@@ -1572,7 +1572,7 @@ You need to enable Entity Handling to use this bot
     <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>All entity types can be found here: https://bit.ly/3Rg68lp</value>
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
     <value>Possible values: "Interact", "Attack" (default), "InteractAt" (Interact and Attack).</value>
@@ -1588,7 +1588,7 @@ You need to enable Entity Handling to use this bot
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
     <value>Automatically craft items in your inventory
-See https://mccteam.github.io/guide/chat-bots.html#auto-craft for how to use
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
 You need to enable Inventory Handling to use this bot
 You should also enable Terrain and Movements if you need to use a crafting table</value>
   </data>
@@ -1603,15 +1603,14 @@ You should also enable Terrain and Movements if you need to use a crafting table
 Recipes.Type: crafting table type: "player" or "table"
 Recipes.Result: the resulting item
 Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
-For the naming of the items, please see:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDig" xml:space="preserve">
     <value>Auto-digging blocks.
 You need to enable Terrain Handling to use this bot
 You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
 Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
-For the naming of the block, please see https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs</value>
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
     <value>How many seconds to wait after entering the game to start digging automatically, set to -1 to disable automatic start.</value>
@@ -1646,8 +1645,7 @@ For the naming of the block, please see https://github.com/MCCTeam/Minecraft-Con
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
     <value>Automatically drop items in inventory
 You need to enable Inventory Handling to use this bot
-See this file for an up-to-date list of item types you can use with this bot:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
     <value>"include", "exclude" or "everything". Include: drop item IN the list. Exclude: drop item NOT IN the list</value>
@@ -1658,7 +1656,7 @@ You need to enable Inventory Handling to use this bot</value>
   </data>
   <data name="config.ChatBot.AutoFishing" xml:space="preserve">
     <value>Automatically catch fish using a fishing rod
-Guide: https://mccteam.github.io/guide/chat-bots.html#auto-fishing
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
 You can use "/fish" to control the bot manually.
 /!\ Make sure server rules allow automated farming before using this bot</value>
   </data>
@@ -1731,12 +1729,12 @@ Server admins can spoof chat messages (/nick, /tellraw) so keep this in mind whe
   <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
     <value>This bot allows you to send and recieve messages and commands via a Discord channel.
 For Setup you can either use the documentation or read here (Documentation has images).
-Documentation: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
 Setup:
 First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
 /!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
 When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
-Copy the "Application ID" and go to: https://bit.ly/2Spn2Q3 .
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
 Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
 This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
 Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
@@ -1754,7 +1752,7 @@ To send a message, simply type it out and hit enter.</value>
     <value>Message formats
 Words wrapped with { and } are going to be replaced during the code execution, do not change them!
 For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Discord message formatting, check the following: https://bit.ly/3F8CUCm</value>
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
     <value>The ID of a server/guild where you have invited the bot to.</value>
@@ -1861,7 +1859,7 @@ Please note that due to technical limitations, the client player (you) will not 
   </data>
   <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
     <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
-See https://mccteam.github.io/guide/chat-bots.html#script-scheduler for more info</value>
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
   </data>
   <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
     <value>This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
@@ -1898,7 +1896,7 @@ To send a message, simply type it out and hit enter.</value>
     <value>Message formats
 Words wrapped with { and } are going to be replaced during the code execution, do not change them!
 For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Telegram message formatting, check the following: https://sendpulse.com/blog/telegram-text-formatting</value>
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
     <value>How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).</value>
@@ -1908,7 +1906,7 @@ For Telegram message formatting, check the following: https://sendpulse.com/blog
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
     <value>MCC does it best to detect chat messages, but some server have unusual chat formats
-When this happens, you'll need to configure chat format below, see https://mccteam.github.io/guide/configuration.html#chat-format</value>
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
   </data>
   <data name="config.ChatFormat.Builtins" xml:space="preserve">
     <value>MCC support for common message formats. Set "false" to avoid conflicts with custom formats.</value>
@@ -1920,7 +1918,7 @@ When this happens, you'll need to configure chat format below, see https://mccte
     <value>Startup Config File
 Please do not record extraneous data in this file as it will be overwritten by MCC.
 
-New to Minecraft Console Client? Check out this document: https://mccteam.github.io/guide/configuration.html
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
 Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
   </data>
   <data name="config.load" xml:space="preserve">
@@ -2003,7 +2001,7 @@ Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; P
     <value>Toggle inventory handling.</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>Fill in with in-game locale code, check https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239</value>
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>The language code is invalid!</value>
@@ -2668,5 +2666,8 @@ Logging in...</value>
   </data>
   <data name="mcc.backup_old_config" xml:space="preserve">
     <value>The old MinecraftClient.ini has been backed up as {0}</value>
+  </data>
+  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>Temporary fix for Badpacket issue on some servers.</value>
   </data>
 </root>

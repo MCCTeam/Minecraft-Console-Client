@@ -118,25 +118,25 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>§cИзменение погоды: Дождь больше не идет.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>§cИзменение погоды: Гроза больше не идет.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>§cИзменения погоды: Начался дождь.§r</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is a thunderstorm.§r</value>
+    <value>§cИзменения погоды: Началась гроза.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
+    <value>Указанный недопустимый диапазон обхода должен быть положительным целым числом, большим 0, используя значение по умолчанию 5!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
-    <value>The terrain handling is not enabled in the settings of the client, enable it if you want to use it with this bot. Using alternative (command) method.</value>
+    <value>Обработка рельефа местности не включена в настройках клиента, включите ее, если вы хотите использовать ее с этим ботом. Используя альтернативный (командный) метод.</value>
   </data>
   <data name="bot.antiafk.swapping" xml:space="preserve">
-    <value>The time range begins with a bigger value, swapped them around.</value>
+    <value>Временной диапазон начинается с большего значения, поменяй их местами.</value>
   </data>
   <data name="bot.autoAttack.invalidcooldown" xml:space="preserve">
     <value>Значение кулдауна атаки не может быть меньше 0. По умолчанию используется auto.</value>
@@ -199,10 +199,10 @@
     <value>Остановить текущий запущенный процесс крафтинга</value>
   </data>
   <data name="bot.autocraft.invaild_result" xml:space="preserve">
-    <value>Invalid result item!</value>
+    <value>Некорректный результат предмета!.</value>
   </data>
   <data name="bot.autocraft.invaild_slots" xml:space="preserve">
-    <value>The number of slots does not match and has been adjusted automatically.</value>
+    <value>Количество слотов не совпадает и было скорректировано автоматически.</value>
   </data>
   <data name="bot.autoCraft.loaded" xml:space="preserve">
     <value>Успешно загружен</value>
@@ -232,34 +232,34 @@
     <value>Время выполнения действия истекло! Причина: {0}</value>
   </data>
   <data name="bot.autodig.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /digbot help &lt;cmd name&gt; for more information.</value>
+    <value>Доступные команды: {0}. Используйте /digbot help &lt;cmd name&gt; для получения дополнительной информации.</value>
   </data>
   <data name="bot.autodig.cmd" xml:space="preserve">
-    <value>Auto-digging ChatBot command</value>
+    <value>Чатбот авто-копание команды</value>
   </data>
   <data name="bot.autodig.dig_timeout" xml:space="preserve">
-    <value>Digging block timeout, retry.</value>
+    <value>Тайм-аут блока копания, повторите попытку.</value>
   </data>
   <data name="bot.autodig.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /digbot help &lt;command name&gt;</value>
+    <value>Получить описание команды. Использование: /autocraft help &lt;имя команды&gt;.</value>
   </data>
   <data name="bot.autodig.help.start" xml:space="preserve">
-    <value>Start the automatic digging bot.</value>
+    <value>Запустить автоматического копаниющего бота.</value>
   </data>
   <data name="bot.autodig.help.stop" xml:space="preserve">
-    <value>Deactivate the automatic digging bot.</value>
+    <value>Отключить автоматического копающего бота.</value>
   </data>
   <data name="bot.autodig.not_allow" xml:space="preserve">
-    <value>The block currently pointed to is not in the allowed list.</value>
+    <value>Блок не находится в разрешенном списке.</value>
   </data>
   <data name="bot.autodig.start" xml:space="preserve">
-    <value>Automatic digging has started.</value>
+    <value>Автоматическое копание началось.</value>
   </data>
   <data name="bot.autodig.start_delay" xml:space="preserve">
-    <value>Digging will start in {0:0.0} second(s).</value>
+    <value>Копание начнется через {0:0.0} секунд(ы).</value>
   </data>
   <data name="bot.autodig.stop" xml:space="preserve">
-    <value>Auto-digging has been stopped.</value>
+    <value>Автоматическое копание остановлено.</value>
   </data>
   <data name="bot.autoDrop.added" xml:space="preserve">
     <value>Добавлен элемент {0}</value>
@@ -305,70 +305,70 @@
     <value>Неизвестный режим. Доступные режимы: Включить, Исключить, Все</value>
   </data>
   <data name="bot.autoFish.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /fish help &lt;cmd name&gt; for more information.</value>
+    <value>Доступные команды: {0}. Используйте /fish help &lt;cmd name&gt; для получения дополнительной информации.</value>
   </data>
   <data name="bot.autoFish.cast_timeout" xml:space="preserve">
-    <value>Casting timeout and will soon retry. (Timeout increased to {0:0.0} sec).</value>
+    <value>Тайм-аут раздачи и скоро повторится. (Тайм-аут увеличился до {0:0.0} сек).</value>
   </data>
   <data name="bot.autoFish.caught" xml:space="preserve">
     <value>Поймал рыбу!</value>
   </data>
   <data name="bot.autoFish.caught_at" xml:space="preserve">
-    <value>Retract the fishing rod at ({0:0.0},{1:0.0},{2:0.0})! (Count: {3})</value>
+    <value>Снять удочку с рыбалки ({0:0.0},{1:0.0},{2:0.0})! (Количество - {3})</value>
   </data>
   <data name="bot.autoFish.cmd" xml:space="preserve">
-    <value>Auto-Fishing ChatBot command</value>
+    <value>Команды авторыбалки ChatBot</value>
   </data>
   <data name="bot.autoFish.despawn" xml:space="preserve">
-    <value>Fish floating despawn, will re-cast.</value>
+    <value>Поплавок пропал, пробуем заново.</value>
   </data>
   <data name="bot.autoFish.fishing_timeout" xml:space="preserve">
-    <value>Fishing timeout, will soon re-cast.</value>
+    <value>Тайм-аут рыбалки, скоро начнется повторно.</value>
   </data>
   <data name="bot.autoFish.got" xml:space="preserve">
-    <value>Fishing got {0}</value>
+    <value>Рыбалка получила {0}</value>
   </data>
   <data name="bot.autoFish.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /fish help &lt;command name&gt;</value>
+    <value>Получить описание команды. Использование: /fish help &lt;command name&gt;</value>
   </data>
   <data name="bot.autoFish.help.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Начать автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.help.status" xml:space="preserve">
-    <value>List all obtained items. Or use "/fish status clear" to clear the list.</value>
+    <value>Список всех полученных элементов. Или используйте "/fish status clear" чтобы очистить список.</value>
   </data>
   <data name="bot.autoFish.help.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Остановить автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling is not enabled. Cannot check rod durability and switch rods.</value>
+    <value>Обработка инвентаря не включена. Не удается проверить прочность удочки и переключить удочку.</value>
   </data>
   <data name="bot.autoFish.no_rod" xml:space="preserve">
     <value>Нет удочки под рукой. Может быть сломана?</value>
   </data>
   <data name="bot.autoFish.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Начать автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.start_at" xml:space="preserve">
-    <value>Fishing will start in {0:0.0} second(s).</value>
+    <value>Рыбалка начнется через {0:0.0} секунд(ы).</value>
   </data>
   <data name="bot.autoFish.status_clear" xml:space="preserve">
-    <value>The record of the obtained items has been cleared.</value>
+    <value>Запись о полученных элементах была очищена.</value>
   </data>
   <data name="bot.autoFish.status_info" xml:space="preserve">
-    <value>All items obtained from fishing (not entirely accurate):</value>
+    <value>Все предметы, полученные от рыбалки (не совсем точно):</value>
   </data>
   <data name="bot.autoFish.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Остановить автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
-    <value>Switch to the rod in slot {0}, durability {1}/64.</value>
+    <value>Переключиться на удочку в ячейке {0}, прочность {1}/64.</value>
   </data>
   <data name="bot.autoFish.throw" xml:space="preserve">
     <value>Закинул удочку</value>
   </data>
   <data name="bot.autoFish.update_lookat" xml:space="preserve">
-    <value>Update yaw = {0:0.00}, pitch = {1:0.00}.</value>
+    <value>Обновить yaw = {0:0.00}, высота = {1:0.00}.</value>
   </data>
   <data name="bot.autoRelog.curr_dir" xml:space="preserve">
     <value>Текущий каталог был: {0}</value>
@@ -440,91 +440,91 @@ cooldown: {6}</value>
     <value>Путь '{0}' содержит недопустимые символы.</value>
   </data>
   <data name="bot.DiscordBridge.canceled_sending" xml:space="preserve">
-    <value>Sending message to Discord was canceled due an error occuring. For more info enable Debug.</value>
+    <value>Отправка сообщения в Discord была отменена из-за ошибки. Для получения дополнительной информации включите Отладку.</value>
   </data>
   <data name="bot.DiscordBridge.channel_not_found" xml:space="preserve">
-    <value>The provided channel with an id '{0}' has not been found!</value>
+    <value>Канал с айди '{0}' не найден!</value>
   </data>
   <data name="bot.DiscordBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>Команда выполнена с результатом</value>
   </data>
   <data name="bot.DiscordBridge.connected" xml:space="preserve">
-    <value>Succesfully connected with MCC!</value>
+    <value>Успешно подключено к MCC!</value>
   </data>
   <data name="bot.DiscordBridge.desc" xml:space="preserve">
-    <value>This command allows you to specify in the which direction the messages will be relayed via the Discord Bridge chat bot.</value>
+    <value>Эта команда позволяет указать в каком направлении сообщения будут передаваться через бот дискорд бота.</value>
   </data>
   <data name="bot.DiscordBridge.direction" xml:space="preserve">
-    <value>Direction of the Discord Brdige has been switched to '{0}'!</value>
+    <value>Направление Discord Brdige было переключено на '{0}'!</value>
   </data>
   <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>Оба</value>
   </data>
   <data name="bot.DiscordBridge.direction.discord" xml:space="preserve">
-    <value>Discord</value>
+    <value>Дискорд</value>
   </data>
   <data name="bot.DiscordBridge.direction.minecraft" xml:space="preserve">
-    <value>Minecraft</value>
+    <value>Майнкрафт</value>
   </data>
   <data name="bot.DiscordBridge.guild_not_found" xml:space="preserve">
-    <value>The provided guild/server with an id '{0}' has not been found!</value>
+    <value>Гильдия/сервер с идентификатором '{0}' не найден!</value>
   </data>
   <data name="bot.DiscordBridge.invalid_direction" xml:space="preserve">
-    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, discord|dsc. Example: "dscbridge direction mc"</value>
+    <value>Недопустимое направление! Доступные направления: как для |b, minecraft|mc, discord|dsc. Пример: "dscbridge direction mc"</value>
   </data>
   <data name="bot.DiscordBridge.missing_token" xml:space="preserve">
-    <value>Please provide a valid token!</value>
+    <value>Пожалуйста, укажите корректный дискорд токен!</value>
   </data>
   <data name="bot.DiscordBridge.unknown_error" xml:space="preserve">
-    <value>An unknown error has occured!</value>
+    <value>Произошла неизвестная ошибка!</value>
   </data>
   <data name="bot.farmer.already_running" xml:space="preserve">
-    <value>The bot is already farming!</value>
+    <value>Этот бот уже фармит!</value>
   </data>
   <data name="bot.farmer.already_stopped" xml:space="preserve">
-    <value>The bot has already stopped farming!</value>
+    <value>Бот уже прекратил фарминг!</value>
   </data>
   <data name="bot.farmer.crop_type" xml:space="preserve">
-    <value>Crop type</value>
+    <value>Тип культуры</value>
   </data>
   <data name="bot.farmer.desc" xml:space="preserve">
-    <value>Farming bot</value>
+    <value>Фарминг бот</value>
   </data>
   <data name="bot.farmer.invalid_crop_type" xml:space="preserve">
-    <value>Invalid crop type provided (Types which you can use: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat)!</value>
+    <value>Предоставлен недопустимый тип посадки (Типы, которые вы можете использовать: Свекла, Морковь, арбуз, Адский нарост, Картофель, Пшеница)!</value>
   </data>
   <data name="bot.farmer.invalid_radius" xml:space="preserve">
-    <value>Invalid radius provided, you must provide a valid integer number greater than 0!</value>
+    <value>Указан неверный радиус, вы должны указать допустимое целое число больше 0!</value>
   </data>
   <data name="bot.farmer.needs_inventory" xml:space="preserve">
-    <value>The Farmer bot needs Inventory Handling in order to work, please enable it!</value>
+    <value>Боту фермера нужна обработка инвентаря для работы, пожалуйста, включите его!</value>
   </data>
   <data name="bot.farmer.needs_terrain" xml:space="preserve">
-    <value>The Farmer bot needs Terrain Handling in order to work, please enable it!</value>
+    <value>Для работы фермерскому боту нужна обработка местности, пожалуйста, включите её!</value>
   </data>
   <data name="bot.farmer.not_implemented" xml:space="preserve">
-    <value>Not implemented bellow 1.13!</value>
+    <value>Не реализовано ниже 1.13!</value>
   </data>
   <data name="bot.farmer.radius" xml:space="preserve">
-    <value>Radius</value>
+    <value>Радиус</value>
   </data>
   <data name="bot.farmer.started" xml:space="preserve">
-    <value>Started farming!</value>
+    <value>Фарминг запущен!</value>
   </data>
   <data name="bot.farmer.stopped" xml:space="preserve">
-    <value>Stopped farming!</value>
+    <value>Фарминг остановлен!</value>
   </data>
   <data name="bot.farmer.stopping" xml:space="preserve">
-    <value>Stoping farming, this might take a second...</value>
+    <value>Остановка фарминга, это может занять секунду...</value>
   </data>
   <data name="bot.farmer.warining_allow_teleport" xml:space="preserve">
-    <value>You have enabled teleporting, this might get your bot account kicked and in the worst case scenario banned! Use with caution!</value>
+    <value>Вы включили телепортацию, это может привести к тому, что ваш бот кикнут, а в худшем случае сценарий запрещён! С осторожностью!</value>
   </data>
   <data name="bot.farmer.warining_force_unsafe" xml:space="preserve">
-    <value>You have enabled un-safe movement, the bot might get hurt!</value>
+    <value>Вы включили небезопасное движение, бот может навредить!</value>
   </data>
   <data name="bot.farmer.warining_invalid_parameter" xml:space="preserve">
-    <value>Invalid parameter "{0}" provided (Use format: "key:value")!</value>
+    <value>Предоставлен недопустимый параметр "{0}" (формат использования: "key:value")!</value>
   </data>
   <data name="bot.mailer.cmd" xml:space="preserve">
     <value>команда почтового клиента</value>
@@ -604,43 +604,43 @@ cooldown: {6}</value>
     <value>{0} игнорируется!</value>
   </data>
   <data name="bot.map.cmd.desc" xml:space="preserve">
-    <value>Render maps (item maps)</value>
+    <value>Отобразить карты (предметы карт)</value>
   </data>
   <data name="bot.map.cmd.invalid_id" xml:space="preserve">
-    <value>Invalid ID provided, must be a number!</value>
+    <value>Указан неверный ID, должен быть число!</value>
   </data>
   <data name="bot.map.cmd.not_found" xml:space="preserve">
-    <value>A map with id '{0}' does not exists!</value>
+    <value>Карта с id '{0}' не существует!</value>
   </data>
   <data name="bot.map.failed_to_render" xml:space="preserve">
-    <value>Failed to render the map with id: '{0}'</value>
+    <value>Не удалось отобразить карту с идентификатором: '{0}'</value>
   </data>
   <data name="bot.map.list_item" xml:space="preserve">
-    <value>- Map id: {0} (Last Updated: {1})</value>
+    <value>- Id карты: {0} (Последнее обновление: {1})</value>
   </data>
   <data name="bot.map.no_maps" xml:space="preserve">
-    <value>No maps received!</value>
+    <value>Карты не получены!</value>
   </data>
   <data name="bot.map.received" xml:space="preserve">
-    <value>The list of received maps from the server:</value>
+    <value>Список полученных карт с сервера:</value>
   </data>
   <data name="bot.map.received_map" xml:space="preserve">
-    <value>Received a new Map, with Id: {0}</value>
+    <value>Получена новая карта, с Id: {0}</value>
   </data>
   <data name="bot.map.rendered" xml:space="preserve">
-    <value>Succesfully rendered a map with id '{0}' to: '{1}'</value>
+    <value>Карта с идентификатором '{0}' ' успешно отобрана: '{1}'</value>
   </data>
   <data name="bot.map.resized_rendered_image" xml:space="preserve">
-    <value>Resized the rendered image of the map with id: '{0}' to {1}x{1}.</value>
+    <value>Изменено отображенное изображение карты с идентификатором: '{0}' до {1}x{1}.</value>
   </data>
   <data name="bot.map.scale" xml:space="preserve">
-    <value>The size of the map is reduced from ({0}x{1}) to ({2}x{3}) due to the size limitation of the current terminal.</value>
+    <value>Размер карты снижается с ({0}x{1}) до ({2}x{3}) из-за ограничения размера текущего терминала.</value>
   </data>
   <data name="bot.map.sent_to_discord" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Discord via Discord Brdige chat bot!</value>
+    <value>Отправлено изображение карты с идентификатором '{0}' ' ' в Discord через чат-бот дискорд бота!</value>
   </data>
   <data name="bot.map.sent_to_telegram" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
+    <value>Отправлено изображение карты с идентификатором '{0}' в Телеграм через чат-бот Телеграм бот!</value>
   </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
     <value>команда воспроизведения</value>
@@ -697,51 +697,51 @@ cooldown: {6}</value>
  действие: {6}</value>
   </data>
   <data name="bot.TelegramBridge.canceled_sending" xml:space="preserve">
-    <value>Sending message to Telegram was canceled due an error occuring. For more info enable Debug.</value>
+    <value>Отправка сообщения в Телеграм была отменена из-за ошибки. Для получения дополнительной информации включите Отладку.</value>
   </data>
   <data name="bot.TelegramBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>Команда выполнена с результатом</value>
   </data>
   <data name="bot.TelegramBridge.connected" xml:space="preserve">
-    <value>Succesfully connected with the MCC!</value>
+    <value>Успешно подключено к MCC!</value>
   </data>
   <data name="bot.TelegramBridge.desc" xml:space="preserve">
-    <value>This command allows you to specify in the which direction the messages will be relayed via the Telegram Bridge chat bot.</value>
+    <value>Эта команда позволяет указать в каком направлении сообщения будут передаваться через чат-бот Телеграм бота.</value>
   </data>
   <data name="bot.TelegramBridge.direction" xml:space="preserve">
-    <value>Direction of the Telegram Brdige has been switched to '{0}'!</value>
+    <value>Направление Телеграм бота было переключено на '{0}'!</value>
   </data>
   <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>Оба</value>
   </data>
   <data name="bot.TelegramBridge.direction.minecraft" xml:space="preserve">
-    <value>Minecraft</value>
+    <value>Майнкрафт</value>
   </data>
   <data name="bot.TelegramBridge.direction.Telegram" xml:space="preserve">
-    <value>Telegram</value>
+    <value>Телеграм</value>
   </data>
   <data name="bot.TelegramBridge.disconnected" xml:space="preserve">
-    <value>Disconnected from from the MCC!</value>
+    <value>Отключено от MCC!</value>
   </data>
   <data name="bot.TelegramBridge.invalid_direction" xml:space="preserve">
-    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, telegram|tg|t. Example: "tgbridge direction mc"</value>
+    <value>Недопустимое направление! Доступные направления: как |b, minecraft|mc, telegram|tg|t. Пример: "tgbridge direction mc"</value>
   </data>
   <data name="bot.TelegramBridge.missing_authorized_channels" xml:space="preserve">
-    <value>[WARNING] You have not provided any Channel IDs, for "Authorized_Chat_Ids" field, anyone who finds your bot will be able to send messages and commands to it!</value>
+    <value>[WARNING] Вы не указали ни одного ID канала, для поля "Authorized_Chat_Ids" любой, кто найдет вашего бота, сможет отправлять ему сообщения и команды!</value>
   </data>
   <data name="bot.TelegramBridge.missing_channel_id" xml:space="preserve">
-    <value>[WARNING] You have not provided a Channel ID, you will ONLY get replies to commands sent from Telegram!</value>
+    <value>[WARNING] Вы не предоставили ID канала, вы будете получать ответы на команды, отправленные через Телеграм!</value>
   </data>
   <data name="bot.TelegramBridge.missing_token" xml:space="preserve">
-    <value>Please provide a valid bot token!</value>
+    <value>Пожалуйста, укажите корректный телеграм бот токен!</value>
   </data>
   <data name="bot.TelegramBridge.unauthorized" xml:space="preserve">
-    <value>**🛑 Unauthorized access! 🛑
+    <value>**🛑 Неавторизованный доступ! 🛑
 
-Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file to gain access!**</value>
+Добавьте ID этого чата в поле "Authorized_Chat_Ids" в файле конфигурации, чтобы получить доступ!**</value>
   </data>
   <data name="bot.TelegramBridge.unknown_error" xml:space="preserve">
-    <value>An unknown error has occured!</value>
+    <value>Произошла неизвестная ошибка!</value>
   </data>
   <data name="bot.testBot.said" xml:space="preserve">
     <value>Бот: {0} сказал: {1}</value>
@@ -750,16 +750,16 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Bot: {0} сказал мне : {1}</value>
   </data>
   <data name="botname.Alerts" xml:space="preserve">
-    <value>Alerts</value>
+    <value>Предупреждения</value>
   </data>
   <data name="botname.AntiAFK" xml:space="preserve">
-    <value>AntiAFK</value>
+    <value>АнтиАФК</value>
   </data>
   <data name="botname.AutoAttack" xml:space="preserve">
-    <value>AutoAttack</value>
+    <value>Автоатака</value>
   </data>
   <data name="botname.AutoCraft" xml:space="preserve">
-    <value>AutoCraft</value>
+    <value>Автокрафт</value>
   </data>
   <data name="botname.AutoDig" xml:space="preserve">
     <value>AutoDig</value>
@@ -970,10 +970,10 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Bot {0} is not loaded, check if you have made a typo!</value>
   </data>
   <data name="cmd.bots.unloaded" xml:space="preserve">
-    <value>Successfully unloaded bot: {0}</value>
+    <value>Успешно выгружен бот: {0}</value>
   </data>
   <data name="cmd.bots.unloaded_all" xml:space="preserve">
-    <value>Successfully unloaded all bots!</value>
+    <value>Все боты успешно выгружены!</value>
   </data>
   <data name="cmd.changeSlot.changed" xml:space="preserve">
     <value>Изменился на слот {0}</value>
@@ -988,26 +988,26 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Не удалось изменить слот: Not a Number</value>
   </data>
   <data name="cmd.chunk.chunk_pos" xml:space="preserve">
-    <value>chunk: ({0}, {1}).</value>
+    <value>чанк: {0}, {1}.</value>
   </data>
   <data name="cmd.chunk.current" xml:space="preserve">
-    <value>Current location：{0}, chunk: ({1}, {2}).</value>
+    <value>Текущее местоположение：{0}, чанк: ({1}, {2}).</value>
   </data>
   <data name="cmd.chunk.desc" xml:space="preserve">
-    <value>Displays the chunk loading status.
-Change EnableEmoji=false in the settings if the display is confusing.</value>
+    <value>Отображает статус загрузки чанка.
+Изменение EnableEmoji=false в настройках, если дисплей запущен.</value>
   </data>
   <data name="cmd.chunk.for_debug" xml:space="preserve">
-    <value>§x§0This command is used for debugging, make sure you know what you are doing.§r</value>
+    <value>§x§0Эта команда используется для отладки, убедитесь, что вы знаете, что делаете.§r</value>
   </data>
   <data name="cmd.chunk.icon" xml:space="preserve">
-    <value>Player:{0}, MarkedChunk:{1}, NotReceived:{2}, Loading:{3}, Loaded:{4}</value>
+    <value>Игрок:{0}, MarkedChunk:{1}, Не получило:{2}, Загрузка:{3}, Загружено:{4}</value>
   </data>
   <data name="cmd.chunk.marked" xml:space="preserve">
-    <value>Marked location: </value>
+    <value>Отметить местоположение: </value>
   </data>
   <data name="cmd.chunk.outside" xml:space="preserve">
-    <value>§x§0Since the marked chunk is outside the graph, it will not be displayed!§r</value>
+    <value>§x§0Поскольку отмеченный чанк находится вне графика, он не отображается!§r</value>
   </data>
   <data name="cmd.connect.desc" xml:space="preserve">
     <value>подключиться к указанному серверу.</value>
@@ -1052,31 +1052,31 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
     <value>Неизвестный предмет {0}</value>
   </data>
   <data name="cmd.enchant.clicked" xml:space="preserve">
-    <value>Sent a click to the server, if you have enough levels and if you have placed the items in the correct slots it should enchant!</value>
+    <value>Послал клик на сервер, если у вас достаточно уровней, и если вы разместили предметы в правильные ячейки, то он должен зачароваться!</value>
   </data>
   <data name="cmd.enchant.desc" xml:space="preserve">
-    <value>Enchant an item when you have the Enchantment table opened and the list of enchants recieved.</value>
+    <value>Зачаровать предмет, когда вы открыли стол зачарования и список зачарований.</value>
   </data>
   <data name="cmd.enchant.enchanting_no_item" xml:space="preserve">
-    <value>You must put an item inside the enchanting table in slot 0!</value>
+    <value>Вы должны поместить предмет в чарующий стол в ячейку 0!</value>
   </data>
   <data name="cmd.enchant.enchanting_no_lapis" xml:space="preserve">
-    <value>You must put at least 3 lapis lazuli inside the enchanting table in slot 1!</value>
+    <value>Вы должны положить по крайней мере 3 лазурита внутри очаровательного стола в слот 1!</value>
   </data>
   <data name="cmd.enchant.enchanting_table_not_opened" xml:space="preserve">
-    <value>You must open a an enchanting table in order to use this option!</value>
+    <value>Вы должны открыть чарующий стол, чтобы использовать этот вариант!</value>
   </data>
   <data name="cmd.enchant.invalid_slot" xml:space="preserve">
-    <value>Invalid slot provided (Available: top, middle, bottom)!</value>
+    <value>Предоставлен недопустимый слот (Даёт: сверху, средний, внизу)!</value>
   </data>
   <data name="cmd.enchant.no_enchantments" xml:space="preserve">
-    <value>You must first put an item to enchant to the enchanting table in order to get enchantments from the server, then you can execute this command!</value>
+    <value>Вы должны сначала поместить предмет, чтобы зачаровать его в чарующие столы, чтобы получить чары с сервера, тогда вы можете выполнить эту команду!</value>
   </data>
   <data name="cmd.enchant.no_levels" xml:space="preserve">
-    <value>You do not have enouhg levels to enchant! (Your current level is {0}, you need to be level {1}).</value>
+    <value>У вас нет уровней заклинания для чаров! (Ваш текущий уровень - {0}, вам нужен {1} уровень).</value>
   </data>
   <data name="cmd.enchant.not_clicked" xml:space="preserve">
-    <value>Could not click!</value>
+    <value>Не удалось нажать!</value>
   </data>
   <data name="cmd.entityCmd.attacked" xml:space="preserve">
     <value>Сущность атакована</value>
@@ -1109,7 +1109,7 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
     <value>Шлем</value>
   </data>
   <data name="cmd.entityCmd.item" xml:space="preserve">
-    <value>Item</value>
+    <value>Предмет</value>
   </data>
   <data name="cmd.entityCmd.latency" xml:space="preserve">
     <value>Задержка</value>
@@ -1136,94 +1136,94 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
     <value>Поза</value>
   </data>
   <data name="cmd.entityCmd.type" xml:space="preserve">
-    <value>Type</value>
+    <value>Тип</value>
   </data>
   <data name="cmd.entityCmd.used" xml:space="preserve">
     <value>Существо использовано</value>
   </data>
   <data name="cmd.execif.desc" xml:space="preserve">
-    <value>Allows you to execute a command if a condition is met. (You can use variables from MinecraftClient.ini and /set command, as well as CSharp expressions)</value>
+    <value>Позволяет выполнить команду, если условие выполнено. (Вы можете использовать переменные из команды MinecraftClient.ini и /set и CSharp)</value>
   </data>
   <data name="cmd.execif.error" xml:space="preserve">
-    <value>Error: {0}</value>
+    <value>Ошибка: {0}</value>
   </data>
   <data name="cmd.execif.error_occured" xml:space="preserve">
-    <value>An error has occured while executing the command: {0}</value>
+    <value>Произошла ошибка при выполнении команды: {0}</value>
   </data>
   <data name="cmd.execif.executed" xml:space="preserve">
-    <value>The condition '{0}' was met, executed command '{1}' with result '{2}'.</value>
+    <value>Условие '{0}' выполнено, выполнена команда '{1}' с результатом '{2}'.</value>
   </data>
   <data name="cmd.execif.executed_no_output" xml:space="preserve">
-    <value>The condition '{0}' was met, executed command '{1}', no result was returned.</value>
+    <value>Условие '{0}' выполнено, выполнена команда '{1}', результат не был возвращен.</value>
   </data>
   <data name="cmd.execmulti.desc" xml:space="preserve">
-    <value>Execute multiple commands one after another</value>
+    <value>Выполнять несколько команд одна за другой</value>
   </data>
   <data name="cmd.execmulti.executed" xml:space="preserve">
-    <value>Executed the command '{0}' with {1}</value>
+    <value>Выполнена команда '{0}' ' ' с {1}</value>
   </data>
   <data name="cmd.execmulti.no_result" xml:space="preserve">
-    <value>no result!</value>
+    <value>нет результатов!</value>
   </data>
   <data name="cmd.execmulti.result" xml:space="preserve">
-    <value>result '{0}'!</value>
+    <value>результат '{0}'!</value>
   </data>
   <data name="cmd.exit.desc" xml:space="preserve">
     <value>отключиться от сервера.</value>
   </data>
   <data name="cmd.follow.already_following" xml:space="preserve">
-    <value>Already following {0}!</value>
+    <value>Уже преследую {0}!</value>
   </data>
   <data name="cmd.follow.already_stopped" xml:space="preserve">
-    <value>Already stopped</value>
+    <value>Уже остановлено</value>
   </data>
   <data name="cmd.follow.cant_reach_player" xml:space="preserve">
-    <value>Can not reach the player, he is either in chunks that are not loaded, too far away or not reachable by a bot due to obstacles like gaps or water bodies!</value>
+    <value>Не могу добраться до игрока, он либо в чанках, которые не загружены, Слишком далеко или недоступно ботом из-за таких препятствий, как разрывы или водяные органы!</value>
   </data>
   <data name="cmd.follow.desc" xml:space="preserve">
-    <value>Makes the bot follow a specified player</value>
+    <value>Заставляет бота следить за указанным игроком</value>
   </data>
   <data name="cmd.follow.invalid_name" xml:space="preserve">
-    <value>Invalid or empty player name provided!</value>
+    <value>Неверное или пустое имя игрока!</value>
   </data>
   <data name="cmd.follow.invalid_player" xml:space="preserve">
-    <value>The specified player is either not connected out out of the range!</value>
+    <value>Указанный игрок либо не подключен за пределы диапазона!</value>
   </data>
   <data name="cmd.follow.note" xml:space="preserve">
-    <value>NOTE: The bot is quite slow, you need to walk slowly and at a close distance for it to be able to keep up, kinda like when you make animals follow you by holding food in your hand. This is a limitation due to a pathfinding algorithm, we are working to get a better one.</value>
+    <value>ПРИМЕЧАНИЕ: Бот довольно медленно, вам нужно двигаться медленно и на близком расстоянии, чтобы он мог идти дальше, добро пожаловать как когда вы заводите животных следуйте за вами, держав пищу в руке. Это ограничение из-за алгоритма поиска путей, мы работаем над получением лучшего.</value>
   </data>
   <data name="cmd.follow.pausing" xml:space="preserve">
-    <value>Pausing!</value>
+    <value>Пауза!</value>
   </data>
   <data name="cmd.follow.player_came_to_the_range" xml:space="preserve">
-    <value>The player {0} came back to the range!</value>
+    <value>Игрок {0} вернулся в зону!</value>
   </data>
   <data name="cmd.follow.player_left" xml:space="preserve">
-    <value>The player {0} left the server!</value>
+    <value>Игрок {0} покинул сервер!</value>
   </data>
   <data name="cmd.follow.player_left_the_range" xml:space="preserve">
-    <value>The player {0} has left the range!</value>
+    <value>Игрок {0} покинул радиус!</value>
   </data>
   <data name="cmd.follow.resuming" xml:space="preserve">
-    <value>Resuming to follow!</value>
+    <value>Возобновление приследования!</value>
   </data>
   <data name="cmd.follow.started" xml:space="preserve">
-    <value>Started following {0}!</value>
+    <value>Начал приследование {0}!</value>
   </data>
   <data name="cmd.follow.stopped" xml:space="preserve">
-    <value>Stopped!</value>
+    <value>Остановлено!</value>
   </data>
   <data name="cmd.follow.stopping" xml:space="preserve">
-    <value>Stopped following!</value>
+    <value>Преследование остановлено!</value>
   </data>
   <data name="cmd.follow.switched" xml:space="preserve">
-    <value>Switched to following {0}!</value>
+    <value>Переключено на {0}!</value>
   </data>
   <data name="cmd.follow.unsafe_enabled" xml:space="preserve">
-    <value>Enabled us-safe walking (NOTE: The bot might die or get hurt!)</value>
+    <value>Включена "Безопасная прогулка" (ПРИМЕЧАНИЕ: бот может погибнуть или навредить себе!)</value>
   </data>
   <data name="cmd.follow.usage" xml:space="preserve">
-    <value>follow &lt;player name|stop&gt; [-f] (Use -f to enable un-safe walking)</value>
+    <value>следуйте за &lt;player name|stop&gt; [-f] (Используйте -f для включения небезопасной ходьбы)</value>
   </data>
   <data name="cmd.health.desc" xml:space="preserve">
     <value>Показать здоровье и насыщенность пищей.</value>
@@ -1265,7 +1265,7 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
     <value>Выбросил всю стопку предметов из слота #{0}</value>
   </data>
   <data name="cmd.inventory.found_items" xml:space="preserve">
-    <value>Found items</value>
+    <value>Найденные предметы</value>
   </data>
   <data name="cmd.inventory.help.available" xml:space="preserve">
     <value>Доступные действия</value>
@@ -1295,7 +1295,7 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
 Note that parameters in '[]' are optional.</value>
   </data>
   <data name="cmd.inventory.help.inventories" xml:space="preserve">
-    <value>List avaliable inventories</value>
+    <value>Список доступных инвентарей</value>
   </data>
   <data name="cmd.inventory.help.list" xml:space="preserve">
     <value>Список инвентаря.</value>
@@ -1572,171 +1572,169 @@ You need to enable Entity Handling to use this bot
     <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>All entity types can be found here: https://bit.ly/3Rg68lp</value>
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
     <value>Possible values: "Interact", "Attack" (default), "InteractAt" (Interact and Attack).</value>
   </data>
   <data name="config.ChatBot.AutoAttack.List_Mode" xml:space="preserve">
-    <value>Wether to treat the entities list as a "whitelist" or as a "blacklist".</value>
+    <value>Ведь мы рассматриваем список сущностей как «белый» или «черный список».</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Mode" xml:space="preserve">
-    <value>"single" or "multi". single target one mob per attack. multi target all mobs in range per attack</value>
+    <value>«одиночный» или «мульти». одиночная цель по одному мобу за атаку. Уничтожайте всех мобов в радиусе действия за атаку</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Priority" xml:space="preserve">
-    <value>"health" or "distance". Only needed when using single mode</value>
+    <value>"здоровье" или "расстояние". Требуется только при использовании единого режима</value>
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
     <value>Automatically craft items in your inventory
-See https://mccteam.github.io/guide/chat-bots.html#auto-craft for how to use
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
 You need to enable Inventory Handling to use this bot
 You should also enable Terrain and Movements if you need to use a crafting table</value>
   </data>
   <data name="config.ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
-    <value>Location of the crafting table if you intended to use it. Terrain and movements must be enabled.</value>
+    <value>Местоположение таблицы крафта, если вы хотите использовать его. Необходимо включить ландшафт и движения.</value>
   </data>
   <data name="config.ChatBot.AutoCraft.OnFailure" xml:space="preserve">
-    <value>What to do on crafting failure, "abort" or "wait".</value>
+    <value>Что делать при сбое создания, "прервать" или "ждать".</value>
   </data>
   <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
     <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
 Recipes.Type: crafting table type: "player" or "table"
 Recipes.Result: the resulting item
 Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
-For the naming of the items, please see:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDig" xml:space="preserve">
     <value>Auto-digging blocks.
 You need to enable Terrain Handling to use this bot
 You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
 Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
-For the naming of the block, please see https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs</value>
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
-    <value>How many seconds to wait after entering the game to start digging automatically, set to -1 to disable automatic start.</value>
+    <value>Сколько секунд ждать после входа в игру начнёт рычать автоматически, установите -1 для отключения автоматического запуска.</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Tool_Switch" xml:space="preserve">
-    <value>Automatically switch to the appropriate tool.</value>
+    <value>Автоматически переключайтесь на соответствующий инструмент.</value>
   </data>
   <data name="config.ChatBot.AutoDig.Dig_Timeout" xml:space="preserve">
-    <value>Mining a block for more than "Dig_Timeout" seconds will be considered a timeout.</value>
+    <value>Добыча блока на более чем "Dig_Timeout" секунд будет считаться таймаут.</value>
   </data>
   <data name="config.ChatBot.AutoDig.Drop_Low_Durability_Tools" xml:space="preserve">
-    <value>Whether to drop the current tool when its durability is too low.</value>
+    <value>Отбрасывать текущий инструмент, когда его прочность слишком мала.</value>
   </data>
   <data name="config.ChatBot.AutoDig.Durability_Limit" xml:space="preserve">
-    <value>Will not use tools with less durability than this. Set to zero to disable this feature.</value>
+    <value>Не будет использовать инструменты с меньшей прочностью. Установите 0, чтобы отключить эту функцию.</value>
   </data>
   <data name="config.ChatBot.AutoDig.List_Type" xml:space="preserve">
-    <value>Wether to treat the blocks list as a "whitelist" or as a "blacklist".</value>
+    <value>Ведь список блоков рассматривается как "белый список" или как "черный список".</value>
   </data>
   <data name="config.ChatBot.AutoDig.Location_Order" xml:space="preserve">
-    <value>"distance" or "index", When using the "fixedpos" mode, the blocks are determined by distance to the player, or by the order in the list.</value>
+    <value>"Расстояние" или "индекс", при использовании режима "фиксированные" блоки определяются по расстоянию до игрока или по порядку в списке.</value>
   </data>
   <data name="config.ChatBot.AutoDig.Locations" xml:space="preserve">
-    <value>The position of the blocks when using "fixedpos" or "both" mode.</value>
+    <value>Положение блоков при использовании "фиксированных" или "обоих" режимов.</value>
   </data>
   <data name="config.ChatBot.AutoDig.Log_Block_Dig" xml:space="preserve">
-    <value>Whether to output logs when digging blocks.</value>
+    <value>Выводить журналы при копании блоков.</value>
   </data>
   <data name="config.ChatBot.AutoDig.Mode" xml:space="preserve">
-    <value>"lookat", "fixedpos" or "both". Digging the block being looked at, the block in a fixed position, or the block that needs to be all met.</value>
+    <value>«взгляд», «фиксированные» или «обои». Подогнать посмотревший блок, блок в фиксированном положении, или блок, который должен быть полностью удовлетворен.</value>
   </data>
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
     <value>Automatically drop items in inventory
 You need to enable Inventory Handling to use this bot
-See this file for an up-to-date list of item types you can use with this bot:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
-    <value>"include", "exclude" or "everything". Include: drop item IN the list. Exclude: drop item NOT IN the list</value>
+    <value>Включите, чтобы включить "включительно", "исключить" или "всего". Включает: выбросить элемент в список. Исключить: исключить элемент НЕ В списке</value>
   </data>
   <data name="config.ChatBot.AutoEat" xml:space="preserve">
-    <value>Automatically eat food when your Hunger value is low
-You need to enable Inventory Handling to use this bot</value>
+    <value>Автоматически съедайте еду, когда ваш голод имеет низкое значение
+Вам нужно включить обработку инвентаря, чтобы использовать этого бота</value>
   </data>
   <data name="config.ChatBot.AutoFishing" xml:space="preserve">
     <value>Automatically catch fish using a fishing rod
-Guide: https://mccteam.github.io/guide/chat-bots.html#auto-fishing
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
 You can use "/fish" to control the bot manually.
 /!\ Make sure server rules allow automated farming before using this bot</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
-    <value>Keep it as false if you have not changed it before.</value>
+    <value>Сохраните это как ложь, если вы не изменили его раньше.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Auto_Rod_Switch" xml:space="preserve">
-    <value>Switch to a new rod from inventory after the current rod is unavailable.</value>
+    <value>Переключиться на новую удочку из инвентаря после того, как текущая удочка недоступна.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Auto_Start" xml:space="preserve">
-    <value>Whether to start fishing automatically after entering a world.</value>
+    <value>Начинать рыбалку автоматически после входа в мир.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Cast_Delay" xml:space="preserve">
-    <value>How soon to re-cast after successful fishing.</value>
+    <value>Как быстро заново забросить после успешного клюва.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Durability_Limit" xml:space="preserve">
-    <value>Will not use rods with less durability than this (full durability is 64). Set to zero to disable this feature.</value>
+    <value>Не будет использовать удочки с меньшей прочностью (полная прочность 64). Установите ноль, чтобы отключить эту функцию.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Enable_Move" xml:space="preserve">
-    <value>This allows the player to change position/facing after each fish caught.</value>
+    <value>Это позволяет игроку изменить положение или положение перед каждой рыбной ловлей.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Fishing_Delay" xml:space="preserve">
-    <value>How long after entering the game to start fishing (seconds).</value>
+    <value>Как долго после входа в игру начать рыбалку (в секундах).</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Fishing_Timeout" xml:space="preserve">
-    <value>Fishing timeout (seconds). Timeout will trigger a re-cast.</value>
+    <value>Тайм-аут рыбалки (в секундах). Тайм-аут вызовет повторный выстрел.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Hook_Threshold" xml:space="preserve">
-    <value>A "stationary" hook that moves above this threshold in the Y-axis will be considered to have caught a fish.</value>
+    <value>"Неподвижный" крюк, который движется выше этого порога в оси Y, будет считаться пойманным рыбу.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Log_Fish_Bobber" xml:space="preserve">
-    <value>Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet.</value>
+    <value>Используется для регулировки выше двух пороговых значений,, который при включении будет напечатать изменения в положении рыболовецкой сущности после получения ее передвижения.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Mainhand" xml:space="preserve">
-    <value>Use the mainhand or the offhand to hold the rod.</value>
+    <value>Используйте mainhand или offhand для удержания стержня.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Movements" xml:space="preserve">
-    <value>It will move in order "1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;..." and can change position or facing or both each time. It is recommended to change the facing only.</value>
+    <value>Порядок "1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;. " и может изменять положение или облицовку или обе стороны. Рекомендуется изменить только облицовочное положение.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Stationary_Threshold" xml:space="preserve">
-    <value>Hook movement in the X and Z axis less than this value will be considered stationary.</value>
+    <value>Движение крюка по оси X и Z меньше, чем это значение будет считаться стационарным.</value>
   </data>
   <data name="config.ChatBot.AutoRelog" xml:space="preserve">
-    <value>Automatically relog when disconnected by server, for example because the server is restating
-/!\ Use Ignore_Kick_Message=true at own risk! Server staff might not appreciate if you auto-relog on manual kicks</value>
+    <value>Автоматически перерегистрировать при отключении сервера, например, потому что сервер снова
+/! Использовать Ignore_Kick_Message=true на свой риск! Сотрудники сервера могут не оценить, если вы автоматически переходите в систему вручную</value>
   </data>
   <data name="config.ChatBot.AutoRelog.Delay" xml:space="preserve">
-    <value>The delay time before joining the server. (in seconds)</value>
+    <value>Задержка при подключении к серверу. (в секундах)</value>
   </data>
   <data name="config.ChatBot.AutoRelog.Ignore_Kick_Message" xml:space="preserve">
-    <value>When set to true, autorelog will reconnect regardless of kick messages.</value>
+    <value>Если установлено значение true, то авторелог будет переподключаться вне зависимости от ударов сообщений.</value>
   </data>
   <data name="config.ChatBot.AutoRelog.Kick_Messages" xml:space="preserve">
-    <value>If the kickout message matches any of the strings, then autorelog will be triggered.</value>
+    <value>Если выпадающее сообщение совпадает с любой из строк, то будет срабатывать авторелог.</value>
   </data>
   <data name="config.ChatBot.AutoRelog.Retries" xml:space="preserve">
-    <value>Retries when failing to relog to the server. use -1 for unlimited retries.</value>
+    <value>Повторяет при сбое записи на сервер. Используйте -1 для неограниченного просмотра.</value>
   </data>
   <data name="config.ChatBot.AutoRespond" xml:space="preserve">
-    <value>Run commands or send messages automatically when a specified pattern is detected in chat
-Server admins can spoof chat messages (/nick, /tellraw) so keep this in mind when implementing AutoRespond rules
-/!\ This bot may get spammy depending on your rules, although the global messagecooldown setting can help you avoiding accidental spam</value>
+    <value>Выполняйте команды или отправляйте сообщения автоматически при обнаружении указанного шаблона в чате
+Администраторы сервера могут воспринимать сообщения чата (/nick, /tellraw) так что помните об этом при внедрении правил AutoRespond
+/! Этот бот может получить спам в зависимости от ваших правил, хотя глобальный параметр messagecooldown может помочь вам избежать случайного спама</value>
   </data>
   <data name="config.ChatBot.AutoRespond.Match_Colors" xml:space="preserve">
-    <value>Do not remove colors from text (Note: Your matches will have to include color codes (ones using the § character) in order to work)</value>
+    <value>Не удаляйте цвета из текста (Примечание: ваши совпадения будут включать цветовые коды (те, которые используют § символ) для работы)</value>
   </data>
   <data name="config.ChatBot.ChatLog" xml:space="preserve">
-    <value>Logs chat messages in a file on disk.</value>
+    <value>Записывает сообщения чата в файле на диске.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
     <value>This bot allows you to send and recieve messages and commands via a Discord channel.
 For Setup you can either use the documentation or read here (Documentation has images).
-Documentation: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
 Setup:
 First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
 /!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
 When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
-Copy the "Application ID" and go to: https://bit.ly/2Spn2Q3 .
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
 Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
 This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
 Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
@@ -1748,25 +1746,25 @@ To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735"
 To send a message, simply type it out and hit enter.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
-    <value>The ID of a channel where you want to interact with the MCC using the bot.</value>
+    <value>ID канала, в котором вы хотите взаимодействовать с MCC с помощью бота.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
     <value>Message formats
 Words wrapped with { and } are going to be replaced during the code execution, do not change them!
 For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Discord message formatting, check the following: https://bit.ly/3F8CUCm</value>
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
-    <value>The ID of a server/guild where you have invited the bot to.</value>
+    <value>ID сервера/гильдии, куда вы пригласили бота.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.MessageSendTimeout" xml:space="preserve">
-    <value>How long to wait (in seconds) if a message can not be sent to discord before canceling the task (minimum 1 second).</value>
+    <value>Как долго ждать (в секундах), если сообщение не может быть отправлено в discord перед отменой задачи (минимум 1 секунда).</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.OwnersIds" xml:space="preserve">
-    <value>A list of IDs of people you want to be able to interact with the MCC using the bot.</value>
+    <value>Список идентификаторов людей, которые вы хотите иметь возможность взаимодействовать с MCC с помощью бота.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.Token" xml:space="preserve">
-    <value>Your Discord Bot token.</value>
+    <value>Ваш токен бота Discord.</value>
   </data>
   <data name="config.ChatBot.Farmer" xml:space="preserve">
     <value>Automatically farms crops for you (plants, breaks and bonemeals them).
@@ -1861,7 +1859,7 @@ Please note that due to technical limitations, the client player (you) will not 
   </data>
   <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
     <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
-See https://mccteam.github.io/guide/chat-bots.html#script-scheduler for more info</value>
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
   </data>
   <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
     <value>This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
@@ -1898,7 +1896,7 @@ To send a message, simply type it out and hit enter.</value>
     <value>Message formats
 Words wrapped with { and } are going to be replaced during the code execution, do not change them!
 For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Telegram message formatting, check the following: https://sendpulse.com/blog/telegram-text-formatting</value>
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
     <value>How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).</value>
@@ -1908,7 +1906,7 @@ For Telegram message formatting, check the following: https://sendpulse.com/blog
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
     <value>MCC does it best to detect chat messages, but some server have unusual chat formats
-When this happens, you'll need to configure chat format below, see https://mccteam.github.io/guide/configuration.html#chat-format</value>
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
   </data>
   <data name="config.ChatFormat.Builtins" xml:space="preserve">
     <value>MCC support for common message formats. Set "false" to avoid conflicts with custom formats.</value>
@@ -1920,7 +1918,7 @@ When this happens, you'll need to configure chat format below, see https://mccte
     <value>Startup Config File
 Please do not record extraneous data in this file as it will be overwritten by MCC.
 
-New to Minecraft Console Client? Check out this document: https://mccteam.github.io/guide/configuration.html
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
 Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
   </data>
   <data name="config.load" xml:space="preserve">
@@ -2003,7 +2001,7 @@ Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; P
     <value>Toggle inventory handling.</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>Fill in with in-game locale code, check https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239</value>
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>The language code is invalid!</value>
@@ -2332,7 +2330,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Не удается подключиться к серверу: эта версия не поддерживается!</value>
   </data>
   <data name="error.usage" xml:space="preserve">
-    <value>Usage:</value>
+    <value>Применение:</value>
   </data>
   <data name="error.version_different" xml:space="preserve">
     <value>§8Сервер сообщает о версии, отличной от установленной вручную. Вход в систему может не работать.</value>
@@ -2668,5 +2666,8 @@ MCC is running with default settings.</value>
   </data>
   <data name="mcc.backup_old_config" xml:space="preserve">
     <value>The old MinecraftClient.ini has been backed up as {0}</value>
+  </data>
+  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>Temporary fix for Badpacket issue on some servers.</value>
   </data>
 </root>

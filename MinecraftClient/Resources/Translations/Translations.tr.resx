@@ -130,7 +130,7 @@
     <value>§cHava değişikliği: Fırtınalı başlandı.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Sağlanan geçersiz yürüyüş aralığı, varsayılan 5 değeri kullanılarak 0dan büyük bir pozitif tam sayı olmalıdır!</value>
+    <value>Geçersiz yürüyüş mesafesi, varsayılan 5 değeri kullanın veya 0dan büyük bir sayı belirleyin!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
     <value>İstemci ayarlarında terrain and movement etkin değil, bu botla kullanmak istiyorsanız etkinleştirin. Alternatif (komut) yöntemini kullanma.</value>
@@ -166,10 +166,10 @@
     <value>Üretim başarısız oldu! Daha fazla malzeme bekliyorum</value>
   </data>
   <data name="bot.autoCraft.debug.no_config" xml:space="preserve">
-    <value>Yapılandırma bulunamadı. Yenisini yazın.</value>
+    <value>Ayarlar bulunamadı. Yenisini yazın.</value>
   </data>
   <data name="bot.autoCraft.error.config" xml:space="preserve">
-    <value>Yapılandırma ayrıştırılırken hata oluştu: {0}</value>
+    <value>Ayarlar okunurken hata oluştu: {0}</value>
   </data>
   <data name="bot.autoCraft.exception.duplicate" xml:space="preserve">
     <value>Belirtilen yinelenen tarif adı: {0}</value>
@@ -184,10 +184,10 @@
     <value>Mevcut tarifleri listeleyin.</value>
   </data>
   <data name="bot.autoCraft.help.load" xml:space="preserve">
-    <value>Yapılandırma dosyasını yükleyin.</value>
+    <value>Ayar dosyasını yükleyin.</value>
   </data>
   <data name="bot.autoCraft.help.reload" xml:space="preserve">
-    <value>Yapılandırma dosyasını yeniden yükleyin.</value>
+    <value>Ayar dosyasını yeniden yükleyin.</value>
   </data>
   <data name="bot.autoCraft.help.resetcfg" xml:space="preserve">
     <value>Varsayılan örnek yapılandırmayı varsayılan konuma yazın.</value>
@@ -196,7 +196,7 @@
     <value>İşçiliği başlatın. Kullanım: /autocraft start &lt;recipe name&gt;</value>
   </data>
   <data name="bot.autoCraft.help.stop" xml:space="preserve">
-    <value>Mevcut çalışan işçiliği işlemini durdur</value>
+    <value>Mevcut üretimi durdurun</value>
   </data>
   <data name="bot.autocraft.invaild_result" xml:space="preserve">
     <value>Geçersiz sonuç öğesi!</value>
@@ -208,13 +208,13 @@
     <value>Başarıyla yüklendi</value>
   </data>
   <data name="bot.autoCraft.missing_material" xml:space="preserve">
-    <value>Missing material: {0}</value>
+    <value>Eksik eşya: {0}</value>
   </data>
   <data name="bot.autoCraft.no_recipe_name" xml:space="preserve">
     <value>Lütfen oluşturmak istediğiniz tarifin adını belirtin.</value>
   </data>
   <data name="bot.autoCraft.recipe_not_exist" xml:space="preserve">
-    <value>Belirtilen tarif adı mevcut değil. Yapılandırma dosyanızı kontrol edin.</value>
+    <value>Belirtilen tarif adı mevcut değil. Ayar dosyanızı kontrol edin.</value>
   </data>
   <data name="bot.autoCraft.start" xml:space="preserve">
     <value>AutoCraft başlatılıyor: {0}</value>
@@ -278,7 +278,7 @@
  {1}</value>
   </data>
   <data name="bot.autoDrop.no_inventory" xml:space="preserve">
-    <value>{0} envanteri bulunamıyor!</value>
+    <value>Envanter {0} bulunamıyor!</value>
   </data>
   <data name="bot.autoDrop.no_item" xml:space="preserve">
     <value>Listede öğe yok</value>
@@ -341,16 +341,16 @@
     <value>auto-fishing durdurur.</value>
   </data>
   <data name="bot.autoFish.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling etkin değil. Çubuk dayanıklılığı kontrol edilemiyor ve çubuklar değiştirilemiyor.</value>
+    <value>Inventory Handling etkin değil. Olta dayanıklılığı kontrol edilemiyor ve oltalar değiştirilemiyor.</value>
   </data>
   <data name="bot.autoFish.no_rod" xml:space="preserve">
     <value>Mevcut olta mevcut değil. Belki kırık veya düşük dayanıklılık?</value>
   </data>
   <data name="bot.autoFish.start" xml:space="preserve">
-    <value>auto-fishing başlatır.</value>
+    <value>auto-fishing başlat.</value>
   </data>
   <data name="bot.autoFish.start_at" xml:space="preserve">
-    <value>Balık avı {0:0.0} saniye içinde başlayacak.</value>
+    <value>Balık tutmaya {0:0.0} saniye içinde başlayacak.</value>
   </data>
   <data name="bot.autoFish.status_clear" xml:space="preserve">
     <value>Elde edilen eşyaların kaydı temizlendi.</value>
@@ -362,7 +362,7 @@
     <value>auto-fishing durdurur.</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
-    <value>{0} slotunda ki çubuğa geçin, dayanıklılık {1}/64.</value>
+    <value>{0} slotunda ki oltaya geçin, dayanıklılık {1}/64.</value>
   </data>
   <data name="bot.autoFish.throw" xml:space="preserve">
     <value>Başarılı bir şekilde döküm.</value>
@@ -458,7 +458,7 @@ cooldown: {6}</value>
     <value>Discord Bridge yönü '{0}' olarak değiştirildi!</value>
   </data>
   <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>İkisi de</value>
   </data>
   <data name="bot.DiscordBridge.direction.discord" xml:space="preserve">
     <value>Discord</value>
@@ -497,10 +497,10 @@ cooldown: {6}</value>
     <value>Geçersiz yarıçap sağlandı, 0dan büyük geçerli bir tam sayı sağlamalısınız!</value>
   </data>
   <data name="bot.farmer.needs_inventory" xml:space="preserve">
-    <value>Farmer botu kullanmak için Inventory Handling  özelliğini açın</value>
+    <value>Farmer botu kullanmak için Inventory Handling özelliğini açın!</value>
   </data>
   <data name="bot.farmer.needs_terrain" xml:space="preserve">
-    <value>Farmer botu kullanmak için Terrain Handling özelliğini açın</value>
+    <value>Farmer botu kullanmak için Terrain and Movements özelliğini etkinleştirin!</value>
   </data>
   <data name="bot.farmer.not_implemented" xml:space="preserve">
     <value>1.13ün altında çalışmaz!</value>
@@ -553,7 +553,7 @@ cooldown: {6}</value>
     <value>Yeni veritabanı dosyası oluşturma: {0}</value>
   </data>
   <data name="bot.mailer.create.ignore" xml:space="preserve">
-    <value>Yeni ignore listesi oluşturma: {0}</value>
+    <value>Yeni yok sayma listesi oluşturuluyor: {0}</value>
   </data>
   <data name="bot.mailer.delivered" xml:space="preserve">
     <value>Teslim edildi: {0}</value>
@@ -712,7 +712,7 @@ cooldown: {6}</value>
     <value>Telegram Köprüsünün yönü '{0}' olarak değiştirildi!</value>
   </data>
   <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>İkisi de</value>
   </data>
   <data name="bot.TelegramBridge.direction.minecraft" xml:space="preserve">
     <value>Minecraft</value>
@@ -870,7 +870,7 @@ Erişim kazanmak için bu sohbetin kimliğini yapılandırma dosyasındaki "Auth
     <value>§8Profil anahtarı önbelleği diske yazılamadı: {0}</value>
   </data>
   <data name="cache.saving" xml:space="preserve">
-    <value>§8Saving session cache to disk</value>
+    <value>§8Oturum önbelleğini diske kaydetme</value>
   </data>
   <data name="cache.saving_keys" xml:space="preserve">
     <value>§8Profil anahtarı önbelleğini diske kaydediliyor</value>
@@ -1001,7 +1001,7 @@ Görüntü kafa karıştırıcıysa ayarlarda EnableEmoji=false öğesini deği�
     <value>§x§0Bu komut hata ayıklamak için kullanılır, ne yaptığınızı bildiğinizden emin olun.§r</value>
   </data>
   <data name="cmd.chunk.icon" xml:space="preserve">
-    <value>Player:{0}, MarkedChunk:{1}, NotReceived:{2}, Loading:{3}, Loaded:{4}</value>
+    <value>Oyuncu:{0}, Aktif Chunk:{1}, Alınamayan:{2}, Yükleniyor:{3}, Yüklenmiş:{4}</value>
   </data>
   <data name="cmd.chunk.marked" xml:space="preserve">
     <value>İşaretli konum:</value>
@@ -1013,7 +1013,7 @@ Görüntü kafa karıştırıcıysa ayarlarda EnableEmoji=false öğesini deği�
     <value>belirtilen sunucuya bağlanın.</value>
   </data>
   <data name="cmd.connect.invalid_ip" xml:space="preserve">
-    <value>Geçersiz sunucu IPsi '{0}'.</value>
+    <value>Geçersiz sunucu adresi '{0}'.</value>
   </data>
   <data name="cmd.connect.unknown" xml:space="preserve">
     <value>Bilinmeyen hesap '{0}'.</value>
@@ -1088,7 +1088,7 @@ Görüntü kafa karıştırıcıysa ayarlarda EnableEmoji=false öğesini deği�
     <value>Zırh</value>
   </data>
   <data name="cmd.entityCmd.customname" xml:space="preserve">
-    <value>Custom Name</value>
+    <value>Özel İsim</value>
   </data>
   <data name="cmd.entityCmd.distance" xml:space="preserve">
     <value>Mesafe</value>
@@ -1355,7 +1355,7 @@ Kullanım yardımı için '/inventory help &lt;action&gt;' kullanın.
     <value>oyuncu listesini alın.</value>
   </data>
   <data name="cmd.list.players" xml:space="preserve">
-    <value>PlayerList: {0}</value>
+    <value>Oyuncu listesi: {0}</value>
   </data>
   <data name="cmd.log.desc" xml:space="preserve">
     <value>konsola bazı metinler kaydedin.</value>
@@ -1392,7 +1392,7 @@ Chunk yükleme durumunu kontrol etmek için "/chunk status {0:0.0} {1:0.0} {2:0.
     <value>O yönde hareket edilemiyor.</value>
   </data>
   <data name="cmd.move.disable" xml:space="preserve">
-    <value>Devre dışı bırakılıyor Terrain and Movements.</value>
+    <value>Terrain and Movements özelliği artık devre dışı.</value>
   </data>
   <data name="cmd.move.enable" xml:space="preserve">
     <value>Bir sonraki sunucu oturumunda, yeniden doğmada veya dünya değişiminde Terrain and Movements etkinleştirin.</value>
@@ -1536,7 +1536,7 @@ Sunucunuzu denetlemek veya birisinin sizinle ne zaman konuştuğunu algılamak i
   <data name="config.ChatBot.AntiAfk" xml:space="preserve">
     <value>Otomatik AFK bağlantısının kesilmesini önlemek için düzenli veya rastgele bir komut gönderin veya botun rastgele dolaşmasını sağlayın
 /!\ Sunucu kurallarınızın AFK karşıtı mekanizmaları yasaklamadığından emin olun!
-/!\ arazi kullanımı kullanıyorsanız, botun dolaşmasını önlemek için bir muhafaza içinde! (Önerilen boyut 5x5x5)</value>
+/!\ Terrain and Movements kullanıyorsanız, botun güvensiz dolaşmasını önlemek için bir muhafaza bir bölge içinde olsun! (Önerilen boyut 5x5x5)</value>
   </data>
   <data name="config.ChatBot.AntiAfk.Command" xml:space="preserve">
     <value>Sunucuya gönderme komutu.</value>
@@ -1548,7 +1548,7 @@ Sunucunuzu denetlemek veya birisinin sizinle ne zaman konuştuğunu algılamak i
     <value>Komutu gönderirken gizlice girip girmeyeceği.</value>
   </data>
   <data name="config.ChatBot.AntiAfk.Use_Terrain_Handling" xml:space="preserve">
-    <value>Botun hareket etmesini sağlamak için terrain and movement kullanın.</value>
+    <value>Botun hareket etmesini sağlamak için Terrain and Movements özelliğini etkinleştirin.</value>
   </data>
   <data name="config.ChatBot.AntiAfk.Walk_Range" xml:space="preserve">
     <value>Botun rastgele hareket edebileceği menzil (Not: Menzil ne kadar büyük olursa, bot o kadar yavaş olur)</value>
@@ -1572,7 +1572,7 @@ Bu botu kullanmak için Entity Handling i etkinleştirmeniz gerekiyor
     <value>Her saldırı arasında ne kadar bekleneceği. MCCnin hesaplamasına izin vermek için "Custom = false" olarak ayarlayın.</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>Tüm varlık türleri burada bulunabilir: https://bit.ly/3Rg68lp</value>
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
     <value>Olası değerler: "Interact", "Attack" (varsayılan), "InteractAt" (Interact ve Attack).</value>
@@ -1587,10 +1587,10 @@ Bu botu kullanmak için Entity Handling i etkinleştirmeniz gerekiyor
     <value>"health" veya "distance". Yalnızca tekli mod kullanılırken gereklidir</value>
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
-    <value>Envanterinizdeki öğeleri otomatik olarak craftlayın
-Nasıl kullanılacağı hakkında https://mccteam.github.io/guide/chat-bots.html#auto-craft adresine bakın
-Bu botu kullanmak için Inventory Handling i etkinleştirmeniz gerekiyor
-Bir çalışma masası kullanmanız gerekiyorsa, terrain and movement özelliğini etkinleştirmelisiniz.</value>
+    <value>Automatically craft items in your inventory
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
+You need to enable Inventory Handling to use this bot
+You should also enable Terrain and Movements if you need to use a crafting table</value>
   </data>
   <data name="config.ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
     <value>Kullanmayı düşünüyorsanız, çalışma masasının konumu. terrain and movement etkinleştirilmelidir.</value>
@@ -1599,19 +1599,18 @@ Bir çalışma masası kullanmanız gerekiyorsa, terrain and movement özelliği
     <value>İşleme hatası, "abort" veya "wait" bu durumunda ne yapılmalı.</value>
   </data>
   <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
-    <value>Recipes.Name: Adı istediğiniz gibi olabilir ve tarifi temsil etmek için kullanılır.
-Recipes.Type: çalışma masası türü: "player" veya "table"
-Recipes.Result: ortaya çıkan öğe
-Recipes.Slots: Tüm slotlardan, soldan sağa, yukarıdan aşağıya doğru sayılır. Lütfen boş slotlar için "Null" doldurunuz.
-Öğelerin adlandırılması için lütfen bakınız:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+    <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
+Recipes.Type: crafting table type: "player" or "table"
+Recipes.Result: the resulting item
+Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDig" xml:space="preserve">
     <value>Auto-digging blocks.
-Botu kullanmak için terrain and movement açmanız gerekiyor
-AutoDig in başlatılmasını ve durdurulmasını kontrol etmek için "/digbot start" ve "/digbot stop" kullanabilirsiniz.
-MCC henüz blokların çarpışma hacminin doğru bir şekilde hesaplanmasını desteklemediğinden, bakış açısının konumu elde edilirken tüm bloklar tam küpler olarak kabul edilir.
-Bloğun adlandırılması için lütfen bakınız. https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs</value>
+You need to enable Terrain Handling to use this bot
+You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
+Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
     <value>Oyuna girdikten sonra otomatik olarak kazmaya başlamak için kaç saniye bekleneceğini, otomatik başlatmayı devre dışı bırakmak için -1 olarak ayarlayın.</value>
@@ -1644,10 +1643,9 @@ Bloğun adlandırılması için lütfen bakınız. https://github.com/MCCTeam/Mi
     <value>"lookat", "fixedpos" veya "both". Bakılan bloğun kazılması, bloğun sabit bir konumda olması veya tamamıyla karşılanması gereken bloğun kazılması.</value>
   </data>
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
-    <value>Öğeleri envantere otomatik olarak bırak
-Botu kullanmak için Inventory Handling i açın
-Bu botla kullanabileceğiniz güncel öğe türlerinin listesi için bu dosyaya bakın:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+    <value>Automatically drop items in inventory
+You need to enable Inventory Handling to use this bot
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
     <value>"include", "exclude" veya "everything". Include: öğeyi listeye bırakın. Hariç tut: listede OLMAYAN öğeyi bırak</value>
@@ -1657,13 +1655,13 @@ https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/
 Botu kullanmak için Inventory Handling i açın</value>
   </data>
   <data name="config.ChatBot.AutoFishing" xml:space="preserve">
-    <value>Bir olta kullanarak balıkları otomatik olarak yakalayın
-Kılavuz: https://mccteam.github.io/guide/chat-bots.html#auto-fishing
-Botu manuel olarak kontrol etmek için "/fish" kullanabilirsiniz.
-/!\ Bu botu kullanmadan önce sunucu kurallarının otomatik çiftçiliğe izin verdiğinden emin olun</value>
+    <value>Automatically catch fish using a fishing rod
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
+You can use "/fish" to control the bot manually.
+/!\ Make sure server rules allow automated farming before using this bot</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
-    <value>Daha önce değiştirmediyseniz yanlış olarak saklayın.</value>
+    <value>Daha önce değiştirmediyseniz false olarak bırakın.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Auto_Rod_Switch" xml:space="preserve">
     <value>Mevcut olta müsait olmadığında envanterden yeni bir olta geçin.</value>
@@ -1675,7 +1673,7 @@ Botu manuel olarak kontrol etmek için "/fish" kullanabilirsiniz.
     <value>Başarılı bir balık avından sonra ne kadar sürede yeniden döküm yapılır.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Durability_Limit" xml:space="preserve">
-    <value>Bundan daha az dayanıklılığa sahip çubuklar kullanmaz (tam dayanıklılık 64tür). Bu özelliği devre dışı bırakmak için sıfıra ayarlayın.</value>
+    <value>Bundan daha az dayanıklılığa sahip oltalar kullanılmaz (tam dayanıklılık 64tür). Bu özelliği devre dışı bırakmak için sıfıra ayarlayın.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Enable_Move" xml:space="preserve">
     <value>Bu, oyuncunun yakalanan her balıktan sonra pozisyonunu/yüzünü değiştirmesini sağlar.</value>
@@ -1693,7 +1691,7 @@ Botu manuel olarak kontrol etmek için "/fish" kullanabilirsiniz.
     <value>Etkinleştirildiğinde, hareket paketinin alınması üzerine olta varlığının konumundaki değişikliği yazdıracak olan yukarıdaki iki eşiği ayarlamak için kullanılır.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Mainhand" xml:space="preserve">
-    <value>Çubuğu tutmak için ana eli veya yan eli kullanın.</value>
+    <value>Oltayı tutmak için ana eli veya yan eli seçin.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Movements" xml:space="preserve">
     <value>"1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;..." sırasına göre hareket eder ve her seferinde konumunu veya yüzünü veya her ikisini değiştirebilir. Sadece kaplamanın değiştirilmesi tavsiye edilir.</value>
@@ -1729,32 +1727,32 @@ Sunucu yöneticileri sohbet mesajlarını (/nick, /tellraw) taklit edebilir, bu 
     <value>Sohbet mesajlarını diskteki bir dosyaya kaydeder.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
-    <value>Bu bot, bir Discord kanalı üzerinden mesaj ve komut göndermenize ve almanıza olanak tanır.
-Kurulum için belgeleri kullanabilir veya burayı okuyabilirsiniz (Belgelerde resimler vardır).
-Belgeler: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
-Kurulum:
-Öncelikle Discord Developers Portalda bir Bot oluşturmanız gerekiyor, işte bir video eğitimi: https://www.youtube.com/watch?v=2FgMnZViNPA .
-/!\ ÖNEMLİ /!\: Bir bot oluştururken, ETKİNLEŞTİRMENİZ GEREKİR "Message Content Intent", "Server Members Intent" ve "Presence Intent" botun çalışması için! Ayrıca dikkatlice takip edin, hiçbir adımı kaçırmayın!
-Bot yaparken oluşturulan token kopyalayın ve buraya yapıştırın. "Token" alan (belirteçler önemlidir, onları güvende tutun).
-Kopyala "Application ID" ve şu adrese gidin: https://bit.ly/2Spn2Q3 .
-Kopyaladığınız kimliği yapıştırın ve kontrol edin. "Administrator" izinler alanında, ardından alttaki bağlantıya tıklayın.
-Bu, sunucularınızla bir davet menüsü açacak, botu davet etmek istediğiniz sunucuyu seçecek ve onu davet edecektir.
-Botu davet ettikten sonra Discord istemcinize gidin ve Kullanıcı Ayarlar -&gt; Gelişmiş ve "Geliştirici Modu".
-Ayarlardan çıkın ve sunucu listesinde botu davet ettiğiniz bir sunucuya sağ tıklayın, ardından "IDyi kopyala", ve kimliği buraya yapıştırın "GuildId".
-Ardından botla etkileşim kurmak istediğiniz kanala sağ tıklayın ve tekrar sağ tıklayın -&gt; "IDyi kopyalayın", kopyalanan kimliği buraya yapıştırın "ChannelId".
-Ve son olarak kanala mesaj atın, nickinize sağ tıklayın ve tekrar sağ tıklayın -&gt; "IDyi kopyalayın", sonra kimliği buraya yapıştırın "OwnersIds".
-Nasıl kullanılır:
-Bir MCC komutunu yürütmek için, diyelim prefix nokta "." ile örnek: ".move 143 64 735" .
-Bir mesaj göndermek için, sadece yazın ve enter tuşuna basın.</value>
+    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
+For Setup you can either use the documentation or read here (Documentation has images).
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
+Setup:
+First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
+/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
+When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
+Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
+This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
+Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
+Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
+Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
+And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
+How to use:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
     <value>Botu kullanarak MCC ile etkileşim kurmak istediğiniz kanalın kimliği.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
-    <value>Mesaj biçimleri
-{ ve } ile sarılmış kelimeler kod yürütme sırasında değiştirilecektir, onları değiştirmeyin!
-Örneğin. {message} gerçek bir mesajla değiştirilecek, {username} bir kullanıcı adıyla, {timestamp} geçerli saatle değiştirilecek.
-Discord mesaj biçimlendirme için şunları kontrol edin: https://bit.ly/3F8CUCm</value>
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
     <value>Botu davet ettiğiniz server/guild kimliği.</value>
@@ -1860,8 +1858,8 @@ Teknik sınırlamalar nedeniyle, istemci oynatıcının (sizin) tekrar dosyasın
     <value>Tekrar oynatılan dosyanın saniye cinsinden ne kadar süreyle otomatik olarak kaydedilmesi gerekir. Devre dışı bırakmak için -1i kullanın.</value>
   </data>
   <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
-    <value>Sunucuya katılma, tarih/saat veya zaman aralığı gibi çeşitli olaylarda başlatılacak komutları ve komut dosyalarını zamanlayın
-Daha fazla bilgi için https://mccteam.github.io/guide/chat-bots.html#script-scheduler adresine bakın</value>
+    <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
   </data>
   <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
     <value>Bu bot, bir Telegram Bot DM aracılığıyla mesaj ve komut gönderip almanıza veya bir Telegram kanalında mesaj almanıza olanak tanır.
@@ -1895,10 +1893,10 @@ Bir mesaj göndermek için, sadece yazın ve enter tuşuna basın.</value>
     <value>Botu kullanarak MCC ile etkileşim kurmak istediğiniz kanalın kimliği.</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.Formats" xml:space="preserve">
-    <value>Mesaj biçimleri
-{ ve } ile sarılmış kelimeler kod yürütme sırasında değiştirilecektir, onları değiştirmeyin!
-Örneğin. {message} gerçek bir mesajla değiştirilecek, {username} bir kullanıcı adıyla, {timestamp} geçerli saatle değiştirilecek.
-Telegram mesaj biçimlendirmesi için aşağıdakileri kontrol edin: https://sendpulse.com/blog/telegram-text-formatting</value>
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
     <value>Görev iptal edilmeden önce Telegrama bir mesaj gönderilemiyorsa (en az 1 saniye) ne kadar bekleneceği (saniye cinsinden).</value>
@@ -1907,21 +1905,21 @@ Telegram mesaj biçimlendirmesi için aşağıdakileri kontrol edin: https://sen
     <value>Telegram Bot tokeni.</value>
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
-    <value>MCC, sohbet mesajlarını algılamak için elinden gelenin en iyisini yapar, ancak bazı sunucuların alışılmadık sohbet biçimleri vardır
-Bu olduğunda, aşağıda sohbet biçimini yapılandırmanız gerekir, bkz. https://mccteam.github.io/guide/configuration.html#chat-format</value>
+    <value>MCC does it best to detect chat messages, but some server have unusual chat formats
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
   </data>
   <data name="config.ChatFormat.Builtins" xml:space="preserve">
-    <value>Ortak mesaj biçimleri için MCC desteği. Özel biçimlerle çakışmaları önlemek için "yanlış" olarak ayarlayın.</value>
+    <value>Ortak mesaj biçimleri için MCC desteği. Özel biçimlerle çakışmaları önlemek için "false" olarak ayarlayın.</value>
   </data>
   <data name="config.ChatFormat.UserDefined" xml:space="preserve">
     <value>Algılama için aşağıdaki özel normal ifadelerin kullanılıp kullanılmayacağı.</value>
   </data>
   <data name="config.Head" xml:space="preserve">
-    <value>Başlangıç Yapılandırma Dosyası
-MCC tarafından üzerine yazılacağı için lütfen bu dosyaya fazladan veri kaydetmeyin.
+    <value>Startup Config File
+Please do not record extraneous data in this file as it will be overwritten by MCC.
 
-Minecraft Konsol İstemcisinde yeni misiniz? Bu belgeye göz atın: https://mccteam.github.io/guide/configuration.html
-Daha yeni bir sürüme yükseltmek mi istiyorsunuz? https://github.com/MCCTeam/Minecraft-Console-Client/#download adresine bakın</value>
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
+Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
   </data>
   <data name="config.load" xml:space="preserve">
     <value>Ayarlar {0} adresinden yüklendi</value>
@@ -1991,31 +1989,31 @@ Kullanım örnekleri:"/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&
     <value>Kapatılırsa, emoji daha basit bir karakterle değiştirilir (/chunk status için).</value>
   </data>
   <data name="config.Main.Advanced.entity_handling" xml:space="preserve">
-    <value>Entity handling aç/kkapat.</value>
+    <value>Entity handling aç/kapat.</value>
   </data>
   <data name="config.Main.Advanced.exit_on_failure" xml:space="preserve">
     <value>Etkileşimli olmayan komut dosyalarında MCC kullanmak için bir hata oluştuğunda doğrudan çıkış yapılıp yapılmayacağı.</value>
   </data>
   <data name="config.Main.Advanced.internal_cmd_char" xml:space="preserve">
-    <value>Use "none", "slash"(/) or "backslash"(\).</value>
+    <value>Komut kullanımı için "none", "slash"(/) or "backslash"(\).</value>
   </data>
   <data name="config.Main.Advanced.inventory_handling" xml:space="preserve">
     <value>Inventory handling aç/kapat.</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>Oyun içi yerel ayar kodunu girin, https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239 adresini kontrol edin</value>
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>Dil kodu geçersiz!</value>
   </data>
   <data name="config.Main.Advanced.mc_forge" xml:space="preserve">
-    <value>"auto", "no" veya "force" kullanın. Zorla etkinleştirme yalnızca MC 1.13+ için çalışır.</value>
+    <value>"auto", "no" veya "force" kullanın. force seçeneği MC 1.13 ve üzeri için geçerli.</value>
   </data>
   <data name="config.Main.Advanced.mc_version" xml:space="preserve">
     <value>"auto" veya "1.X.X" değerlerini kullanın. Sunucu bilgisi alımını atlamanıza izin verir.</value>
   </data>
   <data name="config.Main.Advanced.message_cooldown" xml:space="preserve">
-    <value>Her mesajın sunucuya gönderilmesi arasındaki minimum aralığı (saniye cinsinden) kontrol eder.</value>
+    <value>Mesaj gönderilmesi için arasındaki minimum bekleme zamanı (saniye cinsinden).</value>
   </data>
   <data name="config.Main.Advanced.minecraft_realms" xml:space="preserve">
     <value>Minecraft Realms dünyalarına katılmak için desteği etkinleştirin.</value>
@@ -2027,7 +2025,7 @@ Kullanım örnekleri:"/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&
     <value>Terminalin genişliğinden görüntü boyutunu hesaplarken kullanılan minimum genişlik.</value>
   </data>
   <data name="config.Main.Advanced.move_head_while_walking" xml:space="preserve">
-    <value>Hile önleme tetikleyicilerinden kaçınmak için yürürken kafa hareketini etkinleştirin.</value>
+    <value>Anti hile sistemlerine yakalanmamak için yürürken kafa hareket etmesi.</value>
   </data>
   <data name="config.Main.Advanced.movement_speed" xml:space="preserve">
     <value>2den yüksek bir hareket hızı hile olarak kabul edilebilir.</value>
@@ -2071,7 +2069,7 @@ Kullanım örnekleri: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"<
     <value>"none", "bit_4", "bit_8" veya "bit_24" kullanın. Bu, hata ayıklama günlüğü açılarak kontrol edilebilir.</value>
   </data>
   <data name="config.Main.Advanced.terrain_and_movements" xml:space="preserve">
-    <value>Terrain and Movements Daha fazla ram, cpu, bant genişliği kullanır ancak hareket etmenizi sağlar.</value>
+    <value>Terrain and Movements daha fazla ram, cpu, bant genişliği kullanarak hareket etmenizi sağlar.</value>
   </data>
   <data name="config.Main.Advanced.timeout" xml:space="preserve">
     <value>Sunucu ile TCP bağlantı zaman aşımını özelleştirin. (saniyeler içinde)</value>
@@ -2086,10 +2084,10 @@ Kullanım örnekleri: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"<
     <value>Oyun sunucusunun adresi "Host" alan adı veya IP adresi ile doldurulabilir. ("Port" alanı silinebilir, otomatik olarak çözülecektir)</value>
   </data>
   <data name="config.Main.General.method" xml:space="preserve">
-    <value>Microsoft Account sign-in method: "mcc" VEYA "browser". Giriş her zaman başarısız olursa, lütfen "browser" bir kez kullanmayı deneyin.</value>
+    <value>Microsoft girişi için method: "mcc" VEYA "browser". Giriş her zaman başarısız olursa, lütfen "browser" seçeneğini bir kez kullanmayı deneyin.</value>
   </data>
   <data name="config.Main.General.server_info" xml:space="preserve">
-    <value>Account type: "mojang" VEYA "microsoft". Konsolda etkileşimli oturum açmayı da etkiler.</value>
+    <value>Hesap türü: "mojang" VEYA "microsoft". Konsolda etkileşimli oturum açmayı da etkiler.</value>
   </data>
   <data name="config.MCSettings" xml:space="preserve">
     <value>Aşağıdaki ayarlar sunucuya gönderilir ve yalnızca dış görünümünüz gibi sunucu tarafı öğelerini etkiler.</value>
@@ -2140,7 +2138,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>Yalnızca parola korumalı proxyler için gereklidir.</value>
   </data>
   <data name="config.saving" xml:space="preserve">
-    <value>§aGeçerli ayar {0} olarak kaydedilir</value>
+    <value>§aGeçerli ayarlar {0} dosyasına kaydediliyor</value>
   </data>
   <data name="config.Signature" xml:space="preserve">
     <value>Sohbet imzasıyla ilgili ayarlar (minecraft 1.19+ı etkiler)</value>
@@ -2254,13 +2252,13 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§8El Sıkışma paketine geçersiz yanıt</value>
   </data>
   <data name="error.inventoryhandling_not_enabled" xml:space="preserve">
-    <value>Bu özelliğin çalışması için Inventory Handling in etkinleştirilmesi gerekir!</value>
+    <value>Bu özelliğin çalışması için Inventory Handling özelliğinin etkinleştirilmesi gerekir!</value>
   </data>
   <data name="error.join" xml:space="preserve">
     <value>Bu sunucuya katılmaya çalışırken bir hata oluştu.</value>
   </data>
   <data name="error.login" xml:space="preserve">
-    <value>Login failed :</value>
+    <value>Giriş başarısız : </value>
   </data>
   <data name="error.login.blocked" xml:space="preserve">
     <value>Yanlış kullanıcı adı/şifre, kara listeye alınmış IP veya çok fazla oturum açma.</value>
@@ -2320,7 +2318,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>{0}: Geçersiz sözdizimi, bekleniyor --argname=value veya --section.argname=value</value>
   </data>
   <data name="error.terrain_not_enabled" xml:space="preserve">
-    <value>Bu özelliğin çalışması için Terrain and Movements etkinleştirilmesi gerekir!</value>
+    <value>Bu özelliğin çalışması için Terrain and Movements özelliğini etkinleştirin!</value>
   </data>
   <data name="error.timeout" xml:space="preserve">
     <value>Bağlantı zamanaşımı</value>
@@ -2371,7 +2369,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§cVarlıklar şu anda bu MC sürümü için kullanılmamakta.</value>
   </data>
   <data name="extra.entity_required" xml:space="preserve">
-    <value>Lütfen önce yapılandırma dosyasında EntityHandling i etkinleştirin.</value>
+    <value>Lütfen önce ayar dosyasında EntityHandling özelliğini etkinleştirin.</value>
   </data>
   <data name="extra.inventory_close" xml:space="preserve">
     <value>Envanter # {0} kapatıldı.</value>
@@ -2389,16 +2387,16 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>Envanter # {0} açıldı: {1}</value>
   </data>
   <data name="extra.inventory_required" xml:space="preserve">
-    <value>Lütfen önce yapılandırma dosyasında InventoryHandling i etkinleştirin.</value>
+    <value>Lütfen önce ayar dosyasında InventoryHandling özelliğini etkinleştirin.</value>
   </data>
   <data name="extra.terrainandmovement_disabled" xml:space="preserve">
-    <value>§cArazi ve Hareketler şu anda bu MC sürümü için kullanılmamakta.</value>
+    <value>§cTerrain and Movements bu MC sürümü için kullanılmamakta.</value>
   </data>
   <data name="extra.terrainandmovement_enabled" xml:space="preserve">
-    <value>Arazi ve Hareketler artık aktif.</value>
+    <value>Terrain and Movements artık aktif.</value>
   </data>
   <data name="extra.terrainandmovement_required" xml:space="preserve">
-    <value>Lütfen önce yapılandırma dosyasında Arazi ve Hareketleri etkinleştirin.</value>
+    <value>Lütfen önce ayar dosyasında Terrain and Movements etkinleştirin.</value>
   </data>
   <data name="filemonitor.fail" xml:space="preserve">
     <value>§8[{0}] FileSystemWatcher başlatılamadı, Polling kullanılarak yeniden denendi</value>
@@ -2437,7 +2435,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§8Mod listesi:</value>
   </data>
   <data name="forge.no_mod" xml:space="preserve">
-    <value>§8Sunucu, Forge u modsuz çalıştırıyor.</value>
+    <value>§8Sunucuya Forge kullanılmadan giriş yapılıyor.</value>
   </data>
   <data name="forge.registry" xml:space="preserve">
     <value>§8{0} girişli kayıt alındı</value>
@@ -2452,7 +2450,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§8Forge protokolü sürümü: {0}</value>
   </data>
   <data name="forge.with_mod" xml:space="preserve">
-    <value>§8Sunucu, Forge u {0} mod ile çalıştırıyor.</value>
+    <value>§8{0} Forge modu ile giriş yapılıyor.</value>
   </data>
   <data name="general.available_cmd" xml:space="preserve">
     <value>Kullanılabilir komutlar: {0}</value>
@@ -2527,17 +2525,17 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>Ayarlar dosyası ayrıştırılamadı, yeni bir yapılandırma oluşturmak için "{0}new" girin.</value>
   </data>
   <data name="mcc.ip" xml:space="preserve">
-    <value>Server IP :</value>
+    <value>Sunucu Adresi: </value>
   </data>
   <data name="mcc.joined" xml:space="preserve">
-    <value>Sunucu başarıyla bağlandı.
+    <value>Sunucuya başarıyla bağlanıldı.
 Sunucudan çıkmak için '{0}quit' yazın.</value>
   </data>
   <data name="mcc.link" xml:space="preserve">
-    <value>Link: {0}</value>
+    <value>Bağlantı: {0}</value>
   </data>
   <data name="mcc.login" xml:space="preserve">
-    <value>Login :</value>
+    <value>Giriş :</value>
   </data>
   <data name="mcc.login_basic_io" xml:space="preserve">
     <value>Lütfen tercih ettiğiniz kullanıcı adını veya e-posta adresini yazın.</value>
@@ -2550,7 +2548,7 @@ Sunucudan çıkmak için '{0}quit' yazın.</value>
     <value>§8Çevrimdışı modda giriş yaptınız.</value>
   </data>
   <data name="mcc.password" xml:space="preserve">
-    <value>Password :</value>
+    <value>Şifre: </value>
   </data>
   <data name="mcc.password_basic_io" xml:space="preserve">
     <value>Lütfen {0} için şifreyi yazın.</value>
@@ -2605,7 +2603,7 @@ MCC varsayılan ayarlarla çalışıyor.</value>
     <value>§8Sunucu sürümü : {0} (protokol v{1})</value>
   </data>
   <data name="mcc.server_version" xml:space="preserve">
-    <value>Server version :</value>
+    <value>Sunucu sürümü: </value>
   </data>
   <data name="mcc.session" xml:space="preserve">
     <value>Oturum kontrol ediliyor...</value>
@@ -2620,7 +2618,7 @@ MCC varsayılan ayarlarla çalışıyor.</value>
     <value>§8Önbelleğe alınmış oturum, {0} için hala geçerlidir.</value>
   </data>
   <data name="mcc.settings_generated" xml:space="preserve">
-    <value>§cAyarlar dosyası MinecraftClient.ini oluşturuldu.</value>
+    <value>§cAyar dosyası MinecraftClient.ini oluşturuldu.</value>
   </data>
   <data name="mcc.single_cmd" xml:space="preserve">
     <value>§7Komut §8 {0} §7 gönderildi.</value>
@@ -2643,30 +2641,33 @@ Giriş yapılıyor...</value>
     <value>§8{0}:{1} adresine bağlanılıyor</value>
   </data>
   <data name="config.Main.Advanced.LoadMccTrans" xml:space="preserve">
-    <value>Load translations applied to MCC when available, turn it off to use English only.</value>
+    <value>Mümkün olduğunda MCC için yerel çeviri kullanın, yalnızca İngilizce'yi kullanmak için bu özelliği false ayarlayın.</value>
   </data>
   <data name="cmd.setrnd.format" xml:space="preserve">
     <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="exception.palette.healthfield" xml:space="preserve">
-    <value>Please update health field handling for this Minecraft version.</value>
+    <value>Lütfen bu Minecraft sürümü için sağlık alanı işlemeyi güncelleyin.</value>
   </data>
   <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
-    <value>Successfully disconnected with MCC!</value>
+    <value>MCC ile bağlantınız başarılı bir şekilde kesildi!</value>
   </data>
   <data name="cmd.execmulti.prevent" xml:space="preserve">
-    <value>You can not use execmulti or execif within execmulti command!</value>
+    <value>Execmulti komuduyla execmulti ya da execif kullanamazsınız!</value>
   </data>
   <data name="cmd.move.desc_force" xml:space="preserve">
-    <value>force unsafe movements like falling or touching fire</value>
+    <value>düşme ve ateşe değme gibi güvenli olmayan haraketlere zorla</value>
   </data>
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
+    <value>Inventory handling aktif değil. Aletler otomatik değiştirilemiyor.</value>
   </data>
   <data name="mcc.use_new_config" xml:space="preserve">
-    <value>Please use the newly generated MinecraftClient.ini</value>
+    <value>Lütfen yeni oluşturulan MinecraftClient.ini dosyasını kullanınız.</value>
   </data>
   <data name="mcc.backup_old_config" xml:space="preserve">
-    <value>The old MinecraftClient.ini has been backed up as {0}</value>
+    <value>Eski MinecraftClient.ini dosyası {0} olarak yedeklendi</value>
+  </data>
+  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>Bazı sunucularda Kötü Paket sorunu için geçici düzeltme.</value>
   </data>
 </root>

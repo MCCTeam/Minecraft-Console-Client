@@ -2,7 +2,13 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+    paths:
+      - MinecraftClient/**
+      - ConsoleInteractive/**
+      - MinecraftClient.sln
+  workflow_dispatch:
   
 env:
   PROJECT: "MinecraftClient"
@@ -12,7 +18,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'README') }}
+    if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
 
     steps:
     - name: Setup Project Path
@@ -21,7 +27,8 @@ jobs:
     
     - name: Setup Output Paths
       run: |
-        echo win-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo win-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo win-x86-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x86/publish/ >> $GITHUB_ENV
         echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
         echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
         echo linux-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-arm64/publish/ >> $GITHUB_ENV
@@ -47,13 +54,20 @@ jobs:
         COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
         echo '' >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
-            
-    - name: Build for Windows
+
+    - name: Build for Windows x64
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
 
-    - name: Zip Windows Build
-      run: zip -qq -r windows.zip *
-      working-directory: ${{ env.win-out-path }}
+    - name: Zip Windows x64 Build
+      run: zip -qq -r windows-x64.zip *
+      working-directory: ${{ env.win-x64-out-path }}
+
+    - name: Build for Windows x86
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x86 ${{ env.compile-flags }}
+
+    - name: Zip Windows x86 Build
+      run: zip -qq -r windows-x86.zip *
+      working-directory: ${{ env.win-x86-out-path }}
 
     - name: Build for Linux
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-x64 ${{ env.compile-flags }}
@@ -83,13 +97,22 @@ jobs:
         timeZone: 0
         format: 'YYYYMMDD'
 
-    - name: Windows Release
+    - name: Windows x64 Release
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ env.win-out-path }}windows.zip
-        assetName: ${{ env.PROJECT }}-windows.zip
+        filePath: ${{ env.win-x64-out-path }}windows-x64.zip
+        assetName: ${{ env.PROJECT }}-windows-x64.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Windows x86 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-x86-out-path }}windows-x86.zip
+        assetName: ${{ env.PROJECT }}-windows-x86.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
     - name: Linux Release

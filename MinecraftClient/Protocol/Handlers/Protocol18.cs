@@ -749,9 +749,12 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     // Teleport confirm packet
                                     SendPacket(PacketTypesOut.TeleportConfirm, dataTypes.GetVarInt(teleportID));
-                                    SendLocationUpdate(location, true, yaw, pitch, true);
-                                    if (teleportID == 1)
+                                    if (Config.Main.Advanced.TemporaryFixBadpacket)
+                                    {
                                         SendLocationUpdate(location, true, yaw, pitch, true);
+                                        if (teleportID == 1)
+                                            SendLocationUpdate(location, true, yaw, pitch, true);
+                                    }
                                 }
                                 else
                                 {
@@ -2001,7 +2004,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
-                        SessionCache.Store(InternalConfig.Login.ToLower(), session);
+                        SessionCache.Store(InternalConfig.Account.Login.ToLower(), session);
                     }
                     else
                     {
@@ -2550,7 +2553,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if the location update was successfully sent</returns>
         public bool SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch)
         {
-            return SendLocationUpdate(location, onGround, yaw, pitch, false);
+            return SendLocationUpdate(location, onGround, yaw, pitch, true);
         }
 
         public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null, bool forceUpdate = false)
@@ -2560,12 +2563,25 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] yawpitch = Array.Empty<byte>();
                 PacketTypesOut packetType = PacketTypesOut.PlayerPosition;
 
-                if (yaw.HasValue && pitch.HasValue && (forceUpdate || yaw.Value != LastYaw || pitch.Value != LastPitch))
+                if (Config.Main.Advanced.TemporaryFixBadpacket)
                 {
-                    yawpitch = dataTypes.ConcatBytes(dataTypes.GetFloat(yaw.Value), dataTypes.GetFloat(pitch.Value));
-                    packetType = PacketTypesOut.PlayerPositionAndRotation;
+                    if (yaw.HasValue && pitch.HasValue && (forceUpdate || yaw.Value != LastYaw || pitch.Value != LastPitch))
+                    {
+                        yawpitch = dataTypes.ConcatBytes(dataTypes.GetFloat(yaw.Value), dataTypes.GetFloat(pitch.Value));
+                        packetType = PacketTypesOut.PlayerPositionAndRotation;
 
-                    LastYaw = yaw.Value; LastPitch = pitch.Value;
+                        LastYaw = yaw.Value; LastPitch = pitch.Value;
+                    }
+                }
+                else
+                {
+                    if (yaw.HasValue && pitch.HasValue)
+                    {
+                        yawpitch = dataTypes.ConcatBytes(dataTypes.GetFloat(yaw.Value), dataTypes.GetFloat(pitch.Value));
+                        packetType = PacketTypesOut.PlayerPositionAndRotation;
+
+                        LastYaw = yaw.Value; LastPitch = pitch.Value;
+                    }
                 }
 
                 try

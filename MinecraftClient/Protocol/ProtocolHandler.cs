@@ -570,11 +570,12 @@ namespace MinecraftClient.Protocol
                 Microsoft.OpenBrowser(Microsoft.SignInUrl);
             else
                 Microsoft.OpenBrowser(Microsoft.GetSignInUrlWithHint(loginHint));
-            ConsoleIO.WriteLine("Your browser should open automatically. If not, open the link below in your browser.");
+            ConsoleIO.WriteLine(Translations.mcc_browser_open);
             ConsoleIO.WriteLine("\n" + Microsoft.SignInUrl + "\n");
 
-            ConsoleIO.WriteLine("Paste your code here");
+            ConsoleIO.WriteLine(Translations.mcc_browser_login_code);
             string code = ConsoleIO.ReadLine();
+            ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, "Microsoft"));
 
             var msaResponse = Microsoft.RequestAccessToken(code);
             return MicrosoftLogin(msaResponse, out session);
@@ -604,7 +605,7 @@ namespace MinecraftClient.Protocol
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
                     session.RefreshToken = msaResponse.RefreshToken;
-                    InternalConfig.Login = msaResponse.Email;
+                    InternalConfig.Account.Login = msaResponse.Email;
                     return LoginResult.Success;
                 }
                 else

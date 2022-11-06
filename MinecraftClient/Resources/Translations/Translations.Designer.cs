@@ -4392,7 +4392,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All entity types can be found here: https://bit.ly/3Rg68lp.
+        ///   Looks up a localized string similar to All entity types can be found here: https://mccteam.github.io/r/entity/#L15.
         /// </summary>
         internal static string config_ChatBot_AutoAttack_Entites_List {
             get {
@@ -4438,7 +4438,7 @@ namespace MinecraftClient {
         
         /// <summary>
         ///   Looks up a localized string similar to Automatically craft items in your inventory
-        ///See https://mccteam.github.io/guide/chat-bots.html#auto-craft for how to use
+        ///See https://mccteam.github.io/g/bots/#auto-craft for how to use
         ///You need to enable Inventory Handling to use this bot
         ///You should also enable Terrain and Movements if you need to use a crafting table.
         /// </summary>
@@ -4471,8 +4471,7 @@ namespace MinecraftClient {
         ///Recipes.Type: crafting table type: &quot;player&quot; or &quot;table&quot;
         ///Recipes.Result: the resulting item
         ///Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in &quot;Null&quot; for empty slots.
-        ///For the naming of the items, please see:
-        ///https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs.
+        ///For the naming of the items, please see: https://mccteam.github.io/r/item/#L12.
         /// </summary>
         internal static string config_ChatBot_AutoCraft_Recipes {
             get {
@@ -4485,7 +4484,7 @@ namespace MinecraftClient {
         ///You need to enable Terrain Handling to use this bot
         ///You can use &quot;/digbot start&quot; and &quot;/digbot stop&quot; to control the start and stop of AutoDig.
         ///Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
-        ///For the naming of the block, please see https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs.
+        ///For the naming of the block, please see https://mccteam.github.io/r/block/#L15.
         /// </summary>
         internal static string config_ChatBot_AutoDig {
             get {
@@ -4586,8 +4585,7 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to Automatically drop items in inventory
         ///You need to enable Inventory Handling to use this bot
-        ///See this file for an up-to-date list of item types you can use with this bot:
-        ///https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs.
+        ///See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12.
         /// </summary>
         internal static string config_ChatBot_AutoDrop {
             get {
@@ -4616,7 +4614,7 @@ namespace MinecraftClient {
         
         /// <summary>
         ///   Looks up a localized string similar to Automatically catch fish using a fishing rod
-        ///Guide: https://mccteam.github.io/guide/chat-bots.html#auto-fishing
+        ///Guide: https://mccteam.github.io/g/bots/#auto-fishing
         ///You can use &quot;/fish&quot; to control the bot manually.
         ////!\ Make sure server rules allow automated farming before using this bot.
         /// </summary>
@@ -4821,10 +4819,10 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to This bot allows you to send and recieve messages and commands via a Discord channel.
         ///For Setup you can either use the documentation or read here (Documentation has images).
-        ///Documentation: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
+        ///Documentation: https://mccteam.github.io/g/bots/#discord-bridge
         ///Setup:
         ///First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
-        ////!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE &quot;Message Content Intent&quot;, &quot;Server Members Intent&quot; and &quot;Pr [rest of string was truncated]&quot;;.
+        ////!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE &quot;Message Content Intent&quot;, &quot;Server Members Intent&quot; and &quot;Presence Intent [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string config_ChatBot_DiscordBridge {
             get {
@@ -4845,7 +4843,7 @@ namespace MinecraftClient {
         ///   Looks up a localized string similar to Message formats
         ///Words wrapped with { and } are going to be replaced during the code execution, do not change them!
         ///For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-        ///For Discord message formatting, check the following: https://bit.ly/3F8CUCm.
+        ///For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html.
         /// </summary>
         internal static string config_ChatBot_DiscordBridge_Formats {
             get {
@@ -5103,7 +5101,7 @@ namespace MinecraftClient {
         
         /// <summary>
         ///   Looks up a localized string similar to Schedule commands and scripts to launch on various events such as server join, date/time or time interval
-        ///See https://mccteam.github.io/guide/chat-bots.html#script-scheduler for more info.
+        ///See https://mccteam.github.io/g/bots/#script-scheduler for more info.
         /// </summary>
         internal static string config_ChatBot_ScriptScheduler {
             get {
@@ -5147,7 +5145,7 @@ namespace MinecraftClient {
         ///   Looks up a localized string similar to Message formats
         ///Words wrapped with { and } are going to be replaced during the code execution, do not change them!
         ///For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-        ///For Telegram message formatting, check the following: https://sendpulse.com/blog/telegram-text-formatting.
+        ///For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html.
         /// </summary>
         internal static string config_ChatBot_TelegramBridge_Formats {
             get {
@@ -5175,7 +5173,7 @@ namespace MinecraftClient {
         
         /// <summary>
         ///   Looks up a localized string similar to MCC does it best to detect chat messages, but some server have unusual chat formats
-        ///When this happens, you&apos;ll need to configure chat format below, see https://mccteam.github.io/guide/configuration.html#chat-format.
+        ///When this happens, you&apos;ll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section.
         /// </summary>
         internal static string config_ChatFormat {
             get {
@@ -5205,7 +5203,7 @@ namespace MinecraftClient {
         ///   Looks up a localized string similar to Startup Config File
         ///Please do not record extraneous data in this file as it will be overwritten by MCC.
         ///
-        ///New to Minecraft Console Client? Check out this document: https://mccteam.github.io/guide/configuration.html
+        ///New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
         ///Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download.
         /// </summary>
         internal static string config_Head {
@@ -5450,7 +5448,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fill in with in-game locale code, check https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239.
+        ///   Looks up a localized string similar to Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html.
         /// </summary>
         internal static string config_Main_Advanced_language {
             get {
@@ -5646,6 +5644,15 @@ namespace MinecraftClient {
         internal static string config_Main_Advanced_show_xpbar_messages {
             get {
                 return ResourceManager.GetString("config.Main.Advanced.show_xpbar_messages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Temporary fix for Badpacket issue on some servers..
+        /// </summary>
+        internal static string config_Main_Advanced_temporary_fix_badpacket {
+            get {
+                return ResourceManager.GetString("config.Main.Advanced.temporary_fix_badpacket", resourceCulture);
             }
         }
         
@@ -6891,6 +6898,24 @@ namespace MinecraftClient {
         internal static string mcc_backup_old_config {
             get {
                 return ResourceManager.GetString("mcc.backup_old_config", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paste your code here:.
+        /// </summary>
+        internal static string mcc_browser_login_code {
+            get {
+                return ResourceManager.GetString("mcc.browser_login_code", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your browser should open automatically. If not, open the link below in your browser..
+        /// </summary>
+        internal static string mcc_browser_open {
+            get {
+                return ResourceManager.GetString("mcc.browser_open", resourceCulture);
             }
         }
         
