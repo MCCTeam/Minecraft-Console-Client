@@ -6902,6 +6902,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Paste your code here:.
+        /// </summary>
+        internal static string mcc_browser_login_code {
+            get {
+                return ResourceManager.GetString("mcc.browser_login_code", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your browser should open automatically. If not, open the link below in your browser..
+        /// </summary>
+        internal static string mcc_browser_open {
+            get {
+                return ResourceManager.GetString("mcc.browser_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connecting to {0}....
         /// </summary>
         internal static string mcc_connecting {

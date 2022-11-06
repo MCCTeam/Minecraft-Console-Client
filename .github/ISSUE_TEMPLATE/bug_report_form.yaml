@@ -9,7 +9,7 @@ body:
     attributes:
       label: Prerequisites
       options:
-        - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
+        - label: I made sure I am running the latest [development build](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
           required: true
         - label: I tried to [look for similar issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
           required: true

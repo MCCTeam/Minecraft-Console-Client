@@ -2004,7 +2004,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
-                        SessionCache.Store(InternalConfig.Login.ToLower(), session);
+                        SessionCache.Store(InternalConfig.Account.Login.ToLower(), session);
                     }
                     else
                     {
