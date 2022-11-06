@@ -1,0 +1,33 @@
+{
+    "title": "Minecraft命令行客户端",
+    "description": "Minecraft Console Client (MCC) 文档站点",
+    "helpUsTranslate": "帮助我们翻译",
+    "theme": {
+        "selectLanguageName": "简体中文",
+        "selectLanguageText": "选择语言",
+        "selectLanguageAriaLabel": "选择语言",
+        "editLinkText": "在 GitHub 上编辑此页",
+        "lastUpdatedText": "上次更新",
+        "contributorsText": "贡献者",
+        "tip": "提示",
+        "warning": "警告",
+        "danger": "重要警告",
+        "notFound": [
+            "这里什么都没有",
+            "我们怎么到这来了？",
+            "这是一个 404 页面",
+            "看起来我们进入了错误的链接"
+        ],
+        "backToHome": "返回首页",
+        "openInNewWindow": "在新窗口打开",
+        "toggleColorMode": "切换颜色模式",
+        "toggleSidebar": "切换侧边栏"
+    },
+    "navbar": {
+        "AboutAndFeatures": "关于 & 特性",
+        "Installation": "安装",
+        "Usage": "用法",
+        "Configuration": "配置",
+        "ChatBots": "机器人"
+    }
+}

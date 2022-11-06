@@ -1,0 +1,2672 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="bot.alerts.end_rain" xml:space="preserve">
+    <value>§c天氣變化：雨停了。§r</value>
+  </data>
+  <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
+    <value>§c天氣變化：現在不再是雷雨天了。§r</value>
+  </data>
+  <data name="bot.alerts.start_rain" xml:space="preserve">
+    <value>§c天氣變化：開始下雨了。§r</value>
+  </data>
+  <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
+    <value>§c天氣變化：現在是雷雨天。§r</value>
+  </data>
+  <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
+    <value>當前提供的行走範圍無效，它必須是一個大於0的正整數，將使用預設值5!</value>
+  </data>
+  <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
+    <value>當前未啟用地形處理，如果你想使用相關的特性，請在設定中啟用它。當前將繼續使用替代方法執行（定時傳送命令）。</value>
+  </data>
+  <data name="bot.antiafk.swapping" xml:space="preserve">
+    <value>最短時間大於最長時間，已將它們交換。</value>
+  </data>
+  <data name="bot.autoAttack.invalidcooldown" xml:space="preserve">
+    <value>攻擊冷卻時間值不能小於0，已使用自動作為預設值</value>
+  </data>
+  <data name="bot.autoCraft.aborted" xml:space="preserve">
+    <value>合成被終止！請檢查可用材料。</value>
+  </data>
+  <data name="bot.autoCraft.alias" xml:space="preserve">
+    <value>自動合成ChatBot命令的別名</value>
+  </data>
+  <data name="bot.autoCraft.available_cmd" xml:space="preserve">
+    <value>可用命令：{0}。可使用 /autocraft help &lt;命令名&gt; 瞭解更多資訊。您可以使用 /ac 作為命令別名。</value>
+  </data>
+  <data name="bot.autoCraft.close_inventory" xml:space="preserve">
+    <value>容器#{0}被AutoCraft關閉</value>
+  </data>
+  <data name="bot.autoCraft.cmd" xml:space="preserve">
+    <value>自動合成ChatBot命令</value>
+  </data>
+  <data name="bot.autoCraft.cmd.list" xml:space="preserve">
+    <value>已載入{0}個配方：{1}</value>
+  </data>
+  <data name="bot.autoCraft.cmd.resetcfg" xml:space="preserve">
+    <value>將配置重置為預設值</value>
+  </data>
+  <data name="bot.autoCraft.craft_fail" xml:space="preserve">
+    <value>合成失敗！等待更多材料</value>
+  </data>
+  <data name="bot.autoCraft.debug.no_config" xml:space="preserve">
+    <value>找不到配置。請新建一個。</value>
+  </data>
+  <data name="bot.autoCraft.error.config" xml:space="preserve">
+    <value>分析配置時出錯：{0}</value>
+  </data>
+  <data name="bot.autoCraft.exception.duplicate" xml:space="preserve">
+    <value>指定了重複的配方名稱：{0}</value>
+  </data>
+  <data name="bot.autoCraft.exception.name_miss" xml:space="preserve">
+    <value>解析配方時缺少配方名稱</value>
+  </data>
+  <data name="bot.autoCraft.help.help" xml:space="preserve">
+    <value>獲取命令描述。用法： /autocraft help &lt;命令名&gt;</value>
+  </data>
+  <data name="bot.autoCraft.help.list" xml:space="preserve">
+    <value>列出可用配方。</value>
+  </data>
+  <data name="bot.autoCraft.help.load" xml:space="preserve">
+    <value>載入配置檔案。</value>
+  </data>
+  <data name="bot.autoCraft.help.reload" xml:space="preserve">
+    <value>重新載入配置檔案。</value>
+  </data>
+  <data name="bot.autoCraft.help.resetcfg" xml:space="preserve">
+    <value>將預設示例配置寫入預設位置。</value>
+  </data>
+  <data name="bot.autoCraft.help.start" xml:space="preserve">
+    <value>開始合成。用法：/autocraft start &lt;配方名稱&gt;</value>
+  </data>
+  <data name="bot.autoCraft.help.stop" xml:space="preserve">
+    <value>停止當前正在進行的合成過程</value>
+  </data>
+  <data name="bot.autocraft.invaild_result" xml:space="preserve">
+    <value>無效的輸出物品！</value>
+  </data>
+  <data name="bot.autocraft.invaild_slots" xml:space="preserve">
+    <value>配方的物品數量不匹配，已自動調整。</value>
+  </data>
+  <data name="bot.autoCraft.loaded" xml:space="preserve">
+    <value>已成功載入</value>
+  </data>
+  <data name="bot.autoCraft.missing_material" xml:space="preserve">
+    <value>缺失材料：{0}</value>
+  </data>
+  <data name="bot.autoCraft.no_recipe_name" xml:space="preserve">
+    <value>請指定要合成的配方名稱。</value>
+  </data>
+  <data name="bot.autoCraft.recipe_not_exist" xml:space="preserve">
+    <value>指定的配方名稱不存在。請檢查配置檔案。</value>
+  </data>
+  <data name="bot.autoCraft.start" xml:space="preserve">
+    <value>AutoCraft啟動中：{0}</value>
+  </data>
+  <data name="bot.autoCraft.start_fail" xml:space="preserve">
+    <value>無法啟動AutoCraft。請檢查用於合成{0}的可用材料</value>
+  </data>
+  <data name="bot.autoCraft.stop" xml:space="preserve">
+    <value>AutoCraft已停止</value>
+  </data>
+  <data name="bot.autoCraft.table_not_found" xml:space="preserve">
+    <value>找不到工作台</value>
+  </data>
+  <data name="bot.autoCraft.timeout" xml:space="preserve">
+    <value>動作超時！原因：{0}</value>
+  </data>
+  <data name="bot.autodig.available_cmd" xml:space="preserve">
+    <value>可用命令：{0}。可使用 /digbot help &lt;命令名&gt; 瞭解更多資訊。</value>
+  </data>
+  <data name="bot.autodig.cmd" xml:space="preserve">
+    <value>自動挖掘 ChatBot 命令</value>
+  </data>
+  <data name="bot.autodig.dig_timeout" xml:space="preserve">
+    <value>挖掘方塊超時，重試。</value>
+  </data>
+  <data name="bot.autodig.help.help" xml:space="preserve">
+    <value>獲取命令描述。用法：/digbot help &lt;命令名&gt;</value>
+  </data>
+  <data name="bot.autodig.help.start" xml:space="preserve">
+    <value>開始執行自動挖掘。</value>
+  </data>
+  <data name="bot.autodig.help.stop" xml:space="preserve">
+    <value>停止執行自動挖掘。</value>
+  </data>
+  <data name="bot.autodig.not_allow" xml:space="preserve">
+    <value>當前所看向的方塊不在允許挖掘列表中。</value>
+  </data>
+  <data name="bot.autodig.start" xml:space="preserve">
+    <value>開始自動挖掘。</value>
+  </data>
+  <data name="bot.autodig.start_delay" xml:space="preserve">
+    <value>將在 {0:0.0} 秒後開始自動挖掘。</value>
+  </data>
+  <data name="bot.autodig.stop" xml:space="preserve">
+    <value>停止自動挖掘。</value>
+  </data>
+  <data name="bot.autoDrop.added" xml:space="preserve">
+    <value>已新增物品{0}</value>
+  </data>
+  <data name="bot.autoDrop.alias" xml:space="preserve">
+    <value>自動丟棄 ChatBot 命令別名</value>
+  </data>
+  <data name="bot.autoDrop.cmd" xml:space="preserve">
+    <value>自動丟棄 ChatBot 命令</value>
+  </data>
+  <data name="bot.autoDrop.incorrect_name" xml:space="preserve">
+    <value>物品名稱不正確：{0}。請再試一次。</value>
+  </data>
+  <data name="bot.autoDrop.list" xml:space="preserve">
+    <value>列表中總計{0}個物品：
+ {1}</value>
+  </data>
+  <data name="bot.autoDrop.no_inventory" xml:space="preserve">
+    <value>找不到容器{0}!</value>
+  </data>
+  <data name="bot.autoDrop.no_item" xml:space="preserve">
+    <value>列表中沒有物品</value>
+  </data>
+  <data name="bot.autoDrop.no_mode" xml:space="preserve">
+    <value>無法從配置中讀取丟棄模式（drop mode）。使用Include模式。</value>
+  </data>
+  <data name="bot.autoDrop.not_in_list" xml:space="preserve">
+    <value>物品不在列表中</value>
+  </data>
+  <data name="bot.autoDrop.off" xml:space="preserve">
+    <value>已禁用自動丟棄</value>
+  </data>
+  <data name="bot.autoDrop.on" xml:space="preserve">
+    <value>已啟用自動丟棄</value>
+  </data>
+  <data name="bot.autoDrop.removed" xml:space="preserve">
+    <value>已刪除物品{0}</value>
+  </data>
+  <data name="bot.autoDrop.switched" xml:space="preserve">
+    <value> 切換到{0}模式。</value>
+  </data>
+  <data name="bot.autoDrop.unknown_mode" xml:space="preserve">
+    <value>未知模式。可用的模式：Include, Exclude, Everything</value>
+  </data>
+  <data name="bot.autoFish.available_cmd" xml:space="preserve">
+    <value>可用命令：{0}。可使用 /fish help &lt;命令名&gt; 瞭解更多資訊。</value>
+  </data>
+  <data name="bot.autoFish.cast_timeout" xml:space="preserve">
+    <value>拋竿超時，將在等待一段時間後重試。（超時時間延長至 {0:0.0} 秒）</value>
+  </data>
+  <data name="bot.autoFish.caught" xml:space="preserve">
+    <value>收竿!（總計第 {0} 次）</value>
+  </data>
+  <data name="bot.autoFish.caught_at" xml:space="preserve">
+    <value>收竿 (位於 {0:0.0},{1:0.0},{2:0.0}) ！（總計第 {3} 次）</value>
+  </data>
+  <data name="bot.autoFish.cmd" xml:space="preserve">
+    <value>自動釣魚 ChatBot 命令</value>
+  </data>
+  <data name="bot.autoFish.despawn" xml:space="preserve">
+    <value>魚鉤消失，將會重新拋竿。</value>
+  </data>
+  <data name="bot.autoFish.fishing_timeout" xml:space="preserve">
+    <value>釣魚超時，將於幾秒鐘後重新拋竿。</value>
+  </data>
+  <data name="bot.autoFish.got" xml:space="preserve">
+    <value>釣到了 {0}</value>
+  </data>
+  <data name="bot.autoFish.help.help" xml:space="preserve">
+    <value>獲取命令描述。用法：/fish help &lt;命令名&gt;</value>
+  </data>
+  <data name="bot.autoFish.help.start" xml:space="preserve">
+    <value>開始自動釣魚。</value>
+  </data>
+  <data name="bot.autoFish.help.status" xml:space="preserve">
+    <value>列出釣到的物品。或者使用 "/fish status clear" 清空該列表。</value>
+  </data>
+  <data name="bot.autoFish.help.stop" xml:space="preserve">
+    <value>停止自動釣魚。</value>
+  </data>
+  <data name="bot.autoFish.no_inv_handle" xml:space="preserve">
+    <value>未啟用庫存(物品)處理。將不支援檢查魚竿耐久度都和自動切換魚竿。</value>
+  </data>
+  <data name="bot.autoFish.no_rod" xml:space="preserve">
+    <value>沒有可使用的釣魚竿了。也許是用壞了或耐久度過低？</value>
+  </data>
+  <data name="bot.autoFish.start" xml:space="preserve">
+    <value>開始自動釣魚。</value>
+  </data>
+  <data name="bot.autoFish.start_at" xml:space="preserve">
+    <value>將在 {0:0.0} 秒後自動開始釣魚。</value>
+  </data>
+  <data name="bot.autoFish.status_clear" xml:space="preserve">
+    <value>已清空釣到的物品資訊。</value>
+  </data>
+  <data name="bot.autoFish.status_info" xml:space="preserve">
+    <value>所有釣到的物品（不完全準確）：</value>
+  </data>
+  <data name="bot.autoFish.stop" xml:space="preserve">
+    <value>停止自動釣魚。</value>
+  </data>
+  <data name="bot.autoFish.switch" xml:space="preserve">
+    <value>切換到位於背包 {0} 位置的魚竿，剩餘耐用 {1}/64。</value>
+  </data>
+  <data name="bot.autoFish.throw" xml:space="preserve">
+    <value>拋竿成功。</value>
+  </data>
+  <data name="bot.autoFish.update_lookat" xml:space="preserve">
+    <value>更新當前朝向 偏航角(yaw) = {0:0.00}, 俯仰角(pitch) = {1:0.00}。</value>
+  </data>
+  <data name="bot.autoRelog.curr_dir" xml:space="preserve">
+    <value>當前目錄為：{0}</value>
+  </data>
+  <data name="bot.autoRelog.disconnect_msg" xml:space="preserve">
+    <value>連線斷開，收到訊息：{0}</value>
+  </data>
+  <data name="bot.autoRelog.ignore_user_logout" xml:space="preserve">
+    <value>由使用者或MCC bot啟動的斷開連線。忽略。</value>
+  </data>
+  <data name="bot.autoRelog.launch" xml:space="preserve">
+    <value>已啟動，嘗試了{0}次重新連線</value>
+  </data>
+  <data name="bot.autoRelog.loaded" xml:space="preserve">
+    <value>已載入訊息：{0}</value>
+  </data>
+  <data name="bot.autoRelog.loading" xml:space="preserve">
+    <value>從檔案{0}載入訊息</value>
+  </data>
+  <data name="bot.autoRelog.no_kick_msg" xml:space="preserve">
+    <value>在沒有kick訊息檔案的情況下初始化</value>
+  </data>
+  <data name="bot.autoRelog.not_found" xml:space="preserve">
+    <value>找不到檔案或目錄：{0}</value>
+  </data>
+  <data name="bot.autoRelog.reconnect" xml:space="preserve">
+    <value>資訊包含 '{0}'。重新連線。</value>
+  </data>
+  <data name="bot.autoRelog.reconnect_always" xml:space="preserve">
+    <value>忽略kick訊息，仍要重新連線。</value>
+  </data>
+  <data name="bot.autoRelog.reconnect_ignore" xml:space="preserve">
+    <value>不包含任何已定義關鍵字的訊息，忽略。</value>
+  </data>
+  <data name="bot.autoRelog.wait" xml:space="preserve">
+    <value>等待{0:0.000}秒後重新連線...</value>
+  </data>
+  <data name="bot.autoRespond.file_not_found" xml:space="preserve">
+    <value>找不到檔案或目錄： '{0}'</value>
+  </data>
+  <data name="bot.autoRespond.loaded_match" xml:space="preserve">
+    <value>載入匹配項：
+{0}</value>
+  </data>
+  <data name="bot.autoRespond.loading" xml:space="preserve">
+    <value>正在從'{0}'載入匹配項</value>
+  </data>
+  <data name="bot.autoRespond.match" xml:space="preserve">
+    <value>match: {0}
+regex: {1}
+action: {2}
+actionPrivate: {3}
+actionOther: {4}
+ownersOnly: {5}
+cooldown: {6}</value>
+  </data>
+  <data name="bot.autoRespond.match_run" xml:space="preserve">
+    <value>進行操作：{0}</value>
+  </data>
+  <data name="bot.autoRespond.no_action" xml:space="preserve">
+    <value>匹配沒有對應操作:
+{0}</value>
+  </data>
+  <data name="bot.autoRespond.no_trigger" xml:space="preserve">
+    <value>這個匹配永遠不會觸發：
+{0}</value>
+  </data>
+  <data name="bot.chatLog.invalid_file" xml:space="preserve">
+    <value>路徑'{0}'包含無效字元。</value>
+  </data>
+  <data name="bot.DiscordBridge.canceled_sending" xml:space="preserve">
+    <value>發生錯誤，已取消傳送信息至Discord。打開除錯訊息以獲得更多資訊。</value>
+  </data>
+  <data name="bot.DiscordBridge.channel_not_found" xml:space="preserve">
+    <value>找不到ID為 '{0}' 的頻道！</value>
+  </data>
+  <data name="bot.DiscordBridge.command_executed" xml:space="preserve">
+    <value>指令已執行，結果為</value>
+  </data>
+  <data name="bot.DiscordBridge.connected" xml:space="preserve">
+    <value>成功與 MCC 連線</value>
+  </data>
+  <data name="bot.DiscordBridge.desc" xml:space="preserve">
+    <value>這個指令允許你指定哪一個方向的信息會被Discord Bridge轉送。</value>
+  </data>
+  <data name="bot.DiscordBridge.direction" xml:space="preserve">
+    <value>Discord Brdige信息轉送方向已更改為 {0}</value>
+  </data>
+  <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
+    <value>雙向</value>
+  </data>
+  <data name="bot.DiscordBridge.direction.discord" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="bot.DiscordBridge.direction.minecraft" xml:space="preserve">
+    <value>Minecraft</value>
+  </data>
+  <data name="bot.DiscordBridge.guild_not_found" xml:space="preserve">
+    <value>找不到ID為 '{0}' 的伺服器！</value>
+  </data>
+  <data name="bot.DiscordBridge.invalid_direction" xml:space="preserve">
+    <value>無效的信息方向！可選：both|b, minecraft|mc, discord|dsc。例子："dscbridge direction mc"</value>
+  </data>
+  <data name="bot.DiscordBridge.missing_token" xml:space="preserve">
+    <value>請提供有效的令牌！</value>
+  </data>
+  <data name="bot.DiscordBridge.unknown_error" xml:space="preserve">
+    <value>發生了未知的錯誤！</value>
+  </data>
+  <data name="bot.farmer.already_running" xml:space="preserve">
+    <value>機器人已經在耕作中。</value>
+  </data>
+  <data name="bot.farmer.already_stopped" xml:space="preserve">
+    <value>機器人已經停止耕作了。</value>
+  </data>
+  <data name="bot.farmer.crop_type" xml:space="preserve">
+    <value>農作物類型</value>
+  </data>
+  <data name="bot.farmer.desc" xml:space="preserve">
+    <value>耕作機器人</value>
+  </data>
+  <data name="bot.farmer.invalid_crop_type" xml:space="preserve">
+    <value>提供了無效的農作物類型（可選的類型：Beetroot（甜菜根）, Carrot（蘿蔔）, Melon（西瓜）, Netherwart（地獄疙瘩）, Pumpkin（南瓜）, Potato（馬鈴薯）, Wheat（小麥））</value>
+  </data>
+  <data name="bot.farmer.invalid_radius" xml:space="preserve">
+    <value>提供了無效的半徑。你必須提供一個大於0的整數。</value>
+  </data>
+  <data name="bot.farmer.needs_inventory" xml:space="preserve">
+    <value>自動種植機器人需要庫存處理才能運作，請啟用庫存處理！</value>
+  </data>
+  <data name="bot.farmer.needs_terrain" xml:space="preserve">
+    <value>自動種植機器人需要地形處理才能運作，請啟用地形處理！</value>
+  </data>
+  <data name="bot.farmer.not_implemented" xml:space="preserve">
+    <value>未支援1.13以下的版本！</value>
+  </data>
+  <data name="bot.farmer.radius" xml:space="preserve">
+    <value>半徑</value>
+  </data>
+  <data name="bot.farmer.started" xml:space="preserve">
+    <value>開始耕作！</value>
+  </data>
+  <data name="bot.farmer.stopped" xml:space="preserve">
+    <value>停止耕作！</value>
+  </data>
+  <data name="bot.farmer.stopping" xml:space="preserve">
+    <value>正在停止耕作，這可能需要幾秒的時間...</value>
+  </data>
+  <data name="bot.farmer.warining_allow_teleport" xml:space="preserve">
+    <value>你已啟用傳送，你的帳號可能因此被踢出甚至被封禁。請小心使用！</value>
+  </data>
+  <data name="bot.farmer.warining_force_unsafe" xml:space="preserve">
+    <value>你已啟用不安全的移動，機器人可能會受到傷害！</value>
+  </data>
+  <data name="bot.farmer.warining_invalid_parameter" xml:space="preserve">
+    <value>提供了無效的參數 "{0}"（正確格式："鍵:值"）</value>
+  </data>
+  <data name="bot.mailer.cmd" xml:space="preserve">
+    <value>Mailer 命令</value>
+  </data>
+  <data name="bot.mailer.cmd.getignored" xml:space="preserve">
+    <value>--- 忽略列表 ---
+{0}</value>
+  </data>
+  <data name="bot.mailer.cmd.getmails" xml:space="preserve">
+    <value>--- 資料庫中的郵件 ---
+{0}</value>
+  </data>
+  <data name="bot.mailer.cmd.help" xml:space="preserve">
+    <value>檢視用法</value>
+  </data>
+  <data name="bot.mailer.cmd.ignore.added" xml:space="preserve">
+    <value>新增{0}到忽略列表！</value>
+  </data>
+  <data name="bot.mailer.cmd.ignore.invalid" xml:space="preserve">
+    <value>丟失或無效的名稱。用法：{0}&lt;使用者名稱&gt;</value>
+  </data>
+  <data name="bot.mailer.cmd.ignore.removed" xml:space="preserve">
+    <value>{0}已從忽略列表中刪除！</value>
+  </data>
+  <data name="bot.mailer.create.db" xml:space="preserve">
+    <value>建立新資料庫檔案：{0}</value>
+  </data>
+  <data name="bot.mailer.create.ignore" xml:space="preserve">
+    <value>建立新忽略列表：{0}</value>
+  </data>
+  <data name="bot.mailer.delivered" xml:space="preserve">
+    <value>已傳送：{0}</value>
+  </data>
+  <data name="bot.mailer.init" xml:space="preserve">
+    <value>使用設定初始化Mailer：</value>
+  </data>
+  <data name="bot.mailer.init.db" xml:space="preserve">
+    <value> - 資料庫檔案：{0}</value>
+  </data>
+  <data name="bot.mailer.init.db_size" xml:space="preserve">
+    <value> - 最大資料庫大小：{0}</value>
+  </data>
+  <data name="bot.mailer.init.ignore" xml:space="preserve">
+    <value> - 忽略列表：{0}</value>
+  </data>
+  <data name="bot.mailer.init.mail_retention" xml:space="preserve">
+    <value> - 郵件保留天數：{0}</value>
+  </data>
+  <data name="bot.mailer.init.max_mails" xml:space="preserve">
+    <value> - 每位玩家最多郵件數：{0}</value>
+  </data>
+  <data name="bot.mailer.init.public" xml:space="preserve">
+    <value> - 公開互動：{0}</value>
+  </data>
+  <data name="bot.mailer.init_fail.db_size" xml:space="preserve">
+    <value>無法啟用Mailer：最大資料庫大小必須大於0。請檢查設定。</value>
+  </data>
+  <data name="bot.mailer.init_fail.mail_retention" xml:space="preserve">
+    <value>無法啟用Mailer：郵件保留天數必須大於0。請檢查設定。</value>
+  </data>
+  <data name="bot.mailer.init_fail.max_mails" xml:space="preserve">
+    <value>無法啟用Mailer：每個玩家的最大郵件數必須大於0。請檢查設定。</value>
+  </data>
+  <data name="bot.mailer.load.db" xml:space="preserve">
+    <value>載入資料庫檔案：{0}</value>
+  </data>
+  <data name="bot.mailer.load.ignore" xml:space="preserve">
+    <value>載入忽略列表：</value>
+  </data>
+  <data name="bot.mailer.process_mails" xml:space="preserve">
+    <value>正在查詢要傳送的郵件 @ {0}</value>
+  </data>
+  <data name="bot.mailer.saving" xml:space="preserve">
+    <value>正在儲存郵件：{0}</value>
+  </data>
+  <data name="bot.mailer.user_ignored" xml:space="preserve">
+    <value>{0}已被忽略!</value>
+  </data>
+  <data name="bot.map.cmd.desc" xml:space="preserve">
+    <value>渲染物品形式的地圖</value>
+  </data>
+  <data name="bot.map.cmd.invalid_id" xml:space="preserve">
+    <value>無效的地圖編號，必須是一個數字。</value>
+  </data>
+  <data name="bot.map.cmd.not_found" xml:space="preserve">
+    <value>沒有找到編號為 '{0}' 的地圖！</value>
+  </data>
+  <data name="bot.map.failed_to_render" xml:space="preserve">
+    <value>無法渲染編號為 '{0}' 的地圖。</value>
+  </data>
+  <data name="bot.map.list_item" xml:space="preserve">
+    <value>- 地圖編號：{0}（最近更新於：{1}）</value>
+  </data>
+  <data name="bot.map.no_maps" xml:space="preserve">
+    <value>沒有收到過地圖！</value>
+  </data>
+  <data name="bot.map.received" xml:space="preserve">
+    <value>從伺服器接收到的地圖有：</value>
+  </data>
+  <data name="bot.map.received_map" xml:space="preserve">
+    <value>收到一個編號為 {0} 的新地圖。</value>
+  </data>
+  <data name="bot.map.rendered" xml:space="preserve">
+    <value>成功接收到地圖 '{0}' ，儲存為 '{1}'</value>
+  </data>
+  <data name="bot.map.resized_rendered_image" xml:space="preserve">
+    <value>已調整地圖ID '{0}' 的大小為 {1}x{1}。</value>
+  </data>
+  <data name="bot.map.scale" xml:space="preserve">
+    <value>由於當前終端尺寸限制，地圖大小由 ({0}x{1}) 縮小為 ({2}x{3}) 。</value>
+  </data>
+  <data name="bot.map.sent_to_discord" xml:space="preserve">
+    <value>已透過Discord Brdige傳送地圖ID '{0}' 的渲染圖片至Discord。</value>
+  </data>
+  <data name="bot.map.sent_to_telegram" xml:space="preserve">
+    <value>已透過Telegram Brdige傳送地圖ID '{0}' 的渲染圖片至Telegram。</value>
+  </data>
+  <data name="bot.replayCapture.cmd" xml:space="preserve">
+    <value>replay 命令</value>
+  </data>
+  <data name="bot.replayCapture.created" xml:space="preserve">
+    <value>已建立重播檔案。</value>
+  </data>
+  <data name="bot.replayCapture.restart" xml:space="preserve">
+    <value>錄製已停止。請重新啟動程式以進行另一段錄製。</value>
+  </data>
+  <data name="bot.replayCapture.stopped" xml:space="preserve">
+    <value>錄製已停止。</value>
+  </data>
+  <data name="bot.script.fail" xml:space="preserve">
+    <value>指令碼'{0}'執行失敗 ({1})。</value>
+  </data>
+  <data name="bot.script.file_not_found" xml:space="preserve">
+    <value>找不到檔案或目錄： '{0}'</value>
+  </data>
+  <data name="bot.script.not_found" xml:space="preserve">
+    <value>§8[MCC] [{0}] 找不到指令碼檔案：{1}</value>
+  </data>
+  <data name="bot.script.pm.loaded" xml:space="preserve">
+    <value>指令碼'{0}'載入。</value>
+  </data>
+  <data name="bot.scriptScheduler.loaded_task" xml:space="preserve">
+    <value>已載入任務：
+{0}</value>
+  </data>
+  <data name="bot.scriptScheduler.no_action" xml:space="preserve">
+    <value>任務沒有對應操作：
+{0}</value>
+  </data>
+  <data name="bot.scriptScheduler.no_trigger" xml:space="preserve">
+    <value>這個任務永遠不會觸發：
+{0}</value>
+  </data>
+  <data name="bot.scriptScheduler.running_inverval" xml:space="preserve">
+    <value>間隔 / 執行中的操作：{0}</value>
+  </data>
+  <data name="bot.scriptScheduler.running_login" xml:space="preserve">
+    <value>登入 / 執行中的操作：{0}</value>
+  </data>
+  <data name="bot.scriptScheduler.running_time" xml:space="preserve">
+    <value>時間 / 執行中的操作：{0}</value>
+  </data>
+  <data name="bot.scriptScheduler.task" xml:space="preserve">
+    <value>triggeronfirstlogin: {0}
+ triggeronlogin: {1}
+ triggerontime: {2}
+ triggeroninterval: {3}
+ timevalue: {4}
+ timeinterval: {5}
+ action: {6}</value>
+  </data>
+  <data name="bot.TelegramBridge.canceled_sending" xml:space="preserve">
+    <value>發生錯誤，已取消傳送信息至Telegram。打開除錯訊息以獲得更多資訊。</value>
+  </data>
+  <data name="bot.TelegramBridge.command_executed" xml:space="preserve">
+    <value>指令已執行，結果為</value>
+  </data>
+  <data name="bot.TelegramBridge.connected" xml:space="preserve">
+    <value>成功與 MCC 連線</value>
+  </data>
+  <data name="bot.TelegramBridge.desc" xml:space="preserve">
+    <value>這個指令允許你指定哪一個方向的信息會被Telegram Bridge轉送。</value>
+  </data>
+  <data name="bot.TelegramBridge.direction" xml:space="preserve">
+    <value>Telegram Brdige信息轉送方向已更改為 {0}</value>
+  </data>
+  <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
+    <value>雙向</value>
+  </data>
+  <data name="bot.TelegramBridge.direction.minecraft" xml:space="preserve">
+    <value>Minecraft</value>
+  </data>
+  <data name="bot.TelegramBridge.direction.Telegram" xml:space="preserve">
+    <value>Telegram</value>
+  </data>
+  <data name="bot.TelegramBridge.disconnected" xml:space="preserve">
+    <value>成功與 MCC 斷開連線</value>
+  </data>
+  <data name="bot.TelegramBridge.invalid_direction" xml:space="preserve">
+    <value>無效的信息方向！可選：both|b, minecraft|mc, telegram|tg|t。例子："tgbridge direction mc"</value>
+  </data>
+  <data name="bot.TelegramBridge.missing_authorized_channels" xml:space="preserve">
+    <value>[警告] 你未在 "Authorized_Chat_Ids" 欄位提供任何的頻道ID，任何找到你的機器人的人將能夠傳送信息和指令！</value>
+  </data>
+  <data name="bot.TelegramBridge.missing_channel_id" xml:space="preserve">
+    <value>[警告] 你未提供頻道ID，你將只會收到從Telegram傳送的指令的回覆！</value>
+  </data>
+  <data name="bot.TelegramBridge.missing_token" xml:space="preserve">
+    <value>請提供有效的令牌！</value>
+  </data>
+  <data name="bot.TelegramBridge.unauthorized" xml:space="preserve">
+    <value>**🛑 未授權的存取！ 🛑
+
+將此頻道的ID加到配置文件中的 "Authorized_Chat_Ids" 欄位以獲得存取授權！**</value>
+  </data>
+  <data name="bot.TelegramBridge.unknown_error" xml:space="preserve">
+    <value>發生了未知的錯誤！</value>
+  </data>
+  <data name="bot.testBot.said" xml:space="preserve">
+    <value>Bot：{0}說：{1}</value>
+  </data>
+  <data name="bot.testBot.told" xml:space="preserve">
+    <value>Bot：{0}對我說：{1}</value>
+  </data>
+  <data name="botname.Alerts" xml:space="preserve">
+    <value>提醒</value>
+  </data>
+  <data name="botname.AntiAFK" xml:space="preserve">
+    <value>AntiAFK</value>
+  </data>
+  <data name="botname.AutoAttack" xml:space="preserve">
+    <value>自動攻擊</value>
+  </data>
+  <data name="botname.AutoCraft" xml:space="preserve">
+    <value>自動合成</value>
+  </data>
+  <data name="botname.AutoDig" xml:space="preserve">
+    <value>自動挖掘</value>
+  </data>
+  <data name="botname.AutoDrop" xml:space="preserve">
+    <value>自動丟棄</value>
+  </data>
+  <data name="botname.AutoEat" xml:space="preserve">
+    <value>自動進食</value>
+  </data>
+  <data name="botname.AutoFishing" xml:space="preserve">
+    <value>自動釣魚</value>
+  </data>
+  <data name="botname.AutoRelog" xml:space="preserve">
+    <value>自動重連</value>
+  </data>
+  <data name="botname.AutoRespond" xml:space="preserve">
+    <value>自動回覆</value>
+  </data>
+  <data name="botname.ChatLog" xml:space="preserve">
+    <value>聊天日誌</value>
+  </data>
+  <data name="botname.DiscordBridge" xml:space="preserve">
+    <value>DiscordBridge</value>
+  </data>
+  <data name="botname.Farmer" xml:space="preserve">
+    <value>自動種植</value>
+  </data>
+  <data name="botname.FollowPlayer" xml:space="preserve">
+    <value>跟隨玩家</value>
+  </data>
+  <data name="botname.HangmanGame" xml:space="preserve">
+    <value>HangmanGame</value>
+  </data>
+  <data name="botname.Mailer" xml:space="preserve">
+    <value>郵差</value>
+  </data>
+  <data name="botname.Map" xml:space="preserve">
+    <value>地圖</value>
+  </data>
+  <data name="botname.PlayerListLogger" xml:space="preserve">
+    <value>PlayerListLogger</value>
+  </data>
+  <data name="botname.RemoteControl" xml:space="preserve">
+    <value>RemoteControl</value>
+  </data>
+  <data name="botname.ReplayCapture" xml:space="preserve">
+    <value>ReplayCapture</value>
+  </data>
+  <data name="botname.Script" xml:space="preserve">
+    <value>指令碼</value>
+  </data>
+  <data name="botname.ScriptScheduler" xml:space="preserve">
+    <value>ScriptScheduler</value>
+  </data>
+  <data name="botname.TelegramBridge" xml:space="preserve">
+    <value>TelegramBridge</value>
+  </data>
+  <data name="botname.TestBot" xml:space="preserve">
+    <value>TestBot</value>
+  </data>
+  <data name="cache.converting" xml:space="preserve">
+    <value>§8從磁碟轉換會話快取：{0}</value>
+  </data>
+  <data name="cache.ignore_line" xml:space="preserve">
+    <value>§8忽略無效的會話令牌行：{0}</value>
+  </data>
+  <data name="cache.ignore_line_keys" xml:space="preserve">
+    <value>§8忽略無效的聊天簽名金鑰行：{0}</value>
+  </data>
+  <data name="cache.ignore_string" xml:space="preserve">
+    <value>§8忽略會話令牌字串'{0}'：{1}</value>
+  </data>
+  <data name="cache.ignore_string_keys" xml:space="preserve">
+    <value>§8忽略聊天簽名金鑰字串 '{0}'：{1}</value>
+  </data>
+  <data name="cache.loaded" xml:space="preserve">
+    <value>§8已載入會話：{0}:{1}</value>
+  </data>
+  <data name="cache.loaded_keys" xml:space="preserve">
+    <value>§8已載入簽名金鑰，下次重新整理於 {0}</value>
+  </data>
+  <data name="cache.loading" xml:space="preserve">
+    <value>§8載入Minecraft配置檔案：{0}</value>
+  </data>
+  <data name="cache.loading_keys" xml:space="preserve">
+    <value>§8從磁碟載入聊天簽名金鑰快取: {0}</value>
+  </data>
+  <data name="cache.loading_session" xml:space="preserve">
+    <value>§8從磁碟載入會話快取：{0}</value>
+  </data>
+  <data name="cache.malformed" xml:space="preserve">
+    <value>§8從磁碟讀取序列化會話快取時，獲取到格式錯誤的資料：{0}</value>
+  </data>
+  <data name="cache.read_fail" xml:space="preserve">
+    <value>§8無法從磁碟讀取序列化會話快取：{0}</value>
+  </data>
+  <data name="cache.read_fail_plain" xml:space="preserve">
+    <value>§8無法從磁碟讀取會話快取：{0}</value>
+  </data>
+  <data name="cache.read_fail_plain_keys" xml:space="preserve">
+    <value>§8無法從磁碟讀取聊天簽名金鑰快取：{0}</value>
+  </data>
+  <data name="cache.save_fail" xml:space="preserve">
+    <value>§8無法將會話快取寫入磁碟：{0}</value>
+  </data>
+  <data name="cache.save_fail_keys" xml:space="preserve">
+    <value>§8無法將聊天簽名金鑰寫入磁碟：{0}</value>
+  </data>
+  <data name="cache.saving" xml:space="preserve">
+    <value>§8將會話快取儲存到磁碟</value>
+  </data>
+  <data name="cache.saving_keys" xml:space="preserve">
+    <value>§8將聊天簽名金鑰儲存到磁碟</value>
+  </data>
+  <data name="chat.done" xml:space="preserve">
+    <value>§8下載完成。檔案另存為 '{0}'</value>
+  </data>
+  <data name="chat.download" xml:space="preserve">
+    <value>§8正在從Mojang伺服器下載語言檔案 '{0}.lang'...</value>
+  </data>
+  <data name="chat.fail" xml:space="preserve">
+    <value>§8下載檔案失敗。</value>
+  </data>
+  <data name="chat.from_dir" xml:space="preserve">
+    <value>§8預設為你的Minecraft目錄中的en_GB.lang</value>
+  </data>
+  <data name="chat.loaded" xml:space="preserve">
+    <value>§8已載入翻譯檔案。</value>
+  </data>
+  <data name="chat.message_chain_broken" xml:space="preserve">
+    <value>玩家 {0} 的訊息簽名鏈已經被破壞。（簽名不在可信）</value>
+  </data>
+  <data name="chat.not_found" xml:space="preserve">
+    <value>§8找不到翻譯檔案：'{0}'
+如果沒有此檔案，某些資訊將無法正確列印。</value>
+  </data>
+  <data name="chat.request" xml:space="preserve">
+    <value>§8正在請求{0}...</value>
+  </data>
+  <data name="chatbot.reconnect" xml:space="preserve">
+    <value>[{0}] 斷開並重新連線到伺服器</value>
+  </data>
+  <data name="cmd.animation.desc" xml:space="preserve">
+    <value>揮動你的手臂。</value>
+  </data>
+  <data name="cmd.bed.bed_not_found" xml:space="preserve">
+    <value>沒有找到床！</value>
+  </data>
+  <data name="cmd.bed.cant_reach_safely" xml:space="preserve">
+    <value>無法安全地到達床邊!</value>
+  </data>
+  <data name="cmd.bed.desc" xml:space="preserve">
+    <value>用於右鍵床開始睡覺或離開正在睡覺的床。</value>
+  </data>
+  <data name="cmd.bed.failed_to_reach_in_time" xml:space="preserve">
+    <value>無法在30秒內到達(X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0})，放棄本次尋路。</value>
+  </data>
+  <data name="cmd.bed.found_a_bed_at" xml:space="preserve">
+    <value>在 (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) 找到了一個床。</value>
+  </data>
+  <data name="cmd.bed.in" xml:space="preserve">
+    <value>成功地躺在了床上！</value>
+  </data>
+  <data name="cmd.bed.leaving" xml:space="preserve">
+    <value>已向伺服器傳送離開床的資料包。</value>
+  </data>
+  <data name="cmd.bed.moving" xml:space="preserve">
+    <value>正在移動到床所在的位置： (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0})</value>
+  </data>
+  <data name="cmd.bed.not_a_bed" xml:space="preserve">
+    <value>位於 (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) 的方塊不是一個床！</value>
+  </data>
+  <data name="cmd.bed.not_in" xml:space="preserve">
+    <value>上床睡覺失敗了。（PS: 你必須使用床頭對應的座標）</value>
+  </data>
+  <data name="cmd.bed.searching" xml:space="preserve">
+    <value>在半徑為{0}的範圍內尋找床...</value>
+  </data>
+  <data name="cmd.bed.trying_to_use" xml:space="preserve">
+    <value>試圖在位於 (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) 上的床上睡覺，結果：{3}</value>
+  </data>
+  <data name="cmd.blockinfo.BlocksAround" xml:space="preserve">
+    <value>附近的方塊</value>
+  </data>
+  <data name="cmd.blockinfo.BlockType" xml:space="preserve">
+    <value>方塊類型</value>
+  </data>
+  <data name="cmd.blockinfo.desc" xml:space="preserve">
+    <value>回報提供坐標的方塊種類。（使用 -s 來回報目標四周的方塊）</value>
+  </data>
+  <data name="cmd.blockinfo.Negative" xml:space="preserve">
+    <value>Negative</value>
+  </data>
+  <data name="cmd.blockinfo.Positive" xml:space="preserve">
+    <value>Positive</value>
+  </data>
+  <data name="cmd.bots.desc" xml:space="preserve">
+    <value>列出全部 ChatBot ，載入或解除安裝一個 ChatBot。</value>
+  </data>
+  <data name="cmd.bots.list" xml:space="preserve">
+    <value>已載入的 ChatBot</value>
+  </data>
+  <data name="cmd.bots.noloaded" xml:space="preserve">
+    <value>沒有 ChatBot 被載入。</value>
+  </data>
+  <data name="cmd.bots.notfound" xml:space="preserve">
+    <value>該 ChatBot 並未載入，請檢查輸入。</value>
+  </data>
+  <data name="cmd.bots.unloaded" xml:space="preserve">
+    <value>成功解除安裝 ChatBot：{0}</value>
+  </data>
+  <data name="cmd.bots.unloaded_all" xml:space="preserve">
+    <value>成功解除安裝所有 ChatBot。</value>
+  </data>
+  <data name="cmd.changeSlot.changed" xml:space="preserve">
+    <value>已變更為欄位{0}</value>
+  </data>
+  <data name="cmd.changeSlot.desc" xml:space="preserve">
+    <value>變更快捷欄欄位</value>
+  </data>
+  <data name="cmd.changeSlot.fail" xml:space="preserve">
+    <value>無法變更欄位</value>
+  </data>
+  <data name="cmd.changeSlot.nan" xml:space="preserve">
+    <value>無法變更欄位：不是數字</value>
+  </data>
+  <data name="cmd.chunk.chunk_pos" xml:space="preserve">
+    <value>區塊：({0}, {1})。</value>
+  </data>
+  <data name="cmd.chunk.current" xml:space="preserve">
+    <value>當前位置：{0}，所在區塊：({1}, {2})。</value>
+  </data>
+  <data name="cmd.chunk.desc" xml:space="preserve">
+    <value>顯示區塊載入狀態。
+如果顯示錯亂竟在設定中更改 EnableEmoji=false 。</value>
+  </data>
+  <data name="cmd.chunk.for_debug" xml:space="preserve">
+    <value>§x§0此命令僅用於除錯使用，確保你已經瞭解執行該命令會造成的影響。§r</value>
+  </data>
+  <data name="cmd.chunk.icon" xml:space="preserve">
+    <value>玩家:{0}，標記的區塊:{1}，未收到:{2}，載入中:{3}，已載入:{4}</value>
+  </data>
+  <data name="cmd.chunk.marked" xml:space="preserve">
+    <value>標記的位置：</value>
+  </data>
+  <data name="cmd.chunk.outside" xml:space="preserve">
+    <value>§x§0由於被標記的區塊距離玩家太遠，它不會被顯示在圖中§r</value>
+  </data>
+  <data name="cmd.connect.desc" xml:space="preserve">
+    <value>連線到指定的伺服器。</value>
+  </data>
+  <data name="cmd.connect.invalid_ip" xml:space="preserve">
+    <value>無效的伺服器IP '{0}'。</value>
+  </data>
+  <data name="cmd.connect.unknown" xml:space="preserve">
+    <value>未知帳戶 '{0}'。</value>
+  </data>
+  <data name="cmd.debug.desc" xml:space="preserve">
+    <value>切換除錯訊息。</value>
+  </data>
+  <data name="cmd.debug.state_off" xml:space="preserve">
+    <value>除錯訊息現在已關閉</value>
+  </data>
+  <data name="cmd.debug.state_on" xml:space="preserve">
+    <value>除錯訊息現在已開啟</value>
+  </data>
+  <data name="cmd.dig.desc" xml:space="preserve">
+    <value>試圖破壞一個方塊</value>
+  </data>
+  <data name="cmd.dig.dig" xml:space="preserve">
+    <value>嘗試挖掘位於({0}, {1}, {2})的方塊({3})。</value>
+  </data>
+  <data name="cmd.dig.fail" xml:space="preserve">
+    <value>無法開始挖掘方塊。</value>
+  </data>
+  <data name="cmd.dig.no_block" xml:space="preserve">
+    <value>這個地方沒有方塊 (空氣)</value>
+  </data>
+  <data name="cmd.dig.too_far" xml:space="preserve">
+    <value>你離這個方塊太遠了。</value>
+  </data>
+  <data name="cmd.dropItem.desc" xml:space="preserve">
+    <value>丟棄玩家容器中的指定型別物品或開啟的容器</value>
+  </data>
+  <data name="cmd.dropItem.dropped" xml:space="preserve">
+    <value>已從容器#{1}中丟棄所有{0}</value>
+  </data>
+  <data name="cmd.dropItem.unknown_item" xml:space="preserve">
+    <value>未知物品：{0}</value>
+  </data>
+  <data name="cmd.enchant.clicked" xml:space="preserve">
+    <value>已傳送按鍵給伺服器。如果你有足夠的經驗值和已將物品擺放在正確的物品欄，物品應該會被附魔！</value>
+  </data>
+  <data name="cmd.enchant.desc" xml:space="preserve">
+    <value>使用已開啟的附魔台來附魔物品。</value>
+  </data>
+  <data name="cmd.enchant.enchanting_no_item" xml:space="preserve">
+    <value>你必須將物品放在附魔台的欄位0！</value>
+  </data>
+  <data name="cmd.enchant.enchanting_no_lapis" xml:space="preserve">
+    <value>你必須在附魔台的欄位1放置至少3個青金石！</value>
+  </data>
+  <data name="cmd.enchant.enchanting_table_not_opened" xml:space="preserve">
+    <value>你必須先開啟附魔台才能使用這個選項！</value>
+  </data>
+  <data name="cmd.enchant.invalid_slot" xml:space="preserve">
+    <value>提供了無效的欄位（可選：top, middle, bottom）</value>
+  </data>
+  <data name="cmd.enchant.no_enchantments" xml:space="preserve">
+    <value>你必須先將物品放置在附魔台並從伺服器獲得附魔選項才能使用這個指令！</value>
+  </data>
+  <data name="cmd.enchant.no_levels" xml:space="preserve">
+    <value>你的等級不足夠附魔！（你目前等級為{0}，你需要等級{1}）</value>
+  </data>
+  <data name="cmd.enchant.not_clicked" xml:space="preserve">
+    <value>無法單擊！</value>
+  </data>
+  <data name="cmd.entityCmd.attacked" xml:space="preserve">
+    <value>已攻擊實體</value>
+  </data>
+  <data name="cmd.entityCmd.boots" xml:space="preserve">
+    <value>靴子</value>
+  </data>
+  <data name="cmd.entityCmd.chestplate" xml:space="preserve">
+    <value>胸甲</value>
+  </data>
+  <data name="cmd.entityCmd.customname" xml:space="preserve">
+    <value>自定義名稱</value>
+  </data>
+  <data name="cmd.entityCmd.distance" xml:space="preserve">
+    <value>距離</value>
+  </data>
+  <data name="cmd.entityCmd.entities" xml:space="preserve">
+    <value>實體集</value>
+  </data>
+  <data name="cmd.entityCmd.entity" xml:space="preserve">
+    <value>實體</value>
+  </data>
+  <data name="cmd.entityCmd.equipment" xml:space="preserve">
+    <value>裝備</value>
+  </data>
+  <data name="cmd.entityCmd.health" xml:space="preserve">
+    <value>生命值</value>
+  </data>
+  <data name="cmd.entityCmd.helmet" xml:space="preserve">
+    <value>頭盔</value>
+  </data>
+  <data name="cmd.entityCmd.item" xml:space="preserve">
+    <value>物品</value>
+  </data>
+  <data name="cmd.entityCmd.latency" xml:space="preserve">
+    <value>延遲</value>
+  </data>
+  <data name="cmd.entityCmd.leggings" xml:space="preserve">
+    <value>護腿</value>
+  </data>
+  <data name="cmd.entityCmd.location" xml:space="preserve">
+    <value>位置</value>
+  </data>
+  <data name="cmd.entityCmd.mainhand" xml:space="preserve">
+    <value>主手</value>
+  </data>
+  <data name="cmd.entityCmd.nickname" xml:space="preserve">
+    <value>暱稱</value>
+  </data>
+  <data name="cmd.entityCmd.not_found" xml:space="preserve">
+    <value>找不到實體</value>
+  </data>
+  <data name="cmd.entityCmd.offhand" xml:space="preserve">
+    <value>副手</value>
+  </data>
+  <data name="cmd.entityCmd.pose" xml:space="preserve">
+    <value>姿勢</value>
+  </data>
+  <data name="cmd.entityCmd.type" xml:space="preserve">
+    <value>型別</value>
+  </data>
+  <data name="cmd.entityCmd.used" xml:space="preserve">
+    <value>已使用實體</value>
+  </data>
+  <data name="cmd.execif.desc" xml:space="preserve">
+    <value>允許你在某個條件成立時執行一個命令。(你可以使用"MinecraftClient.ini"中的變數和使用"/set"命令定義的變數，以及CSharp表示式）。</value>
+  </data>
+  <data name="cmd.execif.error" xml:space="preserve">
+    <value>錯誤：{0}</value>
+  </data>
+  <data name="cmd.execif.error_occured" xml:space="preserve">
+    <value>在執行命令 {0} 時出現錯誤。</value>
+  </data>
+  <data name="cmd.execif.executed" xml:space="preserve">
+    <value>條件'{0}'滿足，已執行命令'{1}'，得到結果'{2}'。</value>
+  </data>
+  <data name="cmd.execif.executed_no_output" xml:space="preserve">
+    <value>條件'{0}'滿足，已執行命令'{1}'，該命令沒有返回任何結果。</value>
+  </data>
+  <data name="cmd.execmulti.desc" xml:space="preserve">
+    <value>依次執行多個命令。</value>
+  </data>
+  <data name="cmd.execmulti.executed" xml:space="preserve">
+    <value>執行了命令 '{0}' ，</value>
+  </data>
+  <data name="cmd.execmulti.no_result" xml:space="preserve">
+    <value>沒有返回結果！</value>
+  </data>
+  <data name="cmd.execmulti.result" xml:space="preserve">
+    <value>結果為 '{0}'！</value>
+  </data>
+  <data name="cmd.exit.desc" xml:space="preserve">
+    <value>斷開與伺服器的連線。</value>
+  </data>
+  <data name="cmd.follow.already_following" xml:space="preserve">
+    <value>已經在跟隨 {0} 了！</value>
+  </data>
+  <data name="cmd.follow.already_stopped" xml:space="preserve">
+    <value>已經停止過了</value>
+  </data>
+  <data name="cmd.follow.cant_reach_player" xml:space="preserve">
+    <value>無法尋路到該玩家，有可能他在沒有載入的區塊中，或是距離太遠，也有可能是間隙或水體等障礙使機器人無法到達。</value>
+  </data>
+  <data name="cmd.follow.desc" xml:space="preserve">
+    <value>讓機器人跟隨指定的玩家</value>
+  </data>
+  <data name="cmd.follow.invalid_name" xml:space="preserve">
+    <value>提供的玩家名無效！</value>
+  </data>
+  <data name="cmd.follow.invalid_player" xml:space="preserve">
+    <value>指定的玩家沒有上線或距離太遠！</value>
+  </data>
+  <data name="cmd.follow.note" xml:space="preserve">
+    <value>注意：此機器人的速度很慢，你需要慢慢地走，而且要保持很近的距離，這樣它才能跟上，有點像拿著食物讓動物跟著你。這是由於尋路演算法的限制，我們正在努力改進它。</value>
+  </data>
+  <data name="cmd.follow.pausing" xml:space="preserve">
+    <value>已暫停！</value>
+  </data>
+  <data name="cmd.follow.player_came_to_the_range" xml:space="preserve">
+    <value>玩家 {0} 回到了可尋路範圍之內！</value>
+  </data>
+  <data name="cmd.follow.player_left" xml:space="preserve">
+    <value>玩家 {0} 離開了伺服器！</value>
+  </data>
+  <data name="cmd.follow.player_left_the_range" xml:space="preserve">
+    <value>玩家 {0} 離開了可尋路範圍！</value>
+  </data>
+  <data name="cmd.follow.resuming" xml:space="preserve">
+    <value>繼續跟隨！</value>
+  </data>
+  <data name="cmd.follow.started" xml:space="preserve">
+    <value>開始跟隨 {0}！</value>
+  </data>
+  <data name="cmd.follow.stopped" xml:space="preserve">
+    <value>已停止！</value>
+  </data>
+  <data name="cmd.follow.stopping" xml:space="preserve">
+    <value>已停止！</value>
+  </data>
+  <data name="cmd.follow.switched" xml:space="preserve">
+    <value>切換為跟隨 {0}！</value>
+  </data>
+  <data name="cmd.follow.unsafe_enabled" xml:space="preserve">
+    <value>啟用了允許途徑不安全位置（注意：機器人可能會受傷或死亡！）</value>
+  </data>
+  <data name="cmd.follow.usage" xml:space="preserve">
+    <value>follow &lt;player name|stop&gt; [-f] (使用 -f 允許機器人途徑不安全的地方)</value>
+  </data>
+  <data name="cmd.health.desc" xml:space="preserve">
+    <value>顯示生命值和飽食度。</value>
+  </data>
+  <data name="cmd.health.response" xml:space="preserve">
+    <value>生命值：{0}，飽食度：{1}，等級：{2}，總經驗值：{3}</value>
+  </data>
+  <data name="cmd.inventory.clicking" xml:space="preserve">
+    <value>{0}鍵點選容器#{2}中的欄位{1}</value>
+  </data>
+  <data name="cmd.inventory.close" xml:space="preserve">
+    <value>關閉容器 #{0}</value>
+  </data>
+  <data name="cmd.inventory.close_fail" xml:space="preserve">
+    <value>關閉容器失敗 #{0}</value>
+  </data>
+  <data name="cmd.inventory.container_not_found" xml:space="preserve">
+    <value>找不到容器，請使用顯式ID重試</value>
+  </data>
+  <data name="cmd.inventory.creative_delete" xml:space="preserve">
+    <value>請求清除欄位 #{0}</value>
+  </data>
+  <data name="cmd.inventory.creative_done" xml:space="preserve">
+    <value>向容器#{2}請求{0} x{1}</value>
+  </data>
+  <data name="cmd.inventory.creative_fail" xml:space="preserve">
+    <value>請求創造模式操作失敗</value>
+  </data>
+  <data name="cmd.inventory.damage" xml:space="preserve">
+    <value>耐久損耗</value>
+  </data>
+  <data name="cmd.inventory.desc" xml:space="preserve">
+    <value>容器相關命令</value>
+  </data>
+  <data name="cmd.inventory.drop" xml:space="preserve">
+    <value>從欄位#{0}中丟棄了1個物品</value>
+  </data>
+  <data name="cmd.inventory.drop_stack" xml:space="preserve">
+    <value>從欄位#{0}中丟棄了所有堆疊的物品</value>
+  </data>
+  <data name="cmd.inventory.found_items" xml:space="preserve">
+    <value>找到物品</value>
+  </data>
+  <data name="cmd.inventory.help.available" xml:space="preserve">
+    <value>可用操作</value>
+  </data>
+  <data name="cmd.inventory.help.basic" xml:space="preserve">
+    <value>基本用法</value>
+  </data>
+  <data name="cmd.inventory.help.click" xml:space="preserve">
+    <value>單擊物品。</value>
+  </data>
+  <data name="cmd.inventory.help.close" xml:space="preserve">
+    <value>關閉開啟的容器。</value>
+  </data>
+  <data name="cmd.inventory.help.creativedelete" xml:space="preserve">
+    <value>在創造性模式中清除欄位。</value>
+  </data>
+  <data name="cmd.inventory.help.creativegive" xml:space="preserve">
+    <value>在創造模式中給予物品。</value>
+  </data>
+  <data name="cmd.inventory.help.drop" xml:space="preserve">
+    <value>從容器中丟棄物品。</value>
+  </data>
+  <data name="cmd.inventory.help.help" xml:space="preserve">
+    <value>{0}
+使用 '/inventory help &lt;action&gt;' 獲取幫助。
+'player' 和 'container' 可以簡化為 'p' 和 'c'。
+請注意，'[]' 中的引數是可選的。</value>
+  </data>
+  <data name="cmd.inventory.help.inventories" xml:space="preserve">
+    <value>列出所有可用的視窗。</value>
+  </data>
+  <data name="cmd.inventory.help.list" xml:space="preserve">
+    <value>列出所有容器。</value>
+  </data>
+  <data name="cmd.inventory.help.search" xml:space="preserve">
+    <value>在開啟的所有視窗中搜索物品。</value>
+  </data>
+  <data name="cmd.inventory.help.shiftclick" xml:space="preserve">
+    <value>按住Shift鍵點選一個物品。</value>
+  </data>
+  <data name="cmd.inventory.help.unknown" xml:space="preserve">
+    <value>未知操作。</value>
+  </data>
+  <data name="cmd.inventory.help.usage" xml:space="preserve">
+    <value>用法</value>
+  </data>
+  <data name="cmd.inventory.hotbar" xml:space="preserve">
+    <value>您選擇的快捷欄是{0}</value>
+  </data>
+  <data name="cmd.inventory.inventories" xml:space="preserve">
+    <value>容器</value>
+  </data>
+  <data name="cmd.inventory.inventories_available" xml:space="preserve">
+    <value>可用容器</value>
+  </data>
+  <data name="cmd.inventory.inventory" xml:space="preserve">
+    <value>容器</value>
+  </data>
+  <data name="cmd.inventory.left" xml:space="preserve">
+    <value>左</value>
+  </data>
+  <data name="cmd.inventory.middle" xml:space="preserve">
+    <value>中間</value>
+  </data>
+  <data name="cmd.inventory.need_creative" xml:space="preserve">
+    <value>你必須在創造模式</value>
+  </data>
+  <data name="cmd.inventory.no_found_items" xml:space="preserve">
+    <value>在任何視窗中都沒有找到該物品！</value>
+  </data>
+  <data name="cmd.inventory.no_item" xml:space="preserve">
+    <value>欄位#{0}中沒有物品</value>
+  </data>
+  <data name="cmd.inventory.not_exist" xml:space="preserve">
+    <value>容器#{0}不存在</value>
+  </data>
+  <data name="cmd.inventory.right" xml:space="preserve">
+    <value>右</value>
+  </data>
+  <data name="cmd.inventory.shiftclick" xml:space="preserve">
+    <value>按住Shift鍵點選容器#{1}中的欄位{0}</value>
+  </data>
+  <data name="cmd.inventory.shiftclick_fail" xml:space="preserve">
+    <value>執行Shift點選失敗，這可能是因為該容器型別目前不被支援。</value>
+  </data>
+  <data name="cmd.list.desc" xml:space="preserve">
+    <value>獲取玩家列表。</value>
+  </data>
+  <data name="cmd.list.players" xml:space="preserve">
+    <value>玩家列表：{0}</value>
+  </data>
+  <data name="cmd.log.desc" xml:space="preserve">
+    <value>將文字記錄到控制檯。</value>
+  </data>
+  <data name="cmd.look.at" xml:space="preserve">
+    <value>當前視角 偏航角：{0} 俯仰角：{1}。</value>
+  </data>
+  <data name="cmd.look.block" xml:space="preserve">
+    <value>正看向位於 {0} 的方塊。</value>
+  </data>
+  <data name="cmd.look.desc" xml:space="preserve">
+    <value>檢視方向或座標。</value>
+  </data>
+  <data name="cmd.look.inspection" xml:space="preserve">
+    <value>與視線相交的第一個方塊是 {0} ({1:0}, {2:0}, {3:0})，距離玩家 {4:0.0}({5:0.0})。</value>
+  </data>
+  <data name="cmd.look.noinspection" xml:space="preserve">
+    <value>在 {0} 米內沒有任何方塊與視線相交。</value>
+  </data>
+  <data name="cmd.look.unknown" xml:space="preserve">
+    <value>未知方向 '{0}'。</value>
+  </data>
+  <data name="cmd.move.chunk_loading_status" xml:space="preserve">
+    <value>區塊載入進度：{0:P} - 共{2}個，載入完成了{1}個。</value>
+  </data>
+  <data name="cmd.move.chunk_not_loaded" xml:space="preserve">
+    <value>目標位置所在的區塊還沒有被載入。你可以使用"/chunk status {0:0.0} {1:0.0} {2:0.0}"來檢視區塊的載入狀態。</value>
+  </data>
+  <data name="cmd.move.desc" xml:space="preserve">
+    <value>移動或開始移動。</value>
+  </data>
+  <data name="cmd.move.dir_fail" xml:space="preserve">
+    <value>不能朝此方向移動。</value>
+  </data>
+  <data name="cmd.move.disable" xml:space="preserve">
+    <value>禁用地形和移動。</value>
+  </data>
+  <data name="cmd.move.enable" xml:space="preserve">
+    <value>在下次伺服器登入、重生或更換世界時啟用地形和移動。</value>
+  </data>
+  <data name="cmd.move.fail" xml:space="preserve">
+    <value>無法計算到達{0}的路徑。</value>
+  </data>
+  <data name="cmd.move.gravity.disabled" xml:space="preserve">
+    <value>重力已關閉。</value>
+  </data>
+  <data name="cmd.move.gravity.enabled" xml:space="preserve">
+    <value>重力已開啟。</value>
+  </data>
+  <data name="cmd.move.moving" xml:space="preserve">
+    <value>移動{0}</value>
+  </data>
+  <data name="cmd.move.suggestforce" xml:space="preserve">
+    <value>無法計算安全到達{0}的路徑. 請使用 -f 引數允許不安全移動。</value>
+  </data>
+  <data name="cmd.move.walk" xml:space="preserve">
+    <value>移動到{0}</value>
+  </data>
+  <data name="cmd.reco.desc" xml:space="preserve">
+    <value>重新啟動並重新連線到伺服器。</value>
+  </data>
+  <data name="cmd.reload.desc" xml:space="preserve">
+    <value>重新載入MCC的設定。</value>
+  </data>
+  <data name="cmd.reload.finished" xml:space="preserve">
+    <value>重新載入設定完成！</value>
+  </data>
+  <data name="cmd.reload.started" xml:space="preserve">
+    <value>重新載入設定中...</value>
+  </data>
+  <data name="cmd.reload.warning1" xml:space="preserve">
+    <value>這條命令不會影響在連線到伺服器之前的某些設定。</value>
+  </data>
+  <data name="cmd.reload.warning2" xml:space="preserve">
+    <value>一些通過命令列引數傳遞的設定可能會被覆蓋！</value>
+  </data>
+  <data name="cmd.reload.warning3" xml:space="preserve">
+    <value>你有可能需要重新連線(/reco)才能使某些設定生效。</value>
+  </data>
+  <data name="cmd.reload.warning4" xml:space="preserve">
+    <value>由於技術限制，ReplayCapturer 將不會被強制過載!</value>
+  </data>
+  <data name="cmd.respawn.desc" xml:space="preserve">
+    <value>如果你死亡了，請用這個來重生。</value>
+  </data>
+  <data name="cmd.respawn.done" xml:space="preserve">
+    <value>你重生了。</value>
+  </data>
+  <data name="cmd.script.desc" xml:space="preserve">
+    <value>執行指令碼檔案。</value>
+  </data>
+  <data name="cmd.send.desc" xml:space="preserve">
+    <value>傳送聊天資訊或命令。</value>
+  </data>
+  <data name="cmd.set.desc" xml:space="preserve">
+    <value>設定自定義 %variable%。</value>
+  </data>
+  <data name="cmd.set.format" xml:space="preserve">
+    <value>變數名範圍必須為 A-Za-z0-9。</value>
+  </data>
+  <data name="cmd.setrnd.desc" xml:space="preserve">
+    <value>隨機為自定義 %變數名% 賦值。</value>
+  </data>
+  <data name="cmd.setrndnum.format" xml:space="preserve">
+    <value>setrnd 變數名 -7to17</value>
+  </data>
+  <data name="cmd.setrndstr.format" xml:space="preserve">
+    <value>setrnd 變數名 字串1 "\"字串2\" 字串3"</value>
+  </data>
+  <data name="cmd.sneak.desc" xml:space="preserve">
+    <value>切換到潛行</value>
+  </data>
+  <data name="cmd.sneak.off" xml:space="preserve">
+    <value>你不在潛行狀態了。</value>
+  </data>
+  <data name="cmd.sneak.on" xml:space="preserve">
+    <value>現在你在潛行狀態。</value>
+  </data>
+  <data name="cmd.tps.current" xml:space="preserve">
+    <value>當前TPS</value>
+  </data>
+  <data name="cmd.tps.desc" xml:space="preserve">
+    <value>顯示伺服器當前tps (tick per second)。（可能不精確）</value>
+  </data>
+  <data name="cmd.useblock.desc" xml:space="preserve">
+    <value>放置一個方塊或開啟箱子</value>
+  </data>
+  <data name="cmd.useblock.use" xml:space="preserve">
+    <value>使用位於 ({0:0.0}, {1:0.0}, {2:0.0}) 的 {3}。</value>
+  </data>
+  <data name="cmd.useitem.desc" xml:space="preserve">
+    <value>使用（左鍵單擊）手上的物品</value>
+  </data>
+  <data name="cmd.useitem.use" xml:space="preserve">
+    <value>使用了一個物品。</value>
+  </data>
+  <data name="config.AppVars.Variables" xml:space="preserve">
+    <value>可以在某些欄位中以"%yourvar%"的形式使用。
+%username% 和 %serverip% 時保留的變數名。</value>
+  </data>
+  <data name="config.backup.fail" xml:space="preserve">
+    <value>§c寫入設定檔案（{0}）時出錯：§r</value>
+  </data>
+  <data name="config.ChatBot" xml:space="preserve">
+    <value>=============================== #
+ Minecraft Console Client Bots  #
+=============================== #</value>
+  </data>
+  <data name="config.ChatBot.Alerts" xml:space="preserve">
+    <value>當檢測到特定聊天訊息或特定事件發生時提醒你
+ # 對檢測特定玩家的聊天訊息很有用。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Beep_Enabled" xml:space="preserve">
+    <value>除了高亮顯示外，當檢測到一個詞時還會播放類似蜂鳴器的嗶嗶聲。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Excludes" xml:space="preserve">
+    <value>出現這些關鍵詞後該條訊息一定不觸發提醒。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Log_File" xml:space="preserve">
+    <value>日誌檔案的路徑。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Log_To_File" xml:space="preserve">
+    <value>是否將提醒訊息寫入到日誌檔案。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Matches" xml:space="preserve">
+    <value>觸發提醒的聊天關鍵詞列表。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Trigger_By_Rain" xml:space="preserve">
+    <value>在開始下雨和停止下雨時觸發提醒。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Trigger_By_Thunderstorm" xml:space="preserve">
+    <value>在雷暴天氣的開始與結束觸發提醒。</value>
+  </data>
+  <data name="config.ChatBot.Alerts.Trigger_By_Words" xml:space="preserve">
+    <value>在收到指定的關鍵詞後觸發提醒。</value>
+  </data>
+  <data name="config.ChatBot.AntiAfk" xml:space="preserve">
+    <value>定期傳送命令，或讓機器人隨機走動，以避免檢測到掛機後被踢出伺服器
+ # /!\啟用前請確保你的伺服器規則不禁止反AFK機制！
+/!\如果啟用隨機移動，請將機器人圍在圍欄裡，以防走失！（建議尺寸5x5x5）</value>
+  </data>
+  <data name="config.ChatBot.AntiAfk.Command" xml:space="preserve">
+    <value>傳送給伺服器的指令。</value>
+  </data>
+  <data name="config.ChatBot.AntiAfk.Delay" xml:space="preserve">
+    <value>執行操作的間隔時間。（秒）</value>
+  </data>
+  <data name="config.ChatBot.AntiAfk.Use_Sneak" xml:space="preserve">
+    <value>在傳送指令時是否蹲下。</value>
+  </data>
+  <data name="config.ChatBot.AntiAfk.Use_Terrain_Handling" xml:space="preserve">
+    <value>啟用地形處理，以使機器人能夠四處移動。</value>
+  </data>
+  <data name="config.ChatBot.AntiAfk.Walk_Range" xml:space="preserve">
+    <value>機器人可以隨機移動的範圍（注意：範圍越大，速度越慢）</value>
+  </data>
+  <data name="config.ChatBot.AntiAfk.Walk_Retries" xml:space="preserve">
+    <value>嘗試移動失敗幾次後在改為傳送命令模式。</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack" xml:space="preserve">
+    <value>自動攻擊周圍的生物
+使用此功能之前，你需要開啟實體處理。
+/!\確保你的伺服器允許使用自動攻擊。
+/!\伺服器外掛可能會認為此功能時作弊，並可能會封禁你的賬號，所以請自己檢查伺服器規則是否允許。</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.Attack_Hostile" xml:space="preserve">
+    <value>是否攻擊敵對生物。</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.Attack_Passive" xml:space="preserve">
+    <value>是否攻擊被動生物。</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.Cooldown_Time" xml:space="preserve">
+    <value>每次攻擊間的冷卻時間，設定 "Custom = false" 以讓MCC自動計算攻擊速度。</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
+    <value>可選項："Interact"（互動），"Attack"（攻擊） 或 "InteractAt"（互動並攻擊）</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.List_Mode" xml:space="preserve">
+    <value>將實體列表作為 "whitelist"（白名單）還是 "blacklist"（黑名單）。</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.Mode" xml:space="preserve">
+    <value>"single"（單目標） 或 "multi"（多目標）。一次攻擊一個生物還是範圍內的所有生物。</value>
+  </data>
+  <data name="config.ChatBot.AutoAttack.Priority" xml:space="preserve">
+    <value>"health"（生命值）或 "distance"（距離）。當使用"single"模式時，以哪一個屬性確定優先順序。</value>
+  </data>
+  <data name="config.ChatBot.AutoCraft" xml:space="preserve">
+    <value>Automatically craft items in your inventory
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
+You need to enable Inventory Handling to use this bot
+You should also enable Terrain and Movements if you need to use a crafting table</value>
+  </data>
+  <data name="config.ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
+    <value>如果你打算使用工作臺，請填寫它所在的位置。（需要啟用地形處理）</value>
+  </data>
+  <data name="config.ChatBot.AutoCraft.OnFailure" xml:space="preserve">
+    <value>合成失敗時應該怎麼處理，"abort"（中止）或 "wait"（等待）。</value>
+  </data>
+  <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
+    <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
+Recipes.Type: crafting table type: "player" or "table"
+Recipes.Result: the resulting item
+Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
+  </data>
+  <data name="config.ChatBot.AutoDig" xml:space="preserve">
+    <value>Auto-digging blocks.
+You need to enable Terrain Handling to use this bot
+You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
+Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
+    <value>進入遊戲後等待多少秒後開始自動挖掘，設定為-1禁用自動開始。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Auto_Tool_Switch" xml:space="preserve">
+    <value>自動切換到合適的工具。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Dig_Timeout" xml:space="preserve">
+    <value>若挖掘一個方塊用時超過這個值，將會重新獲取目標進行挖掘。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Drop_Low_Durability_Tools" xml:space="preserve">
+    <value>在當前使用的工具耐久度過低後，是否丟掉它。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Durability_Limit" xml:space="preserve">
+    <value>不會使用低於此耐久度的工具。（需要啟用庫存處理）</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.List_Type" xml:space="preserve">
+    <value>將方塊列表作為 "whitelist"（白名單）還是 "blacklist"（黑名單）。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Location_Order" xml:space="preserve">
+    <value>"distance" 或 "index"，當使用 "fixedpos" 模式時，按照到玩家的距離，還是列表中的順序確定挖掘的方塊。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Locations" xml:space="preserve">
+    <value>使用 "fixedpos" 或 "both" 模式時，方塊的座標。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Log_Block_Dig" xml:space="preserve">
+    <value>是否輸出挖掘方塊的相關資訊。</value>
+  </data>
+  <data name="config.ChatBot.AutoDig.Mode" xml:space="preserve">
+    <value>"lookat"，"fixedpos" 或 "both"。挖掘看向的方塊還是固定位置的方塊，或者是兩個條件都滿足的方塊。</value>
+  </data>
+  <data name="config.ChatBot.AutoDrop" xml:space="preserve">
+    <value>Automatically drop items in inventory
+You need to enable Inventory Handling to use this bot
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
+  </data>
+  <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
+    <value>"include"（丟棄列表中的物品），"exclude"（丟棄列表外的所有物品） 或 "everything"（丟棄所有物品）</value>
+  </data>
+  <data name="config.ChatBot.AutoEat" xml:space="preserve">
+    <value>在飽食度較低是自動在背包中尋找食物食用。
+你需要啟用庫存處理來使用這個功能。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing" xml:space="preserve">
+    <value>Automatically catch fish using a fishing rod
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
+You can use "/fish" to control the bot manually.
+/!\ Make sure server rules allow automated farming before using this bot</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
+    <value>如果你之前沒有啟用過這個選項，請保持它為 false 。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Auto_Rod_Switch" xml:space="preserve">
+    <value>在當前魚竿不可用後自動切換到背包中的其他魚竿。（需要啟用庫存處理）</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Auto_Start" xml:space="preserve">
+    <value>是否在進入伺服器後自動開始釣魚，禁用此功能後，你需要使用"/usehand"手動使用魚竿一次。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Cast_Delay" xml:space="preserve">
+    <value>釣到魚後多久開始下一次釣魚（拋竿）。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Durability_Limit" xml:space="preserve">
+    <value>不會使用低於此耐久度的魚竿（魚竿耐久度最高為64）。（需要啟用庫存處理）</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Enable_Move" xml:space="preserve">
+    <value>這允許玩家在釣到魚後改變其位置或朝向。（需要啟用地形處理）</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Fishing_Delay" xml:space="preserve">
+    <value>進入伺服器後多久後開始自動釣魚。（秒）</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Fishing_Timeout" xml:space="preserve">
+    <value>多少秒後沒有釣到魚視為超時。超時後會重新拋竿。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Hook_Threshold" xml:space="preserve">
+    <value>一個「靜止」的魚鉤，在Y軸方向上的移動超過這個閾值將被認為釣到了魚。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Log_Fish_Bobber" xml:space="preserve">
+    <value>用於調整以上兩個閾值，啟用後會在收到魚鉤實體移動資料包後列印其座標變化。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Mainhand" xml:space="preserve">
+    <value>使用主手還是副手拿魚竿。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Movements" xml:space="preserve">
+    <value>會按照 "1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;..." 的順序執行。每次可用改變位置、朝向或是都改變。推薦只改變朝向。</value>
+  </data>
+  <data name="config.ChatBot.AutoFishing.Stationary_Threshold" xml:space="preserve">
+    <value>魚鉤在X軸和Z軸方向上的移動小於這個值將被認為是靜止的，過高的閾值會在拋竿途中觸發收竿。</value>
+  </data>
+  <data name="config.ChatBot.AutoRelog" xml:space="preserve">
+    <value>在被伺服器斷開連線時自動重連，例如伺服器重啟時。
+/!\ 謹慎使用Ignore_Kick_Message=true，這會在伺服器管理員將你踢出時依然連回！</value>
+  </data>
+  <data name="config.ChatBot.AutoRelog.Delay" xml:space="preserve">
+    <value>重新加入到伺服器前的延遲時間。(單位：秒)</value>
+  </data>
+  <data name="config.ChatBot.AutoRelog.Ignore_Kick_Message" xml:space="preserve">
+    <value>當設定為 true 時，將不考慮踢出的資訊直接重連。</value>
+  </data>
+  <data name="config.ChatBot.AutoRelog.Kick_Messages" xml:space="preserve">
+    <value>如果踢出資訊與這其中的任何一個字串匹配，那麼將觸發自動重連。</value>
+  </data>
+  <data name="config.ChatBot.AutoRelog.Retries" xml:space="preserve">
+    <value>重新登入伺服器失敗時的重試次數，使用-1表示無限重試。</value>
+  </data>
+  <data name="config.ChatBot.AutoRespond" xml:space="preserve">
+    <value>當聊天訊息與檔案中的規則匹配時，自動執行指定命令。
+/!\ 伺服器管理員可以以任意玩家的身份傳送任意訊息，記住這一點！
+此機器人如果設定的不得當可能會造成刷屏，建議設定一個冷卻時間。</value>
+  </data>
+  <data name="config.ChatBot.AutoRespond.Match_Colors" xml:space="preserve">
+    <value>不要刪除文字中的顏色程式碼（使用§字元的程式碼）。注意：啟用後你的匹配模板也必須包括顏色程式碼。</value>
+  </data>
+  <data name="config.ChatBot.ChatLog" xml:space="preserve">
+    <value>將聊天資訊寫入到日誌檔案中。</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
+    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
+For Setup you can either use the documentation or read here (Documentation has images).
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
+Setup:
+First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
+/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
+When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
+Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
+This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
+Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
+Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
+Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
+And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
+How to use:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
+    <value>你想要使用機器人與 MCC 互動的頻道ID。</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
+    <value>你邀請機器人加入的伺服器的ID。</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.MessageSendTimeout" xml:space="preserve">
+    <value>如果信息無法被傳送至Discord時，要等候多少秒才取消傳送。（最小 1秒）</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.OwnersIds" xml:space="preserve">
+    <value>你希望能夠使用機器人與 MCC 互動的使用者ID列表。</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.Token" xml:space="preserve">
+    <value>你的Discord機器人的令牌。</value>
+  </data>
+  <data name="config.ChatBot.Farmer" xml:space="preserve">
+    <value>自動為你耕種農作物（種下，收成和骨粉催生）
+可用的農作物類型：Beetroot（甜菜根）, Carrot（蘿蔔）, Melon（西瓜）, Netherwart（地獄疙瘩）, Pumpkin（南瓜）, Potato（馬鈴薯）, Wheat（小麥）
+使用方法："/farmer start" 指令和 "/farmer stop" 指令。
+注意：這是新加入的機器人，它不完美並只在 1.19.2 版本進行過測試。它有些小問題，例如有時候不能對蘿蔔或馬鈴薯使用骨粉催生；
+或機器人會在耕地上跳躍並破壞耕地（這很少發生，但還是有機率出現）。我們期待可以改善它。
+另外，如果你的耕地只有一格厚，請加厚至兩格以上，否則機器人在重新連線時有可能會穿過耕地並掉落。
+此外，如果機器人走到邊緣時將不會拾起所有的掉落物，我們已有計劃在未來新增這個選項，同時加入將農作物放到箱子及從箱子補充骨粉。</value>
+  </data>
+  <data name="config.ChatBot.Farmer.Delay_Between_Tasks" xml:space="preserve">
+    <value>每個任務之間的延遲時間（最小 1秒）</value>
+  </data>
+  <data name="config.ChatBot.FollowPlayer" xml:space="preserve">
+    <value>讓機器人跟隨指定玩家
+注意這是一個實驗性的功能，目前的尋路速度可能很慢，你可能需要時常等一會機器人來讓它跟上你。
+你可以調整"Update_Limit"，找到最適合你的速度。（注意不要設定的太低，這樣可能導致反效果或使MCC卡頓）。
+/!\ 在使用此功能之前，請先確保伺服器規則允許你這樣做。</value>
+  </data>
+  <data name="config.ChatBot.FollowPlayer.Stop_At_Distance" xml:space="preserve">
+    <value>如果玩家在該範圍內，則視為已經接近玩家了。（防止機器人將玩家推開而產生無限迴圈）</value>
+  </data>
+  <data name="config.ChatBot.FollowPlayer.Update_Limit" xml:space="preserve">
+    <value>機器人尋路的間隔時間（以秒為單位）</value>
+  </data>
+  <data name="config.ChatBot.HangmanGame" xml:space="preserve">
+    <value>一個用於演示聊天互動的小遊戲。玩家可以一次一個字母地猜出神祕的單詞。
+你需要正確地使用 ChatFormat，並在 botowners 中新增自己，用/tell &lt;bot username&gt; start
+/!\ 這個機器人可能會造成刷屏，如果許多玩家與它互動。</value>
+  </data>
+  <data name="config.ChatBot.Mailer" xml:space="preserve">
+    <value>在玩家和伺服器之間中繼訊息，就像一個郵件外掛一樣。
+這個機器人可以在收件人離線時儲存訊息，並在他們加入伺服器時傳送訊息。
+/!\ 伺服器管理員可以以任意玩家的身份傳送任意訊息，請記住這一點。</value>
+  </data>
+  <data name="config.ChatBot.Map" xml:space="preserve">
+    <value>允許你將地圖渲染成.jpg圖片，該圖片會被渲染到Rendered_Maps資料夾中。
+注意：這個功能目前只對解決使用地圖的驗證碼有用。
+如果一些伺服器解決驗證碼的時間很短，請啟用Auto_Render_On_Update並準備快速開啟該檔案。
+在linux上，你可以使用FTP來訪問生成的檔案。</value>
+  </data>
+  <data name="config.ChatBot.Map.Auto_Render_On_Update" xml:space="preserve">
+    <value>一旦接收到新的地圖或已有地圖被更新，自動渲染該地圖。</value>
+  </data>
+  <data name="config.ChatBot.Map.Delete_All_On_Unload" xml:space="preserve">
+    <value>在解除安裝/重新載入地圖時刪除所有已渲染的地圖（退出MCC時不會刪除影象）</value>
+  </data>
+  <data name="config.ChatBot.Map.Notify_On_First_Update" xml:space="preserve">
+    <value>當第一次從伺服器上收到一張地圖時，傳送一個通知。</value>
+  </data>
+  <data name="config.ChatBot.Map.Rasize_Rendered_Image" xml:space="preserve">
+    <value>調整影像大小。當渲染圖像太小或傳送到Discord時，這很有用。</value>
+  </data>
+  <data name="config.ChatBot.Map.Render_In_Console" xml:space="preserve">
+    <value>是否在控制檯中渲染地圖。</value>
+  </data>
+  <data name="config.ChatBot.Map.Resize_To" xml:space="preserve">
+    <value>渲染圖像應調整到的大小，以像素為單位（例如 512）。</value>
+  </data>
+  <data name="config.ChatBot.Map.Save_To_File" xml:space="preserve">
+    <value>是否將地圖儲存為檔案。</value>
+  </data>
+  <data name="config.ChatBot.Map.Send_Rendered_To_Bridges" xml:space="preserve">
+    <value>將已渲染地圖（保存到文件）透過Discord或Telegram Bridge傳送到Discord或Telegram頻道（Discord/Telegram Bridge必須已啟用並完成配置！）
+你需要啟用 Save_To_File 才能使用此功能。
+我們同時建議打開調整大小功能。</value>
+  </data>
+  <data name="config.ChatBot.PlayerListLogger" xml:space="preserve">
+    <value>定期記錄當前的玩家列表到檔案中。</value>
+  </data>
+  <data name="config.ChatBot.PlayerListLogger.Delay" xml:space="preserve">
+    <value>（單位：秒）</value>
+  </data>
+  <data name="config.ChatBot.RemoteControl" xml:space="preserve">
+    <value>通過遊戲中的私聊向機器人傳送MCC控制檯命令
+你需要先配置好[ChatFormat]章節的設定，並在[Main.Advanced.bot_owners]中新增自己的賬號。
+/!\ 伺服器管理員可以以任意玩家的身份傳送任意訊息，僅在信任他們時啟用本功能。</value>
+  </data>
+  <data name="config.ChatBot.ReplayCapture" xml:space="preserve">
+    <value>使用"/replay start"開始記錄遊戲，並在之後使用 Replay Mod (https://www.replaymod.com/) 進行重放。
+請注意，由於技術限制，玩家自身不會顯示在重放檔案中。
+/!\ 你應該使用"/replay stop"停止記錄或者使用"/quit"退出程式，否則回放檔案可能會損壞。</value>
+  </data>
+  <data name="config.ChatBot.ReplayCapture.Backup_Interval" xml:space="preserve">
+    <value>每間隔多少秒自動儲存一次回放檔案，以秒為單位。使用-1禁用自動儲存。</value>
+  </data>
+  <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
+    <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
+    <value>這個 Chatbot 可以讓你透過Telegram機器人私人信息使用Telegram頻道來接收和傳送信息。
+/!\ 注意：你不能從群組對話傳送信息和指令，你只能從私人信息傳送，但你可以從客戶端取得群組對話的信息。
+-----------------------------------------------------------
+配置：
+首先你需要創建一個Telegram機器人並取得API鑰匙。請使用Telegram尋找 @botfather
+點擊開始按鈕，閱讀機器人的信息，然後輸入 "/newbot"。@botfather 將會引導你建立機器人。
+當成功建立機器人後，複製API鑰匙，然後貼在 "ChatBot.TelegramBridge" 部分中的 "Token" 欄位（本部分）
+/!\ 請勿與任何人分享API鑰匙，並將它儲存在安全的地方。
+然後啟動客戶端和你的Telegram，在Telegram中尋找你新建立的機器人並與機器人開啟私人信息。
+點擊開始按鈕，輸入並傳送 ".chatid" 指令來獲得聊天室ID。
+複製聊天室ID （例子：2627844670），然後貼在 "ChannelId" 欄位和 "Authorized_Chat_Ids" 欄位 （"Authorized_Chat_Ids" 欄位是一個數字而不是字串），儲存配置文件。
+現在你可以透過私人信息來使用機器人。
+/!\ 如果你沒有將聊天室ID加到 "Authorized_Chat_Ids" 欄位，任何找到你的機器人的人將能夠執行指令和傳送信息！
+/!\ "Authorized_Chat_Ids" 欄位中的ID應該是一個數字而不是字串！
+-----------------------------------------------------------
+注意：如果你希望透過群組來接收信息，將群組暫時改為公開，邀請你的機器人到群組並給與機器人管理員權限，最後將群組改為私人。
+然後將 "ChannelId" 欄位設為 @群組名稱（必須包括@，例子："@mysupersecretchannel"），你可以在頻道邀請連結看到這個使用者名稱。
+/!\ 只需包含使用者名稱加上@在前面，不需要包括剩下的連結。例如你的連結是 "https://t.me/mysupersecretchannel"，"ChannelId" 欄位將會是 "@mysupersecretchannel"。
+/!\ 注意，你將不能從群組傳送信息到客戶端！
+-----------------------------------------------------------
+如何使用：
+希望執行MCC指令時，在指令前加上點 "."。例如 ".move 143 64 735"。
+希望傳送聊天信息時，只需要直接傳送就好了。</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.Authorized_Chat_Ids" xml:space="preserve">
+    <value>允許發送信息和執行指令的聊天室ID列表。要獲得你的私人聊天室ID，請在 Telegram 中使用 ".chatid" 指令。</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.ChannelId" xml:space="preserve">
+    <value>你想要使用機器人與 MCC 互動的頻道ID。</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.Formats" xml:space="preserve">
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
+    <value>如果信息無法被傳送至Telegram時，要等候多少秒才取消傳送。（最小 1秒）</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.Token" xml:space="preserve">
+    <value>你的Telegram機器人的令牌。</value>
+  </data>
+  <data name="config.ChatFormat" xml:space="preserve">
+    <value>MCC does it best to detect chat messages, but some server have unusual chat formats
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
+  </data>
+  <data name="config.ChatFormat.Builtins" xml:space="preserve">
+    <value>是否啟用MCC內建的聊天檢測規則。設定為 false 以避免與自定義格式衝突。</value>
+  </data>
+  <data name="config.ChatFormat.UserDefined" xml:space="preserve">
+    <value>是否啟用下方的自定義正規表示式進行聊天檢測。</value>
+  </data>
+  <data name="config.Head" xml:space="preserve">
+    <value>Startup Config File
+Please do not record extraneous data in this file as it will be overwritten by MCC.
+
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
+Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
+  </data>
+  <data name="config.load" xml:space="preserve">
+    <value>已從 {0} 載入設定。</value>
+  </data>
+  <data name="config.load.fail" xml:space="preserve">
+    <value>§c載入設定時出錯：§r</value>
+  </data>
+  <data name="config.Logging" xml:space="preserve">
+    <value>此項設定僅會影響到控制檯中的資訊（日誌）。</value>
+  </data>
+  <data name="config.Logging.ChatFilter" xml:space="preserve">
+    <value>過濾聊天訊息所用的正規表示式。</value>
+  </data>
+  <data name="config.Logging.ChatMessages" xml:space="preserve">
+    <value>是否顯示來自伺服器的聊天訊息。</value>
+  </data>
+  <data name="config.Logging.DebugFilter" xml:space="preserve">
+    <value>過濾除錯訊息所用的正規表示式。</value>
+  </data>
+  <data name="config.Logging.DebugMessages" xml:space="preserve">
+    <value>請在提交錯誤報告之前先啟用此項。謝謝！</value>
+  </data>
+  <data name="config.Logging.ErrorMessages" xml:space="preserve">
+    <value>顯示錯誤訊息。</value>
+  </data>
+  <data name="config.Logging.FilterMode" xml:space="preserve">
+    <value>過濾方式："disable"（禁用），"blacklist"（隱藏匹配的訊息） 或 "whitelist"（僅顯示匹配的訊息）</value>
+  </data>
+  <data name="config.Logging.InfoMessages" xml:space="preserve">
+    <value>資訊性的訊息。（大部分來自MCC內部）</value>
+  </data>
+  <data name="config.Logging.LogFile" xml:space="preserve">
+    <value>日誌檔名稱。</value>
+  </data>
+  <data name="config.Logging.LogToFile" xml:space="preserve">
+    <value>是否將日誌資訊寫入到檔案。</value>
+  </data>
+  <data name="config.Logging.PrependTimestamp" xml:space="preserve">
+    <value>寫入日誌檔案時是否新增時間戳。</value>
+  </data>
+  <data name="config.Logging.SaveColorCodes" xml:space="preserve">
+    <value>是否保留訊息中的顏色字元。（例如"§b"）</value>
+  </data>
+  <data name="config.Logging.WarningMessages" xml:space="preserve">
+    <value>顯示警告訊息。</value>
+  </data>
+  <data name="config.Main.Advanced" xml:space="preserve">
+    <value>在更改這裏的某項設定之前，請確保你理解了該選項的影響。</value>
+  </data>
+  <data name="config.Main.Advanced.account_list" xml:space="preserve">
+    <value>AccountList：使你可以不用輸入賬號資訊而快速在多個賬號間切換
+可用命令示例："/tell &lt;mybot&gt; reco Player2"，"/connect &lt;serverip&gt; Player1"</value>
+  </data>
+  <data name="config.Main.Advanced.auto_respawn" xml:space="preserve">
+    <value>死亡時自動重生（開啟前請確保你的出生點是安全的）</value>
+  </data>
+  <data name="config.Main.Advanced.bot_owners" xml:space="preserve">
+    <value>設定機器人的所有者。/!\伺服器管理員可以偽裝成任何玩家!</value>
+  </data>
+  <data name="config.Main.Advanced.brand_info" xml:space="preserve">
+    <value>客戶端標識，可用 "mcc"，"vanilla"(原版客戶端) 或 "none"(空標識)。這用於改變MCC向伺服器傳送的客戶端標識內容。</value>
+  </data>
+  <data name="config.Main.Advanced.chatbot_log_file" xml:space="preserve">
+    <value>留空將禁用 ChatBot 寫入日誌檔案。</value>
+  </data>
+  <data name="config.Main.Advanced.enable_emoji" xml:space="preserve">
+    <value>如果關閉，Emoji表情符號將被替換成更簡單的字元（用於 "/chunk status" 命令）</value>
+  </data>
+  <data name="config.Main.Advanced.entity_handling" xml:space="preserve">
+    <value>啟用實體處理。</value>
+  </data>
+  <data name="config.Main.Advanced.exit_on_failure" xml:space="preserve">
+    <value>發生錯誤時是否直接退出，用於在非互動式指令碼中使用MCC。</value>
+  </data>
+  <data name="config.Main.Advanced.internal_cmd_char" xml:space="preserve">
+    <value>MCC內部命令的字首，可使用 "none", "slash"(/) 或 "backslash"(\)。</value>
+  </data>
+  <data name="config.Main.Advanced.inventory_handling" xml:space="preserve">
+    <value>啟用庫存處理（可操作背包、箱子等容器）。</value>
+  </data>
+  <data name="config.Main.Advanced.language" xml:space="preserve">
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
+  </data>
+  <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
+    <value>無效的語言程式碼！</value>
+  </data>
+  <data name="config.Main.Advanced.mc_forge" xml:space="preserve">
+    <value>可使用 "auto"(自動)，"no"(禁用) 或是 "force"(強制啟用，僅在 1.13 及更高的版本中可用)。</value>
+  </data>
+  <data name="config.Main.Advanced.mc_version" xml:space="preserve">
+    <value>遊戲版本，可使用 "auto"(自動) 或類似 "1.X.X" 的值。設定具體版本將跳過從伺服器解析的過程。</value>
+  </data>
+  <data name="config.Main.Advanced.message_cooldown" xml:space="preserve">
+    <value>控制向伺服器傳送訊息的最小間隔時間（秒）。</value>
+  </data>
+  <data name="config.Main.Advanced.minecraft_realms" xml:space="preserve">
+    <value>啟用對加入我的世界領域(Realms)伺服器的支援。</value>
+  </data>
+  <data name="config.Main.Advanced.MinTerminalHeight" xml:space="preserve">
+    <value>當使用終端高度來計算顯示的影象大小時，限制其最小高度。</value>
+  </data>
+  <data name="config.Main.Advanced.MinTerminalWidth" xml:space="preserve">
+    <value>當使用終端寬度來計算顯示的影象大小時，限制其最小寬度。</value>
+  </data>
+  <data name="config.Main.Advanced.move_head_while_walking" xml:space="preserve">
+    <value>在移動時轉向頭部。</value>
+  </data>
+  <data name="config.Main.Advanced.movement_speed" xml:space="preserve">
+    <value>高於 2 的移動速度可能會被檢測為作弊。</value>
+  </data>
+  <data name="config.Main.Advanced.player_head_icon" xml:space="preserve">
+    <value>使用玩家面板頭像作為視窗圖示，這僅在部分舊版控制檯中有效。</value>
+  </data>
+  <data name="config.Main.Advanced.private_msgs_cmd_name" xml:space="preserve">
+    <value>遠端控制功能將會使用它。</value>
+  </data>
+  <data name="config.Main.Advanced.profilekey_cache" xml:space="preserve">
+    <value>如何快取聊天簽名金鑰。可使用 "none"(不快取)，"memory"(記憶體快取) 或 "disk"(磁碟快取)。</value>
+  </data>
+  <data name="config.Main.Advanced.resolve_srv_records" xml:space="preserve">
+    <value>可填寫 "no"，"fast"（超時時間為五秒鐘）或是 "yes"。加入某些伺服器需要開啟此項。</value>
+  </data>
+  <data name="config.Main.Advanced.script_cache" xml:space="preserve">
+    <value>快取已編譯的指令碼，以便在低端裝置上更快的載入。</value>
+  </data>
+  <data name="config.Main.Advanced.server_list" xml:space="preserve">
+    <value>ServerList：可用使用伺服器別名快速連線到該伺服器
+別名不能包含空格和小數點"，而且 "localhost" 不能作為別名使用。
+可用命令示例："/tell &lt;mybot&gt; connect Server1"，"/connect Server2"</value>
+  </data>
+  <data name="config.Main.Advanced.session_cache" xml:space="preserve">
+    <value>如何快取會話令牌。可使用 "none"(不快取)，"memory"(記憶體快取) 或 "disk"(磁碟快取)。</value>
+  </data>
+  <data name="config.Main.Advanced.show_chat_links" xml:space="preserve">
+    <value>解碼聊天資訊裡的連結，並在控制檯單獨顯示。</value>
+  </data>
+  <data name="config.Main.Advanced.show_inventory_layout" xml:space="preserve">
+    <value>以字元畫形式顯示庫存佈局。</value>
+  </data>
+  <data name="config.Main.Advanced.show_system_messages" xml:space="preserve">
+    <value>顯示遊戲伺服器的系統訊息（來自管理員或命令方塊等）。</value>
+  </data>
+  <data name="config.Main.Advanced.show_xpbar_messages" xml:space="preserve">
+    <value>顯示經驗條上方的訊息，如果被此類訊息刷屏請禁用此選項。</value>
+  </data>
+  <data name="config.Main.Advanced.TerminalColorDepth" xml:space="preserve">
+    <value>可填寫 "none"，"bit_4"，"bit_8" 或 "bit_24"。可以通過除錯模式下的日誌檢測支援的顏色深度。</value>
+  </data>
+  <data name="config.Main.Advanced.terrain_and_movements" xml:space="preserve">
+    <value>開啟地形處理將消耗更多的記憶體、CPU和網路頻寬，但這允許你進行移動以及和方塊互動。</value>
+  </data>
+  <data name="config.Main.Advanced.timeout" xml:space="preserve">
+    <value>與伺服器的TCP連線超時時間（秒）。</value>
+  </data>
+  <data name="config.Main.Advanced.timestamps" xml:space="preserve">
+    <value>在聊天資訊頭部新增時間戳。</value>
+  </data>
+  <data name="config.Main.General.account" xml:space="preserve">
+    <value>Login請填寫郵箱或玩家名稱。若要以離線模式登入請使用"-"作為密碼。若留空則使用互動式登入。</value>
+  </data>
+  <data name="config.Main.General.login" xml:space="preserve">
+    <value>遊戲伺服器的地址和埠，可填入域名或IP地址。（可刪除埠欄位，會自動解析SRV記錄）</value>
+  </data>
+  <data name="config.Main.General.method" xml:space="preserve">
+    <value>微軟賬戶的登入方式：mcc 或是 browser（手動在網頁上登入）。</value>
+  </data>
+  <data name="config.Main.General.server_info" xml:space="preserve">
+    <value>帳戶型別：mojang 或是 microsoft。此項設定也會影響互動式登入。</value>
+  </data>
+  <data name="config.MCSettings" xml:space="preserve">
+    <value>下面的設定將會被發送到遊戲伺服器，只影響一些伺服器端的東西，比如你的皮膚。</value>
+  </data>
+  <data name="config.MCSettings.ChatColors" xml:space="preserve">
+    <value>這允許你在伺服器端禁用聊天顏色。</value>
+  </data>
+  <data name="config.MCSettings.ChatMode" xml:space="preserve">
+    <value>使用 "enabled"（完全啟用聊天）、"commands"（僅限命令）或 "disabled"（完全禁用聊天）。這允許你禁言自己...</value>
+  </data>
+  <data name="config.MCSettings.Difficulty" xml:space="preserve">
+    <value>Minecraft 1.7及更早版本難度。"peaceful"，"easy"，"normal"，"difficult"。</value>
+  </data>
+  <data name="config.MCSettings.Enabled" xml:space="preserve">
+    <value>如果禁用，下面的設定就不會被髮送到伺服器上。</value>
+  </data>
+  <data name="config.MCSettings.Locale" xml:space="preserve">
+    <value>請使用Minecraft的語言程式碼填寫，詳見[Main.Advanced.Language]</value>
+  </data>
+  <data name="config.MCSettings.MainHand" xml:space="preserve">
+    <value>在1.9及更高版本中的主手設定。"left"（左手） 或 "right"（右手）。</value>
+  </data>
+  <data name="config.MCSettings.RenderDistance" xml:space="preserve">
+    <value>渲染距離，取值範圍[0 - 255]。</value>
+  </data>
+  <data name="config.Proxy" xml:space="preserve">
+    <value>通過代理連線到伺服器。
+如果Mojang/微軟登入服務被防火牆阻斷，設定Enabled_Login=true以使用代理進行登入。
+如果到Minecraft遊戲伺服器的連線被防火牆阻止，設定Enabled_Ingame=true以使用代理連線遊戲伺服器。
+/!\ 在啟用代理前，請確保你的伺服器規則允許使用代理或VPN，否則你可能面臨被封禁等風險！</value>
+  </data>
+  <data name="config.Proxy.Enabled_Ingame" xml:space="preserve">
+    <value>是否通過代理連線Minecraft遊戲伺服器。</value>
+  </data>
+  <data name="config.Proxy.Enabled_Login" xml:space="preserve">
+    <value>是否使用代理連線Mojang或微軟的登入伺服器。</value>
+  </data>
+  <data name="config.Proxy.Password" xml:space="preserve">
+    <value>只有連線到受密碼保護的代理才需要。</value>
+  </data>
+  <data name="config.Proxy.Proxy_Type" xml:space="preserve">
+    <value>支援的代理型別："HTTP"，"SOCKS4"，"SOCKS4a"，"SOCKS5"。</value>
+  </data>
+  <data name="config.Proxy.Server" xml:space="preserve">
+    <value>代理伺服器必須允許HTTPS登入。</value>
+  </data>
+  <data name="config.Proxy.Username" xml:space="preserve">
+    <value>只有連線到受密碼保護的代理才需要。</value>
+  </data>
+  <data name="config.saving" xml:space="preserve">
+    <value>§a當前設定已儲存至 {0}</value>
+  </data>
+  <data name="config.Signature" xml:space="preserve">
+    <value>聊天簽名相關設定（影響1.19及以上版本）</value>
+  </data>
+  <data name="config.Signature.LoginWithSecureProfile" xml:space="preserve">
+    <value>僅微軟賬戶可用。如禁用此項，將無法簽名訊息和進入某些的伺服器。</value>
+  </data>
+  <data name="config.Signature.MarkIllegallySignedMsg" xml:space="preserve">
+    <value>是否使用紅色色塊標識沒有合法簽名的聊天。</value>
+  </data>
+  <data name="config.Signature.MarkLegallySignedMsg" xml:space="preserve">
+    <value>是否使用綠色色塊標識擁有合法簽名的聊天。</value>
+  </data>
+  <data name="config.Signature.MarkModifiedMsg" xml:space="preserve">
+    <value>是否使用黃色色塊標識被伺服器更改過的聊天。</value>
+  </data>
+  <data name="config.Signature.MarkSystemMessage" xml:space="preserve">
+    <value>是否使用灰色色塊標識系統訊息（它們總是不會被簽名）。</value>
+  </data>
+  <data name="config.Signature.ShowIllegalSignedChat" xml:space="preserve">
+    <value>是否顯示沒有被正確簽名的聊天訊息。</value>
+  </data>
+  <data name="config.Signature.ShowModifiedChat" xml:space="preserve">
+    <value>設定為 true，顯示被伺服器修改過的資訊；設定為 false，顯示經過簽名的原始資訊。</value>
+  </data>
+  <data name="config.Signature.SignChat" xml:space="preserve">
+    <value>是否簽名傳送的聊天訊息。</value>
+  </data>
+  <data name="config.Signature.SignMessageInCommand" xml:space="preserve">
+    <value>是否簽名指令中的訊息。例如"/msg"和"/me"中的訊息。</value>
+  </data>
+  <data name="config.write.fail" xml:space="preserve">
+    <value>§儲存備份檔案（{0}）時出錯：§r</value>
+  </data>
+  <data name="debug.color_test" xml:space="preserve">
+    <value>顏色測試：終端應該顯示：{0}</value>
+  </data>
+  <data name="debug.crypto" xml:space="preserve">
+    <value>§8金鑰和雜湊值已生成：</value>
+  </data>
+  <data name="debug.keys_cache_fail" xml:space="preserve">
+    <value>§8無法從磁碟中載入聊天簽名金鑰。</value>
+  </data>
+  <data name="debug.keys_cache_ok" xml:space="preserve">
+    <value>§8已成功從磁碟中載入聊天簽名金鑰。</value>
+  </data>
+  <data name="debug.request" xml:space="preserve">
+    <value>§8正在請求{0}...</value>
+  </data>
+  <data name="debug.session_cache_fail" xml:space="preserve">
+    <value>§8無法從磁碟載入快取的會話資料。</value>
+  </data>
+  <data name="debug.session_cache_ok" xml:space="preserve">
+    <value>§8已成功從磁碟中載入會話資料。</value>
+  </data>
+  <data name="debug.session_id" xml:space="preserve">
+    <value>成功！(會話ID：{0})</value>
+  </data>
+  <data name="Enchantment.bottom_slot" xml:space="preserve">
+    <value>下面的欄位</value>
+  </data>
+  <data name="Enchantment.enchantments_available" xml:space="preserve">
+    <value>可選的附魔</value>
+  </data>
+  <data name="Enchantment.levels" xml:space="preserve">
+    <value>等級</value>
+  </data>
+  <data name="Enchantment.middle_slot" xml:space="preserve">
+    <value>中間的欄位</value>
+  </data>
+  <data name="Enchantment.tops_slot" xml:space="preserve">
+    <value>上面的欄位</value>
+  </data>
+  <data name="error.auth" xml:space="preserve">
+    <value>§8在重新整理身份驗證時接收到伺服器錯誤：{0}</value>
+  </data>
+  <data name="error.connect" xml:space="preserve">
+    <value>無法連線到此IP。</value>
+  </data>
+  <data name="error.connection_timeout" xml:space="preserve">
+    <value>§8嘗試連線到此IP時超時。</value>
+  </data>
+  <data name="error.determine" xml:space="preserve">
+    <value>無法確定伺服器版本。</value>
+  </data>
+  <data name="error.forge" xml:space="preserve">
+    <value>§8Forge登入握手未成功完成</value>
+  </data>
+  <data name="error.forge_encrypt" xml:space="preserve">
+    <value>§8Forge StartEncryption握手未成功完成</value>
+  </data>
+  <data name="error.forgeforce" xml:space="preserve">
+    <value>無法為此Minecraft版本強制啟動Forge支援！</value>
+  </data>
+  <data name="error.generator.invalid" xml:space="preserve">
+    <value>該生成器命令用法無效！</value>
+  </data>
+  <data name="error.generator.json" xml:space="preserve">
+    <value>提供的路徑必須指向一個.json格式的檔案!</value>
+  </data>
+  <data name="error.generator.path" xml:space="preserve">
+    <value>提供的資料路徑無效! (路徑不存在或是輸入錯誤）</value>
+  </data>
+  <data name="error.http_code" xml:space="preserve">
+    <value>§8接收到伺服器錯誤：{0}</value>
+  </data>
+  <data name="error.invalid_encrypt" xml:space="preserve">
+    <value>§8對StartEncryption資料包的響應無效</value>
+  </data>
+  <data name="error.invalid_response" xml:space="preserve">
+    <value>§8對握手包的響應無效</value>
+  </data>
+  <data name="error.inventoryhandling_not_enabled" xml:space="preserve">
+    <value>此功能需要啟用庫存處理才能運作！</value>
+  </data>
+  <data name="error.join" xml:space="preserve">
+    <value>加入伺服器時發生錯誤。</value>
+  </data>
+  <data name="error.login" xml:space="preserve">
+    <value>登入失敗：</value>
+  </data>
+  <data name="error.login.blocked" xml:space="preserve">
+    <value>使用者名稱/密碼錯誤、IP被禁用或登入次數過多。</value>
+  </data>
+  <data name="error.login.cancel" xml:space="preserve">
+    <value>使用者取消。</value>
+  </data>
+  <data name="error.login.migrated" xml:space="preserve">
+    <value>帳戶已遷移，請使用電子郵件作為使用者名稱。</value>
+  </data>
+  <data name="error.login.network" xml:space="preserve">
+    <value>網路錯誤。</value>
+  </data>
+  <data name="error.login.premium" xml:space="preserve">
+    <value>不是Premium使用者。</value>
+  </data>
+  <data name="error.login.response" xml:space="preserve">
+    <value>伺服器返回了無效的響應。</value>
+  </data>
+  <data name="error.login.server" xml:space="preserve">
+    <value>登入伺服器不可用。請稍後再試。</value>
+  </data>
+  <data name="error.login.ssl" xml:space="preserve">
+    <value>SSL錯誤。</value>
+  </data>
+  <data name="error.login.unknown" xml:space="preserve">
+    <value>未知錯誤。</value>
+  </data>
+  <data name="error.login_failed" xml:space="preserve">
+    <value>無法登入到此伺服器。</value>
+  </data>
+  <data name="error.missing.argument" xml:space="preserve">
+    <value>缺少引數 {0}</value>
+  </data>
+  <data name="error.no_version_report" xml:space="preserve">
+    <value>§8伺服器未報告其協議版本，自動檢測將不起作用。</value>
+  </data>
+  <data name="error.ping" xml:space="preserve">
+    <value>ping此IP失敗。</value>
+  </data>
+  <data name="error.realms.access_denied" xml:space="preserve">
+    <value>此Realms世界不存在或訪問被拒絕</value>
+  </data>
+  <data name="error.realms.disabled" xml:space="preserve">
+    <value>正在嘗試加入Realms世界，但配置中禁用了Realms支援</value>
+  </data>
+  <data name="error.realms.ip_error" xml:space="preserve">
+    <value>無法獲取您Realms世界的伺服器IP</value>
+  </data>
+  <data name="error.realms.server_id" xml:space="preserve">
+    <value>Realms伺服器ID無效或未知。</value>
+  </data>
+  <data name="error.realms.server_unavailable" xml:space="preserve">
+    <value>Realms伺服器可能需要一些時間來啟動。請稍後再試。</value>
+  </data>
+  <data name="error.setting.argument_syntax" xml:space="preserve">
+    <value>{0}：無效語法，應為 --argname=value 或 --section.argname=value</value>
+  </data>
+  <data name="error.terrain_not_enabled" xml:space="preserve">
+    <value>此功能需要啟用地形和移動才能運作！</value>
+  </data>
+  <data name="error.timeout" xml:space="preserve">
+    <value>連線超時</value>
+  </data>
+  <data name="error.unexpect_response" xml:space="preserve">
+    <value>§8來自伺服器的意外響應（這是Minecraft伺服器嗎？）</value>
+  </data>
+  <data name="error.unsupported" xml:space="preserve">
+    <value>無法連線到伺服器：不支援此版本！</value>
+  </data>
+  <data name="error.usage" xml:space="preserve">
+    <value>使用方法：</value>
+  </data>
+  <data name="error.version_different" xml:space="preserve">
+    <value>§8伺服器報告的版本與手動設定的版本不同。登入可能無法工作。</value>
+  </data>
+  <data name="exception.chatbot.init" xml:space="preserve">
+    <value>不應在建構函式中呼叫ChatBot的方法，因為作為API處理程式的模組尚未初始化。請重寫 Initialize() 或 AfterGameJoined() 來執行初始化任務。</value>
+  </data>
+  <data name="exception.csrunner.invalid_head" xml:space="preserve">
+    <value>提供的指令碼沒有有效的MCCScript頭</value>
+  </data>
+  <data name="exception.packet_process" xml:space="preserve">
+    <value>無法處理傳入的{0}型別的資料包。(資料包ID：{1}，協議：{2}，登陸階段：{3}，內部異常：{4})。</value>
+  </data>
+  <data name="exception.palette.block" xml:space="preserve">
+    <value>請為此Minecraft版本更新方塊型別處理。詳細請參考 Material.cs</value>
+  </data>
+  <data name="exception.palette.entity" xml:space="preserve">
+    <value>請為此Minecraft版本更新實體型別處理。詳細請參考 EntityType.cs</value>
+  </data>
+  <data name="exception.palette.item" xml:space="preserve">
+    <value>請為此Minecraft版本更新物品型別處理。詳細請參考 ItemType.cs</value>
+  </data>
+  <data name="exception.palette.packet" xml:space="preserve">
+    <value>請為此Minecraft版本更新資料包型別調色盤。詳細請參考 PacketTypePalette.cs</value>
+  </data>
+  <data name="exception.unknown_direction" xml:space="preserve">
+    <value>未知方向</value>
+  </data>
+  <data name="exception.user_logout" xml:space="preserve">
+    <value>使用者發起的登出應該通過呼叫Disconnect()來完成</value>
+  </data>
+  <data name="exception.version_unsupport" xml:space="preserve">
+    <value>版本{0}的協議未被支援。</value>
+  </data>
+  <data name="extra.entity_disabled" xml:space="preserve">
+    <value>§c該MC版本當前還不支援處理實體。</value>
+  </data>
+  <data name="extra.entity_required" xml:space="preserve">
+    <value>請先在配置檔案中啟用"Main.Advanced.entity_handling"。</value>
+  </data>
+  <data name="extra.inventory_close" xml:space="preserve">
+    <value>容器# {0}已關閉。</value>
+  </data>
+  <data name="extra.inventory_disabled" xml:space="preserve">
+    <value>§c該MC版本目前未支援處理庫存(物品)。</value>
+  </data>
+  <data name="extra.inventory_enabled" xml:space="preserve">
+    <value>庫存(物品)處理現在已啟用。</value>
+  </data>
+  <data name="extra.inventory_interact" xml:space="preserve">
+    <value>請使用 /inventory 來與其互動。</value>
+  </data>
+  <data name="extra.inventory_open" xml:space="preserve">
+    <value>容器# {0}已開啟：{1}</value>
+  </data>
+  <data name="extra.inventory_required" xml:space="preserve">
+    <value>請先在配置檔案中啟用"Main.Advanced.inventory_handling"。</value>
+  </data>
+  <data name="extra.terrainandmovement_disabled" xml:space="preserve">
+    <value>§c該遊戲版本目前還不支援地形和移動處理。</value>
+  </data>
+  <data name="extra.terrainandmovement_enabled" xml:space="preserve">
+    <value>地形和移動處理現在已啟用。</value>
+  </data>
+  <data name="extra.terrainandmovement_required" xml:space="preserve">
+    <value>請先在配置檔案中啟用地形和移動處理。</value>
+  </data>
+  <data name="filemonitor.fail" xml:space="preserve">
+    <value>§8[{0}] 無法初始化FileSystemWatcher，正在使用輪詢重試</value>
+  </data>
+  <data name="filemonitor.init" xml:space="preserve">
+    <value>§8[{0}] 正在為檔案{1}初始化FileSystemWatcher</value>
+  </data>
+  <data name="forge.accept" xml:space="preserve">
+    <value>§8接受來自的伺服器模組列表...</value>
+  </data>
+  <data name="forge.accept_registry" xml:space="preserve">
+    <value>§8接受伺服器登錄檔...</value>
+  </data>
+  <data name="forge.complete" xml:space="preserve">
+    <value>Forge伺服器連線完成!</value>
+  </data>
+  <data name="forge.fml2.config" xml:space="preserve">
+    <value>§8確認FML2伺服器配置：{0}</value>
+  </data>
+  <data name="forge.fml2.mod" xml:space="preserve">
+    <value>§8收到FM2伺服器模組列表</value>
+  </data>
+  <data name="forge.fml2.mod_send" xml:space="preserve">
+    <value>§8發回FML2客戶端的模組列表</value>
+  </data>
+  <data name="forge.fml2.registry" xml:space="preserve">
+    <value>§8確認FML2伺服器登錄檔：{0}</value>
+  </data>
+  <data name="forge.fml2.unknown" xml:space="preserve">
+    <value>§8收到未知的FML2握手資訊，編號：{0}</value>
+  </data>
+  <data name="forge.fml2.unknown_channel" xml:space="preserve">
+    <value>§8忽略未知的FML2登入訊息通道：{0}</value>
+  </data>
+  <data name="forge.mod_list" xml:space="preserve">
+    <value>§8模組列表:</value>
+  </data>
+  <data name="forge.no_mod" xml:space="preserve">
+    <value>§8正在執行的伺服器沒有Forge模組。</value>
+  </data>
+  <data name="forge.registry" xml:space="preserve">
+    <value>§8已接收的登錄檔包含{0}個條目</value>
+  </data>
+  <data name="forge.registry_2" xml:space="preserve">
+    <value>§8已接收登錄檔{0}，包含{1}個條目</value>
+  </data>
+  <data name="forge.send_mod" xml:space="preserve">
+    <value>§8向伺服器傳送偽造的forge模組列表...</value>
+  </data>
+  <data name="forge.version" xml:space="preserve">
+    <value>§8Forge協議版本：{0}</value>
+  </data>
+  <data name="forge.with_mod" xml:space="preserve">
+    <value>§8伺服器正在執行Forge，有{0}個模組。</value>
+  </data>
+  <data name="general.available_cmd" xml:space="preserve">
+    <value>可用命令：{0}</value>
+  </data>
+  <data name="general.bot_unload" xml:space="preserve">
+    <value>將會解除安裝此bot。</value>
+  </data>
+  <data name="general.done" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="general.fail" xml:space="preserve">
+    <value>失敗</value>
+  </data>
+  <data name="icmd.error" xml:space="preserve">
+    <value>OnInternalCommand: 來自{0}的錯誤{1}</value>
+  </data>
+  <data name="icmd.help" xml:space="preserve">
+    <value>help &lt;命令名稱&gt; ：顯示有關命令的簡要幫助。</value>
+  </data>
+  <data name="icmd.list" xml:space="preserve">
+    <value>help &lt;命令名稱&gt;。可用命令：{0}。在伺服器上獲取幫助，請改用 '{1}send /help'。</value>
+  </data>
+  <data name="icmd.unknown" xml:space="preserve">
+    <value>未知命令 '{0}'。請使用 'help' 命令來獲取命令列表。</value>
+  </data>
+  <data name="mcc.connecting" xml:space="preserve">
+    <value>正在連線至{0}...</value>
+  </data>
+  <data name="mcc.disconnect.login" xml:space="preserve">
+    <value>連線失敗：</value>
+  </data>
+  <data name="mcc.disconnect.lost" xml:space="preserve">
+    <value>失去連線。</value>
+  </data>
+  <data name="mcc.disconnect.server" xml:space="preserve">
+    <value>從伺服器斷開連線：</value>
+  </data>
+  <data name="mcc.disconnected" xml:space="preserve">
+    <value>未連線至任何伺服器。輸入 '{0}help' 獲得幫助。</value>
+  </data>
+  <data name="mcc.fetching_key" xml:space="preserve">
+    <value>正在從微軟獲取聊天簽名金鑰。</value>
+  </data>
+  <data name="mcc.forge" xml:space="preserve">
+    <value>檢查伺服器是否正在執行Forge...</value>
+  </data>
+  <data name="mcc.forgeforce" xml:space="preserve">
+    <value>正在強制啟動Forge支援。</value>
+  </data>
+  <data name="mcc.found" xml:space="preserve">
+    <value>§8已找到伺服器{0}:{1}，域名：{2}</value>
+  </data>
+  <data name="mcc.gen_new_config" xml:space="preserve">
+    <value>已生成新的配置檔案 "{0}" 。</value>
+  </data>
+  <data name="mcc.generator.done" xml:space="preserve">
+    <value>已完成從 {0} 資訊生成，使用 {1}</value>
+  </data>
+  <data name="mcc.generator.generating" xml:space="preserve">
+    <value>正在從 {1} 生成 {0} 資訊。</value>
+  </data>
+  <data name="mcc.handshake" xml:space="preserve">
+    <value>§8握手成功。 (伺服器ID：{0})</value>
+  </data>
+  <data name="mcc.has_update" xml:space="preserve">
+    <value>§e新版本的MCC已經推出：{0}</value>
+  </data>
+  <data name="mcc.help_us_translate" xml:space="preserve">
+    <value>幫助我們翻譯MCC：{0}</value>
+  </data>
+  <data name="mcc.invaild_config" xml:space="preserve">
+    <value>解析配置檔案失敗，輸入 "{0}new" 以生成一個新的配置。</value>
+  </data>
+  <data name="mcc.ip" xml:space="preserve">
+    <value>伺服器IP：</value>
+  </data>
+  <data name="mcc.joined" xml:space="preserve">
+    <value>已成功加入伺服器。
+輸入 '{0}quit' 離開伺服器。</value>
+  </data>
+  <data name="mcc.link" xml:space="preserve">
+    <value>連結：{0}</value>
+  </data>
+  <data name="mcc.login" xml:space="preserve">
+    <value>賬戶名：</value>
+  </data>
+  <data name="mcc.login_basic_io" xml:space="preserve">
+    <value>請輸入使用者名稱或郵箱。</value>
+  </data>
+  <data name="mcc.not_found" xml:space="preserve">
+    <value>§8無法執行{0}的SRV解析
+{1}：{2}</value>
+  </data>
+  <data name="mcc.offline" xml:space="preserve">
+    <value>§8您正在使用離線模式。</value>
+  </data>
+  <data name="mcc.password" xml:space="preserve">
+    <value>密碼：</value>
+  </data>
+  <data name="mcc.password_basic_io" xml:space="preserve">
+    <value>請輸入使用者 {0} 的密碼。</value>
+  </data>
+  <data name="mcc.password_hidden" xml:space="preserve">
+    <value>密碼(不會顯示)：{0}</value>
+  </data>
+  <data name="mcc.player_dead" xml:space="preserve">
+    <value>你死了！輸入 '{0}respawn' 重生。</value>
+  </data>
+  <data name="mcc.player_dead_respawn" xml:space="preserve">
+    <value>你死了！1秒後自動重生。</value>
+  </data>
+  <data name="mcc.press_exit" xml:space="preserve">
+    <value>或者敲擊回車退出Minecraft Console Client。</value>
+  </data>
+  <data name="mcc.profile_key_invalid" xml:space="preserve">
+    <value>§8快取的聊天簽名金鑰需要重新整理。</value>
+  </data>
+  <data name="mcc.profile_key_valid" xml:space="preserve">
+    <value>§8{0}的聊天簽名金鑰快取仍然有效.</value>
+  </data>
+  <data name="mcc.realms_available" xml:space="preserve">
+    <value>#NAME?</value>
+  </data>
+  <data name="mcc.realms_join" xml:space="preserve">
+    <value>請使用"realms:&lt;序號&gt;"作為伺服器IP加入Realms世界</value>
+  </data>
+  <data name="mcc.reconnect" xml:space="preserve">
+    <value>等待5秒 (剩餘{0}次嘗試)...</value>
+  </data>
+  <data name="mcc.resolve" xml:space="preserve">
+    <value>正在解析{0}...</value>
+  </data>
+  <data name="mcc.restart" xml:space="preserve">
+    <value>正在重啟Minecraft Console Client...</value>
+  </data>
+  <data name="mcc.restart_delay" xml:space="preserve">
+    <value>等待 {0} 秒後重啟...</value>
+  </data>
+  <data name="mcc.retrieve" xml:space="preserve">
+    <value>正在獲取伺服器資訊...</value>
+  </data>
+  <data name="mcc.run_with_default_settings" xml:space="preserve">
+    <value>
+MCC正在使用預設配置執行。</value>
+  </data>
+  <data name="mcc.server_offline" xml:space="preserve">
+    <value>§8伺服器正處於離線模式。</value>
+  </data>
+  <data name="mcc.server_protocol" xml:space="preserve">
+    <value>§8伺服器的Minecraft版本：{0} (協議v{1})</value>
+  </data>
+  <data name="mcc.server_version" xml:space="preserve">
+    <value>伺服器版本：</value>
+  </data>
+  <data name="mcc.session" xml:space="preserve">
+    <value>檢查會話...</value>
+  </data>
+  <data name="mcc.session_fail" xml:space="preserve">
+    <value>檢查會話失敗</value>
+  </data>
+  <data name="mcc.session_invalid" xml:space="preserve">
+    <value>§8會話快取無效或已過期。</value>
+  </data>
+  <data name="mcc.session_valid" xml:space="preserve">
+    <value>§8{0}的會話快取仍然有效。</value>
+  </data>
+  <data name="mcc.settings_generated" xml:space="preserve">
+    <value>§c配置檔案 MinecraftClient.ini 已經生成。</value>
+  </data>
+  <data name="mcc.single_cmd" xml:space="preserve">
+    <value>§7已傳送命令§8 {0}</value>
+  </data>
+  <data name="mcc.unknown_version" xml:space="preserve">
+    <value>§8未知或不受支援的Minecraft版本{0}。
+正在切換至自動檢測模式。</value>
+  </data>
+  <data name="mcc.use_version" xml:space="preserve">
+    <value>§8正在執行Minecraft版本{0} (v{1}協議)</value>
+  </data>
+  <data name="mcc.version_supported" xml:space="preserve">
+    <value>該版本受到支援
+正在登入...</value>
+  </data>
+  <data name="mcc.with_forge" xml:space="preserve">
+    <value>, 帶有Forge</value>
+  </data>
+  <data name="proxy.connected" xml:space="preserve">
+    <value>§8已連線到代理{0}:{1}</value>
+  </data>
+  <data name="config.Main.Advanced.LoadMccTrans" xml:space="preserve">
+    <value>在可用時載入應用於MCC的翻譯，關閉則僅使用英語。</value>
+  </data>
+  <data name="cmd.setrnd.format" xml:space="preserve">
+    <value>setrnd variable -7to17 或 setrnd variable string1 "\"string2\" string3"</value>
+  </data>
+  <data name="exception.palette.healthfield" xml:space="preserve">
+    <value>請為此Minecraft版本更新血量欄位處理。</value>
+  </data>
+  <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
+    <value>成功與 MCC 斷開連線</value>
+  </data>
+  <data name="cmd.execmulti.prevent" xml:space="preserve">
+    <value>你不能在 execmulti 指令中使用 execmulti 或 execif 指令</value>
+  </data>
+  <data name="cmd.move.desc_force" xml:space="preserve">
+    <value>強制進行不安全的移動，例如掉落或觸碰火</value>
+  </data>
+  <data name="bot.autodig.no_inv_handle" xml:space="preserve">
+    <value>庫存處理未啟用，無法自動切換工具。</value>
+  </data>
+  <data name="mcc.use_new_config" xml:space="preserve">
+    <value>請使用新建立的 MinecraftClient.ini</value>
+  </data>
+  <data name="mcc.backup_old_config" xml:space="preserve">
+    <value>已將舊的 MinecraftClient.ini 備份為 {0}</value>
+  </data>
+  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>某些伺服器上 Badpacket 問題的臨時修補。</value>
+  </data>
+  <data name="mcc.browser_login_code" xml:space="preserve">
+    <value>Paste your code here:</value>
+  </data>
+  <data name="mcc.browser_open" xml:space="preserve">
+    <value>Your browser should open automatically. If not, open the link below in your browser.</value>
+  </data>
+</root>

@@ -1,0 +1,33 @@
+{
+    "title": "Minecraft Console Client",
+    "description": "Documentation website for the Minecraft Console Client (MCC)",
+    "helpUsTranslate": "Help us translate",
+    "theme": {
+        "selectLanguageName": "English",
+        "selectLanguageText": "Languages",
+        "selectLanguageAriaLabel": "Select language",
+        "editLinkText": "Edit this page",
+        "lastUpdatedText": "Last Updated",
+        "contributorsText": "Contributors",
+        "tip": "Tip",
+        "warning": "Warning",
+        "danger": "Danger",
+        "notFound": [
+            "There's nothing here.",
+            "How did we get here?",
+            "That's a Four-Oh-Four.",
+            "Looks like we've got some broken links."
+        ],
+        "backToHome": "Take me home",
+        "openInNewWindow": "open in new window",
+        "toggleColorMode": "toggle color mode",
+        "toggleSidebar": "toggle sidebar"
+    },
+    "navbar": {
+        "AboutAndFeatures": "About & Features",
+        "Installation": "Installation",
+        "Usage": "Utilisation",
+        "Configuration": "Configuration",
+        "ChatBots": "ChatBots"
+    }
+}
