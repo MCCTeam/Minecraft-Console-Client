@@ -17,8 +17,9 @@ env:
   compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:
-  synchronize-with-crowdin:
+  build:
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
 
     steps:
 
@@ -28,15 +29,14 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
-    - name: crowdin action
+    - name: Download translations from crowdin
       uses: crowdin/github-action@1.5.0
       with:
-        upload_translations: true
+        upload_translations: false
         download_translations: true
 
-        create_pull_request: false
-
-        dryrun_action: false
+        localization_branch_name: l10n_master
+        create_pull_request: false 
 
         base_path: ${{ github.workspace }}
       env:
@@ -44,11 +44,6 @@ jobs:
         CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
         CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
 
-  # build:
-  #   runs-on: ubuntu-latest
-  #   if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
-
-  #   steps:
     - name: Setup Project Path
       run: |
         echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
@@ -64,15 +59,9 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v2.1.0
 
-    # - name: Checkout
-    #   uses: actions/checkout@v2
-    #   with:
-    #     fetch-depth: 0
-    #     submodules: 'true'
-
     - name: Get Version DateTime
       id: date-version
-      uses: nanzm/get-time-action@v1.0
+      uses: nanzm/get-time-action@v1.1
       with:
         timeZone: 0
         format: 'YYYY-MM-DD'
@@ -92,7 +81,7 @@ jobs:
 
     - name: Get Release DateTime
       id: date-release
-      uses: nanzm/get-time-action@v1.0
+      uses: nanzm/get-time-action@v1.1
       with:
         timeZone: 0
         format: 'YYYYMMDD'
