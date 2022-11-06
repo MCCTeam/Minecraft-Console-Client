@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - MinecraftClient/**
-      - ConsoleInteractive/**
-      - MinecraftClient.sln
-      - .github/workflows/build-and-release.yml
   workflow_dispatch:
   
 env:
@@ -17,7 +12,7 @@ env:
   compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:
-  build:
+  Build:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
 
@@ -32,7 +27,7 @@ jobs:
     - name: Download translations from crowdin
       uses: crowdin/github-action@1.5.0
       with:
-        upload_translations: false
+        upload_translations: true
         download_translations: true
 
         localization_branch_name: l10n_master
@@ -79,6 +74,34 @@ jobs:
       run: zip -qq -r windows-x64.zip *
       working-directory: ${{ env.win-x64-out-path }}
 
+    - name: Build for Windows x86
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x86 ${{ env.compile-flags }}
+
+    - name: Zip Windows x86 Build
+      run: zip -qq -r windows-x86.zip *
+      working-directory: ${{ env.win-x86-out-path }}
+
+    - name: Build for Linux
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-x64 ${{ env.compile-flags }}
+
+    - name: Zip Linux Build
+      run: zip -qq -r linux.zip *
+      working-directory: ${{ env.linux-out-path }}
+
+    - name: Build for ARM64 Linux
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-arm64 ${{ env.compile-flags }}
+      
+    - name: Zip ARM64 Linux Build
+      run: zip -qq -r linux-arm64.zip *
+      working-directory: ${{ env.linux-arm64-out-path }}
+
+    - name: Build for OSX
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r osx-x64 ${{ env.compile-flags }}
+
+    - name: Zip OSX Build
+      run: zip -qq -r osx.zip *
+      working-directory: ${{ env.osx-out-path }}
+
     - name: Get Release DateTime
       id: date-release
       uses: nanzm/get-time-action@v1.1
@@ -93,6 +116,42 @@ jobs:
         mode: uploadReleaseAsset
         filePath: ${{ env.win-x64-out-path }}windows-x64.zip
         assetName: ${{ env.PROJECT }}-windows-x64.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Windows x86 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-x86-out-path }}windows-x86.zip
+        assetName: ${{ env.PROJECT }}-windows-x86.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Linux Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-out-path }}linux.zip
+        assetName: ${{ env.PROJECT }}-linux.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Linux ARM64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-arm64-out-path }}linux-arm64.zip
+        assetName: ${{ env.PROJECT }}-linux-arm64.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: OSX Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.osx-out-path }}osx.zip
+        assetName: ${{ env.PROJECT }}-osx.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
     - name: Deploy Documentation Site

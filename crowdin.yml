@@ -15,7 +15,7 @@
   },
   {
     "source": "/README.md",
-    "translation": "/docs/.vuepress/public/README/README-%language%.md"
+    "translation": "/README/README-%language%.md"
   },
   {
     "source": "/docs/.vuepress/translations/en.json",
