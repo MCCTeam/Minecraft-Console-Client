@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - MinecraftClient/**
-      - ConsoleInteractive/**
-      - MinecraftClient.sln
   workflow_dispatch:
   
 env:
@@ -16,11 +12,33 @@ env:
   compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:
-  build:
+  Build:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
 
     steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: 'true'
+
+    - name: Download translations from crowdin
+      uses: crowdin/github-action@1.5.0
+      with:
+        upload_translations: true
+        download_translations: true
+
+        localization_branch_name: l10n_master
+        create_pull_request: false 
+
+        base_path: ${{ github.workspace }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+
     - name: Setup Project Path
       run: |
         echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
@@ -36,15 +54,9 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v2.1.0
 
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        submodules: 'true'
-
     - name: Get Version DateTime
       id: date-version
-      uses: nanzm/get-time-action@v1.0
+      uses: nanzm/get-time-action@v1.1
       with:
         timeZone: 0
         format: 'YYYY-MM-DD'
@@ -92,7 +104,7 @@ jobs:
 
     - name: Get Release DateTime
       id: date-release
-      uses: nanzm/get-time-action@v1.0
+      uses: nanzm/get-time-action@v1.1
       with:
         timeZone: 0
         format: 'YYYYMMDD'
@@ -141,3 +153,14 @@ jobs:
         filePath: ${{ env.osx-out-path }}osx.zip
         assetName: ${{ env.PROJECT }}-osx.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Deploy Documentation Site
+      uses: jenkey2011/vuepress-deploy@master
+      env:
+        ACCESS_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
+        TARGET_REPO: MCCTeam/MCCTeam.github.io
+        TARGET_BRANCH: master
+        BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
+        BUILD_DIR: docs/.vuepress/dist
+        COMMIT_MESSAGE: Build from ${{ github.sha }}
+        CNAME: https://mccteam.github.io
