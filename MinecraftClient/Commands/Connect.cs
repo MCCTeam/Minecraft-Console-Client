@@ -28,7 +28,7 @@ namespace MinecraftClient.Commands
 
                 if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHealper.MainConfig.ServerInfoConfig(args[0]), true))
                 {
-                    Program.Restart();
+                    Program.Restart(keepAccountAndServerSettings: true);
                     return "";
                 }
                 else return string.Format(Translations.cmd_connect_invalid_ip, args[0]);

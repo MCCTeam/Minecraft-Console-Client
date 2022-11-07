@@ -247,12 +247,12 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="extraAttempts">If connection fails, the client will make X extra attempts</param>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
-        new public void ReconnectToTheServer(int extraAttempts = -999999, int delaySeconds = 0)
+        new public void ReconnectToTheServer(int extraAttempts = -999999, int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
             if (extraAttempts == -999999)
-                base.ReconnectToTheServer();
+                base.ReconnectToTheServer(delaySeconds: delaySeconds, keepAccountAndServerSettings: keepAccountAndServerSettings);
             else
-                base.ReconnectToTheServer(extraAttempts);
+                base.ReconnectToTheServer(extraAttempts, delaySeconds, keepAccountAndServerSettings);
         }
 
         /// <summary>
@@ -361,7 +361,7 @@ namespace MinecraftClient
         {
             bool result = Settings.Config.Main.Advanced.SetAccount(accountAlias);
             if (result && andReconnect)
-                ReconnectToTheServer();
+                ReconnectToTheServer(keepAccountAndServerSettings: true);
             return result;
         }
 
@@ -374,7 +374,7 @@ namespace MinecraftClient
         {
             bool result = Settings.Config.Main.SetServerIP(new MainConfigHealper.MainConfig.ServerInfoConfig(server), true);
             if (result && andReconnect)
-                ReconnectToTheServer();
+                ReconnectToTheServer(keepAccountAndServerSettings: true);
             return result;
         }
 
