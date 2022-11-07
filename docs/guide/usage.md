@@ -55,7 +55,7 @@ _Learn more on how to use the screen command: [YouTube](https://www.youtube.com/
 
 ## Docker
 
-See [Run using Docker](./guide/installation.md#using-docker)
+See [Run using Docker](./installation.md#using-docker)
 
 ## Command-line usage
 
