@@ -405,3 +405,12 @@ FodyWeavers.xsd
 # docs
 !/docs/.vuepress
 /docs/.vuepress/dist
+
+# translations
+/MinecraftClient/Resources/Translations/Translations.*.resx
+/MinecraftClient/Resources/AsciiArt/AsciiArt.*.resx
+
+/docs/.vuepress/translations/*.json
+!/docs/.vuepress/translations/en.json
+
+/docs/l10n/

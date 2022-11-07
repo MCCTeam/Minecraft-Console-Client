@@ -57,7 +57,7 @@ Install [Git](https://www.git-scm.com/)
 4. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
 
 ```bash
-git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+git clone --branch l10n_master https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
@@ -114,7 +114,7 @@ Requirements:
 2. Recursively clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
 
 ```bash
-git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+git clone --branch l10n_master https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
@@ -171,7 +171,7 @@ Requirements:
 1. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
 
 ```bash
-git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+git clone --branch l10n_master https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 2. Navigate to `Minecraft-Console-Client/Docker`

@@ -153,7 +153,7 @@ namespace MinecraftClient
                     string configString = File.ReadAllText(filepath);
                     if (configString.Contains("Some settings missing here after an upgrade?"))
                     {
-                        string newFilePath = Path.ChangeExtension(filepath, ".backup.ini");
+                        string newFilePath = Path.ChangeExtension(filepath, ".old.ini");
                         File.Copy(filepath, newFilePath, true);
                         ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
                         ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.mcc_backup_old_config, newFilePath));

@@ -1,9 +1,6 @@
-name: Build MCC and Documents
+name: Build MCC
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
   
 env:
@@ -14,7 +11,6 @@ env:
 jobs:
   Build:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
 
     steps:
 
@@ -24,7 +20,7 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
-    - name: Download translations from crowdin
+    - name: Sync translations from crowdin
       uses: crowdin/github-action@1.5.0
       with:
         upload_translations: true
@@ -153,14 +149,3 @@ jobs:
         filePath: ${{ env.osx-out-path }}osx.zip
         assetName: ${{ env.PROJECT }}-osx.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
-
-    - name: Deploy Documentation Site
-      uses: jenkey2011/vuepress-deploy@master
-      env:
-        ACCESS_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
-        TARGET_REPO: MCCTeam/MCCTeam.github.io
-        TARGET_BRANCH: master
-        BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
-        BUILD_DIR: docs/.vuepress/dist
-        COMMIT_MESSAGE: Build from ${{ github.sha }}
-        CNAME: https://mccteam.github.io
