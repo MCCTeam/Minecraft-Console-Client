@@ -1,8 +1,10 @@
-name: Build
+name: Build MCC and Documents
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+  workflow_dispatch:
   
 env:
   PROJECT: "MinecraftClient"
@@ -10,18 +12,42 @@ env:
   compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:
-  build:
+  Build:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'README') }}
+    if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
+    timeout-minutes: 15
 
     steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: 'true'
+
+    - name: Download translations from crowdin
+      uses: crowdin/github-action@1.5.0
+      with:
+        upload_translations: true
+        download_translations: true
+
+        localization_branch_name: l10n_master
+        create_pull_request: false 
+
+        base_path: ${{ github.workspace }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+
     - name: Setup Project Path
       run: |
         echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
     
     - name: Setup Output Paths
       run: |
-        echo win-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo win-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo win-x86-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x86/publish/ >> $GITHUB_ENV
         echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
         echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
         echo linux-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-arm64/publish/ >> $GITHUB_ENV
@@ -29,15 +55,9 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v2.1.0
 
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        submodules: 'true'
-
     - name: Get Version DateTime
       id: date-version
-      uses: nanzm/get-time-action@v1.0
+      uses: nanzm/get-time-action@v1.1
       with:
         timeZone: 0
         format: 'YYYY-MM-DD'
@@ -47,13 +67,20 @@ jobs:
         COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
         echo '' >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
-            
-    - name: Build for Windows
+
+    - name: Build for Windows x64
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
 
-    - name: Zip Windows Build
-      run: zip -qq -r windows.zip *
-      working-directory: ${{ env.win-out-path }}
+    - name: Zip Windows x64 Build
+      run: zip -qq -r windows-x64.zip *
+      working-directory: ${{ env.win-x64-out-path }}
+
+    - name: Build for Windows x86
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x86 ${{ env.compile-flags }}
+
+    - name: Zip Windows x86 Build
+      run: zip -qq -r windows-x86.zip *
+      working-directory: ${{ env.win-x86-out-path }}
 
     - name: Build for Linux
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-x64 ${{ env.compile-flags }}
@@ -78,18 +105,27 @@ jobs:
 
     - name: Get Release DateTime
       id: date-release
-      uses: nanzm/get-time-action@v1.0
+      uses: nanzm/get-time-action@v1.1
       with:
         timeZone: 0
         format: 'YYYYMMDD'
 
-    - name: Windows Release
+    - name: Windows x64 Release
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ env.win-out-path }}windows.zip
-        assetName: ${{ env.PROJECT }}-windows.zip
+        filePath: ${{ env.win-x64-out-path }}windows-x64.zip
+        assetName: ${{ env.PROJECT }}-windows-x64.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Windows x86 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-x86-out-path }}windows-x86.zip
+        assetName: ${{ env.PROJECT }}-windows-x86.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
     - name: Linux Release
@@ -118,3 +154,14 @@ jobs:
         filePath: ${{ env.osx-out-path }}osx.zip
         assetName: ${{ env.PROJECT }}-osx.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Deploy Documentation Site
+      uses: jenkey2011/vuepress-deploy@master
+      env:
+        ACCESS_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
+        TARGET_REPO: MCCTeam/MCCTeam.github.io
+        TARGET_BRANCH: master
+        BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
+        BUILD_DIR: docs/.vuepress/dist
+        COMMIT_MESSAGE: Build from ${{ github.sha }}
+        CNAME: https://mccteam.github.io
