@@ -1,0 +1,31 @@
+name: Sync Translations
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Sync:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: 'true'
+
+    - name: Sync translations from crowdin
+      uses: crowdin/github-action@1.5.0
+      with:
+        upload_translations: true
+        download_translations: true
+
+        localization_branch_name: l10n_master
+        create_pull_request: false 
+
+        base_path: ${{ github.workspace }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}

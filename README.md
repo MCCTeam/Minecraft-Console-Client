@@ -59,16 +59,6 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 
 To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
 
-MCC now supports the following languages (Alphabetical order) :
-  * `de.ini` : Deutsch - German
-  * `en.ini` : English - English
-  * `fr.ini` : Français (France) - French
-  * `ru.ini` : Русский (Russkiy) - Russian
-  * `tr.ini` : Türkçe (Türkiye) - Turkish
-  * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
-  * `zh-Hans.ini` : 简体中文 - Chinese Simplified
-  * `zh-Hant.ini` : 繁體中文 - Chinese Traditional
-
 ## Building from the source 🏗️
 
 This section has been moved to our new [Documentation website](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
