@@ -40,6 +40,8 @@ redirectFrom:
 -   [Auto Relog](#auto-relog)
 -   [Auto Respond](#auto-respond)
 -   [Chat Log](#chat-log)
+-   [Discord Bridge](#discord-bridge)
+-   [Farmer](#farmer)
 -   [Follow Player](#follow-player)
 -   [Hangman](#hangman)
 -   [Mailer](#mailer)
@@ -73,7 +75,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Beep_Enabled`
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -90,7 +91,6 @@ redirectFrom:
 
     -   **Default:** `true`
 
-
     #### `Trigger_By_Words`
 
     -   **Description:**
@@ -102,7 +102,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `Trigger_By_Rain`
 
@@ -116,7 +115,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Trigger_By_Thunderstorm`
 
     -   **Description:**
@@ -128,7 +126,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `Log_To_File`
 
@@ -142,7 +139,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Log_File`
 
     -   **Description:**
@@ -152,7 +148,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `"alerts-log.txt"`
-
 
     #### `Matches`
 
@@ -167,7 +162,6 @@ redirectFrom:
         ```toml
         Matches = [ "Yourname", " whispers ", "-> me", "admin", ".com", ]
         ```
-
 
     #### `Excludes`
 
@@ -205,7 +199,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Delay`
 
     -   **Description:**
@@ -220,7 +213,6 @@ redirectFrom:
 
     -   **Default:** `{ min = 60.0, max = 60.0 }`
 
-
     #### `Command`
 
     -   **Description:**
@@ -231,7 +223,6 @@ redirectFrom:
 
     -   **Default:** `/ping`
 
-
     #### `Use_Sneak`
 
     -   **Description:**
@@ -241,7 +232,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `Use_Terrain_Handling`
 
@@ -263,7 +253,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Walk_Range`
 
     -   **Description:**
@@ -273,7 +262,6 @@ redirectFrom:
         The bigger the slower the bot might be at calculating the path, recommended 2-5.
 
     -   **Default:** `5`
-
 
     #### `Walk_Retries`
 
@@ -317,7 +305,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Mode`
 
     -   **Description:**
@@ -336,7 +323,6 @@ redirectFrom:
 
     -   **Default:** `single`
 
-
     #### `Priority`
 
     -   **Description:**
@@ -349,7 +335,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `distance`
-
 
     #### `Cooldown_Time`
 
@@ -368,7 +353,6 @@ redirectFrom:
     -   **Example:** `Cooldown_Time = { Custom = true, value = 1.5 }`
 
     -   **Default:** `{ Custom = false, value = 1.0 }`
-
 
     #### `Interaction`
 
@@ -392,7 +376,6 @@ redirectFrom:
 
     -   **Default:** `Attack`
 
-
     #### `Attack_Hostile`
 
     -   **Description:**
@@ -404,7 +387,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `true`
-
 
     #### `Attack_Passive`
 
@@ -418,7 +400,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `List_Mode`
 
     -   **Description:**
@@ -430,7 +411,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `whitelist`
-
 
     #### `Entites_List`
 
@@ -482,7 +462,6 @@ redirectFrom:
 
     **Section:** **`ChatBot.AutoCraft`**
 
-
     #### `Enabled`
 
     -   **Description:**
@@ -494,7 +473,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `CraftingTable`
 
@@ -518,7 +496,6 @@ redirectFrom:
         CraftingTable = { X = 123.0, Y = 65.0, Z = 456.0 }
         ```
 
-
     #### `OnFailure`
 
     -   **Description:**
@@ -532,7 +509,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `abort`
-
 
     ### Defining a recipe
     
@@ -554,7 +530,7 @@ redirectFrom:
 
     -   `Type`
 
-        **Avaliable values:** `player` and `table`
+        **Available values:** `player` and `table`
 
     -   `Result`
 
@@ -657,7 +633,6 @@ redirectFrom:
 
     **Section:** **`ChatBot.AutoDig`**
 
-
     #### `Enabled`
 
     -   **Description:**
@@ -669,7 +644,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `Mode`
 
@@ -694,7 +668,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `lookat`
-
 
     #### `Locations`
 
@@ -721,7 +694,6 @@ redirectFrom:
         ]
         ```
 
-
     #### `Location_Order`
 
     -   **Description:**
@@ -742,7 +714,6 @@ redirectFrom:
 
     -   **Default:** `distance`
 
-
     #### `Auto_Start_Delay`
 
     -   **Description:**
@@ -755,7 +726,6 @@ redirectFrom:
 
     -   **Default:** `3.0`
 
-
     #### `Dig_Timeout`
 
     -   **Description:**
@@ -765,7 +735,6 @@ redirectFrom:
     -   **Type:** `float`
 
     -   **Default:** `60.0`
-
 
     #### `Log_Block_Dig`
 
@@ -779,7 +748,6 @@ redirectFrom:
 
     -   **Default:** `true`
 
-
     #### `List_Type`
 
     -   **Description:**
@@ -791,7 +759,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `whitelist`
-
 
     #### `Blocks`
 
@@ -837,7 +804,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Mode`
 
     -   **Description:**
@@ -863,7 +829,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `include`
-
 
     #### `Items`
 
@@ -913,7 +878,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `Threshold`
 
@@ -966,7 +930,6 @@ redirectFrom:
 
     **Section:** **`ChatBot.AutoFishing`**
 
-
     #### `Enabled`
 
     -   **Description:**
@@ -979,7 +942,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Antidespawn`
 
     -   **Description:**
@@ -991,7 +953,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `Mainhand`
 
@@ -1008,7 +969,6 @@ redirectFrom:
 
     -   **Default:** `true`
 
-
     #### `Auto_Start`
 
     -   **Description:**
@@ -1021,7 +981,6 @@ redirectFrom:
 
     -   **Default:** `true`
 
-
     #### `Cast_Delay`
 
     -   **Description:**
@@ -1031,7 +990,6 @@ redirectFrom:
     -   **Type:** `float`
 
     -   **Default:** `0.4`
-
 
     #### `Fishing_Delay`
 
@@ -1045,7 +1003,6 @@ redirectFrom:
 
     -   **Default:** `3.0`
 
-
     #### `Fishing_Timeout`
 
     -   **Description:**
@@ -1055,7 +1012,6 @@ redirectFrom:
     -   **Type:** `float`
 
     -   **Default:** `300.0`
-
 
     #### `Durability_Limit`
 
@@ -1069,7 +1025,6 @@ redirectFrom:
 
     -   **Default:** `2`
 
-
     #### `Auto_Rod_Switch`
 
     -   **Description:**
@@ -1081,7 +1036,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `true`
-
 
     #### `Stationary_Threshold`
 
@@ -1099,7 +1053,6 @@ redirectFrom:
 
     -   **Default:** `0.001`
 
-
     #### `Hook_Threshold`
 
     -   **Description:**
@@ -1113,7 +1066,6 @@ redirectFrom:
     -   **Type:** `float`
 
     -   **Default:** `0.2`
-
 
     #### `Log_Fish_Bobber`
 
@@ -1129,7 +1081,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Enable_Move`
 
     -   **Description:**
@@ -1144,12 +1095,11 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     ### Adding a position/movement
 
     Each position/movement is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection of `[ChatBot.AutoFishing]`.
 
-    **Avaliable settings/options:**
+    **Available settings/options:**
 
     -   `XYZ`
 
@@ -1185,7 +1135,6 @@ redirectFrom:
         facing = { yaw = 12.34, pitch = -23.45 }
         ```
 
-
     #### Full example
 
     ```toml
@@ -1219,7 +1168,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Delay`
 
     -   **Description:**
@@ -1235,7 +1183,6 @@ redirectFrom:
     -   **Example:** `{ min = 8.0, max = 60.0 }`
 
     -   **Default:** `{ min = 3.0, max = 3.0 }`
-
 
     #### `Retries`
 
@@ -1253,7 +1200,6 @@ redirectFrom:
 
     -   **Default:** `-1`
 
-
     #### `Ignore_Kick_Message`
 
     -   **Description:**
@@ -1263,7 +1209,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
 
     #### `Kick_Messages`
 
@@ -1311,7 +1256,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Matches_File`
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -1331,7 +1275,6 @@ redirectFrom:
     -   **Type:** `string`
 
     -   **Default:** `matches.ini`
-
 
     #### `Match_Colors`
 
@@ -1373,7 +1316,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Add_DateTime`
 
     -   **Description:**
@@ -1384,7 +1326,6 @@ redirectFrom:
 
     -   **Default:** `true`
 
-
     #### `Log_File`
 
     -   **Description:**
@@ -1392,7 +1333,6 @@ redirectFrom:
         This setting specifies the name of the Chat Log file that will be created.
 
     -   **Default:** `chatlog-%username%-%serverip%.txt`
-
 
     #### `Filter`
 
@@ -1423,6 +1363,275 @@ redirectFrom:
             Only internal messages and commands.
 
     -   **Default:** `messages`
+
+## Discord Bridge
+
+-   **Description:**
+
+    This Chat Bot allows you to send and receive messages and MCC commands via a Discord channel.
+
+-   **Setup:**
+
+    In order for this to work you must create a Discord bot on the [Discord Developers portal](https://discord.com/developers/applications/).
+
+    First go to [Discord Developers portal](https://discord.com/developers/applications/), click on **New Application**, fill out the name of your bot and confirm the terms of service and click **Create**.
+
+    ![Image](/images/guide/Discord_Create_Application.png)
+
+    Copy the **Application ID** and save it somewhere.
+
+    Click on the **Bot** tab in the left menu.
+
+    Click on **Add Bot**
+
+    ![Image](/images/guide/Discord_Add_Bot.png)
+
+    Click on the **Reset Token** button and copy the generated token, then paste it in the `Token` field in the MCC configuration.
+
+    Enable `Message Content Intent`, `Server Members Intent` and `Presence Intent`.
+
+    ![Image](/images/guide/Discord_Reset_Token.png)
+    ![Image](/images/guide/Discord_Privileged_Intents.png)
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **Token is what gives you access to the Bot, do not share it with anyone and keep it safe!**
+
+    </div>
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **You must Enable `Message Content Intent`, `Server Members Intent` and `Presence Intent` for the bot to work!**
+
+    </div>
+
+    Then go to [Discord Permissions Calculator](https://discordapi.com/permissions.html).
+    Paste the **Application Id** that you've copied into the **Client ID** field, then Check/Enable the **Administrator** field in General Permissions section.
+    Finally click on the **Link** down bellow and invite the Bot on to a server you want to interact with the MCC on.
+
+    ![Image](/images/guide/Discord_Permissions.png)
+
+    Go to your Discord Client and go to **Settings -> Advanced**, Enable **Developer Mode**.
+
+    Then **right click** on a server where you invited the bot to in the server list and click on **Copy ID**, paste the copied id in `GuildId` in your MCC configuration.
+
+    Then **right click** on a channel where you want to interact with the bot and click on **Copy ID**, paste the copied id in `ChannelId` in your MCC configuration.
+
+    Send a message in that channel and **right click** on your nick and click **Copy ID** and paste the copied id in `OwnersIds` list setting in your MCC configuration.
+
+    Enable the bot by setting `Enabled` to `true` in your MCC configuration and start the MCC.
+
+-   **Usage:**
+
+    To send a message simply type it out in the Discord channel and press enter.
+
+    To execute a MCC command, you must prefix it with a dot (`.`).
+    Example: `.move 145 64 832`
+
+-   **Settings:**
+
+    **Section:** **`ChatBot.DiscordBrdige`**
+
+    #### `Enabled`
+
+    -   **Description:**
+
+        This setting specifies if the Discord Bridge Chat Bot is enabled.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Token`
+
+    -   **Description:**
+
+        This is the token of your Discord bot.
+
+    -   **Type:** `string`
+
+    #### `GuildId`
+
+    -   **Description:**
+
+        This is the ID of your server/guild where you have invited the bot to.
+
+    -   **Type:** `unsigned long`
+
+    #### `ChannelId`
+
+    -   **Description:**
+
+        This is the ID of a channel on your server/guild where you want to interact with the bot.
+
+    -   **Type:** `unsigned long`
+
+    #### `OwnersIds`
+
+    -   **Description:**
+
+        This is a list of Discord user IDs which can interact with the bot.
+
+    -   **Type:** `list/array of: unsigned long`
+
+    #### `PrivateMessageFormat`
+
+    -   **Description:**
+
+        This is a format that will be used when someone has sent you a private message on the server.
+
+        Parts of the message that are between `{` and `}` will be replaced by the Chat Bot during runtime, you should not change them in any way!
+
+        For example `{message}` will be replaced with an actual message, `{username}` will be replaced with the username of the person who sent a message on the server and `{timestamp}` will be replaced with the current date and time.
+
+        For Discord message formatting/styling, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+
+    -   **Type:** `string`
+
+    -   **Default:** `**[Private Message]** {username}: {message}`
+
+    #### `PublicMessageFormat`
+
+    -   **Description:**
+
+        This is a format that will be used when sending a public message to the Discord channel.
+
+        Parts of the message that are between `{` and `}` will be replaced by the Chat Bot during runtime, you should not change them in any way!
+
+        For example `{message}` will be replaced with an actual message, `{username}` will be replaced with the username of the person who sent a message on the server and `{timestamp}` will be replaced with the current date and time.
+
+        For Discord message formatting/styling, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+
+    -   **Type:** `string`
+
+    -   **Default:** `{username}: {message}`
+
+    #### `TeleportRequestMessageFormat`
+
+    -   **Description:**
+
+        This is a format that will be used when someone has sent you a Teleport Request.
+
+        Parts of the message that are between `{` and `}` will be replaced by the Chat Bot during runtime, you should not change them in any way!
+
+        For example `{message}` will be replaced with an actual message, `{username}` will be replaced with the username of the person who sent a message on the server and `{timestamp}` will be replaced with the current date and time.
+
+        For Discord message formatting/styling, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+
+    -   **Type:** `string`
+
+    -   **Default:** `A new Teleport Request from **{username}**!`
+
+## Farmer
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **You need to have [Terrain And Movements](configuration.md#terrainandmovements) and [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this bot to work.**
+
+    </div>
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues with it and you should treat it as an experimental bot.**
+
+    </div>
+
+-   **Description:**
+
+    This bot can farm crops for you.
+    When you start it it will plant, break and bonemeal crops in order.
+
+    Supported crops:
+
+    -   Beetroot
+    -   Carrot
+    -   Melon
+    -   Netherwart
+    -   Pumpkin
+    -   Potato
+    -   Wheat
+
+    **Current list of issues:**
+
+    -   Sometimes the bot will not bone meal carrots/potatoes or melon/pumpkin stems (you will see it in a pattern of crops that have not been bonemealed)
+    -   Sometimes the bot can jump on to the crops and break the farmland when coming form a different height, it's advised to keep the farming area flat and fenced off so the items to not fly out of the farming area
+    -   If you have a farming platform that is 1 block thick and has air bellow, make it a few blocks thick because the bot can fall through sometimes when logging in and standing on farmland
+    -   Sometimes the bot can be kicked for "invalid movement" packets when farming netherwart on soul sand, we haven't been able to figure why this happens in some parts of the world, while on other it's completely fine, it's advised to keep the farming area small and flat.
+
+    _We're working on solving these issues._
+
+    **What the bot does not do as of the time of writing, but are planned features:**
+
+    -   Does not collect items which fly off to the side, (it's advised to fence off the farming area with 2 high wall)
+    -   Does not put items to the chest once the inventory is full
+    -   Does not warn you when the inventory is full
+    -   Does not refill inventory with seeds or bonemeal from chests by it self.
+
+    > **ℹ️ NOTE: The default radius of scanning is `30` blocks, we suggest that you do not use radius too big because it might slow down the bot. The bigger the radius, the slower the scanning and processing is.**
+
+-   **Commands:**
+
+    When enabled will add the `/farmer` command.
+
+    **Usage**:
+
+    ```
+    /farmer <start <crop type> [radius:<radius = 30>] [unsafe:<true/false>] [teleport:<true/false>] [debug:<true/false>]|stop>
+    ```
+
+    _Options marked with `[` and `]` are optional and in case of this command can have whatever order you prefer after the `<crop type>` field._
+
+    _Options that have `=` means that the value after the `=` is a default value, in case of this command the default radius is 30 blocks._
+
+    **Examples:**
+
+    Farming `wheat` in a radius of `40` blocks.
+
+    ```
+    /farmer start wheat radius:40
+    ```
+
+    Farming `melon` with debug output and direct teleporting:
+
+    ```
+    /farmer start melon debug:true teleport:true
+    ```
+
+    Stopping the bot:
+
+    ```
+    /farmer stop
+    ```
+
+-   **Settings:**
+
+    **Section:** **`ChatBot.Farmer`**
+
+    #### `Enabled`
+
+    -   **Description:**
+
+        This setting specifies if the Farmer Chat Bot is enabled.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Delay_Between_Tasks`
+
+    -   **Description:**
+
+        This setting specifies the delay in seconds between each task performed by the bot.
+
+    -   **Type:** `integer`
+
+    -   **Default:** `1`
+
+    -   **Minimum:** `1`
 
 ## Follow player
 
@@ -1458,7 +1667,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Update_Limit`
 
     -   **Description:**
@@ -1470,7 +1678,6 @@ redirectFrom:
     -   **Type:** `float`
 
     -   **Default:** `1.5`
-
 
     #### `Stop_At_Distance`
 
@@ -1512,7 +1719,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `English`
 
     -   **Description:**
@@ -1522,7 +1728,6 @@ redirectFrom:
     -   **Available values:** `true` and `false`.
 
     -   **Default:** `true`
-
 
     #### `FileWords_EN`
 
@@ -1538,7 +1743,6 @@ redirectFrom:
 
     -   **Default:** `hangman-en.txt`
     -   **Example**: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt)
-
 
     #### `FileWords_FR`
 
@@ -1610,7 +1814,6 @@ redirectFrom:
 
     **Section:** **`ChatBot.Mailer`**
 
-
     #### `Enabled`
 
     -   **Description:**
@@ -1623,7 +1826,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `DatabaseFile`
 
     -   **Description:**
@@ -1634,7 +1836,6 @@ redirectFrom:
 
     -   **Default:** `MailerDatabase.ini`
 
-
     #### `IgnoreListFile`
 
     -   **Description:**
@@ -1644,7 +1845,6 @@ redirectFrom:
         This file will be auto created by the Mailer Chat Bot.
 
     -   **Default:** `MailerIgnoreList.ini`
-
 
     #### `PublicInteractions`
 
@@ -1658,7 +1858,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `MaxMailsPerPlayer`
 
     -   **Description:**
@@ -1669,7 +1868,6 @@ redirectFrom:
 
     -   **Default:** `10`
 
-
     #### `MaxDatabaseSize`
 
     -   **Description:**
@@ -1679,7 +1877,6 @@ redirectFrom:
     -   **Type:** `integer`
 
     -   **Default:** `10000` (10 MB)
-
 
     #### `MailRetentionDays`
 
@@ -1695,17 +1892,11 @@ redirectFrom:
 
 -   **Description:**
 
-    This Chat Bot allows you to render items maps into `.jpg` images.
+    This Chat Bot allows you to render items maps in the console, to `.bmp` images and to relay them to Discord using the [Discord Bridge](#discord-bridge) Chat Bot.
 
     This is useful for solving captchas on servers which require it, or saving the map art into an image.
 
-    The maps are **rendered** into `Rendered_Maps` folder.
-
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-    **This bot has only been tested on Windows 10, it may not work on Linux or Mac OS due to .NET BitMap API. We're looking forward to swap the underlaying Bitmap API dependency with a library.**
-
-    </div>
+    The maps are **rendered** into `Rendered_Maps` folder which will be auto created in the same folder where the client executable is located.
 
 -   **Commands:**
 
@@ -1733,44 +1924,37 @@ redirectFrom:
 
     -   **Default:** `false`
 
+    #### `Render_In_Console`
 
-    #### `Should_Resize`
+    -   **Description:**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+        This setting specifies if the Map Chat Bot should render the map in the console.
 
-    **The bigger the size, the less is the quality.**
+        It is recommended to use something like Power Shell for the best map quality (at least for Windows users).
 
-    </div>
+    -   **Available values:** `true` and `false`.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    -   **Type:** `boolean`
 
-    **For upscaling your maps you could use (getting a bit better quality): https://deepai.org/machine-learning-model/torch-srgan**
+    -   **Default:** `true`
+
+    #### `Save_To_File`
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **If you want the Discord relay feature, you must enable this setting!**
 
     </div>
 
     -   **Description:**
 
-        This setting specifies if the Map Chat Bot should resize the image.
-
-        The default map size is `128x128`.
+        This setting specifies if the Map Chat Bot should render the map and save it into a file (`.bmp` format)
 
     -   **Available values:** `true` and `false`.
 
     -   **Type:** `boolean`
 
     -   **Default:** `false`
-
-
-    #### `Resize_To`
-
-    -   **Description:**
-
-        Which size the map should be resized to if `Should_Resize` is `true`.
-
-    -   **Type:** `integer`
-
-    -   **Default:** `256`
-
 
     #### `Auto_Render_On_Update`
 
@@ -1790,7 +1974,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Delete_All_On_Unload`
 
     -   **Description:**
@@ -1803,7 +1986,6 @@ redirectFrom:
 
     -   **Default:** `true`
 
-
     #### `Notify_On_First_Update`
 
     -   **Description:**
@@ -1811,6 +1993,80 @@ redirectFrom:
         This setting specifies if the Map Chat Bot should notify you when it got a map from the server for the first time.
 
     -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Rasize_Rendered_Image`
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **The bigger the size, the less is the quality.**
+
+    </div>
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **For upscaling your maps you could use (getting a bit better quality): https://deepai.org/machine-learning-model/torch-srgan**
+
+    </div>
+
+    -   **Description:**
+
+        This setting specifies if the Map Chat Bot should resize the rendered image (the one that is saved to a file).
+
+        This is useful if you're relying map images to Discord via the [Discord Bridge](#discord-bridge) Chat Bot.
+
+        The default map size is `128x128`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Resize_To`
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **Might be a bit slow on less powerful systems when rendering a lot of maps. Lower down the resolution if you have any performance issues. If your system is not that powerful and can't handle it, use external tools for upscaling and resizing.**
+
+    </div>
+
+    -   **Description:**
+
+        Which size the map should be resized to if `Rasize_Rendered_Image` is `true`.
+
+
+    -   **Type:** `integer`
+
+    -   **Default:** `512`
+
+    #### `Send_Rendered_To_Discord`
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **The [Discord Bridge](#discord-bridge) Chat Bot must be enabled and configured!**
+
+    </div>
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **You need to enable `Save_To_File` in order for this to work.**
+
+    </div>
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **Sometimes when the client connects, the [Discord Bridge](#discord-bridge) will be loaded a tiny bit after. Rendered map images are queued up and sent in order as soon as the [Discord Bridge](#discord-bridge) is ready and connected.**
+
+    </div>
+
+    -   **Description:**
+
+        Send a rendered map (saved to a file) to a Discord channel via the [Discord Bridge](#discord-bridge) Chat Bot.
+
 
     -   **Type:** `boolean`
 
@@ -1835,7 +2091,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `File`
 
     -   **Description:**
@@ -1843,7 +2098,6 @@ redirectFrom:
         This setting specifies the name of the player list Log file that will be created.
 
     -   **Default:** `playerlog.txt`
-
 
     #### `Delay`
 
@@ -1885,7 +2139,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `AutoTpaccept`
 
     -   **Description:**
@@ -1897,7 +2150,6 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `true`
-
 
     #### `AutoTpaccept_Everyone`
 
@@ -1951,7 +2203,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     #### `Backup_Interval`
 
     -   **Description:**
@@ -1986,7 +2237,6 @@ redirectFrom:
 
     -   **Default:** `false`
 
-
     ### Defining a task
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -2007,7 +2257,7 @@ redirectFrom:
         <setting> = <value>
         ```
 
-        **Avaliable settings/options:**
+        **Available settings/options:**
 
         -   `Trigger_On_First_Login`
 
@@ -2060,7 +2310,6 @@ redirectFrom:
             ```toml
             Trigger_On_Interval = { Enable = true, MinTime = 30.0, MaxTime = 160.0 }
             ```
-
 
     ### Full example
 
