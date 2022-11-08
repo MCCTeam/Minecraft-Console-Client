@@ -236,6 +236,28 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /bed sleep 50
     ```
 
+### `blockinfo`
+
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+**You need to have [Terrain And Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+
+</div>
+
+-   **Description:**
+
+    Reports the block type at the given position.
+
+    If you use the `-s` option it will report the types of blocks around the targeted blokcs.
+
+-   **Usage:**
+
+    Basic usage:
+
+    ```
+    /blockinfo <x> <y> <z> [-s]
+    ```
+
 ### `bots`
 
 -   **Description:**
@@ -364,6 +386,30 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /dropitem diamond
     ```
 
+### `enchant`
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+
+    </div>
+
+-   **Description:**
+
+    Allows you to enchant items in an enchanting table.
+
+    You need to first open an enchanting table and then place and item that you want to enchant and lapis in the enchanting table, and then you can execute the command.
+
+    To open an enchanting table you can use the [`useblock`](#useblock) command.
+
+-   **Usage:**
+
+    Basic usage:
+
+    ```
+    /enchant <top|middle|bottom>
+    ```
+
 ### `entity`
 
 -   **Description:**
@@ -440,20 +486,17 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /execif test2 == "1" ---> send Success 2!
     ```
 
-
     Basic C# expression:
 
     ```
     /execif 1 + 2 + 3 == 6 ---> send Success!
     ```
 
-
     Using MCC class:
 
     ```
     /execif MCC.GetHealth() == 20.0 ---> send Success!
     ```
-
 
     Using in combination with [`execmulti`](#execmulti):
 
