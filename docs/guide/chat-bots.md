@@ -1526,17 +1526,17 @@ redirectFrom:
 
 ## Farmer
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to have [Terrain And Movements](configuration.md#terrainandmovements) and [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this bot to work.**
+**You need to have [Terrain And Movements](configuration.md#terrainandmovements) and [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this bot to work.**
 
-    </div>
+</div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues with it and you should treat it as an experimental bot.**
+**This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues with it and you should treat it as an experimental bot.**
 
-    </div>
+</div>
 
 -   **Description:**
 

@@ -388,11 +388,11 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 ### `enchant`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+**You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
-    </div>
+</div>
 
 -   **Description:**
 
