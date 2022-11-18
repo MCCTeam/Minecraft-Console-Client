@@ -1,6 +1,8 @@
 name: Build Documents
 
 on:
+  schedule:
+    - cron: '45 0 * * *'
   workflow_dispatch:
 
 jobs:
