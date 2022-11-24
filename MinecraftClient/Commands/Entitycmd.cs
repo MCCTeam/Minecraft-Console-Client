@@ -126,7 +126,16 @@ namespace MinecraftClient.Commands
                     }
                     catch (FormatException)
                     {
-                        EntityType interacttype = Enum.Parse<EntityType>(args[0]);
+                        EntityType interacttype;
+                        try
+                        {
+                            interacttype = Enum.Parse<EntityType>(args[0]);
+                        }
+                        catch (Exception)
+                        {
+                            return Translations.cmd_entityCmd_not_found;
+                        }
+
                         string action = args.Length > 1
                         ? args[1].ToLower()
                         : "list";
