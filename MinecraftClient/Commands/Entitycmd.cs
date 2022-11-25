@@ -99,9 +99,8 @@ namespace MinecraftClient.Commands
                 string[] args = GetArgs(command);
                 if (args.Length >= 1)
                 {
-                    try
+                    if (int.TryParse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture, out int entityID))
                     {
-                        int entityID = int.Parse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture);
                         if (handler.GetEntities().ContainsKey(entityID))
                         {
                             string action = args.Length > 1
@@ -124,22 +123,13 @@ namespace MinecraftClient.Commands
                         }
                         else return Translations.cmd_entityCmd_not_found;
                     }
-                    catch (FormatException)
+                    else if (Enum.TryParse(args[0], true, out EntityType interacttype))
                     {
-                        EntityType interacttype;
-                        try
-                        {
-                            interacttype = Enum.Parse<EntityType>(args[0]);
-                        }
-                        catch (Exception)
-                        {
-                            return Translations.cmd_entityCmd_not_found;
-                        }
-
                         string action = args.Length > 1
                         ? args[1].ToLower()
                         : "list";
-                        if (action == "attack" || action == "use") {
+                        if (action == "attack" || action == "use")
+                        {
                             string actionst = Translations.cmd_entityCmd_attacked;
                             int actioncount = 0;
                             foreach (var entity2 in handler.GetEntities())
@@ -175,7 +165,8 @@ namespace MinecraftClient.Commands
                         }
                         response.Append(GetCmdDescTranslated());
                         return response.ToString();
-                   }
+                    }
+                    else return GetCmdDescTranslated();
                 }
                 else
                 {
