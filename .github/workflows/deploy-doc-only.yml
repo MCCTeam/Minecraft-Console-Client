@@ -1,4 +1,4 @@
-name: Build Documents
+﻿name: Build Documents
 
 on:
   schedule:

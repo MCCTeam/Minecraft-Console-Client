@@ -1,4 +1,4 @@
-namespace MinecraftClient.Protocol
+﻿namespace MinecraftClient.Protocol
 {
     public enum EntityActionType
     {

@@ -1,4 +1,4 @@
-import type { HeadConfig } from '@vuepress/core'
+﻿import type { HeadConfig } from '@vuepress/core'
 
 export const headConfig: HeadConfig[] = [
     [

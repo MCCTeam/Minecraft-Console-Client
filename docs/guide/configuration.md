@@ -1,4 +1,4 @@
----
+﻿---
 title: Configuration
 redirectFrom: 
     - "/g/conf/index.html"

@@ -1,4 +1,4 @@
-# Using the .NET official image for .NET 6.0
+﻿# Using the .NET official image for .NET 6.0
 FROM mcr.microsoft.com/dotnet/sdk:6.0
 
 # If you want to use a specific build, un-comment the ENV MCC_VERSION line (remove the # from the start)

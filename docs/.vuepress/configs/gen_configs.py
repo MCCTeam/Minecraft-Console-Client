@@ -1,4 +1,4 @@
-import os
+﻿import os
 
 LangNameMap = {
    "af": "Afrikaans",

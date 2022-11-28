@@ -1,4 +1,4 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 
 MCC.LoadBot(new SugarCaneFarmer());
 

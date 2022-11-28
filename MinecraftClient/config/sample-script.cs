@@ -1,4 +1,4 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 
 /* This is a sample script for Minecraft Console Client
  * The code provided in this file will be compiled at runtime and executed

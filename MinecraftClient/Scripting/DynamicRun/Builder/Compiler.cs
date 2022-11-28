@@ -1,4 +1,4 @@
-/*
+﻿/*
 MIT License
 Copyright (c) 2019 Laurent Kempé
 https://github.com/laurentkempe/DynamicRun/blob/master/LICENSE
