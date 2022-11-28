@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 
 cd /opt/data || exit 1
 

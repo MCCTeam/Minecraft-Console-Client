@@ -1,4 +1,4 @@
-﻿import type { SiteLocaleData  } from '@vuepress/shared'
+import type { SiteLocaleData  } from '@vuepress/shared'
 import type { DefaultThemeLocaleData } from '@vuepress/theme-default'
 import { headConfig } from '../head.js'
 
