@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -2966,7 +2966,7 @@ namespace MinecraftClient
         /// Called on Entity Equipment
         /// </summary>
         /// <param name="entityid"> Entity ID</param>
-        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2-5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
         public void OnEntityEquipment(int entityid, int slot, Item? item)
         {

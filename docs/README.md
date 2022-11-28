@@ -1,4 +1,4 @@
----
+﻿---
 title: Home
 home: true
 heroImage: /images/MCC_logo_with_edge.png

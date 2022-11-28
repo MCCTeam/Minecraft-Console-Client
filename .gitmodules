@@ -1,4 +1,4 @@
-[submodule "ConsoleInteractive"]
+﻿[submodule "ConsoleInteractive"]
 	path = ConsoleInteractive
 	url = https://github.com/breadbyte/ConsoleInteractive
 	branch = main

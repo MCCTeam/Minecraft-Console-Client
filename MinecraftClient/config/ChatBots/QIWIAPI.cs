@@ -1,4 +1,4 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 //using System.Threading.Tasks;
 
 MCC.LoadBot(new QIWI_DonationBot());

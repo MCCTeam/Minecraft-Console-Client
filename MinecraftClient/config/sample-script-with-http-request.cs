@@ -1,4 +1,4 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 
 string mojangStatus = PerformHttpRequest("https://status.mojang.com/check");
 MCC.LogToConsole(mojangStatus);

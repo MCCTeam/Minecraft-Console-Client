@@ -1,4 +1,4 @@
-name: Build MCC and Documents
+﻿name: Build MCC and Documents
 
 on:
   push:

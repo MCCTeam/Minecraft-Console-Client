@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
