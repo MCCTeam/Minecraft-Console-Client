@@ -1,4 +1,4 @@
-﻿---
+---
 title: About & Features
 ---
 

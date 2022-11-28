@@ -1,4 +1,4 @@
-﻿name: Sync Translations
+name: Sync Translations
 
 on:
   workflow_dispatch:
