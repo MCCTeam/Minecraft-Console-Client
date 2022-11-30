@@ -205,7 +205,7 @@ namespace MinecraftClient.Commands
                                 else
                                     return Translations.cmd_entityCmd_not_found;
                             }
-                            else if (int.TryParse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture, out int entityID2))
+                            else if (int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int entityID2))
                             {
                                 if (handler.GetEntities().TryGetValue(entityID2, out Entity? entity))
                                     return InteractionWithEntity(handler, entity, args.Length > 1 ? args[1].ToLower() : "list");
