@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using MinecraftClient.Inventory;
@@ -10,10 +11,10 @@ namespace MinecraftClient.Commands
     class Entitycmd : Command
     {
         public override string CmdName { get { return "entity"; } }
-        public override string CmdUsage { get { return "entity <id|entitytype> <attack|use>"; } }
+        public override string CmdUsage { get { return "entity [near] <id|entitytype> <attack|use>"; } }
         public override string CmdDesc { get { return string.Empty; } }
 
-        private static void GetEntityInfoShort(StringBuilder sb, Entity entity)
+        private static string GetEntityInfoShort(Entity entity)
         {
             int id = entity.ID;
             float health = entity.Health;
@@ -26,17 +27,18 @@ namespace MinecraftClient.Commands
             string location = $"X:{Math.Round(entity.Location.X, 2)}, Y:{Math.Round(entity.Location.Y, 2)}, Z:{Math.Round(entity.Location.Z, 2)}";
 
             if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
-                sb.AppendLine($" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_item}: {item.GetTypeString()}, {Translations.cmd_entityCmd_location}: {location}");
+                return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_item}: {item.GetTypeString()}, {Translations.cmd_entityCmd_location}: {location}";
             else if (type == EntityType.Player && !string.IsNullOrEmpty(nickname))
-                sb.AppendLine($" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_nickname}: §8{nickname}§8, {Translations.cmd_entityCmd_latency}: {latency}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_pose}: {pose}, {Translations.cmd_entityCmd_location}: {location}");
+                return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_nickname}: §8{nickname}§8, {Translations.cmd_entityCmd_latency}: {latency}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_pose}: {pose}, {Translations.cmd_entityCmd_location}: {location}";
             else if (type == EntityType.Player && !string.IsNullOrEmpty(customname))
-                sb.AppendLine($" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_customname}: §8{customname.Replace("&", "§")}§8, {Translations.cmd_entityCmd_latency}: {latency}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_pose}: {pose}, {Translations.cmd_entityCmd_location}: {location}");
+                return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_customname}: §8{customname.Replace("&", "§")}§8, {Translations.cmd_entityCmd_latency}: {latency}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_pose}: {pose}, {Translations.cmd_entityCmd_location}: {location}";
             else
-                sb.AppendLine($" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_location}: {location}");
+                return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_location}: {location}";
         }
 
-        private static void GetEntityInfoDetailed(StringBuilder sb, McClient handler, Entity entity)
+        private static string GetEntityInfoDetailed(McClient handler, Entity entity)
         {
+            StringBuilder sb = new();
             int id = entity.ID;
             float health = entity.Health;
             int latency = entity.Latency;
@@ -46,6 +48,7 @@ namespace MinecraftClient.Commands
             EntityPose pose = entity.Pose;
             EntityType type = entity.Type;
             double distance = Math.Round(entity.Location.Distance(handler.GetCurrentLocation()), 2);
+            string location = $"X:{Math.Round(entity.Location.X, 2)}, Y:{Math.Round(entity.Location.Y, 2)}, Z:{Math.Round(entity.Location.Z, 2)}";
 
             string color = "§a"; // Green
             if (health < 10)
@@ -53,14 +56,17 @@ namespace MinecraftClient.Commands
             else if (health < 15)
                 color = "§e";  // Yellow
 
-            string location = $"X:{Math.Round(entity.Location.X, 2)}, Y:{Math.Round(entity.Location.Y, 2)}, Z:{Math.Round(entity.Location.Z, 2)}";
             sb.Append($"{Translations.cmd_entityCmd_entity}: {id}\n [MCC] Type: {entity.GetTypeString()}");
+
             if (!string.IsNullOrEmpty(nickname))
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_nickname}: {nickname}");
             else if (!string.IsNullOrEmpty(customname))
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_customname}: {customname.Replace("&", "§")}§8");
+
             if (type == EntityType.Player)
+            {
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_latency}: {latency}");
+            }
             else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
             {
                 string? displayName = item.DisplayName;
@@ -86,10 +92,49 @@ namespace MinecraftClient.Commands
                 if (entity.Equipment.ContainsKey(2) && entity.Equipment[2] != null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_boots}: {entity.Equipment[2].GetTypeString()} x{entity.Equipment[2].Count}");
             }
+
             sb.Append($"\n [MCC] {Translations.cmd_entityCmd_pose}: {pose}");
             sb.Append($"\n [MCC] {Translations.cmd_entityCmd_health}: {color}{health}§8");
             sb.Append($"\n [MCC] {Translations.cmd_entityCmd_distance}: {distance}");
             sb.Append($"\n [MCC] {Translations.cmd_entityCmd_location}: {location}");
+
+            return sb.ToString();
+        }
+
+        private static bool TryGetClosetEntity(Dictionary<int, Entity> entities, Location location, EntityType? entityType, [NotNullWhen(true)] out Entity? closest)
+        {
+            closest = null;
+            bool find = false;
+            double closest_distance = double.PositiveInfinity;
+            foreach (var entity in entities)
+            {
+                if (entityType.HasValue && entity.Value.Type != entityType)
+                    continue;
+
+                double distance = Math.Round(entity.Value.Location.Distance(location), 2);
+                if (distance < closest_distance)
+                {
+                    find = true;
+                    closest = entity.Value;
+                    closest_distance = distance;
+                }
+            }
+            return find;
+        }
+
+        private static string InteractionWithEntity(McClient handler, Entity entity, string action)
+        {
+            switch (action)
+            {
+                case "attack":
+                    handler.InteractEntity(entity.ID, InteractType.Attack);
+                    return Translations.cmd_entityCmd_attacked;
+                case "use":
+                    handler.InteractEntity(entity.ID, InteractType.Interact);
+                    return Translations.cmd_entityCmd_used;
+                default:
+                    return GetEntityInfoDetailed(handler, entity);
+            }
         }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
@@ -97,31 +142,14 @@ namespace MinecraftClient.Commands
             if (handler.GetEntityHandlingEnabled())
             {
                 string[] args = GetArgs(command);
-                if (args.Length >= 1)
+                if (args.Length > 0)
                 {
                     if (int.TryParse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture, out int entityID))
                     {
-                        if (handler.GetEntities().ContainsKey(entityID))
-                        {
-                            string action = args.Length > 1
-                                ? args[1].ToLower()
-                                : "list";
-                            switch (action)
-                            {
-                                case "attack":
-                                    handler.InteractEntity(entityID, InteractType.Attack);
-                                    return Translations.cmd_entityCmd_attacked;
-                                case "use":
-                                    handler.InteractEntity(entityID, InteractType.Interact);
-                                    return Translations.cmd_entityCmd_used;
-                                default:
-                                    Entity entity = handler.GetEntities()[entityID];
-                                    StringBuilder done = new();
-                                    GetEntityInfoDetailed(done, handler, entity);
-                                    return done.ToString();
-                            }
-                        }
-                        else return Translations.cmd_entityCmd_not_found;
+                        if (handler.GetEntities().TryGetValue(entityID, out Entity? entity))
+                            return InteractionWithEntity(handler, entity, args.Length > 1 ? args[1].ToLower() : "list");
+                        else
+                            return Translations.cmd_entityCmd_not_found;
                     }
                     else if (Enum.TryParse(args[0], true, out EntityType interacttype))
                     {
@@ -160,11 +188,39 @@ namespace MinecraftClient.Commands
                         {
                             if (entity2.Value.Type == interacttype)
                             {
-                                GetEntityInfoShort(response, entity2.Value);
+                                response.AppendLine(GetEntityInfoShort(entity2.Value));
                             }
                         }
                         response.Append(GetCmdDescTranslated());
                         return response.ToString();
+                    }
+                    else if (args[0] == "near")
+                    {
+                        if (args.Length > 1)
+                        {
+                            if (Enum.TryParse(args[1], true, out EntityType entityType))
+                            {
+                                if (TryGetClosetEntity(handler.GetEntities(), handler.GetCurrentLocation(), entityType, out Entity? closest))
+                                    return InteractionWithEntity(handler, closest, args.Length > 2 ? args[2].ToLower() : "list");
+                                else
+                                    return Translations.cmd_entityCmd_not_found;
+                            }
+                            else if (int.TryParse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture, out int entityID2))
+                            {
+                                if (handler.GetEntities().TryGetValue(entityID2, out Entity? entity))
+                                    return InteractionWithEntity(handler, entity, args.Length > 1 ? args[1].ToLower() : "list");
+                                else
+                                    return Translations.cmd_entityCmd_not_found;
+                            }
+                            else return GetCmdDescTranslated();
+                        }
+                        else
+                        {
+                            if (TryGetClosetEntity(handler.GetEntities(), handler.GetCurrentLocation(), null, out Entity? closest))
+                                return GetEntityInfoDetailed(handler, closest);
+                            else
+                                return Translations.cmd_entityCmd_not_found;
+                        }
                     }
                     else return GetCmdDescTranslated();
                 }
@@ -175,7 +231,7 @@ namespace MinecraftClient.Commands
                     response.AppendLine(Translations.cmd_entityCmd_entities);
                     foreach (var entity2 in entities)
                     {
-                        GetEntityInfoShort(response, entity2.Value);
+                        response.AppendLine(GetEntityInfoShort(entity2.Value));
                     }
                     response.Append(GetCmdDescTranslated());
                     return response.ToString();
