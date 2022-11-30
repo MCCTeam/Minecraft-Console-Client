@@ -86,7 +86,7 @@ namespace MinecraftClient.Proxy
 
                     if (!proxy_ok)
                     {
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.proxy_connected, Config.Server.Host, Config.Server.Port));
+                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.proxy_connected, Config.Server.Host, Config.Server.Port));
                         proxy_ok = true;
                     }
 

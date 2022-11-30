@@ -123,7 +123,7 @@ namespace MinecraftClient.ChatBots
                         Console.Beep();
                         Console.Beep();
                     }
-                    LogToConsole(Translations.bot_alerts_start_rain);
+                    LogToConsole("§c" + Translations.bot_alerts_start_rain);
                 }
             }
             else if (curRainLevel >= threshold && level < threshold)
@@ -134,7 +134,7 @@ namespace MinecraftClient.ChatBots
                     {
                         Console.Beep();
                     }
-                    LogToConsole(Translations.bot_alerts_end_rain);
+                    LogToConsole("§c" + Translations.bot_alerts_end_rain);
                 }
             }
             curRainLevel = level;
@@ -151,7 +151,7 @@ namespace MinecraftClient.ChatBots
                         Console.Beep();
                         Console.Beep();
                     }
-                    LogToConsole(Translations.bot_alerts_start_thunderstorm);
+                    LogToConsole("§c" + Translations.bot_alerts_start_thunderstorm);
                 }
             }
             else if (curThunderLevel >= threshold && level < threshold)
@@ -162,7 +162,7 @@ namespace MinecraftClient.ChatBots
                     {
                         Console.Beep();
                     }
-                    LogToConsole(Translations.bot_alerts_end_thunderstorm);
+                    LogToConsole("§c" + Translations.bot_alerts_end_thunderstorm);
                 }
             }
             curThunderLevel = level;
