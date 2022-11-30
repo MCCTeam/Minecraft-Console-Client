@@ -219,7 +219,7 @@ namespace MinecraftClient.Protocol
             //File not found? Try downloading language file from Mojang's servers?
             if (!File.Exists(Language_File))
             {
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_download, Config.Main.Advanced.Language));
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_download, Config.Main.Advanced.Language));
                 HttpClient httpClient = new();
                 try
                 {
@@ -233,7 +233,7 @@ namespace MinecraftClient.Protocol
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
                     string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
                     if (Settings.Config.Logging.DebugMessages)
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_request, translation_file_location));
+                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_request, translation_file_location));
 
                     Task<string> fetch_file = httpClient.GetStringAsync(translation_file_location);
                     fetch_file.Wait();
@@ -245,11 +245,11 @@ namespace MinecraftClient.Protocol
                         stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue.Replace("\n", "\\n").Replace("\r", String.Empty)).Append(Environment.NewLine);
                     File.WriteAllText(Language_File, stringBuilder.ToString());
 
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_done, Language_File));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, Language_File));
                 }
                 catch
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.chat_fail, acceptnewlines: true);
+                    ConsoleIO.WriteLineFormatted("§8" + Translations.chat_fail, acceptnewlines: true);
                 }
                 httpClient.Dispose();
             }
@@ -259,7 +259,7 @@ namespace MinecraftClient.Protocol
               && File.Exists(Settings.TranslationsFile_FromMCDir))
             {
                 Language_File = Settings.TranslationsFile_FromMCDir;
-                ConsoleIO.WriteLineFormatted(Translations.chat_from_dir, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§8" + Translations.chat_from_dir, acceptnewlines: true);
             }
 
             //Load the external dictionnary of translation rules or display an error message
@@ -278,11 +278,11 @@ namespace MinecraftClient.Protocol
                 }
 
                 if (Settings.Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(Translations.chat_loaded, acceptnewlines: true);
+                    ConsoleIO.WriteLineFormatted("§8" + Translations.chat_loaded, acceptnewlines: true);
             }
             else //No external dictionnary found.
             {
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_not_found, Language_File));
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_not_found, Language_File));
             }
         }
 

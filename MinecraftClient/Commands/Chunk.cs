@@ -127,7 +127,7 @@ namespace MinecraftClient.Commands
                         if (markedChunkPos != null &&
                             (((Math.Max(bottomMost, markChunkZ) - Math.Min(topMost, markChunkZ) + 1) > consoleHeight) ||
                             ((Math.Max(rightMost, markChunkX) - Math.Min(leftMost, markChunkX) + 1) > consoleWidth)))
-                            sb.AppendLine(Translations.cmd_chunk_outside);
+                            sb.AppendLine("§x§0" + Translations.cmd_chunk_outside);
                         else
                         {
                             topMost = Math.Min(topMost, markChunkZ);
@@ -173,7 +173,7 @@ namespace MinecraftClient.Commands
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
-                            handler.Log.Info(Translations.cmd_chunk_for_debug);
+                            handler.Log.Info("§x§0" + Translations.cmd_chunk_for_debug);
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
@@ -190,7 +190,7 @@ namespace MinecraftClient.Commands
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
-                            handler.Log.Info(Translations.cmd_chunk_for_debug);
+                            handler.Log.Info("§x§0" + Translations.cmd_chunk_for_debug);
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
@@ -207,7 +207,7 @@ namespace MinecraftClient.Commands
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
-                            handler.Log.Info(Translations.cmd_chunk_for_debug);
+                            handler.Log.Info("§x§0" + Translations.cmd_chunk_for_debug);
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             world[chunkX, chunkZ] = null;

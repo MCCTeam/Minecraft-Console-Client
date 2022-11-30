@@ -190,7 +190,7 @@ namespace MinecraftClient.Protocol.Session
                 }
                 catch (IOException ex)
                 {
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_read_fail, ex.Message));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.cache_read_fail, ex.Message));
                 }
                 catch (SerializationException ex2)
                 {
@@ -236,7 +236,7 @@ namespace MinecraftClient.Protocol.Session
                 }
                 catch (IOException e)
                 {
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_read_fail_plain, e.Message));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.cache_read_fail_plain, e.Message));
                 }
             }
 
@@ -249,7 +249,7 @@ namespace MinecraftClient.Protocol.Session
         private static void SaveToDisk()
         {
             if (Config.Logging.DebugMessages)
-                ConsoleIO.WriteLineFormatted(Translations.cache_saving, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§8" + Translations.cache_saving, acceptnewlines: true);
 
             List<string> sessionCacheLines = new()
             {
@@ -265,7 +265,7 @@ namespace MinecraftClient.Protocol.Session
             }
             catch (IOException e)
             {
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_save_fail, e.Message));
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.cache_save_fail, e.Message));
             }
         }
     }
