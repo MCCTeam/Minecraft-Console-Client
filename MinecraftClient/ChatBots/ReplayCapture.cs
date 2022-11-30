@@ -20,7 +20,7 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.ReplayCapture.Backup_Interval$")]
+            [TomlInlineComment("$ChatBot.ReplayCapture.Backup_Interval$")]
             public double Backup_Interval = 300.0;
 
             public void OnSettingUpdate()

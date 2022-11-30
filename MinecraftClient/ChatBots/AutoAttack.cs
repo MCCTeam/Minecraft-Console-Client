@@ -20,28 +20,28 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.Mode$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.Mode$")]
             public AttackMode Mode = AttackMode.single;
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.Priority$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.Priority$")]
             public PriorityType Priority = PriorityType.distance;
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.Cooldown_Time$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.Cooldown_Time$")]
             public CooldownConfig Cooldown_Time = new(false, 1.0);
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.Interaction$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.Interaction$")]
             public InteractType Interaction = InteractType.Attack;
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.Attack_Hostile$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.Attack_Hostile$")]
             public bool Attack_Hostile = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.Attack_Passive$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.Attack_Passive$")]
             public bool Attack_Passive = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.List_Mode$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.List_Mode$")]
             public ListType List_Mode = ListType.whitelist;
 
-            [TomlInlineComment("$config.ChatBot.AutoAttack.Entites_List$")]
+            [TomlInlineComment("$ChatBot.AutoAttack.Entites_List$")]
             public List<EntityType> Entites_List = new() { EntityType.Zombie, EntityType.Cow };
 
             public void OnSettingUpdate()

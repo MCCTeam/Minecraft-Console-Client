@@ -19,7 +19,7 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoDrop.Mode$")]
+            [TomlInlineComment("$ChatBot.AutoDrop.Mode$")]
             public DropMode Mode = DropMode.include;
 
             public List<ItemType> Items = new() { ItemType.Cobblestone, ItemType.Dirt };

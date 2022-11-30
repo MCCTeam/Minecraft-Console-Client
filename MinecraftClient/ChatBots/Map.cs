@@ -29,28 +29,28 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Render_In_Console$")]
+            [TomlInlineComment("$ChatBot.Map.Render_In_Console$")]
             public bool Render_In_Console = true;
 
-            [TomlInlineComment("$config.ChatBot.Map.Save_To_File$")]
+            [TomlInlineComment("$ChatBot.Map.Save_To_File$")]
             public bool Save_To_File = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Auto_Render_On_Update$")]
+            [TomlInlineComment("$ChatBot.Map.Auto_Render_On_Update$")]
             public bool Auto_Render_On_Update = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Delete_All_On_Unload$")]
+            [TomlInlineComment("$ChatBot.Map.Delete_All_On_Unload$")]
             public bool Delete_All_On_Unload = true;
 
-            [TomlInlineComment("$config.ChatBot.Map.Notify_On_First_Update$")]
+            [TomlInlineComment("$ChatBot.Map.Notify_On_First_Update$")]
             public bool Notify_On_First_Update = true;
 
-            [TomlInlineComment("$config.ChatBot.Map.Rasize_Rendered_Image$")]
+            [TomlInlineComment("$ChatBot.Map.Rasize_Rendered_Image$")]
             public bool Rasize_Rendered_Image = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Resize_To$")]
+            [TomlInlineComment("$ChatBot.Map.Resize_To$")]
             public int Resize_To = 512;
 
-            [TomlPrecedingComment("$config.ChatBot.Map.Send_Rendered_To_Bridges$")]
+            [TomlPrecedingComment("$ChatBot.Map.Send_Rendered_To_Bridges$")]
             public bool Send_Rendered_To_Discord = false;
             public bool Send_Rendered_To_Telegram = false;
 

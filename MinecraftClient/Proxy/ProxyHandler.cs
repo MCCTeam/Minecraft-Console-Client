@@ -17,22 +17,22 @@ namespace MinecraftClient.Proxy
         [TomlDoNotInlineObject]
         public class Configs
         {
-            [TomlInlineComment("$config.Proxy.Enabled_Login$")]
+            [TomlInlineComment("$Proxy.Enabled_Login$")]
             public bool Enabled_Login = false;
 
-            [TomlInlineComment("$config.Proxy.Enabled_Ingame$")]
+            [TomlInlineComment("$Proxy.Enabled_Ingame$")]
             public bool Enabled_Ingame = false;
 
-            [TomlInlineComment("$config.Proxy.Server$")]
+            [TomlInlineComment("$Proxy.Server$")]
             public ProxyInfoConfig Server = new("0.0.0.0", 8080);
 
-            [TomlInlineComment("$config.Proxy.Proxy_Type$")]
+            [TomlInlineComment("$Proxy.Proxy_Type$")]
             public ProxyType Proxy_Type = ProxyType.HTTP;
 
-            [TomlInlineComment("$config.Proxy.Username$")]
+            [TomlInlineComment("$Proxy.Username$")]
             public string Username = "";
 
-            [TomlInlineComment("$config.Proxy.Password$")]
+            [TomlInlineComment("$Proxy.Password$")]
             public string Password = "";
 
             public void OnSettingUpdate() { }

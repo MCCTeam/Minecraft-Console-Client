@@ -1,0 +1,768 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+		Microsoft ResX Schema
+
+		Version 1.3
+
+		The primary goals of this format is to allow a simple XML format 
+		that is mostly human readable. The generation and parsing of the 
+		various data types are done through the TypeConverter classes 
+		associated with the data types.
+
+		Example:
+
+		... ado.net/XML headers & schema ...
+		<resheader name="resmimetype">text/microsoft-resx</resheader>
+		<resheader name="version">1.3</resheader>
+		<resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+		<resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+		<data name="Name1">this is my long string</data>
+		<data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+		<data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+			[base64 mime encoded serialized .NET Framework object]
+		</data>
+		<data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+			[base64 mime encoded string representing a byte array form of the .NET Framework object]
+		</data>
+
+		There are any number of "resheader" rows that contain simple 
+		name/value pairs.
+
+		Each data row contains a name, and value. The row also contains a 
+		type or mimetype. Type corresponds to a .NET class that support 
+		text/value conversion through the TypeConverter architecture. 
+		Classes that don't support this are serialized and stored with the 
+		mimetype set.
+
+		The mimetype is used for serialized objects, and tells the 
+		ResXResourceReader how to depersist the object. This is currently not 
+		extensible. For a given mimetype the value must be set accordingly:
+
+		Note - application/x-microsoft.net.object.binary.base64 is the format 
+		that the ResXResourceWriter will generate, however the reader can 
+		read any of the formats listed below.
+
+		mimetype: application/x-microsoft.net.object.binary.base64
+		value   : The object must be serialized with 
+			: System.Serialization.Formatters.Binary.BinaryFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.soap.base64
+		value   : The object must be serialized with 
+			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.bytearray.base64
+		value   : The object must be serialized into a byte array 
+			: using a System.ComponentModel.TypeConverter
+			: and then encoded with base64 encoding.
+	-->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppVars.Variables" xml:space="preserve">
+    <value>can be used in some other fields as %yourvar%
+%username% and %serverip% are reserved variables.</value>
+  </data>
+  <data name="ChatBot" xml:space="preserve">
+    <value>=============================== #
+ Minecraft Console Client Bots  #
+=============================== #</value>
+  </data>
+  <data name="ChatBot.Alerts" xml:space="preserve">
+    <value>Get alerted when specified words are detected in chat
+Useful for moderating your server or detecting when someone is talking to you</value>
+  </data>
+  <data name="ChatBot.Alerts.Beep_Enabled" xml:space="preserve">
+    <value>Play a beep sound when a word is detected in addition to highlighting.</value>
+  </data>
+  <data name="ChatBot.Alerts.Excludes" xml:space="preserve">
+    <value>List of words/strings to NOT alert you on.</value>
+  </data>
+  <data name="ChatBot.Alerts.Log_File" xml:space="preserve">
+    <value>The name of a file where alers logs will be written.</value>
+  </data>
+  <data name="ChatBot.Alerts.Log_To_File" xml:space="preserve">
+    <value>Log alerts info a file.</value>
+  </data>
+  <data name="ChatBot.Alerts.Matches" xml:space="preserve">
+    <value>List of words/strings to alert you on.</value>
+  </data>
+  <data name="ChatBot.Alerts.Trigger_By_Rain" xml:space="preserve">
+    <value>Trigger alerts when it rains and when it stops.</value>
+  </data>
+  <data name="ChatBot.Alerts.Trigger_By_Thunderstorm" xml:space="preserve">
+    <value>Triggers alerts at the beginning and end of thunderstorms.</value>
+  </data>
+  <data name="ChatBot.Alerts.Trigger_By_Words" xml:space="preserve">
+    <value>Triggers an alert after receiving a specified keyword.</value>
+  </data>
+  <data name="ChatBot.AntiAfk" xml:space="preserve">
+    <value>Send a command on a regular or random basis or make the bot walk around randomly to avoid automatic AFK disconnection
+/!\ Make sure your server rules do not forbid anti-AFK mechanisms!
+/!\ Make sure you keep the bot in an enclosure to prevent it wandering off if you're using terrain handling! (Recommended size 5x5x5)</value>
+  </data>
+  <data name="ChatBot.AntiAfk.Command" xml:space="preserve">
+    <value>Command to send to the server.</value>
+  </data>
+  <data name="ChatBot.AntiAfk.Delay" xml:space="preserve">
+    <value>The time interval for execution. (in seconds)</value>
+  </data>
+  <data name="ChatBot.AntiAfk.Use_Sneak" xml:space="preserve">
+    <value>Whether to sneak when sending the command.</value>
+  </data>
+  <data name="ChatBot.AntiAfk.Use_Terrain_Handling" xml:space="preserve">
+    <value>Use terrain handling to enable the bot to move around.</value>
+  </data>
+  <data name="ChatBot.AntiAfk.Walk_Range" xml:space="preserve">
+    <value>The range the bot can move around randomly (Note: the bigger the range, the slower the bot will be)</value>
+  </data>
+  <data name="ChatBot.AntiAfk.Walk_Retries" xml:space="preserve">
+    <value>How many times can the bot fail trying to move before using the command method.</value>
+  </data>
+  <data name="ChatBot.AutoAttack" xml:space="preserve">
+    <value>Automatically attack hostile mobs around you
+You need to enable Entity Handling to use this bot
+/!\ Make sure server rules allow your planned use of AutoAttack
+/!\ SERVER PLUGINS may consider AutoAttack to be a CHEAT MOD and TAKE ACTION AGAINST YOUR ACCOUNT so DOUBLE CHECK WITH SERVER RULES!</value>
+  </data>
+  <data name="ChatBot.AutoAttack.Attack_Hostile" xml:space="preserve">
+    <value>Allow attacking hostile mobs.</value>
+  </data>
+  <data name="ChatBot.AutoAttack.Attack_Passive" xml:space="preserve">
+    <value>Allow attacking passive mobs.</value>
+  </data>
+  <data name="ChatBot.AutoAttack.Cooldown_Time" xml:space="preserve">
+    <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
+  </data>
+  <data name="ChatBot.AutoAttack.Entites_List" xml:space="preserve">
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
+  </data>
+  <data name="ChatBot.AutoAttack.Interaction" xml:space="preserve">
+    <value>Possible values: "Interact", "Attack" (default), "InteractAt" (Interact and Attack).</value>
+  </data>
+  <data name="ChatBot.AutoAttack.List_Mode" xml:space="preserve">
+    <value>Wether to treat the entities list as a "whitelist" or as a "blacklist".</value>
+  </data>
+  <data name="ChatBot.AutoAttack.Mode" xml:space="preserve">
+    <value>"single" or "multi". single target one mob per attack. multi target all mobs in range per attack</value>
+  </data>
+  <data name="ChatBot.AutoAttack.Priority" xml:space="preserve">
+    <value>"health" or "distance". Only needed when using single mode</value>
+  </data>
+  <data name="ChatBot.AutoCraft" xml:space="preserve">
+    <value>Automatically craft items in your inventory
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
+You need to enable Inventory Handling to use this bot
+You should also enable Terrain and Movements if you need to use a crafting table</value>
+  </data>
+  <data name="ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
+    <value>Location of the crafting table if you intended to use it. Terrain and movements must be enabled.</value>
+  </data>
+  <data name="ChatBot.AutoCraft.OnFailure" xml:space="preserve">
+    <value>What to do on crafting failure, "abort" or "wait".</value>
+  </data>
+  <data name="ChatBot.AutoCraft.Recipes" xml:space="preserve">
+    <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
+Recipes.Type: crafting table type: "player" or "table"
+Recipes.Result: the resulting item
+Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
+  </data>
+  <data name="ChatBot.AutoDig" xml:space="preserve">
+    <value>Auto-digging blocks.
+You need to enable Terrain Handling to use this bot
+You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
+Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
+  </data>
+  <data name="ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
+    <value>How many seconds to wait after entering the game to start digging automatically, set to -1 to disable automatic start.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Auto_Tool_Switch" xml:space="preserve">
+    <value>Automatically switch to the appropriate tool.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Dig_Timeout" xml:space="preserve">
+    <value>Mining a block for more than "Dig_Timeout" seconds will be considered a timeout.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Drop_Low_Durability_Tools" xml:space="preserve">
+    <value>Whether to drop the current tool when its durability is too low.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Durability_Limit" xml:space="preserve">
+    <value>Will not use tools with less durability than this. Set to zero to disable this feature.</value>
+  </data>
+  <data name="ChatBot.AutoDig.List_Type" xml:space="preserve">
+    <value>Wether to treat the blocks list as a "whitelist" or as a "blacklist".</value>
+  </data>
+  <data name="ChatBot.AutoDig.Locations" xml:space="preserve">
+    <value>The position of the blocks when using "fixedpos" or "both" mode.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Location_Order" xml:space="preserve">
+    <value>"distance" or "index", When using the "fixedpos" mode, the blocks are determined by distance to the player, or by the order in the list.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Log_Block_Dig" xml:space="preserve">
+    <value>Whether to output logs when digging blocks.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Mode" xml:space="preserve">
+    <value>"lookat", "fixedpos" or "both". Digging the block being looked at, the block in a fixed position, or the block that needs to be all met.</value>
+  </data>
+  <data name="ChatBot.AutoDrop" xml:space="preserve">
+    <value>Automatically drop items in inventory
+You need to enable Inventory Handling to use this bot
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
+  </data>
+  <data name="ChatBot.AutoDrop.Mode" xml:space="preserve">
+    <value>"include", "exclude" or "everything". Include: drop item IN the list. Exclude: drop item NOT IN the list</value>
+  </data>
+  <data name="ChatBot.AutoEat" xml:space="preserve">
+    <value>Automatically eat food when your Hunger value is low
+You need to enable Inventory Handling to use this bot</value>
+  </data>
+  <data name="ChatBot.AutoFishing" xml:space="preserve">
+    <value>Automatically catch fish using a fishing rod
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
+You can use "/fish" to control the bot manually.
+/!\ Make sure server rules allow automated farming before using this bot</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
+    <value>Keep it as false if you have not changed it before.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Auto_Rod_Switch" xml:space="preserve">
+    <value>Switch to a new rod from inventory after the current rod is unavailable.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Auto_Start" xml:space="preserve">
+    <value>Whether to start fishing automatically after entering a world.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Cast_Delay" xml:space="preserve">
+    <value>How soon to re-cast after successful fishing.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Durability_Limit" xml:space="preserve">
+    <value>Will not use rods with less durability than this (full durability is 64). Set to zero to disable this feature.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Enable_Move" xml:space="preserve">
+    <value>This allows the player to change position/facing after each fish caught.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Fishing_Delay" xml:space="preserve">
+    <value>How long after entering the game to start fishing (seconds).</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Fishing_Timeout" xml:space="preserve">
+    <value>Fishing timeout (seconds). Timeout will trigger a re-cast.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Hook_Threshold" xml:space="preserve">
+    <value>A "stationary" hook that moves above this threshold in the Y-axis will be considered to have caught a fish.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Log_Fish_Bobber" xml:space="preserve">
+    <value>Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Mainhand" xml:space="preserve">
+    <value>Use the mainhand or the offhand to hold the rod.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Movements" xml:space="preserve">
+    <value>It will move in order "1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;..." and can change position or facing or both each time. It is recommended to change the facing only.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Stationary_Threshold" xml:space="preserve">
+    <value>Hook movement in the X and Z axis less than this value will be considered stationary.</value>
+  </data>
+  <data name="ChatBot.AutoRelog" xml:space="preserve">
+    <value>Automatically relog when disconnected by server, for example because the server is restating
+/!\ Use Ignore_Kick_Message=true at own risk! Server staff might not appreciate if you auto-relog on manual kicks</value>
+  </data>
+  <data name="ChatBot.AutoRelog.Delay" xml:space="preserve">
+    <value>The delay time before joining the server. (in seconds)</value>
+  </data>
+  <data name="ChatBot.AutoRelog.Ignore_Kick_Message" xml:space="preserve">
+    <value>When set to true, autorelog will reconnect regardless of kick messages.</value>
+  </data>
+  <data name="ChatBot.AutoRelog.Kick_Messages" xml:space="preserve">
+    <value>If the kickout message matches any of the strings, then autorelog will be triggered.</value>
+  </data>
+  <data name="ChatBot.AutoRelog.Retries" xml:space="preserve">
+    <value>Retries when failing to relog to the server. use -1 for unlimited retries.</value>
+  </data>
+  <data name="ChatBot.AutoRespond" xml:space="preserve">
+    <value>Run commands or send messages automatically when a specified pattern is detected in chat
+Server admins can spoof chat messages (/nick, /tellraw) so keep this in mind when implementing AutoRespond rules
+/!\ This bot may get spammy depending on your rules, although the global messagecooldown setting can help you avoiding accidental spam</value>
+  </data>
+  <data name="ChatBot.AutoRespond.Match_Colors" xml:space="preserve">
+    <value>Do not remove colors from text (Note: Your matches will have to include color codes (ones using the § character) in order to work)</value>
+  </data>
+  <data name="ChatBot.ChatLog" xml:space="preserve">
+    <value>Logs chat messages in a file on disk.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge" xml:space="preserve">
+    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
+For Setup you can either use the documentation or read here (Documentation has images).
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
+Setup:
+First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
+/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
+When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
+Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
+This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
+Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
+Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
+Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
+And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
+How to use:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
+    <value>The ID of a channel where you want to interact with the MCC using the bot.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.Formats" xml:space="preserve">
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.GuildId" xml:space="preserve">
+    <value>The ID of a server/guild where you have invited the bot to.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.MessageSendTimeout" xml:space="preserve">
+    <value>How long to wait (in seconds) if a message can not be sent to discord before canceling the task (minimum 1 second).</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.OwnersIds" xml:space="preserve">
+    <value>A list of IDs of people you want to be able to interact with the MCC using the bot.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.Token" xml:space="preserve">
+    <value>Your Discord Bot token.</value>
+  </data>
+  <data name="ChatBot.Farmer" xml:space="preserve">
+    <value>Automatically farms crops for you (plants, breaks and bonemeals them).
+Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
+Usage: "/farmer start" command and "/farmer stop" command.
+NOTE: This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues like not being able to bonemeal carrots/potatoes sometimes.
+or bot jumps onto the farm land and breaks it (this happens rarely but still happens). We are looking forward at improving this.
+It is recommended to keep the farming area walled off and flat to avoid the bot jumping.
+Also, if you have your farmland that is one block high, make it 2 or more blocks high so the bot does not fall through, as it can happen sometimes when the bot reconnects.
+The bot also does not pickup all items if they fly off to the side, we have a plan to implement this option in the future as well as drop off and bonemeal refill chest(s).</value>
+  </data>
+  <data name="ChatBot.Farmer.Delay_Between_Tasks" xml:space="preserve">
+    <value>Delay between tasks in seconds (Minimum 1 second)</value>
+  </data>
+  <data name="ChatBot.FollowPlayer" xml:space="preserve">
+    <value>Enabled you to make the bot follow you
+NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
+It's similar to making animals follow you when you're holding food in your hand.
+This is due to a slow pathfinding algorithm, we're working on getting a better one
+You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,
+this might clog the thread for terain handling) and thus slow the bot even more.
+/!\ Make sure server rules allow an option like this in the rules of the server before using this bot</value>
+  </data>
+  <data name="ChatBot.FollowPlayer.Stop_At_Distance" xml:space="preserve">
+    <value>Do not follow the player if he is in the range of 3 blocks (prevents the bot from pushing a player in an infinite loop)</value>
+  </data>
+  <data name="ChatBot.FollowPlayer.Update_Limit" xml:space="preserve">
+    <value>The rate at which the bot does calculations (in seconds) (You can tweak this if you feel the bot is too slow)</value>
+  </data>
+  <data name="ChatBot.HangmanGame" xml:space="preserve">
+    <value>A small game to demonstrate chat interactions. Players can guess mystery words one letter at a time.
+You need to have ChatFormat working correctly and add yourself in botowners to start the game with /tell &lt;bot username&gt; start
+/!\ This bot may get a bit spammy if many players are interacting with it</value>
+  </data>
+  <data name="ChatBot.Mailer" xml:space="preserve">
+    <value>Relay messages between players and servers, like a mail plugin
+This bot can store messages when the recipients are offline, and send them when they join the server
+/!\ Server admins can spoof PMs (/tellraw, /nick) so enable this bot only if you trust server admins</value>
+  </data>
+  <data name="ChatBot.Map" xml:space="preserve">
+    <value>Allows you to render maps in the console and into images (which can be then sent to Discord using Discord Bridge Chat Bot)
+This is useful for solving captchas which use maps
+The maps are rendered into Rendered_Maps folder if the Save_To_File is enabled.
+NOTE:
+If some servers have a very short time for solving captchas, enabe Auto_Render_On_Update to see them immediatelly in the console.
+/!\ Make sure server rules allow bots to be used on the server, or you risk being punished.</value>
+  </data>
+  <data name="ChatBot.Map.Auto_Render_On_Update" xml:space="preserve">
+    <value>Automatically render the map once it is received or updated from/by the server</value>
+  </data>
+  <data name="ChatBot.Map.Delete_All_On_Unload" xml:space="preserve">
+    <value>Delete all rendered maps on unload/reload or when you launch the MCC again.</value>
+  </data>
+  <data name="ChatBot.Map.Notify_On_First_Update" xml:space="preserve">
+    <value>Get a notification when you have gotten a map from the server for the first time</value>
+  </data>
+  <data name="ChatBot.Map.Rasize_Rendered_Image" xml:space="preserve">
+    <value>Resize an rendered image, this is useful when images that are rendered are small and when are being sent to Discord.</value>
+  </data>
+  <data name="ChatBot.Map.Render_In_Console" xml:space="preserve">
+    <value>Whether to render the map in the console.</value>
+  </data>
+  <data name="ChatBot.Map.Resize_To" xml:space="preserve">
+    <value>The size that a rendered image should be resized to, in pixels (eg. 512).</value>
+  </data>
+  <data name="ChatBot.Map.Save_To_File" xml:space="preserve">
+    <value>Whether to store the rendered map as a file (You need this setting if you want to get a map on Discord using Discord Bridge).</value>
+  </data>
+  <data name="ChatBot.Map.Send_Rendered_To_Bridges" xml:space="preserve">
+    <value>Send a rendered map (saved to a file) to a Discord or a Telegram channel via the Discord or Telegram Bride chat bot (The Discord/Telegram Bridge chat bot must be enabled and configured!)
+You need to enable Save_To_File in order for this to work.
+We also recommend turning on resizing.</value>
+  </data>
+  <data name="ChatBot.PlayerListLogger" xml:space="preserve">
+    <value>Log the list of players periodically into a textual file.</value>
+  </data>
+  <data name="ChatBot.PlayerListLogger.Delay" xml:space="preserve">
+    <value>(In seconds)</value>
+  </data>
+  <data name="ChatBot.RemoteControl" xml:space="preserve">
+    <value>Send MCC console commands to your bot through server PMs (/tell)
+You need to have ChatFormat working correctly and add yourself in botowners to use the bot
+/!\ Server admins can spoof PMs (/tellraw, /nick) so enable RemoteControl only if you trust server admins</value>
+  </data>
+  <data name="ChatBot.ReplayCapture" xml:space="preserve">
+    <value>Enable recording of the game (/replay start) and replay it later using the Replay Mod (https://www.replaymod.com/)
+Please note that due to technical limitations, the client player (you) will not be shown in the replay file
+/!\ You SHOULD use /replay stop or exit the program gracefully with /quit OR THE REPLAY FILE MAY GET CORRUPT!</value>
+  </data>
+  <data name="ChatBot.ReplayCapture.Backup_Interval" xml:space="preserve">
+    <value>How long should replay file be auto-saved, in seconds. Use -1 to disable.</value>
+  </data>
+  <data name="ChatBot.ScriptScheduler" xml:space="preserve">
+    <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
+  </data>
+  <data name="ChatBot.TelegramBridge" xml:space="preserve">
+    <value>This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
+/!\ NOTE: You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.
+-----------------------------------------------------------
+Setup:
+First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
+Click on "Start" button and read the bot reply, then type "/newbot", the Botfather will guide you through the bot creation.
+Once you create the bot, copy the API key that you have gotten, and put it into the "Token" field of "ChatBot.TelegramBridge" section (this section).
+/!\ Do not share this token with anyone else as it will give them the control over your bot. Save it securely.
+Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
+Click on "Start" button and type and send the following command ".chatid" to obtain the chat id. 
+Copy the chat id number (eg. 2627844670) and paste it in the "ChannelId" field and add it to the "Authorized_Chat_Ids" field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
+Now you can use the bot using it's DM.
+/!\ If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!
+/!\ An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!
+-----------------------------------------------------------
+NOTE: If you want to recieve messages to a group channel instead, make the channel temporarely public, invite the bot to it and make it an administrator, then set the channel to private if you want.
+Then set the "ChannelId" field to the @ of your channel (you must include the @ in the settings, eg. "@mysupersecretchannel"), this is the username you can see in the invite link of the channel.
+/!\ Only include the username with @ prefix, do not include the rest of the link. Example if you have "https://t.me/mysupersecretchannel", the "ChannelId" will be "@mysupersecretchannel".
+/!\ Note that you will not be able to send messages to the client from a group channel!
+-----------------------------------------------------------
+How to use the bot:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
+  </data>
+  <data name="ChatBot.TelegramBridge.Authorized_Chat_Ids" xml:space="preserve">
+    <value>A list of Chat IDs that are allowed to send messages and execute commands. To get an id of your chat DM with the bot use ".chatid" bot command in Telegram.</value>
+  </data>
+  <data name="ChatBot.TelegramBridge.ChannelId" xml:space="preserve">
+    <value>An ID of a channel where you want to interact with the MCC using the bot.</value>
+  </data>
+  <data name="ChatBot.TelegramBridge.Formats" xml:space="preserve">
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
+  </data>
+  <data name="ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
+    <value>How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).</value>
+  </data>
+  <data name="ChatBot.TelegramBridge.Token" xml:space="preserve">
+    <value>Your Telegram Bot token.</value>
+  </data>
+  <data name="ChatFormat" xml:space="preserve">
+    <value>MCC does it best to detect chat messages, but some server have unusual chat formats
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
+  </data>
+  <data name="ChatFormat.Builtins" xml:space="preserve">
+    <value>MCC support for common message formats. Set "false" to avoid conflicts with custom formats.</value>
+  </data>
+  <data name="ChatFormat.UserDefined" xml:space="preserve">
+    <value>Whether to use the custom regular expressions below for detection.</value>
+  </data>
+  <data name="Head" xml:space="preserve">
+    <value>Startup Config File
+Please do not record extraneous data in this file as it will be overwritten by MCC.
+
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
+Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
+  </data>
+  <data name="Logging" xml:space="preserve">
+    <value>This setting affects only the messages in the console.</value>
+  </data>
+  <data name="Logging.ChatFilter" xml:space="preserve">
+    <value>Regex for filtering chat message.</value>
+  </data>
+  <data name="Logging.ChatMessages" xml:space="preserve">
+    <value>Show server chat messages.</value>
+  </data>
+  <data name="Logging.DebugFilter" xml:space="preserve">
+    <value>Regex for filtering debug message.</value>
+  </data>
+  <data name="Logging.DebugMessages" xml:space="preserve">
+    <value>Please enable this before submitting bug reports. Thanks!</value>
+  </data>
+  <data name="Logging.ErrorMessages" xml:space="preserve">
+    <value>Show error messages.</value>
+  </data>
+  <data name="Logging.FilterMode" xml:space="preserve">
+    <value>"disable" or "blacklist" OR "whitelist". Blacklist hide message match regex. Whitelist show message match regex.</value>
+  </data>
+  <data name="Logging.InfoMessages" xml:space="preserve">
+    <value>Informative messages. (i.e Most of the message from MCC)</value>
+  </data>
+  <data name="Logging.LogFile" xml:space="preserve">
+    <value>Log file name.</value>
+  </data>
+  <data name="Logging.LogToFile" xml:space="preserve">
+    <value>Write log messages to file.</value>
+  </data>
+  <data name="Logging.PrependTimestamp" xml:space="preserve">
+    <value>Prepend timestamp to messages in log file.</value>
+  </data>
+  <data name="Logging.SaveColorCodes" xml:space="preserve">
+    <value>Keep color codes in the saved text.(look like "§b")</value>
+  </data>
+  <data name="Logging.WarningMessages" xml:space="preserve">
+    <value>Show warning messages.</value>
+  </data>
+  <data name="Main.Advanced" xml:space="preserve">
+    <value>Make sure you understand what each setting does before changing anything!</value>
+  </data>
+  <data name="Main.Advanced.account_list" xml:space="preserve">
+    <value>AccountList: It allows a fast account switching without directly using the credentials
+Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; Player1"</value>
+  </data>
+  <data name="Main.Advanced.auto_respawn" xml:space="preserve">
+    <value>Toggle auto respawn if client player was dead (make sure your spawn point is safe).</value>
+  </data>
+  <data name="Main.Advanced.bot_owners" xml:space="preserve">
+    <value>Set the owner of the bot. /!\ Server admins can impersonate owners!</value>
+  </data>
+  <data name="Main.Advanced.brand_info" xml:space="preserve">
+    <value>Use "mcc", "vanilla" or "none". This is how MCC identifies itself to the server.</value>
+  </data>
+  <data name="Main.Advanced.chatbot_log_file" xml:space="preserve">
+    <value>Leave empty for no logfile.</value>
+  </data>
+  <data name="Main.Advanced.enable_emoji" xml:space="preserve">
+    <value>If turned off, the emoji will be replaced with a simpler character (for /chunk status).</value>
+  </data>
+  <data name="Main.Advanced.entity_handling" xml:space="preserve">
+    <value>Toggle entity handling.</value>
+  </data>
+  <data name="Main.Advanced.exit_on_failure" xml:space="preserve">
+    <value>Whether to exit directly when an error occurs, for using MCC in non-interactive scripts.</value>
+  </data>
+  <data name="Main.Advanced.internal_cmd_char" xml:space="preserve">
+    <value>Use "none", "slash"(/) or "backslash"(\).</value>
+  </data>
+  <data name="Main.Advanced.inventory_handling" xml:space="preserve">
+    <value>Toggle inventory handling.</value>
+  </data>
+  <data name="Main.Advanced.language" xml:space="preserve">
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
+  </data>
+  <data name="Main.Advanced.LoadMccTrans" xml:space="preserve">
+    <value>Load translations applied to MCC when available, turn it off to use English only.</value>
+  </data>
+  <data name="Main.Advanced.mc_forge" xml:space="preserve">
+    <value>Use "auto", "no" or "force". Force-enabling only works for MC 1.13+.</value>
+  </data>
+  <data name="Main.Advanced.mc_version" xml:space="preserve">
+    <value>Use "auto" or "1.X.X" values. Allows to skip server info retrieval.</value>
+  </data>
+  <data name="Main.Advanced.message_cooldown" xml:space="preserve">
+    <value>Controls the minimum interval (in seconds) between sending each message to the server.</value>
+  </data>
+  <data name="Main.Advanced.minecraft_realms" xml:space="preserve">
+    <value>Enable support for joining Minecraft Realms worlds.</value>
+  </data>
+  <data name="Main.Advanced.MinTerminalHeight" xml:space="preserve">
+    <value>The minimum height to use when calculating the image size from the height of the terminal.</value>
+  </data>
+  <data name="Main.Advanced.MinTerminalWidth" xml:space="preserve">
+    <value>The minimum width used when calculating the image size from the width of the terminal.</value>
+  </data>
+  <data name="Main.Advanced.movement_speed" xml:space="preserve">
+    <value>A movement speed higher than 2 may be considered cheating.</value>
+  </data>
+  <data name="Main.Advanced.move_head_while_walking" xml:space="preserve">
+    <value>Enable head movement while walking to avoid anti-cheat triggers.</value>
+  </data>
+  <data name="Main.Advanced.player_head_icon" xml:space="preserve">
+    <value>Only works on Windows XP-8 or Windows 10 with old console.</value>
+  </data>
+  <data name="Main.Advanced.private_msgs_cmd_name" xml:space="preserve">
+    <value>For remote control of the bot.</value>
+  </data>
+  <data name="Main.Advanced.profilekey_cache" xml:space="preserve">
+    <value>How to retain profile key. Use "none", "memory" or "disk".</value>
+  </data>
+  <data name="Main.Advanced.resolve_srv_records" xml:space="preserve">
+    <value>Use "no", "fast" (5s timeout), or "yes". Required for joining some servers.</value>
+  </data>
+  <data name="Main.Advanced.script_cache" xml:space="preserve">
+    <value>Cache compiled scripts for faster load on low-end devices.</value>
+  </data>
+  <data name="Main.Advanced.server_list" xml:space="preserve">
+    <value>ServerList: It allows an easier and faster server switching with short aliases instead of full server IP
+Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
+Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value>
+  </data>
+  <data name="Main.Advanced.session_cache" xml:space="preserve">
+    <value>How to retain session tokens. Use "none", "memory" or "disk".</value>
+  </data>
+  <data name="Main.Advanced.show_chat_links" xml:space="preserve">
+    <value>Decode links embedded in chat messages and show them in console.</value>
+  </data>
+  <data name="Main.Advanced.show_inventory_layout" xml:space="preserve">
+    <value>Show inventory layout as ASCII art in inventory command.</value>
+  </data>
+  <data name="Main.Advanced.show_system_messages" xml:space="preserve">
+    <value>System messages for server ops.</value>
+  </data>
+  <data name="Main.Advanced.show_xpbar_messages" xml:space="preserve">
+    <value>Messages displayed above xp bar, set this to false in case of xp bar spam.</value>
+  </data>
+  <data name="Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>Temporary fix for Badpacket issue on some servers.</value>
+  </data>
+  <data name="Main.Advanced.TerminalColorDepth" xml:space="preserve">
+    <value>Use "none", "bit_4", "bit_8" or "bit_24". This can be checked by opening the debug log.</value>
+  </data>
+  <data name="Main.Advanced.terrain_and_movements" xml:space="preserve">
+    <value>Uses more ram, cpu, bandwidth but allows you to move around.</value>
+  </data>
+  <data name="Main.Advanced.timeout" xml:space="preserve">
+    <value>Customize the TCP connection timeout with the server. (in seconds)</value>
+  </data>
+  <data name="Main.Advanced.timestamps" xml:space="preserve">
+    <value>Prepend timestamps to chat messages.</value>
+  </data>
+  <data name="Main.General.account" xml:space="preserve">
+    <value>Login=Email or Name. Use "-" as password for offline mode. Leave blank to prompt user on startup.</value>
+  </data>
+  <data name="Main.General.login" xml:space="preserve">
+    <value>The address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)</value>
+  </data>
+  <data name="Main.General.method" xml:space="preserve">
+    <value>Microsoft Account sign-in method: "mcc" OR "browser". If the login always fails, please try to use the "browser" once.</value>
+  </data>
+  <data name="Main.General.server_info" xml:space="preserve">
+    <value>Account type: "mojang" OR "microsoft". Also affects interactive login in console.</value>
+  </data>
+  <data name="MCSettings" xml:space="preserve">
+    <value>Settings below are sent to the server and only affect server-side things like your skin.</value>
+  </data>
+  <data name="MCSettings.ChatColors" xml:space="preserve">
+    <value>Allows disabling chat colors server-side.</value>
+  </data>
+  <data name="MCSettings.ChatMode" xml:space="preserve">
+    <value>Use "enabled", "commands", or "disabled". Allows to mute yourself...</value>
+  </data>
+  <data name="MCSettings.Difficulty" xml:space="preserve">
+    <value>MC 1.7- difficulty. "peaceful", "easy", "normal", "difficult".</value>
+  </data>
+  <data name="MCSettings.Enabled" xml:space="preserve">
+    <value>If disabled, settings below are not sent to the server.</value>
+  </data>
+  <data name="MCSettings.Locale" xml:space="preserve">
+    <value>Use any language implemented in Minecraft.</value>
+  </data>
+  <data name="MCSettings.MainHand" xml:space="preserve">
+    <value>MC 1.9+ main hand. "left" or "right".</value>
+  </data>
+  <data name="MCSettings.RenderDistance" xml:space="preserve">
+    <value>Value range: [0 - 255].</value>
+  </data>
+  <data name="Proxy" xml:space="preserve">
+    <value>Connect to a server via a proxy instead of connecting directly
+If Mojang session services are blocked on your network, set Enabled_Login=true to login using proxy.
+If the connection to the Minecraft game server is blocked by the firewall, set Enabled_Ingame=true to use a proxy to connect to the game server.
+/!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!</value>
+  </data>
+  <data name="Proxy.Enabled_Ingame" xml:space="preserve">
+    <value>Whether to connect to the game server through a proxy.</value>
+  </data>
+  <data name="Proxy.Enabled_Login" xml:space="preserve">
+    <value>Whether to connect to the login server through a proxy.</value>
+  </data>
+  <data name="Proxy.Password" xml:space="preserve">
+    <value>Only required for password-protected proxies.</value>
+  </data>
+  <data name="Proxy.Proxy_Type" xml:space="preserve">
+    <value>Supported types: "HTTP", "SOCKS4", "SOCKS4a", "SOCKS5".</value>
+  </data>
+  <data name="Proxy.Server" xml:space="preserve">
+    <value>Proxy server must allow HTTPS for login, and non-443 ports for playing.</value>
+  </data>
+  <data name="Proxy.Username" xml:space="preserve">
+    <value>Only required for password-protected proxies.</value>
+  </data>
+  <data name="Signature" xml:space="preserve">
+    <value>Chat signature related settings (affects minecraft 1.19+)</value>
+  </data>
+  <data name="Signature.LoginWithSecureProfile" xml:space="preserve">
+    <value>Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with "enforce-secure-profile=true"</value>
+  </data>
+  <data name="Signature.MarkIllegallySignedMsg" xml:space="preserve">
+    <value>Use red    color block to mark chat without legitimate signature</value>
+  </data>
+  <data name="Signature.MarkLegallySignedMsg" xml:space="preserve">
+    <value>Use green  color block to mark chat with legitimate signatures</value>
+  </data>
+  <data name="Signature.MarkModifiedMsg" xml:space="preserve">
+    <value>Use yellow color block to mark chat that have been modified by the server.</value>
+  </data>
+  <data name="Signature.MarkSystemMessage" xml:space="preserve">
+    <value>Use gray   color block to mark system message (always without signature)</value>
+  </data>
+  <data name="Signature.ShowIllegalSignedChat" xml:space="preserve">
+    <value>Whether to display chat and messages in commands without legal signatures</value>
+  </data>
+  <data name="Signature.ShowModifiedChat" xml:space="preserve">
+    <value>Set to true to display messages modified by the server, false to display the original signed messages</value>
+  </data>
+  <data name="Signature.SignChat" xml:space="preserve">
+    <value>Whether to sign the chat send from MCC</value>
+  </data>
+  <data name="Signature.SignMessageInCommand" xml:space="preserve">
+    <value>Whether to sign the messages contained in the commands sent by MCC. For example, the message in "/msg" and "/me"</value>
+  </data>
+</root>

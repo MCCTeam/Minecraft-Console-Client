@@ -21,13 +21,13 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoCraft.CraftingTable$")]
+            [TomlInlineComment("$ChatBot.AutoCraft.CraftingTable$")]
             public LocationConfig CraftingTable = new(123, 65, 456);
 
-            [TomlInlineComment("$config.ChatBot.AutoCraft.OnFailure$")]
+            [TomlInlineComment("$ChatBot.AutoCraft.OnFailure$")]
             public OnFailConfig OnFailure = OnFailConfig.abort;
 
-            [TomlPrecedingComment("$config.ChatBot.AutoCraft.Recipes$")]
+            [TomlPrecedingComment("$ChatBot.AutoCraft.Recipes$")]
             public RecipeConfig[] Recipes = new RecipeConfig[]
             {
                 new RecipeConfig(

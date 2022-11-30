@@ -18,16 +18,16 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoRelog.Delay$")]
+            [TomlInlineComment("$ChatBot.AutoRelog.Delay$")]
             public Range Delay = new(3);
 
-            [TomlInlineComment("$config.ChatBot.AutoRelog.Retries$")]
+            [TomlInlineComment("$ChatBot.AutoRelog.Retries$")]
             public int Retries = 3;
 
-            [TomlInlineComment("$config.ChatBot.AutoRelog.Ignore_Kick_Message$")]
+            [TomlInlineComment("$ChatBot.AutoRelog.Ignore_Kick_Message$")]
             public bool Ignore_Kick_Message = false;
 
-            [TomlPrecedingComment("$config.ChatBot.AutoRelog.Kick_Messages$")]
+            [TomlPrecedingComment("$ChatBot.AutoRelog.Kick_Messages$")]
             public string[] Kick_Messages = new string[] { "Connection has been lost", "Server is restarting", "Server is full", "Too Many people" };
 
             [NonSerialized]

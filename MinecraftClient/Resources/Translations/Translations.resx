@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>Weather change: It is no longer raining.</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>Weather change: It is no longer a thunderstorm.</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>Weather change: It is raining now.</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is a thunderstorm.§r</value>
+    <value>Weather change: It is a thunderstorm.</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
     <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
@@ -159,17 +159,8 @@
   <data name="bot.autoCraft.cmd.list" xml:space="preserve">
     <value>Total {0} recipes loaded: {1}</value>
   </data>
-  <data name="bot.autoCraft.cmd.resetcfg" xml:space="preserve">
-    <value>Resetting your config to default</value>
-  </data>
   <data name="bot.autoCraft.craft_fail" xml:space="preserve">
     <value>Crafting failed! Waiting for more materials</value>
-  </data>
-  <data name="bot.autoCraft.debug.no_config" xml:space="preserve">
-    <value>No config found. Writing a new one.</value>
-  </data>
-  <data name="bot.autoCraft.error.config" xml:space="preserve">
-    <value>Error while parsing config: {0}</value>
   </data>
   <data name="bot.autoCraft.exception.duplicate" xml:space="preserve">
     <value>Duplicate recipe name specified: {0}</value>
@@ -203,9 +194,6 @@
   </data>
   <data name="bot.autocraft.invaild_slots" xml:space="preserve">
     <value>The number of slots does not match and has been adjusted automatically.</value>
-  </data>
-  <data name="bot.autoCraft.loaded" xml:space="preserve">
-    <value>Successfully loaded</value>
   </data>
   <data name="bot.autoCraft.missing_material" xml:space="preserve">
     <value>Missing material: {0}</value>
@@ -252,6 +240,9 @@
   <data name="bot.autodig.not_allow" xml:space="preserve">
     <value>The block currently pointed to is not in the allowed list.</value>
   </data>
+  <data name="bot.autodig.no_inv_handle" xml:space="preserve">
+    <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
+  </data>
   <data name="bot.autodig.start" xml:space="preserve">
     <value>Automatic digging has started.</value>
   </data>
@@ -277,6 +268,9 @@
     <value>Total {0} in the list:
  {1}</value>
   </data>
+  <data name="bot.autoDrop.not_in_list" xml:space="preserve">
+    <value>Item not in the list</value>
+  </data>
   <data name="bot.autoDrop.no_inventory" xml:space="preserve">
     <value>Cannot find inventory {0}!</value>
   </data>
@@ -285,9 +279,6 @@
   </data>
   <data name="bot.autoDrop.no_mode" xml:space="preserve">
     <value>Cannot read drop mode from config. Using include mode.</value>
-  </data>
-  <data name="bot.autoDrop.not_in_list" xml:space="preserve">
-    <value>Item not in the list</value>
   </data>
   <data name="bot.autoDrop.off" xml:space="preserve">
     <value>AutoDrop disabled</value>
@@ -382,17 +373,8 @@
   <data name="bot.autoRelog.launch" xml:space="preserve">
     <value>Launching with {0} reconnection attempts</value>
   </data>
-  <data name="bot.autoRelog.loaded" xml:space="preserve">
-    <value>Loaded message: {0}</value>
-  </data>
-  <data name="bot.autoRelog.loading" xml:space="preserve">
-    <value>Loading messages from file: {0}</value>
-  </data>
   <data name="bot.autoRelog.no_kick_msg" xml:space="preserve">
     <value>Initializing without a kick message file</value>
-  </data>
-  <data name="bot.autoRelog.not_found" xml:space="preserve">
-    <value>File not found: {0}</value>
   </data>
   <data name="bot.autoRelog.reconnect" xml:space="preserve">
     <value>Message contains '{0}'. Reconnecting.</value>
@@ -465,6 +447,9 @@ cooldown: {6}</value>
   </data>
   <data name="bot.DiscordBridge.direction.minecraft" xml:space="preserve">
     <value>Minecraft</value>
+  </data>
+  <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
+    <value>Successfully disconnected with MCC!</value>
   </data>
   <data name="bot.DiscordBridge.guild_not_found" xml:space="preserve">
     <value>The provided guild/server with an id '{0}' has not been found!</value>
@@ -661,7 +646,7 @@ cooldown: {6}</value>
     <value>File not found: '{0}'</value>
   </data>
   <data name="bot.script.not_found" xml:space="preserve">
-    <value>§8[MCC] [{0}] Cannot find script file: {1}</value>
+    <value>[MCC] [{0}] Cannot find script file: {1}</value>
   </data>
   <data name="bot.script.pm.loaded" xml:space="preserve">
     <value>Script '{0}' loaded.</value>
@@ -822,83 +807,83 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>TestBot</value>
   </data>
   <data name="cache.converting" xml:space="preserve">
-    <value>§8Converting session cache from disk: {0}</value>
+    <value>Converting session cache from disk: {0}</value>
   </data>
   <data name="cache.ignore_line" xml:space="preserve">
-    <value>§8Ignoring invalid session token line: {0}</value>
+    <value>Ignoring invalid session token line: {0}</value>
   </data>
   <data name="cache.ignore_line_keys" xml:space="preserve">
-    <value>§8Ignoring invalid profile key token line: {0}</value>
+    <value>Ignoring invalid profile key token line: {0}</value>
   </data>
   <data name="cache.ignore_string" xml:space="preserve">
-    <value>§8Ignoring session token string '{0}': {1}</value>
+    <value>Ignoring session token string '{0}': {1}</value>
   </data>
   <data name="cache.ignore_string_keys" xml:space="preserve">
-    <value>§8Ignoring profile key token string '{0}': {1}</value>
+    <value>Ignoring profile key token string '{0}': {1}</value>
   </data>
   <data name="cache.loaded" xml:space="preserve">
-    <value>§8Loaded session: {0}:{1}</value>
+    <value>Loaded session: {0}:{1}</value>
   </data>
   <data name="cache.loaded_keys" xml:space="preserve">
-    <value>§8Loaded profile key, it will be refresh at {0}</value>
+    <value>Loaded profile key, it will be refresh at {0}</value>
   </data>
   <data name="cache.loading" xml:space="preserve">
-    <value>§8Loading Minecraft profiles: {0}</value>
+    <value>Loading Minecraft profiles: {0}</value>
   </data>
   <data name="cache.loading_keys" xml:space="preserve">
-    <value>§8Loading profile key cache from disk: {0}</value>
+    <value>Loading profile key cache from disk: {0}</value>
   </data>
   <data name="cache.loading_session" xml:space="preserve">
-    <value>§8Loading session cache from disk: {0}</value>
+    <value>Loading session cache from disk: {0}</value>
   </data>
   <data name="cache.malformed" xml:space="preserve">
-    <value>§8Got malformed data while reading serialized session cache from disk: {0}</value>
+    <value>Got malformed data while reading serialized session cache from disk: {0}</value>
   </data>
   <data name="cache.read_fail" xml:space="preserve">
-    <value>§8Failed to read serialized session cache from disk: {0}</value>
+    <value>Failed to read serialized session cache from disk: {0}</value>
   </data>
   <data name="cache.read_fail_plain" xml:space="preserve">
-    <value>§8Failed to read session cache from disk: {0}</value>
+    <value>Failed to read session cache from disk: {0}</value>
   </data>
   <data name="cache.read_fail_plain_keys" xml:space="preserve">
-    <value>§8Failed to read profile key cache from disk: {0}</value>
+    <value>Failed to read profile key cache from disk: {0}</value>
   </data>
   <data name="cache.save_fail" xml:space="preserve">
-    <value>§8Failed to write session cache to disk: {0}</value>
+    <value>Failed to write session cache to disk: {0}</value>
   </data>
   <data name="cache.save_fail_keys" xml:space="preserve">
-    <value>§8Failed to write profile key cache to disk: {0}</value>
+    <value>Failed to write profile key cache to disk: {0}</value>
   </data>
   <data name="cache.saving" xml:space="preserve">
-    <value>§8Saving session cache to disk</value>
+    <value>Saving session cache to disk</value>
   </data>
   <data name="cache.saving_keys" xml:space="preserve">
-    <value>§8Saving profile key cache to disk</value>
+    <value>Saving profile key cache to disk</value>
   </data>
   <data name="chat.done" xml:space="preserve">
-    <value>§8Done. File saved as '{0}'</value>
+    <value>Done. File saved as '{0}'</value>
   </data>
   <data name="chat.download" xml:space="preserve">
-    <value>§8Downloading '{0}.lang' from Mojang servers...</value>
+    <value>Downloading '{0}.lang' from Mojang servers...</value>
   </data>
   <data name="chat.fail" xml:space="preserve">
-    <value>§8Failed to download the file.</value>
+    <value>Failed to download the file.</value>
   </data>
   <data name="chat.from_dir" xml:space="preserve">
-    <value>§8Defaulting to en_GB.lang from your Minecraft directory.</value>
+    <value>Defaulting to en_GB.lang from your Minecraft directory.</value>
   </data>
   <data name="chat.loaded" xml:space="preserve">
-    <value>§8Translations file loaded.</value>
+    <value>Translations file loaded.</value>
   </data>
   <data name="chat.message_chain_broken" xml:space="preserve">
     <value>Player {0}'s message chain is broken!</value>
   </data>
   <data name="chat.not_found" xml:space="preserve">
-    <value>§8Translations file not found: '{0}'
+    <value>Translations file not found: '{0}'
 Some messages won't be properly printed without this file.</value>
   </data>
   <data name="chat.request" xml:space="preserve">
-    <value>§8Performing request to {0}</value>
+    <value>Performing request to {0}</value>
   </data>
   <data name="chatbot.reconnect" xml:space="preserve">
     <value>[{0}] Disconnecting and Reconnecting to the Server</value>
@@ -998,7 +983,7 @@ Some messages won't be properly printed without this file.</value>
 Change EnableEmoji=false in the settings if the display is confusing.</value>
   </data>
   <data name="cmd.chunk.for_debug" xml:space="preserve">
-    <value>§x§0This command is used for debugging, make sure you know what you are doing.§r</value>
+    <value>This command is used for debugging, make sure you know what you are doing.</value>
   </data>
   <data name="cmd.chunk.icon" xml:space="preserve">
     <value>Player:{0}, MarkedChunk:{1}, NotReceived:{2}, Loading:{3}, Loaded:{4}</value>
@@ -1007,7 +992,7 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
     <value>Marked location: </value>
   </data>
   <data name="cmd.chunk.outside" xml:space="preserve">
-    <value>§x§0Since the marked chunk is outside the graph, it will not be displayed!§r</value>
+    <value>Since the marked chunk is outside the graph, it will not be displayed!</value>
   </data>
   <data name="cmd.connect.desc" xml:space="preserve">
     <value>connect to the specified server.</value>
@@ -1069,14 +1054,14 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.enchant.invalid_slot" xml:space="preserve">
     <value>Invalid slot provided (Available: top, middle, bottom)!</value>
   </data>
+  <data name="cmd.enchant.not_clicked" xml:space="preserve">
+    <value>Could not click!</value>
+  </data>
   <data name="cmd.enchant.no_enchantments" xml:space="preserve">
     <value>You must first put an item to enchant to the enchanting table in order to get enchantments from the server, then you can execute this command!</value>
   </data>
   <data name="cmd.enchant.no_levels" xml:space="preserve">
     <value>You do not have enouhg levels to enchant! (Your current level is {0}, you need to be level {1}).</value>
-  </data>
-  <data name="cmd.enchant.not_clicked" xml:space="preserve">
-    <value>Could not click!</value>
   </data>
   <data name="cmd.entityCmd.attacked" xml:space="preserve">
     <value>Entity attacked</value>
@@ -1165,6 +1150,9 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.execmulti.no_result" xml:space="preserve">
     <value>no result!</value>
   </data>
+  <data name="cmd.execmulti.prevent" xml:space="preserve">
+    <value>You can not use execmulti or execif within execmulti command!</value>
+  </data>
   <data name="cmd.execmulti.result" xml:space="preserve">
     <value>result '{0}'!</value>
   </data>
@@ -1209,9 +1197,6 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   </data>
   <data name="cmd.follow.started" xml:space="preserve">
     <value>Started following {0}!</value>
-  </data>
-  <data name="cmd.follow.stopped" xml:space="preserve">
-    <value>Stopped!</value>
   </data>
   <data name="cmd.follow.stopping" xml:space="preserve">
     <value>Stopped following!</value>
@@ -1307,7 +1292,7 @@ Note that parameters in '[]' are optional.</value>
     <value>Shift click an item.</value>
   </data>
   <data name="cmd.inventory.help.unknown" xml:space="preserve">
-    <value>Unknown action. </value>
+    <value>Unknown action.</value>
   </data>
   <data name="cmd.inventory.help.usage" xml:space="preserve">
     <value>Usage</value>
@@ -1333,14 +1318,14 @@ Note that parameters in '[]' are optional.</value>
   <data name="cmd.inventory.need_creative" xml:space="preserve">
     <value>You must be in Creative gamemode</value>
   </data>
+  <data name="cmd.inventory.not_exist" xml:space="preserve">
+    <value>Inventory #{0} do not exist</value>
+  </data>
   <data name="cmd.inventory.no_found_items" xml:space="preserve">
     <value>Could not find the specified item in any of avaliable Inventories!</value>
   </data>
   <data name="cmd.inventory.no_item" xml:space="preserve">
     <value>No item in slot #{0}</value>
-  </data>
-  <data name="cmd.inventory.not_exist" xml:space="preserve">
-    <value>Inventory #{0} do not exist</value>
   </data>
   <data name="cmd.inventory.right" xml:space="preserve">
     <value>Right</value>
@@ -1387,6 +1372,9 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   </data>
   <data name="cmd.move.desc" xml:space="preserve">
     <value>walk or start walking.</value>
+  </data>
+  <data name="cmd.move.desc_force" xml:space="preserve">
+    <value>force unsafe movements like falling or touching fire</value>
   </data>
   <data name="cmd.move.dir_fail" xml:space="preserve">
     <value>Cannot move in that direction.</value>
@@ -1460,6 +1448,9 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="cmd.setrnd.desc" xml:space="preserve">
     <value>set a custom %variable% randomly to a given value.</value>
   </data>
+  <data name="cmd.setrnd.format" xml:space="preserve">
+    <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
+  </data>
   <data name="cmd.setrndnum.format" xml:space="preserve">
     <value>setrnd variable -7to17</value>
   </data>
@@ -1493,706 +1484,44 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="cmd.useitem.use" xml:space="preserve">
     <value>Used an item</value>
   </data>
-  <data name="config.AppVars.Variables" xml:space="preserve">
-    <value>can be used in some other fields as %yourvar%
-%username% and %serverip% are reserved variables.</value>
-  </data>
   <data name="config.backup.fail" xml:space="preserve">
-    <value>§cFailed to write to backup file {0}§r</value>
-  </data>
-  <data name="config.ChatBot" xml:space="preserve">
-    <value>=============================== #
- Minecraft Console Client Bots  #
-=============================== #</value>
-  </data>
-  <data name="config.ChatBot.Alerts" xml:space="preserve">
-    <value>Get alerted when specified words are detected in chat
-Useful for moderating your server or detecting when someone is talking to you</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Beep_Enabled" xml:space="preserve">
-    <value>Play a beep sound when a word is detected in addition to highlighting.</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Excludes" xml:space="preserve">
-    <value>List of words/strings to NOT alert you on.</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Log_File" xml:space="preserve">
-    <value>The name of a file where alers logs will be written.</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Log_To_File" xml:space="preserve">
-    <value>Log alerts info a file.</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Matches" xml:space="preserve">
-    <value>List of words/strings to alert you on.</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Trigger_By_Rain" xml:space="preserve">
-    <value>Trigger alerts when it rains and when it stops.</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Trigger_By_Thunderstorm" xml:space="preserve">
-    <value>Triggers alerts at the beginning and end of thunderstorms.</value>
-  </data>
-  <data name="config.ChatBot.Alerts.Trigger_By_Words" xml:space="preserve">
-    <value>Triggers an alert after receiving a specified keyword.</value>
-  </data>
-  <data name="config.ChatBot.AntiAfk" xml:space="preserve">
-    <value>Send a command on a regular or random basis or make the bot walk around randomly to avoid automatic AFK disconnection
-/!\ Make sure your server rules do not forbid anti-AFK mechanisms!
-/!\ Make sure you keep the bot in an enclosure to prevent it wandering off if you're using terrain handling! (Recommended size 5x5x5)</value>
-  </data>
-  <data name="config.ChatBot.AntiAfk.Command" xml:space="preserve">
-    <value>Command to send to the server.</value>
-  </data>
-  <data name="config.ChatBot.AntiAfk.Delay" xml:space="preserve">
-    <value>The time interval for execution. (in seconds)</value>
-  </data>
-  <data name="config.ChatBot.AntiAfk.Use_Sneak" xml:space="preserve">
-    <value>Whether to sneak when sending the command.</value>
-  </data>
-  <data name="config.ChatBot.AntiAfk.Use_Terrain_Handling" xml:space="preserve">
-    <value>Use terrain handling to enable the bot to move around.</value>
-  </data>
-  <data name="config.ChatBot.AntiAfk.Walk_Range" xml:space="preserve">
-    <value>The range the bot can move around randomly (Note: the bigger the range, the slower the bot will be)</value>
-  </data>
-  <data name="config.ChatBot.AntiAfk.Walk_Retries" xml:space="preserve">
-    <value>How many times can the bot fail trying to move before using the command method.</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack" xml:space="preserve">
-    <value>Automatically attack hostile mobs around you
-You need to enable Entity Handling to use this bot
-/!\ Make sure server rules allow your planned use of AutoAttack
-/!\ SERVER PLUGINS may consider AutoAttack to be a CHEAT MOD and TAKE ACTION AGAINST YOUR ACCOUNT so DOUBLE CHECK WITH SERVER RULES!</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.Attack_Hostile" xml:space="preserve">
-    <value>Allow attacking hostile mobs.</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.Attack_Passive" xml:space="preserve">
-    <value>Allow attacking passive mobs.</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.Cooldown_Time" xml:space="preserve">
-    <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
-    <value>Possible values: "Interact", "Attack" (default), "InteractAt" (Interact and Attack).</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.List_Mode" xml:space="preserve">
-    <value>Wether to treat the entities list as a "whitelist" or as a "blacklist".</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.Mode" xml:space="preserve">
-    <value>"single" or "multi". single target one mob per attack. multi target all mobs in range per attack</value>
-  </data>
-  <data name="config.ChatBot.AutoAttack.Priority" xml:space="preserve">
-    <value>"health" or "distance". Only needed when using single mode</value>
-  </data>
-  <data name="config.ChatBot.AutoCraft" xml:space="preserve">
-    <value>Automatically craft items in your inventory
-See https://mccteam.github.io/g/bots/#auto-craft for how to use
-You need to enable Inventory Handling to use this bot
-You should also enable Terrain and Movements if you need to use a crafting table</value>
-  </data>
-  <data name="config.ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
-    <value>Location of the crafting table if you intended to use it. Terrain and movements must be enabled.</value>
-  </data>
-  <data name="config.ChatBot.AutoCraft.OnFailure" xml:space="preserve">
-    <value>What to do on crafting failure, "abort" or "wait".</value>
-  </data>
-  <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
-    <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
-Recipes.Type: crafting table type: "player" or "table"
-Recipes.Result: the resulting item
-Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
-For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
-  </data>
-  <data name="config.ChatBot.AutoDig" xml:space="preserve">
-    <value>Auto-digging blocks.
-You need to enable Terrain Handling to use this bot
-You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
-Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
-For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
-    <value>How many seconds to wait after entering the game to start digging automatically, set to -1 to disable automatic start.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Auto_Tool_Switch" xml:space="preserve">
-    <value>Automatically switch to the appropriate tool.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Dig_Timeout" xml:space="preserve">
-    <value>Mining a block for more than "Dig_Timeout" seconds will be considered a timeout.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Drop_Low_Durability_Tools" xml:space="preserve">
-    <value>Whether to drop the current tool when its durability is too low.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Durability_Limit" xml:space="preserve">
-    <value>Will not use tools with less durability than this. Set to zero to disable this feature.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.List_Type" xml:space="preserve">
-    <value>Wether to treat the blocks list as a "whitelist" or as a "blacklist".</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Location_Order" xml:space="preserve">
-    <value>"distance" or "index", When using the "fixedpos" mode, the blocks are determined by distance to the player, or by the order in the list.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Locations" xml:space="preserve">
-    <value>The position of the blocks when using "fixedpos" or "both" mode.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Log_Block_Dig" xml:space="preserve">
-    <value>Whether to output logs when digging blocks.</value>
-  </data>
-  <data name="config.ChatBot.AutoDig.Mode" xml:space="preserve">
-    <value>"lookat", "fixedpos" or "both". Digging the block being looked at, the block in a fixed position, or the block that needs to be all met.</value>
-  </data>
-  <data name="config.ChatBot.AutoDrop" xml:space="preserve">
-    <value>Automatically drop items in inventory
-You need to enable Inventory Handling to use this bot
-See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
-  </data>
-  <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
-    <value>"include", "exclude" or "everything". Include: drop item IN the list. Exclude: drop item NOT IN the list</value>
-  </data>
-  <data name="config.ChatBot.AutoEat" xml:space="preserve">
-    <value>Automatically eat food when your Hunger value is low
-You need to enable Inventory Handling to use this bot</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing" xml:space="preserve">
-    <value>Automatically catch fish using a fishing rod
-Guide: https://mccteam.github.io/g/bots/#auto-fishing
-You can use "/fish" to control the bot manually.
-/!\ Make sure server rules allow automated farming before using this bot</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
-    <value>Keep it as false if you have not changed it before.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Auto_Rod_Switch" xml:space="preserve">
-    <value>Switch to a new rod from inventory after the current rod is unavailable.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Auto_Start" xml:space="preserve">
-    <value>Whether to start fishing automatically after entering a world.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Cast_Delay" xml:space="preserve">
-    <value>How soon to re-cast after successful fishing.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Durability_Limit" xml:space="preserve">
-    <value>Will not use rods with less durability than this (full durability is 64). Set to zero to disable this feature.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Enable_Move" xml:space="preserve">
-    <value>This allows the player to change position/facing after each fish caught.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Fishing_Delay" xml:space="preserve">
-    <value>How long after entering the game to start fishing (seconds).</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Fishing_Timeout" xml:space="preserve">
-    <value>Fishing timeout (seconds). Timeout will trigger a re-cast.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Hook_Threshold" xml:space="preserve">
-    <value>A "stationary" hook that moves above this threshold in the Y-axis will be considered to have caught a fish.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Log_Fish_Bobber" xml:space="preserve">
-    <value>Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Mainhand" xml:space="preserve">
-    <value>Use the mainhand or the offhand to hold the rod.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Movements" xml:space="preserve">
-    <value>It will move in order "1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;..." and can change position or facing or both each time. It is recommended to change the facing only.</value>
-  </data>
-  <data name="config.ChatBot.AutoFishing.Stationary_Threshold" xml:space="preserve">
-    <value>Hook movement in the X and Z axis less than this value will be considered stationary.</value>
-  </data>
-  <data name="config.ChatBot.AutoRelog" xml:space="preserve">
-    <value>Automatically relog when disconnected by server, for example because the server is restating
-/!\ Use Ignore_Kick_Message=true at own risk! Server staff might not appreciate if you auto-relog on manual kicks</value>
-  </data>
-  <data name="config.ChatBot.AutoRelog.Delay" xml:space="preserve">
-    <value>The delay time before joining the server. (in seconds)</value>
-  </data>
-  <data name="config.ChatBot.AutoRelog.Ignore_Kick_Message" xml:space="preserve">
-    <value>When set to true, autorelog will reconnect regardless of kick messages.</value>
-  </data>
-  <data name="config.ChatBot.AutoRelog.Kick_Messages" xml:space="preserve">
-    <value>If the kickout message matches any of the strings, then autorelog will be triggered.</value>
-  </data>
-  <data name="config.ChatBot.AutoRelog.Retries" xml:space="preserve">
-    <value>Retries when failing to relog to the server. use -1 for unlimited retries.</value>
-  </data>
-  <data name="config.ChatBot.AutoRespond" xml:space="preserve">
-    <value>Run commands or send messages automatically when a specified pattern is detected in chat
-Server admins can spoof chat messages (/nick, /tellraw) so keep this in mind when implementing AutoRespond rules
-/!\ This bot may get spammy depending on your rules, although the global messagecooldown setting can help you avoiding accidental spam</value>
-  </data>
-  <data name="config.ChatBot.AutoRespond.Match_Colors" xml:space="preserve">
-    <value>Do not remove colors from text (Note: Your matches will have to include color codes (ones using the § character) in order to work)</value>
-  </data>
-  <data name="config.ChatBot.ChatLog" xml:space="preserve">
-    <value>Logs chat messages in a file on disk.</value>
-  </data>
-  <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
-    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
-For Setup you can either use the documentation or read here (Documentation has images).
-Documentation: https://mccteam.github.io/g/bots/#discord-bridge
-Setup:
-First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
-/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
-When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
-Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
-Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
-This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
-Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
-Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
-Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
-And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
-How to use:
-To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
-To send a message, simply type it out and hit enter.</value>
-  </data>
-  <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
-    <value>The ID of a channel where you want to interact with the MCC using the bot.</value>
-  </data>
-  <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
-    <value>Message formats
-Words wrapped with { and } are going to be replaced during the code execution, do not change them!
-For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
-  </data>
-  <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
-    <value>The ID of a server/guild where you have invited the bot to.</value>
-  </data>
-  <data name="config.ChatBot.DiscordBridge.MessageSendTimeout" xml:space="preserve">
-    <value>How long to wait (in seconds) if a message can not be sent to discord before canceling the task (minimum 1 second).</value>
-  </data>
-  <data name="config.ChatBot.DiscordBridge.OwnersIds" xml:space="preserve">
-    <value>A list of IDs of people you want to be able to interact with the MCC using the bot.</value>
-  </data>
-  <data name="config.ChatBot.DiscordBridge.Token" xml:space="preserve">
-    <value>Your Discord Bot token.</value>
-  </data>
-  <data name="config.ChatBot.Farmer" xml:space="preserve">
-    <value>Automatically farms crops for you (plants, breaks and bonemeals them).
-Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
-Usage: "/farmer start" command and "/farmer stop" command.
-NOTE: This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues like not being able to bonemeal carrots/potatoes sometimes.
-or bot jumps onto the farm land and breaks it (this happens rarely but still happens). We are looking forward at improving this.
-It is recommended to keep the farming area walled off and flat to avoid the bot jumping.
-Also, if you have your farmland that is one block high, make it 2 or more blocks high so the bot does not fall through, as it can happen sometimes when the bot reconnects.
-The bot also does not pickup all items if they fly off to the side, we have a plan to implement this option in the future as well as drop off and bonemeal refill chest(s).</value>
-  </data>
-  <data name="config.ChatBot.Farmer.Delay_Between_Tasks" xml:space="preserve">
-    <value>Delay between tasks in seconds (Minimum 1 second)</value>
-  </data>
-  <data name="config.ChatBot.FollowPlayer" xml:space="preserve">
-    <value>Enabled you to make the bot follow you
-NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
-It's similar to making animals follow you when you're holding food in your hand.
-This is due to a slow pathfinding algorithm, we're working on getting a better one
-You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,
-this might clog the thread for terain handling) and thus slow the bot even more.
-/!\ Make sure server rules allow an option like this in the rules of the server before using this bot</value>
-  </data>
-  <data name="config.ChatBot.FollowPlayer.Stop_At_Distance" xml:space="preserve">
-    <value>Do not follow the player if he is in the range of 3 blocks (prevents the bot from pushing a player in an infinite loop)</value>
-  </data>
-  <data name="config.ChatBot.FollowPlayer.Update_Limit" xml:space="preserve">
-    <value>The rate at which the bot does calculations (in seconds) (You can tweak this if you feel the bot is too slow)</value>
-  </data>
-  <data name="config.ChatBot.HangmanGame" xml:space="preserve">
-    <value>A small game to demonstrate chat interactions. Players can guess mystery words one letter at a time.
-You need to have ChatFormat working correctly and add yourself in botowners to start the game with /tell &lt;bot username&gt; start
-/!\ This bot may get a bit spammy if many players are interacting with it</value>
-  </data>
-  <data name="config.ChatBot.Mailer" xml:space="preserve">
-    <value>Relay messages between players and servers, like a mail plugin
-This bot can store messages when the recipients are offline, and send them when they join the server
-/!\ Server admins can spoof PMs (/tellraw, /nick) so enable this bot only if you trust server admins</value>
-  </data>
-  <data name="config.ChatBot.Map" xml:space="preserve">
-    <value>Allows you to render maps in the console and into images (which can be then sent to Discord using Discord Bridge Chat Bot)
-This is useful for solving captchas which use maps
-The maps are rendered into Rendered_Maps folder if the Save_To_File is enabled.
-NOTE:
-If some servers have a very short time for solving captchas, enabe Auto_Render_On_Update to see them immediatelly in the console.
-/!\ Make sure server rules allow bots to be used on the server, or you risk being punished.</value>
-  </data>
-  <data name="config.ChatBot.Map.Auto_Render_On_Update" xml:space="preserve">
-    <value>Automatically render the map once it is received or updated from/by the server</value>
-  </data>
-  <data name="config.ChatBot.Map.Delete_All_On_Unload" xml:space="preserve">
-    <value>Delete all rendered maps on unload/reload or when you launch the MCC again.</value>
-  </data>
-  <data name="config.ChatBot.Map.Notify_On_First_Update" xml:space="preserve">
-    <value>Get a notification when you have gotten a map from the server for the first time</value>
-  </data>
-  <data name="config.ChatBot.Map.Rasize_Rendered_Image" xml:space="preserve">
-    <value>Resize an rendered image, this is useful when images that are rendered are small and when are being sent to Discord.</value>
-  </data>
-  <data name="config.ChatBot.Map.Render_In_Console" xml:space="preserve">
-    <value>Whether to render the map in the console.</value>
-  </data>
-  <data name="config.ChatBot.Map.Resize_To" xml:space="preserve">
-    <value>The size that a rendered image should be resized to, in pixels (eg. 512).</value>
-  </data>
-  <data name="config.ChatBot.Map.Save_To_File" xml:space="preserve">
-    <value>Whether to store the rendered map as a file (You need this setting if you want to get a map on Discord using Discord Bridge).</value>
-  </data>
-  <data name="config.ChatBot.Map.Send_Rendered_To_Bridges" xml:space="preserve">
-    <value>Send a rendered map (saved to a file) to a Discord or a Telegram channel via the Discord or Telegram Bride chat bot (The Discord/Telegram Bridge chat bot must be enabled and configured!)
-You need to enable Save_To_File in order for this to work.
-We also recommend turning on resizing.</value>
-  </data>
-  <data name="config.ChatBot.PlayerListLogger" xml:space="preserve">
-    <value>Log the list of players periodically into a textual file.</value>
-  </data>
-  <data name="config.ChatBot.PlayerListLogger.Delay" xml:space="preserve">
-    <value>(In seconds)</value>
-  </data>
-  <data name="config.ChatBot.RemoteControl" xml:space="preserve">
-    <value>Send MCC console commands to your bot through server PMs (/tell)
-You need to have ChatFormat working correctly and add yourself in botowners to use the bot
-/!\ Server admins can spoof PMs (/tellraw, /nick) so enable RemoteControl only if you trust server admins</value>
-  </data>
-  <data name="config.ChatBot.ReplayCapture" xml:space="preserve">
-    <value>Enable recording of the game (/replay start) and replay it later using the Replay Mod (https://www.replaymod.com/)
-Please note that due to technical limitations, the client player (you) will not be shown in the replay file
-/!\ You SHOULD use /replay stop or exit the program gracefully with /quit OR THE REPLAY FILE MAY GET CORRUPT!</value>
-  </data>
-  <data name="config.ChatBot.ReplayCapture.Backup_Interval" xml:space="preserve">
-    <value>How long should replay file be auto-saved, in seconds. Use -1 to disable.</value>
-  </data>
-  <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
-    <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
-See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
-  </data>
-  <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
-    <value>This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
-/!\ NOTE: You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.
------------------------------------------------------------
-Setup:
-First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
-Click on "Start" button and read the bot reply, then type "/newbot", the Botfather will guide you through the bot creation.
-Once you create the bot, copy the API key that you have gotten, and put it into the "Token" field of "ChatBot.TelegramBridge" section (this section).
-/!\ Do not share this token with anyone else as it will give them the control over your bot. Save it securely.
-Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
-Click on "Start" button and type and send the following command ".chatid" to obtain the chat id. 
-Copy the chat id number (eg. 2627844670) and paste it in the "ChannelId" field and add it to the "Authorized_Chat_Ids" field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
-Now you can use the bot using it's DM.
-/!\ If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!
-/!\ An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!
------------------------------------------------------------
-NOTE: If you want to recieve messages to a group channel instead, make the channel temporarely public, invite the bot to it and make it an administrator, then set the channel to private if you want.
-Then set the "ChannelId" field to the @ of your channel (you must include the @ in the settings, eg. "@mysupersecretchannel"), this is the username you can see in the invite link of the channel.
-/!\ Only include the username with @ prefix, do not include the rest of the link. Example if you have "https://t.me/mysupersecretchannel", the "ChannelId" will be "@mysupersecretchannel".
-/!\ Note that you will not be able to send messages to the client from a group channel!
------------------------------------------------------------
-How to use the bot:
-To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
-To send a message, simply type it out and hit enter.</value>
-  </data>
-  <data name="config.ChatBot.TelegramBridge.Authorized_Chat_Ids" xml:space="preserve">
-    <value>A list of Chat IDs that are allowed to send messages and execute commands. To get an id of your chat DM with the bot use ".chatid" bot command in Telegram.</value>
-  </data>
-  <data name="config.ChatBot.TelegramBridge.ChannelId" xml:space="preserve">
-    <value>An ID of a channel where you want to interact with the MCC using the bot.</value>
-  </data>
-  <data name="config.ChatBot.TelegramBridge.Formats" xml:space="preserve">
-    <value>Message formats
-Words wrapped with { and } are going to be replaced during the code execution, do not change them!
-For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
-  </data>
-  <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
-    <value>How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).</value>
-  </data>
-  <data name="config.ChatBot.TelegramBridge.Token" xml:space="preserve">
-    <value>Your Telegram Bot token.</value>
-  </data>
-  <data name="config.ChatFormat" xml:space="preserve">
-    <value>MCC does it best to detect chat messages, but some server have unusual chat formats
-When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
-  </data>
-  <data name="config.ChatFormat.Builtins" xml:space="preserve">
-    <value>MCC support for common message formats. Set "false" to avoid conflicts with custom formats.</value>
-  </data>
-  <data name="config.ChatFormat.UserDefined" xml:space="preserve">
-    <value>Whether to use the custom regular expressions below for detection.</value>
-  </data>
-  <data name="config.Head" xml:space="preserve">
-    <value>Startup Config File
-Please do not record extraneous data in this file as it will be overwritten by MCC.
-
-New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
-Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
+    <value>Failed to write to backup file {0}</value>
   </data>
   <data name="config.load" xml:space="preserve">
     <value>Settings have been loaded from {0}</value>
   </data>
   <data name="config.load.fail" xml:space="preserve">
-    <value>§cFailed to load settings:§r</value>
-  </data>
-  <data name="config.Logging" xml:space="preserve">
-    <value>This setting affects only the messages in the console.</value>
-  </data>
-  <data name="config.Logging.ChatFilter" xml:space="preserve">
-    <value>Regex for filtering chat message.</value>
-  </data>
-  <data name="config.Logging.ChatMessages" xml:space="preserve">
-    <value>Show server chat messages.</value>
-  </data>
-  <data name="config.Logging.DebugFilter" xml:space="preserve">
-    <value>Regex for filtering debug message.</value>
-  </data>
-  <data name="config.Logging.DebugMessages" xml:space="preserve">
-    <value>Please enable this before submitting bug reports. Thanks!</value>
-  </data>
-  <data name="config.Logging.ErrorMessages" xml:space="preserve">
-    <value>Show error messages.</value>
-  </data>
-  <data name="config.Logging.FilterMode" xml:space="preserve">
-    <value>"disable" or "blacklist" OR "whitelist". Blacklist hide message match regex. Whitelist show message match regex.</value>
-  </data>
-  <data name="config.Logging.InfoMessages" xml:space="preserve">
-    <value>Informative messages. (i.e Most of the message from MCC)</value>
-  </data>
-  <data name="config.Logging.LogFile" xml:space="preserve">
-    <value>Log file name.</value>
-  </data>
-  <data name="config.Logging.LogToFile" xml:space="preserve">
-    <value>Write log messages to file.</value>
-  </data>
-  <data name="config.Logging.PrependTimestamp" xml:space="preserve">
-    <value>Prepend timestamp to messages in log file.</value>
-  </data>
-  <data name="config.Logging.SaveColorCodes" xml:space="preserve">
-    <value>Keep color codes in the saved text.(look like "§b")</value>
-  </data>
-  <data name="config.Logging.WarningMessages" xml:space="preserve">
-    <value>Show warning messages.</value>
-  </data>
-  <data name="config.Main.Advanced" xml:space="preserve">
-    <value>Make sure you understand what each setting does before changing anything!</value>
-  </data>
-  <data name="config.Main.Advanced.account_list" xml:space="preserve">
-    <value>AccountList: It allows a fast account switching without directly using the credentials
-Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; Player1"</value>
-  </data>
-  <data name="config.Main.Advanced.auto_respawn" xml:space="preserve">
-    <value>Toggle auto respawn if client player was dead (make sure your spawn point is safe).</value>
-  </data>
-  <data name="config.Main.Advanced.bot_owners" xml:space="preserve">
-    <value>Set the owner of the bot. /!\ Server admins can impersonate owners!</value>
-  </data>
-  <data name="config.Main.Advanced.brand_info" xml:space="preserve">
-    <value>Use "mcc", "vanilla" or "none". This is how MCC identifies itself to the server.</value>
-  </data>
-  <data name="config.Main.Advanced.chatbot_log_file" xml:space="preserve">
-    <value>Leave empty for no logfile.</value>
-  </data>
-  <data name="config.Main.Advanced.enable_emoji" xml:space="preserve">
-    <value>If turned off, the emoji will be replaced with a simpler character (for /chunk status).</value>
-  </data>
-  <data name="config.Main.Advanced.entity_handling" xml:space="preserve">
-    <value>Toggle entity handling.</value>
-  </data>
-  <data name="config.Main.Advanced.exit_on_failure" xml:space="preserve">
-    <value>Whether to exit directly when an error occurs, for using MCC in non-interactive scripts.</value>
-  </data>
-  <data name="config.Main.Advanced.internal_cmd_char" xml:space="preserve">
-    <value>Use "none", "slash"(/) or "backslash"(\).</value>
-  </data>
-  <data name="config.Main.Advanced.inventory_handling" xml:space="preserve">
-    <value>Toggle inventory handling.</value>
-  </data>
-  <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
+    <value>Failed to load settings:</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>The language code is invalid!</value>
   </data>
-  <data name="config.Main.Advanced.mc_forge" xml:space="preserve">
-    <value>Use "auto", "no" or "force". Force-enabling only works for MC 1.13+.</value>
-  </data>
-  <data name="config.Main.Advanced.mc_version" xml:space="preserve">
-    <value>Use "auto" or "1.X.X" values. Allows to skip server info retrieval.</value>
-  </data>
-  <data name="config.Main.Advanced.message_cooldown" xml:space="preserve">
-    <value>Controls the minimum interval (in seconds) between sending each message to the server.</value>
-  </data>
-  <data name="config.Main.Advanced.minecraft_realms" xml:space="preserve">
-    <value>Enable support for joining Minecraft Realms worlds.</value>
-  </data>
-  <data name="config.Main.Advanced.MinTerminalHeight" xml:space="preserve">
-    <value>The minimum height to use when calculating the image size from the height of the terminal.</value>
-  </data>
-  <data name="config.Main.Advanced.MinTerminalWidth" xml:space="preserve">
-    <value>The minimum width used when calculating the image size from the width of the terminal.</value>
-  </data>
-  <data name="config.Main.Advanced.move_head_while_walking" xml:space="preserve">
-    <value>Enable head movement while walking to avoid anti-cheat triggers.</value>
-  </data>
-  <data name="config.Main.Advanced.movement_speed" xml:space="preserve">
-    <value>A movement speed higher than 2 may be considered cheating.</value>
-  </data>
-  <data name="config.Main.Advanced.player_head_icon" xml:space="preserve">
-    <value>Only works on Windows XP-8 or Windows 10 with old console.</value>
-  </data>
-  <data name="config.Main.Advanced.private_msgs_cmd_name" xml:space="preserve">
-    <value>For remote control of the bot.</value>
-  </data>
-  <data name="config.Main.Advanced.profilekey_cache" xml:space="preserve">
-    <value>How to retain profile key. Use "none", "memory" or "disk".</value>
-  </data>
-  <data name="config.Main.Advanced.resolve_srv_records" xml:space="preserve">
-    <value>Use "no", "fast" (5s timeout), or "yes". Required for joining some servers.</value>
-  </data>
-  <data name="config.Main.Advanced.script_cache" xml:space="preserve">
-    <value>Cache compiled scripts for faster load on low-end devices.</value>
-  </data>
-  <data name="config.Main.Advanced.server_list" xml:space="preserve">
-    <value>ServerList: It allows an easier and faster server switching with short aliases instead of full server IP
-Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
-Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value>
-  </data>
-  <data name="config.Main.Advanced.session_cache" xml:space="preserve">
-    <value>How to retain session tokens. Use "none", "memory" or "disk".</value>
-  </data>
-  <data name="config.Main.Advanced.show_chat_links" xml:space="preserve">
-    <value>Decode links embedded in chat messages and show them in console.</value>
-  </data>
-  <data name="config.Main.Advanced.show_inventory_layout" xml:space="preserve">
-    <value>Show inventory layout as ASCII art in inventory command.</value>
-  </data>
-  <data name="config.Main.Advanced.show_system_messages" xml:space="preserve">
-    <value>System messages for server ops.</value>
-  </data>
-  <data name="config.Main.Advanced.show_xpbar_messages" xml:space="preserve">
-    <value>Messages displayed above xp bar, set this to false in case of xp bar spam.</value>
-  </data>
-  <data name="config.Main.Advanced.TerminalColorDepth" xml:space="preserve">
-    <value>Use "none", "bit_4", "bit_8" or "bit_24". This can be checked by opening the debug log.</value>
-  </data>
-  <data name="config.Main.Advanced.terrain_and_movements" xml:space="preserve">
-    <value>Uses more ram, cpu, bandwidth but allows you to move around.</value>
-  </data>
-  <data name="config.Main.Advanced.timeout" xml:space="preserve">
-    <value>Customize the TCP connection timeout with the server. (in seconds)</value>
-  </data>
-  <data name="config.Main.Advanced.timestamps" xml:space="preserve">
-    <value>Prepend timestamps to chat messages.</value>
-  </data>
-  <data name="config.Main.General.account" xml:space="preserve">
-    <value>Login=Email or Name. Use "-" as password for offline mode. Leave blank to prompt user on startup.</value>
-  </data>
-  <data name="config.Main.General.login" xml:space="preserve">
-    <value>The address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)</value>
-  </data>
-  <data name="config.Main.General.method" xml:space="preserve">
-    <value>Microsoft Account sign-in method: "mcc" OR "browser". If the login always fails, please try to use the "browser" once.</value>
-  </data>
-  <data name="config.Main.General.server_info" xml:space="preserve">
-    <value>Account type: "mojang" OR "microsoft". Also affects interactive login in console.</value>
-  </data>
-  <data name="config.MCSettings" xml:space="preserve">
-    <value>Settings below are sent to the server and only affect server-side things like your skin.</value>
-  </data>
-  <data name="config.MCSettings.ChatColors" xml:space="preserve">
-    <value>Allows disabling chat colors server-side.</value>
-  </data>
-  <data name="config.MCSettings.ChatMode" xml:space="preserve">
-    <value>Use "enabled", "commands", or "disabled". Allows to mute yourself...</value>
-  </data>
-  <data name="config.MCSettings.Difficulty" xml:space="preserve">
-    <value>MC 1.7- difficulty. "peaceful", "easy", "normal", "difficult".</value>
-  </data>
-  <data name="config.MCSettings.Enabled" xml:space="preserve">
-    <value>If disabled, settings below are not sent to the server.</value>
-  </data>
-  <data name="config.MCSettings.Locale" xml:space="preserve">
-    <value>Use any language implemented in Minecraft.</value>
-  </data>
-  <data name="config.MCSettings.MainHand" xml:space="preserve">
-    <value>MC 1.9+ main hand. "left" or "right".</value>
-  </data>
-  <data name="config.MCSettings.RenderDistance" xml:space="preserve">
-    <value>Value range: [0 - 255].</value>
-  </data>
-  <data name="config.Proxy" xml:space="preserve">
-    <value>Connect to a server via a proxy instead of connecting directly
-If Mojang session services are blocked on your network, set Enabled_Login=true to login using proxy.
-If the connection to the Minecraft game server is blocked by the firewall, set Enabled_Ingame=true to use a proxy to connect to the game server.
-/!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!</value>
-  </data>
-  <data name="config.Proxy.Enabled_Ingame" xml:space="preserve">
-    <value>Whether to connect to the game server through a proxy.</value>
-  </data>
-  <data name="config.Proxy.Enabled_Login" xml:space="preserve">
-    <value>Whether to connect to the login server through a proxy.</value>
-  </data>
-  <data name="config.Proxy.Password" xml:space="preserve">
-    <value>Only required for password-protected proxies.</value>
-  </data>
-  <data name="config.Proxy.Proxy_Type" xml:space="preserve">
-    <value>Supported types: "HTTP", "SOCKS4", "SOCKS4a", "SOCKS5".</value>
-  </data>
-  <data name="config.Proxy.Server" xml:space="preserve">
-    <value>Proxy server must allow HTTPS for login, and non-443 ports for playing.</value>
-  </data>
-  <data name="config.Proxy.Username" xml:space="preserve">
-    <value>Only required for password-protected proxies.</value>
-  </data>
   <data name="config.saving" xml:space="preserve">
-    <value>§aThe current setting is saved as {0}</value>
-  </data>
-  <data name="config.Signature" xml:space="preserve">
-    <value>Chat signature related settings (affects minecraft 1.19+)</value>
-  </data>
-  <data name="config.Signature.LoginWithSecureProfile" xml:space="preserve">
-    <value>Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with "enforce-secure-profile=true"</value>
-  </data>
-  <data name="config.Signature.MarkIllegallySignedMsg" xml:space="preserve">
-    <value>Use red    color block to mark chat without legitimate signature</value>
-  </data>
-  <data name="config.Signature.MarkLegallySignedMsg" xml:space="preserve">
-    <value>Use green  color block to mark chat with legitimate signatures</value>
-  </data>
-  <data name="config.Signature.MarkModifiedMsg" xml:space="preserve">
-    <value>Use yellow color block to mark chat that have been modified by the server.</value>
-  </data>
-  <data name="config.Signature.MarkSystemMessage" xml:space="preserve">
-    <value>Use gray   color block to mark system message (always without signature)</value>
-  </data>
-  <data name="config.Signature.ShowIllegalSignedChat" xml:space="preserve">
-    <value>Whether to display chat and messages in commands without legal signatures</value>
-  </data>
-  <data name="config.Signature.ShowModifiedChat" xml:space="preserve">
-    <value>Set to true to display messages modified by the server, false to display the original signed messages</value>
-  </data>
-  <data name="config.Signature.SignChat" xml:space="preserve">
-    <value>Whether to sign the chat send from MCC</value>
-  </data>
-  <data name="config.Signature.SignMessageInCommand" xml:space="preserve">
-    <value>Whether to sign the messages contained in the commands sent by MCC. For example, the message in "/msg" and "/me"</value>
+    <value>The current setting is saved as {0}</value>
   </data>
   <data name="config.write.fail" xml:space="preserve">
-    <value>§cFailed to write to settings file {0}§r</value>
+    <value>Failed to write to settings file {0}</value>
   </data>
   <data name="debug.color_test" xml:space="preserve">
     <value>Color test: Your terminal should display {0}</value>
   </data>
   <data name="debug.crypto" xml:space="preserve">
-    <value>§8Crypto keys &amp; hash generated.</value>
+    <value>Crypto keys &amp; hash generated.</value>
   </data>
   <data name="debug.keys_cache_fail" xml:space="preserve">
-    <value>§8No profile keys could be loaded from disk</value>
+    <value>No profile keys could be loaded from disk</value>
   </data>
   <data name="debug.keys_cache_ok" xml:space="preserve">
-    <value>§8Profile keys has been successfully loaded from disk.</value>
+    <value>Profile keys has been successfully loaded from disk.</value>
   </data>
   <data name="debug.request" xml:space="preserve">
-    <value>§8Performing request to {0}</value>
+    <value>Performing request to {0}</value>
   </data>
   <data name="debug.session_cache_fail" xml:space="preserve">
-    <value>§8No sessions could be loaded from disk</value>
+    <value>No sessions could be loaded from disk</value>
   </data>
   <data name="debug.session_cache_ok" xml:space="preserve">
-    <value>§8Session data has been successfully loaded from disk.</value>
+    <value>Session data has been successfully loaded from disk.</value>
   </data>
   <data name="debug.session_id" xml:space="preserve">
     <value>Success. (session ID: {0})</value>
@@ -2213,25 +1542,25 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Top slot</value>
   </data>
   <data name="error.auth" xml:space="preserve">
-    <value>§8Got error code from server while refreshing authentication: {0}</value>
+    <value>Got error code from server while refreshing authentication: {0}</value>
   </data>
   <data name="error.connect" xml:space="preserve">
     <value>Failed to connect to this IP.</value>
   </data>
   <data name="error.connection_timeout" xml:space="preserve">
-    <value>§8A timeout occured while attempting to connect to this IP.</value>
+    <value>A timeout occured while attempting to connect to this IP.</value>
   </data>
   <data name="error.determine" xml:space="preserve">
     <value>Failed to determine server version.</value>
   </data>
   <data name="error.forge" xml:space="preserve">
-    <value>§8Forge Login Handshake did not complete successfully</value>
-  </data>
-  <data name="error.forge_encrypt" xml:space="preserve">
-    <value>§8Forge StartEncryption Handshake did not complete successfully</value>
+    <value>Forge Login Handshake did not complete successfully</value>
   </data>
   <data name="error.forgeforce" xml:space="preserve">
     <value>Cannot force Forge support for this Minecraft version!</value>
+  </data>
+  <data name="error.forge_encrypt" xml:space="preserve">
+    <value>Forge StartEncryption Handshake did not complete successfully</value>
   </data>
   <data name="error.generator.invalid" xml:space="preserve">
     <value>Invalid usage of the generator command!</value>
@@ -2243,13 +1572,13 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Invalid data path provided! (The path either does not exists or you have made a typo)</value>
   </data>
   <data name="error.http_code" xml:space="preserve">
-    <value>§8Got error code from server: {0}</value>
+    <value>Got error code from server: {0}</value>
   </data>
   <data name="error.invalid_encrypt" xml:space="preserve">
-    <value>§8Invalid response to StartEncryption packet</value>
+    <value>Invalid response to StartEncryption packet</value>
   </data>
   <data name="error.invalid_response" xml:space="preserve">
-    <value>§8Invalid response to Handshake packet</value>
+    <value>Invalid response to Handshake packet</value>
   </data>
   <data name="error.inventoryhandling_not_enabled" xml:space="preserve">
     <value>This feature requires Inventory Handling to be enabled in order to work!</value>
@@ -2294,7 +1623,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>You are missing argument {0}</value>
   </data>
   <data name="error.no_version_report" xml:space="preserve">
-    <value>§8Server does not report its protocol version, autodetection will not work.</value>
+    <value>Server does not report its protocol version, autodetection will not work.</value>
   </data>
   <data name="error.ping" xml:space="preserve">
     <value>Failed to ping this IP.</value>
@@ -2324,7 +1653,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Connection Timeout</value>
   </data>
   <data name="error.unexpect_response" xml:space="preserve">
-    <value>§8Unexpected response from the server (is that a Minecraft server?)</value>
+    <value>Unexpected response from the server (is that a Minecraft server?)</value>
   </data>
   <data name="error.unsupported" xml:space="preserve">
     <value>Cannot connect to the server : This version is not supported !</value>
@@ -2333,7 +1662,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Usage:</value>
   </data>
   <data name="error.version_different" xml:space="preserve">
-    <value>§8Server reports a different version than manually set. Login may not work.</value>
+    <value>Server reports a different version than manually set. Login may not work.</value>
   </data>
   <data name="exception.chatbot.init" xml:space="preserve">
     <value>ChatBot methods should NOT be called in the constructor as API handler is not initialized yet. Override Initialize() or AfterGameJoined() instead to perform initialization tasks.</value>
@@ -2349,6 +1678,9 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   </data>
   <data name="exception.palette.entity" xml:space="preserve">
     <value>Please update entity types handling for this Minecraft version. See EntityType.cs</value>
+  </data>
+  <data name="exception.palette.healthfield" xml:space="preserve">
+    <value>Please update health field handling for this Minecraft version.</value>
   </data>
   <data name="exception.palette.item" xml:space="preserve">
     <value>Please update item types handling for this Minecraft version. See ItemType.cs</value>
@@ -2366,7 +1698,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>The protocol version no.{0} is not supported.</value>
   </data>
   <data name="extra.entity_disabled" xml:space="preserve">
-    <value>§cEntities are currently not handled for that MC version.</value>
+    <value>Entities are currently not handled for that MC version.</value>
   </data>
   <data name="extra.entity_required" xml:space="preserve">
     <value>Please enable EntityHandling in the config file first.</value>
@@ -2375,7 +1707,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Inventory # {0} closed.</value>
   </data>
   <data name="extra.inventory_disabled" xml:space="preserve">
-    <value>§cInventories are currently not handled for that MC version.</value>
+    <value>Inventories are currently not handled for that MC version.</value>
   </data>
   <data name="extra.inventory_enabled" xml:space="preserve">
     <value>Inventory handling is now enabled.</value>
@@ -2390,7 +1722,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Please enable InventoryHandling in the config file first.</value>
   </data>
   <data name="extra.terrainandmovement_disabled" xml:space="preserve">
-    <value>§cTerrain &amp; Movements currently not handled for that MC version.</value>
+    <value>Terrain &amp; Movements currently not handled for that MC version.</value>
   </data>
   <data name="extra.terrainandmovement_enabled" xml:space="preserve">
     <value>Terrain and Movements is now enabled.</value>
@@ -2399,58 +1731,58 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Please enable Terrain and Movements in the config file first.</value>
   </data>
   <data name="filemonitor.fail" xml:space="preserve">
-    <value>§8[{0}] Failed to initialize FileSystemWatcher, retrying using Polling</value>
+    <value>[{0}] Failed to initialize FileSystemWatcher, retrying using Polling</value>
   </data>
   <data name="filemonitor.init" xml:space="preserve">
-    <value>§8[{0}] Initializing FileSystemWatcher for file: {1}</value>
+    <value>[{0}] Initializing FileSystemWatcher for file: {1}</value>
   </data>
   <data name="forge.accept" xml:space="preserve">
-    <value>§8Accepting server mod list...</value>
+    <value>Accepting server mod list...</value>
   </data>
   <data name="forge.accept_registry" xml:space="preserve">
-    <value>§8Accepting server registries...</value>
+    <value>Accepting server registries...</value>
   </data>
   <data name="forge.complete" xml:space="preserve">
     <value>Forge server connection complete!</value>
   </data>
   <data name="forge.fml2.config" xml:space="preserve">
-    <value>§8Acknowledging FML2 Server Config: {0}</value>
+    <value>Acknowledging FML2 Server Config: {0}</value>
   </data>
   <data name="forge.fml2.mod" xml:space="preserve">
-    <value>§8Received FML2 Server Mod List</value>
+    <value>Received FML2 Server Mod List</value>
   </data>
   <data name="forge.fml2.mod_send" xml:space="preserve">
-    <value>§8Sending back FML2 Client Mod List</value>
+    <value>Sending back FML2 Client Mod List</value>
   </data>
   <data name="forge.fml2.registry" xml:space="preserve">
-    <value>§8Acknowledging FML2 Server Registry: {0}</value>
+    <value>Acknowledging FML2 Server Registry: {0}</value>
   </data>
   <data name="forge.fml2.unknown" xml:space="preserve">
-    <value>§8Got Unknown FML2 Handshake message no. {0}</value>
+    <value>Got Unknown FML2 Handshake message no. {0}</value>
   </data>
   <data name="forge.fml2.unknown_channel" xml:space="preserve">
-    <value>§8Ignoring Unknown FML2 LoginMessage channel: {0}</value>
+    <value>Ignoring Unknown FML2 LoginMessage channel: {0}</value>
   </data>
   <data name="forge.mod_list" xml:space="preserve">
-    <value>§8Mod list:</value>
+    <value>Mod list:</value>
   </data>
   <data name="forge.no_mod" xml:space="preserve">
-    <value>§8Server is running Forge without mods.</value>
+    <value>Server is running Forge without mods.</value>
   </data>
   <data name="forge.registry" xml:space="preserve">
-    <value>§8Received registry with {0} entries</value>
+    <value>Received registry with {0} entries</value>
   </data>
   <data name="forge.registry_2" xml:space="preserve">
-    <value>§8Received registry {0} with {1} entries</value>
+    <value>Received registry {0} with {1} entries</value>
   </data>
   <data name="forge.send_mod" xml:space="preserve">
-    <value>§8Sending falsified mod list to server...</value>
+    <value>Sending falsified mod list to server...</value>
   </data>
   <data name="forge.version" xml:space="preserve">
-    <value>§8Forge protocol version : {0}</value>
+    <value>Forge protocol version : {0}</value>
   </data>
   <data name="forge.with_mod" xml:space="preserve">
-    <value>§8Server is running Forge with {0} mods.</value>
+    <value>Server is running Forge with {0} mods.</value>
   </data>
   <data name="general.available_cmd" xml:space="preserve">
     <value>Available commands: {0}</value>
@@ -2475,6 +1807,15 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   </data>
   <data name="icmd.unknown" xml:space="preserve">
     <value>Unknown command '{0}'. Use 'help' for command list.</value>
+  </data>
+  <data name="mcc.backup_old_config" xml:space="preserve">
+    <value>The old MinecraftClient.ini has been backed up as {0}</value>
+  </data>
+  <data name="mcc.browser_login_code" xml:space="preserve">
+    <value>Paste your code here:</value>
+  </data>
+  <data name="mcc.browser_open" xml:space="preserve">
+    <value>Your browser should open automatically. If not, open the link below in your browser.</value>
   </data>
   <data name="mcc.connecting" xml:space="preserve">
     <value>Connecting to {0}...</value>
@@ -2501,10 +1842,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Force-enabling Forge support.</value>
   </data>
   <data name="mcc.found" xml:space="preserve">
-    <value>§8Found server {0}:{1} for domain {2}</value>
-  </data>
-  <data name="mcc.gen_new_config" xml:space="preserve">
-    <value>New configuration file "{0}" is generated.</value>
+    <value>Found server {0}:{1} for domain {2}</value>
   </data>
   <data name="mcc.generator.done" xml:space="preserve">
     <value>Succesfully generated {0} palette using the dataset: {1}</value>
@@ -2512,11 +1850,14 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="mcc.generator.generating" xml:space="preserve">
     <value>Generating {0} palette using the dataset: {1}</value>
   </data>
+  <data name="mcc.gen_new_config" xml:space="preserve">
+    <value>New configuration file "{0}" is generated.</value>
+  </data>
   <data name="mcc.handshake" xml:space="preserve">
-    <value>§8Handshake successful. (Server ID: {0})</value>
+    <value>Handshake successful. (Server ID: {0})</value>
   </data>
   <data name="mcc.has_update" xml:space="preserve">
-    <value>§eNew version of MCC available: {0}</value>
+    <value>New version of MCC available: {0}</value>
   </data>
   <data name="mcc.help_us_translate" xml:space="preserve">
     <value>Help us translate MCC: {0}</value>
@@ -2541,14 +1882,11 @@ Type '{0}quit' to leave the server.</value>
     <value>Please type the username or email of your choice.</value>
   </data>
   <data name="mcc.not_found" xml:space="preserve">
-    <value>§8Failed to perform SRV lookup for {0}
+    <value>Failed to perform SRV lookup for {0}
 {1}: {2}</value>
   </data>
   <data name="mcc.offline" xml:space="preserve">
-    <value>§8You chose to run in offline mode.</value>
-  </data>
-  <data name="mcc.password" xml:space="preserve">
-    <value>Password: </value>
+    <value>You chose to run in offline mode.</value>
   </data>
   <data name="mcc.password_basic_io" xml:space="preserve">
     <value>Please type the password for {0}.</value>
@@ -2566,10 +1904,10 @@ Type '{0}quit' to leave the server.</value>
     <value>Or press Enter to exit Minecraft Console Client.</value>
   </data>
   <data name="mcc.profile_key_invalid" xml:space="preserve">
-    <value>§8Cached profile key needs to be refreshed.</value>
+    <value>Cached profile key needs to be refreshed.</value>
   </data>
   <data name="mcc.profile_key_valid" xml:space="preserve">
-    <value>§8Cached profile key is still valid for {0}.</value>
+    <value>Cached profile key is still valid for {0}.</value>
   </data>
   <data name="mcc.realms_available" xml:space="preserve">
     <value>You have access to the following Realms worlds</value>
@@ -2597,10 +1935,10 @@ Type '{0}quit' to leave the server.</value>
 MCC is running with default settings.</value>
   </data>
   <data name="mcc.server_offline" xml:space="preserve">
-    <value>§8Server is in offline mode.</value>
+    <value>Server is in offline mode.</value>
   </data>
   <data name="mcc.server_protocol" xml:space="preserve">
-    <value>§8Server version : {0} (protocol v{1})</value>
+    <value>Server version : {0} (protocol v{1})</value>
   </data>
   <data name="mcc.server_version" xml:space="preserve">
     <value>Server version : </value>
@@ -2612,23 +1950,23 @@ MCC is running with default settings.</value>
     <value>Failed to check session.</value>
   </data>
   <data name="mcc.session_invalid" xml:space="preserve">
-    <value>§8Cached session is invalid or expired.</value>
+    <value>Cached session is invalid or expired.</value>
   </data>
   <data name="mcc.session_valid" xml:space="preserve">
-    <value>§8Cached session is still valid for {0}.</value>
+    <value>Cached session is still valid for {0}.</value>
   </data>
   <data name="mcc.settings_generated" xml:space="preserve">
-    <value>§cSettings file MinecraftClient.ini has been generated.</value>
-  </data>
-  <data name="mcc.single_cmd" xml:space="preserve">
-    <value>§7Command §8 {0} §7 sent.</value>
+    <value>Settings file MinecraftClient.ini has been generated.</value>
   </data>
   <data name="mcc.unknown_version" xml:space="preserve">
-    <value>§8Unknown or not supported MC version {0}.
+    <value>Unknown or not supported MC version {0}.
 Switching to autodetection mode.</value>
   </data>
+  <data name="mcc.use_new_config" xml:space="preserve">
+    <value>Please use the newly generated MinecraftClient.ini</value>
+  </data>
   <data name="mcc.use_version" xml:space="preserve">
-    <value>§8Using Minecraft version {0} (protocol v{1})</value>
+    <value>Using Minecraft version {0} (protocol v{1})</value>
   </data>
   <data name="mcc.version_supported" xml:space="preserve">
     <value>Version is supported.
@@ -2638,42 +1976,6 @@ Logging in...</value>
     <value>, with Forge</value>
   </data>
   <data name="proxy.connected" xml:space="preserve">
-    <value>§8Connected to proxy {0}:{1}</value>
-  </data>
-  <data name="config.Main.Advanced.LoadMccTrans" xml:space="preserve">
-    <value>Load translations applied to MCC when available, turn it off to use English only.</value>
-  </data>
-  <data name="cmd.setrnd.format" xml:space="preserve">
-    <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
-  </data>
-  <data name="exception.palette.healthfield" xml:space="preserve">
-    <value>Please update health field handling for this Minecraft version.</value>
-  </data>
-  <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
-    <value>Successfully disconnected with MCC!</value>
-  </data>
-  <data name="cmd.execmulti.prevent" xml:space="preserve">
-    <value>You can not use execmulti or execif within execmulti command!</value>
-  </data>
-  <data name="cmd.move.desc_force" xml:space="preserve">
-    <value>force unsafe movements like falling or touching fire</value>
-  </data>
-  <data name="bot.autodig.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
-  </data>
-  <data name="mcc.use_new_config" xml:space="preserve">
-    <value>Please use the newly generated MinecraftClient.ini</value>
-  </data>
-  <data name="mcc.backup_old_config" xml:space="preserve">
-    <value>The old MinecraftClient.ini has been backed up as {0}</value>
-  </data>
-  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
-    <value>Temporary fix for Badpacket issue on some servers.</value>
-  </data>
-  <data name="mcc.browser_login_code" xml:space="preserve">
-    <value>Paste your code here:</value>
-  </data>
-  <data name="mcc.browser_open" xml:space="preserve">
-    <value>Your browser should open automatically. If not, open the link below in your browser.</value>
+    <value>Connected to proxy {0}:{1}</value>
   </data>
 </root>

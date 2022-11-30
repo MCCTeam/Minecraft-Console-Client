@@ -26,7 +26,7 @@ namespace MinecraftClient.ChatBots
 
             public string Matches_File = @"matches.ini";
 
-            [TomlInlineComment("$config.ChatBot.AutoRespond.Match_Colors$")]
+            [TomlInlineComment("$ChatBot.AutoRespond.Match_Colors$")]
             public bool Match_Colors = false;
 
             public void OnSettingUpdate()
