@@ -68,13 +68,16 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 1. Visit [MCC project's homepage on Crowdin](https://crowdin.com/project/minecraft-console-client).
 2. You will need to log in to your Crowdin account in order to download.
 3. Click on the language you want to download the translation for.
-4. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text and settings file comments`
+4. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
 5. Click the button `•••` at the end of the line.
 6. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
-7. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
+7. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
 8. Click the button `•••` at the end of the line.
-9. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
-10. If you need to download a translation in another language, go to step 3 to continue.
+9. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
+10. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
+11. Click the button `•••` at the end of the line.
+12. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
+13. If you need to download a translation in another language, go to step 3 to continue.
 
 #### Building using the Visual Studio
 
