@@ -40,19 +40,19 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.Token$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.Token$")]
             public string Token = "your bot token here";
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.ChannelId$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.ChannelId$")]
             public string ChannelId = "";
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.Authorized_Chat_Ids$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.Authorized_Chat_Ids$")]
             public long[] Authorized_Chat_Ids = Array.Empty<long>();
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.MessageSendTimeout$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.MessageSendTimeout$")]
             public int Message_Send_Timeout = 3;
 
-            [TomlPrecedingComment("$config.ChatBot.TelegramBridge.Formats$")]
+            [TomlPrecedingComment("$ChatBot.TelegramBridge.Formats$")]
             public string PrivateMessageFormat = "*(Private Message)* {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
             public string TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!";

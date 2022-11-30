@@ -25,43 +25,43 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Antidespawn$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Antidespawn$")]
             public bool Antidespawn = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Mainhand$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Mainhand$")]
             public bool Mainhand = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Auto_Start$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Auto_Start$")]
             public bool Auto_Start = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Cast_Delay$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Cast_Delay$")]
             public double Cast_Delay = 0.4;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Fishing_Delay$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Fishing_Delay$")]
             public double Fishing_Delay = 3.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Fishing_Timeout$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Fishing_Timeout$")]
             public double Fishing_Timeout = 300.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Durability_Limit$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Durability_Limit$")]
             public double Durability_Limit = 2;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Auto_Rod_Switch$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Auto_Rod_Switch$")]
             public bool Auto_Rod_Switch = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Stationary_Threshold$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Stationary_Threshold$")]
             public double Stationary_Threshold = 0.001;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Hook_Threshold$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Hook_Threshold$")]
             public double Hook_Threshold = 0.2;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Log_Fish_Bobber$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Log_Fish_Bobber$")]
             public bool Log_Fish_Bobber = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Enable_Move$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Enable_Move$")]
             public bool Enable_Move = false;
 
-            [TomlPrecedingComment("$config.ChatBot.AutoFishing.Movements$")]
+            [TomlPrecedingComment("$ChatBot.AutoFishing.Movements$")]
             public LocationConfig[] Movements = new LocationConfig[]
             {
                 new LocationConfig(12.34, -23.45),

@@ -41,7 +41,7 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.Farmer.Delay_Between_Tasks$")]
+            [TomlInlineComment("$ChatBot.Farmer.Delay_Between_Tasks$")]
             public int Delay_Between_Tasks = 1;
 
             public void OnSettingUpdate()

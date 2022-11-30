@@ -19,28 +19,28 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.Alerts.Beep_Enabled$")]
+            [TomlInlineComment("$ChatBot.Alerts.Beep_Enabled$")]
             public bool Beep_Enabled = true;
 
-            [TomlInlineComment("$config.ChatBot.Alerts.Trigger_By_Words$")]
+            [TomlInlineComment("$ChatBot.Alerts.Trigger_By_Words$")]
             public bool Trigger_By_Words = false;
 
-            [TomlInlineComment("$config.ChatBot.Alerts.Trigger_By_Rain$")]
+            [TomlInlineComment("$ChatBot.Alerts.Trigger_By_Rain$")]
             public bool Trigger_By_Rain = false;
 
-            [TomlInlineComment("$config.ChatBot.Alerts.Trigger_By_Thunderstorm$")]
+            [TomlInlineComment("$ChatBot.Alerts.Trigger_By_Thunderstorm$")]
             public bool Trigger_By_Thunderstorm = false;
 
-            [TomlInlineComment("$config.ChatBot.Alerts.Log_To_File$")]
+            [TomlInlineComment("$ChatBot.Alerts.Log_To_File$")]
             public bool Log_To_File = false;
 
-            [TomlInlineComment("$config.ChatBot.Alerts.Log_File$")]
+            [TomlInlineComment("$ChatBot.Alerts.Log_File$")]
             public string Log_File = @"alerts-log.txt";
 
-            [TomlPrecedingComment("$config.ChatBot.Alerts.Matches$")]
+            [TomlPrecedingComment("$ChatBot.Alerts.Matches$")]
             public string[] Matches = new string[] { "Yourname", " whispers ", "-> me", "admin", ".com" };
 
-            [TomlPrecedingComment("$config.ChatBot.Alerts.Excludes$")]
+            [TomlPrecedingComment("$ChatBot.Alerts.Excludes$")]
             public string[] Excludes = new string[] { "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is" };
 
             public void OnSettingUpdate()

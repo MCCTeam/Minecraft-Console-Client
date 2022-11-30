@@ -19,36 +19,36 @@ namespace MinecraftClient.ChatBots
             public bool Enabled = false;
 
             [NonSerialized]
-            [TomlInlineComment("$config.ChatBot.AutoDig.Auto_Tool_Switch$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Auto_Tool_Switch$")]
             public bool Auto_Tool_Switch = false;
 
             [NonSerialized]
-            [TomlInlineComment("$config.ChatBot.AutoDig.Durability_Limit$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Durability_Limit$")]
             public int Durability_Limit = 2;
 
             [NonSerialized]
-            [TomlInlineComment("$config.ChatBot.AutoDig.Drop_Low_Durability_Tools$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Drop_Low_Durability_Tools$")]
             public bool Drop_Low_Durability_Tools = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Mode$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Mode$")]
             public ModeType Mode = ModeType.lookat;
 
-            [TomlPrecedingComment("$config.ChatBot.AutoDig.Locations$")]
+            [TomlPrecedingComment("$ChatBot.AutoDig.Locations$")]
             public Coordination[] Locations = new Coordination[] { new(123.5, 64, 234.5), new(124.5, 63, 235.5) };
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Location_Order$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Location_Order$")]
             public OrderType Location_Order = OrderType.distance;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Auto_Start_Delay$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Auto_Start_Delay$")]
             public double Auto_Start_Delay = 3.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Dig_Timeout$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Dig_Timeout$")]
             public double Dig_Timeout = 60.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Log_Block_Dig$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Log_Block_Dig$")]
             public bool Log_Block_Dig = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.List_Type$")]
+            [TomlInlineComment("$ChatBot.AutoDig.List_Type$")]
             public ListType List_Type = ListType.whitelist;
 
             public List<Material> Blocks = new() { Material.Cobblestone, Material.Stone };
