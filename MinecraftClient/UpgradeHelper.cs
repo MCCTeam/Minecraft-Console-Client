@@ -48,11 +48,11 @@ namespace MinecraftClient
             });
         }
 
-        public static void DownloadLatestBuild(bool forceUpdate, bool isCommandLine = false)
+        public static bool DownloadLatestBuild(bool forceUpdate, bool isCommandLine = false)
         {
             if (Interlocked.Exchange(ref running, 1) == 1)
             {
-                ConsoleIO.WriteLine(Translations.mcc_update_already_running);
+                return false;
             }
             else
             {
@@ -105,7 +105,10 @@ namespace MinecraftClient
                                             (double)info.BytesTransferred / info.TotalBytes * 100.0,
                                             (double)info.BytesTransferred / 1024 / 1024,
                                             (double)info.TotalBytes / 1024 / 1024,
-                                            (double)info.BytesTransferred / 1024 / (now - downloadStartTime).TotalSeconds)
+                                            (double)info.BytesTransferred / 1024 / (now - downloadStartTime).TotalSeconds,
+                                            TimeSpan.FromMilliseconds(
+                                                (double)(info.TotalBytes - info.BytesTransferred) / (info.BytesTransferred / (now - downloadStartTime).TotalMilliseconds)
+                                                ).ToString("hh\\:mm\\:ss"))
                                         );
                                     }
                                     else
@@ -123,10 +126,10 @@ namespace MinecraftClient
                             try
                             {
                                 string downloadUrl = $"{GithubReleaseUrl}/download/{latestVersion}/MinecraftClient-{OSInfo}.zip";
-                                using HttpResponseMessage response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                                 downloadStartTime = DateTime.Now;
                                 lastNotifyTime = DateTime.MinValue;
                                 lastBytesTransferred = 0;
+                                using HttpResponseMessage response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                                 using Stream zipFileStream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
                                 if (!cancellationToken.IsCancellationRequested)
@@ -162,6 +165,7 @@ namespace MinecraftClient
                     }
                     Interlocked.Exchange(ref running, 0);
                 }, cancellationToken);
+                return true;
             }
         }
 

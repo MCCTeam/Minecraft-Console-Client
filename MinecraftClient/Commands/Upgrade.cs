@@ -31,8 +31,10 @@ namespace MinecraftClient.Commands
 
         private static string DownloadUpdate(bool force)
         {
-            UpgradeHelper.DownloadLatestBuild(force);
-            return Translations.mcc_update_start;
+            if (UpgradeHelper.DownloadLatestBuild(force))
+                return Translations.mcc_update_start;
+            else
+                return Translations.mcc_update_already_running;
         }
 
         private static string CancelDownloadUpdate()

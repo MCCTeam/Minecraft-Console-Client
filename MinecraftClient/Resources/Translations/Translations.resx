@@ -1988,7 +1988,7 @@ Switching to autodetection mode.</value>
     <value>The latest release does not contain a build that matches your operating system and CPU architecture.</value>
   </data>
   <data name="mcc.update.progress" xml:space="preserve">
-    <value>Self-updating: {0:00.00}%, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s</value>
+    <value>Self-updating: {0:00.00}%, ETA {4}, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s</value>
   </data>
   <data name="mcc.update.progress_type2" xml:space="preserve">
     <value>Self-updating: Downloaded {0:00.0}MB, Avg {1:0.0}KB/s</value>

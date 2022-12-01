@@ -5603,7 +5603,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Self-updating: {0:00.00}%, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s.
+        ///   Looks up a localized string similar to Self-updating: {0:00.00}%, ETA {4}, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s.
         /// </summary>
         internal static string mcc_update_progress {
             get {
