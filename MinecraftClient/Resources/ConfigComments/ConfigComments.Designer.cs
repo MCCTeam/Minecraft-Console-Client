@@ -790,8 +790,7 @@ namespace MinecraftClient {
         ///NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
         ///It&apos;s similar to making animals follow you when you&apos;re holding food in your hand.
         ///This is due to a slow pathfinding algorithm, we&apos;re working on getting a better one
-        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,
-        /// [rest of string was truncated]&quot;;.
+        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatBot_FollowPlayer {
             get {
@@ -1677,6 +1676,15 @@ namespace MinecraftClient {
         internal static string Proxy_Enabled_Login {
             get {
                 return ResourceManager.GetString("Proxy.Enabled_Login", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Whether to download MCC updates via proxy..
+        /// </summary>
+        internal static string Proxy_Enabled_Update {
+            get {
+                return ResourceManager.GetString("Proxy.Enabled_Update", resourceCulture);
             }
         }
         

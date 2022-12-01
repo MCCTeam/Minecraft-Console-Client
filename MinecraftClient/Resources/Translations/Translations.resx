@@ -1857,7 +1857,8 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
     <value>Handshake successful. (Server ID: {0})</value>
   </data>
   <data name="mcc.has_update" xml:space="preserve">
-    <value>New version of MCC available: {0}</value>
+    <value>A new version of MCC is available and you can download it via /upgrade
+Or download it manually: {0}</value>
   </data>
   <data name="mcc.help_us_translate" xml:space="preserve">
     <value>Help us translate MCC: {0}</value>
@@ -1961,6 +1962,48 @@ MCC is running with default settings.</value>
   <data name="mcc.unknown_version" xml:space="preserve">
     <value>Unknown or not supported MC version {0}.
 Switching to autodetection mode.</value>
+  </data>
+  <data name="mcc.update.already_latest" xml:space="preserve">
+    <value>The current version is already up to date or is a development build.</value>
+  </data>
+  <data name="mcc.update.already_running" xml:space="preserve">
+    <value>Checking for updates has already started.</value>
+  </data>
+  <data name="mcc.update.cancel" xml:space="preserve">
+    <value>The download has been cancelled.</value>
+  </data>
+  <data name="mcc.update.check_fail" xml:space="preserve">
+    <value>Unable to check for updates from Github, please check your internet connection or enable proxy.</value>
+  </data>
+  <data name="mcc.update.download_complete" xml:space="preserve">
+    <value>Self-updating: Download is complete, decompressing.</value>
+  </data>
+  <data name="mcc.update.download_fail" xml:space="preserve">
+    <value>Self-updating: An error occurred while downloading or saving the file:</value>
+  </data>
+  <data name="mcc.update.exist_update" xml:space="preserve">
+    <value>Self-updating: New version detected: "{0}", download will start soon (platform: {1}).</value>
+  </data>
+  <data name="mcc.update.platform_not_support" xml:space="preserve">
+    <value>The latest release does not contain a build that matches your operating system and CPU architecture.</value>
+  </data>
+  <data name="mcc.update.progress" xml:space="preserve">
+    <value>Self-updating: {0:00.00}%, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s</value>
+  </data>
+  <data name="mcc.update.progress_type2" xml:space="preserve">
+    <value>Self-updating: Downloaded {0:00.0}MB, Avg {1:0.0}KB/s</value>
+  </data>
+  <data name="mcc.update.promote_force" xml:space="preserve">
+    <value>Add "-f" to force the download.</value>
+  </data>
+  <data name="mcc.update.promote_force_cmd" xml:space="preserve">
+    <value>Use "--force-upgrade" to force the download.</value>
+  </data>
+  <data name="mcc.update.save_as" xml:space="preserve">
+    <value>Self-updating: File saved as: {0}</value>
+  </data>
+  <data name="mcc.update.start" xml:space="preserve">
+    <value>Start checking for updates.</value>
   </data>
   <data name="mcc.use_new_config" xml:space="preserve">
     <value>Please use the newly generated MinecraftClient.ini</value>

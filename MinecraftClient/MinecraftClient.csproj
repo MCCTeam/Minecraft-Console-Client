@@ -32,6 +32,7 @@
     <PackageReference Include="DSharpPlus" Version="4.2.0" />
     <PackageReference Include="DynamicExpresso.Core" Version="2.13.0" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.0" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />

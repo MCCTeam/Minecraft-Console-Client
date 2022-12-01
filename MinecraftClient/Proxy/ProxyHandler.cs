@@ -17,6 +17,9 @@ namespace MinecraftClient.Proxy
         [TomlDoNotInlineObject]
         public class Configs
         {
+            [TomlInlineComment("$Proxy.Enabled_Update$")]
+            public bool Enabled_Update = false;
+
             [TomlInlineComment("$Proxy.Enabled_Login$")]
             public bool Enabled_Login = false;
 
@@ -79,7 +82,7 @@ namespace MinecraftClient.Proxy
                         case Configs.ProxyType.SOCKS5: innerProxytype = ProxyType.Socks5; break;
                     }
 
-                    if (Config.Username != "" && Config.Password != "")
+                    if (!string.IsNullOrWhiteSpace(Config.Username)&& !string.IsNullOrWhiteSpace(Config.Password))
                         proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port, Config.Username, Config.Password);
                     else
                         proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port);

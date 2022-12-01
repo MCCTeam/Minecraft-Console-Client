@@ -5220,7 +5220,8 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New version of MCC available: {0}.
+        ///   Looks up a localized string similar to A new version of MCC is available and you can download it via /upgrade
+        ///Or download it manually: {0}.
         /// </summary>
         internal static string mcc_has_update {
             get {
@@ -5526,6 +5527,132 @@ namespace MinecraftClient {
         internal static string mcc_unknown_version {
             get {
                 return ResourceManager.GetString("mcc.unknown_version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current version is already up to date or is a development build..
+        /// </summary>
+        internal static string mcc_update_already_latest {
+            get {
+                return ResourceManager.GetString("mcc.update.already_latest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checking for updates has already started..
+        /// </summary>
+        internal static string mcc_update_already_running {
+            get {
+                return ResourceManager.GetString("mcc.update.already_running", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The download has been cancelled..
+        /// </summary>
+        internal static string mcc_update_cancel {
+            get {
+                return ResourceManager.GetString("mcc.update.cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to check for updates from Github, please check your internet connection or enable proxy..
+        /// </summary>
+        internal static string mcc_update_check_fail {
+            get {
+                return ResourceManager.GetString("mcc.update.check_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: Download is complete, decompressing..
+        /// </summary>
+        internal static string mcc_update_download_complete {
+            get {
+                return ResourceManager.GetString("mcc.update.download_complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: An error occurred while downloading or saving the file:.
+        /// </summary>
+        internal static string mcc_update_download_fail {
+            get {
+                return ResourceManager.GetString("mcc.update.download_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: New version detected: &quot;{0}&quot;, download will start soon (platform: {1})..
+        /// </summary>
+        internal static string mcc_update_exist_update {
+            get {
+                return ResourceManager.GetString("mcc.update.exist_update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The latest release does not contain a build that matches your operating system and CPU architecture..
+        /// </summary>
+        internal static string mcc_update_platform_not_support {
+            get {
+                return ResourceManager.GetString("mcc.update.platform_not_support", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: {0:00.00}%, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s.
+        /// </summary>
+        internal static string mcc_update_progress {
+            get {
+                return ResourceManager.GetString("mcc.update.progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: Downloaded {0:00.0}MB, Avg {1:0.0}KB/s.
+        /// </summary>
+        internal static string mcc_update_progress_type2 {
+            get {
+                return ResourceManager.GetString("mcc.update.progress_type2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add &quot;-f&quot; to force the download..
+        /// </summary>
+        internal static string mcc_update_promote_force {
+            get {
+                return ResourceManager.GetString("mcc.update.promote_force", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use &quot;--force-upgrade&quot; to force the download..
+        /// </summary>
+        internal static string mcc_update_promote_force_cmd {
+            get {
+                return ResourceManager.GetString("mcc.update.promote_force_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: File saved as: {0}.
+        /// </summary>
+        internal static string mcc_update_save_as {
+            get {
+                return ResourceManager.GetString("mcc.update.save_as", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start checking for updates..
+        /// </summary>
+        internal static string mcc_update_start {
+            get {
+                return ResourceManager.GetString("mcc.update.start", resourceCulture);
             }
         }
         
