@@ -37,8 +37,6 @@ namespace MinecraftClient
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
 
         public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
-        public const string GithubReleaseUrl = "https://github.com/MCCTeam/Minecraft-Console-Client/releases";
-        public const string GithubLatestReleaseUrl = GithubReleaseUrl + "/latest";
 
         public static GlobalConfig Config = new();
 
@@ -1686,61 +1684,6 @@ namespace MinecraftClient
             {
                 return str;
             }
-        }
-
-        public static bool CheckUpdate(string? current, string? latest)
-        {
-            if (current == null || latest == null)
-                return false;
-            Regex reg = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s(\d{4})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{2}).*");
-            Regex reg2 = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s\w+\s(\d{2})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{4}).*");
-
-            DateTime? curTime = null, latestTime = null;
-
-            Match curMatch = reg.Match(current);
-            if (curMatch.Success && curMatch.Groups.Count == 5)
-            {
-                try { curTime = new(int.Parse(curMatch.Groups[2].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[4].Value)); }
-                catch { curTime = null; }
-            }
-            if (curTime == null)
-            {
-                curMatch = reg2.Match(current);
-                try { curTime = new(int.Parse(curMatch.Groups[4].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[2].Value)); }
-                catch { curTime = null; }
-            }
-            if (curTime == null)
-                return false;
-
-            Match latestMatch = reg.Match(latest);
-            if (latestMatch.Success && latestMatch.Groups.Count == 5)
-            {
-                try { latestTime = new(int.Parse(latestMatch.Groups[2].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[4].Value)); }
-                catch { latestTime = null; }
-            }
-            if (latestTime == null)
-            {
-                latestMatch = reg2.Match(latest);
-                try { latestTime = new(int.Parse(latestMatch.Groups[4].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[2].Value)); }
-                catch { latestTime = null; }
-            }
-            if (latestTime == null)
-                return false;
-
-            int curBuildId, latestBuildId;
-            try
-            {
-                curBuildId = int.Parse(curMatch.Groups[1].Value);
-                latestBuildId = int.Parse(latestMatch.Groups[1].Value);
-            }
-            catch { return false; }
-
-            if (latestTime > curTime)
-                return true;
-            else if (latestTime >= curTime && latestBuildId > curBuildId)
-                return true;
-            else
-                return false;
         }
 
         public static int DoubleToTick(double time)

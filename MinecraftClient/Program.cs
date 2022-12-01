@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MinecraftClient.Inventory.ItemPalettes;
@@ -200,6 +198,18 @@ namespace MinecraftClient
                     return;
                 }
 
+                if (args.Contains("--upgrade"))
+                {
+                    UpgradeHelper.HandleBlockingUpdate(forceUpgrade: false);
+                    return;
+                }
+
+                if (args.Contains("--force-upgrade"))
+                {
+                    UpgradeHelper.HandleBlockingUpdate(forceUpgrade: true);
+                    return;
+                }
+
                 if (args.Contains("--generate"))
                 {
                     string dataGenerator = "";
@@ -284,47 +294,7 @@ namespace MinecraftClient
             }
 
             // Check for updates
-            {
-                bool needPromptUpdate = true;
-                if (Settings.CheckUpdate(Config.Head.CurrentVersion, Config.Head.LatestVersion))
-                {
-                    needPromptUpdate = false;
-                    ConsoleIO.WriteLineFormatted("§e" + string.Format(Translations.mcc_has_update, Settings.GithubReleaseUrl));
-                }
-                Task.Run(() =>
-                {
-                    HttpClientHandler httpClientHandler = new() { AllowAutoRedirect = false };
-                    HttpClient httpClient = new(httpClientHandler);
-                    Task<HttpResponseMessage>? httpWebRequest = null;
-                    try
-                    {
-                        httpWebRequest = httpClient.GetAsync(Settings.GithubLatestReleaseUrl, HttpCompletionOption.ResponseHeadersRead);
-                        httpWebRequest.Wait();
-                        HttpResponseMessage res = httpWebRequest.Result;
-                        if (res.Headers.Location != null)
-                        {
-                            Match match = Regex.Match(res.Headers.Location.ToString(), Settings.GithubReleaseUrl + @"/tag/(\d{4})(\d{2})(\d{2})-(\d+)");
-                            if (match.Success && match.Groups.Count == 5)
-                            {
-                                string year = match.Groups[1].Value, month = match.Groups[2].Value, day = match.Groups[3].Value, run = match.Groups[4].Value;
-                                string latestVersion = string.Format("GitHub build {0}, built on {1}-{2}-{3}", run, year, month, day);
-                                if (needPromptUpdate)
-                                    if (Settings.CheckUpdate(Config.Head.CurrentVersion, Config.Head.LatestVersion))
-                                        ConsoleIO.WriteLineFormatted("§e" + string.Format(Translations.mcc_has_update, Settings.GithubReleaseUrl));
-                                if (latestVersion != Config.Head.LatestVersion)
-                                {
-                                    Config.Head.LatestVersion = latestVersion;
-                                    WriteBackSettings(false);
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception) { }
-                    finally { httpWebRequest?.Dispose(); }
-                    httpClient.Dispose();
-                    httpClientHandler.Dispose();
-                });
-            }
+            UpgradeHelper.CheckUpdate();
 
             // Load command-line arguments
             if (args.Length >= 1)
