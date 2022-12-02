@@ -314,9 +314,46 @@ namespace MinecraftClient.Protocol
             {
                 string[] cookie = value.Split(';'); // cookie options are ignored
                 string[] tmp = cookie[0].Split(new char[] { '=' }, 2); // Split first '=' only
+                string[] options = cookie[1..];
                 string cname = tmp[0].Trim();
                 string cvalue = tmp[1].Trim();
-                cookies.Add(cname, cvalue);
+                // Check expire
+                bool isExpired = false;
+                foreach (var option in options)
+                {
+                    var tmp2 = option.Trim().Split(new char[] { '=' }, 2);
+                    // Check for Expires=<date> and Max-Age=<number>
+                    if (tmp2.Length == 2)
+                    {
+                        var optName = tmp2[0].Trim().ToLower();
+                        var optValue = tmp2[1].Trim();
+                        switch (optName)
+                        {
+                            case "expires":
+                                {
+                                    if (DateTime.TryParse(optValue, out var expDate))
+                                    {
+                                        if (expDate < DateTime.Now)
+                                            isExpired = true;
+                                    }
+                                    break;
+                                }
+                            case "max-age":
+                                {
+                                    if (int.TryParse(optValue, out var expInt))
+                                    {
+                                        if (expInt <= 0)
+                                            isExpired = true;
+                                    }
+                                    break;
+                                }
+                        }
+                    }
+                    if (isExpired)
+                        break;
+                }
+                if (!isExpired)
+                    cookies.Add(cname, cvalue);
             }
             return cookies;
         }
