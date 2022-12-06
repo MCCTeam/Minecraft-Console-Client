@@ -27,7 +27,7 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.ReplayCapture.Backup_Interval$")]
+            [TomlInlineComment("$ChatBot.ReplayCapture.Backup_Interval$")]
             public double Backup_Interval = 300.0;
 
             public void OnSettingUpdate()
@@ -40,33 +40,33 @@ namespace MinecraftClient.ChatBots
         private ReplayHandler? replay;
         private int backupCounter = -1;
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             SetNetworkPacketEventEnabled(true);
             replay = new ReplayHandler(GetProtocolVersion());
             replay.MetaData.serverName = GetServerHost() + GetServerPort();
             backupCounter = Settings.DoubleToTick(Config.Backup_Interval);
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("save")
                     .Executes(r => OnCommandSave(r.Source)))
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -75,7 +75,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   string.Format(Translations.general_available_cmd, "save, stop")
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

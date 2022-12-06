@@ -57,11 +57,27 @@ Install [Git](https://www.git-scm.com/)
 4. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
 
 ```bash
-git clone --branch l10n_master https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
 6. Open up the new cloned folder
+
+#### Download translation resources (optional)
+
+1. Visit [MCC project's homepage on Crowdin](https://crowdin.com/project/minecraft-console-client).
+2. You will need to log in to your Crowdin account in order to download.
+3. Click on the language you want to download the translation for.
+4. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
+5. Click the button `•••` at the end of the line.
+6. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
+7. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
+8. Click the button `•••` at the end of the line.
+9. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
+10. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
+11. Click the button `•••` at the end of the line.
+12. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
+13. If you need to download a translation in another language, go to step 3 to continue.
 
 #### Building using the Visual Studio
 
@@ -114,11 +130,12 @@ Requirements:
 2. Recursively clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
 
 ```bash
-git clone --branch l10n_master https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
-4. Run the following command to build the project:
+4. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
+5. Run the following command to build the project:
 
     - On Linux:
 
@@ -171,7 +188,7 @@ Requirements:
 1. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
 
 ```bash
-git clone --branch l10n_master https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 2. Navigate to `Minecraft-Console-Client/Docker`

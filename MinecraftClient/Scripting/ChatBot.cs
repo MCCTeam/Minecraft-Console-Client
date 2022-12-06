@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -100,12 +100,12 @@ namespace MinecraftClient.Scripting
         /// NOTE: Chat messages cannot be sent at this point in the login process.
         /// If you want to send a message when the bot is loaded, use AfterGameJoined.
         /// </summary>
-        public virtual void Initialize(CommandDispatcher<CmdResult> dispatcher) { }
+        public virtual void Initialize() { }
 
         /// <summary>
         /// This method is called when the bot is being unloaded, you can use it to free up resources like DB connections
         /// </summary>
-        public virtual void OnUnload(CommandDispatcher<CmdResult> dispatcher) { }
+        public virtual void OnUnload() { }
 
         /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.

@@ -133,7 +133,7 @@ namespace MinecraftClient.Protocol.Handlers
                             byte fmlProtocolVersion = dataTypes.ReadNextByte(packetData);
 
                             if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_version, fmlProtocolVersion));
+                                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_version, fmlProtocolVersion));
 
                             if (fmlProtocolVersion >= 1)
                                 currentDimension = dataTypes.ReadNextInt(packetData);
@@ -143,7 +143,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             // Then tell the server that we're running the same mods.
                             if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(Translations.forge_send_mod, acceptnewlines: true);
+                                ConsoleIO.WriteLineFormatted("§8" + Translations.forge_send_mod, acceptnewlines: true);
                             byte[][] mods = new byte[forgeInfo.Mods.Count][];
                             for (int i = 0; i < forgeInfo.Mods.Count; i++)
                             {
@@ -163,7 +163,7 @@ namespace MinecraftClient.Protocol.Handlers
                             Thread.Sleep(2000);
 
                             if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(Translations.forge_accept, acceptnewlines: true);
+                                ConsoleIO.WriteLineFormatted("§8" + Translations.forge_accept, acceptnewlines: true);
                             // Tell the server that yes, we are OK with the mods it has
                             // even though we don't actually care what mods it has.
 
@@ -185,7 +185,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 int registrySize = dataTypes.ReadNextVarInt(packetData);
 
                                 if (Settings.Config.Logging.DebugMessages)
-                                    ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_registry, registrySize));
+                                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_registry, registrySize));
 
                                 fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
                             }
@@ -197,7 +197,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 string registryName = dataTypes.ReadNextString(packetData);
                                 int registrySize = dataTypes.ReadNextVarInt(packetData);
                                 if (Settings.Config.Logging.DebugMessages)
-                                    ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_registry_2, registryName, registrySize));
+                                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_registry_2, registryName, registrySize));
                                 if (!hasNextRegistry)
                                     fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
                             }
@@ -209,7 +209,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (discriminator != FMLHandshakeDiscriminator.HandshakeAck)
                                 return false;
                             if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(Translations.forge_accept_registry, acceptnewlines: true);
+                                ConsoleIO.WriteLineFormatted("§8" + Translations.forge_accept_registry, acceptnewlines: true);
                             SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
                                 new byte[] { (byte)FMLHandshakeClientState.PENDINGCOMPLETE });
                             fmlHandshakeState = FMLHandshakeClientState.COMPLETE;
@@ -303,7 +303,7 @@ namespace MinecraftClient.Protocol.Handlers
                             // [1]: Version is usually set to "FML2" for FML stuff and "1" for mods
 
                             if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(Translations.forge_fml2_mod, acceptnewlines: true);
+                                ConsoleIO.WriteLineFormatted("§8" + Translations.forge_fml2_mod, acceptnewlines: true);
 
                             List<string> mods = new();
                             int modCount = dataTypes.ReadNextVarInt(packetData);
@@ -335,7 +335,7 @@ namespace MinecraftClient.Protocol.Handlers
                             // In MCC, we just want to send a valid response so we'll reply back with data collected from the server.
 
                             if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(Translations.forge_fml2_mod_send, acceptnewlines: true);
+                                ConsoleIO.WriteLineFormatted("§8" + Translations.forge_fml2_mod_send, acceptnewlines: true);
 
                             // Packet ID 2: Client to Server Mod List
                             fmlResponsePacket.AddRange(dataTypes.GetVarInt(2));
@@ -373,7 +373,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 string registryName = dataTypes.ReadNextString(packetData);
-                                ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_fml2_registry, registryName));
+                                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_registry, registryName));
                             }
 
                             fmlResponsePacket.AddRange(dataTypes.GetVarInt(99));
@@ -392,7 +392,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 string configName = dataTypes.ReadNextString(packetData);
-                                ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_fml2_config, configName));
+                                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_config, configName));
                             }
 
                             fmlResponsePacket.AddRange(dataTypes.GetVarInt(99));
@@ -401,7 +401,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                         default:
                             if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_fml2_unknown, packetID));
+                                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_unknown, packetID));
                             break;
                     }
 
@@ -417,7 +417,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (Settings.Config.Logging.DebugMessages)
                 {
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_fml2_unknown_channel, fmlChannel));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_unknown_channel, fmlChannel));
                 }
             }
             return false;
@@ -506,10 +506,10 @@ namespace MinecraftClient.Protocol.Handlers
                     forgeInfo = new ForgeInfo(modData, fmlVersion);
                     if (forgeInfo.Mods.Any())
                     {
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.forge_with_mod, forgeInfo.Mods.Count));
+                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_with_mod, forgeInfo.Mods.Count));
                         if (Settings.Config.Logging.DebugMessages)
                         {
-                            ConsoleIO.WriteLineFormatted(Translations.forge_mod_list, acceptnewlines: true);
+                            ConsoleIO.WriteLineFormatted("§8" + Translations.forge_mod_list, acceptnewlines: true);
                             foreach (ForgeInfo.ForgeMod mod in forgeInfo.Mods)
                                 ConsoleIO.WriteLineFormatted("§8  " + mod.ToString());
                         }
@@ -517,7 +517,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     else
                     {
-                        ConsoleIO.WriteLineFormatted(Translations.forge_no_mod, acceptnewlines: true);
+                        ConsoleIO.WriteLineFormatted("§8" + Translations.forge_no_mod, acceptnewlines: true);
                         forgeInfo = null;
                     }
                 }

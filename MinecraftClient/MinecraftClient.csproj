@@ -35,6 +35,7 @@
     <PackageReference Include="FuzzySharp" Version="2.0.2" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
     <PackageReference Include="Samboy063.Tomlet" Version="5.0.1" />
@@ -79,6 +80,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>AsciiArt.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\ConfigComments\ConfigComments.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ConfigComments.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\Translations\Translations.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -89,6 +95,11 @@
     <EmbeddedResource Update="Resources\AsciiArt\AsciiArt.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>AsciiArt.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>MinecraftClient</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ConfigComments\ConfigComments.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ConfigComments.Designer.cs</LastGenOutput>
       <CustomToolNamespace>MinecraftClient</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Translations\Translations.resx">

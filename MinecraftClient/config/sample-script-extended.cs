@@ -1,4 +1,4 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 
 /* This script demonstrates how to use methods and arguments */
 

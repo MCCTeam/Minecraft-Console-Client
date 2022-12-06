@@ -35,28 +35,28 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Render_In_Console$")]
+            [TomlInlineComment("$ChatBot.Map.Render_In_Console$")]
             public bool Render_In_Console = true;
 
-            [TomlInlineComment("$config.ChatBot.Map.Save_To_File$")]
+            [TomlInlineComment("$ChatBot.Map.Save_To_File$")]
             public bool Save_To_File = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Auto_Render_On_Update$")]
+            [TomlInlineComment("$ChatBot.Map.Auto_Render_On_Update$")]
             public bool Auto_Render_On_Update = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Delete_All_On_Unload$")]
+            [TomlInlineComment("$ChatBot.Map.Delete_All_On_Unload$")]
             public bool Delete_All_On_Unload = true;
 
-            [TomlInlineComment("$config.ChatBot.Map.Notify_On_First_Update$")]
+            [TomlInlineComment("$ChatBot.Map.Notify_On_First_Update$")]
             public bool Notify_On_First_Update = true;
 
-            [TomlInlineComment("$config.ChatBot.Map.Rasize_Rendered_Image$")]
+            [TomlInlineComment("$ChatBot.Map.Rasize_Rendered_Image$")]
             public bool Rasize_Rendered_Image = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Resize_To$")]
+            [TomlInlineComment("$ChatBot.Map.Resize_To$")]
             public int Resize_To = 512;
 
-            [TomlPrecedingComment("$config.ChatBot.Map.Send_Rendered_To_Bridges$")]
+            [TomlPrecedingComment("$ChatBot.Map.Send_Rendered_To_Bridges$")]
             public bool Send_Rendered_To_Discord = false;
             public bool Send_Rendered_To_Telegram = false;
 
@@ -73,20 +73,20 @@ namespace MinecraftClient.ChatBots
 
         private readonly Queue<QueuedMap> discordQueue = new();
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (!Directory.Exists(baseDirectory))
                 Directory.CreateDirectory(baseDirectory);
 
             DeleteRenderedMaps();
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Executes(r => OnCommandList(r.Source))
                 .Then(l => l.Literal("list")
                     .Executes(r => OnCommandList(r.Source)))
@@ -94,14 +94,14 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Argument("MapID", MccArguments.MapBotMapId())
                         .Executes(r => OnCommandRender(r.Source, Arguments.GetInteger(r, "MapID")))))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             DeleteRenderedMaps();
         }
 
@@ -111,7 +111,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   Translations.error_usage + ": /maps <list/render <id>>"
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

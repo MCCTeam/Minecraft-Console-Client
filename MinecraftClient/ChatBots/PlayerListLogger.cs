@@ -23,7 +23,7 @@ namespace MinecraftClient.ChatBots
 
             public string File = "playerlog.txt";
 
-            [TomlInlineComment("$config.ChatBot.PlayerListLogger.Delay$")]
+            [TomlInlineComment("$ChatBot.PlayerListLogger.Delay$")]
             public double Delay = 60;
 
             public void OnSettingUpdate()

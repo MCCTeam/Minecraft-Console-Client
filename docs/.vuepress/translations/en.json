@@ -3,7 +3,6 @@
     "description": "Documentation website for the Minecraft Console Client (MCC)",
     "helpUsTranslate": "Help us translate",
     "theme":{
-        "selectLanguageName": "English",
         "selectLanguageText": "Languages",
         "selectLanguageAriaLabel": "Select language",
         "editLinkText": "Edit this page",

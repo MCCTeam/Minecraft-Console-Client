@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;

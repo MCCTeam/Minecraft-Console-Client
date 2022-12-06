@@ -36,7 +36,7 @@ namespace MinecraftClient
             StringBuilder sb = new();
             string s = (string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc)) ? string.Empty : ": "; // If either one is empty, no colon :
             sb.Append("§e").Append(cmdChar).Append(CmdUsage).Append("§r").Append(s).AppendLine(CmdDesc);
-            sb.Append(McClient.dispatcher.GetAllUsageString(CmdName, false));
+            sb.Append(CmdResult.client!.dispatcher.GetAllUsageString(CmdName, false));
             return sb.ToString();
         }
 

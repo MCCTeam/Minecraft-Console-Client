@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using Brigadier.NET;
 using Brigadier.NET.Builder;

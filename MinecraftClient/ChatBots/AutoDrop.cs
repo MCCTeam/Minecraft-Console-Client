@@ -26,7 +26,7 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoDrop.Mode$")]
+            [TomlInlineComment("$ChatBot.AutoDrop.Mode$")]
             public DropMode Mode = DropMode.include;
 
             public List<ItemType> Items = new() { ItemType.Cobblestone, ItemType.Dirt };
@@ -45,7 +45,7 @@ namespace MinecraftClient.ChatBots
         private readonly int updateDebounceValue = 2;
         private int inventoryUpdated = -1;
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (!GetInventoryEnabled())
             {
@@ -55,7 +55,7 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Then(l => l.Literal("add")
@@ -67,7 +67,7 @@ namespace MinecraftClient.ChatBots
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("on")
                     .Executes(r => OnCommandEnable(r.Source, true)))
                 .Then(l => l.Literal("off")
@@ -88,14 +88,14 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Literal("everything")
                         .Executes(r => OnCommandMode(r.Source, DropMode.everything))))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -107,7 +107,7 @@ namespace MinecraftClient.ChatBots
                 "remove"    =>   Translations.cmd_inventory_help_usage + ": remove <item name>",
                 "mode"      =>   Translations.bot_autoDrop_unknown_mode,
                 _           =>   string.Format(Translations.general_available_cmd, "on, off, add, remove, list, mode")
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

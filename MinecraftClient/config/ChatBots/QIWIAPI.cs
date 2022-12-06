@@ -1,4 +1,4 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 //using System.Threading.Tasks;
 
 MCC.LoadBot(new QIWI_DonationBot());
@@ -6,8 +6,8 @@ MCC.LoadBot(new QIWI_DonationBot());
 //MCCScript Extensions
 
 public class QIWI_DonationBot : ChatBot
-{	
-        //More info: https://github.com/Nekiplay/QIWI-API
+{
+    //More info: https://github.com/Nekiplay/QIWI-API
         public override void Initialize()
         {
 		QIWI.Donation donation = new QIWI.Donation("token", OnDonate);

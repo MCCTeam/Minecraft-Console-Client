@@ -44,22 +44,22 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.DiscordBridge.Token$")]
+            [TomlInlineComment("$ChatBot.DiscordBridge.Token$")]
             public string Token = "your bot token here";
 
-            [TomlInlineComment("$config.ChatBot.DiscordBridge.GuildId$")]
+            [TomlInlineComment("$ChatBot.DiscordBridge.GuildId$")]
             public ulong GuildId = 1018553894831403028L;
 
-            [TomlInlineComment("$config.ChatBot.DiscordBridge.ChannelId$")]
+            [TomlInlineComment("$ChatBot.DiscordBridge.ChannelId$")]
             public ulong ChannelId = 1018565295654326364L;
 
-            [TomlInlineComment("$config.ChatBot.DiscordBridge.OwnersIds$")]
+            [TomlInlineComment("$ChatBot.DiscordBridge.OwnersIds$")]
             public ulong[] OwnersIds = new[] { 978757810781323276UL };
 
-            [TomlInlineComment("$config.ChatBot.DiscordBridge.MessageSendTimeout$")]
+            [TomlInlineComment("$ChatBot.DiscordBridge.MessageSendTimeout$")]
             public int Message_Send_Timeout = 3;
 
-            [TomlPrecedingComment("$config.ChatBot.DiscordBridge.Formats$")]
+            [TomlPrecedingComment("$ChatBot.DiscordBridge.Formats$")]
             public string PrivateMessageFormat = "**[Private Message]** {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
             public string TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!";
@@ -75,15 +75,15 @@ namespace MinecraftClient.ChatBots
             instance = this;
         }
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("direction")
                     .Then(l => l.Literal("both")
                         .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Both)))
@@ -93,16 +93,16 @@ namespace MinecraftClient.ChatBots
                         .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Discord)))
                 )
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 
             Task.Run(async () => await MainAsync());
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             Disconnect();
         }
 
@@ -112,7 +112,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   "dscbridge direction <both|mc|discord>"
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

@@ -47,19 +47,19 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.Token$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.Token$")]
             public string Token = "your bot token here";
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.ChannelId$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.ChannelId$")]
             public string ChannelId = "";
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.Authorized_Chat_Ids$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.Authorized_Chat_Ids$")]
             public long[] Authorized_Chat_Ids = Array.Empty<long>();
 
-            [TomlInlineComment("$config.ChatBot.TelegramBridge.MessageSendTimeout$")]
+            [TomlInlineComment("$ChatBot.TelegramBridge.MessageSendTimeout$")]
             public int Message_Send_Timeout = 3;
 
-            [TomlPrecedingComment("$config.ChatBot.TelegramBridge.Formats$")]
+            [TomlPrecedingComment("$ChatBot.TelegramBridge.Formats$")]
             public string PrivateMessageFormat = "*(Private Message)* {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
             public string TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!";
@@ -75,15 +75,15 @@ namespace MinecraftClient.ChatBots
             instance = this;
         }
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("direction")
                     .Then(l => l.Literal("both")
                         .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Both)))
@@ -92,16 +92,16 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Literal("telegram")
                         .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Telegram))))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 
             Task.Run(async () => await MainAsync());
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             Disconnect();
         }
 
@@ -111,7 +111,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   Translations.error_usage + ": /tgbridge direction <both|mc|telegram>"
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

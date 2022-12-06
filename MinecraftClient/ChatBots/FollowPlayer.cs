@@ -24,10 +24,10 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.FollowPlayer.Update_Limit$")]
+            [TomlInlineComment("$ChatBot.FollowPlayer.Update_Limit$")]
             public double Update_Limit = 1.5;
 
-            [TomlInlineComment("$config.ChatBot.FollowPlayer.Stop_At_Distance$")]
+            [TomlInlineComment("$ChatBot.FollowPlayer.Stop_At_Distance$")]
             public double Stop_At_Distance = 3.0;
 
             public void OnSettingUpdate()
@@ -44,7 +44,7 @@ namespace MinecraftClient.ChatBots
         private int _updateCounter = 0;
         private bool _unsafeEnabled = false;
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (!GetEntityHandlingEnabled())
             {
@@ -62,13 +62,13 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("start")
                     .Then(l => l.Argument("PlayerName", MccArguments.PlayerName())
                         .Executes(r => OnCommandStart(r.Source, Arguments.GetString(r, "PlayerName"), takeRisk: false))
@@ -77,14 +77,14 @@ namespace MinecraftClient.ChatBots
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -93,7 +93,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   Translations.cmd_follow_desc + ": " + Translations.cmd_follow_usage
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

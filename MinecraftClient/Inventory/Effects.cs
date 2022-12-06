@@ -1,4 +1,4 @@
-namespace MinecraftClient.Inventory
+﻿namespace MinecraftClient.Inventory
 {
     /// <summary>
     /// Represents a Minecraft effects

@@ -1,133 +1,171 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Sign-in | Minecraft Console Client</title>
-        <link rel="stylesheet" href="/redirect_assets/redirect.css" />
-    </head>
-    
-    <body>
-        <h3>
-            <span class="brand"><img src="/icons/android-chrome-192x192.png" class="logo">Minecraft Console Client</span>
-        </h3>
-        <div class="messageContainer">
-            <div id="codeDisplay" style="display: none;">
-                <p>
-                    Your sign-in code is <input id='code' onClick="this.setSelectionRange(0, this.value.length)" />
-                    <button id="copyCode">Copy to clipboard</button>
-                </p>
-                <p>
-                    Copy and paste the code to your client. <strong>Keep it secret!</strong>
-                </p>
-            </div>
-            <div id="errorDisplay" style="display: none;">
-                <p>
-                    The following error was occurred:
-                </p>
-                <pre><code id="error"></code></pre>
-                <p>
-                    Click <a href="https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id=54473e32-df8f-42e9-a649-9419b0dab9d3&response_type=code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&scope=XboxLive.signin%20offline_access%20openid%20email&prompt=select_account&response_mode=fragment" rel="noreferrer">here</a> to sign-in again. If the error keep showing up, save the error message and ask for help.
-                </p>
-            </div>
-            <div id="emptyPage" style="display: none;">
-                <p>
-                    Click <a href="https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id=54473e32-df8f-42e9-a649-9419b0dab9d3&response_type=code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&scope=XboxLive.signin%20offline_access%20openid%20email&prompt=select_account&response_mode=fragment" rel="noreferrer">here</a> to sign-in.
-                </p>
-            </div>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sign-in | Minecraft Console Client</title>
+    <style>
+        .messageContainer {
+            box-shadow: 0px 1px 2px 1px #bdbdbd;
+            border-radius: 2px;
+            max-width: 30em;
+            padding: 2em;
+            margin: 0 auto;
+            background-color: white;
+        }
+
+        .logo {
+            width: 1.5em;
+            vertical-align: bottom;
+            padding-right: 0.5em;
+        }
+
+        .brand {
+            background-color: #ffffff78;
+            padding: 0.5em;
+            border-radius: 8px;
+        }
+
+        code {
+            white-space: pre-wrap;
+        }
+
+        pre {
+            box-shadow: 0px 1px 2px 1px #bdbdbd;
+            padding: 0.5em;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h3>
+        <span class="brand"><img src="/icons/android-chrome-192x192.png" class="logo">Minecraft Console Client</span>
+    </h3>
+    <div class="messageContainer">
+        <div id="codeDisplay" style="display: none;">
+            <p>
+                Your sign-in code is <input id='code' onClick="this.setSelectionRange(0, this.value.length)" />
+                <button id="copyCode">Copy to clipboard</button>
+            </p>
+            <p>
+                Copy and paste the code to your client. <strong>Keep it secret!</strong>
+            </p>
         </div>
-        <script>
-            let imagePath = "redirect_assets/wallpaper/";
-            let numImages = 8;
-            let image = randomIntFromInterval(1, numImages);
-            let selectedImagePath = `${imagePath}${image}.png`;
-            let bodyEl = document.body
-            bodyEl.style.backgroundImage = `url("${selectedImagePath}")`;
-            function randomIntFromInterval(min, max) { 
-                // min and max included 
-                return Math.floor(Math.random() * (max - min + 1) + min)
-            }
-        </script>
-        <script>
-            let rawHash = window.location.hash;
-            if (rawHash !== '') {
-                // Remove the leading #
-                rawHash = rawHash.substring(1);
-            }
-            let hash = new URLSearchParams(rawHash);
-            let query = new URLSearchParams(window.location.search);
-            
-            if (hash.has('error') || query.has('error')) {
-                // Error occurred
-                let errorMessage = hash.get('error') || query.get('error')
-                errorMessage += "\n\n" + (hash.get('error_description') || query.get('error_description'))
-                displayError(errorMessage);
+        <div id="errorDisplay" style="display: none;">
+            <p>
+                The following error was occurred:
+            </p>
+            <pre><code id="error"></code></pre>
+            <p>
+                Click <a
+                    href="https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id=54473e32-df8f-42e9-a649-9419b0dab9d3&response_type=code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&scope=XboxLive.signin%20offline_access%20openid%20email&prompt=select_account&response_mode=fragment"
+                    rel="noreferrer">here</a> to sign-in again. If the error keep showing up, save the error message and
+                ask for help.
+            </p>
+        </div>
+        <div id="emptyPage" style="display: none;">
+            <p>
+                Click <a
+                    href="https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id=54473e32-df8f-42e9-a649-9419b0dab9d3&response_type=code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&scope=XboxLive.signin%20offline_access%20openid%20email&prompt=select_account&response_mode=fragment"
+                    rel="noreferrer">here</a> to sign-in.
+            </p>
+        </div>
+    </div>
+    <script>
+        let imagePath = "http://localhost:8000/redirect_assets/wallpaper/";
+        let numImages = 8;
+        let image = randomIntFromInterval(1, numImages);
+        let selectedImagePath = `${imagePath}${image}.png`;
+        let bodyEl = document.body
+        bodyEl.style.backgroundImage = `url("${selectedImagePath}")`;
+        function randomIntFromInterval(min, max) {
+            // min and max included 
+            return Math.floor(Math.random() * (max - min + 1) + min)
+        }
+    </script>
+    <script>
+        let rawHash = window.location.hash;
+        if (rawHash !== '') {
+            // Remove the leading #
+            rawHash = rawHash.substring(1);
+        }
+        let hash = new URLSearchParams(rawHash);
+        let query = new URLSearchParams(window.location.search);
+
+        if (hash.has('error') || query.has('error')) {
+            // Error occurred
+            let errorMessage = hash.get('error') || query.get('error')
+            errorMessage += "\n\n" + (hash.get('error_description') || query.get('error_description'))
+            displayError(errorMessage);
+        } else {
+            // Get code
+            if (hash.has('code')) {
+                displayCode(hash.get('code'));
             } else {
-                // Get code
-                if (hash.has('code')) {
-                    displayCode(hash.get('code'));
-                } else {
-                    // No error and no code
-                    displayEmpty();
-                }
+                // No error and no code
+                displayEmpty();
             }
-            // Lastly, remove code from URL hash
-            window.location.hash = ''
-            function displayCode(code) {
-                let codeDisplay = document.getElementById('codeDisplay')
-                let codeEl = document.getElementById('code');
-                codeEl.value = code;
-                codeDisplay.style.display = "block"
-                let copyBtn = document.getElementById('copyCode');
-                copyBtn.addEventListener('click', () => {
-                    copyTextToClipboard(code);
-                });
-            }
-            function displayError(errorText) {
-                let errorDisplay = document.getElementById('errorDisplay');
-                let errorEl = document.getElementById('error');
-                errorEl.innerText = errorText;
-                errorDisplay.style.display = "block";
-            }
-            function displayEmpty() {
-                let emptyPage = document.getElementById('emptyPage');
-                emptyPage.style.display = "block";
-            }
-            // Clipboard. Thanks to https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
-            function fallbackCopyTextToClipboard(text) {
-              var textArea = document.createElement("textarea");
-              textArea.value = text;
-              
-              // Avoid scrolling to bottom
-              textArea.style.top = "0";
-              textArea.style.left = "0";
-              textArea.style.position = "fixed";
+        }
+        // Lastly, remove code from URL hash
+        window.location.hash = ''
+        function displayCode(code) {
+            let codeDisplay = document.getElementById('codeDisplay')
+            let codeEl = document.getElementById('code');
+            codeEl.value = code;
+            codeDisplay.style.display = "block"
+            let copyBtn = document.getElementById('copyCode');
+            copyBtn.addEventListener('click', () => {
+                copyTextToClipboard(code);
+            });
+        }
+        function displayError(errorText) {
+            let errorDisplay = document.getElementById('errorDisplay');
+            let errorEl = document.getElementById('error');
+            errorEl.innerText = errorText;
+            errorDisplay.style.display = "block";
+        }
+        function displayEmpty() {
+            let emptyPage = document.getElementById('emptyPage');
+            emptyPage.style.display = "block";
+        }
+        // Clipboard. Thanks to https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
 
-              document.body.appendChild(textArea);
-              textArea.focus();
-              textArea.select();
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
 
-              try {
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
                 var successful = document.execCommand('copy');
                 var msg = successful ? 'successful' : 'unsuccessful';
                 console.log('Fallback: Copying text command was ' + msg);
-              } catch (err) {
+            } catch (err) {
                 console.error('Fallback: Oops, unable to copy', err);
-              }
-
-              document.body.removeChild(textArea);
             }
-            function copyTextToClipboard(text) {
-              if (!navigator.clipboard) {
+
+            document.body.removeChild(textArea);
+        }
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
                 fallbackCopyTextToClipboard(text);
                 return;
-              }
-              navigator.clipboard.writeText(text).then(function() {
-                console.log('Async: Copying to clipboard was successful!');
-              }, function(err) {
-                console.error('Async: Could not copy text: ', err);
-              });
             }
-        </script>
-    </body>
+            navigator.clipboard.writeText(text).then(function () {
+                console.log('Async: Copying to clipboard was successful!');
+            }, function (err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+    </script>
+</body>
+
 </html>

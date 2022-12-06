@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -106,18 +106,18 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_2_Version)
             {
-                log.Error(Translations.extra_terrainandmovement_disabled);
+                log.Error("§c" + Translations.extra_terrainandmovement_disabled);
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_2_Version))
             {
-                log.Error(Translations.extra_inventory_disabled);
+                log.Error("§c" + Translations.extra_inventory_disabled);
                 handler.SetInventoryEnabled(false);
             }
             if (handler.GetEntityHandlingEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_2_Version))
             {
-                log.Error(Translations.extra_entity_disabled);
+                log.Error("§c" + Translations.extra_entity_disabled);
                 handler.SetEntityHandlingEnabled(false);
             }
 
@@ -1955,12 +1955,12 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x02) //Login successful
                 {
-                    log.Info(Translations.mcc_server_offline);
+                    log.Info("§8" + Translations.mcc_server_offline);
                     login_phase = false;
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        log.Error(Translations.error_forge);
+                        log.Error("§8" + Translations.error_forge);
                         return false;
                     }
 
@@ -1980,7 +1980,7 @@ namespace MinecraftClient.Protocol.Handlers
             RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
-            log.Debug(Translations.debug_crypto);
+            log.Debug("§8" + Translations.debug_crypto);
 
             if (serverIDhash != "-")
             {
@@ -2049,7 +2049,7 @@ namespace MinecraftClient.Protocol.Handlers
                 (int packetID, Queue<byte> packetData) = ReadNextPacket();
                 if (packetID < 0 || loopPrevention-- < 0) // Failed to read packet or too many iterations (issue #1150)
                 {
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_invalid_encrypt);
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "§8" + Translations.error_invalid_encrypt);
                     return false;
                 }
                 else if (packetID == 0x00) //Login rejected
@@ -2085,7 +2085,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        log.Error(Translations.error_forge_encrypt);
+                        log.Error("§8" + Translations.error_forge_encrypt);
                         return false;
                     }
 
@@ -2207,7 +2207,7 @@ namespace MinecraftClient.Protocol.Handlers
                             // Check for forge on the server.
                             Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
 
-                            ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_server_protocol, version, protocolVersion + (forgeInfo != null ? Translations.mcc_with_forge : "")));
+                            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_server_protocol, version, protocolVersion + (forgeInfo != null ? Translations.mcc_with_forge : "")));
 
                             return true;
                         }
