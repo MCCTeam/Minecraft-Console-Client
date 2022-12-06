@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 using static MinecraftClient.ChatBots.AutoFishing.Configs;
 
@@ -15,6 +20,8 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class AutoFishing : ChatBot
     {
+        public const string CommandName = "autofishing";
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -169,87 +176,119 @@ namespace MinecraftClient.ChatBots
             Stopping,
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             if (!GetEntityHandlingEnabled())
             {
                 LogToConsole(Translations.extra_entity_required);
                 state = FishingState.WaitJoinGame;
             }
+
             inventoryEnabled = GetInventoryEnabled();
             if (!inventoryEnabled)
                 LogToConsole(Translations.bot_autoFish_no_inv_handle);
 
-            RegisterChatBotCommand("fish", Translations.bot_autoFish_cmd, GetHelp(), CommandHandler);
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Then(l => l.Literal("start")
+                        .Executes(r => OnCommandHelp(r.Source, "start")))
+                    .Then(l => l.Literal("stop")
+                        .Executes(r => OnCommandHelp(r.Source, "stop")))
+                    .Then(l => l.Literal("status")
+                        .Executes(r => OnCommandHelp(r.Source, "status")))
+                    .Then(l => l.Literal("help")
+                        .Executes(r => OnCommandHelp(r.Source, "help")))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("start")
+                    .Executes(r => OnCommandStart(r.Source)))
+                .Then(l => l.Literal("stop")
+                    .Executes(r => OnCommandStop(r.Source)))
+                .Then(l => l.Literal("status")
+                    .Executes(r => OnCommandStatus(r.Source))
+                    .Then(l => l.Literal("clear")
+                        .Executes(r => OnCommandStatusClear(r.Source))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
         }
 
-        public string CommandHandler(string cmd, string[] args)
+        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
         {
-            if (args.Length >= 1)
+            dispatcher.Unregister(CommandName);
+            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+        }
+
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                switch (args[0])
-                {
-                    case "start":
-                        isFishing = false;
-                        lock (stateLock)
-                        {
-                            isFishing = false;
-                            counter = 0;
-                            state = FishingState.StartMove;
-                        }
-                        return Translations.bot_autoFish_start;
-                    case "stop":
-                        isFishing = false;
-                        lock (stateLock)
-                        {
-                            isFishing = false;
-                            if (state == FishingState.WaitingFishToBite)
-                                UseFishRod();
-                            state = FishingState.Stopping;
-                        }
-                        StopFishing();
-                        return Translations.bot_autoFish_stop;
-                    case "status":
-                        if (args.Length >= 2)
-                        {
-                            if (args[1] == "clear")
-                            {
-                                fishItemCnt = new();
-                                return Translations.bot_autoFish_status_clear;
-                            }
-                            else
-                            {
-                                return GetCommandHelp("status");
-                            }
-                        }
-                        else
-                        {
-                            if (fishItemCnt.Count == 0)
-                                return Translations.bot_autoFish_status_info;
+#pragma warning disable format // @formatter:off
+                "start"     =>   Translations.bot_autoFish_help_start,
+                "stop"      =>   Translations.bot_autoFish_help_stop,
+                "status"    =>   Translations.bot_autoFish_help_status,
+                "help"      =>   Translations.bot_autoFish_help_help,
+                _           =>   string.Format(Translations.bot_autoFish_available_cmd, "start, stop, status, help")
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
 
-                            List<KeyValuePair<ItemType, uint>> orderedList = fishItemCnt.OrderBy(x => x.Value).ToList();
-                            int maxLen = orderedList[^1].Value.ToString().Length;
-                            StringBuilder sb = new();
-                            sb.Append(Translations.bot_autoFish_status_info);
-                            foreach ((ItemType type, uint cnt) in orderedList)
-                            {
-                                sb.Append(Environment.NewLine);
-
-                                string cntStr = cnt.ToString();
-                                sb.Append(' ', maxLen - cntStr.Length).Append(cntStr);
-                                sb.Append(" x ");
-                                sb.Append(Item.GetTypeString(type));
-                            }
-                            return sb.ToString();
-                        }
-                    case "help":
-                        return GetCommandHelp(args.Length >= 2 ? args[1] : "");
-                    default:
-                        return GetHelp();
-                }
+        private int OnCommandStart(CmdResult r)
+        {
+            isFishing = false;
+            lock (stateLock)
+            {
+                isFishing = false;
+                counter = 0;
+                state = FishingState.StartMove;
             }
-            else
-                return GetHelp();
+            return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autoFish_start);
+        }
+
+        private int OnCommandStop(CmdResult r)
+        {
+            isFishing = false;
+            lock (stateLock)
+            {
+                isFishing = false;
+                if (state == FishingState.WaitingFishToBite)
+                    UseFishRod();
+                state = FishingState.Stopping;
+            }
+            StopFishing();
+            return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autoFish_stop);
+        }
+
+        private int OnCommandStatus(CmdResult r)
+        {
+            if (fishItemCnt.Count == 0)
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autoFish_status_info);
+
+            List<KeyValuePair<ItemType, uint>> orderedList = fishItemCnt.OrderBy(x => x.Value).ToList();
+            int maxLen = orderedList[^1].Value.ToString().Length;
+            StringBuilder sb = new();
+            sb.Append(Translations.bot_autoFish_status_info);
+            foreach ((ItemType type, uint cnt) in orderedList)
+            {
+                sb.Append(Environment.NewLine);
+
+                string cntStr = cnt.ToString();
+                sb.Append(' ', maxLen - cntStr.Length).Append(cntStr);
+                sb.Append(" x ");
+                sb.Append(Item.GetTypeString(type));
+            }
+            LogToConsole(sb.ToString());
+            return r.SetAndReturn(CmdResult.Status.Done);
+        }
+
+        private int OnCommandStatusClear(CmdResult r)
+        {
+            fishItemCnt = new();
+            return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autoFish_status_clear);
         }
 
         private void StartFishing()
@@ -386,7 +425,7 @@ namespace MinecraftClient.ChatBots
         public override void OnEntitySpawn(Entity entity)
         {
             if (fishItemCounter < 15 && entity.Type == EntityType.Item && Math.Abs(entity.Location.Y - LastPos.Y) < 2.2 &&
-                Math.Abs(entity.Location.X - LastPos.X) < 0.12  && Math.Abs(entity.Location.Z - LastPos.Z) < 0.12)
+                Math.Abs(entity.Location.X - LastPos.X) < 0.12 && Math.Abs(entity.Location.Z - LastPos.Z) < 0.12)
             {
                 if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("Item ({0}) spawn at {1}, distance = {2:0.00}", entity.ID, entity.Location, entity.Location.Distance(LastPos)));
@@ -440,7 +479,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            if (isFishing && entity != null && fishingBobber!.ID == entity.ID && 
+            if (isFishing && entity != null && fishingBobber!.ID == entity.ID &&
                 (state == FishingState.WaitingFishToBite || state == FishingState.WaitingFishingBobber))
             {
                 Location Pos = entity.Location;
@@ -619,25 +658,6 @@ namespace MinecraftClient.ChatBots
                 isWaitingRod = true;
                 return false;
             }
-        }
-
-        private static string GetHelp()
-        {
-            return string.Format(Translations.bot_autoFish_available_cmd, "start, stop, status, help");
-        }
-
-        private string GetCommandHelp(string cmd)
-        {
-            return cmd.ToLower() switch
-            {
-#pragma warning disable format // @formatter:off
-                "start"     =>   Translations.bot_autoFish_help_start,
-                "stop"      =>   Translations.bot_autoFish_help_stop,
-                "status"    =>   Translations.bot_autoFish_help_status,
-                "help"      =>   Translations.bot_autoFish_help_help,
-                _           =>   GetHelp(),
-#pragma warning restore format // @formatter:on
-            };
         }
     }
 }

@@ -3,6 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
+using MinecraftClient.Scripting;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -16,6 +21,8 @@ namespace MinecraftClient.ChatBots
 {
     public class TelegramBridge : ChatBot
     {
+        public const string CommandName = "tgbridge";
+
         private enum BridgeDirection
         {
             Both = 0,
@@ -68,19 +75,74 @@ namespace MinecraftClient.ChatBots
             instance = this;
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
-            RegisterChatBotCommand("tgbridge", "bot.TelegramBridge.desc", "tgbridge direction <both|mc|telegram>", OnTgCommand);
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("direction")
+                    .Then(l => l.Literal("both")
+                        .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Both)))
+                    .Then(l => l.Literal("mc")
+                        .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Minecraft)))
+                    .Then(l => l.Literal("telegram")
+                        .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Telegram))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
 
             Task.Run(async () => await MainAsync());
         }
 
-        ~TelegramBridge()
+        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
         {
+            dispatcher.Unregister(CommandName);
+            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             Disconnect();
         }
 
-        public override void OnUnload()
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>   Translations.error_usage + ": /tgbridge direction <both|mc|telegram>"
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int OnCommandDirection(CmdResult r, BridgeDirection direction)
+        {
+            string bridgeName;
+            switch (direction)
+            {
+                case BridgeDirection.Both:
+                    bridgeName = Translations.bot_TelegramBridge_direction_both;
+                    bridgeDirection = BridgeDirection.Both;
+                    break;
+
+                case BridgeDirection.Minecraft:
+                    bridgeName = Translations.bot_TelegramBridge_direction_minecraft;
+                    bridgeDirection = BridgeDirection.Minecraft;
+                    break;
+
+                case BridgeDirection.Telegram:
+                    bridgeName = Translations.bot_TelegramBridge_direction_Telegram;
+                    bridgeDirection = BridgeDirection.Telegram;
+                    break;
+
+                default:
+                    goto case BridgeDirection.Both;
+            }
+            return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_TelegramBridge_direction, bridgeName));
+        }
+
+        ~TelegramBridge()
         {
             Disconnect();
         }
@@ -108,47 +170,6 @@ namespace MinecraftClient.ChatBots
         public static TelegramBridge? GetInstance()
         {
             return instance;
-        }
-
-        private string OnTgCommand(string cmd, string[] args)
-        {
-            if (args.Length == 2)
-            {
-                if (args[0].ToLower().Equals("direction"))
-                {
-                    string direction = args[1].ToLower().Trim();
-
-                    string bridgeName;
-                    switch (direction)
-                    {
-                        case "b":
-                        case "both":
-                            bridgeName = Translations.bot_TelegramBridge_direction_both;
-                            bridgeDirection = BridgeDirection.Both;
-                            break;
-
-                        case "mc":
-                        case "minecraft":
-                            bridgeName = Translations.bot_TelegramBridge_direction_minecraft;
-                            bridgeDirection = BridgeDirection.Minecraft;
-                            break;
-
-                        case "t":
-                        case "tg":
-                        case "telegram":
-                            bridgeName = Translations.bot_TelegramBridge_direction_Telegram;
-                            bridgeDirection = BridgeDirection.Telegram;
-                            break;
-
-                        default:
-                            return Translations.bot_TelegramBridge_invalid_direction;
-                    }
-
-                    return string.Format(Translations.bot_TelegramBridge_direction, bridgeName);
-                };
-            }
-
-            return "dscbridge direction <both|mc|discord>";
         }
 
         public override void GetText(string text)
@@ -324,9 +345,8 @@ namespace MinecraftClient.ChatBots
             {
                 var command = text[1..];
 
-                string? result = "";
+                CmdResult result = new();
                 PerformInternalCommand(command, ref result);
-                result = string.IsNullOrEmpty(result) ? "-" : result;
 
                 await botClient.SendTextMessageAsync(
                     chatId: chatId,

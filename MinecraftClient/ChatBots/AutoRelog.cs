@@ -1,4 +1,7 @@
 ﻿using System;
+using Brigadier.NET;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -43,7 +46,7 @@ namespace MinecraftClient.ChatBots
 
                 if (Delay.min > Delay.max)
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
-                
+
                 if (Retries == -1)
                     Retries = int.MaxValue;
 
@@ -82,7 +85,12 @@ namespace MinecraftClient.ChatBots
             LogDebugToConsole(string.Format(Translations.bot_autoRelog_launch, Config.Retries));
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        {
+            Initialize();
+        }
+
+        private void Initialize()
         {
             McClient.ReconnectionAttemptsLeft = Config.Retries;
             if (Config.Ignore_Kick_Message)

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Brigadier.NET;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -109,7 +112,7 @@ namespace MinecraftClient.ChatBots
             attackPassive = Config.Attack_Passive;
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             if (!GetEntityHandlingEnabled())
             {

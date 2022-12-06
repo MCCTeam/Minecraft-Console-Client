@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace MinecraftClient.Protocol.Keys
+namespace MinecraftClient.Protocol.ProfileKey
 {
     public class PlayerKeyPair
     {
@@ -74,17 +74,17 @@ namespace MinecraftClient.Protocol.Keys
             List<string> datas = new();
             datas.Add(Convert.ToBase64String(PublicKey.Key));
             if (PublicKey.Signature == null)
-                datas.Add(String.Empty);
+                datas.Add(string.Empty);
             else
                 datas.Add(Convert.ToBase64String(PublicKey.Signature));
             if (PublicKey.SignatureV2 == null)
-                datas.Add(String.Empty);
+                datas.Add(string.Empty);
             else
                 datas.Add(Convert.ToBase64String(PublicKey.SignatureV2));
             datas.Add(Convert.ToBase64String(PrivateKey.Key));
             datas.Add(ExpiresAt.ToString(DataTimeFormat));
             datas.Add(RefreshedAfter.ToString(DataTimeFormat));
-            return String.Join(",", datas.ToArray());
+            return string.Join(",", datas.ToArray());
         }
     }
 }

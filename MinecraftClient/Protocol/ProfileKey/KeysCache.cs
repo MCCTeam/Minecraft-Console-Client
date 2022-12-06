@@ -6,7 +6,7 @@ using System.Timers;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
 
-namespace MinecraftClient.Protocol.Keys
+namespace MinecraftClient.Protocol.ProfileKey
 {
     /// <summary>
     /// Handle keys caching and storage.
@@ -115,7 +115,7 @@ namespace MinecraftClient.Protocol.Keys
             //User-editable keys cache file in text format
             if (File.Exists(KeysCacheFilePlaintext))
             {
-                if (Settings.Config.Logging.DebugMessages)
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loading_keys, KeysCacheFilePlaintext));
 
                 try
@@ -134,27 +134,27 @@ namespace MinecraftClient.Protocol.Keys
                                 {
                                     PlayerKeyPair playerKeyPair = PlayerKeyPair.FromString(value);
                                     keys[login] = playerKeyPair;
-                                    if (Settings.Config.Logging.DebugMessages)
+                                    if (Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loaded_keys, playerKeyPair.ExpiresAt.ToString()));
                                 }
                                 catch (InvalidDataException e)
                                 {
-                                    if (Settings.Config.Logging.DebugMessages)
+                                    if (Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string_keys, value, e.Message));
                                 }
                                 catch (FormatException e)
                                 {
-                                    if (Settings.Config.Logging.DebugMessages)
+                                    if (Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string_keys, value, e.Message));
                                 }
                                 catch (ArgumentNullException e)
                                 {
-                                    if (Settings.Config.Logging.DebugMessages)
+                                    if (Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string_keys, value, e.Message));
 
                                 }
                             }
-                            else if (Settings.Config.Logging.DebugMessages)
+                            else if (Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_line_keys, line));
                             }

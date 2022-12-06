@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Brigadier.NET;
+﻿using Brigadier.NET;
 using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 
 namespace MinecraftClient.Commands
 {
@@ -11,76 +10,44 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "animation <mainhand|offhand>"; } }
         public override string CmdDesc { get { return Translations.cmd_animation_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
         {
-            dispatcher.Register(l =>
-                l.Literal("help").Then(l =>
-                    l.Literal(CmdName).Executes(c => {
-                        LogUsage(handler.Log);
-                        return 1;
-                    })
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Then(l => l.Literal("mainhand")
+                        .Executes(r => GetUsage(r.Source, "mainhand")))
+                    .Then(l => l.Literal("offhand")
+                        .Executes(r => GetUsage(r.Source, "offhand")))
                 )
             );
 
-            dispatcher.Register(l =>
-                l.Literal(CmdName).Then(l =>
-                    l.Literal("mainhand")
-                        .Executes(c => {
-                            return LogExecuteResult(handler.Log, handler.DoAnimation(0));
-                        })
-                )
-            );
-            dispatcher.Register(l =>
-                l.Literal(CmdName).Then(l =>
-                    l.Literal("0") 
-                        .Redirect(dispatcher.GetRoot().GetChild(CmdName).GetChild("mainhand"))
-                )
-            );
-
-            dispatcher.Register(l =>
-                l.Literal(CmdName).Then(l =>
-                    l.Literal("offhand")
-                        .Executes(c => {
-                            return LogExecuteResult(handler.Log, handler.DoAnimation(1));
-                        })
-                )
-            );
-            dispatcher.Register(l =>
-                l.Literal(CmdName).Then(l =>
-                    l.Literal("1")
-                        .Redirect(dispatcher.GetRoot().GetChild(CmdName).GetChild("offhand"))
-                )
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Executes(r => DoAnimation(r.Source, handler, mainhand: true))
+                .Then(l => l.Literal("mainhand")
+                    .Executes(r => DoAnimation(r.Source, handler, mainhand: true)))
+                .Then(l => l.Literal("offhand")
+                    .Executes(r => DoAnimation(r.Source, handler, mainhand: false)))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        private int GetUsage(CmdResult r, string? cmd)
         {
-            if (HasArg(command))
+            return r.SetAndReturn(cmd switch
             {
-                string[] args = GetArgs(command);
-                if (args.Length > 0)
-                {
-                    if (args[0] == "mainhand" || args[0] == "0")
-                    {
-                        handler.DoAnimation(0);
-                        return Translations.general_done;
-                    }
-                    else if (args[0] == "offhand" || args[0] == "1")
-                    {
-                        handler.DoAnimation(1);
-                        return Translations.general_done;
-                    }
-                    else
-                    {
-                        return GetCmdDescTranslated();
-                    }
-                }
-                else
-                {
-                    return GetCmdDescTranslated();
-                }
-            }
-            else return GetCmdDescTranslated();
+#pragma warning disable format // @formatter:off
+                "mainhand"  =>  GetCmdDescTranslated(),
+                "offhand"   =>  GetCmdDescTranslated(),
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private static int DoAnimation(CmdResult r, McClient handler, bool mainhand)
+        {
+            return r.SetAndReturn(handler.DoAnimation(mainhand ? 1 : 0));
         }
     }
 }

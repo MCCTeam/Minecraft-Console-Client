@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MinecraftClient.Inventory;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Mapping
 {
@@ -158,7 +159,7 @@ namespace MinecraftClient.Mapping
         public string GetTypeString()
         {
             string typeStr = Type.ToString();
-            string? trans = Protocol.ChatParser.TranslateString("entity.minecraft." + typeStr.ToUnderscoreCase());
+            string? trans = ChatParser.TranslateString("entity.minecraft." + typeStr.ToUnderscoreCase());
             return string.IsNullOrEmpty(trans) ? typeStr : trans;
         }
     }

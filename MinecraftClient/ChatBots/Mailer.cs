@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -12,6 +17,8 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class Mailer : ChatBot
     {
+        public const string CommandName = "mailer";
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -216,7 +223,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Initialization of the Mailer bot
         /// </summary>
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             LogDebugToConsole(Translations.bot_mailer_init);
             LogDebugToConsole(Translations.bot_mailer_init_db + Config.DatabaseFile);
@@ -251,7 +258,123 @@ namespace MinecraftClient.ChatBots
             mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.DatabaseFile)!, Path.GetFileName(Config.DatabaseFile), FileMonitorCallback);
             ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.IgnoreListFile)!, Path.GetFileName(Config.IgnoreListFile), FileMonitorCallback);
 
-            RegisterChatBotCommand("mailer", Translations.bot_mailer_cmd, "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
+            dispatcher.Register(l =>
+                l.Literal("help")
+                    .Then(l => l.Literal(CommandName)
+                        .Executes(r => OnCommandHelp(string.Empty))
+                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp(string.Empty)))
+                    )
+            );
+
+            dispatcher.Register(l =>
+                l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(string.Empty))
+                    .Then(l => l.Literal("getmails")
+                        .Executes(r => OnCommandGetMails())
+                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("getmails")))
+                    )
+                    .Then(l => l.Literal("getignored")
+                        .Executes(r => OnCommandGetIgnored())
+                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("getignored")))
+                    )
+                    .Then(l => l.Literal("addignored")
+                        .Executes(r => OnCommandHelp("addignored"))
+                        .Then(l => l.Argument("username", Arguments.String())
+                            .Executes(r => OnCommandAddIgnored(Arguments.GetString(r, "username")))
+                            .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("addignored")))
+                        )
+                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("addignored")))
+                    )
+                    .Then(l => l.Literal("removeignored")
+                        .Executes(r => OnCommandHelp("removeignored"))
+                        .Then(l => l.Argument("username", Arguments.String())
+                            .Executes(r => OnCommandRemoveIgnored(Arguments.GetString(r, "username")))
+                            .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("removeignored")))
+                        )
+                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("removeignored")))
+                    )
+                    .Then(l => l.Literal("_help")
+                        .Executes(r => OnCommandHelp(string.Empty))
+                        .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName))
+                    )
+                    .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp(string.Empty)))
+            );
+        }
+
+        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        {
+            dispatcher.Unregister(CommandName);
+            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+        }
+
+        private int OnCommandHelp(string cmd)
+        {
+            LogToConsole(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>   Translations.bot_mailer_cmd_help + ": /mailer <getmails|addignored|getignored|removeignored>"
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+            return 1;
+        }
+
+        private int OnCommandGetMails()
+        {
+            LogToConsole(string.Format(Translations.bot_mailer_cmd_getmails, string.Join("\n", mailDatabase)));
+            return 1;
+        }
+
+        private int OnCommandGetIgnored()
+        {
+            LogToConsole(string.Format(Translations.bot_mailer_cmd_getignored, string.Join("\n", ignoreList)));
+            return 1;
+        }
+
+        private int OnCommandAddIgnored(string username)
+        {
+            if (IsValidName(username))
+            {
+                username = username.ToLower();
+                lock (readWriteLock)
+                {
+                    if (!ignoreList.Contains(username))
+                    {
+                        ignoreList.Add(username);
+                        ignoreList.SaveToFile(Config.IgnoreListFile);
+                    }
+                }
+                LogToConsole(string.Format(Translations.bot_mailer_cmd_ignore_added, username));
+                return 1;
+            }
+            else
+            {
+                LogToConsole(string.Format(Translations.bot_mailer_cmd_ignore_invalid, "addignored"));
+                return 0;
+            }
+        }
+
+        private int OnCommandRemoveIgnored(string username)
+        {
+            if (IsValidName(username))
+            {
+                username = username.ToLower();
+                lock (readWriteLock)
+                {
+                    if (ignoreList.Contains(username))
+                    {
+                        ignoreList.Remove(username);
+                        ignoreList.SaveToFile(Config.IgnoreListFile);
+                    }
+                }
+                LogToConsole(string.Format(Translations.bot_mailer_cmd_ignore_removed, username));
+                return 1;
+            }
+            else
+            {
+                LogToConsole(string.Format(Translations.bot_mailer_cmd_ignore_invalid, "removeignored"));
+                return 0;
+            }
         }
 
         /// <summary>
@@ -364,58 +487,6 @@ namespace MinecraftClient.ChatBots
                 mailDatabase = MailDatabase.FromFile(Config.DatabaseFile);
                 ignoreList = IgnoreList.FromFile(Config.IgnoreListFile);
             }
-        }
-
-        /// <summary>
-        /// Interprets local commands.
-        /// </summary>
-        private string ProcessInternalCommand(string cmd, string[] args)
-        {
-            if (args.Length > 0)
-            {
-                string commandName = args[0].ToLower();
-                switch (commandName)
-                {
-                    case "getmails": // Sorry, I (ReinforceZwei) replaced "=" to "-" because it would affect the parsing of translation file (key=value)
-                        return string.Format(Translations.bot_mailer_cmd_getmails, string.Join("\n", mailDatabase));
-
-                    case "getignored":
-                        return string.Format(Translations.bot_mailer_cmd_getignored, string.Join("\n", ignoreList));
-
-                    case "addignored":
-                    case "removeignored":
-                        if (args.Length > 1 && IsValidName(args[1]))
-                        {
-                            string username = args[1].ToLower();
-                            if (commandName == "addignored")
-                            {
-                                lock (readWriteLock)
-                                {
-                                    if (!ignoreList.Contains(username))
-                                    {
-                                        ignoreList.Add(username);
-                                        ignoreList.SaveToFile(Config.IgnoreListFile);
-                                    }
-                                }
-                                return string.Format(Translations.bot_mailer_cmd_ignore_added, args[1]);
-                            }
-                            else
-                            {
-                                lock (readWriteLock)
-                                {
-                                    if (ignoreList.Contains(username))
-                                    {
-                                        ignoreList.Remove(username);
-                                        ignoreList.SaveToFile(Config.IgnoreListFile);
-                                    }
-                                }
-                                return string.Format(Translations.bot_mailer_cmd_ignore_removed, args[1]);
-                            }
-                        }
-                        else return string.Format(Translations.bot_mailer_cmd_ignore_invalid, commandName);
-                }
-            }
-            return Translations.bot_mailer_cmd_help + ": /help mailer";
         }
     }
 }

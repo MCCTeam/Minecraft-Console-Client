@@ -4,10 +4,9 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Settings;
 
-namespace MinecraftClient.Protocol
+namespace MinecraftClient.Protocol.Message
 {
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
@@ -223,7 +222,7 @@ namespace MinecraftClient.Protocol
                 HttpClient httpClient = new();
                 try
                 {
-                    Task<string> fetch_index = httpClient.GetStringAsync(Settings.TranslationsFile_Website_Index);
+                    Task<string> fetch_index = httpClient.GetStringAsync(TranslationsFile_Website_Index);
                     fetch_index.Wait();
                     string assets_index = fetch_index.Result;
                     fetch_index.Dispose();
@@ -231,8 +230,8 @@ namespace MinecraftClient.Protocol
                     string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Config.Main.Advanced.Language.ToLower() + ".json" }, StringSplitOptions.None);
                     tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
-                    string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
-                    if (Settings.Config.Logging.DebugMessages)
+                    string translation_file_location = TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
+                    if (Config.Logging.DebugMessages)
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_request, translation_file_location));
 
                     Task<string> fetch_file = httpClient.GetStringAsync(translation_file_location);
@@ -242,7 +241,7 @@ namespace MinecraftClient.Protocol
 
                     StringBuilder stringBuilder = new();
                     foreach (KeyValuePair<string, Json.JSONData> entry in Json.ParseJson(translation_file).Properties)
-                        stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue.Replace("\n", "\\n").Replace("\r", String.Empty)).Append(Environment.NewLine);
+                        stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue.Replace("\n", "\\n").Replace("\r", string.Empty)).Append(Environment.NewLine);
                     File.WriteAllText(Language_File, stringBuilder.ToString());
 
                     ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_done, Language_File));
@@ -256,9 +255,9 @@ namespace MinecraftClient.Protocol
 
             //Download Failed? Defaulting to en_GB.lang if the game is installed
             if (!File.Exists(Language_File) //Try en_GB.lang
-              && File.Exists(Settings.TranslationsFile_FromMCDir))
+              && File.Exists(TranslationsFile_FromMCDir))
             {
-                Language_File = Settings.TranslationsFile_FromMCDir;
+                Language_File = TranslationsFile_FromMCDir;
                 ConsoleIO.WriteLineFormatted(Translations.chat_from_dir, acceptnewlines: true);
             }
 
@@ -277,7 +276,7 @@ namespace MinecraftClient.Protocol
                     }
                 }
 
-                if (Settings.Config.Logging.DebugMessages)
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.chat_loaded, acceptnewlines: true);
             }
             else //No external dictionnary found.

@@ -151,7 +151,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information. You may use /ac as command alias..
+        ///   Looks up a localized string similar to Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information..
         /// </summary>
         internal static string bot_autoCraft_available_cmd {
             get {
@@ -403,7 +403,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Available commands: {0}. Use /digbot help &lt;cmd name&gt; for more information..
+        ///   Looks up a localized string similar to Available commands: {0}. Use /autodig help &lt;cmd name&gt; for more information..
         /// </summary>
         internal static string bot_autodig_available_cmd {
             get {
@@ -430,7 +430,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Get the command description. Usage: /digbot help &lt;command name&gt;.
+        ///   Looks up a localized string similar to Get the command description. Usage: /autodig help &lt;command name&gt;.
         /// </summary>
         internal static string bot_autodig_help_help {
             get {
@@ -2488,7 +2488,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searching for a bed in radius of {0}....
+        ///   Looks up a localized string similar to Searching for a bed in radius of {0:0.00}....
         /// </summary>
         internal static string cmd_bed_searching {
             get {
@@ -3599,7 +3599,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unknown action. .
+        ///   Looks up a localized string similar to Unknown action..
         /// </summary>
         internal static string cmd_inventory_help_unknown {
             get {
@@ -4068,7 +4068,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to setrnd variable -7to17 OR setrnd variable string1 &quot;\&quot;string2\&quot; string3&quot;.
+        ///   Looks up a localized string similar to setrnd variable -7 to 17 OR setrnd variable string1 &quot;\&quot;string2\&quot; string3&quot;.
         /// </summary>
         internal static string cmd_setrnd_format {
             get {
@@ -4077,7 +4077,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to setrnd variable -7to17.
+        ///   Looks up a localized string similar to setrnd variable -7 to 17.
         /// </summary>
         internal static string cmd_setrndnum_format {
             get {
@@ -6875,7 +6875,8 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to help &lt;cmdname&gt;. Available commands: {0}. For server help, use &apos;{1}send /help&apos; instead..
+        ///   Looks up a localized string similar to help &lt;cmdname&gt;. Available commands:
+        ///{0}For server help, use &apos;{1}send /help&apos; instead..
         /// </summary>
         internal static string icmd_list {
             get {

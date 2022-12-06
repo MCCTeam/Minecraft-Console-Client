@@ -1,34 +1,62 @@
-﻿using System.Collections.Generic;
-using Brigadier.NET;
+﻿using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 
 namespace MinecraftClient.Commands
 {
     public class Sneak : Command
     {
         private bool sneaking = false;
-        public override string CmdName { get { return "Sneak"; } }
-        public override string CmdUsage { get { return "Sneak"; } }
+        public override string CmdName { get { return "sneak"; } }
+        public override string CmdUsage { get { return "sneak"; } }
         public override string CmdDesc { get { return Translations.cmd_sneak_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
         {
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Executes(r => DoSneak(r.Source, handler))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
         }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int DoSneak(CmdResult r, McClient handler)
         {
             if (sneaking)
             {
                 var result = handler.SendEntityAction(Protocol.EntityActionType.StopSneaking);
                 if (result)
                     sneaking = false;
-                return result ? Translations.cmd_sneak_off : Translations.general_fail;
+                if (result)
+                    return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_sneak_off);
+                else
+                    return r.SetAndReturn(CmdResult.Status.Fail);
             }
             else
             {
                 var result = handler.SendEntityAction(Protocol.EntityActionType.StartSneaking);
                 if (result)
                     sneaking = true;
-                return result ? Translations.cmd_sneak_on : Translations.general_fail;
+                if (result)
+                    return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_sneak_on);
+                else
+                    return r.SetAndReturn(CmdResult.Status.Fail);
             }
         }
     }

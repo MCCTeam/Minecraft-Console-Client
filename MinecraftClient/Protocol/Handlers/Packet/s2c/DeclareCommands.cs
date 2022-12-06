@@ -54,7 +54,22 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
                 Nodes[i] = new(flags, childs, redirectNode, name, paser, suggestionsType);
             }
-             RootIdx = dataTypes.ReadNextVarInt(packetData);
+            RootIdx = dataTypes.ReadNextVarInt(packetData);
+
+            ConsoleIO.OnDeclareMinecraftCommand(ExtractRootCommand());
+        }
+
+        private static string[] ExtractRootCommand()
+        {
+            List<string> commands = new();
+            CommandNode root = Nodes[RootIdx];
+            foreach (var child in root.Clildren)
+            {
+                string? childName = Nodes[child].Name;
+                if (childName != null)
+                    commands.Add(childName);
+            }
+            return commands.ToArray();
         }
 
         public static List<Tuple<string, string>> CollectSignArguments(string command)
@@ -113,7 +128,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             public string? Name;
             public Paser? Paser;
             public string? SuggestionsType;
-            
+
 
             public CommandNode(byte Flags,
                         int[] Clildren,

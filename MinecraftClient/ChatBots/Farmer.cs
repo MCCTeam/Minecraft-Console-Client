@@ -3,34 +3,22 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Handlers;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
-    enum State
-    {
-        SearchingForCropsToBreak = 0,
-        SearchingForFarmlandToPlant,
-        PlantingCrops,
-        BonemealingCrops
-    }
-
-    enum CropType
-    {
-        Beetroot,
-        Carrot,
-        Melon,
-        Netherwart,
-        Pumpkin,
-        Potato,
-        Wheat
-    }
-
     public class Farmer : ChatBot
     {
+        public const string CommandName = "farmer";
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -42,13 +30,32 @@ namespace MinecraftClient.ChatBots
             public bool Enabled = false;
 
             [TomlInlineComment("$config.ChatBot.Farmer.Delay_Between_Tasks$")]
-            public int Delay_Between_Tasks = 1;
+            public double Delay_Between_Tasks = 1.0;
 
             public void OnSettingUpdate()
             {
-                if (Delay_Between_Tasks <= 0)
-                    Delay_Between_Tasks = 1;
+                if (Delay_Between_Tasks < 1.0)
+                    Delay_Between_Tasks = 1.0;
             }
+        }
+
+        public enum State
+        {
+            SearchingForCropsToBreak = 0,
+            SearchingForFarmlandToPlant,
+            PlantingCrops,
+            BonemealingCrops
+        }
+
+        public enum CropType
+        {
+            Beetroot,
+            Carrot,
+            Melon,
+            Netherwart,
+            Pumpkin,
+            Potato,
+            Wheat
         }
 
         private State state = State.SearchingForCropsToBreak;
@@ -59,9 +66,11 @@ namespace MinecraftClient.ChatBots
         private bool allowTeleport = false;
         private bool debugEnabled = false;
 
+        public int Delay_Between_Tasks_Millisecond => (int)Math.Round(Config.Delay_Between_Tasks * 1000);
+
         private const string commandDescription = "farmer <start <crop type> [radius:<radius = 30>] [unsafe:<true/false>] [teleport:<true/false>] [debug:<true/false>]|stop>";
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             if (GetProtocolVersion() < Protocol18Handler.MC_1_13_Version)
             {
@@ -81,130 +90,152 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
-            RegisterChatBotCommand("farmer", "bot.farmer.desc", commandDescription, OnFarmCommand);
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("stop")
+                    .Executes(r => OnCommandStop(r.Source)))
+                .Then(l => l.Literal("start")
+                    .Then(l => l.Argument("CropType", MccArguments.FarmerCropType())
+                        .Executes(r => OnCommandStart(r.Source, MccArguments.GetFarmerCropType(r, "CropType"), null))
+                        .Then(l => l.Argument("OtherArgs", Arguments.GreedyString())
+                            .Executes(r => OnCommandStart(r.Source, MccArguments.GetFarmerCropType(r, "CropType"), Arguments.GetString(r, "OtherArgs"))))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
         }
 
-        private string OnFarmCommand(string cmd, string[] args)
+        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
         {
-            if (args.Length > 0)
+            dispatcher.Unregister(CommandName);
+            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+        }
+
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                if (args[0].Equals("stop", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!running)
-                        return Translations.bot_farmer_already_stopped;
+#pragma warning disable format // @formatter:off
+                _           =>   Translations.bot_farmer_desc + ": " + commandDescription
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
 
-                    running = false;
-                    return Translations.bot_farmer_stopping;
-                }
+        private int OnCommandStop(CmdResult r)
+        {
+            if (!running)
+            {
+                return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_farmer_already_stopped);
+            }
+            else
+            {
+                running = false;
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_farmer_stopping);
+            }
+        }
 
-                if (args[0].Equals("start", StringComparison.OrdinalIgnoreCase))
+        private int OnCommandStart(CmdResult r, CropType whatToFarm, string? otherArgs)
+        {
+            if (running)
+                return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_farmer_already_running);
+
+            int radius = 30;
+
+            state = State.SearchingForFarmlandToPlant;
+            cropType = whatToFarm;
+            allowUnsafe = false;
+            allowTeleport = false;
+            debugEnabled = false;
+
+            if (!string.IsNullOrWhiteSpace(otherArgs))
+            {
+                string[] args = otherArgs.ToLower().Split(' ', StringSplitOptions.TrimEntries);
+                foreach (string currentArg in args)
                 {
-                    if (args.Length >= 2)
+                    if (!currentArg.Contains(':'))
                     {
-                        if (running)
-                            return Translations.bot_farmer_already_running;
+                        LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
+                        continue;
+                    }
 
-                        if (!Enum.TryParse(args[1], true, out CropType whatToFarm))
-                            return Translations.bot_farmer_invalid_crop_type;
+                    string[] parts = currentArg.Split(":", StringSplitOptions.TrimEntries);
 
-                        int radius = 30;
+                    if (parts.Length != 2)
+                    {
+                        LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
+                        continue;
+                    }
 
-                        state = State.SearchingForFarmlandToPlant;
-                        cropType = whatToFarm;
-                        allowUnsafe = false;
-                        allowTeleport = false;
-                        debugEnabled = false;
+                    switch (parts[0])
+                    {
+                        case "r":
+                        case "radius":
+                            if (!int.TryParse(parts[1], NumberStyles.Any, CultureInfo.CurrentCulture, out radius))
+                                LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
 
-                        if (args.Length >= 3)
-                        {
-                            for (int i = 2; i < args.Length; i++)
+                            if (radius <= 0)
                             {
-                                string currentArg = args[i].Trim().ToLower();
-
-                                if (!currentArg.Contains(':'))
-                                {
-                                    LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
-                                    continue;
-                                }
-
-                                string[] parts = currentArg.Split(":", StringSplitOptions.TrimEntries);
-
-                                if (parts.Length != 2)
-                                {
-                                    LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
-                                    continue;
-                                }
-
-                                switch (parts[0])
-                                {
-                                    case "r":
-                                    case "radius":
-                                        if (!int.TryParse(parts[1], NumberStyles.Any, CultureInfo.CurrentCulture, out radius))
-                                            LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
-
-                                        if (radius <= 0)
-                                        {
-                                            LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
-                                            radius = 30;
-                                        }
-
-                                        break;
-
-                                    case "f":
-                                    case "unsafe":
-                                        if (allowUnsafe)
-                                            break;
-
-                                        if (parts[1].Equals("true") || parts[1].Equals("1"))
-                                        {
-                                            LogToConsole("§x§1§0" + Translations.bot_farmer_warining_force_unsafe);
-                                            allowUnsafe = true;
-                                        }
-                                        else allowUnsafe = false;
-
-                                        break;
-
-                                    case "t":
-                                    case "teleport":
-                                        if (allowTeleport)
-                                            break;
-
-                                        if (parts[1].Equals("true") || parts[1].Equals("1"))
-                                        {
-                                            LogToConsole("§w§1§f" + Translations.bot_farmer_warining_allow_teleport);
-                                            allowTeleport = true;
-                                        }
-                                        else allowTeleport = false;
-
-                                        break;
-
-                                    case "d":
-                                    case "debug":
-                                        if (debugEnabled)
-                                            break;
-
-                                        if (parts[1].Equals("true") || parts[1].Equals("1"))
-                                        {
-                                            LogToConsole("Debug enabled!");
-                                            debugEnabled = true;
-                                        }
-                                        else debugEnabled = false;
-
-                                        break;
-                                }
+                                LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
+                                radius = 30;
                             }
-                        }
 
-                        farmingRadius = radius;
-                        running = true;
-                        new Thread(() => MainPorcess()).Start();
+                            break;
 
-                        return "";
+                        case "f":
+                        case "unsafe":
+                            if (allowUnsafe)
+                                break;
+
+                            if (parts[1].Equals("true") || parts[1].Equals("1"))
+                            {
+                                LogToConsole("§x§1§0" + Translations.bot_farmer_warining_force_unsafe);
+                                allowUnsafe = true;
+                            }
+                            else allowUnsafe = false;
+
+                            break;
+
+                        case "t":
+                        case "teleport":
+                            if (allowTeleport)
+                                break;
+
+                            if (parts[1].Equals("true") || parts[1].Equals("1"))
+                            {
+                                LogToConsole("§w§1§f" + Translations.bot_farmer_warining_allow_teleport);
+                                allowTeleport = true;
+                            }
+                            else allowTeleport = false;
+
+                            break;
+
+                        case "d":
+                        case "debug":
+                            if (debugEnabled)
+                                break;
+
+                            if (parts[1].Equals("true") || parts[1].Equals("1"))
+                            {
+                                LogToConsole("Debug enabled!");
+                                debugEnabled = true;
+                            }
+                            else debugEnabled = false;
+
+                            break;
                     }
                 }
             }
 
-            return Translations.bot_farmer_desc + ": " + commandDescription;
+            farmingRadius = radius;
+            running = true;
+            new Thread(() => MainPorcess()).Start();
+
+            return r.SetAndReturn(CmdResult.Status.Done);
         }
 
         public override void AfterGameJoined()
@@ -230,7 +261,7 @@ namespace MinecraftClient.ChatBots
                 if (AutoEat.Eating)
                 {
                     LogDebug("Eating...");
-                    Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                    Thread.Sleep(Delay_Between_Tasks_Millisecond);
                     continue;
                 }
 
@@ -246,7 +277,7 @@ namespace MinecraftClient.ChatBots
                         {
                             LogDebug("No seeds, trying to find some crops to break");
                             state = State.SearchingForCropsToBreak;
-                            Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                            Thread.Sleep(Delay_Between_Tasks_Millisecond);
                             continue;
                         }
 
@@ -256,7 +287,7 @@ namespace MinecraftClient.ChatBots
                         {
                             LogDebug("Could not find any farmland, trying to find some crops to break");
                             state = State.SearchingForCropsToBreak;
-                            Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                            Thread.Sleep(Delay_Between_Tasks_Millisecond);
                             continue;
                         }
 
@@ -272,7 +303,7 @@ namespace MinecraftClient.ChatBots
                                 {
                                     LogDebug("Ran out of seeds, looking for crops to break...");
                                     state = State.SearchingForCropsToBreak;
-                                    Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                                    Thread.Sleep(Delay_Between_Tasks_Millisecond);
                                     continue;
                                 }
                             }
@@ -321,7 +352,7 @@ namespace MinecraftClient.ChatBots
                         {
                             LogToConsole("No crops to break, trying to bonemeal ungrown ones");
                             state = State.BonemealingCrops;
-                            Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                            Thread.Sleep(Delay_Between_Tasks_Millisecond);
                             continue;
                         }
 
@@ -367,7 +398,7 @@ namespace MinecraftClient.ChatBots
                         if (cropType == CropType.Netherwart)
                         {
                             state = State.SearchingForFarmlandToPlant;
-                            Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                            Thread.Sleep(Delay_Between_Tasks_Millisecond);
                             continue;
                         }
 
@@ -376,7 +407,7 @@ namespace MinecraftClient.ChatBots
                         {
                             LogDebug("No bonemeal, searching for some farmland to plant seeds on");
                             state = State.SearchingForFarmlandToPlant;
-                            Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                            Thread.Sleep(Delay_Between_Tasks_Millisecond);
                             continue;
                         }
 
@@ -386,7 +417,7 @@ namespace MinecraftClient.ChatBots
                         {
                             LogDebug("No crops to bonemeal, searching for farmland to plant seeds on");
                             state = State.SearchingForFarmlandToPlant;
-                            Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                            Thread.Sleep(Delay_Between_Tasks_Millisecond);
                             continue;
                         }
 
@@ -402,7 +433,7 @@ namespace MinecraftClient.ChatBots
                                 {
                                     LogDebug("Ran out of Bone Meal, looking for farmland to plant on...");
                                     state = State.SearchingForFarmlandToPlant;
-                                    Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                                    Thread.Sleep(Delay_Between_Tasks_Millisecond);
                                     continue;
                                 }
                             }
@@ -438,8 +469,8 @@ namespace MinecraftClient.ChatBots
                         break;
                 }
 
-                LogDebug("Waiting for " + Config.Delay_Between_Tasks + " seconds for next cycle.");
-                Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                LogDebug(string.Format("Waiting for {0:0.00} seconds for next cycle.", Config.Delay_Between_Tasks));
+                Thread.Sleep(Delay_Between_Tasks_Millisecond);
             }
 
             LogToConsole(Translations.bot_farmer_stopped);
@@ -815,6 +846,7 @@ namespace MinecraftClient.ChatBots
         {
             return GetPlayerInventory().SearchItem(itemType).Length > 0;
         }
+
         private void LogDebug(object text)
         {
             if (debugEnabled)

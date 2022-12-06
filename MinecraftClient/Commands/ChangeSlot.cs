@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Brigadier.NET;
+﻿using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -10,39 +11,41 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "changeslot <1-9>"; } }
         public override string CmdDesc { get { return Translations.cmd_changeSlot_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
         {
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Then(l => l.Argument("Slot", Arguments.Integer(1, 9))
+                    .Executes(r => DoChangeSlot(r.Source, handler, Arguments.GetInteger(r, "Slot"))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
         }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int DoChangeSlot(CmdResult r, McClient handler, int slot)
         {
             if (!handler.GetInventoryEnabled())
-                return Translations.extra_inventory_required;
+                return r.SetAndReturn(Status.FailNeedInventory);
 
-            if (HasArg(command))
-            {
-                short slot;
-                try
-                {
-                    slot = Convert.ToInt16(GetArg(command));
-                }
-                catch (FormatException)
-                {
-                    return Translations.cmd_changeSlot_nan;
-                }
-                if (slot >= 1 && slot <= 9)
-                {
-                    if (handler.ChangeSlot(slot -= 1))
-                    {
-                        return string.Format(Translations.cmd_changeSlot_changed, (slot += 1));
-                    }
-                    else
-                    {
-                        return Translations.cmd_changeSlot_fail;
-                    }
-                }
-            }
-            return GetCmdDescTranslated();
+            if (handler.ChangeSlot((short)(slot - 1)))
+                return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_changeSlot_changed, slot));
+            else
+                return r.SetAndReturn(Status.Fail, Translations.cmd_changeSlot_fail);
         }
     }
 }

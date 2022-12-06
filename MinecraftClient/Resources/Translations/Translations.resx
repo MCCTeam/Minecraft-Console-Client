@@ -148,7 +148,7 @@
     <value>Auto-crafting ChatBot command alias</value>
   </data>
   <data name="bot.autoCraft.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information. You may use /ac as command alias.</value>
+    <value>Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information.</value>
   </data>
   <data name="bot.autoCraft.close_inventory" xml:space="preserve">
     <value>Inventory #{0} was closed by AutoCraft</value>
@@ -232,7 +232,7 @@
     <value>Action timeout! Reason: {0}</value>
   </data>
   <data name="bot.autodig.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /digbot help &lt;cmd name&gt; for more information.</value>
+    <value>Available commands: {0}. Use /autodig help &lt;cmd name&gt; for more information.</value>
   </data>
   <data name="bot.autodig.cmd" xml:space="preserve">
     <value>Auto-digging ChatBot command</value>
@@ -241,7 +241,7 @@
     <value>Digging block timeout, retry.</value>
   </data>
   <data name="bot.autodig.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /digbot help &lt;command name&gt;</value>
+    <value>Get the command description. Usage: /autodig help &lt;command name&gt;</value>
   </data>
   <data name="bot.autodig.help.start" xml:space="preserve">
     <value>Start the automatic digging bot.</value>
@@ -937,7 +937,7 @@ Some messages won't be properly printed without this file.</value>
     <value>Could not lay in bed. Are you trying to sleep in a bed? (PS: You must use the head block coordinates of the bed)</value>
   </data>
   <data name="cmd.bed.searching" xml:space="preserve">
-    <value>Searching for a bed in radius of {0}...</value>
+    <value>Searching for a bed in radius of {0:0.00}...</value>
   </data>
   <data name="cmd.bed.trying_to_use" xml:space="preserve">
     <value>Trying to sleep in a bed on location (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}). Result: {3}</value>
@@ -1307,7 +1307,7 @@ Note that parameters in '[]' are optional.</value>
     <value>Shift click an item.</value>
   </data>
   <data name="cmd.inventory.help.unknown" xml:space="preserve">
-    <value>Unknown action. </value>
+    <value>Unknown action.</value>
   </data>
   <data name="cmd.inventory.help.usage" xml:space="preserve">
     <value>Usage</value>
@@ -1461,7 +1461,7 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
     <value>set a custom %variable% randomly to a given value.</value>
   </data>
   <data name="cmd.setrndnum.format" xml:space="preserve">
-    <value>setrnd variable -7to17</value>
+    <value>setrnd variable -7 to 17</value>
   </data>
   <data name="cmd.setrndstr.format" xml:space="preserve">
     <value>setrnd variable string1 "\"string2\" string3"</value>
@@ -2471,7 +2471,8 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>help &lt;cmdname&gt;: show brief help about a command.</value>
   </data>
   <data name="icmd.list" xml:space="preserve">
-    <value>help &lt;cmdname&gt;. Available commands: {0}. For server help, use '{1}send /help' instead.</value>
+    <value>help &lt;cmdname&gt;. Available commands:
+{0}For server help, use '{1}send /help' instead.</value>
   </data>
   <data name="icmd.unknown" xml:space="preserve">
     <value>Unknown command '{0}'. Use 'help' for command list.</value>
@@ -2644,7 +2645,7 @@ Logging in...</value>
     <value>Load translations applied to MCC when available, turn it off to use English only.</value>
   </data>
   <data name="cmd.setrnd.format" xml:space="preserve">
-    <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
+    <value>setrnd variable -7 to 17 OR setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="exception.palette.healthfield" xml:space="preserve">
     <value>Please update health field handling for this Minecraft version.</value>
