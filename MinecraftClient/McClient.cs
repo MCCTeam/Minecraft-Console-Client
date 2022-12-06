@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -30,7 +30,7 @@ namespace MinecraftClient
     {
         public static int ReconnectionAttemptsLeft = 0;
 
-        public static CommandDispatcher<CmdResult> dispatcher = new();
+        public CommandDispatcher<CmdResult> dispatcher = new();
         private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
 
         private static bool commandsLoaded = false;
@@ -810,7 +810,7 @@ namespace MinecraftClient
             b.SetHandler(this);
             bots.Add(b);
             if (init)
-                DispatchBotEvent(bot => bot.Initialize(dispatcher), new ChatBot[] { b });
+                DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
             if (handler != null)
                 DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
         }
@@ -826,7 +826,7 @@ namespace MinecraftClient
                 return;
             }
 
-            b.OnUnload(dispatcher);
+            b.OnUnload();
 
             bots.RemoveAll(item => ReferenceEquals(item, b));
 
@@ -2398,7 +2398,7 @@ namespace MinecraftClient
 
             DispatchBotEvent(bot => bot.AfterGameJoined());
 
-            ConsoleIO.InitAutocomplete();
+            ConsoleIO.InitCommandList(dispatcher);
         }
 
         /// <summary>
@@ -2952,7 +2952,7 @@ namespace MinecraftClient
         /// Called on Entity Equipment
         /// </summary>
         /// <param name="entityid"> Entity ID</param>
-        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2-5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
         public void OnEntityEquipment(int entityid, int slot, Item? item)
         {

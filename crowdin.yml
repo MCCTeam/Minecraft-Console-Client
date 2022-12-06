@@ -10,12 +10,16 @@
     "translation": "/MinecraftClient/Resources/Translations/Translations.%osx_code%.resx"
   },
   {
+    "source": "/MinecraftClient/Resources/ConfigComments/ConfigComments.resx",
+    "translation": "/MinecraftClient/Resources/ConfigComments/ConfigComments.%osx_code%.resx"
+  },
+  {
     "source": "/MinecraftClient/Resources/AsciiArt/AsciiArt.resx",
     "translation": "/MinecraftClient/Resources/AsciiArt/AsciiArt.%osx_code%.resx"
   },
   {
     "source": "/README.md",
-    "translation": "/README/README-%language%.md"
+    "translation": "/docs/.vuepress/public/MCC-README/README-%language%.md"
   },
   {
     "source": "/docs/.vuepress/translations/en.json",

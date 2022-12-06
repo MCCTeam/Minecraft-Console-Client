@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -42,19 +42,19 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (Handler.GetTerrainEnabled())
             {
-                ConsoleIO.WriteLineFormatted(Translations.extra_terrainandmovement_disabled, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§c" + Translations.extra_terrainandmovement_disabled, acceptnewlines: true);
                 Handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled())
             {
-                ConsoleIO.WriteLineFormatted(Translations.extra_inventory_disabled, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§c" + Translations.extra_inventory_disabled, acceptnewlines: true);
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled())
             {
-                ConsoleIO.WriteLineFormatted(Translations.extra_entity_disabled, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§c" + Translations.extra_entity_disabled, acceptnewlines: true);
                 handler.SetEntityHandlingEnabled(false);
             }
         }
@@ -500,15 +500,15 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] token = ReadNextByteArray();
 
                 if (serverID == "-")
-                    ConsoleIO.WriteLineFormatted(Translations.mcc_server_offline, acceptnewlines: true);
+                    ConsoleIO.WriteLineFormatted("§8" + Translations.mcc_server_offline, acceptnewlines: true);
                 else if (Settings.Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_handshake, serverID));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_handshake, serverID));
 
                 return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey, session);
             }
             else
             {
-                ConsoleIO.WriteLineFormatted(Translations.error_invalid_response, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§8" + Translations.error_invalid_response, acceptnewlines: true);
                 return false;
             }
         }
@@ -519,7 +519,7 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.Config.Logging.DebugMessages)
-                ConsoleIO.WriteLineFormatted(Translations.debug_crypto, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§8" + Translations.debug_crypto, acceptnewlines: true);
 
             if (serverIDhash != "-")
             {
@@ -584,7 +584,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                ConsoleIO.WriteLineFormatted(Translations.error_invalid_encrypt, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§8" + Translations.error_invalid_encrypt, acceptnewlines: true);
                 return false;
             }
         }

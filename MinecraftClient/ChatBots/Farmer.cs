@@ -29,7 +29,7 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.Farmer.Delay_Between_Tasks$")]
+            [TomlInlineComment("$ChatBot.Farmer.Delay_Between_Tasks$")]
             public double Delay_Between_Tasks = 1.0;
 
             public void OnSettingUpdate()
@@ -70,7 +70,7 @@ namespace MinecraftClient.ChatBots
 
         private const string commandDescription = "farmer <start <crop type> [radius:<radius = 30>] [unsafe:<true/false>] [teleport:<true/false>] [debug:<true/false>]|stop>";
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (GetProtocolVersion() < Protocol18Handler.MC_1_13_Version)
             {
@@ -90,13 +90,13 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("start")
@@ -105,14 +105,14 @@ namespace MinecraftClient.ChatBots
                         .Then(l => l.Argument("OtherArgs", Arguments.GreedyString())
                             .Executes(r => OnCommandStart(r.Source, MccArguments.GetFarmerCropType(r, "CropType"), Arguments.GetString(r, "OtherArgs"))))))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -121,7 +121,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   Translations.bot_farmer_desc + ": " + commandDescription
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

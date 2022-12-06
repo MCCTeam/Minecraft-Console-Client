@@ -1,4 +1,4 @@
-namespace MinecraftClient.Mapping
+﻿namespace MinecraftClient.Mapping
 {
     /// <summary>
     /// Represents a unit movement in the world

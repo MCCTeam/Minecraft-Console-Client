@@ -218,7 +218,7 @@ namespace MinecraftClient.Protocol.Message
             //File not found? Try downloading language file from Mojang's servers?
             if (!File.Exists(Language_File))
             {
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_download, Config.Main.Advanced.Language));
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_download, Config.Main.Advanced.Language));
                 HttpClient httpClient = new();
                 try
                 {
@@ -244,11 +244,11 @@ namespace MinecraftClient.Protocol.Message
                         stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue.Replace("\n", "\\n").Replace("\r", string.Empty)).Append(Environment.NewLine);
                     File.WriteAllText(Language_File, stringBuilder.ToString());
 
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_done, Language_File));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, Language_File));
                 }
                 catch
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.chat_fail, acceptnewlines: true);
+                    ConsoleIO.WriteLineFormatted("§8" + Translations.chat_fail, acceptnewlines: true);
                 }
                 httpClient.Dispose();
             }
@@ -281,7 +281,7 @@ namespace MinecraftClient.Protocol.Message
             }
             else //No external dictionnary found.
             {
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_not_found, Language_File));
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_not_found, Language_File));
             }
         }
 

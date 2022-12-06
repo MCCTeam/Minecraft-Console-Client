@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -223,7 +223,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Initialization of the Mailer bot
         /// </summary>
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             LogDebugToConsole(Translations.bot_mailer_init);
             LogDebugToConsole(Translations.bot_mailer_init_db + Config.DatabaseFile);
@@ -258,53 +258,31 @@ namespace MinecraftClient.ChatBots
             mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.DatabaseFile)!, Path.GetFileName(Config.DatabaseFile), FileMonitorCallback);
             ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.IgnoreListFile)!, Path.GetFileName(Config.IgnoreListFile), FileMonitorCallback);
 
-            dispatcher.Register(l =>
-                l.Literal("help")
-                    .Then(l => l.Literal(CommandName)
-                        .Executes(r => OnCommandHelp(string.Empty))
-                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp(string.Empty)))
-                    )
+            Handler.dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(string.Empty)))
             );
 
-            dispatcher.Register(l =>
-                l.Literal(CommandName)
-                    .Executes(r => OnCommandHelp(string.Empty))
-                    .Then(l => l.Literal("getmails")
-                        .Executes(r => OnCommandGetMails())
-                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("getmails")))
-                    )
-                    .Then(l => l.Literal("getignored")
-                        .Executes(r => OnCommandGetIgnored())
-                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("getignored")))
-                    )
-                    .Then(l => l.Literal("addignored")
-                        .Executes(r => OnCommandHelp("addignored"))
-                        .Then(l => l.Argument("username", Arguments.String())
-                            .Executes(r => OnCommandAddIgnored(Arguments.GetString(r, "username")))
-                            .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("addignored")))
-                        )
-                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("addignored")))
-                    )
-                    .Then(l => l.Literal("removeignored")
-                        .Executes(r => OnCommandHelp("removeignored"))
-                        .Then(l => l.Argument("username", Arguments.String())
-                            .Executes(r => OnCommandRemoveIgnored(Arguments.GetString(r, "username")))
-                            .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("removeignored")))
-                        )
-                        .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp("removeignored")))
-                    )
-                    .Then(l => l.Literal("_help")
-                        .Executes(r => OnCommandHelp(string.Empty))
-                        .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName))
-                    )
-                    .Then(l => l.Argument("any", Arguments.GreedyString()).Executes(r => OnCommandHelp(string.Empty)))
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("getmails")
+                    .Executes(r => OnCommandGetMails()))
+                .Then(l => l.Literal("getignored")
+                    .Executes(r => OnCommandGetIgnored()))
+                .Then(l => l.Literal("addignored")
+                    .Then(l => l.Argument("username", Arguments.String())
+                        .Executes(r => OnCommandAddIgnored(Arguments.GetString(r, "username")))))
+                .Then(l => l.Literal("removeignored")
+                    .Then(l => l.Argument("username", Arguments.String())
+                        .Executes(r => OnCommandRemoveIgnored(Arguments.GetString(r, "username")))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(string cmd)
@@ -313,7 +291,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   Translations.bot_mailer_cmd_help + ": /mailer <getmails|addignored|getignored|removeignored>"
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
             return 1;

@@ -127,7 +127,7 @@ namespace MinecraftClient.ChatBots
             return false;
         }
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             //Load the given file from the startup parameters
             if (LookForScript(ref file!))

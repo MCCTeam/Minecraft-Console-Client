@@ -32,43 +32,43 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Antidespawn$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Antidespawn$")]
             public bool Antidespawn = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Mainhand$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Mainhand$")]
             public bool Mainhand = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Auto_Start$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Auto_Start$")]
             public bool Auto_Start = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Cast_Delay$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Cast_Delay$")]
             public double Cast_Delay = 0.4;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Fishing_Delay$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Fishing_Delay$")]
             public double Fishing_Delay = 3.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Fishing_Timeout$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Fishing_Timeout$")]
             public double Fishing_Timeout = 300.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Durability_Limit$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Durability_Limit$")]
             public double Durability_Limit = 2;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Auto_Rod_Switch$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Auto_Rod_Switch$")]
             public bool Auto_Rod_Switch = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Stationary_Threshold$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Stationary_Threshold$")]
             public double Stationary_Threshold = 0.001;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Hook_Threshold$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Hook_Threshold$")]
             public double Hook_Threshold = 0.2;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Log_Fish_Bobber$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Log_Fish_Bobber$")]
             public bool Log_Fish_Bobber = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Enable_Move$")]
+            [TomlInlineComment("$ChatBot.AutoFishing.Enable_Move$")]
             public bool Enable_Move = false;
 
-            [TomlPrecedingComment("$config.ChatBot.AutoFishing.Movements$")]
+            [TomlPrecedingComment("$ChatBot.AutoFishing.Movements$")]
             public LocationConfig[] Movements = new LocationConfig[]
             {
                 new LocationConfig(12.34, -23.45),
@@ -176,7 +176,7 @@ namespace MinecraftClient.ChatBots
             Stopping,
         }
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (!GetEntityHandlingEnabled())
             {
@@ -188,7 +188,7 @@ namespace MinecraftClient.ChatBots
             if (!inventoryEnabled)
                 LogToConsole(Translations.bot_autoFish_no_inv_handle);
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Then(l => l.Literal("start")
@@ -202,7 +202,7 @@ namespace MinecraftClient.ChatBots
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("start")
                     .Executes(r => OnCommandStart(r.Source)))
                 .Then(l => l.Literal("stop")
@@ -212,14 +212,14 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Literal("clear")
                         .Executes(r => OnCommandStatusClear(r.Source))))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -232,7 +232,7 @@ namespace MinecraftClient.ChatBots
                 "status"    =>   Translations.bot_autoFish_help_status,
                 "help"      =>   Translations.bot_autoFish_help_help,
                 _           =>   string.Format(Translations.bot_autoFish_available_cmd, "start, stop, status, help")
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

@@ -17,22 +17,25 @@ namespace MinecraftClient.Proxy
         [TomlDoNotInlineObject]
         public class Configs
         {
-            [TomlInlineComment("$config.Proxy.Enabled_Login$")]
+            [TomlInlineComment("$Proxy.Enabled_Update$")]
+            public bool Enabled_Update = false;
+
+            [TomlInlineComment("$Proxy.Enabled_Login$")]
             public bool Enabled_Login = false;
 
-            [TomlInlineComment("$config.Proxy.Enabled_Ingame$")]
+            [TomlInlineComment("$Proxy.Enabled_Ingame$")]
             public bool Enabled_Ingame = false;
 
-            [TomlInlineComment("$config.Proxy.Server$")]
+            [TomlInlineComment("$Proxy.Server$")]
             public ProxyInfoConfig Server = new("0.0.0.0", 8080);
 
-            [TomlInlineComment("$config.Proxy.Proxy_Type$")]
+            [TomlInlineComment("$Proxy.Proxy_Type$")]
             public ProxyType Proxy_Type = ProxyType.HTTP;
 
-            [TomlInlineComment("$config.Proxy.Username$")]
+            [TomlInlineComment("$Proxy.Username$")]
             public string Username = "";
 
-            [TomlInlineComment("$config.Proxy.Password$")]
+            [TomlInlineComment("$Proxy.Password$")]
             public string Password = "";
 
             public void OnSettingUpdate() { }
@@ -79,14 +82,14 @@ namespace MinecraftClient.Proxy
                         case Configs.ProxyType.SOCKS5: innerProxytype = ProxyType.Socks5; break;
                     }
 
-                    if (Config.Username != "" && Config.Password != "")
+                    if (!string.IsNullOrWhiteSpace(Config.Username)&& !string.IsNullOrWhiteSpace(Config.Password))
                         proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port, Config.Username, Config.Password);
                     else
                         proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port);
 
                     if (!proxy_ok)
                     {
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.proxy_connected, Config.Server.Host, Config.Server.Port));
+                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.proxy_connected, Config.Server.Host, Config.Server.Port));
                         proxy_ok = true;
                     }
 

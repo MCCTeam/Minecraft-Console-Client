@@ -37,8 +37,6 @@ namespace MinecraftClient
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
 
         public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
-        public const string GithubReleaseUrl = "https://github.com/MCCTeam/Minecraft-Console-Client/releases";
-        public const string GithubLatestReleaseUrl = GithubReleaseUrl + "/latest";
 
         public static GlobalConfig Config = new();
 
@@ -65,7 +63,7 @@ namespace MinecraftClient
 
         public class GlobalConfig
         {
-            [TomlPrecedingComment("$config.Head$")]
+            [TomlPrecedingComment("$Head$")]
             public HeadComment Head
             {
                 get { return HeadCommentHealper.Config; }
@@ -78,14 +76,14 @@ namespace MinecraftClient
                 set { MainConfigHealper.Config = value; MainConfigHealper.Config.OnSettingUpdate(); }
             }
 
-            [TomlPrecedingComment("$config.Signature$")]
+            [TomlPrecedingComment("$Signature$")]
             public SignatureConfig Signature
             {
                 get { return SignatureConfigHelper.Config; }
                 set { SignatureConfigHelper.Config = value; SignatureConfigHelper.Config.OnSettingUpdate(); }
             }
 
-            [TomlPrecedingComment("$config.Logging$")]
+            [TomlPrecedingComment("$Logging$")]
             public LoggingConfig Logging
             {
                 get { return LoggingConfigHealper.Config; }
@@ -98,28 +96,28 @@ namespace MinecraftClient
                 set { AppVarConfigHelper.Config = value; AppVarConfigHelper.Config.OnSettingUpdate(); }
             }
 
-            [TomlPrecedingComment("$config.Proxy$")]
+            [TomlPrecedingComment("$Proxy$")]
             public ProxyHandler.Configs Proxy
             {
                 get { return ProxyHandler.Config; }
                 set { ProxyHandler.Config = value; ProxyHandler.Config.OnSettingUpdate(); }
             }
 
-            [TomlPrecedingComment("$config.MCSettings$")]
+            [TomlPrecedingComment("$MCSettings$")]
             public MCSettingsConfig MCSettings
             {
                 get { return MCSettingsConfigHealper.Config; }
                 set { MCSettingsConfigHealper.Config = value; MCSettingsConfigHealper.Config.OnSettingUpdate(); }
             }
 
-            [TomlPrecedingComment("$config.ChatFormat$")]
+            [TomlPrecedingComment("$ChatFormat$")]
             public ChatFormatConfig ChatFormat
             {
                 get { return ChatFormatConfigHelper.Config; }
                 set { ChatFormatConfigHelper.Config = value; ChatFormatConfigHelper.Config.OnSettingUpdate(); }
             }
 
-            [TomlPrecedingComment("$config.ChatBot$")]
+            [TomlPrecedingComment("$ChatBot$")]
             public ChatBotConfig ChatBot
             {
                 get { return ChatBotConfigHealper.Config; }
@@ -161,7 +159,7 @@ namespace MinecraftClient
                     }
                 }
                 catch { }
-                ConsoleIO.WriteLineFormatted(Translations.config_load_fail);
+                ConsoleIO.WriteLineFormatted("§c" + Translations.config_load_fail);
                 ConsoleIO.WriteLine(ex.GetFullMessage());
                 return new(false, false);
             }
@@ -191,7 +189,7 @@ namespace MinecraftClient
                     string config = matchComment.Groups[1].Value, comment = matchComment.Groups[2].Value;
                     if (config.Length > 0)
                         newConfig.Append(config).Append(' ', Math.Max(1, CommentsAlignPosition - config.Length) - 1);
-                    string? comment_trans = Translations.ResourceManager.GetString(comment);
+                    string? comment_trans = ConfigComments.ResourceManager.GetString(comment);
                     if (string.IsNullOrEmpty(comment_trans))
                         newConfig.Append("# ").AppendLine(comment.ReplaceLineEndings());
                     else
@@ -226,7 +224,7 @@ namespace MinecraftClient
                     catch (Exception ex)
                     {
                         backupSuccessed = false;
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.config_backup_fail, backupFilePath));
+                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.config_backup_fail, backupFilePath));
                         ConsoleIO.WriteLine(ex.Message);
                     }
                 }
@@ -236,7 +234,7 @@ namespace MinecraftClient
                     try { File.WriteAllBytes(filepath, newConfigByte); }
                     catch (Exception ex)
                     {
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.config_write_fail, filepath));
+                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.config_write_fail, filepath));
                         ConsoleIO.WriteLine(ex.Message);
                     }
                 }
@@ -330,23 +328,29 @@ namespace MinecraftClient
             {
                 public GeneralConfig General = new();
 
-                [TomlPrecedingComment("$config.Main.Advanced$")]
+                [TomlPrecedingComment("$Main.Advanced$")]
                 public AdvancedConfig Advanced = new();
 
 
                 [NonSerialized]
                 public static readonly string[] AvailableLang =
                 {
-                    "af_za", "ar_sa", "ast_es", "az_az", "ba_ru", "bar", "be_by", "bg_bg", "br_fr", "brb", "bs_ba", "ca_es",
-                    "cs_cz", "cy_gb", "da_dk", "de_at", "de_ch", "de_de", "el_gr", "en_au", "en_ca", "en_gb", "en_nz", "eo_uy",
-                    "es_ar", "es_cl", "es_ec", "es_es", "es_mx", "es_uy", "es_ve", "esan", "et_ee", "eu_es", "fa_ir", "fi_fi",
-                    "fil_ph", "fo_fo", "fr_ca", "fr_fr", "fra_de", "fur_it", "fy_nl", "ga_ie", "gd_gb", "gl_es", "haw_us", "he_il",
-                    "hi_in", "hr_hr", "hu_hu", "hy_am", "id_id", "ig_ng", "io_en", "is_is", "isv", "it_it", "ja_jp", "jbo_en",
-                    "ka_ge", "kk_kz", "kn_in", "ko_kr", "ksh", "kw_gb", "la_la", "lb_lu", "li_li", "lmo", "lt_lt", "lv_lv", "lzh",
-                    "mk_mk", "mn_mn", "ms_my", "mt_mt", "nds_de", "nl_be", "nl_nl", "nn_no", "oc_fr", "ovd", "pl_pl", "pt_br",
-                    "pt_pt", "qya_aa", "ro_ro", "rpr", "ru_ru", "se_no", "sk_sk", "sl_si", "so_so", "sq_al", "sr_sp", "sv_se",
-                    "sxu", "szl", "ta_in", "th_th", "tl_ph", "tlh_aa", "tok", "tr_tr", "tt_ru", "uk_ua", "val_es", "vec_it",
-                    "vi_vn", "yi_de", "yo_ng", "zh_cn", "zh_hk", "zh_tw", "zlm_arab"
+                    "af_za", "ar_sa", "ast_es", "az_az", "ba_ru", "bar", "be_by", "bg_bg",
+                    "br_fr", "brb", "bs_ba", "ca_es", "cs_cz", "cy_gb", "da_dk", "de_at",
+                    "de_ch", "de_de", "el_gr", "en_au", "en_ca", "en_gb", "en_nz", "en_pt",
+                    "en_ud", "en_us", "enp", "enws", "eo_uy", "es_ar", "es_cl", "es_ec",
+                    "es_es", "es_mx", "es_uy", "es_ve", "esan", "et_ee", "eu_es", "fa_ir",
+                    "fi_fi", "fil_ph", "fo_fo", "fr_ca", "fr_fr", "fra_de", "fur_it", "fy_nl",
+                    "ga_ie", "gd_gb", "gl_es", "haw_us", "he_il", "hi_in", "hr_hr", "hu_hu",
+                    "hy_am", "id_id", "ig_ng", "io_en", "is_is", "isv", "it_it", "ja_jp",
+                    "jbo_en", "ka_ge", "kk_kz", "kn_in", "ko_kr", "ksh", "kw_gb", "la_la",
+                    "lb_lu", "li_li", "lmo", "lol_us", "lt_lt", "lv_lv", "lzh", "mk_mk",
+                    "mn_mn", "ms_my", "mt_mt", "nds_de", "nl_be", "nl_nl", "nn_no", "no_no",
+                    "oc_fr", "ovd", "pl_pl", "pt_br", "pt_pt", "qya_aa", "ro_ro", "rpr",
+                    "ru_ru", "se_no", "sk_sk", "sl_si", "so_so", "sq_al", "sr_sp", "sv_se",
+                    "sxu", "szl", "ta_in", "th_th", "tl_ph", "tlh_aa", "tok", "tr_tr",
+                    "tt_ru", "uk_ua", "val_es", "vec_it", "vi_vn", "yi_de", "yo_ng", "zh_cn",
+                    "zh_hk", "zh_tw", "zlm_arab"
                 };
 
                 /// <summary>
@@ -466,16 +470,16 @@ namespace MinecraftClient
                 [TomlDoNotInlineObject]
                 public class GeneralConfig
                 {
-                    [TomlInlineComment("$config.Main.General.account$")]
+                    [TomlInlineComment("$Main.General.account$")]
                     public AccountInfoConfig Account = new(string.Empty, string.Empty);
 
-                    [TomlInlineComment("$config.Main.General.login$")]
+                    [TomlInlineComment("$Main.General.login$")]
                     public ServerInfoConfig Server = new(string.Empty);
 
-                    [TomlInlineComment("$config.Main.General.server_info$")]
+                    [TomlInlineComment("$Main.General.server_info$")]
                     public LoginType AccountType = LoginType.microsoft;
 
-                    [TomlInlineComment("$config.Main.General.method$")]
+                    [TomlInlineComment("$Main.General.method$")]
                     public LoginMethod Method = LoginMethod.mcc;
 
                     public enum LoginType { mojang, microsoft };
@@ -486,121 +490,121 @@ namespace MinecraftClient
                 [TomlDoNotInlineObject]
                 public class AdvancedConfig
                 {
-                    [TomlInlineComment("$config.Main.Advanced.language$")]
+                    [TomlInlineComment("$Main.Advanced.language$")]
                     public string Language = "en_gb";
 
-                    [TomlInlineComment("$config.Main.Advanced.LoadMccTrans$")]
+                    [TomlInlineComment("$Main.Advanced.LoadMccTrans$")]
                     public bool LoadMccTranslation = true;
 
-                    // [TomlInlineComment("$config.Main.Advanced.console_title$")]
+                    // [TomlInlineComment("$Main.Advanced.console_title$")]
                     public string ConsoleTitle = "%username%@%serverip% - Minecraft Console Client";
 
-                    [TomlInlineComment("$config.Main.Advanced.internal_cmd_char$")]
+                    [TomlInlineComment("$Main.Advanced.internal_cmd_char$")]
                     public InternalCmdCharType InternalCmdChar = InternalCmdCharType.slash;
 
-                    [TomlInlineComment("$config.Main.Advanced.message_cooldown$")]
+                    [TomlInlineComment("$Main.Advanced.message_cooldown$")]
                     public double MessageCooldown = 1.0;
 
-                    [TomlInlineComment("$config.Main.Advanced.bot_owners$")]
+                    [TomlInlineComment("$Main.Advanced.bot_owners$")]
                     public List<string> BotOwners = new() { "Player1", "Player2" };
 
-                    [TomlInlineComment("$config.Main.Advanced.mc_version$")]
+                    [TomlInlineComment("$Main.Advanced.mc_version$")]
                     public string MinecraftVersion = "auto";
 
-                    [TomlInlineComment("$config.Main.Advanced.mc_forge$")]
+                    [TomlInlineComment("$Main.Advanced.mc_forge$")]
                     public ForgeConfigType EnableForge = ForgeConfigType.auto;
 
-                    [TomlInlineComment("$config.Main.Advanced.brand_info$")]
+                    [TomlInlineComment("$Main.Advanced.brand_info$")]
                     public BrandInfoType BrandInfo = BrandInfoType.mcc;
 
-                    [TomlInlineComment("$config.Main.Advanced.chatbot_log_file$")]
+                    [TomlInlineComment("$Main.Advanced.chatbot_log_file$")]
                     public string ChatbotLogFile = "";
 
-                    [TomlInlineComment("$config.Main.Advanced.private_msgs_cmd_name$")]
+                    [TomlInlineComment("$Main.Advanced.private_msgs_cmd_name$")]
                     public string PrivateMsgsCmdName = "tell";
 
-                    [TomlInlineComment("$config.Main.Advanced.show_system_messages$")]
+                    [TomlInlineComment("$Main.Advanced.show_system_messages$")]
                     public bool ShowSystemMessages = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.show_xpbar_messages$")]
+                    [TomlInlineComment("$Main.Advanced.show_xpbar_messages$")]
                     public bool ShowXPBarMessages = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.show_chat_links$")]
+                    [TomlInlineComment("$Main.Advanced.show_chat_links$")]
                     public bool ShowChatLinks = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.show_inventory_layout$")]
+                    [TomlInlineComment("$Main.Advanced.show_inventory_layout$")]
                     public bool ShowInventoryLayout = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.terrain_and_movements$")]
+                    [TomlInlineComment("$Main.Advanced.terrain_and_movements$")]
                     public bool TerrainAndMovements = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.move_head_while_walking$")]
+                    [TomlInlineComment("$Main.Advanced.move_head_while_walking$")]
                     public bool MoveHeadWhileWalking = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.movement_speed$")]
+                    [TomlInlineComment("$Main.Advanced.movement_speed$")]
                     public int MovementSpeed = 2;
 
-                    [TomlInlineComment("$config.Main.Advanced.temporary_fix_badpacket$")]
+                    [TomlInlineComment("$Main.Advanced.temporary_fix_badpacket$")]
                     public bool TemporaryFixBadpacket = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.inventory_handling$")]
+                    [TomlInlineComment("$Main.Advanced.inventory_handling$")]
                     public bool InventoryHandling = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.entity_handling$")]
+                    [TomlInlineComment("$Main.Advanced.entity_handling$")]
                     public bool EntityHandling = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.session_cache$")]
+                    [TomlInlineComment("$Main.Advanced.session_cache$")]
                     public CacheType SessionCache = CacheType.disk;
 
-                    [TomlInlineComment("$config.Main.Advanced.profilekey_cache$")]
+                    [TomlInlineComment("$Main.Advanced.profilekey_cache$")]
                     public CacheType ProfileKeyCache = CacheType.disk;
 
-                    [TomlInlineComment("$config.Main.Advanced.resolve_srv_records$")]
+                    [TomlInlineComment("$Main.Advanced.resolve_srv_records$")]
                     public ResolveSrvRecordType ResolveSrvRecords = ResolveSrvRecordType.fast;
 
-                    [TomlPrecedingComment("$config.Main.Advanced.account_list$")]
+                    [TomlPrecedingComment("$Main.Advanced.account_list$")]
                     public Dictionary<string, AccountInfoConfig> AccountList = new() {
                         { "AccountNikename1", new AccountInfoConfig("playerone@email.com", "thepassword") },
                         { "AccountNikename2", new AccountInfoConfig("TestBot", "-") },
                     };
 
-                    [TomlPrecedingComment("$config.Main.Advanced.server_list$")]
+                    [TomlPrecedingComment("$Main.Advanced.server_list$")]
                     public Dictionary<string, ServerInfoConfig> ServerList = new() {
                         { "ServerAlias1", new ServerInfoConfig("mc.awesomeserver.com") },
                         { "ServerAlias2", new ServerInfoConfig("192.168.1.27", 12345) },
                     };
 
-                    [TomlInlineComment("$config.Main.Advanced.player_head_icon$")]
+                    [TomlInlineComment("$Main.Advanced.player_head_icon$")]
                     public bool PlayerHeadAsIcon = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.exit_on_failure$")]
+                    [TomlInlineComment("$Main.Advanced.exit_on_failure$")]
                     public bool ExitOnFailure = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.script_cache$")]
+                    [TomlInlineComment("$Main.Advanced.script_cache$")]
                     public bool CacheScript = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.timestamps$")]
+                    [TomlInlineComment("$Main.Advanced.timestamps$")]
                     public bool Timestamps = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.auto_respawn$")]
+                    [TomlInlineComment("$Main.Advanced.auto_respawn$")]
                     public bool AutoRespawn = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.minecraft_realms$")]
+                    [TomlInlineComment("$Main.Advanced.minecraft_realms$")]
                     public bool MinecraftRealms = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.timeout$")]
+                    [TomlInlineComment("$Main.Advanced.timeout$")]
                     public int TcpTimeout = 30;
 
-                    [TomlInlineComment("$config.Main.Advanced.enable_emoji$")]
+                    [TomlInlineComment("$Main.Advanced.enable_emoji$")]
                     public bool EnableEmoji = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.TerminalColorDepth$")]
+                    [TomlInlineComment("$Main.Advanced.TerminalColorDepth$")]
                     public TerminalColorDepthType TerminalColorDepth = TerminalColorDepthType.bit_24;
 
-                    [TomlInlineComment("$config.Main.Advanced.MinTerminalWidth$")]
+                    [TomlInlineComment("$Main.Advanced.MinTerminalWidth$")]
                     public int MinTerminalWidth = 16;
 
-                    [TomlInlineComment("$config.Main.Advanced.MinTerminalHeight$")]
+                    [TomlInlineComment("$Main.Advanced.MinTerminalHeight$")]
                     public int MinTerminalHeight = 10;
 
                     /// <summary>
@@ -683,31 +687,31 @@ namespace MinecraftClient
             [TomlDoNotInlineObject]
             public class SignatureConfig
             {
-                [TomlInlineComment("$config.Signature.LoginWithSecureProfile$")]
+                [TomlInlineComment("$Signature.LoginWithSecureProfile$")]
                 public bool LoginWithSecureProfile = true;
 
-                [TomlInlineComment("$config.Signature.SignChat$")]
+                [TomlInlineComment("$Signature.SignChat$")]
                 public bool SignChat = true;
 
-                [TomlInlineComment("$config.Signature.SignMessageInCommand$")]
+                [TomlInlineComment("$Signature.SignMessageInCommand$")]
                 public bool SignMessageInCommand = true;
 
-                [TomlInlineComment("$config.Signature.MarkLegallySignedMsg$")]
+                [TomlInlineComment("$Signature.MarkLegallySignedMsg$")]
                 public bool MarkLegallySignedMsg = false;
 
-                [TomlInlineComment("$config.Signature.MarkModifiedMsg$")]
+                [TomlInlineComment("$Signature.MarkModifiedMsg$")]
                 public bool MarkModifiedMsg = true;
 
-                [TomlInlineComment("$config.Signature.MarkIllegallySignedMsg$")]
+                [TomlInlineComment("$Signature.MarkIllegallySignedMsg$")]
                 public bool MarkIllegallySignedMsg = true;
 
-                [TomlInlineComment("$config.Signature.MarkSystemMessage$")]
+                [TomlInlineComment("$Signature.MarkSystemMessage$")]
                 public bool MarkSystemMessage = false;
 
-                [TomlInlineComment("$config.Signature.ShowModifiedChat$")]
+                [TomlInlineComment("$Signature.ShowModifiedChat$")]
                 public bool ShowModifiedChat = true;
 
-                [TomlInlineComment("$config.Signature.ShowIllegalSignedChat$")]
+                [TomlInlineComment("$Signature.ShowIllegalSignedChat$")]
                 public bool ShowIllegalSignedChat = true;
 
                 public void OnSettingUpdate() { }
@@ -721,40 +725,40 @@ namespace MinecraftClient
             [TomlDoNotInlineObject]
             public class LoggingConfig
             {
-                [TomlInlineComment("$config.Logging.DebugMessages$")]
+                [TomlInlineComment("$Logging.DebugMessages$")]
                 public bool DebugMessages = false;
 
-                [TomlInlineComment("$config.Logging.ChatMessages$")]
+                [TomlInlineComment("$Logging.ChatMessages$")]
                 public bool ChatMessages = true;
 
-                [TomlInlineComment("$config.Logging.InfoMessages$")]
+                [TomlInlineComment("$Logging.InfoMessages$")]
                 public bool InfoMessages = true;
 
-                [TomlInlineComment("$config.Logging.WarningMessages$")]
+                [TomlInlineComment("$Logging.WarningMessages$")]
                 public bool WarningMessages = true;
 
-                [TomlInlineComment("$config.Logging.ErrorMessages$")]
+                [TomlInlineComment("$Logging.ErrorMessages$")]
                 public bool ErrorMessages = true;
 
-                [TomlInlineComment("$config.Logging.ChatFilter$")]
+                [TomlInlineComment("$Logging.ChatFilter$")]
                 public string ChatFilterRegex = @".*";
 
-                [TomlInlineComment("$config.Logging.DebugFilter$")]
+                [TomlInlineComment("$Logging.DebugFilter$")]
                 public string DebugFilterRegex = @".*";
 
-                [TomlInlineComment("$config.Logging.FilterMode$")]
+                [TomlInlineComment("$Logging.FilterMode$")]
                 public FilterModeEnum FilterMode = FilterModeEnum.disable;
 
-                [TomlInlineComment("$config.Logging.LogToFile$")]
+                [TomlInlineComment("$Logging.LogToFile$")]
                 public bool LogToFile = false;
 
-                [TomlInlineComment("$config.Logging.LogFile$")]
+                [TomlInlineComment("$Logging.LogFile$")]
                 public string LogFile = @"console-log.txt";
 
-                [TomlInlineComment("$config.Logging.PrependTimestamp$")]
+                [TomlInlineComment("$Logging.PrependTimestamp$")]
                 public bool PrependTimestamp = false;
 
-                [TomlInlineComment("$config.Logging.SaveColorCodes$")]
+                [TomlInlineComment("$Logging.SaveColorCodes$")]
                 public bool SaveColorCodes = false;
 
                 public void OnSettingUpdate() { }
@@ -770,7 +774,7 @@ namespace MinecraftClient
             [TomlDoNotInlineObject]
             public class AppVarConfig
             {
-                [TomlPrecedingComment("$config.AppVars.Variables$")]
+                [TomlPrecedingComment("$AppVars.Variables$")]
                 private readonly Dictionary<string, string> VarStirng = new() {
                     { "your_var", "your_value" },
                     { "your var 2", "your value 2" },
@@ -947,25 +951,25 @@ namespace MinecraftClient
             [TomlDoNotInlineObject]
             public class MCSettingsConfig
             {
-                [TomlInlineComment("$config.MCSettings.Enabled$")]
+                [TomlInlineComment("$MCSettings.Enabled$")]
                 public bool Enabled = true;
 
-                [TomlInlineComment("$config.MCSettings.Locale$")]
+                [TomlInlineComment("$MCSettings.Locale$")]
                 public string Locale = "en_US";
 
-                [TomlInlineComment("$config.MCSettings.RenderDistance$")]
+                [TomlInlineComment("$MCSettings.RenderDistance$")]
                 public byte RenderDistance = 8;
 
-                [TomlInlineComment("$config.MCSettings.Difficulty$")]
+                [TomlInlineComment("$MCSettings.Difficulty$")]
                 public DifficultyType Difficulty = DifficultyType.peaceful;
 
-                [TomlInlineComment("$config.MCSettings.ChatMode$")]
+                [TomlInlineComment("$MCSettings.ChatMode$")]
                 public ChatModeType ChatMode = ChatModeType.enabled;
 
-                [TomlInlineComment("$config.MCSettings.ChatColors$")]
+                [TomlInlineComment("$MCSettings.ChatColors$")]
                 public bool ChatColors = true;
 
-                [TomlInlineComment("$config.MCSettings.MainHand$")]
+                [TomlInlineComment("$MCSettings.MainHand$")]
                 public MainHandType MainHand = MainHandType.left;
 
                 public SkinInfo Skin = new();
@@ -1020,10 +1024,10 @@ namespace MinecraftClient
             [TomlDoNotInlineObject]
             public class ChatFormatConfig
             {
-                [TomlInlineComment("$config.ChatFormat.Builtins$")]
+                [TomlInlineComment("$ChatFormat.Builtins$")]
                 public bool Builtins = true;
 
-                [TomlInlineComment("$config.ChatFormat.UserDefined$")]
+                [TomlInlineComment("$ChatFormat.UserDefined$")]
                 public bool UserDefined = false;
 
                 public string Public = @"^<([a-zA-Z0-9_]+)> (.+)$";
@@ -1076,154 +1080,154 @@ namespace MinecraftClient
             [TomlDoNotInlineObject]
             public class ChatBotConfig
             {
-                [TomlPrecedingComment("$config.ChatBot.Alerts$")]
+                [TomlPrecedingComment("$ChatBot.Alerts$")]
                 public ChatBots.Alerts.Configs Alerts
                 {
                     get { return ChatBots.Alerts.Config; }
                     set { ChatBots.Alerts.Config = value; ChatBots.Alerts.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AntiAfk$")]
+                [TomlPrecedingComment("$ChatBot.AntiAfk$")]
                 public ChatBots.AntiAFK.Configs AntiAFK
                 {
                     get { return ChatBots.AntiAFK.Config; }
                     set { ChatBots.AntiAFK.Config = value; ChatBots.AntiAFK.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoAttack$")]
+                [TomlPrecedingComment("$ChatBot.AutoAttack$")]
                 public ChatBots.AutoAttack.Configs AutoAttack
                 {
                     get { return ChatBots.AutoAttack.Config; }
                     set { ChatBots.AutoAttack.Config = value; ChatBots.AutoAttack.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoCraft$")]
+                [TomlPrecedingComment("$ChatBot.AutoCraft$")]
                 public ChatBots.AutoCraft.Configs AutoCraft
                 {
                     get { return ChatBots.AutoCraft.Config; }
                     set { ChatBots.AutoCraft.Config = value; ChatBots.AutoCraft.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoDig$")]
+                [TomlPrecedingComment("$ChatBot.AutoDig$")]
                 public ChatBots.AutoDig.Configs AutoDig
                 {
                     get { return ChatBots.AutoDig.Config; }
                     set { ChatBots.AutoDig.Config = value; ChatBots.AutoDig.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoDrop$")]
+                [TomlPrecedingComment("$ChatBot.AutoDrop$")]
                 public ChatBots.AutoDrop.Configs AutoDrop
                 {
                     get { return ChatBots.AutoDrop.Config; }
                     set { ChatBots.AutoDrop.Config = value; ChatBots.AutoDrop.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoEat$")]
+                [TomlPrecedingComment("$ChatBot.AutoEat$")]
                 public ChatBots.AutoEat.Configs AutoEat
                 {
                     get { return ChatBots.AutoEat.Config; }
                     set { ChatBots.AutoEat.Config = value; ChatBots.AutoEat.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoFishing$")]
+                [TomlPrecedingComment("$ChatBot.AutoFishing$")]
                 public ChatBots.AutoFishing.Configs AutoFishing
                 {
                     get { return ChatBots.AutoFishing.Config; }
                     set { ChatBots.AutoFishing.Config = value; ChatBots.AutoFishing.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoRelog$")]
+                [TomlPrecedingComment("$ChatBot.AutoRelog$")]
                 public ChatBots.AutoRelog.Configs AutoRelog
                 {
                     get { return ChatBots.AutoRelog.Config; }
                     set { ChatBots.AutoRelog.Config = value; ChatBots.AutoRelog.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AutoRespond$")]
+                [TomlPrecedingComment("$ChatBot.AutoRespond$")]
                 public ChatBots.AutoRespond.Configs AutoRespond
                 {
                     get { return ChatBots.AutoRespond.Config; }
                     set { ChatBots.AutoRespond.Config = value; ChatBots.AutoRespond.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.ChatLog$")]
+                [TomlPrecedingComment("$ChatBot.ChatLog$")]
                 public ChatBots.ChatLog.Configs ChatLog
                 {
                     get { return ChatBots.ChatLog.Config; }
                     set { ChatBots.ChatLog.Config = value; ChatBots.ChatLog.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.DiscordBridge$")]
+                [TomlPrecedingComment("$ChatBot.DiscordBridge$")]
                 public ChatBots.DiscordBridge.Configs DiscordBridge
                 {
                     get { return ChatBots.DiscordBridge.Config; }
                     set { ChatBots.DiscordBridge.Config = value; ChatBots.DiscordBridge.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.Farmer$")]
+                [TomlPrecedingComment("$ChatBot.Farmer$")]
                 public ChatBots.Farmer.Configs Farmer
                 {
                     get { return ChatBots.Farmer.Config; }
                     set { ChatBots.Farmer.Config = value; ChatBots.Farmer.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.FollowPlayer$")]
+                [TomlPrecedingComment("$ChatBot.FollowPlayer$")]
                 public ChatBots.FollowPlayer.Configs FollowPlayer
                 {
                     get { return ChatBots.FollowPlayer.Config; }
                     set { ChatBots.FollowPlayer.Config = value; ChatBots.FollowPlayer.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.HangmanGame$")]
+                [TomlPrecedingComment("$ChatBot.HangmanGame$")]
                 public ChatBots.HangmanGame.Configs HangmanGame
                 {
                     get { return ChatBots.HangmanGame.Config; }
                     set { ChatBots.HangmanGame.Config = value; ChatBots.HangmanGame.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.Mailer$")]
+                [TomlPrecedingComment("$ChatBot.Mailer$")]
                 public ChatBots.Mailer.Configs Mailer
                 {
                     get { return ChatBots.Mailer.Config; }
                     set { ChatBots.Mailer.Config = value; ChatBots.Mailer.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.Map$")]
+                [TomlPrecedingComment("$ChatBot.Map$")]
                 public ChatBots.Map.Configs Map
                 {
                     get { return ChatBots.Map.Config; }
                     set { ChatBots.Map.Config = value; ChatBots.Map.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.PlayerListLogger$")]
+                [TomlPrecedingComment("$ChatBot.PlayerListLogger$")]
                 public ChatBots.PlayerListLogger.Configs PlayerListLogger
                 {
                     get { return ChatBots.PlayerListLogger.Config; }
                     set { ChatBots.PlayerListLogger.Config = value; ChatBots.PlayerListLogger.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.RemoteControl$")]
+                [TomlPrecedingComment("$ChatBot.RemoteControl$")]
                 public ChatBots.RemoteControl.Configs RemoteControl
                 {
                     get { return ChatBots.RemoteControl.Config; }
                     set { ChatBots.RemoteControl.Config = value; ChatBots.RemoteControl.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.ReplayCapture$")]
+                [TomlPrecedingComment("$ChatBot.ReplayCapture$")]
                 public ChatBots.ReplayCapture.Configs ReplayCapture
                 {
                     get { return ChatBots.ReplayCapture.Config; }
                     set { ChatBots.ReplayCapture.Config = value; ChatBots.ReplayCapture.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.ScriptScheduler$")]
+                [TomlPrecedingComment("$ChatBot.ScriptScheduler$")]
                 public ChatBots.ScriptScheduler.Configs ScriptScheduler
                 {
                     get { return ChatBots.ScriptScheduler.Config; }
                     set { ChatBots.ScriptScheduler.Config = value; ChatBots.ScriptScheduler.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.TelegramBridge$")]
+                [TomlPrecedingComment("$ChatBot.TelegramBridge$")]
                 public ChatBots.TelegramBridge.Configs TelegramBridge
                 {
                     get { return ChatBots.TelegramBridge.Config; }
@@ -1680,61 +1684,6 @@ namespace MinecraftClient
             {
                 return str;
             }
-        }
-
-        public static bool CheckUpdate(string? current, string? latest)
-        {
-            if (current == null || latest == null)
-                return false;
-            Regex reg = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s(\d{4})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{2}).*");
-            Regex reg2 = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s\w+\s(\d{2})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{4}).*");
-
-            DateTime? curTime = null, latestTime = null;
-
-            Match curMatch = reg.Match(current);
-            if (curMatch.Success && curMatch.Groups.Count == 5)
-            {
-                try { curTime = new(int.Parse(curMatch.Groups[2].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[4].Value)); }
-                catch { curTime = null; }
-            }
-            if (curTime == null)
-            {
-                curMatch = reg2.Match(current);
-                try { curTime = new(int.Parse(curMatch.Groups[4].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[2].Value)); }
-                catch { curTime = null; }
-            }
-            if (curTime == null)
-                return false;
-
-            Match latestMatch = reg.Match(latest);
-            if (latestMatch.Success && latestMatch.Groups.Count == 5)
-            {
-                try { latestTime = new(int.Parse(latestMatch.Groups[2].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[4].Value)); }
-                catch { latestTime = null; }
-            }
-            if (latestTime == null)
-            {
-                latestMatch = reg2.Match(latest);
-                try { latestTime = new(int.Parse(latestMatch.Groups[4].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[2].Value)); }
-                catch { latestTime = null; }
-            }
-            if (latestTime == null)
-                return false;
-
-            int curBuildId, latestBuildId;
-            try
-            {
-                curBuildId = int.Parse(curMatch.Groups[1].Value);
-                latestBuildId = int.Parse(latestMatch.Groups[1].Value);
-            }
-            catch { return false; }
-
-            if (latestTime > curTime)
-                return true;
-            else if (latestTime >= curTime && latestBuildId > curBuildId)
-                return true;
-            else
-                return false;
         }
 
         public static int DoubleToTick(double time)

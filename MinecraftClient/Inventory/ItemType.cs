@@ -1,4 +1,4 @@
-namespace MinecraftClient.Inventory
+﻿namespace MinecraftClient.Inventory
 {
     /// <summary>
     /// Generated using the --generator flag on the client

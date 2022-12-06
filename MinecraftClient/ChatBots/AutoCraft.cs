@@ -28,13 +28,13 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoCraft.CraftingTable$")]
+            [TomlInlineComment("$ChatBot.AutoCraft.CraftingTable$")]
             public LocationConfig CraftingTable = new(123, 65, 456);
 
-            [TomlInlineComment("$config.ChatBot.AutoCraft.OnFailure$")]
+            [TomlInlineComment("$ChatBot.AutoCraft.OnFailure$")]
             public OnFailConfig OnFailure = OnFailConfig.abort;
 
-            [TomlPrecedingComment("$config.ChatBot.AutoCraft.Recipes$")]
+            [TomlPrecedingComment("$ChatBot.AutoCraft.Recipes$")]
             public RecipeConfig[] Recipes = new RecipeConfig[]
             {
                 new RecipeConfig(
@@ -286,7 +286,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (!GetInventoryEnabled())
             {
@@ -296,7 +296,7 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Then(l => l.Literal("list")
@@ -310,7 +310,7 @@ namespace MinecraftClient.ChatBots
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("list")
                     .Executes(r => OnCommandList(r.Source)))
                 .Then(l => l.Literal("start")
@@ -319,14 +319,14 @@ namespace MinecraftClient.ChatBots
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -339,7 +339,7 @@ namespace MinecraftClient.ChatBots
                 "stop"      =>   Translations.bot_autoCraft_help_stop,
                 "help"      =>   Translations.bot_autoCraft_help_help,
                 _           =>   string.Format(Translations.bot_autoCraft_available_cmd, "load, list, reload, resetcfg, start, stop, help")
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

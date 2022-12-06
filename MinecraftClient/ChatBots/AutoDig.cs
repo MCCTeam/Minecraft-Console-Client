@@ -26,36 +26,36 @@ namespace MinecraftClient.ChatBots
             public bool Enabled = false;
 
             [NonSerialized]
-            [TomlInlineComment("$config.ChatBot.AutoDig.Auto_Tool_Switch$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Auto_Tool_Switch$")]
             public bool Auto_Tool_Switch = false;
 
             [NonSerialized]
-            [TomlInlineComment("$config.ChatBot.AutoDig.Durability_Limit$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Durability_Limit$")]
             public int Durability_Limit = 2;
 
             [NonSerialized]
-            [TomlInlineComment("$config.ChatBot.AutoDig.Drop_Low_Durability_Tools$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Drop_Low_Durability_Tools$")]
             public bool Drop_Low_Durability_Tools = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Mode$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Mode$")]
             public ModeType Mode = ModeType.lookat;
 
-            [TomlPrecedingComment("$config.ChatBot.AutoDig.Locations$")]
+            [TomlPrecedingComment("$ChatBot.AutoDig.Locations$")]
             public Coordination[] Locations = new Coordination[] { new(123.5, 64, 234.5), new(124.5, 63, 235.5) };
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Location_Order$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Location_Order$")]
             public OrderType Location_Order = OrderType.distance;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Auto_Start_Delay$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Auto_Start_Delay$")]
             public double Auto_Start_Delay = 3.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Dig_Timeout$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Dig_Timeout$")]
             public double Dig_Timeout = 60.0;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Log_Block_Dig$")]
+            [TomlInlineComment("$ChatBot.AutoDig.Log_Block_Dig$")]
             public bool Log_Block_Dig = true;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.List_Type$")]
+            [TomlInlineComment("$ChatBot.AutoDig.List_Type$")]
             public ListType List_Type = ListType.whitelist;
 
             public List<Material> Blocks = new() { Material.Cobblestone, Material.Stone };
@@ -110,7 +110,7 @@ namespace MinecraftClient.ChatBots
             Stopping,
         }
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (!GetTerrainEnabled())
             {
@@ -124,7 +124,7 @@ namespace MinecraftClient.ChatBots
             if (!inventoryEnabled && Config.Auto_Tool_Switch)
                 LogToConsole(Translations.bot_autodig_no_inv_handle);
 
-            dispatcher.Register(l => l.Literal("help")
+            Handler.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Then(l => l.Literal("start")
@@ -136,25 +136,25 @@ namespace MinecraftClient.ChatBots
                 )
             );
 
-            var cmd = dispatcher.Register(l => l.Literal(CommandName)
+            var cmd = Handler.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("start")
                     .Executes(r => OnCommandStart(r.Source)))
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 
-            dispatcher.Register(l => l.Literal("digbot")
+            Handler.dispatcher.Register(l => l.Literal("digbot")
                 .Redirect(cmd)
             );
         }
 
-        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        public override void OnUnload()
         {
-            dispatcher.Unregister("digbot");
-            dispatcher.Unregister(CommandName);
-            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            Handler.dispatcher.Unregister("digbot");
+            Handler.dispatcher.Unregister(CommandName);
+            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -166,7 +166,7 @@ namespace MinecraftClient.ChatBots
                 "stop"      =>   Translations.bot_autodig_help_stop,
                 "help"      =>   Translations.bot_autodig_help_help,
                 _           =>   string.Format(Translations.bot_autodig_available_cmd, "start, stop, help")
-                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

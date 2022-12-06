@@ -1,4 +1,8 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
+
+//using MinecraftClient.CommandHandler;
+//using MinecraftClient.Mapping;
+//using MinecraftClient.Scripting;
 
 MCC.LoadBot(new SugarCaneMiner());
 

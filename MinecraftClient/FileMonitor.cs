@@ -25,7 +25,7 @@ namespace MinecraftClient
             if (Settings.Config.Logging.DebugMessages)
             {
                 string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.filemonitor_init, callerClass, Path.Combine(folder, filename)));
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.filemonitor_init, callerClass, Path.Combine(folder, filename)));
             }
 
             try
@@ -43,7 +43,7 @@ namespace MinecraftClient
                 if (Settings.Config.Logging.DebugMessages)
                 {
                     string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.filemonitor_fail, callerClass));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.filemonitor_fail, callerClass));
                 }
 
                 monitor = null;

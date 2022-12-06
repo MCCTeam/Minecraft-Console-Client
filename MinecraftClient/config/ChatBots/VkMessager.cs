@@ -1,8 +1,21 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 //using System.Threading.Tasks;
 //dll Newtonsoft.Json.dll
 //using Newtonsoft.Json;
 //using Newtonsoft.Json.Linq;
+//using Brigadier.NET;
+//using MinecraftClient.CommandHandler;
+//using MinecraftClient.Scripting;
+//using MinecraftClient;
+//using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json;
+//using System.Collections.Generic;
+//using System.Net;
+//using System.Text.RegularExpressions;
+//using System.Text;
+//using System.Threading.Tasks;
+//using System;
+//using System.Linq;
 
 //==== INFO START ====
 // Download Newtonsoft.Json.dll and install it into the program folder Link: https://www.newtonsoft.com/json

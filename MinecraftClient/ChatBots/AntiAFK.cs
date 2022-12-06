@@ -23,22 +23,22 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AntiAfk.Delay$")]
+            [TomlInlineComment("$ChatBot.AntiAfk.Delay$")]
             public Range Delay = new(60);
 
-            [TomlInlineComment("$config.ChatBot.AntiAfk.Command$")]
+            [TomlInlineComment("$ChatBot.AntiAfk.Command$")]
             public string Command = "/ping";
 
-            [TomlInlineComment("$config.ChatBot.AntiAfk.Use_Sneak$")]
+            [TomlInlineComment("$ChatBot.AntiAfk.Use_Sneak$")]
             public bool Use_Sneak = false;
 
-            [TomlInlineComment("$config.ChatBot.AntiAfk.Use_Terrain_Handling$")]
+            [TomlInlineComment("$ChatBot.AntiAfk.Use_Terrain_Handling$")]
             public bool Use_Terrain_Handling = false;
 
-            [TomlInlineComment("$config.ChatBot.AntiAfk.Walk_Range$")]
+            [TomlInlineComment("$ChatBot.AntiAfk.Walk_Range$")]
             public int Walk_Range = 5;
 
-            [TomlInlineComment("$config.ChatBot.AntiAfk.Walk_Retries$")]
+            [TomlInlineComment("$ChatBot.AntiAfk.Walk_Retries$")]
             public int Walk_Retries = 20;
 
             public void OnSettingUpdate()
@@ -93,7 +93,7 @@ namespace MinecraftClient.ChatBots
             count = 0;
         }
 
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (Config.Use_Terrain_Handling)
             {

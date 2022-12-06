@@ -61,7 +61,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cWeather change: It is no longer raining.§r.
+        ///   Looks up a localized string similar to Weather change: It is no longer raining..
         /// </summary>
         internal static string bot_alerts_end_rain {
             get {
@@ -70,7 +70,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cWeather change: It is no longer a thunderstorm.§r.
+        ///   Looks up a localized string similar to Weather change: It is no longer a thunderstorm..
         /// </summary>
         internal static string bot_alerts_end_thunderstorm {
             get {
@@ -79,7 +79,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cWeather change: It is raining now.§r.
+        ///   Looks up a localized string similar to Weather change: It is raining now..
         /// </summary>
         internal static string bot_alerts_start_rain {
             get {
@@ -88,7 +88,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cWeather change: It is a thunderstorm.§r.
+        ///   Looks up a localized string similar to Weather change: It is a thunderstorm..
         /// </summary>
         internal static string bot_alerts_start_thunderstorm {
             get {
@@ -187,38 +187,11 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resetting your config to default.
-        /// </summary>
-        internal static string bot_autoCraft_cmd_resetcfg {
-            get {
-                return ResourceManager.GetString("bot.autoCraft.cmd.resetcfg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Crafting failed! Waiting for more materials.
         /// </summary>
         internal static string bot_autoCraft_craft_fail {
             get {
                 return ResourceManager.GetString("bot.autoCraft.craft_fail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No config found. Writing a new one..
-        /// </summary>
-        internal static string bot_autoCraft_debug_no_config {
-            get {
-                return ResourceManager.GetString("bot.autoCraft.debug.no_config", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Error while parsing config: {0}.
-        /// </summary>
-        internal static string bot_autoCraft_error_config {
-            get {
-                return ResourceManager.GetString("bot.autoCraft.error.config", resourceCulture);
             }
         }
         
@@ -318,15 +291,6 @@ namespace MinecraftClient {
         internal static string bot_autocraft_invaild_slots {
             get {
                 return ResourceManager.GetString("bot.autocraft.invaild_slots", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Successfully loaded.
-        /// </summary>
-        internal static string bot_autoCraft_loaded {
-            get {
-                return ResourceManager.GetString("bot.autoCraft.loaded", resourceCulture);
             }
         }
         
@@ -863,38 +827,11 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Loaded message: {0}.
-        /// </summary>
-        internal static string bot_autoRelog_loaded {
-            get {
-                return ResourceManager.GetString("bot.autoRelog.loaded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Loading messages from file: {0}.
-        /// </summary>
-        internal static string bot_autoRelog_loading {
-            get {
-                return ResourceManager.GetString("bot.autoRelog.loading", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Initializing without a kick message file.
         /// </summary>
         internal static string bot_autoRelog_no_kick_msg {
             get {
                 return ResourceManager.GetString("bot.autoRelog.no_kick_msg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File not found: {0}.
-        /// </summary>
-        internal static string bot_autoRelog_not_found {
-            get {
-                return ResourceManager.GetString("bot.autoRelog.not_found", resourceCulture);
             }
         }
         
@@ -1684,7 +1621,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8[MCC] [{0}] Cannot find script file: {1}.
+        ///   Looks up a localized string similar to [MCC] [{0}] Cannot find script file: {1}.
         /// </summary>
         internal static string bot_script_not_found {
             get {
@@ -2145,7 +2082,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Converting session cache from disk: {0}.
+        ///   Looks up a localized string similar to Converting session cache from disk: {0}.
         /// </summary>
         internal static string cache_converting {
             get {
@@ -2154,7 +2091,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Ignoring invalid session token line: {0}.
+        ///   Looks up a localized string similar to Ignoring invalid session token line: {0}.
         /// </summary>
         internal static string cache_ignore_line {
             get {
@@ -2163,7 +2100,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Ignoring invalid profile key token line: {0}.
+        ///   Looks up a localized string similar to Ignoring invalid profile key token line: {0}.
         /// </summary>
         internal static string cache_ignore_line_keys {
             get {
@@ -2172,7 +2109,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Ignoring session token string &apos;{0}&apos;: {1}.
+        ///   Looks up a localized string similar to Ignoring session token string &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string cache_ignore_string {
             get {
@@ -2181,7 +2118,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Ignoring profile key token string &apos;{0}&apos;: {1}.
+        ///   Looks up a localized string similar to Ignoring profile key token string &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string cache_ignore_string_keys {
             get {
@@ -2190,7 +2127,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Loaded session: {0}:{1}.
+        ///   Looks up a localized string similar to Loaded session: {0}:{1}.
         /// </summary>
         internal static string cache_loaded {
             get {
@@ -2199,7 +2136,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Loaded profile key, it will be refresh at {0}.
+        ///   Looks up a localized string similar to Loaded profile key, it will be refresh at {0}.
         /// </summary>
         internal static string cache_loaded_keys {
             get {
@@ -2208,7 +2145,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Loading Minecraft profiles: {0}.
+        ///   Looks up a localized string similar to Loading Minecraft profiles: {0}.
         /// </summary>
         internal static string cache_loading {
             get {
@@ -2217,7 +2154,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Loading profile key cache from disk: {0}.
+        ///   Looks up a localized string similar to Loading profile key cache from disk: {0}.
         /// </summary>
         internal static string cache_loading_keys {
             get {
@@ -2226,7 +2163,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Loading session cache from disk: {0}.
+        ///   Looks up a localized string similar to Loading session cache from disk: {0}.
         /// </summary>
         internal static string cache_loading_session {
             get {
@@ -2235,7 +2172,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Got malformed data while reading serialized session cache from disk: {0}.
+        ///   Looks up a localized string similar to Got malformed data while reading serialized session cache from disk: {0}.
         /// </summary>
         internal static string cache_malformed {
             get {
@@ -2244,7 +2181,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Failed to read serialized session cache from disk: {0}.
+        ///   Looks up a localized string similar to Failed to read serialized session cache from disk: {0}.
         /// </summary>
         internal static string cache_read_fail {
             get {
@@ -2253,7 +2190,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Failed to read session cache from disk: {0}.
+        ///   Looks up a localized string similar to Failed to read session cache from disk: {0}.
         /// </summary>
         internal static string cache_read_fail_plain {
             get {
@@ -2262,7 +2199,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Failed to read profile key cache from disk: {0}.
+        ///   Looks up a localized string similar to Failed to read profile key cache from disk: {0}.
         /// </summary>
         internal static string cache_read_fail_plain_keys {
             get {
@@ -2271,7 +2208,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Failed to write session cache to disk: {0}.
+        ///   Looks up a localized string similar to Failed to write session cache to disk: {0}.
         /// </summary>
         internal static string cache_save_fail {
             get {
@@ -2280,7 +2217,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Failed to write profile key cache to disk: {0}.
+        ///   Looks up a localized string similar to Failed to write profile key cache to disk: {0}.
         /// </summary>
         internal static string cache_save_fail_keys {
             get {
@@ -2289,7 +2226,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Saving session cache to disk.
+        ///   Looks up a localized string similar to Saving session cache to disk.
         /// </summary>
         internal static string cache_saving {
             get {
@@ -2298,7 +2235,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Saving profile key cache to disk.
+        ///   Looks up a localized string similar to Saving profile key cache to disk.
         /// </summary>
         internal static string cache_saving_keys {
             get {
@@ -2307,7 +2244,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Done. File saved as &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Done. File saved as &apos;{0}&apos;.
         /// </summary>
         internal static string chat_done {
             get {
@@ -2316,7 +2253,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Downloading &apos;{0}.lang&apos; from Mojang servers....
+        ///   Looks up a localized string similar to Downloading &apos;{0}.lang&apos; from Mojang servers....
         /// </summary>
         internal static string chat_download {
             get {
@@ -2325,7 +2262,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Failed to download the file..
+        ///   Looks up a localized string similar to Failed to download the file..
         /// </summary>
         internal static string chat_fail {
             get {
@@ -2334,7 +2271,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Defaulting to en_GB.lang from your Minecraft directory..
+        ///   Looks up a localized string similar to Defaulting to en_GB.lang from your Minecraft directory..
         /// </summary>
         internal static string chat_from_dir {
             get {
@@ -2343,7 +2280,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Translations file loaded..
+        ///   Looks up a localized string similar to Translations file loaded..
         /// </summary>
         internal static string chat_loaded {
             get {
@@ -2361,7 +2298,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Translations file not found: &apos;{0}&apos;
+        ///   Looks up a localized string similar to Translations file not found: &apos;{0}&apos;
         ///Some messages won&apos;t be properly printed without this file..
         /// </summary>
         internal static string chat_not_found {
@@ -2371,7 +2308,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Performing request to {0}.
+        ///   Looks up a localized string similar to Performing request to {0}.
         /// </summary>
         internal static string chat_request {
             get {
@@ -2669,7 +2606,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §x§0This command is used for debugging, make sure you know what you are doing.§r.
+        ///   Looks up a localized string similar to This command is used for debugging, make sure you know what you are doing..
         /// </summary>
         internal static string cmd_chunk_for_debug {
             get {
@@ -2696,7 +2633,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §x§0Since the marked chunk is outside the graph, it will not be displayed!§r.
+        ///   Looks up a localized string similar to Since the marked chunk is outside the graph, it will not be displayed!.
         /// </summary>
         internal static string cmd_chunk_outside {
             get {
@@ -3313,15 +3250,6 @@ namespace MinecraftClient {
         internal static string cmd_follow_started {
             get {
                 return ResourceManager.GetString("cmd.follow.started", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Stopped!.
-        /// </summary>
-        internal static string cmd_follow_stopped {
-            get {
-                return ResourceManager.GetString("cmd.follow.stopped", resourceCulture);
             }
         }
         
@@ -4176,1039 +4104,11 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to can be used in some other fields as %yourvar%
-        ///%username% and %serverip% are reserved variables..
-        /// </summary>
-        internal static string config_AppVars_Variables {
-            get {
-                return ResourceManager.GetString("config.AppVars.Variables", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to §cFailed to write to backup file {0}§r.
+        ///   Looks up a localized string similar to Failed to write to backup file {0}.
         /// </summary>
         internal static string config_backup_fail {
             get {
                 return ResourceManager.GetString("config.backup.fail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to =============================== #
-        /// Minecraft Console Client Bots  #
-        ///=============================== #.
-        /// </summary>
-        internal static string config_ChatBot {
-            get {
-                return ResourceManager.GetString("config.ChatBot", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Get alerted when specified words are detected in chat
-        ///Useful for moderating your server or detecting when someone is talking to you.
-        /// </summary>
-        internal static string config_ChatBot_Alerts {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Play a beep sound when a word is detected in addition to highlighting..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Beep_Enabled {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Beep_Enabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to List of words/strings to NOT alert you on..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Excludes {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Excludes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name of a file where alers logs will be written..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Log_File {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Log_File", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Log alerts info a file..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Log_To_File {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Log_To_File", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to List of words/strings to alert you on..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Matches {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Matches", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Trigger alerts when it rains and when it stops..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Trigger_By_Rain {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Trigger_By_Rain", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Triggers alerts at the beginning and end of thunderstorms..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Trigger_By_Thunderstorm {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Trigger_By_Thunderstorm", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Triggers an alert after receiving a specified keyword..
-        /// </summary>
-        internal static string config_ChatBot_Alerts_Trigger_By_Words {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Alerts.Trigger_By_Words", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Send a command on a regular or random basis or make the bot walk around randomly to avoid automatic AFK disconnection
-        ////!\ Make sure your server rules do not forbid anti-AFK mechanisms!
-        ////!\ Make sure you keep the bot in an enclosure to prevent it wandering off if you&apos;re using terrain handling! (Recommended size 5x5x5).
-        /// </summary>
-        internal static string config_ChatBot_AntiAfk {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AntiAfk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Command to send to the server..
-        /// </summary>
-        internal static string config_ChatBot_AntiAfk_Command {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AntiAfk.Command", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The time interval for execution. (in seconds).
-        /// </summary>
-        internal static string config_ChatBot_AntiAfk_Delay {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AntiAfk.Delay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to sneak when sending the command..
-        /// </summary>
-        internal static string config_ChatBot_AntiAfk_Use_Sneak {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AntiAfk.Use_Sneak", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use terrain handling to enable the bot to move around..
-        /// </summary>
-        internal static string config_ChatBot_AntiAfk_Use_Terrain_Handling {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AntiAfk.Use_Terrain_Handling", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The range the bot can move around randomly (Note: the bigger the range, the slower the bot will be).
-        /// </summary>
-        internal static string config_ChatBot_AntiAfk_Walk_Range {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AntiAfk.Walk_Range", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How many times can the bot fail trying to move before using the command method..
-        /// </summary>
-        internal static string config_ChatBot_AntiAfk_Walk_Retries {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AntiAfk.Walk_Retries", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically attack hostile mobs around you
-        ///You need to enable Entity Handling to use this bot
-        ////!\ Make sure server rules allow your planned use of AutoAttack
-        ////!\ SERVER PLUGINS may consider AutoAttack to be a CHEAT MOD and TAKE ACTION AGAINST YOUR ACCOUNT so DOUBLE CHECK WITH SERVER RULES!.
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow attacking hostile mobs..
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_Attack_Hostile {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.Attack_Hostile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow attacking passive mobs..
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_Attack_Passive {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.Attack_Passive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How long to wait between each attack. Set &quot;Custom = false&quot; to let MCC calculate it..
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_Cooldown_Time {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.Cooldown_Time", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to All entity types can be found here: https://mccteam.github.io/r/entity/#L15.
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_Entites_List {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.Entites_List", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Possible values: &quot;Interact&quot;, &quot;Attack&quot; (default), &quot;InteractAt&quot; (Interact and Attack)..
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_Interaction {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.Interaction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Wether to treat the entities list as a &quot;whitelist&quot; or as a &quot;blacklist&quot;..
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_List_Mode {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.List_Mode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &quot;single&quot; or &quot;multi&quot;. single target one mob per attack. multi target all mobs in range per attack.
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_Mode {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.Mode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &quot;health&quot; or &quot;distance&quot;. Only needed when using single mode.
-        /// </summary>
-        internal static string config_ChatBot_AutoAttack_Priority {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoAttack.Priority", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically craft items in your inventory
-        ///See https://mccteam.github.io/g/bots/#auto-craft for how to use
-        ///You need to enable Inventory Handling to use this bot
-        ///You should also enable Terrain and Movements if you need to use a crafting table.
-        /// </summary>
-        internal static string config_ChatBot_AutoCraft {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoCraft", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Location of the crafting table if you intended to use it. Terrain and movements must be enabled..
-        /// </summary>
-        internal static string config_ChatBot_AutoCraft_CraftingTable {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoCraft.CraftingTable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to What to do on crafting failure, &quot;abort&quot; or &quot;wait&quot;..
-        /// </summary>
-        internal static string config_ChatBot_AutoCraft_OnFailure {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoCraft.OnFailure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
-        ///Recipes.Type: crafting table type: &quot;player&quot; or &quot;table&quot;
-        ///Recipes.Result: the resulting item
-        ///Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in &quot;Null&quot; for empty slots.
-        ///For the naming of the items, please see: https://mccteam.github.io/r/item/#L12.
-        /// </summary>
-        internal static string config_ChatBot_AutoCraft_Recipes {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoCraft.Recipes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Auto-digging blocks.
-        ///You need to enable Terrain Handling to use this bot
-        ///You can use &quot;/digbot start&quot; and &quot;/digbot stop&quot; to control the start and stop of AutoDig.
-        ///Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
-        ///For the naming of the block, please see https://mccteam.github.io/r/block/#L15.
-        /// </summary>
-        internal static string config_ChatBot_AutoDig {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How many seconds to wait after entering the game to start digging automatically, set to -1 to disable automatic start..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Auto_Start_Delay {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Auto_Start_Delay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically switch to the appropriate tool..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Auto_Tool_Switch {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Auto_Tool_Switch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Mining a block for more than &quot;Dig_Timeout&quot; seconds will be considered a timeout..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Dig_Timeout {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Dig_Timeout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to drop the current tool when its durability is too low..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Drop_Low_Durability_Tools {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Drop_Low_Durability_Tools", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Will not use tools with less durability than this. Set to zero to disable this feature..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Durability_Limit {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Durability_Limit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Wether to treat the blocks list as a &quot;whitelist&quot; or as a &quot;blacklist&quot;..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_List_Type {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.List_Type", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &quot;distance&quot; or &quot;index&quot;, When using the &quot;fixedpos&quot; mode, the blocks are determined by distance to the player, or by the order in the list..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Location_Order {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Location_Order", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The position of the blocks when using &quot;fixedpos&quot; or &quot;both&quot; mode..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Locations {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Locations", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to output logs when digging blocks..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Log_Block_Dig {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Log_Block_Dig", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &quot;lookat&quot;, &quot;fixedpos&quot; or &quot;both&quot;. Digging the block being looked at, the block in a fixed position, or the block that needs to be all met..
-        /// </summary>
-        internal static string config_ChatBot_AutoDig_Mode {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDig.Mode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically drop items in inventory
-        ///You need to enable Inventory Handling to use this bot
-        ///See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12.
-        /// </summary>
-        internal static string config_ChatBot_AutoDrop {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDrop", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &quot;include&quot;, &quot;exclude&quot; or &quot;everything&quot;. Include: drop item IN the list. Exclude: drop item NOT IN the list.
-        /// </summary>
-        internal static string config_ChatBot_AutoDrop_Mode {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoDrop.Mode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically eat food when your Hunger value is low
-        ///You need to enable Inventory Handling to use this bot.
-        /// </summary>
-        internal static string config_ChatBot_AutoEat {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoEat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically catch fish using a fishing rod
-        ///Guide: https://mccteam.github.io/g/bots/#auto-fishing
-        ///You can use &quot;/fish&quot; to control the bot manually.
-        ////!\ Make sure server rules allow automated farming before using this bot.
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Keep it as false if you have not changed it before..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Antidespawn {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Antidespawn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Switch to a new rod from inventory after the current rod is unavailable..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Auto_Rod_Switch {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Auto_Rod_Switch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to start fishing automatically after entering a world..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Auto_Start {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Auto_Start", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How soon to re-cast after successful fishing..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Cast_Delay {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Cast_Delay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Will not use rods with less durability than this (full durability is 64). Set to zero to disable this feature..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Durability_Limit {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Durability_Limit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This allows the player to change position/facing after each fish caught..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Enable_Move {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Enable_Move", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How long after entering the game to start fishing (seconds)..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Fishing_Delay {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Fishing_Delay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fishing timeout (seconds). Timeout will trigger a re-cast..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Fishing_Timeout {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Fishing_Timeout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A &quot;stationary&quot; hook that moves above this threshold in the Y-axis will be considered to have caught a fish..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Hook_Threshold {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Hook_Threshold", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Log_Fish_Bobber {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Log_Fish_Bobber", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use the mainhand or the offhand to hold the rod..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Mainhand {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Mainhand", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to It will move in order &quot;1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;...&quot; and can change position or facing or both each time. It is recommended to change the facing only..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Movements {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Movements", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hook movement in the X and Z axis less than this value will be considered stationary..
-        /// </summary>
-        internal static string config_ChatBot_AutoFishing_Stationary_Threshold {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoFishing.Stationary_Threshold", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically relog when disconnected by server, for example because the server is restating
-        ////!\ Use Ignore_Kick_Message=true at own risk! Server staff might not appreciate if you auto-relog on manual kicks.
-        /// </summary>
-        internal static string config_ChatBot_AutoRelog {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoRelog", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The delay time before joining the server. (in seconds).
-        /// </summary>
-        internal static string config_ChatBot_AutoRelog_Delay {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoRelog.Delay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to When set to true, autorelog will reconnect regardless of kick messages..
-        /// </summary>
-        internal static string config_ChatBot_AutoRelog_Ignore_Kick_Message {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoRelog.Ignore_Kick_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to If the kickout message matches any of the strings, then autorelog will be triggered..
-        /// </summary>
-        internal static string config_ChatBot_AutoRelog_Kick_Messages {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoRelog.Kick_Messages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Retries when failing to relog to the server. use -1 for unlimited retries..
-        /// </summary>
-        internal static string config_ChatBot_AutoRelog_Retries {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoRelog.Retries", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Run commands or send messages automatically when a specified pattern is detected in chat
-        ///Server admins can spoof chat messages (/nick, /tellraw) so keep this in mind when implementing AutoRespond rules
-        ////!\ This bot may get spammy depending on your rules, although the global messagecooldown setting can help you avoiding accidental spam.
-        /// </summary>
-        internal static string config_ChatBot_AutoRespond {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoRespond", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not remove colors from text (Note: Your matches will have to include color codes (ones using the § character) in order to work).
-        /// </summary>
-        internal static string config_ChatBot_AutoRespond_Match_Colors {
-            get {
-                return ResourceManager.GetString("config.ChatBot.AutoRespond.Match_Colors", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Logs chat messages in a file on disk..
-        /// </summary>
-        internal static string config_ChatBot_ChatLog {
-            get {
-                return ResourceManager.GetString("config.ChatBot.ChatLog", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This bot allows you to send and recieve messages and commands via a Discord channel.
-        ///For Setup you can either use the documentation or read here (Documentation has images).
-        ///Documentation: https://mccteam.github.io/g/bots/#discord-bridge
-        ///Setup:
-        ///First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
-        ////!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE &quot;Message Content Intent&quot;, &quot;Server Members Intent&quot; and &quot;Presence Intent [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string config_ChatBot_DiscordBridge {
-            get {
-                return ResourceManager.GetString("config.ChatBot.DiscordBridge", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The ID of a channel where you want to interact with the MCC using the bot..
-        /// </summary>
-        internal static string config_ChatBot_DiscordBridge_ChannelId {
-            get {
-                return ResourceManager.GetString("config.ChatBot.DiscordBridge.ChannelId", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Message formats
-        ///Words wrapped with { and } are going to be replaced during the code execution, do not change them!
-        ///For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-        ///For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html.
-        /// </summary>
-        internal static string config_ChatBot_DiscordBridge_Formats {
-            get {
-                return ResourceManager.GetString("config.ChatBot.DiscordBridge.Formats", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The ID of a server/guild where you have invited the bot to..
-        /// </summary>
-        internal static string config_ChatBot_DiscordBridge_GuildId {
-            get {
-                return ResourceManager.GetString("config.ChatBot.DiscordBridge.GuildId", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How long to wait (in seconds) if a message can not be sent to discord before canceling the task (minimum 1 second)..
-        /// </summary>
-        internal static string config_ChatBot_DiscordBridge_MessageSendTimeout {
-            get {
-                return ResourceManager.GetString("config.ChatBot.DiscordBridge.MessageSendTimeout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A list of IDs of people you want to be able to interact with the MCC using the bot..
-        /// </summary>
-        internal static string config_ChatBot_DiscordBridge_OwnersIds {
-            get {
-                return ResourceManager.GetString("config.ChatBot.DiscordBridge.OwnersIds", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Your Discord Bot token..
-        /// </summary>
-        internal static string config_ChatBot_DiscordBridge_Token {
-            get {
-                return ResourceManager.GetString("config.ChatBot.DiscordBridge.Token", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically farms crops for you (plants, breaks and bonemeals them).
-        ///Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
-        ///Usage: &quot;/farmer start&quot; command and &quot;/farmer stop&quot; command.
-        ///NOTE: This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues like not being able to bonemeal carrots/potatoes sometimes.
-        ///or bot jumps onto the farm land and breaks it (this happens rarely but still happens). We are looking forward at improving this. [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string config_ChatBot_Farmer {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Farmer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delay between tasks in seconds (Minimum 1 second).
-        /// </summary>
-        internal static string config_ChatBot_Farmer_Delay_Between_Tasks {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Farmer.Delay_Between_Tasks", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enabled you to make the bot follow you
-        ///NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
-        ///It&apos;s similar to making animals follow you when you&apos;re holding food in your hand.
-        ///This is due to a slow pathfinding algorithm, we&apos;re working on getting a better one
-        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,        /// [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string config_ChatBot_FollowPlayer {
-            get {
-                return ResourceManager.GetString("config.ChatBot.FollowPlayer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not follow the player if he is in the range of 3 blocks (prevents the bot from pushing a player in an infinite loop).
-        /// </summary>
-        internal static string config_ChatBot_FollowPlayer_Stop_At_Distance {
-            get {
-                return ResourceManager.GetString("config.ChatBot.FollowPlayer.Stop_At_Distance", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The rate at which the bot does calculations (in seconds) (You can tweak this if you feel the bot is too slow).
-        /// </summary>
-        internal static string config_ChatBot_FollowPlayer_Update_Limit {
-            get {
-                return ResourceManager.GetString("config.ChatBot.FollowPlayer.Update_Limit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A small game to demonstrate chat interactions. Players can guess mystery words one letter at a time.
-        ///You need to have ChatFormat working correctly and add yourself in botowners to start the game with /tell &lt;bot username&gt; start
-        ////!\ This bot may get a bit spammy if many players are interacting with it.
-        /// </summary>
-        internal static string config_ChatBot_HangmanGame {
-            get {
-                return ResourceManager.GetString("config.ChatBot.HangmanGame", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Relay messages between players and servers, like a mail plugin
-        ///This bot can store messages when the recipients are offline, and send them when they join the server
-        ////!\ Server admins can spoof PMs (/tellraw, /nick) so enable this bot only if you trust server admins.
-        /// </summary>
-        internal static string config_ChatBot_Mailer {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Mailer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allows you to render maps in the console and into images (which can be then sent to Discord using Discord Bridge Chat Bot)
-        ///This is useful for solving captchas which use maps
-        ///The maps are rendered into Rendered_Maps folder if the Save_To_File is enabled.
-        ///NOTE:
-        ///If some servers have a very short time for solving captchas, enabe Auto_Render_On_Update to see them immediatelly in the console.
-        ////!\ Make sure server rules allow bots to be used on the server, or you risk being punished..
-        /// </summary>
-        internal static string config_ChatBot_Map {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically render the map once it is received or updated from/by the server.
-        /// </summary>
-        internal static string config_ChatBot_Map_Auto_Render_On_Update {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Auto_Render_On_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delete all rendered maps on unload/reload or when you launch the MCC again..
-        /// </summary>
-        internal static string config_ChatBot_Map_Delete_All_On_Unload {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Delete_All_On_Unload", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Get a notification when you have gotten a map from the server for the first time.
-        /// </summary>
-        internal static string config_ChatBot_Map_Notify_On_First_Update {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Notify_On_First_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Resize an rendered image, this is useful when images that are rendered are small and when are being sent to Discord..
-        /// </summary>
-        internal static string config_ChatBot_Map_Rasize_Rendered_Image {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Rasize_Rendered_Image", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to render the map in the console..
-        /// </summary>
-        internal static string config_ChatBot_Map_Render_In_Console {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Render_In_Console", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The size that a rendered image should be resized to, in pixels (eg. 512)..
-        /// </summary>
-        internal static string config_ChatBot_Map_Resize_To {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Resize_To", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to store the rendered map as a file (You need this setting if you want to get a map on Discord using Discord Bridge)..
-        /// </summary>
-        internal static string config_ChatBot_Map_Save_To_File {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Save_To_File", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Send a rendered map (saved to a file) to a Discord or a Telegram channel via the Discord or Telegram Bride chat bot (The Discord/Telegram Bridge chat bot must be enabled and configured!)
-        ///You need to enable Save_To_File in order for this to work.
-        ///We also recommend turning on resizing..
-        /// </summary>
-        internal static string config_ChatBot_Map_Send_Rendered_To_Bridges {
-            get {
-                return ResourceManager.GetString("config.ChatBot.Map.Send_Rendered_To_Bridges", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Log the list of players periodically into a textual file..
-        /// </summary>
-        internal static string config_ChatBot_PlayerListLogger {
-            get {
-                return ResourceManager.GetString("config.ChatBot.PlayerListLogger", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to (In seconds).
-        /// </summary>
-        internal static string config_ChatBot_PlayerListLogger_Delay {
-            get {
-                return ResourceManager.GetString("config.ChatBot.PlayerListLogger.Delay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Send MCC console commands to your bot through server PMs (/tell)
-        ///You need to have ChatFormat working correctly and add yourself in botowners to use the bot
-        ////!\ Server admins can spoof PMs (/tellraw, /nick) so enable RemoteControl only if you trust server admins.
-        /// </summary>
-        internal static string config_ChatBot_RemoteControl {
-            get {
-                return ResourceManager.GetString("config.ChatBot.RemoteControl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable recording of the game (/replay start) and replay it later using the Replay Mod (https://www.replaymod.com/)
-        ///Please note that due to technical limitations, the client player (you) will not be shown in the replay file
-        ////!\ You SHOULD use /replay stop or exit the program gracefully with /quit OR THE REPLAY FILE MAY GET CORRUPT!.
-        /// </summary>
-        internal static string config_ChatBot_ReplayCapture {
-            get {
-                return ResourceManager.GetString("config.ChatBot.ReplayCapture", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How long should replay file be auto-saved, in seconds. Use -1 to disable..
-        /// </summary>
-        internal static string config_ChatBot_ReplayCapture_Backup_Interval {
-            get {
-                return ResourceManager.GetString("config.ChatBot.ReplayCapture.Backup_Interval", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Schedule commands and scripts to launch on various events such as server join, date/time or time interval
-        ///See https://mccteam.github.io/g/bots/#script-scheduler for more info.
-        /// </summary>
-        internal static string config_ChatBot_ScriptScheduler {
-            get {
-                return ResourceManager.GetString("config.ChatBot.ScriptScheduler", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
-        ////!\ NOTE: You can&apos;t send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.
-        ///-----------------------------------------------------------
-        ///Setup:
-        ///First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
-        ///Click on &quot;Start&quot; button and re [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string config_ChatBot_TelegramBridge {
-            get {
-                return ResourceManager.GetString("config.ChatBot.TelegramBridge", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A list of Chat IDs that are allowed to send messages and execute commands. To get an id of your chat DM with the bot use &quot;.chatid&quot; bot command in Telegram..
-        /// </summary>
-        internal static string config_ChatBot_TelegramBridge_Authorized_Chat_Ids {
-            get {
-                return ResourceManager.GetString("config.ChatBot.TelegramBridge.Authorized_Chat_Ids", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An ID of a channel where you want to interact with the MCC using the bot..
-        /// </summary>
-        internal static string config_ChatBot_TelegramBridge_ChannelId {
-            get {
-                return ResourceManager.GetString("config.ChatBot.TelegramBridge.ChannelId", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Message formats
-        ///Words wrapped with { and } are going to be replaced during the code execution, do not change them!
-        ///For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-        ///For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html.
-        /// </summary>
-        internal static string config_ChatBot_TelegramBridge_Formats {
-            get {
-                return ResourceManager.GetString("config.ChatBot.TelegramBridge.Formats", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second)..
-        /// </summary>
-        internal static string config_ChatBot_TelegramBridge_MessageSendTimeout {
-            get {
-                return ResourceManager.GetString("config.ChatBot.TelegramBridge.MessageSendTimeout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Your Telegram Bot token..
-        /// </summary>
-        internal static string config_ChatBot_TelegramBridge_Token {
-            get {
-                return ResourceManager.GetString("config.ChatBot.TelegramBridge.Token", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to MCC does it best to detect chat messages, but some server have unusual chat formats
-        ///When this happens, you&apos;ll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section.
-        /// </summary>
-        internal static string config_ChatFormat {
-            get {
-                return ResourceManager.GetString("config.ChatFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to MCC support for common message formats. Set &quot;false&quot; to avoid conflicts with custom formats..
-        /// </summary>
-        internal static string config_ChatFormat_Builtins {
-            get {
-                return ResourceManager.GetString("config.ChatFormat.Builtins", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to use the custom regular expressions below for detection..
-        /// </summary>
-        internal static string config_ChatFormat_UserDefined {
-            get {
-                return ResourceManager.GetString("config.ChatFormat.UserDefined", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Startup Config File
-        ///Please do not record extraneous data in this file as it will be overwritten by MCC.
-        ///
-        ///New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
-        ///Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download.
-        /// </summary>
-        internal static string config_Head {
-            get {
-                return ResourceManager.GetString("config.Head", resourceCulture);
             }
         }
         
@@ -5222,237 +4122,11 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cFailed to load settings:§r.
+        ///   Looks up a localized string similar to Failed to load settings:.
         /// </summary>
         internal static string config_load_fail {
             get {
                 return ResourceManager.GetString("config.load.fail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This setting affects only the messages in the console..
-        /// </summary>
-        internal static string config_Logging {
-            get {
-                return ResourceManager.GetString("config.Logging", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Regex for filtering chat message..
-        /// </summary>
-        internal static string config_Logging_ChatFilter {
-            get {
-                return ResourceManager.GetString("config.Logging.ChatFilter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show server chat messages..
-        /// </summary>
-        internal static string config_Logging_ChatMessages {
-            get {
-                return ResourceManager.GetString("config.Logging.ChatMessages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Regex for filtering debug message..
-        /// </summary>
-        internal static string config_Logging_DebugFilter {
-            get {
-                return ResourceManager.GetString("config.Logging.DebugFilter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please enable this before submitting bug reports. Thanks!.
-        /// </summary>
-        internal static string config_Logging_DebugMessages {
-            get {
-                return ResourceManager.GetString("config.Logging.DebugMessages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show error messages..
-        /// </summary>
-        internal static string config_Logging_ErrorMessages {
-            get {
-                return ResourceManager.GetString("config.Logging.ErrorMessages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &quot;disable&quot; or &quot;blacklist&quot; OR &quot;whitelist&quot;. Blacklist hide message match regex. Whitelist show message match regex..
-        /// </summary>
-        internal static string config_Logging_FilterMode {
-            get {
-                return ResourceManager.GetString("config.Logging.FilterMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Informative messages. (i.e Most of the message from MCC).
-        /// </summary>
-        internal static string config_Logging_InfoMessages {
-            get {
-                return ResourceManager.GetString("config.Logging.InfoMessages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Log file name..
-        /// </summary>
-        internal static string config_Logging_LogFile {
-            get {
-                return ResourceManager.GetString("config.Logging.LogFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Write log messages to file..
-        /// </summary>
-        internal static string config_Logging_LogToFile {
-            get {
-                return ResourceManager.GetString("config.Logging.LogToFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Prepend timestamp to messages in log file..
-        /// </summary>
-        internal static string config_Logging_PrependTimestamp {
-            get {
-                return ResourceManager.GetString("config.Logging.PrependTimestamp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Keep color codes in the saved text.(look like &quot;§b&quot;).
-        /// </summary>
-        internal static string config_Logging_SaveColorCodes {
-            get {
-                return ResourceManager.GetString("config.Logging.SaveColorCodes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show warning messages..
-        /// </summary>
-        internal static string config_Logging_WarningMessages {
-            get {
-                return ResourceManager.GetString("config.Logging.WarningMessages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Make sure you understand what each setting does before changing anything!.
-        /// </summary>
-        internal static string config_Main_Advanced {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AccountList: It allows a fast account switching without directly using the credentials
-        ///Usage examples: &quot;/tell &lt;mybot&gt; reco Player2&quot;, &quot;/connect &lt;serverip&gt; Player1&quot;.
-        /// </summary>
-        internal static string config_Main_Advanced_account_list {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.account_list", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Toggle auto respawn if client player was dead (make sure your spawn point is safe)..
-        /// </summary>
-        internal static string config_Main_Advanced_auto_respawn {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.auto_respawn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Set the owner of the bot. /!\ Server admins can impersonate owners!.
-        /// </summary>
-        internal static string config_Main_Advanced_bot_owners {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.bot_owners", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;mcc&quot;, &quot;vanilla&quot; or &quot;none&quot;. This is how MCC identifies itself to the server..
-        /// </summary>
-        internal static string config_Main_Advanced_brand_info {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.brand_info", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Leave empty for no logfile..
-        /// </summary>
-        internal static string config_Main_Advanced_chatbot_log_file {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.chatbot_log_file", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to If turned off, the emoji will be replaced with a simpler character (for /chunk status)..
-        /// </summary>
-        internal static string config_Main_Advanced_enable_emoji {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.enable_emoji", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Toggle entity handling..
-        /// </summary>
-        internal static string config_Main_Advanced_entity_handling {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.entity_handling", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to exit directly when an error occurs, for using MCC in non-interactive scripts..
-        /// </summary>
-        internal static string config_Main_Advanced_exit_on_failure {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.exit_on_failure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;none&quot;, &quot;slash&quot;(/) or &quot;backslash&quot;(\)..
-        /// </summary>
-        internal static string config_Main_Advanced_internal_cmd_char {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.internal_cmd_char", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Toggle inventory handling..
-        /// </summary>
-        internal static string config_Main_Advanced_inventory_handling {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.inventory_handling", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html.
-        /// </summary>
-        internal static string config_Main_Advanced_language {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.language", resourceCulture);
             }
         }
         
@@ -5466,408 +4140,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Load translations applied to MCC when available, turn it off to use English only..
-        /// </summary>
-        internal static string config_Main_Advanced_LoadMccTrans {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.LoadMccTrans", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;auto&quot;, &quot;no&quot; or &quot;force&quot;. Force-enabling only works for MC 1.13+..
-        /// </summary>
-        internal static string config_Main_Advanced_mc_forge {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.mc_forge", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;auto&quot; or &quot;1.X.X&quot; values. Allows to skip server info retrieval..
-        /// </summary>
-        internal static string config_Main_Advanced_mc_version {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.mc_version", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls the minimum interval (in seconds) between sending each message to the server..
-        /// </summary>
-        internal static string config_Main_Advanced_message_cooldown {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.message_cooldown", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable support for joining Minecraft Realms worlds..
-        /// </summary>
-        internal static string config_Main_Advanced_minecraft_realms {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.minecraft_realms", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The minimum height to use when calculating the image size from the height of the terminal..
-        /// </summary>
-        internal static string config_Main_Advanced_MinTerminalHeight {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.MinTerminalHeight", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The minimum width used when calculating the image size from the width of the terminal..
-        /// </summary>
-        internal static string config_Main_Advanced_MinTerminalWidth {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.MinTerminalWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable head movement while walking to avoid anti-cheat triggers..
-        /// </summary>
-        internal static string config_Main_Advanced_move_head_while_walking {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.move_head_while_walking", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A movement speed higher than 2 may be considered cheating..
-        /// </summary>
-        internal static string config_Main_Advanced_movement_speed {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.movement_speed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Only works on Windows XP-8 or Windows 10 with old console..
-        /// </summary>
-        internal static string config_Main_Advanced_player_head_icon {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.player_head_icon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to For remote control of the bot..
-        /// </summary>
-        internal static string config_Main_Advanced_private_msgs_cmd_name {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.private_msgs_cmd_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How to retain profile key. Use &quot;none&quot;, &quot;memory&quot; or &quot;disk&quot;..
-        /// </summary>
-        internal static string config_Main_Advanced_profilekey_cache {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.profilekey_cache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;no&quot;, &quot;fast&quot; (5s timeout), or &quot;yes&quot;. Required for joining some servers..
-        /// </summary>
-        internal static string config_Main_Advanced_resolve_srv_records {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.resolve_srv_records", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cache compiled scripts for faster load on low-end devices..
-        /// </summary>
-        internal static string config_Main_Advanced_script_cache {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.script_cache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ServerList: It allows an easier and faster server switching with short aliases instead of full server IP
-        ///Aliases cannot contain dots or spaces, and the name &quot;localhost&quot; cannot be used as an alias.
-        ///Usage examples: &quot;/tell &lt;mybot&gt; connect Server1&quot;, &quot;/connect Server2&quot;.
-        /// </summary>
-        internal static string config_Main_Advanced_server_list {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.server_list", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to How to retain session tokens. Use &quot;none&quot;, &quot;memory&quot; or &quot;disk&quot;..
-        /// </summary>
-        internal static string config_Main_Advanced_session_cache {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.session_cache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Decode links embedded in chat messages and show them in console..
-        /// </summary>
-        internal static string config_Main_Advanced_show_chat_links {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.show_chat_links", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show inventory layout as ASCII art in inventory command..
-        /// </summary>
-        internal static string config_Main_Advanced_show_inventory_layout {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.show_inventory_layout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to System messages for server ops..
-        /// </summary>
-        internal static string config_Main_Advanced_show_system_messages {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.show_system_messages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Messages displayed above xp bar, set this to false in case of xp bar spam..
-        /// </summary>
-        internal static string config_Main_Advanced_show_xpbar_messages {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.show_xpbar_messages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Temporary fix for Badpacket issue on some servers..
-        /// </summary>
-        internal static string config_Main_Advanced_temporary_fix_badpacket {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.temporary_fix_badpacket", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;none&quot;, &quot;bit_4&quot;, &quot;bit_8&quot; or &quot;bit_24&quot;. This can be checked by opening the debug log..
-        /// </summary>
-        internal static string config_Main_Advanced_TerminalColorDepth {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.TerminalColorDepth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Uses more ram, cpu, bandwidth but allows you to move around..
-        /// </summary>
-        internal static string config_Main_Advanced_terrain_and_movements {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.terrain_and_movements", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Customize the TCP connection timeout with the server. (in seconds).
-        /// </summary>
-        internal static string config_Main_Advanced_timeout {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.timeout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Prepend timestamps to chat messages..
-        /// </summary>
-        internal static string config_Main_Advanced_timestamps {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.timestamps", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Login=Email or Name. Use &quot;-&quot; as password for offline mode. Leave blank to prompt user on startup..
-        /// </summary>
-        internal static string config_Main_General_account {
-            get {
-                return ResourceManager.GetString("config.Main.General.account", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The address of the game server, &quot;Host&quot; can be filled in with domain name or IP address. (The &quot;Port&quot; field can be deleted, it will be resolved automatically).
-        /// </summary>
-        internal static string config_Main_General_login {
-            get {
-                return ResourceManager.GetString("config.Main.General.login", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Microsoft Account sign-in method: &quot;mcc&quot; OR &quot;browser&quot;. If the login always fails, please try to use the &quot;browser&quot; once..
-        /// </summary>
-        internal static string config_Main_General_method {
-            get {
-                return ResourceManager.GetString("config.Main.General.method", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Account type: &quot;mojang&quot; OR &quot;microsoft&quot;. Also affects interactive login in console..
-        /// </summary>
-        internal static string config_Main_General_server_info {
-            get {
-                return ResourceManager.GetString("config.Main.General.server_info", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Settings below are sent to the server and only affect server-side things like your skin..
-        /// </summary>
-        internal static string config_MCSettings {
-            get {
-                return ResourceManager.GetString("config.MCSettings", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allows disabling chat colors server-side..
-        /// </summary>
-        internal static string config_MCSettings_ChatColors {
-            get {
-                return ResourceManager.GetString("config.MCSettings.ChatColors", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;enabled&quot;, &quot;commands&quot;, or &quot;disabled&quot;. Allows to mute yourself....
-        /// </summary>
-        internal static string config_MCSettings_ChatMode {
-            get {
-                return ResourceManager.GetString("config.MCSettings.ChatMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to MC 1.7- difficulty. &quot;peaceful&quot;, &quot;easy&quot;, &quot;normal&quot;, &quot;difficult&quot;..
-        /// </summary>
-        internal static string config_MCSettings_Difficulty {
-            get {
-                return ResourceManager.GetString("config.MCSettings.Difficulty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to If disabled, settings below are not sent to the server..
-        /// </summary>
-        internal static string config_MCSettings_Enabled {
-            get {
-                return ResourceManager.GetString("config.MCSettings.Enabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use any language implemented in Minecraft..
-        /// </summary>
-        internal static string config_MCSettings_Locale {
-            get {
-                return ResourceManager.GetString("config.MCSettings.Locale", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to MC 1.9+ main hand. &quot;left&quot; or &quot;right&quot;..
-        /// </summary>
-        internal static string config_MCSettings_MainHand {
-            get {
-                return ResourceManager.GetString("config.MCSettings.MainHand", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Value range: [0 - 255]..
-        /// </summary>
-        internal static string config_MCSettings_RenderDistance {
-            get {
-                return ResourceManager.GetString("config.MCSettings.RenderDistance", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Connect to a server via a proxy instead of connecting directly
-        ///If Mojang session services are blocked on your network, set Enabled_Login=true to login using proxy.
-        ///If the connection to the Minecraft game server is blocked by the firewall, set Enabled_Ingame=true to use a proxy to connect to the game server.
-        ////!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!.
-        /// </summary>
-        internal static string config_Proxy {
-            get {
-                return ResourceManager.GetString("config.Proxy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to connect to the game server through a proxy..
-        /// </summary>
-        internal static string config_Proxy_Enabled_Ingame {
-            get {
-                return ResourceManager.GetString("config.Proxy.Enabled_Ingame", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to connect to the login server through a proxy..
-        /// </summary>
-        internal static string config_Proxy_Enabled_Login {
-            get {
-                return ResourceManager.GetString("config.Proxy.Enabled_Login", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Only required for password-protected proxies..
-        /// </summary>
-        internal static string config_Proxy_Password {
-            get {
-                return ResourceManager.GetString("config.Proxy.Password", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Supported types: &quot;HTTP&quot;, &quot;SOCKS4&quot;, &quot;SOCKS4a&quot;, &quot;SOCKS5&quot;..
-        /// </summary>
-        internal static string config_Proxy_Proxy_Type {
-            get {
-                return ResourceManager.GetString("config.Proxy.Proxy_Type", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Proxy server must allow HTTPS for login, and non-443 ports for playing..
-        /// </summary>
-        internal static string config_Proxy_Server {
-            get {
-                return ResourceManager.GetString("config.Proxy.Server", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Only required for password-protected proxies..
-        /// </summary>
-        internal static string config_Proxy_Username {
-            get {
-                return ResourceManager.GetString("config.Proxy.Username", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to §aThe current setting is saved as {0}.
+        ///   Looks up a localized string similar to The current setting is saved as {0}.
         /// </summary>
         internal static string config_saving {
             get {
@@ -5876,97 +4149,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Chat signature related settings (affects minecraft 1.19+).
-        /// </summary>
-        internal static string config_Signature {
-            get {
-                return ResourceManager.GetString("config.Signature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with &quot;enforce-secure-profile=true&quot;.
-        /// </summary>
-        internal static string config_Signature_LoginWithSecureProfile {
-            get {
-                return ResourceManager.GetString("config.Signature.LoginWithSecureProfile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use red    color block to mark chat without legitimate signature.
-        /// </summary>
-        internal static string config_Signature_MarkIllegallySignedMsg {
-            get {
-                return ResourceManager.GetString("config.Signature.MarkIllegallySignedMsg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use green  color block to mark chat with legitimate signatures.
-        /// </summary>
-        internal static string config_Signature_MarkLegallySignedMsg {
-            get {
-                return ResourceManager.GetString("config.Signature.MarkLegallySignedMsg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use yellow color block to mark chat that have been modified by the server..
-        /// </summary>
-        internal static string config_Signature_MarkModifiedMsg {
-            get {
-                return ResourceManager.GetString("config.Signature.MarkModifiedMsg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use gray   color block to mark system message (always without signature).
-        /// </summary>
-        internal static string config_Signature_MarkSystemMessage {
-            get {
-                return ResourceManager.GetString("config.Signature.MarkSystemMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to display chat and messages in commands without legal signatures.
-        /// </summary>
-        internal static string config_Signature_ShowIllegalSignedChat {
-            get {
-                return ResourceManager.GetString("config.Signature.ShowIllegalSignedChat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Set to true to display messages modified by the server, false to display the original signed messages.
-        /// </summary>
-        internal static string config_Signature_ShowModifiedChat {
-            get {
-                return ResourceManager.GetString("config.Signature.ShowModifiedChat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to sign the chat send from MCC.
-        /// </summary>
-        internal static string config_Signature_SignChat {
-            get {
-                return ResourceManager.GetString("config.Signature.SignChat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Whether to sign the messages contained in the commands sent by MCC. For example, the message in &quot;/msg&quot; and &quot;/me&quot;.
-        /// </summary>
-        internal static string config_Signature_SignMessageInCommand {
-            get {
-                return ResourceManager.GetString("config.Signature.SignMessageInCommand", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to §cFailed to write to settings file {0}§r.
+        ///   Looks up a localized string similar to Failed to write to settings file {0}.
         /// </summary>
         internal static string config_write_fail {
             get {
@@ -5984,7 +4167,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Crypto keys &amp; hash generated..
+        ///   Looks up a localized string similar to Crypto keys &amp; hash generated..
         /// </summary>
         internal static string debug_crypto {
             get {
@@ -5993,7 +4176,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8No profile keys could be loaded from disk.
+        ///   Looks up a localized string similar to No profile keys could be loaded from disk.
         /// </summary>
         internal static string debug_keys_cache_fail {
             get {
@@ -6002,7 +4185,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Profile keys has been successfully loaded from disk..
+        ///   Looks up a localized string similar to Profile keys has been successfully loaded from disk..
         /// </summary>
         internal static string debug_keys_cache_ok {
             get {
@@ -6011,7 +4194,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Performing request to {0}.
+        ///   Looks up a localized string similar to Performing request to {0}.
         /// </summary>
         internal static string debug_request {
             get {
@@ -6020,7 +4203,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8No sessions could be loaded from disk.
+        ///   Looks up a localized string similar to No sessions could be loaded from disk.
         /// </summary>
         internal static string debug_session_cache_fail {
             get {
@@ -6029,7 +4212,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Session data has been successfully loaded from disk..
+        ///   Looks up a localized string similar to Session data has been successfully loaded from disk..
         /// </summary>
         internal static string debug_session_cache_ok {
             get {
@@ -6092,7 +4275,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Got error code from server while refreshing authentication: {0}.
+        ///   Looks up a localized string similar to Got error code from server while refreshing authentication: {0}.
         /// </summary>
         internal static string error_auth {
             get {
@@ -6110,7 +4293,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8A timeout occured while attempting to connect to this IP..
+        ///   Looks up a localized string similar to A timeout occured while attempting to connect to this IP..
         /// </summary>
         internal static string error_connection_timeout {
             get {
@@ -6128,7 +4311,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Forge Login Handshake did not complete successfully.
+        ///   Looks up a localized string similar to Forge Login Handshake did not complete successfully.
         /// </summary>
         internal static string error_forge {
             get {
@@ -6137,7 +4320,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Forge StartEncryption Handshake did not complete successfully.
+        ///   Looks up a localized string similar to Forge StartEncryption Handshake did not complete successfully.
         /// </summary>
         internal static string error_forge_encrypt {
             get {
@@ -6182,7 +4365,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Got error code from server: {0}.
+        ///   Looks up a localized string similar to Got error code from server: {0}.
         /// </summary>
         internal static string error_http_code {
             get {
@@ -6191,7 +4374,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Invalid response to StartEncryption packet.
+        ///   Looks up a localized string similar to Invalid response to StartEncryption packet.
         /// </summary>
         internal static string error_invalid_encrypt {
             get {
@@ -6200,7 +4383,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Invalid response to Handshake packet.
+        ///   Looks up a localized string similar to Invalid response to Handshake packet.
         /// </summary>
         internal static string error_invalid_response {
             get {
@@ -6335,7 +4518,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Server does not report its protocol version, autodetection will not work..
+        ///   Looks up a localized string similar to Server does not report its protocol version, autodetection will not work..
         /// </summary>
         internal static string error_no_version_report {
             get {
@@ -6425,7 +4608,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Unexpected response from the server (is that a Minecraft server?).
+        ///   Looks up a localized string similar to Unexpected response from the server (is that a Minecraft server?).
         /// </summary>
         internal static string error_unexpect_response {
             get {
@@ -6452,7 +4635,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Server reports a different version than manually set. Login may not work..
+        ///   Looks up a localized string similar to Server reports a different version than manually set. Login may not work..
         /// </summary>
         internal static string error_version_different {
             get {
@@ -6560,7 +4743,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cEntities are currently not handled for that MC version..
+        ///   Looks up a localized string similar to Entities are currently not handled for that MC version..
         /// </summary>
         internal static string extra_entity_disabled {
             get {
@@ -6587,7 +4770,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cInventories are currently not handled for that MC version..
+        ///   Looks up a localized string similar to Inventories are currently not handled for that MC version..
         /// </summary>
         internal static string extra_inventory_disabled {
             get {
@@ -6632,7 +4815,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cTerrain &amp; Movements currently not handled for that MC version..
+        ///   Looks up a localized string similar to Terrain &amp; Movements currently not handled for that MC version..
         /// </summary>
         internal static string extra_terrainandmovement_disabled {
             get {
@@ -6659,7 +4842,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8[{0}] Failed to initialize FileSystemWatcher, retrying using Polling.
+        ///   Looks up a localized string similar to [{0}] Failed to initialize FileSystemWatcher, retrying using Polling.
         /// </summary>
         internal static string filemonitor_fail {
             get {
@@ -6668,7 +4851,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8[{0}] Initializing FileSystemWatcher for file: {1}.
+        ///   Looks up a localized string similar to [{0}] Initializing FileSystemWatcher for file: {1}.
         /// </summary>
         internal static string filemonitor_init {
             get {
@@ -6677,7 +4860,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Accepting server mod list....
+        ///   Looks up a localized string similar to Accepting server mod list....
         /// </summary>
         internal static string forge_accept {
             get {
@@ -6686,7 +4869,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Accepting server registries....
+        ///   Looks up a localized string similar to Accepting server registries....
         /// </summary>
         internal static string forge_accept_registry {
             get {
@@ -6704,7 +4887,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Acknowledging FML2 Server Config: {0}.
+        ///   Looks up a localized string similar to Acknowledging FML2 Server Config: {0}.
         /// </summary>
         internal static string forge_fml2_config {
             get {
@@ -6713,7 +4896,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Received FML2 Server Mod List.
+        ///   Looks up a localized string similar to Received FML2 Server Mod List.
         /// </summary>
         internal static string forge_fml2_mod {
             get {
@@ -6722,7 +4905,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Sending back FML2 Client Mod List.
+        ///   Looks up a localized string similar to Sending back FML2 Client Mod List.
         /// </summary>
         internal static string forge_fml2_mod_send {
             get {
@@ -6731,7 +4914,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Acknowledging FML2 Server Registry: {0}.
+        ///   Looks up a localized string similar to Acknowledging FML2 Server Registry: {0}.
         /// </summary>
         internal static string forge_fml2_registry {
             get {
@@ -6740,7 +4923,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Got Unknown FML2 Handshake message no. {0}.
+        ///   Looks up a localized string similar to Got Unknown FML2 Handshake message no. {0}.
         /// </summary>
         internal static string forge_fml2_unknown {
             get {
@@ -6749,7 +4932,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Ignoring Unknown FML2 LoginMessage channel: {0}.
+        ///   Looks up a localized string similar to Ignoring Unknown FML2 LoginMessage channel: {0}.
         /// </summary>
         internal static string forge_fml2_unknown_channel {
             get {
@@ -6758,7 +4941,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Mod list:.
+        ///   Looks up a localized string similar to Mod list:.
         /// </summary>
         internal static string forge_mod_list {
             get {
@@ -6767,7 +4950,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Server is running Forge without mods..
+        ///   Looks up a localized string similar to Server is running Forge without mods..
         /// </summary>
         internal static string forge_no_mod {
             get {
@@ -6776,7 +4959,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Received registry with {0} entries.
+        ///   Looks up a localized string similar to Received registry with {0} entries.
         /// </summary>
         internal static string forge_registry {
             get {
@@ -6785,7 +4968,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Received registry {0} with {1} entries.
+        ///   Looks up a localized string similar to Received registry {0} with {1} entries.
         /// </summary>
         internal static string forge_registry_2 {
             get {
@@ -6794,7 +4977,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Sending falsified mod list to server....
+        ///   Looks up a localized string similar to Sending falsified mod list to server....
         /// </summary>
         internal static string forge_send_mod {
             get {
@@ -6803,7 +4986,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Forge protocol version : {0}.
+        ///   Looks up a localized string similar to Forge protocol version : {0}.
         /// </summary>
         internal static string forge_version {
             get {
@@ -6812,7 +4995,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Server is running Forge with {0} mods..
+        ///   Looks up a localized string similar to Server is running Forge with {0} mods..
         /// </summary>
         internal static string forge_with_mod {
             get {
@@ -6993,7 +5176,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Found server {0}:{1} for domain {2}.
+        ///   Looks up a localized string similar to Found server {0}:{1} for domain {2}.
         /// </summary>
         internal static string mcc_found {
             get {
@@ -7029,7 +5212,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Handshake successful. (Server ID: {0}).
+        ///   Looks up a localized string similar to Handshake successful. (Server ID: {0}).
         /// </summary>
         internal static string mcc_handshake {
             get {
@@ -7038,7 +5221,8 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §eNew version of MCC available: {0}.
+        ///   Looks up a localized string similar to A new version of MCC is available and you can download it via /upgrade
+        ///Or download it manually: {0}.
         /// </summary>
         internal static string mcc_has_update {
             get {
@@ -7111,7 +5295,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Failed to perform SRV lookup for {0}
+        ///   Looks up a localized string similar to Failed to perform SRV lookup for {0}
         ///{1}: {2}.
         /// </summary>
         internal static string mcc_not_found {
@@ -7121,20 +5305,11 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8You chose to run in offline mode..
+        ///   Looks up a localized string similar to You chose to run in offline mode..
         /// </summary>
         internal static string mcc_offline {
             get {
                 return ResourceManager.GetString("mcc.offline", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Password: .
-        /// </summary>
-        internal static string mcc_password {
-            get {
-                return ResourceManager.GetString("mcc.password", resourceCulture);
             }
         }
         
@@ -7184,7 +5359,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Cached profile key needs to be refreshed..
+        ///   Looks up a localized string similar to Cached profile key needs to be refreshed..
         /// </summary>
         internal static string mcc_profile_key_invalid {
             get {
@@ -7193,7 +5368,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Cached profile key is still valid for {0}..
+        ///   Looks up a localized string similar to Cached profile key is still valid for {0}..
         /// </summary>
         internal static string mcc_profile_key_valid {
             get {
@@ -7275,7 +5450,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Server is in offline mode..
+        ///   Looks up a localized string similar to Server is in offline mode..
         /// </summary>
         internal static string mcc_server_offline {
             get {
@@ -7284,7 +5459,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Server version : {0} (protocol v{1}).
+        ///   Looks up a localized string similar to Server version : {0} (protocol v{1}).
         /// </summary>
         internal static string mcc_server_protocol {
             get {
@@ -7320,7 +5495,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Cached session is invalid or expired..
+        ///   Looks up a localized string similar to Cached session is invalid or expired..
         /// </summary>
         internal static string mcc_session_invalid {
             get {
@@ -7329,7 +5504,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Cached session is still valid for {0}..
+        ///   Looks up a localized string similar to Cached session is still valid for {0}..
         /// </summary>
         internal static string mcc_session_valid {
             get {
@@ -7338,7 +5513,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §cSettings file MinecraftClient.ini has been generated..
+        ///   Looks up a localized string similar to Settings file MinecraftClient.ini has been generated..
         /// </summary>
         internal static string mcc_settings_generated {
             get {
@@ -7347,21 +5522,138 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §7Command §8 {0} §7 sent..
-        /// </summary>
-        internal static string mcc_single_cmd {
-            get {
-                return ResourceManager.GetString("mcc.single_cmd", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to §8Unknown or not supported MC version {0}.
+        ///   Looks up a localized string similar to Unknown or not supported MC version {0}.
         ///Switching to autodetection mode..
         /// </summary>
         internal static string mcc_unknown_version {
             get {
                 return ResourceManager.GetString("mcc.unknown_version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current version is already up to date or is a development build..
+        /// </summary>
+        internal static string mcc_update_already_latest {
+            get {
+                return ResourceManager.GetString("mcc.update.already_latest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checking for updates has already started..
+        /// </summary>
+        internal static string mcc_update_already_running {
+            get {
+                return ResourceManager.GetString("mcc.update.already_running", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The download has been cancelled..
+        /// </summary>
+        internal static string mcc_update_cancel {
+            get {
+                return ResourceManager.GetString("mcc.update.cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to check for updates from Github, please check your internet connection or enable proxy..
+        /// </summary>
+        internal static string mcc_update_check_fail {
+            get {
+                return ResourceManager.GetString("mcc.update.check_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: Download is complete, decompressing..
+        /// </summary>
+        internal static string mcc_update_download_complete {
+            get {
+                return ResourceManager.GetString("mcc.update.download_complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: An error occurred while downloading or saving the file:.
+        /// </summary>
+        internal static string mcc_update_download_fail {
+            get {
+                return ResourceManager.GetString("mcc.update.download_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: New version detected: &quot;{0}&quot;, download will start soon (platform: {1})..
+        /// </summary>
+        internal static string mcc_update_exist_update {
+            get {
+                return ResourceManager.GetString("mcc.update.exist_update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The latest release does not contain a build that matches your operating system and CPU architecture..
+        /// </summary>
+        internal static string mcc_update_platform_not_support {
+            get {
+                return ResourceManager.GetString("mcc.update.platform_not_support", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: {0:00.00}%, ETA {4}, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s.
+        /// </summary>
+        internal static string mcc_update_progress {
+            get {
+                return ResourceManager.GetString("mcc.update.progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: Downloaded {0:00.0}MB, Avg {1:0.0}KB/s.
+        /// </summary>
+        internal static string mcc_update_progress_type2 {
+            get {
+                return ResourceManager.GetString("mcc.update.progress_type2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add &quot;-f&quot; to force the download..
+        /// </summary>
+        internal static string mcc_update_promote_force {
+            get {
+                return ResourceManager.GetString("mcc.update.promote_force", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use &quot;--force-upgrade&quot; to force the download..
+        /// </summary>
+        internal static string mcc_update_promote_force_cmd {
+            get {
+                return ResourceManager.GetString("mcc.update.promote_force_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Self-updating: File saved as: {0}.
+        /// </summary>
+        internal static string mcc_update_save_as {
+            get {
+                return ResourceManager.GetString("mcc.update.save_as", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start checking for updates..
+        /// </summary>
+        internal static string mcc_update_start {
+            get {
+                return ResourceManager.GetString("mcc.update.start", resourceCulture);
             }
         }
         
@@ -7375,7 +5667,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Using Minecraft version {0} (protocol v{1}).
+        ///   Looks up a localized string similar to Using Minecraft version {0} (protocol v{1}).
         /// </summary>
         internal static string mcc_use_version {
             get {
@@ -7403,7 +5695,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to §8Connected to proxy {0}:{1}.
+        ///   Looks up a localized string similar to Connected to proxy {0}:{1}.
         /// </summary>
         internal static string proxy_connected {
             get {

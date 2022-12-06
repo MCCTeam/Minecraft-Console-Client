@@ -1,4 +1,4 @@
-//MCCScript 1.0
+﻿//MCCScript 1.0
 
 /* This is a sample script that will load a ChatBot into Minecraft Console Client
  * Simply execute the script once with /script or the script scheduler to load the bot */

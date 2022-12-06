@@ -1,4 +1,4 @@
-namespace MinecraftClient.Mapping
+﻿namespace MinecraftClient.Mapping
 {
     /// <summary>
     /// Represents Minecraft Entity Types

@@ -163,7 +163,7 @@ namespace MinecraftClient.Protocol.ProfileKey
                 }
                 catch (IOException e)
                 {
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_read_fail_plain_keys, e.Message));
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.cache_read_fail_plain_keys, e.Message));
                 }
             }
 
@@ -176,7 +176,7 @@ namespace MinecraftClient.Protocol.ProfileKey
         private static void SaveToDisk()
         {
             if (Config.Logging.DebugMessages)
-                ConsoleIO.WriteLineFormatted(Translations.cache_saving_keys, acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§8" + Translations.cache_saving_keys, acceptnewlines: true);
 
             List<string> KeysCacheLines = new()
             {
@@ -192,7 +192,7 @@ namespace MinecraftClient.Protocol.ProfileKey
             }
             catch (IOException e)
             {
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_save_fail_keys, e.Message));
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.cache_save_fail_keys, e.Message));
             }
         }
     }

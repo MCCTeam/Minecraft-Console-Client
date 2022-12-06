@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Brigadier.NET;
 using FuzzySharp;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Scripting;
@@ -182,7 +183,6 @@ namespace MinecraftClient
 
         #endregion
 
-
         internal static bool AutoCompleteDone = false;
         internal static string[] AutoCompleteResult = Array.Empty<string>();
 
@@ -220,7 +220,7 @@ namespace MinecraftClient
                     string command = fullCommand[offset..];
                     if (command.Length == 0)
                     {
-                        var childs = McClient.dispatcher.GetRoot().Children;
+                        var childs = CmdResult.client!.dispatcher.GetRoot().Children;
                         int index = 0;
                         var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[childs.Count + Commands.Count + 1];
 
@@ -243,9 +243,9 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        var parse = McClient.dispatcher.Parse(command, CmdResult.Empty);
+                        var parse = CmdResult.client!.dispatcher.Parse(command, CmdResult.Empty);
 
-                        var suggestion = await McClient.dispatcher.GetCompletionSuggestions(parse, buffer.CursorPosition - offset);
+                        var suggestion = await CmdResult.client!.dispatcher.GetCompletionSuggestions(parse, buffer.CursorPosition - offset);
 
                         int sugLen = suggestion.List.Count;
                         if (sugLen == 0)
@@ -324,7 +324,7 @@ namespace MinecraftClient
             MergeCommands();
         }
 
-        public static void InitAutocomplete()
+        public static void InitCommandList(CommandDispatcher<CmdResult> dispatcher)
         {
             autocomplete_engine!.AutoComplete("/");
         }

@@ -30,7 +30,7 @@ namespace MinecraftClient.ChatBots
 
             public string Matches_File = @"matches.ini";
 
-            [TomlInlineComment("$config.ChatBot.AutoRespond.Match_Colors$")]
+            [TomlInlineComment("$ChatBot.AutoRespond.Match_Colors$")]
             public bool Match_Colors = false;
 
             public void OnSettingUpdate()
@@ -187,7 +187,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Initialize the AutoRespond bot from the matches file
         /// </summary>
-        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+        public override void Initialize()
         {
             if (File.Exists(Config.Matches_File))
             {
