@@ -4,6 +4,10 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Brigadier.NET;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
+using PInvoke;
 using Tomlet.Attributes;
 using static MinecraftClient.Settings;
 
@@ -183,7 +187,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Initialize the AutoRespond bot from the matches file
         /// </summary>
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             if (File.Exists(Config.Matches_File))
             {
@@ -304,12 +308,12 @@ namespace MinecraftClient.ChatBots
                 {
                     Dictionary<string, object> localVars = new();
                     string? toPerform = rule.Match(sender, message, msgType, localVars);
-                    if (!String.IsNullOrEmpty(toPerform))
+                    if (!string.IsNullOrEmpty(toPerform))
                     {
-                        string? response = null;
+                        CmdResult response = new();
                         LogToConsole(string.Format(Translations.bot_autoRespond_match_run, toPerform));
                         PerformInternalCommand(toPerform, ref response, localVars);
-                        if (!String.IsNullOrEmpty(response))
+                        if (response.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(response.result))
                             LogToConsole(response);
                     }
                 }

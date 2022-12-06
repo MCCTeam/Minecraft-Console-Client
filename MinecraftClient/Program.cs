@@ -14,8 +14,9 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol;
 using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
+using MinecraftClient.Scripting;
 using MinecraftClient.WinAPI;
 using Tomlet;
 using static MinecraftClient.Settings;
@@ -573,7 +574,7 @@ namespace MinecraftClient
                 }
 
                 //Retrieve server info if version is not manually set OR if need to retrieve Forge information
-                if (!isRealms && (protocolversion == 0 || (Config.Main.Advanced.EnableForge == ForgeConfigType.auto) || 
+                if (!isRealms && (protocolversion == 0 || (Config.Main.Advanced.EnableForge == ForgeConfigType.auto) ||
                     ((Config.Main.Advanced.EnableForge == ForgeConfigType.force) && !ProtocolHandler.ProtocolMayForceForge(protocolversion))))
                 {
                     if (protocolversion != 0)
@@ -587,9 +588,9 @@ namespace MinecraftClient
                     }
                 }
 
-                if (Config.Main.General.AccountType == LoginType.microsoft 
+                if (Config.Main.General.AccountType == LoginType.microsoft
                     && (InternalConfig.Account.Password != "-" || Config.Main.General.Method == LoginMethod.browser)
-                    && Config.Signature.LoginWithSecureProfile 
+                    && Config.Signature.LoginWithSecureProfile
                     && protocolversion >= 759 /* 1.19 and above */)
                 {
                     // Load cached profile key from disk if necessary
@@ -683,7 +684,7 @@ namespace MinecraftClient
         /// </summary>
         public static void ReloadSettings(bool keepAccountAndServerSettings = false)
         {
-            if(Settings.LoadFromFile(settingsIniPath, keepAccountAndServerSettings).Item1)
+            if (Settings.LoadFromFile(settingsIniPath, keepAccountAndServerSettings).Item1)
                 ConsoleIO.WriteLine(string.Format(Translations.config_load, settingsIniPath));
         }
 
@@ -720,6 +721,7 @@ namespace MinecraftClient
         public static void DoExit(int exitcode = 0)
         {
             WriteBackSettings(true);
+            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
             ConsoleIO.WriteLineFormatted(string.Format(Translations.config_saving, settingsIniPath));
 
             if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
@@ -807,7 +809,7 @@ namespace MinecraftClient
 
                                     if (command.StartsWith("reco"))
                                     {
-                                        message = new Commands.Reco().Run(null, Config.AppVar.ExpandVars(command), null);
+                                        message = Commands.Reco.DoReconnect(Config.AppVar.ExpandVars(command));
                                         if (message == "")
                                         {
                                             exitThread = true;
@@ -816,7 +818,7 @@ namespace MinecraftClient
                                     }
                                     else if (command.StartsWith("connect"))
                                     {
-                                        message = new Commands.Connect().Run(null, Config.AppVar.ExpandVars(command), null);
+                                        message = Commands.Connect.DoConnect(Config.AppVar.ExpandVars(command));
                                         if (message == "")
                                         {
                                             exitThread = true;
@@ -825,7 +827,7 @@ namespace MinecraftClient
                                     }
                                     else if (command.StartsWith("exit") || command.StartsWith("quit"))
                                     {
-                                        message = new Commands.Exit().Run(null, Config.AppVar.ExpandVars(command), null);
+                                        message = Commands.Exit.DoExit(Config.AppVar.ExpandVars(command));
                                     }
                                     else if (command.StartsWith("help"))
                                     {
@@ -844,7 +846,7 @@ namespace MinecraftClient
                                 }
                                 else
                                 {
-                                    _ = new Commands.Exit().Run(null, Config.AppVar.ExpandVars(command), null);
+                                    Commands.Exit.DoExit(Config.AppVar.ExpandVars(command));
                                 }
                             }
 

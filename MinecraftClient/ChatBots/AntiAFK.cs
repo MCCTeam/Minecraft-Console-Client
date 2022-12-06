@@ -1,5 +1,8 @@
 ﻿using System;
+using Brigadier.NET;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -90,7 +93,7 @@ namespace MinecraftClient.ChatBots
             count = 0;
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             if (Config.Use_Terrain_Handling)
             {

@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using Brigadier.NET;
+﻿using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 
 namespace MinecraftClient.Commands
 {
@@ -9,18 +10,34 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "send <text>"; } }
         public override string CmdDesc { get { return Translations.cmd_send_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
         {
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Then(l => l.Argument("any", Arguments.GreedyString())
+                    .Executes(r => DoSendText(r.Source, handler, Arguments.GetString(r, "any"))))
+            );
         }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        private int GetUsage(CmdResult r, string? cmd)
         {
-            if (HasArg(command))
+            return r.SetAndReturn(cmd switch
             {
-                handler.SendText(GetArg(command));
-                return "";
-            }
-            else return GetCmdDescTranslated();
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int DoSendText(CmdResult r, McClient handler, string command)
+        {
+            handler.SendText(command);
+            return r.SetAndReturn(CmdResult.Status.Done);
         }
     }
 }

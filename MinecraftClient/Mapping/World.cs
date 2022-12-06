@@ -153,7 +153,7 @@ namespace MinecraftClient.Mapping
         /// <param name="block">Block type</param>
         /// <param name="radius">Search radius - larger is slower: O^3 complexity</param>
         /// <returns>Block matching the specified block type</returns>
-        public List<Location> FindBlock(Location from, Material block, int radius)
+        public List<Location> FindBlock(Location from, Material block, double radius)
         {
             return FindBlock(from, block, radius, radius, radius);
         }
@@ -167,7 +167,7 @@ namespace MinecraftClient.Mapping
         /// <param name="radiusy">Search radius on the Y axis</param>
         /// <param name="radiusz">Search radius on the Z axis</param>
         /// <returns>Block matching the specified block type</returns>
-        public List<Location> FindBlock(Location from, Material block, int radiusx, int radiusy, int radiusz)
+        public List<Location> FindBlock(Location from, Material block, double radiusx, double radiusy, double radiusz)
         {
             Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
             Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);

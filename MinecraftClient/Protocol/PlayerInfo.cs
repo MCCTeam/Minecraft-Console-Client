@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.ProfileKey;
 
 namespace MinecraftClient.Protocol
 {

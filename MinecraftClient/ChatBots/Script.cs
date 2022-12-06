@@ -5,6 +5,9 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Brigadier.NET;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.ChatBots
 {
@@ -124,7 +127,7 @@ namespace MinecraftClient.ChatBots
             return false;
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             //Load the given file from the startup parameters
             if (LookForScript(ref file!))

@@ -1,6 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using FuzzySharp;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient
 {
@@ -175,16 +182,151 @@ namespace MinecraftClient
 
         #endregion
 
-        public static void AutocompleteHandler(object? sender, ConsoleKey e)
+
+        internal static bool AutoCompleteDone = false;
+        internal static string[] AutoCompleteResult = Array.Empty<string>();
+
+        private static HashSet<string> Commands = new();
+        private static string[] CommandsFromAutoComplete = Array.Empty<string>();
+        private static string[] CommandsFromDeclareCommands = Array.Empty<string>();
+
+        private static Task _latestTask = Task.CompletedTask;
+        private static CancellationTokenSource? _cancellationTokenSource;
+
+        private static void MccAutocompleteHandler(ConsoleInteractive.ConsoleReader.Buffer buffer)
         {
-            if (e != ConsoleKey.Tab) return;
-
-            if (autocomplete_engine == null)
+            string fullCommand = buffer.Text;
+            if (string.IsNullOrEmpty(fullCommand))
+            {
+                ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
                 return;
+            }
 
-            var buffer = ConsoleInteractive.ConsoleReader.GetBufferContent();
-            ConsoleIO.WriteLine("AutoComplete " + buffer);
-            autocomplete_engine.AutoComplete(buffer.Text[..buffer.CursorPosition]);
+            var InternalCmdChar = Config.Main.Advanced.InternalCmdChar;
+            if (InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none || fullCommand[0] == InternalCmdChar.ToChar())
+            {
+                int offset = InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none ? 0 : 1;
+                if (buffer.CursorPosition - offset < 0)
+                {
+                    ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+                    return;
+                }
+                _cancellationTokenSource?.Cancel();
+                using var cts = new CancellationTokenSource();
+                _cancellationTokenSource = cts;
+                var previousTask = _latestTask;
+                var newTask = new Task(async () =>
+                {
+                    string command = fullCommand[offset..];
+                    if (command.Length == 0)
+                    {
+                        var childs = McClient.dispatcher.GetRoot().Children;
+                        int index = 0;
+                        var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[childs.Count + Commands.Count + 1];
+
+                        sugList[index++] = new("/");
+                        foreach (var child in childs)
+                            sugList[index++] = new(child.Name);
+                        foreach (var cmd in Commands)
+                            sugList[index++] = new(cmd);
+                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList, new(offset, offset));
+                    }
+                    else if (command.Length > 0 && command[0] == '/' && !command.Contains(' '))
+                    {
+                        var sorted = Process.ExtractSorted(command[1..], Commands);
+                        var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[sorted.Count()];
+
+                        int index = 0;
+                        foreach (var sug in sorted)
+                            sugList[index++] = new(sug.Value);
+                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList, new(offset, offset + command.Length));
+                    }
+                    else
+                    {
+                        var parse = McClient.dispatcher.Parse(command, CmdResult.Empty);
+
+                        var suggestion = await McClient.dispatcher.GetCompletionSuggestions(parse, buffer.CursorPosition - offset);
+
+                        int sugLen = suggestion.List.Count;
+                        if (sugLen == 0)
+                        {
+                            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+                            return;
+                        }
+
+                        var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[sugLen];
+                        if (cts.IsCancellationRequested)
+                            return;
+
+                        Tuple<int, int> range = new(suggestion.Range.Start + offset, suggestion.Range.End + offset);
+                        var sorted = Process.ExtractSorted(fullCommand[range.Item1..range.Item2], suggestion.List.Select(_ => _.Text).ToList());
+                        if (cts.IsCancellationRequested)
+                            return;
+
+                        int index = 0;
+                        foreach (var sug in sorted)
+                            sugList[index++] = new(sug.Value);
+
+                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList, range);
+                    }
+                }, cts.Token);
+                _latestTask = newTask;
+                try { newTask.Start(); } catch { }
+                if (_cancellationTokenSource == cts) _cancellationTokenSource = null;
+            }
+            else
+            {
+                ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+                return;
+            }
+        }
+
+        public static void AutocompleteHandler(object? sender, ConsoleInteractive.ConsoleReader.Buffer buffer)
+        {
+            MccAutocompleteHandler(buffer);
+        }
+
+        public static void CancelAutocomplete()
+        {
+            _cancellationTokenSource?.Cancel();
+            _latestTask = Task.CompletedTask;
+            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+
+            AutoCompleteDone = false;
+            AutoCompleteResult = Array.Empty<string>();
+            CommandsFromAutoComplete = Array.Empty<string>();
+            CommandsFromDeclareCommands = Array.Empty<string>();
+        }
+
+        private static void MergeCommands()
+        {
+            Commands.Clear();
+            foreach (string cmd in CommandsFromAutoComplete)
+                Commands.Add('/' + cmd);
+            foreach (string cmd in CommandsFromDeclareCommands)
+                Commands.Add('/' + cmd);
+        }
+
+        public static void OnAutoCompleteDone(int transactionId, string[] result)
+        {
+            AutoCompleteResult = result;
+            if (transactionId == 0)
+            {
+                CommandsFromAutoComplete = result;
+                MergeCommands();
+            }
+            AutoCompleteDone = true;
+        }
+
+        public static void OnDeclareMinecraftCommand(string[] rootCommands)
+        {
+            CommandsFromDeclareCommands = rootCommands;
+            MergeCommands();
+        }
+
+        public static void InitAutocomplete()
+        {
+            autocomplete_engine!.AutoComplete("/");
         }
     }
 
@@ -199,6 +341,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="BehindCursor">Text behind the cursor, e.g. "my input comm"</param>
         /// <returns>List of auto-complete words, e.g. ["command", "comment"]</returns>
-        IEnumerable<string> AutoComplete(string BehindCursor);
+        int AutoComplete(string BehindCursor);
     }
 }

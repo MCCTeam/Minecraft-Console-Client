@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Brigadier.NET;
-using MinecraftClient.Commands;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.Settings;
 
-namespace MinecraftClient
+namespace MinecraftClient.Scripting
 {
     ///
     /// Welcome to the Bot API file !
@@ -42,7 +42,6 @@ namespace MinecraftClient
         private McClient? _handler = null;
         private ChatBot? master = null;
         private readonly List<string> registeredPluginChannels = new();
-        private readonly List<string> registeredCommands = new();
         private readonly object delayTasksLock = new();
         private readonly List<TaskWithDelay> delayedTasks = new();
         protected McClient Handler
@@ -101,12 +100,12 @@ namespace MinecraftClient
         /// NOTE: Chat messages cannot be sent at this point in the login process.
         /// If you want to send a message when the bot is loaded, use AfterGameJoined.
         /// </summary>
-        public virtual void Initialize() { }
+        public virtual void Initialize(CommandDispatcher<CmdResult> dispatcher) { }
 
         /// <summary>
         /// This method is called when the bot is being unloaded, you can use it to free up resources like DB connections
         /// </summary>
-        public virtual void OnUnload() { }
+        public virtual void OnUnload(CommandDispatcher<CmdResult> dispatcher) { }
 
         /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.
@@ -175,13 +174,13 @@ namespace MinecraftClient
         /// Called when properties for the Player entity are received from the server
         /// </summary>
         /// <param name="prop">Dictionary of player properties</param>
-        public virtual void OnPlayerProperty(Dictionary<string, Double> prop) { }
+        public virtual void OnPlayerProperty(Dictionary<string, double> prop) { }
 
         /// <summary>
         /// Called when server TPS are recalculated by MCC based on world time updates
         /// </summary>
         /// <param name="tps">New estimated server TPS (between 0 and 20)</param>
-        public virtual void OnServerTpsUpdate(Double tps) { }
+        public virtual void OnServerTpsUpdate(double tps) { }
 
         /// <summary>
         /// Called when a time changed
@@ -194,7 +193,7 @@ namespace MinecraftClient
         /// Called when an entity moved nearby
         /// </summary>
         /// <param name="entity">Entity with updated location</param>
-        public virtual void OnEntityMove(Mapping.Entity entity) { }
+        public virtual void OnEntityMove(Entity entity) { }
 
         /// <summary>
         /// Called after an internal MCC command has been performed
@@ -202,19 +201,19 @@ namespace MinecraftClient
         /// <param name="commandName">MCC Command Name</param>
         /// <param name="commandParams">MCC Command Parameters</param>
         /// <param name="Result">MCC command result</param>
-        public virtual void OnInternalCommand(string commandName, string commandParams, string Result) { }
+        public virtual void OnInternalCommand(string commandName, string commandParams, CmdResult Result) { }
 
         /// <summary>
         /// Called when an entity spawned nearby
         /// </summary>
         /// <param name="entity">New Entity</param>
-        public virtual void OnEntitySpawn(Mapping.Entity entity) { }
+        public virtual void OnEntitySpawn(Entity entity) { }
 
         /// <summary>
         /// Called when an entity despawns/dies nearby
         /// </summary>
         /// <param name="entity">Entity wich has just disappeared</param>
-        public virtual void OnEntityDespawn(Mapping.Entity entity) { }
+        public virtual void OnEntityDespawn(Entity entity) { }
 
         /// <summary>
         /// Called when the player held item has changed
@@ -515,7 +514,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         protected bool PerformInternalCommand(string command, Dictionary<string, object>? localVars = null)
         {
-            string? temp = "";
+            CmdResult temp = new();
             return Handler.PerformInternalCommand(command, ref temp, localVars);
         }
 
@@ -526,9 +525,9 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        protected bool PerformInternalCommand(string command, ref string? response_msg, Dictionary<string, object>? localVars = null)
+        protected bool PerformInternalCommand(string command, ref CmdResult result, Dictionary<string, object>? localVars = null)
         {
-            return Handler.PerformInternalCommand(command, ref response_msg, localVars);
+            return Handler.PerformInternalCommand(command, ref result, localVars);
         }
 
         /// <summary>
@@ -536,8 +535,8 @@ namespace MinecraftClient
         /// </summary>
         public static string GetVerbatim(string? text)
         {
-            if (String.IsNullOrEmpty(text))
-                return String.Empty;
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
 
             int idx = 0;
             var data = new char[text.Length];
@@ -556,13 +555,13 @@ namespace MinecraftClient
         /// </summary>
         public static bool IsValidName(string username)
         {
-            if (String.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(username))
                 return false;
 
             foreach (char c in username)
-                if (!((c >= 'a' && c <= 'z')
-                        || (c >= 'A' && c <= 'Z')
-                        || (c >= '0' && c <= '9')
+                if (!(c >= 'a' && c <= 'z'
+                        || c >= 'A' && c <= 'Z'
+                        || c >= '0' && c <= '9'
                         || c == '_'))
                     return false;
 
@@ -578,7 +577,7 @@ namespace MinecraftClient
         /// <returns>Returns true if the text is a private message</returns>
         protected static bool IsPrivateMessage(string text, ref string message, ref string sender)
         {
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
                 return false;
 
             text = GetVerbatim(text);
@@ -689,7 +688,7 @@ namespace MinecraftClient
         /// <returns>Returns true if the text is a chat message</returns>
         protected static bool IsChatMessage(string text, ref string message, ref string sender)
         {
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
                 return false;
 
             text = GetVerbatim(text);
@@ -792,7 +791,7 @@ namespace MinecraftClient
         /// <returns>Returns true if the text is a teleport request</returns>
         protected static bool IsTeleportRequest(string text, ref string sender)
         {
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
                 return false;
 
             text = GetVerbatim(text);
@@ -820,8 +819,8 @@ namespace MinecraftClient
                 {
                     //<Rank> Username has requested...
                     //[Rank] Username has requested...
-                    if (((tmp[0].StartsWith("<") && tmp[0].EndsWith(">"))
-                        || (tmp[0].StartsWith("[") && tmp[0].EndsWith("]")))
+                    if ((tmp[0].StartsWith("<") && tmp[0].EndsWith(">")
+                        || tmp[0].StartsWith("[") && tmp[0].EndsWith("]"))
                         && tmp.Length > 1)
                         sender = tmp[1];
                     else //Username has requested..
@@ -847,12 +846,12 @@ namespace MinecraftClient
         {
             string botName = Translations.ResourceManager.GetString("botname." + GetType().Name) ?? GetType().Name;
             if (_handler == null || master == null)
-                ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", botName, text));
+                ConsoleIO.WriteLogLine(string.Format("[{0}] {1}", botName, text));
             else
-                Handler.Log.Info(String.Format("[{0}] {1}", botName, text));
-            string logfile = Settings.Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
+                Handler.Log.Info(string.Format("[{0}] {1}", botName, text));
+            string logfile = Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
 
-            if (!String.IsNullOrEmpty(logfile))
+            if (!string.IsNullOrEmpty(logfile))
             {
                 if (!File.Exists(logfile))
                 {
@@ -869,10 +868,10 @@ namespace MinecraftClient
         protected static void LogToConsole(string originBotName, object? text)
         {
             string botName = Translations.ResourceManager.GetString(originBotName) ?? originBotName;
-            ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", botName, text));
-            string logfile = Settings.Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
+            ConsoleIO.WriteLogLine(string.Format("[{0}] {1}", botName, text));
+            string logfile = Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
 
-            if (!String.IsNullOrEmpty(logfile))
+            if (!string.IsNullOrEmpty(logfile))
             {
                 if (!File.Exists(logfile))
                 {
@@ -892,7 +891,7 @@ namespace MinecraftClient
         /// <param name="text">Debug log text to write</param>
         protected void LogDebugToConsole(object text)
         {
-            if (Settings.Config.Logging.DebugMessages)
+            if (Config.Logging.DebugMessages)
                 LogToConsole(text);
         }
 
@@ -924,7 +923,7 @@ namespace MinecraftClient
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
-            if (Settings.Config.Logging.DebugMessages)
+            if (Config.Logging.DebugMessages)
             {
                 string botName = Translations.ResourceManager.GetString("botname." + GetType().Name) ?? GetType().Name;
                 ConsoleIO.WriteLogLine(string.Format(Translations.chatbot_reconnect, botName));
@@ -946,10 +945,6 @@ namespace MinecraftClient
         /// </summary>
         protected void UnloadBot()
         {
-            foreach (string cmdName in registeredCommands)
-            {
-                Handler.UnregisterCommand(cmdName);
-            }
             Handler.BotUnLoad(this);
         }
 
@@ -960,7 +955,7 @@ namespace MinecraftClient
         /// <param name="message">Message</param>
         protected void SendPrivateMessage(string player, string message)
         {
-            SendText(String.Format("/{0} {1} {2}", Config.Main.Advanced.PrivateMsgsCmdName, player, message));
+            SendText(string.Format("/{0} {1} {2}", Config.Main.Advanced.PrivateMsgsCmdName, player, message));
         }
 
         /// <summary>
@@ -1079,7 +1074,7 @@ namespace MinecraftClient
         /// Get the current location of the player (Feet location)
         /// </summary>
         /// <returns>Minecraft world or null if associated setting is disabled</returns>
-        protected Mapping.Location GetCurrentLocation()
+        protected Location GetCurrentLocation()
         {
             return Handler.GetCurrentLocation();
         }
@@ -1095,7 +1090,7 @@ namespace MinecraftClient
         /// <param name="timeout">How long to wait before stopping computation (default: 5 seconds)</param>
         /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
+        protected bool MoveToLocation(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
         {
             return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout);
         }
@@ -1113,7 +1108,7 @@ namespace MinecraftClient
         /// Look at the specified location
         /// </summary>
         /// <param name="location">Location to look at</param>
-        protected void LookAtLocation(Mapping.Location location)
+        protected void LookAtLocation(Location location)
         {
             Handler.UpdateLocation(Handler.GetCurrentLocation(), location);
         }
@@ -1167,13 +1162,13 @@ namespace MinecraftClient
                 //Read all lines from file, remove lines with no text, convert to lowercase,
                 //remove duplicate entries, convert to a string array, and return the result.
                 return File.ReadAllLines(file, Encoding.UTF8)
-                        .Where(line => !String.IsNullOrWhiteSpace(line))
+                        .Where(line => !string.IsNullOrWhiteSpace(line))
                         .Select(line => line.ToLower())
                         .Distinct().ToArray();
             }
             else
             {
-                LogToConsole("File not found: " + System.IO.Path.GetFullPath(file));
+                LogToConsole("File not found: " + Path.GetFullPath(file));
                 return Array.Empty<string>();
             }
         }
@@ -1315,7 +1310,7 @@ namespace MinecraftClient
         /// Get server current TPS (tick per second)
         /// </summary>
         /// <returns>tps</returns>
-        protected Double GetServerTPS()
+        protected double GetServerTPS()
         {
             return Handler.GetServerTPS();
         }
@@ -1542,21 +1537,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Register a command in command prompt. Command will be automatically unregistered when unloading ChatBot
-        /// </summary>
-        /// <param name="cmdName">Name of the command</param>
-        /// <param name="cmdDesc">Description/usage of the command</param>
-        /// <param name="callback">Method for handling the command</param>
-        /// <returns>True if successfully registered</returns>
-        protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
-        {
-            bool result = Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
-            if (result)
-                registeredCommands.Add(cmdName.ToLower());
-            return result;
-        }
-
-        /// <summary>
         /// Close a opened inventory
         /// </summary>
         /// <param name="inventoryID"></param>
@@ -1687,11 +1667,12 @@ namespace MinecraftClient
             public override string CmdUsage { get { return _cmdUsage; } }
             public override string CmdDesc { get { return _cmdDesc; } }
 
-            public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+            public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
             {
+
             }
 
-            public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+            public string Run(McClient handler, string command, Dictionary<string, object>? localVars)
             {
                 return Runner(command, GetArgs(command));
             }

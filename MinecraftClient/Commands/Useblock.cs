@@ -1,6 +1,8 @@
-using System.Collections.Generic;
 using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -10,29 +12,42 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "useblock <x> <y> <z>"; } }
         public override string CmdDesc { get { return Translations.cmd_useblock_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
         {
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Then(l => l.Argument("Location", MccArguments.Location())
+                    .Executes(r => UseBlockAtLocation(r.Source, handler, MccArguments.GetLocation(r, "Location"))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
         }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int UseBlockAtLocation(CmdResult r, McClient handler, Location block)
         {
             if (!handler.GetTerrainEnabled())
-                return Translations.extra_terrainandmovement_required;
-            else if (HasArg(command))
-            {
-                string[] args = GetArgs(command);
-                if (args.Length >= 3)
-                {
-                    Location block = Location.Parse(handler.GetCurrentLocation().ToFloor(), args[0], args[1], args[2]).ToFloor();
-                    Location blockCenter = block.ToCenter();
-                    bool res = handler.PlaceBlock(block, Direction.Down);
-                    return string.Format(Translations.cmd_useblock_use, blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed");
-                }
-                else
-                    return GetCmdDescTranslated();
-            }
-            else
-                return GetCmdDescTranslated();
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            Location current = handler.GetCurrentLocation();
+            block = block.ToAbsolute(current).ToFloor();
+            Location blockCenter = block.ToCenter();
+            bool res = handler.PlaceBlock(block, Direction.Down);
+            return r.SetAndReturn(string.Format(Translations.cmd_useblock_use, blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed"), res);
         }
     }
 }

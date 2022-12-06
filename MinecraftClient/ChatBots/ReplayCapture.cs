@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Protocol;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -10,6 +15,8 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class ReplayCapture : ChatBot
     {
+        public const string CommandName = "replay";
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -33,14 +40,80 @@ namespace MinecraftClient.ChatBots
         private ReplayHandler? replay;
         private int backupCounter = -1;
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             SetNetworkPacketEventEnabled(true);
             replay = new ReplayHandler(GetProtocolVersion());
             replay.MetaData.serverName = GetServerHost() + GetServerPort();
             backupCounter = Settings.DoubleToTick(Config.Backup_Interval);
 
-            RegisterChatBotCommand("replay", Translations.bot_replayCapture_cmd, "replay <save|stop>", Command);
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("save")
+                    .Executes(r => OnCommandSave(r.Source)))
+                .Then(l => l.Literal("stop")
+                    .Executes(r => OnCommandStop(r.Source)))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
+        }
+
+        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+        {
+            dispatcher.Unregister(CommandName);
+            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+        }
+
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>   string.Format(Translations.general_available_cmd, "save, stop")
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int OnCommandSave(CmdResult r)
+        {
+            try
+            {
+                if (replay!.RecordRunning)
+                {
+                    replay.CreateBackupReplay(@"replay_recordings\" + replay.GetReplayDefaultName());
+                    return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_replayCapture_created);
+                }
+                else
+                    return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_replayCapture_restart);
+            }
+            catch (Exception e)
+            {
+                return r.SetAndReturn(CmdResult.Status.Fail, e.Message);
+            }
+        }
+
+        private int OnCommandStop(CmdResult r)
+        {
+            try
+            {
+                if (replay!.RecordRunning)
+                {
+                    replay.OnShutDown();
+                    return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_replayCapture_stopped);
+                }
+                else
+                    return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_replayCapture_restart);
+            }
+            catch (Exception e)
+            {
+                return r.SetAndReturn(CmdResult.Status.Fail, e.Message);
+            }
         }
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
@@ -65,38 +138,6 @@ namespace MinecraftClient.ChatBots
         {
             replay!.OnShutDown();
             return base.OnDisconnect(reason, message);
-        }
-
-        public string Command(string cmd, string[] args)
-        {
-            try
-            {
-                if (replay!.RecordRunning)
-                {
-                    if (args.Length > 0)
-                    {
-                        switch (args[0].ToLower())
-                        {
-                            case "save":
-                                {
-                                    replay.CreateBackupReplay(@"replay_recordings\" + replay.GetReplayDefaultName());
-                                    return Translations.bot_replayCapture_created;
-                                }
-                            case "stop":
-                                {
-                                    replay.OnShutDown();
-                                    return Translations.bot_replayCapture_stopped;
-                                }
-                        }
-                    }
-                    return string.Format(Translations.general_available_cmd, "save, stop");
-                }
-                else return Translations.bot_replayCapture_restart;
-            }
-            catch (Exception e)
-            {
-                return e.Message;
-            }
         }
     }
 }

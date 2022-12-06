@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using DynamicRun.Builder;
+using MinecraftClient.Scripting.DynamicRun.Builder;
 using static MinecraftClient.Settings;
 
-namespace MinecraftClient
+namespace MinecraftClient.Scripting
 {
     /// <summary>
     /// C# Script runner - Compile on-the-fly and run C# scripts
@@ -77,7 +77,7 @@ namespace MinecraftClient
                         script.Add("return null;");
 
                     //Generate a class from the given script
-                    string code = String.Join("\n", new string[]
+                    string code = string.Join("\n", new string[]
                     {
                         "using System;",
                         "using System.Collections.Generic;",
@@ -90,15 +90,15 @@ namespace MinecraftClient
                         "using MinecraftClient;",
                         "using MinecraftClient.Mapping;",
                         "using MinecraftClient.Inventory;",
-                        String.Join("\n", libs),
+                        string.Join("\n", libs),
                         "namespace ScriptLoader {",
                         "public class Script {",
                         "public CSharpAPI MCC;",
                         "public object __run(CSharpAPI __apiHandler, string[] args) {",
                             "this.MCC = __apiHandler;",
-                            String.Join("\n", script),
+                            string.Join("\n", script),
                         "}",
-                            String.Join("\n", extensions),
+                            string.Join("\n", extensions),
                         "}}",
                     });
 
@@ -108,11 +108,13 @@ namespace MinecraftClient
                     var result = compiler.Compile(code, Guid.NewGuid().ToString(), dlls);
 
                     //Process compile warnings and errors
-                    if (result.Failures != null) {
-                        
+                    if (result.Failures != null)
+                    {
+
                         ConsoleIO.WriteLogLine("[Script] Compilation failed with error(s):");
 
-                        foreach (var failure in result.Failures) {
+                        foreach (var failure in result.Failures)
+                        {
                             ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, line:col{failure.Location.GetMappedLineSpan()}: [{failure.Id}] {failure.GetMessage()}");
                         }
 
@@ -226,7 +228,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully sent (Deprectated, always returns TRUE for compatibility purposes with existing scripts)</returns>
         public bool SendText(object text)
         {
-            return base.SendText(text is string str ? str : (text.ToString() ?? string.Empty));
+            return base.SendText(text is string str ? str : text.ToString() ?? string.Empty);
         }
 
         /// <summary>
@@ -305,7 +307,7 @@ namespace MinecraftClient
             if (localVars != null && localVars.ContainsKey(varName))
                 return localVars[varName];
             else
-                return Settings.Config.AppVar.GetVar(varName);
+                return Config.AppVar.GetVar(varName);
         }
 
         /// <summary>
@@ -317,7 +319,7 @@ namespace MinecraftClient
         {
             if (localVars != null && localVars.ContainsKey(varName))
                 localVars.Remove(varName);
-            return Settings.Config.AppVar.SetVar(varName, varValue);
+            return Config.AppVar.SetVar(varName, varValue);
         }
 
         /// <summary>
@@ -359,7 +361,7 @@ namespace MinecraftClient
         /// <returns>True if the account was found and loaded</returns>
         public bool SetAccount(string accountAlias, bool andReconnect = false)
         {
-            bool result = Settings.Config.Main.Advanced.SetAccount(accountAlias);
+            bool result = Config.Main.Advanced.SetAccount(accountAlias);
             if (result && andReconnect)
                 ReconnectToTheServer(keepAccountAndServerSettings: true);
             return result;
@@ -372,7 +374,7 @@ namespace MinecraftClient
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
         public bool SetServer(string server, bool andReconnect = false)
         {
-            bool result = Settings.Config.Main.SetServerIP(new MainConfigHealper.MainConfig.ServerInfoConfig(server), true);
+            bool result = Config.Main.SetServerIP(new MainConfigHealper.MainConfig.ServerInfoConfig(server), true);
             if (result && andReconnect)
                 ReconnectToTheServer(keepAccountAndServerSettings: true);
             return result;

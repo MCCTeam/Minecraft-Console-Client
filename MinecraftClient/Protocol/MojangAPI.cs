@@ -214,7 +214,7 @@ namespace MinecraftClient.Protocol
                 fetchTask.Dispose();
             }
             catch (Exception)
-            { 
+            {
                 return new MojangServiceStatus();
             }
 

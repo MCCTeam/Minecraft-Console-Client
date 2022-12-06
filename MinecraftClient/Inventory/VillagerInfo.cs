@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Mapping
+﻿namespace MinecraftClient.Inventory
 {
     /// <summary>
     /// Properties of a villager

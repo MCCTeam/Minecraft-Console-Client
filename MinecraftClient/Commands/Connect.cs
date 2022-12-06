@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Brigadier.NET;
+﻿using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -9,31 +11,65 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "connect <server> [account]"; } }
         public override string CmdDesc { get { return Translations.cmd_connect_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
         {
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Then(l => l.Argument("ServerNick", MccArguments.ServerNick())
+                    .Executes(r => DoConnect(r.Source, handler, Arguments.GetString(r, "ServerNick"), string.Empty))
+                    .Then(l => l.Argument("AccountNick", MccArguments.AccountNick())
+                        .Executes(r => DoConnect(r.Source, handler, Arguments.GetString(r, "ServerNick"), Arguments.GetString(r, "AccountNick")))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
         }
 
-        public override string Run(McClient? handler, string command, Dictionary<string, object>? localVars)
+        private int GetUsage(CmdResult r, string? cmd)
         {
-            if (HasArg(command))
+            return r.SetAndReturn(cmd switch
             {
-                string[] args = GetArgs(command);
-                if (args.Length > 1)
-                {
-                    if (!Settings.Config.Main.Advanced.SetAccount(args[1]))
-                    {
-                        return string.Format(Translations.cmd_connect_unknown, args[1]);
-                    }
-                }
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
 
-                if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHealper.MainConfig.ServerInfoConfig(args[0]), true))
-                {
-                    Program.Restart(keepAccountAndServerSettings: true);
-                    return "";
-                }
-                else return string.Format(Translations.cmd_connect_invalid_ip, args[0]);
+        private int DoConnect(CmdResult r, McClient handler, string server, string account)
+        {
+            if (!string.IsNullOrWhiteSpace(account) && !Settings.Config.Main.Advanced.SetAccount(account))
+                return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_connect_unknown, account));
+
+            if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHealper.MainConfig.ServerInfoConfig(server), true))
+            {
+                Program.Restart(keepAccountAndServerSettings: true);
+                return r.SetAndReturn(Status.Done);
             }
-            else return GetCmdDescTranslated();
+            else
+            {
+                return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_connect_invalid_ip, server));
+            }
+        }
+
+        internal static string DoConnect(string command)
+        {
+            string[] args = GetArgs(command);
+            if (args.Length > 1 && !Settings.Config.Main.Advanced.SetAccount(args[1]))
+                return string.Format(Translations.cmd_connect_unknown, args[1]);
+
+            if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHealper.MainConfig.ServerInfoConfig(args[0]), true))
+            {
+                Program.Restart(keepAccountAndServerSettings: true);
+                return string.Empty;
+            }
+            else
+            {
+                return string.Format(Translations.cmd_connect_invalid_ip, args[0]);
+            }
         }
     }
 }

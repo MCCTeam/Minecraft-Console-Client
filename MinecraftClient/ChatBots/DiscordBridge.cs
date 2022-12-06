@@ -3,16 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Logging;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
     public class DiscordBridge : ChatBot
     {
+        public const string CommandName = "dscbridge";
+
         private enum BridgeDirection
         {
             Both = 0,
@@ -68,19 +75,75 @@ namespace MinecraftClient.ChatBots
             instance = this;
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
-            RegisterChatBotCommand("dscbridge", "bot.DiscordBridge.desc", "dscbridge direction <both|mc|discord>", OnDscCommand);
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("direction")
+                    .Then(l => l.Literal("both")
+                        .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Both)))
+                    .Then(l => l.Literal("mc")
+                        .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Minecraft)))
+                    .Then(l => l.Literal("discord")
+                        .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Discord)))
+                )
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
 
             Task.Run(async () => await MainAsync());
         }
 
-        ~DiscordBridge()
+        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
         {
+            dispatcher.Unregister(CommandName);
+            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             Disconnect();
         }
 
-        public override void OnUnload()
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>   "dscbridge direction <both|mc|discord>"
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int OnCommandDirection(CmdResult r, BridgeDirection direction)
+        {
+            string bridgeName;
+            switch (direction)
+            {
+                case BridgeDirection.Both:
+                    bridgeName = Translations.bot_DiscordBridge_direction_both;
+                    bridgeDirection = BridgeDirection.Both;
+                    break;
+
+                case BridgeDirection.Minecraft:
+                    bridgeName = Translations.bot_DiscordBridge_direction_minecraft;
+                    bridgeDirection = BridgeDirection.Minecraft;
+                    break;
+
+                case BridgeDirection.Discord:
+                    bridgeName = Translations.bot_DiscordBridge_direction_discord;
+                    bridgeDirection = BridgeDirection.Discord;
+                    break;
+
+                default:
+                    goto case BridgeDirection.Both;
+            }
+            return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_DiscordBridge_direction, bridgeName));
+        }
+
+        ~DiscordBridge()
         {
             Disconnect();
         }
@@ -112,47 +175,6 @@ namespace MinecraftClient.ChatBots
         public static DiscordBridge? GetInstance()
         {
             return instance;
-        }
-
-        private string OnDscCommand(string cmd, string[] args)
-        {
-            if (args.Length == 2)
-            {
-                if (args[0].ToLower().Equals("direction"))
-                {
-                    string direction = args[1].ToLower().Trim();
-
-                    string bridgeName;
-                    switch (direction)
-                    {
-                        case "b":
-                        case "both":
-                            bridgeName = Translations.bot_DiscordBridge_direction_both;
-                            bridgeDirection = BridgeDirection.Both;
-                            break;
-
-                        case "mc":
-                        case "minecraft":
-                            bridgeName = Translations.bot_DiscordBridge_direction_minecraft;
-                            bridgeDirection = BridgeDirection.Minecraft;
-                            break;
-
-                        case "d":
-                        case "dcs":
-                        case "discord":
-                            bridgeName = Translations.bot_DiscordBridge_direction_discord;
-                            bridgeDirection = BridgeDirection.Discord;
-                            break;
-
-                        default:
-                            return Translations.bot_DiscordBridge_invalid_direction;
-                    }
-
-                    return string.Format(Translations.bot_DiscordBridge_direction, bridgeName);
-                };
-            }
-
-            return "dscbridge direction <both|mc|discord>";
         }
 
         public override void GetText(string text)
@@ -369,9 +391,8 @@ namespace MinecraftClient.ChatBots
                         message = message[1..];
                         await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discordBotClient, ":gear:"));
 
-                        string? result = "";
+                        CmdResult result = new();
                         PerformInternalCommand(message, ref result);
-                        result = string.IsNullOrEmpty(result) ? "-" : result;
 
                         await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(discordBotClient, ":gear:"));
                         await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discordBotClient, ":white_check_mark:"));

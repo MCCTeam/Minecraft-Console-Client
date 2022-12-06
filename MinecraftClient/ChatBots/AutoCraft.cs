@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 using static MinecraftClient.ChatBots.AutoCraft.Configs;
 
@@ -11,6 +16,8 @@ namespace MinecraftClient.ChatBots
 {
     public class AutoCraft : ChatBot
     {
+        public const string CommandName = "autocraft";
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -40,7 +47,7 @@ namespace MinecraftClient.ChatBots
                     Name: "Recipe-Name-2",
                     Type: CraftTypeConfig.table,
                     Result: ItemType.StoneBricks,
-                    Slots: new ItemType[9] { 
+                    Slots: new ItemType[9] {
                         ItemType.Stone, ItemType.Stone, ItemType.Null,
                         ItemType.Stone, ItemType.Stone, ItemType.Null,
                         ItemType.Null, ItemType.Null, ItemType.Null,
@@ -117,7 +124,7 @@ namespace MinecraftClient.ChatBots
 
                 public ItemType Result = ItemType.Air;
 
-                public ItemType[] Slots = new ItemType[9] { 
+                public ItemType[] Slots = new ItemType[9] {
                     ItemType.Null, ItemType.Null, ItemType.Null,
                     ItemType.Null, ItemType.Null, ItemType.Null,
                     ItemType.Null, ItemType.Null, ItemType.Null,
@@ -279,7 +286,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override void Initialize()
+        public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
         {
             if (!GetInventoryEnabled())
             {
@@ -288,81 +295,93 @@ namespace MinecraftClient.ChatBots
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("autocraft", Translations.bot_autoCraft_cmd, GetHelp(), CommandHandler);
-            RegisterChatBotCommand("ac", Translations.bot_autoCraft_alias, GetHelp(), CommandHandler);
+
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Then(l => l.Literal("list")
+                        .Executes(r => OnCommandHelp(r.Source, "list")))
+                    .Then(l => l.Literal("start")
+                        .Executes(r => OnCommandHelp(r.Source, "start")))
+                    .Then(l => l.Literal("stop")
+                        .Executes(r => OnCommandHelp(r.Source, "stop")))
+                    .Then(l => l.Literal("help")
+                        .Executes(r => OnCommandHelp(r.Source, "help")))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("list")
+                    .Executes(r => OnCommandList(r.Source)))
+                .Then(l => l.Literal("start")
+                    .Then(l => l.Argument("RecipeName", MccArguments.AutoCraftRecipeName())
+                        .Executes(r => OnCommandStart(r.Source, Arguments.GetString(r, "RecipeName")))))
+                .Then(l => l.Literal("stop")
+                    .Executes(r => OnCommandStop(r.Source)))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
         }
 
-        public string CommandHandler(string cmd, string[] args)
+        public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
         {
-            if (args.Length > 0)
-            {
-                switch (args[0])
-                {
-                    case "list":
-                        StringBuilder nameList = new();
-                        foreach (RecipeConfig recipe in Config.Recipes)
-                            nameList.Append(recipe.Name).Append(", ");
-                        return string.Format(Translations.bot_autoCraft_cmd_list, Config.Recipes.Length, nameList.ToString());
-                    case "start":
-                        if (args.Length >= 2)
-                        {
-                            string name = args[1];
-
-                            bool hasRecipe = false;
-                            RecipeConfig? recipe = null;
-                            foreach (RecipeConfig recipeConfig in Config.Recipes)
-                            {
-                                if (recipeConfig.Name == name)
-                                {
-                                    hasRecipe = true;
-                                    recipe = recipeConfig;
-                                    break;
-                                }
-                            }
-
-                            if (hasRecipe)
-                            {
-                                ResetVar();
-                                PrepareCrafting(recipe!);
-                                return "";
-                            }
-                            else
-                                return Translations.bot_autoCraft_recipe_not_exist;
-                        }
-                        else
-                            return Translations.bot_autoCraft_no_recipe_name;
-                    case "stop":
-                        StopCrafting();
-                        return Translations.bot_autoCraft_stop;
-                    case "help":
-                        return GetCommandHelp(args.Length >= 2 ? args[1] : "");
-                    default:
-                        return GetHelp();
-                }
-            }
-            else return GetHelp();
+            dispatcher.Unregister(CommandName);
+            dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
-        private static string GetHelp()
+        private int OnCommandHelp(CmdResult r, string? cmd)
         {
-            return string.Format(Translations.bot_autoCraft_available_cmd, "load, list, reload, resetcfg, start, stop, help");
-        }
-
-        private string GetCommandHelp(string cmd)
-        {
-            return cmd.ToLower() switch
+            return r.SetAndReturn(cmd switch
             {
 #pragma warning disable format // @formatter:off
-                "load"      =>   Translations.bot_autoCraft_help_load,
                 "list"      =>   Translations.bot_autoCraft_help_list,
-                "reload"    =>   Translations.bot_autoCraft_help_reload,
-                "resetcfg"  =>   Translations.bot_autoCraft_help_resetcfg,
                 "start"     =>   Translations.bot_autoCraft_help_start,
                 "stop"      =>   Translations.bot_autoCraft_help_stop,
                 "help"      =>   Translations.bot_autoCraft_help_help,
-                _           =>    GetHelp(),
+                _           =>   string.Format(Translations.bot_autoCraft_available_cmd, "load, list, reload, resetcfg, start, stop, help")
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
-            };
+            });
+        }
+
+        private int OnCommandList(CmdResult r)
+        {
+            StringBuilder nameList = new();
+            foreach (RecipeConfig recipe in Config.Recipes)
+                nameList.Append(recipe.Name).Append(", ");
+            return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_autoCraft_cmd_list, Config.Recipes.Length, nameList.ToString()));
+        }
+
+        private int OnCommandStart(CmdResult r, string name)
+        {
+            bool hasRecipe = false;
+            RecipeConfig? recipe = null;
+            foreach (RecipeConfig recipeConfig in Config.Recipes)
+            {
+                if (recipeConfig.Name == name)
+                {
+                    hasRecipe = true;
+                    recipe = recipeConfig;
+                    break;
+                }
+            }
+
+            if (hasRecipe)
+            {
+                ResetVar();
+                PrepareCrafting(recipe!);
+                return r.SetAndReturn(CmdResult.Status.Done);
+            }
+            else
+            {
+                return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_autoCraft_recipe_not_exist);
+            }
+        }
+
+        private int OnCommandStop(CmdResult r)
+        {
+            StopCrafting();
+            return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autoCraft_stop);
         }
 
         #region Core part of auto-crafting
@@ -442,7 +461,7 @@ namespace MinecraftClient.ChatBots
 
             ItemType ResultItem = recipeConfig.Result;
 
-            ContainerType CraftingAreaType = 
+            ContainerType CraftingAreaType =
                 (recipeConfig.Type == CraftTypeConfig.player) ? ContainerType.PlayerInventory : ContainerType.Crafting;
 
             PrepareCrafting(new Recipe(materials, ResultItem, CraftingAreaType));
