@@ -2253,7 +2253,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Downloading &apos;{0}.lang&apos; from Mojang servers....
+        ///   Looks up a localized string similar to Downloading &apos;{0}.json&apos; from Mojang servers....
         /// </summary>
         internal static string chat_download {
             get {

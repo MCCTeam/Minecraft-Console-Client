@@ -864,7 +864,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Done. File saved as '{0}'</value>
   </data>
   <data name="chat.download" xml:space="preserve">
-    <value>Downloading '{0}.lang' from Mojang servers...</value>
+    <value>Downloading '{0}.json' from Mojang servers...</value>
   </data>
   <data name="chat.fail" xml:space="preserve">
     <value>Failed to download the file.</value>
