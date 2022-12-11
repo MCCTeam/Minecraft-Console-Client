@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Brigadier.NET;
+﻿using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 
@@ -11,7 +10,8 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "upgrade [-f|check|cancel|download]"; } }
         public override string CmdDesc { get { return string.Empty; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher) {
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
                     .Executes(r => GetUsage(r.Source, string.Empty))
@@ -41,8 +41,10 @@ namespace MinecraftClient.Commands
             );
         }
 
-        private int GetUsage(CmdResult r, string? cmd) {
-            return r.SetAndReturn(cmd switch {
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
 #pragma warning disable format // @formatter:off
                 "cancel"    =>  GetCmdDescTranslated(),
                 "check"     =>  GetCmdDescTranslated(),

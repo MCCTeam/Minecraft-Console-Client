@@ -18,19 +18,26 @@ namespace MinecraftClient.CommandHandler.Patch
         public static string GetAllUsageString(this CommandDispatcher<CmdResult> commandDispatcher, string commandName, bool restricted)
         {
             char cmdChar = Settings.Config.Main.Advanced.InternalCmdChar.ToChar();
-            string[] usages = commandDispatcher.GetAllUsage(commandDispatcher.GetRoot().GetChild(commandName), new(), restricted);
-            StringBuilder sb = new();
-            sb.AppendLine("All Usages:");
-            foreach (var usage in usages)
+            try
             {
-                sb.Append(cmdChar).Append(commandName).Append(' ');
-                if (usage.Length > 0 && usage[0] == '_')
-                    sb.AppendLine(usage.Replace("_help -> ", $"_help -> {cmdChar}help "));
-                else
-                    sb.AppendLine(usage);
+                string[] usages = commandDispatcher.GetAllUsage(commandDispatcher.GetRoot().GetChild(commandName), new(), restricted);
+                StringBuilder sb = new();
+                sb.AppendLine("All Usages:");
+                foreach (var usage in usages)
+                {
+                    sb.Append(cmdChar).Append(commandName).Append(' ');
+                    if (usage.Length > 0 && usage[0] == '_')
+                        sb.AppendLine(usage.Replace("_help -> ", $"_help -> {cmdChar}help "));
+                    else
+                        sb.AppendLine(usage);
+                }
+                sb.Remove(sb.Length - 1, 1);
+                return sb.ToString();
             }
-            sb.Remove(sb.Length - 1, 1);
-            return sb.ToString();
+            catch
+            {
+                return string.Empty;
+            }
         }
     }
 }

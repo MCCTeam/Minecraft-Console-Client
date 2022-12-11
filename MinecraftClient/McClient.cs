@@ -150,7 +150,6 @@ namespace MinecraftClient
         /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
         public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo)
         {
-            dispatcher = new();
             CmdResult.client = this;
             terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
             inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
@@ -1048,9 +1047,10 @@ namespace MinecraftClient
             if (InvokeRequired)
                 return InvokeOnMainThread(() => GetInventory(inventoryID));
 
-            if (inventories.ContainsKey(inventoryID))
-                return inventories[inventoryID];
-            return null;
+            if (inventories.TryGetValue(inventoryID, out Container? inv))
+                return inv;
+            else
+                return null;
         }
 
         /// <summary>

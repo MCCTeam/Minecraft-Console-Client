@@ -1,6 +1,4 @@
 ﻿using System;
-using Brigadier.NET;
-using MinecraftClient.CommandHandler;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 

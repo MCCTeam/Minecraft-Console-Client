@@ -790,8 +790,7 @@ namespace MinecraftClient {
         ///NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
         ///It&apos;s similar to making animals follow you when you&apos;re holding food in your hand.
         ///This is due to a slow pathfinding algorithm, we&apos;re working on getting a better one
-        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,
-        /// [rest of string was truncated]&quot;;.
+        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatBot_FollowPlayer {
             get {
@@ -1073,6 +1072,51 @@ namespace MinecraftClient {
         internal static string ChatFormat_UserDefined {
             get {
                 return ResourceManager.GetString("ChatFormat.UserDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Console-related settings..
+        /// </summary>
+        internal static string Console {
+            get {
+                return ResourceManager.GetString("Console", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The settings for command completion suggestions..
+        /// </summary>
+        internal static string Console_CommandSuggestion {
+            get {
+                return ResourceManager.GetString("Console.CommandSuggestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Whether to display command suggestions in the console..
+        /// </summary>
+        internal static string Console_CommandSuggestion_Enable {
+            get {
+                return ResourceManager.GetString("Console.CommandSuggestion.Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a garbled code like &quot;←[0m&quot; appears on the terminal, you can turn off this..
+        /// </summary>
+        internal static string Console_Enable_Color {
+            get {
+                return ResourceManager.GetString("Console.Enable_Color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can use &quot;Ctrl+P&quot; to print out the current input and cursor position..
+        /// </summary>
+        internal static string Console_General_Display_Uesr_Input {
+            get {
+                return ResourceManager.GetString("Console.General.Display_Uesr_Input", resourceCulture);
             }
         }
         

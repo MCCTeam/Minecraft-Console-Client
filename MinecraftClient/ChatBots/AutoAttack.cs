@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Brigadier.NET;
-using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;

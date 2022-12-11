@@ -23,8 +23,29 @@ namespace MinecraftClient.CommandHandler.ArgumentType
 
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
-            foreach (var result in Enum.GetNames(typeof(ItemType)))
-                builder.Suggest(result);
+            foreach (ItemType result in Enum.GetValues<ItemType>())
+            {
+                if (result == ItemType.Unknown || result == ItemType.Null)
+                    continue;
+
+                string name = result.ToString();
+                string localName = Item.GetTypeString(result);
+                bool same = true;
+                for (int i = 0, j = 0; i < name.Length; ++i, ++j)
+                {
+                    while (j < localName.Length && localName[j] == ' ')
+                        ++j;
+                    if (j >= localName.Length || name[i] != localName[j])
+                    {
+                        same = false;
+                        break;
+                    }
+                }
+                if (same)
+                    builder.Suggest(name);
+                else
+                    builder.Suggest(name, new SuggestionTooltip(localName));
+            }
             return builder.BuildFuture();
         }
     }
