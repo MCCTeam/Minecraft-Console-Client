@@ -87,6 +87,7 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Literal("everything")
                         .Executes(r => OnCommandMode(r.Source, DropMode.everything))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }

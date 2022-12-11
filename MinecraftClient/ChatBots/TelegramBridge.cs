@@ -91,6 +91,7 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Literal("telegram")
                         .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Telegram))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 

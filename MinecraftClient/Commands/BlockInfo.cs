@@ -32,6 +32,7 @@ namespace MinecraftClient.Commands
                     .Then(l => l.Literal("-s")
                         .Executes(r => LogBlockInfo(r.Source, MccArguments.GetLocation(r, "Location"), true))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

@@ -94,6 +94,7 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Argument("MapID", MccArguments.MapBotMapId())
                         .Executes(r => OnCommandRender(r.Source, Arguments.GetInteger(r, "MapID")))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }

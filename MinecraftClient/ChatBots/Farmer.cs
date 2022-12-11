@@ -105,6 +105,7 @@ namespace MinecraftClient.ChatBots
                         .Then(l => l.Argument("OtherArgs", Arguments.GreedyString())
                             .Executes(r => OnCommandStart(r.Source, MccArguments.GetFarmerCropType(r, "CropType"), Arguments.GetString(r, "OtherArgs"))))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }

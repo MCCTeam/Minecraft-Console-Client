@@ -33,6 +33,7 @@ namespace MinecraftClient.Commands
                     .Then(l => l.Argument("BotName", MccArguments.BotName())
                         .Executes(r => DoUnloadBot(r.Source, Arguments.GetString(r, "BotName")))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

@@ -26,6 +26,7 @@ namespace MinecraftClient.Commands
                 .Then(l => l.Argument("Location", MccArguments.Location())
                     .Executes(r => DigAt(r.Source, MccArguments.GetLocation(r, "Location"))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

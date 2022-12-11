@@ -92,6 +92,7 @@ namespace MinecraftClient.ChatBots
                         .Executes(r => OnCommandDirection(r.Source, BridgeDirection.Discord)))
                 )
                 .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 

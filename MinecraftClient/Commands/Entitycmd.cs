@@ -72,6 +72,7 @@ namespace MinecraftClient.Commands
                     .Then(l => l.Literal("list")
                         .Executes(r => OperateWithType(r.Source, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }
