@@ -794,6 +794,8 @@ namespace MinecraftClient
 
                     ConsoleInteractive.ConsoleSuggestion.EnableColor = CommandSuggestion.Enable_Color;
 
+                    ConsoleInteractive.ConsoleSuggestion.UseBasicArrow = CommandSuggestion.Use_Basic_Arrow;
+
                     CommandSuggestion.Max_Suggestion_Width =
                         ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionLength(CommandSuggestion.Max_Suggestion_Width);
 
@@ -885,6 +887,9 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Console.Enable_Color$")]
                     public bool Enable_Color = true;
+
+                    [TomlInlineComment("$Console.CommandSuggestion.Use_Basic_Arrow$")]
+                    public bool Use_Basic_Arrow = false;
 
                     public int Max_Suggestion_Width = 30;
 

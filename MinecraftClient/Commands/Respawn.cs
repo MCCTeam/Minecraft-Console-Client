@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "respawn"; } }
         public override string CmdDesc { get { return Translations.cmd_respawn_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -19,7 +19,7 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => DoRespawn(r.Source, handler))
+                .Executes(r => DoRespawn(r.Source))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -35,8 +35,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoRespawn(CmdResult r, McClient handler)
+        private int DoRespawn(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             handler.SendRespawnPacket();
             return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_respawn_done);
         }

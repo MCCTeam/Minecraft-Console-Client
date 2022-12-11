@@ -544,6 +544,9 @@ When this happens, you'll need to configure chat format below, see https://mccte
   <data name="Console.CommandSuggestion.Enable" xml:space="preserve">
     <value>Whether to display command suggestions in the console.</value>
   </data>
+  <data name="Console.CommandSuggestion.Use_Basic_Arrow" xml:space="preserve">
+    <value>Enable this option if the arrows in the command suggestions are not displayed properly in your terminal.</value>
+  </data>
   <data name="Console.Enable_Color" xml:space="preserve">
     <value>If a garbled code like "←[0m" appears on the terminal, you can turn off this.</value>
   </data>

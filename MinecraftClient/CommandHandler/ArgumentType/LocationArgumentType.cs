@@ -47,7 +47,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
 
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
-            McClient? client = CmdResult.client;
+            McClient? client = CmdResult.currentHandler;
             string[] args = builder.Remaining.Split(' ', StringSplitOptions.TrimEntries);
             if (args.Length == 0 || (args.Length == 1 && string.IsNullOrWhiteSpace(args[0])))
             {

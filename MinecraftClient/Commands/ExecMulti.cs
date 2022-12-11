@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "execmulti <command 1> -> <command2> -> <command 3> -> ..."; } }
         public override string CmdDesc { get { return Translations.cmd_execmulti_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -23,7 +23,7 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("Commands", Arguments.GreedyString())
-                    .Executes(r => HandleCommand(r.Source, handler, Arguments.GetString(r, "Commands"))))
+                    .Executes(r => HandleCommand(r.Source, Arguments.GetString(r, "Commands"))))
             );
         }
 
@@ -37,8 +37,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int HandleCommand(CmdResult r, McClient handler, string commandsString)
+        private int HandleCommand(CmdResult r, string commandsString)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (commandsString.Contains("execmulti", StringComparison.OrdinalIgnoreCase) || commandsString.Contains("execif", StringComparison.OrdinalIgnoreCase))
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_execmulti_prevent);
 

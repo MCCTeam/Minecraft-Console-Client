@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "bots [list|unload <bot name|all>]"; } }
         public override string CmdDesc { get { return Translations.cmd_bots_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -26,12 +26,12 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => DoListBot(r.Source, handler))
+                .Executes(r => DoListBot(r.Source))
                 .Then(l => l.Literal("list")
-                    .Executes(r => DoListBot(r.Source, handler)))
+                    .Executes(r => DoListBot(r.Source)))
                 .Then(l => l.Literal("unload")
                     .Then(l => l.Argument("BotName", MccArguments.BotName())
-                        .Executes(r => DoUnloadBot(r.Source, handler, Arguments.GetString(r, "BotName")))))
+                        .Executes(r => DoUnloadBot(r.Source, Arguments.GetString(r, "BotName")))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -49,8 +49,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoListBot(CmdResult r, McClient handler)
+        private int DoListBot(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             int length = handler.GetLoadedChatBots().Count;
             if (length == 0)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_bots_noloaded);
@@ -66,8 +67,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_bots_list + ": " + sb.ToString());
         }
 
-        private int DoUnloadBot(CmdResult r, McClient handler, string botName)
+        private int DoUnloadBot(CmdResult r, string botName)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (botName.ToLower().Equals("all", StringComparison.OrdinalIgnoreCase))
             {
                 if (handler.GetLoadedChatBots().Count == 0)

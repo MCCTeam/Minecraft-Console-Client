@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "dig <x> <y> <z>"; } }
         public override string CmdDesc { get { return Translations.cmd_dig_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -22,9 +22,9 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => DigLookAt(r.Source, handler))
+                .Executes(r => DigLookAt(r.Source))
                 .Then(l => l.Argument("Location", MccArguments.Location())
-                    .Executes(r => DigAt(r.Source, handler, MccArguments.GetLocation(r, "Location"))))
+                    .Executes(r => DigAt(r.Source, MccArguments.GetLocation(r, "Location"))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -40,8 +40,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DigAt(CmdResult r, McClient handler, Location blockToBreak)
+        private int DigAt(CmdResult r, Location blockToBreak)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -61,8 +62,9 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_fail);
         }
 
-        private int DigLookAt(CmdResult r, McClient handler)
+        private int DigLookAt(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 

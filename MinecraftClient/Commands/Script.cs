@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "script <scriptname>"; } }
         public override string CmdDesc { get { return Translations.cmd_script_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -21,7 +21,7 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("Script", Arguments.GreedyString())
-                    .Executes(r => DoExecuteScript(r.Source, handler, Arguments.GetString(r, "Script"), null)))
+                    .Executes(r => DoExecuteScript(r.Source, Arguments.GetString(r, "Script"), null)))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -37,8 +37,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoExecuteScript(CmdResult r, McClient handler, string command, Dictionary<string, object>? localVars)
+        private int DoExecuteScript(CmdResult r, string command, Dictionary<string, object>? localVars)
         {
+            McClient handler = CmdResult.currentHandler!;
             handler.BotLoad(new ChatBots.Script(command.Trim(), null, localVars));
             return r.SetAndReturn(CmdResult.Status.Done);
         }

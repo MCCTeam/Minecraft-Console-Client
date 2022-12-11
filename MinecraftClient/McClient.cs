@@ -30,7 +30,7 @@ namespace MinecraftClient
     {
         public static int ReconnectionAttemptsLeft = 0;
 
-        public CommandDispatcher<CmdResult> dispatcher = new();
+        public static CommandDispatcher<CmdResult> dispatcher = new();
         private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
 
         private static bool commandsLoaded = false;
@@ -150,7 +150,7 @@ namespace MinecraftClient
         /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
         public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo)
         {
-            CmdResult.client = this;
+            CmdResult.currentHandler = this;
             terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
             inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
             entityHandlingEnabled = Config.Main.Advanced.EntityHandling;
@@ -674,7 +674,7 @@ namespace MinecraftClient
                         try
                         {
                             Command cmd = (Command)Activator.CreateInstance(type)!;
-                            cmd.RegisterCommand(this, dispatcher);
+                            cmd.RegisterCommand(dispatcher);
                         }
                         catch (Exception e)
                         {

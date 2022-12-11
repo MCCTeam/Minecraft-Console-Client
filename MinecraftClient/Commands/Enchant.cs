@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "enchant <top|middle|bottom>"; } }
         public override string CmdDesc { get { return Translations.cmd_enchant_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -28,11 +28,11 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Literal("top")
-                    .Executes(r => DoEnchant(r.Source, handler, slotId: 0)))
+                    .Executes(r => DoEnchant(r.Source, slotId: 0)))
                 .Then(l => l.Literal("middle")
-                    .Executes(r => DoEnchant(r.Source, handler, slotId: 1)))
+                    .Executes(r => DoEnchant(r.Source, slotId: 1)))
                 .Then(l => l.Literal("bottom")
-                    .Executes(r => DoEnchant(r.Source, handler, slotId: 2)))
+                    .Executes(r => DoEnchant(r.Source, slotId: 2)))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -51,8 +51,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoEnchant(CmdResult r, McClient handler, int slotId)
+        private int DoEnchant(CmdResult r, int slotId)
         {
+            McClient handler = CmdResult.currentHandler!;
             Container? enchantingTable = null;
 
             foreach (var (id, container) in handler.GetInventories())

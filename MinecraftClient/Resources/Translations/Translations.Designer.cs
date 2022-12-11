@@ -5341,7 +5341,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password(invisible): {0}.
+        ///   Looks up a localized string similar to Password(invisible): .
         /// </summary>
         internal static string mcc_password_hidden {
             get {

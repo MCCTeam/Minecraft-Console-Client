@@ -19,7 +19,7 @@ namespace MinecraftClient.Commands
 
         private enum ActionType { Attack, Use, List };
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -36,41 +36,41 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => GetFullEntityList(r.Source, handler))
+                .Executes(r => GetFullEntityList(r.Source))
                 .Then(l => l.Literal("near")
-                    .Executes(r => GetClosetEntityList(r.Source, handler))
+                    .Executes(r => GetClosetEntityList(r.Source))
                     .Then(l => l.Argument("EntityID", Arguments.Integer())
-                        .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.List))
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))
                         .Then(l => l.Literal("attack")
-                            .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.Attack)))
+                            .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Attack)))
                         .Then(l => l.Literal("use")
-                            .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.Use)))
+                            .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Use)))
                         .Then(l => l.Literal("list")
-                            .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.List))))
+                            .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))))
                     .Then(l => l.Argument("EntityType", MccArguments.EntityType())
-                        .Executes(r => OperateWithType(r.Source, handler, true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))
+                        .Executes(r => OperateWithType(r.Source, true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))
                         .Then(l => l.Literal("attack")
-                            .Executes(r => OperateWithType(r.Source, handler, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.Attack)))
+                            .Executes(r => OperateWithType(r.Source, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.Attack)))
                         .Then(l => l.Literal("use")
-                            .Executes(r => OperateWithType(r.Source, handler, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.Use)))
+                            .Executes(r => OperateWithType(r.Source, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.Use)))
                         .Then(l => l.Literal("list")
-                            .Executes(r => OperateWithType(r.Source, handler, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List)))))
+                            .Executes(r => OperateWithType(r.Source, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List)))))
                 .Then(l => l.Argument("EntityID", Arguments.Integer())
-                    .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.List))
+                    .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))
                     .Then(l => l.Literal("attack")
-                        .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.Attack)))
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Attack)))
                     .Then(l => l.Literal("use")
-                        .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.Use)))
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Use)))
                     .Then(l => l.Literal("list")
-                        .Executes(r => OperateWithId(r.Source, handler, Arguments.GetInteger(r, "EntityID"), ActionType.List))))
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))))
                 .Then(l => l.Argument("EntityType", MccArguments.EntityType())
-                    .Executes(r => OperateWithType(r.Source, handler, true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))
+                    .Executes(r => OperateWithType(r.Source, true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))
                     .Then(l => l.Literal("attack")
-                        .Executes(r => OperateWithType(r.Source, handler, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.Attack)))
+                        .Executes(r => OperateWithType(r.Source, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.Attack)))
                     .Then(l => l.Literal("use")
-                        .Executes(r => OperateWithType(r.Source, handler, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.Use)))
+                        .Executes(r => OperateWithType(r.Source, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.Use)))
                     .Then(l => l.Literal("list")
-                        .Executes(r => OperateWithType(r.Source, handler, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))))
+                        .Executes(r => OperateWithType(r.Source, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -90,8 +90,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int GetFullEntityList(CmdResult r, McClient handler)
+        private int GetFullEntityList(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetEntityHandlingEnabled())
                 return r.SetAndReturn(Status.FailNeedEntity);
 
@@ -106,8 +107,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(Status.Done);
         }
 
-        private int GetClosetEntityList(CmdResult r, McClient handler)
+        private int GetClosetEntityList(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetEntityHandlingEnabled())
                 return r.SetAndReturn(Status.FailNeedEntity);
 
@@ -120,8 +122,9 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Fail, Translations.cmd_entityCmd_not_found);
         }
 
-        private int OperateWithId(CmdResult r, McClient handler, int entityID, ActionType action)
+        private int OperateWithId(CmdResult r, int entityID, ActionType action)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetEntityHandlingEnabled())
                 return r.SetAndReturn(Status.FailNeedEntity);
 
@@ -134,8 +137,9 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Fail, Translations.cmd_entityCmd_not_found);
         }
 
-        private int OperateWithType(CmdResult r, McClient handler, bool near, EntityType entityType, ActionType action)
+        private int OperateWithType(CmdResult r, bool near, EntityType entityType, ActionType action)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetEntityHandlingEnabled())
                 return r.SetAndReturn(Status.FailNeedEntity);
 

@@ -1900,7 +1900,7 @@ Type '{0}quit' to leave the server.</value>
     <value>Please type the password for {0}.</value>
   </data>
   <data name="mcc.password_hidden" xml:space="preserve">
-    <value>Password(invisible): {0}</value>
+    <value>Password(invisible): </value>
   </data>
   <data name="mcc.player_dead" xml:space="preserve">
     <value>You are dead. Type '{0}respawn' to respawn.</value>

@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "connect <server> [account]"; } }
         public override string CmdDesc { get { return Translations.cmd_connect_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -21,9 +21,9 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("ServerNick", MccArguments.ServerNick())
-                    .Executes(r => DoConnect(r.Source, handler, Arguments.GetString(r, "ServerNick"), string.Empty))
+                    .Executes(r => DoConnect(r.Source, Arguments.GetString(r, "ServerNick"), string.Empty))
                     .Then(l => l.Argument("AccountNick", MccArguments.AccountNick())
-                        .Executes(r => DoConnect(r.Source, handler, Arguments.GetString(r, "ServerNick"), Arguments.GetString(r, "AccountNick")))))
+                        .Executes(r => DoConnect(r.Source, Arguments.GetString(r, "ServerNick"), Arguments.GetString(r, "AccountNick")))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -39,7 +39,7 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoConnect(CmdResult r, McClient handler, string server, string account)
+        private int DoConnect(CmdResult r, string server, string account)
         {
             if (!string.IsNullOrWhiteSpace(account) && !Settings.Config.Main.Advanced.SetAccount(account))
                 return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_connect_unknown, account));

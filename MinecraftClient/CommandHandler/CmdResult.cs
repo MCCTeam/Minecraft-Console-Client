@@ -6,7 +6,7 @@ namespace MinecraftClient.CommandHandler
     {
         public static readonly CmdResult Empty = new();
 
-        internal static McClient? client;
+        internal static McClient? currentHandler;
 
         public enum Status
         {

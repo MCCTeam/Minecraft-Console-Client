@@ -16,7 +16,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "bed leave|sleep <x> <y> <z>|sleep <radius>"; } }
         public override string CmdDesc { get { return Translations.cmd_bed_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -30,12 +30,12 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Literal("leave")
-                    .Executes(r => DoLeaveBed(r.Source, handler)))
+                    .Executes(r => DoLeaveBed(r.Source)))
                 .Then(l => l.Literal("sleep")
                     .Then(l => l.Argument("Location", MccArguments.Location())
-                        .Executes(r => DoSleepBedWithLocation(r.Source, handler, MccArguments.GetLocation(r, "Location"))))
+                        .Executes(r => DoSleepBedWithLocation(r.Source, MccArguments.GetLocation(r, "Location"))))
                     .Then(l => l.Argument("Radius", Arguments.Double())
-                        .Executes(r => DoSleepBedWithRadius(r.Source, handler, Arguments.GetDouble(r, "Radius")))))
+                        .Executes(r => DoSleepBedWithRadius(r.Source, Arguments.GetDouble(r, "Radius")))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -53,13 +53,15 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private static int DoLeaveBed(CmdResult r, McClient handler)
+        private static int DoLeaveBed(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             return r.SetAndReturn(Translations.cmd_bed_leaving, handler.SendEntityAction(Protocol.EntityActionType.LeaveBed));
         }
 
-        private static int DoSleepBedWithRadius(CmdResult r, McClient handler, double radius)
+        private static int DoSleepBedWithRadius(CmdResult r, double radius)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -153,8 +155,9 @@ namespace MinecraftClient.Commands
             }
         }
 
-        private static int DoSleepBedWithLocation(CmdResult r, McClient handler, Location block)
+        private static int DoSleepBedWithLocation(CmdResult r, Location block)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 

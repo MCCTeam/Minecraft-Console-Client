@@ -123,7 +123,7 @@ namespace MinecraftClient.ChatBots
             if (!inventoryEnabled && Config.Auto_Tool_Switch)
                 LogToConsole(Translations.bot_autodig_no_inv_handle);
 
-            Handler.dispatcher.Register(l => l.Literal("help")
+            McClient.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Then(l => l.Literal("start")
@@ -135,25 +135,25 @@ namespace MinecraftClient.ChatBots
                 )
             );
 
-            var cmd = Handler.dispatcher.Register(l => l.Literal(CommandName)
+            var cmd = McClient.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("start")
                     .Executes(r => OnCommandStart(r.Source)))
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("_help")
-                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 
-            Handler.dispatcher.Register(l => l.Literal("digbot")
+            McClient.dispatcher.Register(l => l.Literal("digbot")
                 .Redirect(cmd)
             );
         }
 
         public override void OnUnload()
         {
-            Handler.dispatcher.Unregister("digbot");
-            Handler.dispatcher.Unregister(CommandName);
-            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            McClient.dispatcher.Unregister("digbot");
+            McClient.dispatcher.Unregister(CommandName);
+            McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -165,7 +165,7 @@ namespace MinecraftClient.ChatBots
                 "stop"      =>   Translations.bot_autodig_help_stop,
                 "help"      =>   Translations.bot_autodig_help_help,
                 _           =>   string.Format(Translations.bot_autodig_available_cmd, "start, stop, help")
-                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

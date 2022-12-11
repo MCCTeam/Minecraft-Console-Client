@@ -18,7 +18,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
 
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
-            McClient? client = CmdResult.client;
+            McClient? client = CmdResult.currentHandler;
             if (client != null && context.Nodes.Count >= 2)
             {
                 string invName = context.Nodes[1].Range.Get(builder.Input);

@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "reco [account]"; } }
         public override string CmdDesc { get { return Translations.cmd_reco_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -40,7 +40,7 @@ namespace MinecraftClient.Commands
 
         private int DoReconnect(CmdResult r, string account)
         {
-            if (string.IsNullOrWhiteSpace(account))
+            if (!string.IsNullOrWhiteSpace(account))
             {
                 account = account.Trim();
                 if (!Settings.Config.Main.Advanced.SetAccount(account))
