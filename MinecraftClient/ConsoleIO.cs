@@ -224,7 +224,7 @@ namespace MinecraftClient
 
                         sugList.Add(new("/"));
 
-                        var childs = CmdResult.client?.dispatcher.GetRoot().Children;
+                        var childs = McClient.dispatcher.GetRoot().Children;
                         if (childs != null)
                             foreach (var child in childs)
                                 sugList.Add(new(child.Name));
@@ -246,7 +246,7 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        CommandDispatcher<CmdResult>? dispatcher = CmdResult.client?.dispatcher;
+                        CommandDispatcher<CmdResult>? dispatcher = McClient.dispatcher;
                         if (dispatcher == null)
                             return;
 

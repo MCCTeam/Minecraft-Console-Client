@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "health"; } }
         public override string CmdDesc { get { return Translations.cmd_health_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -19,7 +19,7 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => LogHealth(r.Source, handler))
+                .Executes(r => LogHealth(r.Source))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -35,8 +35,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int LogHealth(CmdResult r, McClient handler)
+        private int LogHealth(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.cmd_health_response, handler.GetHealth(), handler.GetSaturation(), handler.GetLevel(), handler.GetTotalExperience()));
         }
     }

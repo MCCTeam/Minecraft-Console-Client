@@ -16,7 +16,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
 
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
-            McClient? client = CmdResult.client;
+            McClient? client = CmdResult.currentHandler;
             if (client != null)
             {
                 var botList = client.GetLoadedChatBots();

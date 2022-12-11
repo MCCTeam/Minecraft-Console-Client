@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "reload"; } }
         public override string CmdDesc { get { return Translations.cmd_reload_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -19,7 +19,7 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => DoReload(r.Source, handler))
+                .Executes(r => DoReload(r.Source))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -35,8 +35,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoReload(CmdResult r, McClient handler)
+        private int DoReload(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             handler.Log.Info(Translations.cmd_reload_started);
             handler.ReloadSettings();
             handler.Log.Warn(Translations.cmd_reload_warning1);

@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "animation <mainhand|offhand>"; } }
         public override string CmdDesc { get { return Translations.cmd_animation_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -23,11 +23,11 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => DoAnimation(r.Source, handler, mainhand: true))
+                .Executes(r => DoAnimation(r.Source, mainhand: true))
                 .Then(l => l.Literal("mainhand")
-                    .Executes(r => DoAnimation(r.Source, handler, mainhand: true)))
+                    .Executes(r => DoAnimation(r.Source, mainhand: true)))
                 .Then(l => l.Literal("offhand")
-                    .Executes(r => DoAnimation(r.Source, handler, mainhand: false)))
+                    .Executes(r => DoAnimation(r.Source, mainhand: false)))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -45,8 +45,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private static int DoAnimation(CmdResult r, McClient handler, bool mainhand)
+        private static int DoAnimation(CmdResult r, bool mainhand)
         {
+            McClient handler = CmdResult.currentHandler!;
             return r.SetAndReturn(handler.DoAnimation(mainhand ? 1 : 0));
         }
     }

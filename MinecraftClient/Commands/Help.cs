@@ -12,16 +12,17 @@ namespace MinecraftClient.Commands
         public override string CmdDesc => throw new NotImplementedException();
         public override string CmdUsage => throw new NotImplementedException();
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l =>
                 l.Literal("help")
-                    .Executes(r => LogHelp(r.Source, handler, dispatcher))
+                    .Executes(r => LogHelp(r.Source, dispatcher))
             );
         }
 
-        private int LogHelp(CmdResult r, McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        private int LogHelp(CmdResult r, CommandDispatcher<CmdResult> dispatcher)
         {
+            McClient handler = CmdResult.currentHandler!;
             var usage = dispatcher.GetSmartUsage(dispatcher.GetRoot(), CmdResult.Empty);
             StringBuilder sb = new();
             foreach (var item in usage)

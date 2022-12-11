@@ -14,7 +14,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "chunk status [chunkX chunkZ|locationX locationY locationZ]"; } }
         public override string CmdDesc { get { return Translations.cmd_chunk_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -32,26 +32,26 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Literal("status")
-                    .Executes(r => LogChunkStatus(r.Source, handler))
+                    .Executes(r => LogChunkStatus(r.Source))
                     .Then(l => l.Argument("Location", MccArguments.Location())
-                        .Executes(r => LogChunkStatus(r.Source, handler, pos: MccArguments.GetLocation(r, "Location"))))
+                        .Executes(r => LogChunkStatus(r.Source, pos: MccArguments.GetLocation(r, "Location"))))
                     .Then(l => l.Argument("Chunk", MccArguments.Tuple())
-                        .Executes(r => LogChunkStatus(r.Source, handler, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
+                        .Executes(r => LogChunkStatus(r.Source, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
                 .Then(l => l.Literal("_setloading")
                     .Then(l => l.Argument("Location", MccArguments.Location())
-                        .Executes(r => DebugSetLoading(r.Source, handler, pos: MccArguments.GetLocation(r, "Location"))))
+                        .Executes(r => DebugSetLoading(r.Source, pos: MccArguments.GetLocation(r, "Location"))))
                     .Then(l => l.Argument("Chunk", MccArguments.Tuple())
-                        .Executes(r => DebugSetLoading(r.Source, handler, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
+                        .Executes(r => DebugSetLoading(r.Source, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
                 .Then(l => l.Literal("_setloaded")
                     .Then(l => l.Argument("Location", MccArguments.Location())
-                        .Executes(r => DebugSetLoaded(r.Source, handler, pos: MccArguments.GetLocation(r, "Location"))))
+                        .Executes(r => DebugSetLoaded(r.Source, pos: MccArguments.GetLocation(r, "Location"))))
                     .Then(l => l.Argument("Chunk", MccArguments.Tuple())
-                        .Executes(r => DebugSetLoaded(r.Source, handler, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
+                        .Executes(r => DebugSetLoaded(r.Source, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
                 .Then(l => l.Literal("_delete")
                     .Then(l => l.Argument("Location", MccArguments.Location())
-                        .Executes(r => DebugDelete(r.Source, handler, pos: MccArguments.GetLocation(r, "Location"))))
+                        .Executes(r => DebugDelete(r.Source, pos: MccArguments.GetLocation(r, "Location"))))
                     .Then(l => l.Argument("Chunk", MccArguments.Tuple())
-                        .Executes(r => DebugDelete(r.Source, handler, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
+                        .Executes(r => DebugDelete(r.Source, markedChunkPos: MccArguments.GetTuple(r, "Chunk")))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -71,8 +71,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private static int LogChunkStatus(CmdResult r, McClient handler, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
+        private static int LogChunkStatus(CmdResult r, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -225,8 +226,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(Status.Done);
         }
 
-        private static int DebugSetLoading(CmdResult r, McClient handler, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
+        private static int DebugSetLoading(CmdResult r, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -244,8 +246,9 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Done, string.Format("Successfully marked chunk ({0}, {1}) as loading.", chunkX, chunkZ));
         }
 
-        private static int DebugSetLoaded(CmdResult r, McClient handler, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
+        private static int DebugSetLoaded(CmdResult r, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -263,8 +266,9 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Done, string.Format("Successfully marked chunk ({0}, {1}) as loaded.", chunkX, chunkZ));
         }
 
-        private static int DebugDelete(CmdResult r, McClient handler, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
+        private static int DebugDelete(CmdResult r, Location? pos = null, Tuple<int, int>? markedChunkPos = null)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 

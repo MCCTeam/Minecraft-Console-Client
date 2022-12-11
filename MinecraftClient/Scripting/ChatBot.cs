@@ -1667,7 +1667,7 @@ namespace MinecraftClient.Scripting
             public override string CmdUsage { get { return _cmdUsage; } }
             public override string CmdDesc { get { return _cmdDesc; } }
 
-            public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+            public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
             {
 
             }

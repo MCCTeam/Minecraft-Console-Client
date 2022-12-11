@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]"; } }
         public override string CmdDesc { get { return Translations.cmd_move_desc + " \"-f\": " + Translations.cmd_move_desc_force; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -37,47 +37,47 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Literal("on")
-                    .Executes(r => SetMovementEnable(r.Source, handler, enable: true)))
+                    .Executes(r => SetMovementEnable(r.Source, enable: true)))
                 .Then(l => l.Literal("off")
-                    .Executes(r => SetMovementEnable(r.Source, handler, enable: false)))
+                    .Executes(r => SetMovementEnable(r.Source, enable: false)))
                 .Then(l => l.Literal("gravity")
-                    .Executes(r => SetGravityEnable(r.Source, handler, enable: null))
+                    .Executes(r => SetGravityEnable(r.Source, enable: null))
                     .Then(l => l.Literal("on")
-                        .Executes(r => SetGravityEnable(r.Source, handler, enable: true)))
+                        .Executes(r => SetGravityEnable(r.Source, enable: true)))
                     .Then(l => l.Literal("off")
-                        .Executes(r => SetGravityEnable(r.Source, handler, enable: false))))
+                        .Executes(r => SetGravityEnable(r.Source, enable: false))))
                 .Then(l => l.Literal("up")
-                    .Executes(r => MoveOnDirection(r.Source, handler, Direction.Up, false))
+                    .Executes(r => MoveOnDirection(r.Source, Direction.Up, false))
                     .Then(l => l.Literal("-f")
-                        .Executes(r => MoveOnDirection(r.Source, handler, Direction.Up, true))))
+                        .Executes(r => MoveOnDirection(r.Source, Direction.Up, true))))
                 .Then(l => l.Literal("down")
-                    .Executes(r => MoveOnDirection(r.Source, handler, Direction.Down, false))
+                    .Executes(r => MoveOnDirection(r.Source, Direction.Down, false))
                     .Then(l => l.Literal("-f")
-                        .Executes(r => MoveOnDirection(r.Source, handler, Direction.Down, true))))
+                        .Executes(r => MoveOnDirection(r.Source, Direction.Down, true))))
                 .Then(l => l.Literal("east")
-                    .Executes(r => MoveOnDirection(r.Source, handler, Direction.East, false))
+                    .Executes(r => MoveOnDirection(r.Source, Direction.East, false))
                     .Then(l => l.Literal("-f")
-                        .Executes(r => MoveOnDirection(r.Source, handler, Direction.East, true))))
+                        .Executes(r => MoveOnDirection(r.Source, Direction.East, true))))
                 .Then(l => l.Literal("west")
-                    .Executes(r => MoveOnDirection(r.Source, handler, Direction.West, false))
+                    .Executes(r => MoveOnDirection(r.Source, Direction.West, false))
                     .Then(l => l.Literal("-f")
-                        .Executes(r => MoveOnDirection(r.Source, handler, Direction.West, true))))
+                        .Executes(r => MoveOnDirection(r.Source, Direction.West, true))))
                 .Then(l => l.Literal("north")
-                    .Executes(r => MoveOnDirection(r.Source, handler, Direction.North, false))
+                    .Executes(r => MoveOnDirection(r.Source, Direction.North, false))
                     .Then(l => l.Literal("-f")
-                        .Executes(r => MoveOnDirection(r.Source, handler, Direction.North, true))))
+                        .Executes(r => MoveOnDirection(r.Source, Direction.North, true))))
                 .Then(l => l.Literal("south")
-                    .Executes(r => MoveOnDirection(r.Source, handler, Direction.South, false))
+                    .Executes(r => MoveOnDirection(r.Source, Direction.South, false))
                     .Then(l => l.Literal("-f")
-                        .Executes(r => MoveOnDirection(r.Source, handler, Direction.South, true))))
+                        .Executes(r => MoveOnDirection(r.Source, Direction.South, true))))
                 .Then(l => l.Literal("center")
-                    .Executes(r => MoveToCenter(r.Source, handler)))
+                    .Executes(r => MoveToCenter(r.Source)))
                 .Then(l => l.Literal("get")
-                    .Executes(r => GetCurrentLocation(r.Source, handler)))
+                    .Executes(r => GetCurrentLocation(r.Source)))
                 .Then(l => l.Argument("location", MccArguments.Location())
-                    .Executes(r => MoveToLocation(r.Source, handler, MccArguments.GetLocation(r, "location"), false))
+                    .Executes(r => MoveToLocation(r.Source, MccArguments.GetLocation(r, "location"), false))
                     .Then(l => l.Literal("-f")
-                        .Executes(r => MoveToLocation(r.Source, handler, MccArguments.GetLocation(r, "location"), true))))
+                        .Executes(r => MoveToLocation(r.Source, MccArguments.GetLocation(r, "location"), true))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -100,8 +100,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int SetMovementEnable(CmdResult r, McClient handler, bool enable)
+        private int SetMovementEnable(CmdResult r, bool enable)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (enable)
             {
                 handler.SetTerrainEnabled(true);
@@ -114,8 +115,9 @@ namespace MinecraftClient.Commands
             }
         }
 
-        private int SetGravityEnable(CmdResult r, McClient handler, bool? enable)
+        private int SetGravityEnable(CmdResult r, bool? enable)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (enable.HasValue)
                 Settings.InternalConfig.GravityEnabled = enable.Value;
 
@@ -125,16 +127,18 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_move_gravity_disabled);
         }
 
-        private int GetCurrentLocation(CmdResult r, McClient handler)
+        private int GetCurrentLocation(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
             return r.SetAndReturn(Status.Done, handler.GetCurrentLocation().ToString());
         }
 
-        private int MoveToCenter(CmdResult r, McClient handler)
+        private int MoveToCenter(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -144,8 +148,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_move_walk, currentCenter, current));
         }
 
-        private int MoveOnDirection(CmdResult r, McClient handler, Direction direction, bool takeRisk)
+        private int MoveOnDirection(CmdResult r, Direction direction, bool takeRisk)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -167,8 +172,9 @@ namespace MinecraftClient.Commands
             }
         }
 
-        private int MoveToLocation(CmdResult r, McClient handler, Location goal, bool takeRisk)
+        private int MoveToLocation(CmdResult r, Location goal, bool takeRisk)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 

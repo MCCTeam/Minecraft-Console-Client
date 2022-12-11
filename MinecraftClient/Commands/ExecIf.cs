@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "execif \"<condition/expression>\" \"<command>\""; } }
         public override string CmdDesc { get { return Translations.cmd_execif_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -24,7 +24,7 @@ namespace MinecraftClient.Commands
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("Condition", Arguments.String())
                     .Then(l => l.Argument("Command", Arguments.String())
-                        .Executes(r => HandleCommand(r.Source, handler, Arguments.GetString(r, "Condition"), Arguments.GetString(r, "Command")))))
+                        .Executes(r => HandleCommand(r.Source, Arguments.GetString(r, "Condition"), Arguments.GetString(r, "Command")))))
             );
         }
 
@@ -38,8 +38,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int HandleCommand(CmdResult r, McClient handler, string expressionText, string resultCommand)
+        private int HandleCommand(CmdResult r, string expressionText, string resultCommand)
         {
+            McClient handler = CmdResult.currentHandler!;
             try
             {
                 var interpreter = new Interpreter();

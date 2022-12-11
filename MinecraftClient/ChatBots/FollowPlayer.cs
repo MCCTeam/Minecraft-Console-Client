@@ -62,13 +62,13 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
-            Handler.dispatcher.Register(l => l.Literal("help")
+            McClient.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                 )
             );
 
-            Handler.dispatcher.Register(l => l.Literal(CommandName)
+            McClient.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("start")
                     .Then(l => l.Argument("PlayerName", MccArguments.PlayerName())
                         .Executes(r => OnCommandStart(r.Source, Arguments.GetString(r, "PlayerName"), takeRisk: false))
@@ -77,14 +77,14 @@ namespace MinecraftClient.ChatBots
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("_help")
-                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
         public override void OnUnload()
         {
-            Handler.dispatcher.Unregister(CommandName);
-            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            McClient.dispatcher.Unregister(CommandName);
+            McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -93,7 +93,7 @@ namespace MinecraftClient.ChatBots
             {
 #pragma warning disable format // @formatter:off
                 _           =>   Translations.cmd_follow_desc + ": " + Translations.cmd_follow_usage
-                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

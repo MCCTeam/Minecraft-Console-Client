@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "tps"; } }
         public override string CmdDesc { get { return Translations.cmd_tps_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -20,7 +20,7 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => DoLogTps(r.Source, handler))
+                .Executes(r => DoLogTps(r.Source))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -36,8 +36,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoLogTps(CmdResult r, McClient handler)
+        private int DoLogTps(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             var tps = Math.Round(handler.GetServerTPS(), 2);
             string color;
             if (tps < 10)

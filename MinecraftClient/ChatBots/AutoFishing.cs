@@ -187,7 +187,7 @@ namespace MinecraftClient.ChatBots
             if (!inventoryEnabled)
                 LogToConsole(Translations.bot_autoFish_no_inv_handle);
 
-            Handler.dispatcher.Register(l => l.Literal("help")
+            McClient.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Then(l => l.Literal("start")
@@ -201,7 +201,7 @@ namespace MinecraftClient.ChatBots
                 )
             );
 
-            Handler.dispatcher.Register(l => l.Literal(CommandName)
+            McClient.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("start")
                     .Executes(r => OnCommandStart(r.Source)))
                 .Then(l => l.Literal("stop")
@@ -211,14 +211,14 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Literal("clear")
                         .Executes(r => OnCommandStatusClear(r.Source))))
                 .Then(l => l.Literal("_help")
-                    .Redirect(Handler.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
 
         public override void OnUnload()
         {
-            Handler.dispatcher.Unregister(CommandName);
-            Handler.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            McClient.dispatcher.Unregister(CommandName);
+            McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -231,7 +231,7 @@ namespace MinecraftClient.ChatBots
                 "status"    =>   Translations.bot_autoFish_help_status,
                 "help"      =>   Translations.bot_autoFish_help_help,
                 _           =>   string.Format(Translations.bot_autoFish_available_cmd, "start, stop, status, help")
-                                   + '\n' + Handler.dispatcher.GetAllUsageString(CommandName, false),
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
         }

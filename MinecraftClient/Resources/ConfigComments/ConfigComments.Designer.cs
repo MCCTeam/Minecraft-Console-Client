@@ -1103,6 +1103,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enable this option if the arrows in the command suggestions are not displayed properly in your terminal..
+        /// </summary>
+        internal static string Console_CommandSuggestion_Use_Basic_Arrow {
+            get {
+                return ResourceManager.GetString("Console.CommandSuggestion.Use_Basic_Arrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to If a garbled code like &quot;←[0m&quot; appears on the terminal, you can turn off this..
         /// </summary>
         internal static string Console_Enable_Color {

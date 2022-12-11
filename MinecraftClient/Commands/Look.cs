@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "look <x y z|yaw pitch|up|down|east|west|north|south>"; } }
         public override string CmdDesc { get { return Translations.cmd_look_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -28,24 +28,24 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => LogCurrentLooking(r.Source, handler))
+                .Executes(r => LogCurrentLooking(r.Source))
                 .Then(l => l.Literal("up")
-                    .Executes(r => LookAtDirection(r.Source, handler, Direction.Up)))
+                    .Executes(r => LookAtDirection(r.Source, Direction.Up)))
                 .Then(l => l.Literal("down")
-                    .Executes(r => LookAtDirection(r.Source, handler, Direction.Down)))
+                    .Executes(r => LookAtDirection(r.Source, Direction.Down)))
                 .Then(l => l.Literal("east")
-                    .Executes(r => LookAtDirection(r.Source, handler, Direction.East)))
+                    .Executes(r => LookAtDirection(r.Source, Direction.East)))
                 .Then(l => l.Literal("west")
-                    .Executes(r => LookAtDirection(r.Source, handler, Direction.West)))
+                    .Executes(r => LookAtDirection(r.Source, Direction.West)))
                 .Then(l => l.Literal("north")
-                    .Executes(r => LookAtDirection(r.Source, handler, Direction.North)))
+                    .Executes(r => LookAtDirection(r.Source, Direction.North)))
                 .Then(l => l.Literal("south")
-                    .Executes(r => LookAtDirection(r.Source, handler, Direction.South)))
+                    .Executes(r => LookAtDirection(r.Source, Direction.South)))
                 .Then(l => l.Argument("Yaw", Arguments.Float())
                     .Then(l => l.Argument("Pitch", Arguments.Float())
-                        .Executes(r => LookAtAngle(r.Source, handler, Arguments.GetFloat(r, "Yaw"), Arguments.GetFloat(r, "Pitch")))))
+                        .Executes(r => LookAtAngle(r.Source, Arguments.GetFloat(r, "Yaw"), Arguments.GetFloat(r, "Pitch")))))
                 .Then(l => l.Argument("Location", MccArguments.Location())
-                    .Executes(r => LookAtLocation(r.Source, handler, MccArguments.GetLocation(r, "Location"))))
+                    .Executes(r => LookAtLocation(r.Source, MccArguments.GetLocation(r, "Location"))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -64,8 +64,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int LogCurrentLooking(CmdResult r, McClient handler)
+        private int LogCurrentLooking(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -83,8 +84,9 @@ namespace MinecraftClient.Commands
             }
         }
 
-        private int LookAtDirection(CmdResult r, McClient handler, Direction direction)
+        private int LookAtDirection(CmdResult r, Direction direction)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -92,8 +94,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(Status.Done, "Looking " + direction.ToString());
         }
 
-        private int LookAtAngle(CmdResult r, McClient handler, float yaw, float pitch)
+        private int LookAtAngle(CmdResult r, float yaw, float pitch)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
@@ -101,8 +104,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_look_at, yaw.ToString("0.00"), pitch.ToString("0.00")));
         }
 
-        private int LookAtLocation(CmdResult r, McClient handler, Location location)
+        private int LookAtLocation(CmdResult r, Location location)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
                 return r.SetAndReturn(Status.FailNeedTerrain);
 

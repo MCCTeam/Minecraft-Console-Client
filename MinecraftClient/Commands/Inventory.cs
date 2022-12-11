@@ -15,7 +15,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return GetBasicUsage(); } }
         public override string CmdDesc { get { return Translations.cmd_inventory_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -42,65 +42,65 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Executes(r => ListAllInventories(r.Source, handler))
+                .Executes(r => ListAllInventories(r.Source))
                 .Then(l => l.Literal("creativegive")
                     .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
                         .Then(l => l.Argument("ItemType", MccArguments.ItemType())
                             .Then(l => l.Argument("Count", Arguments.Integer(min: 1))
-                                .Executes(r => DoCreativeGive(r.Source, handler, Arguments.GetInteger(r, "Slot"), MccArguments.GetItemType(r, "ItemType"), Arguments.GetInteger(r, "Count")))))))
+                                .Executes(r => DoCreativeGive(r.Source, Arguments.GetInteger(r, "Slot"), MccArguments.GetItemType(r, "ItemType"), Arguments.GetInteger(r, "Count")))))))
                 .Then(l => l.Literal("creativedelete")
                     .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
-                        .Executes(r => DoCreativeDelete(r.Source, handler, Arguments.GetInteger(r, "Slot")))))
+                        .Executes(r => DoCreativeDelete(r.Source, Arguments.GetInteger(r, "Slot")))))
                 .Then(l => l.Literal("inventories")
-                    .Executes(r => ListAvailableInventories(r.Source, handler)))
+                    .Executes(r => ListAvailableInventories(r.Source)))
                 .Then(l => l.Literal("search")
                     .Then(l => l.Argument("ItemType", MccArguments.ItemType())
-                        .Executes(r => SearchItem(r.Source, handler, MccArguments.GetItemType(r, "ItemType"), null))
+                        .Executes(r => SearchItem(r.Source, MccArguments.GetItemType(r, "ItemType"), null))
                         .Then(l => l.Argument("Count", Arguments.Integer(0, 64))
-                            .Executes(r => SearchItem(r.Source, handler, MccArguments.GetItemType(r, "ItemType"), Arguments.GetInteger(r, "Count"))))))
+                            .Executes(r => SearchItem(r.Source, MccArguments.GetItemType(r, "ItemType"), Arguments.GetInteger(r, "Count"))))))
                 .Then(l => l.Argument("InventoryId", MccArguments.InventoryId())
                     .Then(l => l.Literal("close")
-                        .Executes(r => DoCloseAction(r.Source, handler, Arguments.GetInteger(r, "InventoryId"))))
+                        .Executes(r => DoCloseAction(r.Source, Arguments.GetInteger(r, "InventoryId"))))
                     .Then(l => l.Literal("list")
-                        .Executes(r => DoListAction(r.Source, handler, Arguments.GetInteger(r, "InventoryId"))))
+                        .Executes(r => DoListAction(r.Source, Arguments.GetInteger(r, "InventoryId"))))
                     .Then(l => l.Literal("click")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
-                            .Executes(r => DoClickAction(r.Source, handler, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
+                            .Executes(r => DoClickAction(r.Source, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
                             .Then(l => l.Argument("Action", MccArguments.InventoryAction())
-                                .Executes(r => DoClickAction(r.Source, handler, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), MccArguments.GetInventoryAction(r, "Action"))))))
+                                .Executes(r => DoClickAction(r.Source, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), MccArguments.GetInventoryAction(r, "Action"))))))
                     .Then(l => l.Literal("drop")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
-                            .Executes(r => DoDropAction(r.Source, handler, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.DropItem))
+                            .Executes(r => DoDropAction(r.Source, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.DropItem))
                             .Then(l => l.Literal("all")
-                                .Executes(r => DoDropAction(r.Source, handler, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
+                                .Executes(r => DoDropAction(r.Source, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
                 .Then(l => l.Literal("player")
                     .Then(l => l.Literal("list")
-                        .Executes(r => DoListAction(r.Source, handler, inventoryId: 0)))
+                        .Executes(r => DoListAction(r.Source, inventoryId: 0)))
                     .Then(l => l.Literal("click")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
-                            .Executes(r => DoClickAction(r.Source, handler, inventoryId: 0, Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
+                            .Executes(r => DoClickAction(r.Source, inventoryId: 0, Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
                             .Then(l => l.Argument("Action", MccArguments.InventoryAction())
-                                .Executes(r => DoClickAction(r.Source, handler, inventoryId: 0, Arguments.GetInteger(r, "Slot"), MccArguments.GetInventoryAction(r, "Action"))))))
+                                .Executes(r => DoClickAction(r.Source, inventoryId: 0, Arguments.GetInteger(r, "Slot"), MccArguments.GetInventoryAction(r, "Action"))))))
                     .Then(l => l.Literal("drop")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
-                            .Executes(r => DoDropAction(r.Source, handler, inventoryId: 0, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItem))
+                            .Executes(r => DoDropAction(r.Source, inventoryId: 0, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItem))
                             .Then(l => l.Literal("all")
-                                .Executes(r => DoDropAction(r.Source, handler, inventoryId: 0, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
+                                .Executes(r => DoDropAction(r.Source, inventoryId: 0, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
                 .Then(l => l.Literal("container")
                     .Then(l => l.Literal("close")
-                        .Executes(r => DoCloseAction(r.Source, handler, inventoryId: null)))
+                        .Executes(r => DoCloseAction(r.Source, inventoryId: null)))
                     .Then(l => l.Literal("list")
-                        .Executes(r => DoListAction(r.Source, handler, inventoryId: null)))
+                        .Executes(r => DoListAction(r.Source, inventoryId: null)))
                     .Then(l => l.Literal("click")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
-                            .Executes(r => DoClickAction(r.Source, handler, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
+                            .Executes(r => DoClickAction(r.Source, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
                             .Then(l => l.Argument("Action", MccArguments.InventoryAction())
-                                .Executes(r => DoClickAction(r.Source, handler, inventoryId: null, Arguments.GetInteger(r, "Slot"), MccArguments.GetInventoryAction(r, "Action"))))))
+                                .Executes(r => DoClickAction(r.Source, inventoryId: null, Arguments.GetInteger(r, "Slot"), MccArguments.GetInventoryAction(r, "Action"))))))
                     .Then(l => l.Literal("drop")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
-                            .Executes(r => DoDropAction(r.Source, handler, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItem))
+                            .Executes(r => DoDropAction(r.Source, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItem))
                             .Then(l => l.Literal("all")
-                                .Executes(r => DoDropAction(r.Source, handler, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
+                                .Executes(r => DoDropAction(r.Source, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -133,8 +133,9 @@ namespace MinecraftClient.Commands
             return availableIds.Max(); // use foreground container
         }
 
-        private int ListAllInventories(CmdResult r, McClient handler)
+        private int ListAllInventories(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
             {
                 handler.Log.Info(Translations.extra_inventory_required);
@@ -149,8 +150,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(CmdResult.Status.Done);
         }
 
-        private int DoCreativeGive(CmdResult r, McClient handler, int slot, ItemType itemType, int count)
+        private int DoCreativeGive(CmdResult r, int slot, ItemType itemType, int count)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
@@ -167,8 +169,9 @@ namespace MinecraftClient.Commands
             }
         }
 
-        private int DoCreativeDelete(CmdResult r, McClient handler, int slot)
+        private int DoCreativeDelete(CmdResult r, int slot)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
@@ -185,8 +188,9 @@ namespace MinecraftClient.Commands
             }
         }
 
-        private int ListAvailableInventories(CmdResult r, McClient handler)
+        private int ListAvailableInventories(CmdResult r)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
@@ -202,8 +206,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(CmdResult.Status.Done);
         }
 
-        private int SearchItem(CmdResult r, McClient handler, ItemType itemType, int? itemCount)
+        private int SearchItem(CmdResult r, ItemType itemType, int? itemCount)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
@@ -256,8 +261,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(CmdResult.Status.Done);
         }
 
-        private int DoCloseAction(CmdResult r, McClient handler, int? inventoryId)
+        private int DoCloseAction(CmdResult r, int? inventoryId)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
@@ -278,8 +284,9 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_inventory_close_fail, inventoryId));
         }
 
-        private int DoListAction(CmdResult r, McClient handler, int? inventoryId)
+        private int DoListAction(CmdResult r, int? inventoryId)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
@@ -320,8 +327,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(CmdResult.Status.Done);
         }
 
-        private int DoClickAction(CmdResult r, McClient handler, int? inventoryId, int slot, WindowActionType actionType)
+        private int DoClickAction(CmdResult r, int? inventoryId, int slot, WindowActionType actionType)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
@@ -349,8 +357,9 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(handler.DoWindowAction(inventoryId.Value, slot, actionType));
         }
 
-        private int DoDropAction(CmdResult r, McClient handler, int? inventoryId, int slot, WindowActionType actionType)
+        private int DoDropAction(CmdResult r, int? inventoryId, int slot, WindowActionType actionType)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 

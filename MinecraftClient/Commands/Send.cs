@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "send <text>"; } }
         public override string CmdDesc { get { return Translations.cmd_send_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -20,7 +20,7 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("any", Arguments.GreedyString())
-                    .Executes(r => DoSendText(r.Source, handler, Arguments.GetString(r, "any"))))
+                    .Executes(r => DoSendText(r.Source, Arguments.GetString(r, "any"))))
             );
         }
 
@@ -34,8 +34,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoSendText(CmdResult r, McClient handler, string command)
+        private int DoSendText(CmdResult r, string command)
         {
+            McClient handler = CmdResult.currentHandler!;
             handler.SendText(command);
             return r.SetAndReturn(CmdResult.Status.Done);
         }

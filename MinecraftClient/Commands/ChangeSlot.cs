@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "changeslot <1-9>"; } }
         public override string CmdDesc { get { return Translations.cmd_changeSlot_desc; } }
 
-        public override void RegisterCommand(McClient handler, CommandDispatcher<CmdResult> dispatcher)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
             dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CmdName)
@@ -21,7 +21,7 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("Slot", MccArguments.HotbarSlot())
-                    .Executes(r => DoChangeSlot(r.Source, handler, Arguments.GetInteger(r, "Slot"))))
+                    .Executes(r => DoChangeSlot(r.Source, Arguments.GetInteger(r, "Slot"))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
@@ -37,8 +37,9 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DoChangeSlot(CmdResult r, McClient handler, int slot)
+        private int DoChangeSlot(CmdResult r, int slot)
         {
+            McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(Status.FailNeedInventory);
 
