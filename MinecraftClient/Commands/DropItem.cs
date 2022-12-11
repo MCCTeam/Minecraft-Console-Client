@@ -26,6 +26,7 @@ namespace MinecraftClient.Commands
                 .Then(l => l.Argument("ItemType", MccArguments.ItemType())
                     .Executes(r => DoDropItem(r.Source, MccArguments.GetItemType(r, "ItemType"))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

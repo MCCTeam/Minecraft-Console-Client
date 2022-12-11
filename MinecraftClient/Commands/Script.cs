@@ -23,6 +23,7 @@ namespace MinecraftClient.Commands
                 .Then(l => l.Argument("Script", Arguments.GreedyString())
                     .Executes(r => DoExecuteScript(r.Source, Arguments.GetString(r, "Script"), null)))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

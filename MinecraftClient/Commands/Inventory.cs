@@ -102,6 +102,7 @@ namespace MinecraftClient.Commands
                             .Then(l => l.Literal("all")
                                 .Executes(r => DoDropAction(r.Source, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

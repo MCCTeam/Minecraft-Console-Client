@@ -29,6 +29,7 @@ namespace MinecraftClient.Commands
                 .Then(l => l.Literal("offhand")
                     .Executes(r => DoAnimation(r.Source, mainhand: false)))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

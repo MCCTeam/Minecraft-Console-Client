@@ -25,6 +25,7 @@ namespace MinecraftClient.Commands
                 .Then(l => l.Literal("off")
                     .Executes(r => SetDebugMode(r.Source, false, false)))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

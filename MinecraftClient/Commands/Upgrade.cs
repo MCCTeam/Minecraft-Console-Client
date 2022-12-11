@@ -37,6 +37,7 @@ namespace MinecraftClient.Commands
                 .Then(l => l.Literal("cancel")
                     .Executes(r => CancelDownloadUpdate(r.Source)))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

@@ -211,6 +211,7 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Literal("clear")
                         .Executes(r => OnCommandStatusClear(r.Source))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }

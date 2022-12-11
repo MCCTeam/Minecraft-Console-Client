@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
@@ -259,7 +260,7 @@ namespace MinecraftClient.ChatBots
 
             McClient.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
-                    .Executes(r => OnCommandHelp(string.Empty)))
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty)))
             );
 
             McClient.dispatcher.Register(l => l.Literal(CommandName)
@@ -274,6 +275,7 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Argument("username", Arguments.String())
                         .Executes(r => OnCommandRemoveIgnored(Arguments.GetString(r, "username")))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
         }
@@ -284,16 +286,15 @@ namespace MinecraftClient.ChatBots
             McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
 
-        private int OnCommandHelp(string cmd)
+        private int OnCommandHelp(CmdResult r, string? cmd)
         {
-            LogToConsole(cmd switch
+            return r.SetAndReturn(cmd switch
             {
 #pragma warning disable format // @formatter:off
                 _           =>   Translations.bot_mailer_cmd_help + ": /mailer <getmails|addignored|getignored|removeignored>"
                                    + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
             });
-            return 1;
         }
 
         private int OnCommandGetMails()

@@ -21,6 +21,7 @@ namespace MinecraftClient.Commands
             dispatcher.Register(l => l.Literal(CmdName)
                 .Executes(r => DoRespawn(r.Source))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

@@ -79,6 +79,7 @@ namespace MinecraftClient.Commands
                     .Then(l => l.Literal("-f")
                         .Executes(r => MoveToLocation(r.Source, MccArguments.GetLocation(r, "location"), true))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

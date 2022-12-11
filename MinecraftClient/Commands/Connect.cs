@@ -25,6 +25,7 @@ namespace MinecraftClient.Commands
                     .Then(l => l.Argument("AccountNick", MccArguments.AccountNick())
                         .Executes(r => DoConnect(r.Source, Arguments.GetString(r, "ServerNick"), Arguments.GetString(r, "AccountNick")))))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }

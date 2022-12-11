@@ -34,6 +34,7 @@ namespace MinecraftClient.Commands
                 .Then(l => l.Literal("bottom")
                     .Executes(r => DoEnchant(r.Source, slotId: 2)))
                 .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
             );
         }
