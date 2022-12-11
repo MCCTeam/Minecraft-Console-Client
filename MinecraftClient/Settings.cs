@@ -16,6 +16,7 @@ using Tomlet.Models;
 using static MinecraftClient.Settings.AppVarConfigHelper;
 using static MinecraftClient.Settings.ChatBotConfigHealper;
 using static MinecraftClient.Settings.ChatFormatConfigHelper;
+using static MinecraftClient.Settings.ConsoleConfigHealper;
 using static MinecraftClient.Settings.HeadCommentHealper;
 using static MinecraftClient.Settings.LoggingConfigHealper;
 using static MinecraftClient.Settings.MainConfigHealper;
@@ -31,10 +32,10 @@ namespace MinecraftClient
         private const int CommentsAlignPosition = 45;
         private readonly static Regex CommentRegex = new(@"^(.*)\s?#\s\$([\w\.]+)\$\s*$$", RegexOptions.Compiled);
 
-        //Other Settings
-        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\48\482e0dae05abfa35ab5cb076e41fda77b4fb9a08"; //MC 1.19 en_GB.lang
-        public static string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/b5c7548ddb9e584e84a5f762da5b78211c715a63/1.19.json";
-        public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
+        // Other Settings
+        public const string TranslationsFile_Version = "1.19.3";
+        public const string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/c492375ded5da34b646b8c5c0842a0028bc69cec/2.json";
+        public const string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
 
         public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
 
@@ -88,6 +89,12 @@ namespace MinecraftClient
             {
                 get { return LoggingConfigHealper.Config; }
                 set { LoggingConfigHealper.Config = value; LoggingConfigHealper.Config.OnSettingUpdate(); }
+            }
+
+            public ConsoleConfig Console
+            {
+                get { return ConsoleConfigHealper.Config; }
+                set { ConsoleConfigHealper.Config = value; ConsoleConfigHealper.Config.OnSettingUpdate(); }
             }
 
             public AppVarConfig AppVar
@@ -345,12 +352,12 @@ namespace MinecraftClient
                     "hy_am", "id_id", "ig_ng", "io_en", "is_is", "isv", "it_it", "ja_jp",
                     "jbo_en", "ka_ge", "kk_kz", "kn_in", "ko_kr", "ksh", "kw_gb", "la_la",
                     "lb_lu", "li_li", "lmo", "lol_us", "lt_lt", "lv_lv", "lzh", "mk_mk",
-                    "mn_mn", "ms_my", "mt_mt", "nds_de", "nl_be", "nl_nl", "nn_no", "no_no",
-                    "oc_fr", "ovd", "pl_pl", "pt_br", "pt_pt", "qya_aa", "ro_ro", "rpr",
-                    "ru_ru", "se_no", "sk_sk", "sl_si", "so_so", "sq_al", "sr_sp", "sv_se",
-                    "sxu", "szl", "ta_in", "th_th", "tl_ph", "tlh_aa", "tok", "tr_tr",
-                    "tt_ru", "uk_ua", "val_es", "vec_it", "vi_vn", "yi_de", "yo_ng", "zh_cn",
-                    "zh_hk", "zh_tw", "zlm_arab"
+                    "mn_mn", "ms_my", "mt_mt", "nah", "nds_de", "nl_be", "nl_nl", "nn_no",
+                    "no_no", "oc_fr", "ovd", "pl_pl", "pt_br", "pt_pt", "qya_aa", "ro_ro",
+                    "rpr", "ru_ru", "ry_ua", "se_no", "sk_sk", "sl_si", "so_so", "sq_al",
+                    "sr_sp", "sv_se", "sxu", "szl", "ta_in", "th_th", "tl_ph", "tlh_aa",
+                    "tok", "tr_tr", "tt_ru", "uk_ua", "val_es", "vec_it", "vi_vn", "yi_de",
+                    "yo_ng", "zh_cn", "zh_hk", "zh_tw", "zlm_arab"
                 };
 
                 /// <summary>
@@ -421,7 +428,7 @@ namespace MinecraftClient
 
                     if (!Advanced.LoadMccTranslation)
                     {
-                        CultureInfo culture = CultureInfo.CreateSpecificCulture("en_gb");
+                        CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
                         CultureInfo.DefaultThreadCurrentCulture = culture;
                         CultureInfo.DefaultThreadCurrentUICulture = culture;
                         Program.ActualCulture = culture;
@@ -491,7 +498,7 @@ namespace MinecraftClient
                 public class AdvancedConfig
                 {
                     [TomlInlineComment("$Main.Advanced.language$")]
-                    public string Language = "en_gb";
+                    public string Language = "en_us";
 
                     [TomlInlineComment("$Main.Advanced.LoadMccTrans$")]
                     public bool LoadMccTranslation = true;
@@ -764,6 +771,139 @@ namespace MinecraftClient
                 public void OnSettingUpdate() { }
 
                 public enum FilterModeEnum { disable, blacklist, whitelist }
+            }
+        }
+
+        public static class ConsoleConfigHealper
+        {
+            public static ConsoleConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class ConsoleConfig
+            {
+                public MainConfig General = new();
+
+                [TomlPrecedingComment("$Console.CommandSuggestion$")]
+                public CommandSuggestionConfig CommandSuggestion = new();
+
+                public void OnSettingUpdate()
+                {
+                    ConsoleInteractive.ConsoleWriter.EnableColor = General.Enable_Color;
+
+                    ConsoleInteractive.ConsoleReader.DisplayUesrInput = General.Display_Uesr_Input;
+
+                    ConsoleInteractive.ConsoleSuggestion.EnableColor = CommandSuggestion.Enable_Color;
+
+                    CommandSuggestion.Max_Suggestion_Width =
+                        ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionLength(CommandSuggestion.Max_Suggestion_Width);
+
+                    CommandSuggestion.Max_Displayed_Suggestions =
+                        ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionCount(CommandSuggestion.Max_Displayed_Suggestions);
+
+                    // CommandSuggestion color settings
+                    {
+                        if (!CheckColorCode(CommandSuggestion.Text_Color))
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.TextColor", CommandSuggestion.Text_Color));
+                            CommandSuggestion.Text_Color = "#f8fafc";
+                        }
+                        if (!CheckColorCode(CommandSuggestion.Text_Background_Color))
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.TextBackgroundColor", CommandSuggestion.Text_Background_Color));
+                            CommandSuggestion.Text_Background_Color = "#64748b";
+                        }
+                        if (!CheckColorCode(CommandSuggestion.Highlight_Text_Color))
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.HighlightTextColor", CommandSuggestion.Highlight_Text_Color));
+                            CommandSuggestion.Highlight_Text_Color = "#334155";
+                        }
+                        if (!CheckColorCode(CommandSuggestion.Highlight_Text_Background_Color))
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.HighlightTextBackgroundColor", CommandSuggestion.Highlight_Text_Background_Color));
+                            CommandSuggestion.Highlight_Text_Background_Color = "#fde047";
+                        }
+                        if (!CheckColorCode(CommandSuggestion.Tooltip_Color))
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.TooltipColor", CommandSuggestion.Tooltip_Color));
+                            CommandSuggestion.Tooltip_Color = "#7dd3fc";
+                        }
+                        if (!CheckColorCode(CommandSuggestion.Highlight_Tooltip_Color))
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.HighlightTooltipColor", CommandSuggestion.Highlight_Tooltip_Color));
+                            CommandSuggestion.Highlight_Tooltip_Color = "#3b82f6";
+                        }
+                        if (!CheckColorCode(CommandSuggestion.Arrow_Symbol_Color))
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.ArrowSymbolColor", CommandSuggestion.Arrow_Symbol_Color));
+                            CommandSuggestion.Arrow_Symbol_Color = "#d1d5db";
+                        }
+
+                        ConsoleInteractive.ConsoleSuggestion.SetColors(
+                            CommandSuggestion.Text_Color, CommandSuggestion.Text_Background_Color,
+                            CommandSuggestion.Highlight_Text_Color, CommandSuggestion.Highlight_Text_Background_Color,
+                            CommandSuggestion.Tooltip_Color, CommandSuggestion.Highlight_Tooltip_Color,
+                            CommandSuggestion.Arrow_Symbol_Color);
+                    }
+                }
+
+                private static bool CheckColorCode(string? input)
+                {
+                    if (string.IsNullOrWhiteSpace(input))
+                        return false;
+                    if (input.Length < 6 || input.Length > 7)
+                        return false;
+                    if (input.Length == 6 && input[0] == '#')
+                        return false;
+                    if (input.Length == 7 && input[0] != '#')
+                        return false;
+                    try
+                    {
+                        Convert.ToInt32(input.Length == 7 ? input[1..] : input, 16);
+                        return true;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+
+                [TomlDoNotInlineObject]
+                public class MainConfig
+                {
+                    [TomlInlineComment("$Console.Enable_Color$")]
+                    public bool Enable_Color = true;
+
+                    [TomlInlineComment("$Console.General.Display_Uesr_Input$")]
+                    public bool Display_Uesr_Input = true;
+                }
+
+                [TomlDoNotInlineObject]
+                public class CommandSuggestionConfig
+                {
+                    [TomlInlineComment("$Console.CommandSuggestion.Enable$")]
+                    public bool Enable = true;
+
+                    [TomlInlineComment("$Console.Enable_Color$")]
+                    public bool Enable_Color = true;
+
+                    public int Max_Suggestion_Width = 30;
+
+                    public int Max_Displayed_Suggestions = 6;
+
+                    public string Text_Color = "#f8fafc";
+
+                    public string Text_Background_Color = "#64748b";
+
+                    public string Highlight_Text_Color = "#334155";
+
+                    public string Highlight_Text_Background_Color = "#fde047";
+
+                    public string Tooltip_Color = "#7dd3fc";
+
+                    public string Highlight_Tooltip_Color = "#3b82f6";
+
+                    public string Arrow_Symbol_Color = "#d1d5db";
+                }
             }
         }
 
@@ -1238,7 +1378,7 @@ namespace MinecraftClient
 
         public static string GetDefaultGameLanguage()
         {
-            string gameLanguage = "en_gb";
+            string gameLanguage = "en_us";
             string systemLanguage = string.IsNullOrWhiteSpace(Program.ActualCulture.Name)
                     ? Program.ActualCulture.Parent.Name
                     : Program.ActualCulture.Name;
@@ -1326,6 +1466,9 @@ namespace MinecraftClient
                 case "en-TT":
                 case "en-ZA":
                 case "en-ZW":
+                case "en-US":
+                    gameLanguage = "en_us";
+                    break;
                 case "en-GB":
                     gameLanguage = "en_gb";
                     break;
@@ -1334,9 +1477,6 @@ namespace MinecraftClient
                     break;
                 case "en-CA":
                     gameLanguage = "en_ca";
-                    break;
-                case "en-US":
-                    gameLanguage = "en_us";
                     break;
                 case "en-NZ":
                     gameLanguage = "en_nz";

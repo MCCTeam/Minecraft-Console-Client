@@ -20,7 +20,7 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Then(l => l.Argument("Slot", Arguments.Integer(1, 9))
+                .Then(l => l.Argument("Slot", MccArguments.HotbarSlot())
                     .Executes(r => DoChangeSlot(r.Source, handler, Arguments.GetInteger(r, "Slot"))))
                 .Then(l => l.Literal("_help")
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))

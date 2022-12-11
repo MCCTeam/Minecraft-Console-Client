@@ -692,7 +692,7 @@ namespace MinecraftClient
         {
             WriteBackSettings(true);
             ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
-            ConsoleIO.WriteLineFormatted(string.Format(Translations.config_saving, settingsIniPath));
+            ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
             if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
             if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }

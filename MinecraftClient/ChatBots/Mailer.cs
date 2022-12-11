@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
-using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;

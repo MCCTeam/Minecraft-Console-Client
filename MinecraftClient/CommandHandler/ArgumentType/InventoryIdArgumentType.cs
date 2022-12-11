@@ -25,7 +25,13 @@ namespace MinecraftClient.CommandHandler.ArgumentType
                 {
                     string invName = inv.Key.ToString();
                     if (invName.StartsWith(builder.RemainingLowerCase, StringComparison.InvariantCultureIgnoreCase))
-                        builder.Suggest(invName);
+                    {
+                        string? invTitle = inv.Value.Title;
+                        if (!string.IsNullOrWhiteSpace(invTitle))
+                            builder.Suggest(invName, new SuggestionTooltip(invTitle));
+                        else
+                            builder.Suggest(invName);
+                    }
                 }
             }
             return builder.BuildFuture();

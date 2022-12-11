@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Brigadier.NET;
 using Brigadier.NET.Builder;
 using DSharpPlus;
 using DSharpPlus.Entities;

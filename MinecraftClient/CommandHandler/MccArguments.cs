@@ -71,6 +71,11 @@ namespace MinecraftClient.CommandHandler
             return new InventoryActionArgumentType();
         }
 
+        public static InventorySlotArgumentType InventorySlot()
+        {
+            return new InventorySlotArgumentType();
+        }
+
         public static Inventory.WindowActionType GetInventoryAction<TSource>(CommandContext<TSource> context, string name)
         {
             return context.GetArgument<Inventory.WindowActionType>(name);
@@ -99,6 +104,11 @@ namespace MinecraftClient.CommandHandler
         public static MapBotMapIdArgumentType MapBotMapId()
         {
             return new MapBotMapIdArgumentType();
+        }
+
+        public static HotbarSlotArgumentType HotbarSlot()
+        {
+            return new HotbarSlotArgumentType();
         }
     }
 }

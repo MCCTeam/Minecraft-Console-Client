@@ -2271,15 +2271,6 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Defaulting to en_GB.lang from your Minecraft directory..
-        /// </summary>
-        internal static string chat_from_dir {
-            get {
-                return ResourceManager.GetString("chat.from_dir", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Translations file loaded..
         /// </summary>
         internal static string chat_loaded {
@@ -2313,6 +2304,24 @@ namespace MinecraftClient {
         internal static string chat_request {
             get {
                 return ResourceManager.GetString("chat.request", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to save the file {0}..
+        /// </summary>
+        internal static string chat_save_fail {
+            get {
+                return ResourceManager.GetString("chat.save_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Switch to use Minecraft&apos;s default language resource &quot;en_us.json&quot;..
+        /// </summary>
+        internal static string chat_use_default {
+            get {
+                return ResourceManager.GetString("chat.use_default", resourceCulture);
             }
         }
         
@@ -4109,6 +4118,15 @@ namespace MinecraftClient {
         internal static string config_backup_fail {
             get {
                 return ResourceManager.GetString("config.backup.fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The color code {1} in {0} is in illegal format and the default value has been restored..
+        /// </summary>
+        internal static string config_commandsuggestion_illegal_color {
+            get {
+                return ResourceManager.GetString("config.commandsuggestion.illegal_color", resourceCulture);
             }
         }
         

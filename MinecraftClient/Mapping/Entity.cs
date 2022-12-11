@@ -156,11 +156,16 @@ namespace MinecraftClient.Mapping
             Pitch = pitch * (1 / 256) * 360;
         }
 
-        public string GetTypeString()
+        public static string GetTypeString(EntityType type)
         {
-            string typeStr = Type.ToString();
+            string typeStr = type.ToString();
             string? trans = ChatParser.TranslateString("entity.minecraft." + typeStr.ToUnderscoreCase());
             return string.IsNullOrEmpty(trans) ? typeStr : trans;
+        }
+
+        public string GetTypeString()
+        {
+            return GetTypeString(Type);
         }
     }
 }

@@ -869,9 +869,6 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
   <data name="chat.fail" xml:space="preserve">
     <value>Failed to download the file.</value>
   </data>
-  <data name="chat.from_dir" xml:space="preserve">
-    <value>Defaulting to en_GB.lang from your Minecraft directory.</value>
-  </data>
   <data name="chat.loaded" xml:space="preserve">
     <value>Translations file loaded.</value>
   </data>
@@ -884,6 +881,12 @@ Some messages won't be properly printed without this file.</value>
   </data>
   <data name="chat.request" xml:space="preserve">
     <value>Performing request to {0}</value>
+  </data>
+  <data name="chat.save_fail" xml:space="preserve">
+    <value>Failed to save the file {0}.</value>
+  </data>
+  <data name="chat.use_default" xml:space="preserve">
+    <value>Switch to use Minecraft's default language resource "en_us.json".</value>
   </data>
   <data name="chatbot.reconnect" xml:space="preserve">
     <value>[{0}] Disconnecting and Reconnecting to the Server</value>
@@ -1449,7 +1452,7 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
     <value>set a custom %variable% randomly to a given value.</value>
   </data>
   <data name="cmd.setrnd.format" xml:space="preserve">
-    <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
+    <value>setrnd variable -7 to 17 OR setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="cmd.setrndnum.format" xml:space="preserve">
     <value>setrnd variable -7 to 17</value>
@@ -1486,6 +1489,9 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   </data>
   <data name="config.backup.fail" xml:space="preserve">
     <value>Failed to write to backup file {0}</value>
+  </data>
+  <data name="config.commandsuggestion.illegal_color" xml:space="preserve">
+    <value>The color code {1} in {0} is in illegal format and the default value has been restored.</value>
   </data>
   <data name="config.load" xml:space="preserve">
     <value>Settings have been loaded from {0}</value>
@@ -1990,9 +1996,6 @@ Switching to autodetection mode.</value>
   </data>
   <data name="mcc.update.progress" xml:space="preserve">
     <value>Self-updating: {0:00.00}%, ETA {4}, Downloaded {1:00.0}MB of {2:00.0}MB, Avg {3:0.0}KB/s</value>
-  </data>
-  <data name="cmd.setrnd.format" xml:space="preserve">
-    <value>setrnd variable -7 to 17 OR setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="mcc.update.progress_type2" xml:space="preserve">
     <value>Self-updating: Downloaded {0:00.0}MB, Avg {1:0.0}KB/s</value>

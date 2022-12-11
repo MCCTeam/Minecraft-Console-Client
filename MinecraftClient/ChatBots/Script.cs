@@ -5,8 +5,6 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using Brigadier.NET;
-using MinecraftClient.CommandHandler;
 using MinecraftClient.Scripting;
 
 namespace MinecraftClient.ChatBots

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;

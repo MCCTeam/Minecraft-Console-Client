@@ -220,16 +220,19 @@ namespace MinecraftClient
                     string command = fullCommand[offset..];
                     if (command.Length == 0)
                     {
-                        var childs = CmdResult.client!.dispatcher.GetRoot().Children;
-                        int index = 0;
-                        var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[childs.Count + Commands.Count + 1];
+                        List<ConsoleInteractive.ConsoleSuggestion.Suggestion> sugList = new();
 
-                        sugList[index++] = new("/");
-                        foreach (var child in childs)
-                            sugList[index++] = new(child.Name);
+                        sugList.Add(new("/"));
+
+                        var childs = CmdResult.client?.dispatcher.GetRoot().Children;
+                        if (childs != null)
+                            foreach (var child in childs)
+                                sugList.Add(new(child.Name));
+
                         foreach (var cmd in Commands)
-                            sugList[index++] = new(cmd);
-                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList, new(offset, offset));
+                            sugList.Add(new(cmd));
+
+                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList.ToArray(), new(offset, offset));
                     }
                     else if (command.Length > 0 && command[0] == '/' && !command.Contains(' '))
                     {
@@ -243,29 +246,37 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        var parse = CmdResult.client!.dispatcher.Parse(command, CmdResult.Empty);
+                        CommandDispatcher<CmdResult>? dispatcher = CmdResult.client?.dispatcher;
+                        if (dispatcher == null)
+                            return;
 
-                        var suggestion = await CmdResult.client!.dispatcher.GetCompletionSuggestions(parse, buffer.CursorPosition - offset);
+                        ParseResults<CmdResult> parse = dispatcher.Parse(command, CmdResult.Empty);
 
-                        int sugLen = suggestion.List.Count;
+                        Brigadier.NET.Suggestion.Suggestions suggestions = await dispatcher.GetCompletionSuggestions(parse, buffer.CursorPosition - offset);
+
+                        int sugLen = suggestions.List.Count;
                         if (sugLen == 0)
                         {
                             ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
                             return;
                         }
 
+                        Dictionary<string, string?> dictionary = new();
+                        foreach (var sug in suggestions.List)
+                            dictionary.Add(sug.Text, sug.Tooltip?.String);
+
                         var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[sugLen];
                         if (cts.IsCancellationRequested)
                             return;
 
-                        Tuple<int, int> range = new(suggestion.Range.Start + offset, suggestion.Range.End + offset);
-                        var sorted = Process.ExtractSorted(fullCommand[range.Item1..range.Item2], suggestion.List.Select(_ => _.Text).ToList());
+                        Tuple<int, int> range = new(suggestions.Range.Start + offset, suggestions.Range.End + offset);
+                        var sorted = Process.ExtractSorted(fullCommand[range.Item1..range.Item2], dictionary.Keys);
                         if (cts.IsCancellationRequested)
                             return;
 
                         int index = 0;
                         foreach (var sug in sorted)
-                            sugList[index++] = new(sug.Value);
+                            sugList[index++] = new(sug.Value, dictionary[sug.Value] ?? string.Empty);
 
                         ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList, range);
                     }
@@ -283,7 +294,8 @@ namespace MinecraftClient
 
         public static void AutocompleteHandler(object? sender, ConsoleInteractive.ConsoleReader.Buffer buffer)
         {
-            MccAutocompleteHandler(buffer);
+            if (Settings.Config.Console.CommandSuggestion.Enable)
+                MccAutocompleteHandler(buffer);
         }
 
         public static void CancelAutocomplete()
