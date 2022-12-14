@@ -1085,7 +1085,8 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The settings for command completion suggestions..
+        ///   Looks up a localized string similar to The settings for command completion suggestions.
+        ///Custom colors are only available when using &quot;vt100_24bit&quot; color mode..
         /// </summary>
         internal static string Console_CommandSuggestion {
             get {
@@ -1112,20 +1113,20 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a garbled code like &quot;←[0m&quot; appears on the terminal, you can turn off this..
+        ///   Looks up a localized string similar to Use &quot;disable&quot;, &quot;legacy_4bit&quot;, &quot;vt100_4bit&quot;, &quot;vt100_8bit&quot; or &quot;vt100_24bit&quot;. If a garbled code like &quot;←[0m&quot; appears on the terminal, you can try switching to &quot;legacy_4bit&quot; mode, or just disable it..
         /// </summary>
-        internal static string Console_Enable_Color {
+        internal static string Console_General_ConsoleColorMode {
             get {
-                return ResourceManager.GetString("Console.Enable_Color", resourceCulture);
+                return ResourceManager.GetString("Console.General.ConsoleColorMode", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You can use &quot;Ctrl+P&quot; to print out the current input and cursor position..
         /// </summary>
-        internal static string Console_General_Display_Uesr_Input {
+        internal static string Console_General_Display_Input {
             get {
-                return ResourceManager.GetString("Console.General.Display_Uesr_Input", resourceCulture);
+                return ResourceManager.GetString("Console.General.Display_Input", resourceCulture);
             }
         }
         
@@ -1556,15 +1557,6 @@ namespace MinecraftClient {
         internal static string Main_Advanced_temporary_fix_badpacket {
             get {
                 return ResourceManager.GetString("Main.Advanced.temporary_fix_badpacket", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;none&quot;, &quot;bit_4&quot;, &quot;bit_8&quot; or &quot;bit_24&quot;. This can be checked by opening the debug log..
-        /// </summary>
-        internal static string Main_Advanced_TerminalColorDepth {
-            get {
-                return ResourceManager.GetString("Main.Advanced.TerminalColorDepth", resourceCulture);
             }
         }
         

@@ -203,9 +203,9 @@ namespace MinecraftClient.Commands
                 for (int x = leftMost; x <= rightMost; ++x)
                 {
                     if (z == current.ChunkZ && x == current.ChunkX)
-                        sb.Append("§z");           // Player Location: background gray
+                        sb.Append("§§7");           // Player Location: background gray
                     else if (z == markChunkZ && x == markChunkX)
-                        sb.Append("§w");           // Marked chunk: background red
+                        sb.Append("§§4");           // Marked chunk: background red
 
                     ChunkColumn? chunkColumn = world[x, z];
                     if (chunkColumn == null)
@@ -216,12 +216,12 @@ namespace MinecraftClient.Commands
                         sb.Append(chunkStatusStr[1]);
 
                     if ((z == current.ChunkZ && x == current.ChunkX) || (z == markChunkZ && x == markChunkX))
-                        sb.Append("§r");           // Reset background color
+                        sb.Append("§§r");           // Reset background color
                 }
                 sb.Append('\n');
             }
 
-            sb.Append(string.Format(Translations.cmd_chunk_icon, "§z  §r", "§w  §r", chunkStatusStr[0], chunkStatusStr[1], chunkStatusStr[2]));
+            sb.Append(string.Format(Translations.cmd_chunk_icon, "§§7  §§r", "§§4  §§r", chunkStatusStr[0], chunkStatusStr[1], chunkStatusStr[2]));
             handler.Log.Info(sb.ToString());
 
             return r.SetAndReturn(Status.Done);

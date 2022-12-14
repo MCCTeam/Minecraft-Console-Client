@@ -159,7 +159,7 @@ namespace MinecraftClient.ChatBots
                 }
                 catch (Exception e)
                 {
-                    LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_canceled_sending);
+                    LogToConsole("§§4§l§f" + Translations.bot_TelegramBridge_canceled_sending);
                     LogDebugToConsole(e);
                 }
 
@@ -209,7 +209,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_canceled_sending);
+                LogToConsole("§§4§l§f" + Translations.bot_TelegramBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -232,7 +232,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_canceled_sending);
+                LogToConsole("§§4§l§f" + Translations.bot_TelegramBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -254,7 +254,7 @@ namespace MinecraftClient.ChatBots
                 }
 
                 if (string.IsNullOrEmpty(Config.ChannelId.Trim()))
-                    LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_missing_channel_id);
+                    LogToConsole("§§4§l§f" + Translations.bot_TelegramBridge_missing_channel_id);
 
                 botClient = new TelegramBotClient(Config.Token.Trim());
                 cancellationToken = new CancellationTokenSource();
@@ -273,12 +273,12 @@ namespace MinecraftClient.ChatBots
                 IsConnected = true;
 
                 SendMessage($"✅ {Translations.bot_TelegramBridge_connected}");
-                LogToConsole($"§y§l§f{Translations.bot_TelegramBridge_connected}");
+                LogToConsole($"§§2§l§f{Translations.bot_TelegramBridge_connected}");
 
                 if (Config.Authorized_Chat_Ids.Length == 0)
                 {
                     SendMessage($"⚠️ *{Translations.bot_TelegramBridge_missing_authorized_channels}* ⚠️");
-                    LogToConsole($"§w§l§f{Translations.bot_TelegramBridge_missing_authorized_channels}");
+                    LogToConsole($"§§4§l§f{Translations.bot_TelegramBridge_missing_authorized_channels}");
                     return;
                 }
 
@@ -286,7 +286,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole($"§w§l§f{Translations.bot_TelegramBridge_unknown_error}");
+                LogToConsole($"§§4§l§f{Translations.bot_TelegramBridge_unknown_error}");
                 LogToConsole(e);
                 return;
             }
@@ -368,7 +368,7 @@ namespace MinecraftClient.ChatBots
                 _ => exception.ToString()
             };
 
-            LogToConsole("§w§l§f" + ErrorMessage);
+            LogToConsole("§§4§l§f" + ErrorMessage);
             return Task.CompletedTask;
         }
     }

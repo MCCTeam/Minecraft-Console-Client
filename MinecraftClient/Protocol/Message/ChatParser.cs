@@ -119,7 +119,7 @@ namespace MinecraftClient.Protocol.Message
             if (message.isSystemChat)
             {
                 if (Config.Signature.MarkSystemMessage)
-                    color = "§z §r ";     // Custom color code §z : Background Gray
+                    color = "§§7 §§r ";     // Background Gray
             }
             else
             {
@@ -128,18 +128,18 @@ namespace MinecraftClient.Protocol.Message
                     if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
                     {
                         if (Config.Signature.MarkModifiedMsg)
-                            color = "§x §r "; // Custom color code §x : Background Yellow
+                            color = "§§6 §§r "; // Background Yellow
                     }
                     else
                     {
                         if (Config.Signature.MarkLegallySignedMsg)
-                            color = "§y §r "; // Custom color code §y : Background Green
+                            color = "§§2 §§r "; // Background Green
                     }
                 }
                 else
                 {
                     if (Config.Signature.MarkIllegallySignedMsg)
-                        color = "§w §r "; // Custom color code §w : Background Red
+                        color = "§§4 §§r "; // Background Red
                 }
             }
             return color + text;

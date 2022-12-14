@@ -605,9 +605,6 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.Advanced.enable_emoji$")]
                     public bool EnableEmoji = true;
 
-                    [TomlInlineComment("$Main.Advanced.TerminalColorDepth$")]
-                    public TerminalColorDepthType TerminalColorDepth = TerminalColorDepthType.bit_24;
-
                     [TomlInlineComment("$Main.Advanced.MinTerminalWidth$")]
                     public int MinTerminalWidth = 16;
 
@@ -640,8 +637,6 @@ namespace MinecraftClient
                     public enum ResolveSrvRecordType { no, fast, yes };
 
                     public enum ForgeConfigType { no, auto, force };
-
-                    public enum TerminalColorDepthType { bit_4, bit_8, bit_24 };
                 }
 
                 public struct AccountInfoConfig
@@ -788,11 +783,25 @@ namespace MinecraftClient
 
                 public void OnSettingUpdate()
                 {
-                    ConsoleInteractive.ConsoleWriter.EnableColor = General.Enable_Color;
+                    // Reader
+                    ConsoleInteractive.ConsoleReader.DisplayUesrInput = General.Display_Input;
 
-                    ConsoleInteractive.ConsoleReader.DisplayUesrInput = General.Display_Uesr_Input;
+                    // Writer
+                    ConsoleInteractive.ConsoleWriter.EnableColor = General.ConsoleColorMode != ConsoleColorModeType.disable;
+
+                    ConsoleInteractive.ConsoleWriter.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
+
+                    // Buffer
+                    General.History_Input_Records = 
+                        ConsoleInteractive.ConsoleBuffer.SetBackreadBufferLimit(General.History_Input_Records);
+
+                    // Suggestion
+                    if (General.ConsoleColorMode == ConsoleColorModeType.disable)
+                        CommandSuggestion.Enable_Color = false;
 
                     ConsoleInteractive.ConsoleSuggestion.EnableColor = CommandSuggestion.Enable_Color;
+
+                    ConsoleInteractive.ConsoleSuggestion.Enable24bitColor = General.ConsoleColorMode == ConsoleColorModeType.vt100_24bit;
 
                     ConsoleInteractive.ConsoleSuggestion.UseBasicArrow = CommandSuggestion.Use_Basic_Arrow;
 
@@ -802,7 +811,7 @@ namespace MinecraftClient
                     CommandSuggestion.Max_Displayed_Suggestions =
                         ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionCount(CommandSuggestion.Max_Displayed_Suggestions);
 
-                    // CommandSuggestion color settings
+                    // Suggestion color settings
                     {
                         if (!CheckColorCode(CommandSuggestion.Text_Color))
                         {
@@ -872,11 +881,14 @@ namespace MinecraftClient
                 [TomlDoNotInlineObject]
                 public class MainConfig
                 {
-                    [TomlInlineComment("$Console.Enable_Color$")]
-                    public bool Enable_Color = true;
+                    [TomlInlineComment("$Console.General.ConsoleColorMode$")]
+                    public ConsoleColorModeType ConsoleColorMode = ConsoleColorModeType.vt100_24bit;
 
-                    [TomlInlineComment("$Console.General.Display_Uesr_Input$")]
-                    public bool Display_Uesr_Input = true;
+                    [TomlInlineComment("$Console.General.Display_Input$")]
+                    public bool Display_Input = true;
+
+                    [TomlInlineComment("$Console.General.History_Input_Records$")]
+                    public int History_Input_Records = 32;
                 }
 
                 [TomlDoNotInlineObject]
@@ -885,7 +897,6 @@ namespace MinecraftClient
                     [TomlInlineComment("$Console.CommandSuggestion.Enable$")]
                     public bool Enable = true;
 
-                    [TomlInlineComment("$Console.Enable_Color$")]
                     public bool Enable_Color = true;
 
                     [TomlInlineComment("$Console.CommandSuggestion.Use_Basic_Arrow$")]
@@ -909,6 +920,8 @@ namespace MinecraftClient
 
                     public string Arrow_Symbol_Color = "#d1d5db";
                 }
+
+                public enum ConsoleColorModeType { disable, legacy_4bit, vt100_4bit, vt100_8bit, vt100_24bit };
             }
         }
 
