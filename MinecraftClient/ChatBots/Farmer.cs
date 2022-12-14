@@ -160,7 +160,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (!currentArg.Contains(':'))
                     {
-                        LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
+                        LogToConsole("§§6§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
                         continue;
                     }
 
@@ -168,7 +168,7 @@ namespace MinecraftClient.ChatBots
 
                     if (parts.Length != 2)
                     {
-                        LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
+                        LogToConsole("§§6§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
                         continue;
                     }
 
@@ -177,11 +177,11 @@ namespace MinecraftClient.ChatBots
                         case "r":
                         case "radius":
                             if (!int.TryParse(parts[1], NumberStyles.Any, CultureInfo.CurrentCulture, out radius))
-                                LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
+                                LogToConsole("§§6§1§0" + Translations.bot_farmer_invalid_radius);
 
                             if (radius <= 0)
                             {
-                                LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
+                                LogToConsole("§§6§1§0" + Translations.bot_farmer_invalid_radius);
                                 radius = 30;
                             }
 
@@ -194,7 +194,7 @@ namespace MinecraftClient.ChatBots
 
                             if (parts[1].Equals("true") || parts[1].Equals("1"))
                             {
-                                LogToConsole("§x§1§0" + Translations.bot_farmer_warining_force_unsafe);
+                                LogToConsole("§§6§1§0" + Translations.bot_farmer_warining_force_unsafe);
                                 allowUnsafe = true;
                             }
                             else allowUnsafe = false;
@@ -208,7 +208,7 @@ namespace MinecraftClient.ChatBots
 
                             if (parts[1].Equals("true") || parts[1].Equals("1"))
                             {
-                                LogToConsole("§w§1§f" + Translations.bot_farmer_warining_allow_teleport);
+                                LogToConsole("§§4§1§f" + Translations.bot_farmer_warining_allow_teleport);
                                 allowTeleport = true;
                             }
                             else allowTeleport = false;
@@ -252,9 +252,9 @@ namespace MinecraftClient.ChatBots
 
         private void MainPorcess()
         {
-            LogToConsole("§y§1§f" + Translations.bot_farmer_started);
-            LogToConsole("§y§1§f " + Translations.bot_farmer_crop_type + ": " + cropType);
-            LogToConsole("§y§1§f " + Translations.bot_farmer_radius + ": " + farmingRadius);
+            LogToConsole("§§2§1§f" + Translations.bot_farmer_started);
+            LogToConsole("§§2§1§f " + Translations.bot_farmer_crop_type + ": " + cropType);
+            LogToConsole("§§2§1§f " + Translations.bot_farmer_radius + ": " + farmingRadius);
 
             while (running)
             {

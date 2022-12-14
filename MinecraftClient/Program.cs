@@ -18,6 +18,7 @@ using MinecraftClient.Scripting;
 using MinecraftClient.WinAPI;
 using Tomlet;
 using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
@@ -98,9 +99,7 @@ namespace MinecraftClient
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null)
-            {
                 ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
-            }
 
             //Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")
@@ -288,7 +287,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (Config.Main.Advanced.ConsoleTitle != "")
+            if (!string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
             {
                 InternalConfig.Username = "New Window";
                 Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
@@ -319,28 +318,28 @@ namespace MinecraftClient
                 Random random = new();
                 { // Test 8 bit color
                     StringBuilder sb = new();
-                    sb.Append("[0123456789]: (8bit)[");
+                    sb.Append("[0123456789]: (vt100 8bit)[");
                     for (int i = 0; i < 10; ++i)
                     {
                         sb.Append(ColorHelper.GetColorEscapeCode((byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  true,
-                                                                 TerminalColorDepthType.bit_8)).Append(i);
+                                                                 ConsoleColorModeType.vt100_8bit)).Append(i);
                     }
                     sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
                     ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb.ToString()));
                 }
                 { // Test 24 bit color
                     StringBuilder sb = new();
-                    sb.Append("[0123456789]: (24bit)[");
+                    sb.Append("[0123456789]: (vt100 24bit)[");
                     for (int i = 0; i < 10; ++i)
                     {
                         sb.Append(ColorHelper.GetColorEscapeCode((byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  true,
-                                                                 TerminalColorDepthType.bit_24)).Append(i);
+                                                                 ConsoleColorModeType.vt100_24bit)).Append(i);
                     }
                     sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
                     ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb.ToString()));

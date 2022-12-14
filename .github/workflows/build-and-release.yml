@@ -8,7 +8,7 @@ on:
   
 env:
   PROJECT: "MinecraftClient"
-  target-version: "net6.0"
+  target-version: "net7.0"
   compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:

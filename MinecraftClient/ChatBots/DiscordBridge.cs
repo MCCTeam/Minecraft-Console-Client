@@ -163,7 +163,7 @@ namespace MinecraftClient.ChatBots
                 }
                 catch (Exception e)
                 {
-                    LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
+                    LogToConsole("§§4§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                     LogDebugToConsole(e);
                 }
 
@@ -233,7 +233,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
+                LogToConsole("§§4§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -249,7 +249,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
+                LogToConsole("§§4§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -265,7 +265,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
+                LogToConsole("§§4§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -291,7 +291,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
+                LogToConsole("§§4§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -420,12 +420,12 @@ namespace MinecraftClient.ChatBots
                 });
 
                 IsConnected = true;
-                LogToConsole("§y§l§f" + Translations.bot_DiscordBridge_connected);
+                LogToConsole("§§2§l§f" + Translations.bot_DiscordBridge_connected);
                 await Task.Delay(-1);
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_unknown_error);
+                LogToConsole("§§4§l§f" + Translations.bot_DiscordBridge_unknown_error);
                 LogToConsole(e);
                 return;
             }
