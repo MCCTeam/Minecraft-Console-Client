@@ -128,8 +128,8 @@ namespace MinecraftClient.Mapping
             Health = 1.0f;
             Equipment = new Dictionary<int, Item>();
             Item = new Item(ItemType.Air, 0, null);
-            Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
-            Pitch = pitch * (1 / 256) * 360;
+            Yaw = yaw * (1F / 256) * 360; // to angle in 360 degree
+            Pitch = pitch * (1F / 256) * 360;
             ObjectData = objectData;
         }
 
@@ -151,8 +151,8 @@ namespace MinecraftClient.Mapping
             Health = 1.0f;
             Equipment = new Dictionary<int, Item>();
             Item = new Item(ItemType.Air, 0, null);
-            Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
-            Pitch = pitch * (1 / 256) * 360;
+            Yaw = yaw * (1F / 256) * 360; // to angle in 360 degree
+            Pitch = pitch * (1F / 256) * 360;
         }
 
         public string GetTypeString()
