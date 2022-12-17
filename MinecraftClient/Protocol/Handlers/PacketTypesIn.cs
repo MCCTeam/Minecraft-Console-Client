@@ -51,6 +51,7 @@
         EntityVelocity,             //
         Explosion,                  //
         FacePlayer,                 //
+        FeatureFlags,               // Added in 1.19.3
         HeldItemChange,             //
         HideMessage,                // Added in 1.19.1 (1.19.2)
         InitializeWorldBorder,      //
@@ -71,8 +72,10 @@
         PlayerAbilities,            //
         PlayerInfo,                 //
         PlayerListHeaderAndFooter,  //
+        PlayerRemove,               // Added in 1.19.3 (Not used)
         PlayerPositionAndLook,      //
         PluginMessage,              //
+        ProfilelessChatMessage,     // Added in 1.19.3
         RemoveEntityEffect,         //
         ResourcePackSend,           //
         Respawn,                    //

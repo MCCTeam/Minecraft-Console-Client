@@ -62,6 +62,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_18_2_Version = 758;
         internal const int MC_1_19_Version = 759;
         internal const int MC_1_19_2_Version = 760;
+        internal const int MC_1_19_3_Version = 761;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
