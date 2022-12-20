@@ -751,15 +751,16 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
     <value>Connect to a server via a proxy instead of connecting directly
 If Mojang session services are blocked on your network, set Enabled_Login=true to login using proxy.
 If the connection to the Minecraft game server is blocked by the firewall, set Enabled_Ingame=true to use a proxy to connect to the game server.
-/!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!</value>
+/!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!
+Use "custom", "follow_system" or "disable".</value>
   </data>
-  <data name="Proxy.Enabled_Ingame" xml:space="preserve">
+  <data name="Proxy.Ingame_Proxy" xml:space="preserve">
     <value>Whether to connect to the game server through a proxy.</value>
   </data>
-  <data name="Proxy.Enabled_Login" xml:space="preserve">
+  <data name="Proxy.Login_Proxy" xml:space="preserve">
     <value>Whether to connect to the login server through a proxy.</value>
   </data>
-  <data name="Proxy.Enabled_Update" xml:space="preserve">
+  <data name="Proxy.MCC_Update_Proxy" xml:space="preserve">
     <value>Whether to download MCC updates via proxy.</value>
   </data>
   <data name="Proxy.Password" xml:space="preserve">

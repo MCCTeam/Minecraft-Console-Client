@@ -61,6 +61,10 @@ namespace MinecraftClient
         /// </summary>
         public static string LogPrefix = "§8[Log] ";
 
+        private static bool SuppressOutput = false;
+
+        private static List<Tuple<bool, string>> MessageBuffer = new();
+
         /// <summary>
         /// Read a password from the standard input
         /// </summary>
@@ -101,15 +105,42 @@ namespace MinecraftClient
             }
         }
 
+        public static void SuppressPrinting(bool enable)
+        {
+            SuppressOutput = enable;
+            if (!enable)
+            {
+                lock (MessageBuffer)
+                {
+                    foreach ((bool format, string message) in MessageBuffer)
+                    {
+                        if (format)
+                            WriteLineFormatted(message, true, false);
+                        else
+                            WriteLine(message);
+                    }
+                    MessageBuffer.Clear();
+                }
+            }
+        }
+
         /// <summary>
         /// Write a string to the standard output with a trailing newline
         /// </summary>
-        public static void WriteLine(string line)
+        public static void WriteLine(string line, bool ignoreSuppress = false)
         {
-            if (BasicIO)
-                Console.WriteLine(line);
+            if (!ignoreSuppress && SuppressOutput)
+            {
+                lock(MessageBuffer)
+                    MessageBuffer.Add(new(true, line));
+            }
             else
-                ConsoleInteractive.ConsoleWriter.WriteLine(line);
+            {
+                if (BasicIO)
+                    Console.WriteLine(line);
+                else
+                    ConsoleInteractive.ConsoleWriter.WriteLine(line);
+            }
         }
 
         /// <summary>
@@ -123,37 +154,42 @@ namespace MinecraftClient
         /// If true, "hh-mm-ss" timestamp will be prepended.
         /// If unspecified, value is retrieved from EnableTimestamps.
         /// </param>
-        public static void WriteLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
+        public static void WriteLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null, bool ignoreSuppress = false)
         {
-            StringBuilder output = new();
-
-            if (!String.IsNullOrEmpty(str))
+            if (!string.IsNullOrEmpty(str))
             {
+                StringBuilder output = new();
                 displayTimestamp ??= EnableTimestamps;
                 if (displayTimestamp.Value)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
                     output.Append(String.Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"), second.ToString("00")));
                 }
+
                 if (!acceptnewlines)
-                {
                     str = str.Replace('\n', ' ');
-                }
-                if (BasicIO)
+
+                if (!ignoreSuppress && SuppressOutput)
                 {
-                    if (BasicIO_NoColor)
+                    lock (MessageBuffer)
+                        MessageBuffer.Add(new(true, output.ToString()));
+                }
+                else
+                {
+                    if (BasicIO)
                     {
-                        output.Append(ChatBot.GetVerbatim(str));
+                        if (BasicIO_NoColor)
+                            output.Append(ChatBot.GetVerbatim(str));
+                        else
+                            output.Append(str);
+                        Console.WriteLine(output.ToString());
                     }
                     else
                     {
                         output.Append(str);
+                        ConsoleInteractive.ConsoleWriter.WriteLineFormatted(output.ToString());
                     }
-                    Console.WriteLine(output.ToString());
-                    return;
                 }
-                output.Append(str);
-                ConsoleInteractive.ConsoleWriter.WriteLineFormatted(output.ToString());
             }
         }
 
@@ -178,6 +214,17 @@ namespace MinecraftClient
         {
             if (BasicIO) return;
             ConsoleInteractive.ConsoleReader.ClearBuffer();
+
+            _cancellationTokenSource?.Cancel();
+
+            AutoCompleteDone = false;
+            AutoCompleteResult = Array.Empty<string>();
+
+            Commands.Clear();
+            CommandsFromAutoComplete = Array.Empty<string>();
+            CommandsFromDeclareCommands = Array.Empty<string>();
+
+            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
         }
 
 
@@ -220,9 +267,7 @@ namespace MinecraftClient
                     string command = fullCommand[offset..];
                     if (command.Length == 0)
                     {
-                        List<ConsoleInteractive.ConsoleSuggestion.Suggestion> sugList = new();
-
-                        sugList.Add(new("/"));
+                        List<ConsoleInteractive.ConsoleSuggestion.Suggestion> sugList = new() { new("/") };
 
                         var childs = McClient.dispatcher.GetRoot().Children;
                         if (childs != null)
@@ -336,9 +381,9 @@ namespace MinecraftClient
             MergeCommands();
         }
 
-        public static void InitCommandList(CommandDispatcher<CmdResult> dispatcher)
+        public static async Task InitCommandList(CommandDispatcher<CmdResult> dispatcher)
         {
-            autocomplete_engine!.AutoComplete("/");
+            await autocomplete_engine!.AutoComplete("/");
         }
     }
 
@@ -353,6 +398,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="BehindCursor">Text behind the cursor, e.g. "my input comm"</param>
         /// <returns>List of auto-complete words, e.g. ["command", "comment"]</returns>
-        int AutoComplete(string BehindCursor);
+        Task<int> AutoComplete(string BehindCursor);
     }
 }

@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol
@@ -25,7 +26,7 @@ namespace MinecraftClient.Protocol
 
         private readonly string httpVersion = "HTTP/1.1";
 
-        private ITcpFactory? tcpFactory;
+        private readonly ITcpFactory? tcpFactory;
         private bool isProxied = false; // Send absolute Url in request if true
 
         private readonly Uri uri;
@@ -45,7 +46,7 @@ namespace MinecraftClient.Protocol
         /// Set to true to tell the http client proxy is enabled
         /// </summary>
         public bool IsProxy { get { return isProxied; } set { isProxied = value; } }
-        public bool Debug { get { return Settings.Config.Logging.DebugMessages; } }
+        public static bool Debug { get { return Settings.Config.Logging.DebugMessages; } }
 
         /// <summary>
         /// Create a new http request
@@ -105,9 +106,9 @@ namespace MinecraftClient.Protocol
         /// Perform GET request and get the response. Proxy is handled automatically
         /// </summary>
         /// <returns></returns>
-        public Response Get()
+        public async Task<Response> Get()
         {
-            return Send("GET");
+            return await Send("GET");
         }
 
         /// <summary>
@@ -116,12 +117,12 @@ namespace MinecraftClient.Protocol
         /// <param name="contentType">The content type of request body</param>
         /// <param name="body">Request body</param>
         /// <returns></returns>
-        public Response Post(string contentType, string body)
+        public async Task<Response> Post(string contentType, string body)
         {
             Headers.Add("Content-Type", contentType);
             // Calculate length
             Headers.Add("Content-Length", Encoding.UTF8.GetBytes(body).Length.ToString());
-            return Send("POST", body);
+            return await Send("POST", body);
         }
 
         /// <summary>
@@ -130,35 +131,35 @@ namespace MinecraftClient.Protocol
         /// <param name="method">Method in string representation</param>
         /// <param name="body">Optional request body</param>
         /// <returns></returns>
-        private Response Send(string method, string body = "")
+        private async Task<Response> Send(string method, string body = "")
         {
             List<string> requestMessage = new()
             {
                 string.Format("{0} {1} {2}", method.ToUpper(), isProxied ? AbsoluteUrl : Path, httpVersion) // Request line
             };
+
             foreach (string key in Headers) // Headers
             {
                 var value = Headers[key];
                 requestMessage.Add(string.Format("{0}: {1}", key, value));
             }
+
             requestMessage.Add(""); // <CR><LF>
+
             if (body != "")
-            {
                 requestMessage.Add(body);
-            }
-            else requestMessage.Add(""); // <CR><LF>
+            else
+                requestMessage.Add(""); // <CR><LF>
+
             if (Debug)
-            {
                 foreach (string l in requestMessage)
-                {
                     ConsoleIO.WriteLine("< " + l);
-                }
-            }
+
             Response response = Response.Empty();
 
             // FIXME: Use TcpFactory interface to avoid direct usage of the ProxyHandler class
             // TcpClient client = tcpFactory.CreateTcpClient(Host, Port);
-            TcpClient client = ProxyHandler.NewTcpClient(Host, Port, true);
+            TcpClient client = ProxyHandler.NewTcpClient(Host, Port, ProxyHandler.ClientType.Login);
             Stream stream;
             if (IsSecure)
             {
@@ -171,35 +172,25 @@ namespace MinecraftClient.Protocol
             }
             string h = string.Join("\r\n", requestMessage.ToArray());
             byte[] data = Encoding.ASCII.GetBytes(h);
-            stream.Write(data, 0, data.Length);
-            stream.Flush();
+            await stream.WriteAsync(data);
+            await stream.FlushAsync();
 
             // Read response
-            int statusCode = ReadHttpStatus(stream);
-            var headers = ReadHeader(stream);
-            string? rbody;
-            if (headers.Get("transfer-encoding") == "chunked")
-            {
-                rbody = ReadBodyChunked(stream);
-            }
-            else
-            {
-                rbody = ReadBody(stream, int.Parse(headers.Get("content-length") ?? "0"));
-            }
+            int statusCode = await ReadHttpStatus(stream);
+            var headers = await ReadHeader(stream);
+
+            Task<string> rbody = (headers.Get("transfer-encoding") == "chunked") ? 
+                ReadBodyChunked(stream) : ReadBody(stream, int.Parse(headers.Get("content-length") ?? "0"));
+
             if (headers.Get("set-cookie") != null)
-            {
                 response.Cookies = ParseSetCookie(headers.GetValues("set-cookie") ?? Array.Empty<string>());
-            }
-            response.Body = rbody ?? "";
+
             response.StatusCode = statusCode;
             response.Headers = headers;
+            response.Body = await rbody;
 
-            try
-            {
-                stream.Close();
-                client.Close();
-            }
-            catch { }
+            try { stream.Close(); } catch { }
+            try { client.Close(); } catch { }
 
             return response;
         }
@@ -210,9 +201,9 @@ namespace MinecraftClient.Protocol
         /// <param name="s">Stream to read</param>
         /// <returns></returns>
         /// <exception cref="InvalidDataException">If server return unknown data</exception>
-        private static int ReadHttpStatus(Stream s)
+        private static async Task<int> ReadHttpStatus(Stream s)
         {
-            var httpHeader = ReadLine(s); // http header line
+            var httpHeader = await ReadLine(s); // http header line
             if (httpHeader.StartsWith("HTTP/1.1") || httpHeader.StartsWith("HTTP/1.0"))
             {
                 return int.Parse(httpHeader.Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
@@ -228,15 +219,15 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="s">Stream to read</param>
         /// <returns>Headers in lower-case</returns>
-        private static NameValueCollection ReadHeader(Stream s)
+        private static async Task<NameValueCollection> ReadHeader(Stream s)
         {
             var headers = new NameValueCollection();
             // Read headers
             string header;
             do
             {
-                header = ReadLine(s);
-                if (!String.IsNullOrEmpty(header))
+                header = await ReadLine(s);
+                if (!string.IsNullOrEmpty(header))
                 {
                     var tmp = header.Split(new char[] { ':' }, 2);
                     var name = tmp[0].ToLower();
@@ -244,7 +235,7 @@ namespace MinecraftClient.Protocol
                     headers.Add(name, value);
                 }
             }
-            while (!String.IsNullOrEmpty(header));
+            while (!string.IsNullOrEmpty(header));
             return headers;
         }
 
@@ -254,23 +245,19 @@ namespace MinecraftClient.Protocol
         /// <param name="s">Stream to read</param>
         /// <param name="length">Length of the body (the Content-Length header)</param>
         /// <returns>Body or null if length is zero</returns>
-        private static string? ReadBody(Stream s, int length)
+        private static async Task<string> ReadBody(Stream s, int length)
         {
             if (length > 0)
             {
                 byte[] buffer = new byte[length];
-                int r = 0;
-                while (r < length)
-                {
-                    var read = s.Read(buffer, r, length - r);
-                    r += read;
-                    Thread.Sleep(50);
-                }
+                int readed = 0;
+                while (readed < length)
+                    readed += await s.ReadAsync(buffer.AsMemory(readed, length - readed));
                 return Encoding.UTF8.GetString(buffer);
             }
             else
             {
-                return null;
+                return string.Empty;
             }
         }
 
@@ -279,13 +266,13 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="s">Stream to read</param>
         /// <returns>Body or empty string if nothing is received</returns>
-        private static string ReadBodyChunked(Stream s)
+        private static async Task<string> ReadBodyChunked(Stream s)
         {
             List<byte> buffer1 = new();
             while (true)
             {
-                string l = ReadLine(s);
-                int size = Int32.Parse(l, NumberStyles.HexNumber);
+                string l = await ReadLine(s);
+                int size = int.Parse(l, NumberStyles.HexNumber);
                 if (size == 0)
                     break;
                 byte[] buffer2 = new byte[size];
@@ -296,7 +283,7 @@ namespace MinecraftClient.Protocol
                     r += read;
                     Thread.Sleep(50);
                 }
-                ReadLine(s);
+                await ReadLine(s);
                 buffer1.AddRange(buffer2);
             }
             return Encoding.UTF8.GetString(buffer1.ToArray());
@@ -366,17 +353,15 @@ namespace MinecraftClient.Protocol
         /// </remarks>
         /// <param name="s">Stream to read</param>
         /// <returns>String</returns>
-        private static string ReadLine(Stream s)
+        private static async Task<string> ReadLine(Stream s)
         {
             List<byte> buffer = new();
-            byte c;
+            byte[] c = new byte[1];
             while (true)
             {
-                int b = s.ReadByte();
-                if (b == -1)
-                    break;
-                c = (byte)b;
-                if (c == '\n')
+                try { await s.ReadExactlyAsync(c, 0, 1); }
+                catch { break; }
+                if (c[0] == '\n')
                 {
                     if (buffer.Last() == '\r')
                     {
@@ -384,7 +369,7 @@ namespace MinecraftClient.Protocol
                         break;
                     }
                 }
-                buffer.Add(c);
+                buffer.Add(c[0]);
             }
             return Encoding.UTF8.GetString(buffer.ToArray());
         }

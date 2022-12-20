@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
@@ -18,7 +19,6 @@ namespace MinecraftClient.Protocol
     {
         /* The MinecraftCom Handler must
          * provide these getters */
-
         int GetServerPort();
         string GetServerHost();
         string GetUsername();
@@ -44,26 +44,6 @@ namespace MinecraftClient.Protocol
         ILogger GetLogger();
 
         /// <summary>
-        /// Invoke a task on the main thread, wait for completion and retrieve return value.
-        /// </summary>
-        /// <param name="task">Task to run with any type or return value</param>
-        /// <returns>Any result returned from task, result type is inferred from the task</returns>
-        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
-        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
-        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
-        /// <typeparam name="T">Type of the return value</typeparam>
-        T InvokeOnMainThread<T>(Func<T> task);
-
-        /// <summary>
-        /// Invoke a task on the main thread and wait for completion
-        /// </summary>
-        /// <param name="task">Task to run without return value</param>
-        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
-        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
-        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
-        void InvokeOnMainThread(Action task);
-
-        /// <summary>
         /// Called when a network packet received or sent
         /// </summary>
         /// <remarks>
@@ -78,7 +58,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-        void OnGameJoined();
+        Task OnGameJoined();
 
         /// <summary>
         /// Received chat/system message from the server
@@ -184,21 +164,21 @@ namespace MinecraftClient.Protocol
         /// Called ~10 times per second (10 ticks per second)
         /// Useful for updating bots in other parts of the program
         /// </summary>
-        void OnUpdate();
+        Task OnUpdate();
 
         /// <summary>
         /// Registers the given plugin channel for the given bot.
         /// </summary>
         /// <param name="channel">The channel to register.</param>
         /// <param name="bot">The bot to register the channel for.</param>
-        void RegisterPluginChannel(string channel, ChatBot bot);
+        Task RegisterPluginChannel(string channel, ChatBot bot);
 
         /// <summary>
         /// Unregisters the given plugin channel for the given bot.
         /// </summary>
         /// <param name="channel">The channel to unregister.</param>
         /// <param name="bot">The bot to unregister the channel for.</param>
-        void UnregisterPluginChannel(string channel, ChatBot bot);
+        Task UnregisterPluginChannel(string channel, ChatBot bot);
 
         /// <summary>
         /// Sends a plugin channel packet to the server.
@@ -208,7 +188,7 @@ namespace MinecraftClient.Protocol
         /// <param name="data">The payload for the packet.</param>
         /// <param name="sendEvenIfNotRegistered">Whether the packet should be sent even if the server or the client hasn't registered it yet.</param>
         /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
-        bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false);
+        Task<bool> SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false);
 
         /// <summary>
         /// Called when a plugin channel message was sent from the server.
@@ -348,7 +328,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="uuid">Affected player's UUID</param>
         /// <param name="gamemode">New game mode</param>
-        void OnGamemodeUpdate(Guid uuid, int gamemode);
+        Task OnGamemodeUpdate(Guid uuid, int gamemode);
 
         /// <summary>
         /// Called when a player's latency has changed
@@ -472,6 +452,6 @@ namespace MinecraftClient.Protocol
         /// <param name="buttonId">Id of the clicked button</param>
         /// <returns>True if packet was successfully sent</returns>
 
-        bool ClickContainerButton(int windowId, int buttonId);
+        public Task<bool> ClickContainerButton(int windowId, int buttonId);
     }
 }

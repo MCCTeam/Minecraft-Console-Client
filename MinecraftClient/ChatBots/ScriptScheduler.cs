@@ -236,10 +236,10 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override bool OnDisconnect(DisconnectReason reason, string message)
+        public override int OnDisconnect(DisconnectReason reason, string message)
         {
             serverlogin_done = false;
-            return false;
+            return base.OnDisconnect(reason, message);
         }
 
         private static string Task2String(TaskConfig task)

@@ -535,7 +535,7 @@ namespace MinecraftClient.ChatBots
             StopFishing();
         }
 
-        public override bool OnDisconnect(DisconnectReason reason, string message)
+        public override int OnDisconnect(DisconnectReason reason, string message)
         {
             StopFishing();
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using Ionic.Zip;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
@@ -135,15 +135,19 @@ namespace MinecraftClient.Protocol
             MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
             MetaData.SaveToFile();
 
-            using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
+            using (FileStream zipToOpen = new(Path.Combine(ReplayFileDirectory, replayFileName), FileMode.Open))
             {
+                using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Create);
+
+                using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
+                {
+                    ZipArchiveEntry recordingTmpFileEntry = archive.CreateEntry(recordingTmpFileName);
+                    recordingFile.CopyTo(recordingTmpFileEntry.Open());
+                }
+
                 using Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open);
-                using ZipOutputStream zs = new(Path.Combine(ReplayFileDirectory, replayFileName));
-                zs.PutNextEntry(recordingTmpFileName);
-                recordingFile.CopyTo(zs);
-                zs.PutNextEntry(MetaData.MetaDataFileName);
-                metaDataFile.CopyTo(zs);
-                zs.Close();
+                ZipArchiveEntry metaDataFileEntry = archive.CreateEntry(MetaData.MetaDataFileName);
+                metaDataFile.CopyTo(metaDataFileEntry.Open());
             }
 
             File.Delete(Path.Combine(temporaryCache, recordingTmpFileName));
@@ -165,20 +169,21 @@ namespace MinecraftClient.Protocol
             MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
             MetaData.SaveToFile();
 
-            using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
+            using (FileStream zipToOpen = new(replayFileName, FileMode.OpenOrCreate))
             {
-                using ZipOutputStream zs = new(replayFileName);
-                zs.PutNextEntry(recordingTmpFileName);
+                using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Create);
+
+                ZipArchiveEntry recordingTmpFileEntry = archive.CreateEntry(recordingTmpFileName);
                 // .CopyTo() method start from stream current position
                 // We need to reset position in order to get full content
                 var lastPosition = recordStream!.BaseStream.Position;
                 recordStream.BaseStream.Position = 0;
-                recordStream.BaseStream.CopyTo(zs);
+                recordStream.BaseStream.CopyTo(recordingTmpFileEntry.Open());
                 recordStream.BaseStream.Position = lastPosition;
 
-                zs.PutNextEntry(MetaData.MetaDataFileName);
-                metaDataFile.CopyTo(zs);
-                zs.Close();
+                using Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open);
+                ZipArchiveEntry metaDataFileEntry = archive.CreateEntry(MetaData.MetaDataFileName);
+                metaDataFile.CopyTo(metaDataFileEntry.Open());
             }
 
             WriteDebugLog("Backup replay file created.");

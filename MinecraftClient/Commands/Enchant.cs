@@ -99,7 +99,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_enchant_no_levels, handler.GetLevel(), requiredLevel));
             else
             {
-                if (handler.ClickContainerButton(enchantingTable.ID, slotId))
+                if (handler.ClickContainerButton(enchantingTable.ID, slotId).Result)
                     return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_enchant_clicked);
                 else
                     return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_enchant_not_clicked);

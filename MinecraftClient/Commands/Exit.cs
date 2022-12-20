@@ -48,11 +48,5 @@ namespace MinecraftClient.Commands
             Program.Exit(code);
             return r.SetAndReturn(CmdResult.Status.Done);
         }
-
-        internal static string DoExit(string command)
-        {
-            Program.Exit();
-            return string.Empty;
-        }
     }
 }

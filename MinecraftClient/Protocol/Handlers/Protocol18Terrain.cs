@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 //using System.Linq;
 //using System.Text;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol.PacketPipeline;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -33,21 +35,21 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Reading the "Block states" field: consists of 4096 entries, representing all the blocks in the chunk section.
         /// </summary>
-        /// <param name="cache">Cache for reading data</param>
+        /// <param name="stream">Cache for reading data</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        private Chunk? ReadBlockStatesField(Queue<byte> cache)
+        private async Task<Chunk?> ReadBlockStatesFieldAsync(PacketStream stream)
         {
             // read Block states (Type: Paletted Container)
-            byte bitsPerEntry = dataTypes.ReadNextByte(cache);
+            byte bitsPerEntry = await dataTypes.ReadNextByteAsync(stream);
 
             // 1.18(1.18.1) add a pattle named "Single valued" to replace the vertical strip bitmask in the old
             if (bitsPerEntry == 0 && protocolversion >= Protocol18Handler.MC_1_18_1_Version)
             {
                 // Palettes: Single valued - 1.18(1.18.1) and above
-                ushort blockId = (ushort)dataTypes.ReadNextVarInt(cache);
+                ushort blockId = (ushort)(await dataTypes.ReadNextVarIntAsync(stream));
                 Block block = new(blockId);
 
-                dataTypes.SkipNextVarInt(cache); // Data Array Length will be zero
+                dataTypes.SkipNextVarInt(stream); // Data Array Length will be zero
 
                 // Empty chunks will not be stored
                 if (block.Type == Material.Air)
@@ -73,16 +75,16 @@ namespace MinecraftClient.Protocol.Handlers
                 // EG, if bitsPerEntry = 5, valueMask = 00011111 in binary
                 uint valueMask = (uint)((1 << bitsPerEntry) - 1);
 
-                int paletteLength = usePalette ? dataTypes.ReadNextVarInt(cache) : 0; // Assume zero when length is absent
+                int paletteLength = usePalette ? await dataTypes.ReadNextVarIntAsync(stream) : 0; // Assume zero when length is absent
 
-                Span<uint> palette = paletteLength < 256 ? stackalloc uint[paletteLength] : new uint[paletteLength];
+                uint[] palette = new uint[paletteLength];
                 for (int i = 0; i < paletteLength; i++)
-                    palette[i] = (uint)dataTypes.ReadNextVarInt(cache);
+                    palette[i] = (uint)(await dataTypes.ReadNextVarIntAsync(stream));
 
                 //// Block IDs are packed in the array of 64-bits integers
-                dataTypes.SkipNextVarInt(cache); // Entry length
-                Span<byte> entryDataByte = stackalloc byte[8];
-                Span<long> entryDataLong = MemoryMarshal.Cast<byte, long>(entryDataByte); // Faster than MemoryMarshal.Read<long>
+                dataTypes.SkipNextVarInt(stream); // Entry length
+
+                long entryData = 0;
 
                 Chunk chunk = new();
                 int startOffset = 64; // Read the first data immediately
@@ -101,10 +103,10 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 // When overlapping, move forward to the beginning of the next Long
                                 startOffset = 0;
-                                dataTypes.ReadDataReverse(cache, entryDataByte); // read long
+                                entryData = await dataTypes.ReadNextLongAsync(stream);
                             }
 
-                            uint blockId = (uint)(entryDataLong[0] >> startOffset) & valueMask;
+                            uint blockId = (uint)(entryData >> startOffset) & valueMask;
 
                             // Map small IDs to actual larger block IDs
                             if (usePalette)
@@ -141,10 +143,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="chunkX">Chunk X location</param>
         /// <param name="chunkZ">Chunk Z location</param>
         /// <param name="verticalStripBitmask">Chunk mask for reading data, store in bitset, used in 1.17 and 1.17.1</param>
-        /// <param name="cache">Cache for reading chunk data</param>
+        /// <param name="stream">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[]? verticalStripBitmask, Queue<byte> cache)
+        public async Task ProcessChunkColumnData(int chunkX, int chunkZ, ulong[]? verticalStripBitmask, PacketStream stream)
         {
             World world = handler.GetWorld();
 
@@ -181,10 +183,10 @@ namespace MinecraftClient.Protocol.Handlers
                         ((verticalStripBitmask![chunkY / 64] & (1UL << (chunkY % 64))) != 0))
                     {
                         // Non-air block count inside chunk section, for lighting purposes
-                        int blockCnt = dataTypes.ReadNextShort(cache);
+                        int blockCnt = await dataTypes.ReadNextShortAsync(stream);
 
                         // Read Block states (Type: Paletted Container)
-                        Chunk? chunk = ReadBlockStatesField(cache);
+                        Chunk? chunk = await ReadBlockStatesFieldAsync(stream);
 
                         //We have our chunk, save the chunk into the world
                         world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == lastChunkY);
@@ -192,23 +194,23 @@ namespace MinecraftClient.Protocol.Handlers
                         // Skip Read Biomes (Type: Paletted Container) - 1.18(1.18.1) and above
                         if (protocolversion >= Protocol18Handler.MC_1_18_1_Version)
                         {
-                            byte bitsPerEntryBiome = dataTypes.ReadNextByte(cache); // Bits Per Entry
+                            byte bitsPerEntryBiome = await dataTypes.ReadNextByteAsync(stream); // Bits Per Entry
                             if (bitsPerEntryBiome == 0)
                             {
-                                dataTypes.SkipNextVarInt(cache); // Value
-                                dataTypes.SkipNextVarInt(cache); // Data Array Length
+                                dataTypes.SkipNextVarInt(stream); // Value
+                                dataTypes.SkipNextVarInt(stream); // Data Array Length
                                 // Data Array must be empty
                             }
                             else
                             {
                                 if (bitsPerEntryBiome <= 3)
                                 {
-                                    int paletteLength = dataTypes.ReadNextVarInt(cache); // Palette Length
+                                    int paletteLength = await dataTypes.ReadNextVarIntAsync(stream); // Palette Length
                                     for (int i = 0; i < paletteLength; i++)
-                                        dataTypes.SkipNextVarInt(cache); // Palette
+                                        dataTypes.SkipNextVarInt(stream); // Palette
                                 }
-                                int dataArrayLength = dataTypes.ReadNextVarInt(cache); // Data Array Length
-                                dataTypes.DropData(dataArrayLength * 8, cache); // Data Array
+                                int dataArrayLength = await dataTypes.ReadNextVarIntAsync(stream); // Data Array Length
+                                await dataTypes.DropDataAsync(dataArrayLength * 8, stream); // Data Array
                             }
                         }
                     }
@@ -228,10 +230,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="hasSkyLight">Contains skylight info</param>
         /// <param name="chunksContinuous">Are the chunk continuous</param>
         /// <param name="currentDimension">Current dimension type (0 = overworld)</param>
-        /// <param name="cache">Cache for reading chunk data</param>
+        /// <param name="stream">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
+        public async Task ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, PacketStream stream)
         {
             World world = handler.GetWorld();
 
@@ -247,9 +249,9 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         // 1.14 and above Non-air block count inside chunk section, for lighting purposes
                         if (protocolversion >= Protocol18Handler.MC_1_14_Version)
-                            dataTypes.ReadNextShort(cache);
+                            await dataTypes.SkipNextShortAsync(stream);
 
-                        byte bitsPerBlock = dataTypes.ReadNextByte(cache);
+                        byte bitsPerBlock = await dataTypes.ReadNextByteAsync(stream);
                         bool usePalette = (bitsPerBlock <= 8);
 
                         // Vanilla Minecraft will use at least 4 bits per block
@@ -260,12 +262,12 @@ namespace MinecraftClient.Protocol.Handlers
                         // is not used, MC 1.13+ does not send the field at all in this case
                         int paletteLength = 0; // Assume zero when length is absent
                         if (usePalette || protocolversion < Protocol18Handler.MC_1_13_Version)
-                            paletteLength = dataTypes.ReadNextVarInt(cache);
+                            paletteLength = await dataTypes.ReadNextVarIntAsync(stream);
 
                         int[] palette = new int[paletteLength];
                         for (int i = 0; i < paletteLength; i++)
                         {
-                            palette[i] = dataTypes.ReadNextVarInt(cache);
+                            palette[i] = await dataTypes.ReadNextVarIntAsync(stream);
                         }
 
                         // Bit mask covering bitsPerBlock bits
@@ -273,7 +275,7 @@ namespace MinecraftClient.Protocol.Handlers
                         uint valueMask = (uint)((1 << bitsPerBlock) - 1);
 
                         // Block IDs are packed in the array of 64-bits integers
-                        ulong[] dataArray = dataTypes.ReadNextULongArray(cache);
+                        ulong[] dataArray = await dataTypes.ReadNextULongArrayAsync(stream);
 
                         Chunk chunk = new();
 
@@ -358,19 +360,19 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                         }
 
-                        //We have our chunk, save the chunk into the world
+                        // We have our chunk, save the chunk into the world
                         world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
 
-                        //Pre-1.14 Lighting data
+                        // Pre-1.14 Lighting data
                         if (protocolversion < Protocol18Handler.MC_1_14_Version)
                         {
-                            //Skip block light
-                            dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                            // Skip block light
+                            await dataTypes.DropDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, stream);
 
-                            //Skip sky light
+                            // Skip sky light
                             if (currentDimension == 0)
                                 // Sky light is not sent in the nether or the end
-                                dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                                await dataTypes.DropDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, stream);
                         }
                     }
                 }
@@ -383,15 +385,12 @@ namespace MinecraftClient.Protocol.Handlers
                 // 1.8 chunk format
                 if (chunksContinuous && chunkMask == 0)
                 {
-                    //Unload the entire chunk column
-                    handler.InvokeOnMainThread(() =>
-                    {
-                        world[chunkX, chunkZ] = null;
-                    });
+                    // Unload the entire chunk column
+                    world[chunkX, chunkZ] = null;
                 }
                 else
                 {
-                    //Load chunk data from the server
+                    // Load chunk data from the server
                     int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
                     for (int chunkY = 0; chunkY <= maxChunkY; chunkY++)
                     {
@@ -399,35 +398,34 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             Chunk chunk = new();
 
-                            //Read chunk data, all at once for performance reasons, and build the chunk object
-                            Queue<ushort> queue = new(dataTypes.ReadNextUShortsLittleEndian(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ, cache));
+                            // Read chunk data, all at once for performance reasons, and build the chunk object
                             for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                                 for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                        chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(queue.Dequeue()));
+                                        chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(await dataTypes.ReadNextUShortAsync(stream)));
 
-                            //We have our chunk, save the chunk into the world
+                            // We have our chunk, save the chunk into the world
                             world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
                         }
                     }
 
-                    //Skip light information
+                    // Skip light information
                     for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
                     {
                         if ((chunkMask & (1 << chunkY)) != 0)
                         {
-                            //Skip block light
-                            dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                            // Skip block light
+                            await dataTypes.DropDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, stream);
 
-                            //Skip sky light
+                            // Skip sky light
                             if (hasSkyLight)
-                                dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                                await dataTypes.DropDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, stream);
                         }
                     }
 
-                    //Skip biome metadata
+                    // Skip biome metadata
                     if (chunksContinuous)
-                        dataTypes.DropData(Chunk.SizeX * Chunk.SizeZ, cache);
+                        await dataTypes.DropDataAsync(Chunk.SizeX * Chunk.SizeZ, stream);
                 }
             }
             else
@@ -435,15 +433,12 @@ namespace MinecraftClient.Protocol.Handlers
                 // 1.7 chunk format
                 if (chunksContinuous && chunkMask == 0)
                 {
-                    //Unload the entire chunk column
-                    handler.InvokeOnMainThread(() =>
-                    {
-                        world[chunkX, chunkZ] = null;
-                    });
+                    // Unload the entire chunk column
+                    world[chunkX, chunkZ] = null;
                 }
                 else
                 {
-                    //Count chunk sections
+                    // Count chunk sections
                     int sectionCount = 0;
                     int addDataSectionCount = 0;
                     for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
@@ -454,10 +449,10 @@ namespace MinecraftClient.Protocol.Handlers
                             addDataSectionCount++;
                     }
 
-                    //Read chunk data, unpacking 4-bit values into 8-bit values for block metadata
-                    Queue<byte> blockTypes = new(dataTypes.ReadData(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount, cache));
+                    // Read chunk data, unpacking 4-bit values into 8-bit values for block metadata
+                    Queue<byte> blockTypes = new(await dataTypes.ReadDataAsync(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount, stream));
                     Queue<byte> blockMeta = new();
-                    foreach (byte packed in dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache))
+                    foreach (byte packed in await dataTypes.ReadDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, stream))
                     {
                         byte hig = (byte)(packed >> 4);
                         byte low = (byte)(packed & (byte)0x0F);
@@ -465,15 +460,15 @@ namespace MinecraftClient.Protocol.Handlers
                         blockMeta.Enqueue(low);
                     }
 
-                    //Skip data we don't need
-                    dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);          //Block light
+                    // Skip data we don't need
+                    await dataTypes.DropDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, stream);          //Block light
                     if (hasSkyLight)
-                        dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);      //Sky light
-                    dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * addDataSectionCount) / 2, cache);   //BlockAdd
+                        await dataTypes.DropDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, stream);      //Sky light
+                    await dataTypes.DropDataAsync((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * addDataSectionCount) / 2, stream);   //BlockAdd
                     if (chunksContinuous)
-                        dataTypes.DropData(Chunk.SizeX * Chunk.SizeZ, cache);                                         //Biomes
+                        await dataTypes.DropDataAsync(Chunk.SizeX * Chunk.SizeZ, stream);                                         //Biomes
 
-                    //Load chunk data
+                    // Load chunk data
                     int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
                     for (int chunkY = 0; chunkY <= maxChunkY; chunkY++)
                     {

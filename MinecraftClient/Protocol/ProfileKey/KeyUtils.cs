@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.ProfileKey
@@ -9,51 +10,6 @@ namespace MinecraftClient.Protocol.ProfileKey
     static class KeyUtils
     {
         private static readonly SHA256 sha256Hash = SHA256.Create();
-
-        private static readonly string certificates = "https://api.minecraftservices.com/player/certificates";
-
-        public static PlayerKeyPair? GetNewProfileKeys(string accessToken)
-        {
-            ProxiedWebRequest.Response? response = null;
-            try
-            {
-                var request = new ProxiedWebRequest(certificates)
-                {
-                    Accept = "application/json"
-                };
-                request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
-
-                response = request.Post("application/json", "");
-
-                if (Settings.Config.Logging.DebugMessages)
-                {
-                    ConsoleIO.WriteLine(response.Body.ToString());
-                }
-
-                string jsonString = response.Body;
-                Json.JSONData json = Json.ParseJson(jsonString);
-
-                PublicKey publicKey = new(pemKey: json.Properties["keyPair"].Properties["publicKey"].StringValue,
-                    sig: json.Properties["publicKeySignature"].StringValue,
-                    sigV2: json.Properties["publicKeySignatureV2"].StringValue);
-
-                PrivateKey privateKey = new(pemKey: json.Properties["keyPair"].Properties["privateKey"].StringValue);
-
-                return new PlayerKeyPair(publicKey, privateKey,
-                    expiresAt: json.Properties["expiresAt"].StringValue,
-                    refreshedAfter: json.Properties["refreshedAfter"].StringValue);
-            }
-            catch (Exception e)
-            {
-                int code = response == null ? 0 : response.StatusCode;
-                ConsoleIO.WriteLineFormatted("§cFetch profile key failed: HttpCode = " + code + ", Error = " + e.Message);
-                if (Settings.Config.Logging.DebugMessages)
-                {
-                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
-                }
-                return null;
-            }
-        }
 
         public static byte[] DecodePemKey(string key, string prefix, string suffix)
         {

@@ -1,35 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 
 namespace MinecraftClient.Protocol.ProfileKey
 {
     public class PlayerKeyPair
     {
+        [JsonInclude]
+        [JsonPropertyName("PublicKey")]
         public PublicKey PublicKey;
 
+        [JsonInclude]
+        [JsonPropertyName("PrivateKey")]
         public PrivateKey PrivateKey;
 
+        [JsonInclude]
+        [JsonPropertyName("ExpiresAt")]
         public DateTime ExpiresAt;
 
-        public DateTime RefreshedAfter; // Todo: add a timer
+        [JsonInclude]
+        [JsonPropertyName("RefreshedAfter")]
+        public DateTime RefreshedAfter;
 
+        [JsonIgnore]
         private const string DataTimeFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
 
-        public PlayerKeyPair(PublicKey keyPublic, PrivateKey keyPrivate, string expiresAt, string refreshedAfter)
+        [JsonConstructor]
+        public PlayerKeyPair(PublicKey PublicKey, PrivateKey PrivateKey, DateTime ExpiresAt, DateTime RefreshedAfter)
         {
-            PublicKey = keyPublic;
-            PrivateKey = keyPrivate;
-            try
-            {
-                ExpiresAt = DateTime.ParseExact(expiresAt, DataTimeFormat, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
-                RefreshedAfter = DateTime.ParseExact(refreshedAfter, DataTimeFormat, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
-            }
-            catch
-            {
-                ExpiresAt = DateTime.Parse(expiresAt).ToUniversalTime();
-                RefreshedAfter = DateTime.Parse(refreshedAfter).ToUniversalTime();
-            }
+            this.PublicKey = PublicKey;
+            this.PrivateKey = PrivateKey;
+            this.ExpiresAt = ExpiresAt;
+            this.RefreshedAfter = RefreshedAfter;
         }
 
         public bool NeedRefresh()
@@ -52,21 +55,6 @@ namespace MinecraftClient.Protocol.ProfileKey
         {
             DateTimeOffset timeOffset = new(ExpiresAt);
             return timeOffset.ToUnixTimeSeconds();
-        }
-
-        public static PlayerKeyPair FromString(string tokenString)
-        {
-            string[] fields = tokenString.Split(',');
-
-            if (fields.Length < 6)
-                throw new InvalidDataException("Invalid string format");
-
-            PublicKey publicKey = new(pemKey: fields[0].Trim(),
-                sig: fields[1].Trim(), sigV2: fields[2].Trim());
-
-            PrivateKey privateKey = new(pemKey: fields[3].Trim());
-
-            return new PlayerKeyPair(publicKey, privateKey, fields[4].Trim(), fields[5].Trim());
         }
 
         public override string ToString()

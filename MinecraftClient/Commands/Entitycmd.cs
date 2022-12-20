@@ -166,12 +166,12 @@ namespace MinecraftClient.Commands
                         {
                             if (action == ActionType.Attack)
                             {
-                                handler.InteractEntity(entity2.Key, InteractType.Attack);
+                                handler.InteractEntity(entity2.Key, InteractType.Attack).Wait();
                                 actionst = Translations.cmd_entityCmd_attacked;
                             }
                             else if (action == ActionType.Use)
                             {
-                                handler.InteractEntity(entity2.Key, InteractType.Interact);
+                                handler.InteractEntity(entity2.Key, InteractType.Interact).Wait();
                                 actionst = Translations.cmd_entityCmd_used;
                             }
                             actioncount++;
@@ -311,10 +311,10 @@ namespace MinecraftClient.Commands
             switch (action)
             {
                 case ActionType.Attack:
-                    handler.InteractEntity(entity.ID, InteractType.Attack);
+                    handler.InteractEntity(entity.ID, InteractType.Attack).Wait();
                     return Translations.cmd_entityCmd_attacked;
                 case ActionType.Use:
-                    handler.InteractEntity(entity.ID, InteractType.Interact);
+                    handler.InteractEntity(entity.ID, InteractType.Interact).Wait();
                     return Translations.cmd_entityCmd_used;
                 case ActionType.List:
                     return GetEntityInfoDetailed(handler, entity);

@@ -77,7 +77,7 @@ namespace MinecraftClient.Commands
                     return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_bots_noloaded);
                 else
                 {
-                    handler.UnloadAllBots();
+                    handler.UnloadAllBots().Wait();
                     return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_bots_unloaded_all);
                 }
             }
@@ -88,7 +88,7 @@ namespace MinecraftClient.Commands
                     return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_bots_notfound, botName));
                 else
                 {
-                    handler.BotUnLoad(bot);
+                    handler.BotUnLoad(bot).Wait();
                     return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.cmd_bots_unloaded, botName));
                 }
             }

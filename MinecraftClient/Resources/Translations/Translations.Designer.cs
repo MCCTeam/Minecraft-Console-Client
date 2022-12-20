@@ -2127,7 +2127,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Loaded session: {0}:{1}.
+        ///   Looks up a localized string similar to Reads {0} session cache and {1} signature key caches from the disk cache..
         /// </summary>
         internal static string cache_loaded {
             get {
@@ -4131,6 +4131,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to [Settings] The language code is invalid!.
+        /// </summary>
+        internal static string config_invaild_language {
+            get {
+                return ResourceManager.GetString("config.invaild_language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [Settings] Only Microsoft accounts support logging in using the browser method..
+        /// </summary>
+        internal static string config_invaild_login_method {
+            get {
+                return ResourceManager.GetString("config.invaild_login_method", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Settings have been loaded from {0}.
         /// </summary>
         internal static string config_load {
@@ -4145,15 +4163,6 @@ namespace MinecraftClient {
         internal static string config_load_fail {
             get {
                 return ResourceManager.GetString("config.load.fail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The language code is invalid!.
-        /// </summary>
-        internal static string config_Main_Advanced_language_invaild {
-            get {
-                return ResourceManager.GetString("config.Main.Advanced.language.invaild", resourceCulture);
             }
         }
         
@@ -5295,7 +5304,16 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Login :.
+        ///   Looks up a localized string similar to Exceptions occur when applying settings from command line parameters ({0}), and some entries may be ignored..
+        /// </summary>
+        internal static string mcc_load_from_args_fail {
+            get {
+                return ResourceManager.GetString("mcc.load_from_args_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login:.
         /// </summary>
         internal static string mcc_login {
             get {
@@ -5309,6 +5327,15 @@ namespace MinecraftClient {
         internal static string mcc_login_basic_io {
             get {
                 return ResourceManager.GetString("mcc.login_basic_io", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timed out when requesting {0}..
+        /// </summary>
+        internal static string mcc_network_timeout {
+            get {
+                return ResourceManager.GetString("mcc.network_timeout", resourceCulture);
             }
         }
         
@@ -5531,11 +5558,20 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings file MinecraftClient.ini has been generated..
+        ///   Looks up a localized string similar to The configuration file is saved as {0}.
         /// </summary>
         internal static string mcc_settings_generated {
             get {
                 return ResourceManager.GetString("mcc.settings_generated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error: Unhandled exception:.
+        /// </summary>
+        internal static string mcc_unhandled_exception {
+            get {
+                return ResourceManager.GetString("mcc.unhandled_exception", resourceCulture);
             }
         }
         

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using MinecraftClient.Protocol.PacketPipeline;
 
 namespace MinecraftClient.Protocol.Handlers.packet.s2c
 {
@@ -8,7 +10,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         private static int RootIdx;
         private static CommandNode[] Nodes = Array.Empty<CommandNode>();
 
-        public static void Read(DataTypes dataTypes, Queue<byte> packetData)
+        public static async Task Read(DataTypes dataTypes, PacketStream packetData)
         {
             int count = dataTypes.ReadNextVarInt(packetData);
             Nodes = new CommandNode[count];
@@ -23,7 +25,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
                 int redirectNode = ((flags & 0x08) > 0) ? dataTypes.ReadNextVarInt(packetData) : -1;
 
-                string? name = ((flags & 0x03) == 1 || (flags & 0x03) == 2) ? dataTypes.ReadNextString(packetData) : null;
+                string? name = ((flags & 0x03) == 1 || (flags & 0x03) == 2) ? (await dataTypes.ReadNextStringAsync(packetData)) : null;
 
                 int paserId = ((flags & 0x03) == 2) ? dataTypes.ReadNextVarInt(packetData) : -1;
                 Paser? paser = null;
@@ -50,7 +52,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                     };
                 }
 
-                string? suggestionsType = ((flags & 0x10) > 0) ? dataTypes.ReadNextString(packetData) : null;
+                string? suggestionsType = ((flags & 0x10) > 0) ? (await dataTypes.ReadNextStringAsync(packetData)) : null;
 
                 Nodes[i] = new(flags, childs, redirectNode, name, paser, suggestionsType);
             }
@@ -158,7 +160,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         internal class PaserEmpty : Paser
         {
 
-            public PaserEmpty(DataTypes dataTypes, Queue<byte> packetData) { }
+            public PaserEmpty(DataTypes dataTypes, PacketStream packetData) { }
 
             public override bool Check(string text)
             {
@@ -181,7 +183,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             private byte Flags;
             private float Min = float.MinValue, Max = float.MaxValue;
 
-            public PaserFloat(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserFloat(DataTypes dataTypes, PacketStream packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -211,7 +213,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             private byte Flags;
             private double Min = double.MinValue, Max = double.MaxValue;
 
-            public PaserDouble(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserDouble(DataTypes dataTypes, PacketStream packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -241,7 +243,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             private byte Flags;
             private int Min = int.MinValue, Max = int.MaxValue;
 
-            public PaserInteger(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserInteger(DataTypes dataTypes, PacketStream packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -271,7 +273,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             private byte Flags;
             private long Min = long.MinValue, Max = long.MaxValue;
 
-            public PaserLong(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserLong(DataTypes dataTypes, PacketStream packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -302,7 +304,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
             private enum StringType { SINGLE_WORD, QUOTABLE_PHRASE, GREEDY_PHRASE };
 
-            public PaserString(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserString(DataTypes dataTypes, PacketStream packetData)
             {
                 Type = (StringType)dataTypes.ReadNextVarInt(packetData);
             }
@@ -327,7 +329,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         {
             private byte Flags;
 
-            public PaserEntity(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserEntity(DataTypes dataTypes, PacketStream packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
             }
@@ -351,7 +353,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         internal class PaserBlockPos : Paser
         {
 
-            public PaserBlockPos(DataTypes dataTypes, Queue<byte> packetData) { }
+            public PaserBlockPos(DataTypes dataTypes, PacketStream packetData) { }
 
             public override bool Check(string text)
             {
@@ -372,7 +374,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         internal class PaserColumnPos : Paser
         {
 
-            public PaserColumnPos(DataTypes dataTypes, Queue<byte> packetData) { }
+            public PaserColumnPos(DataTypes dataTypes, PacketStream packetData) { }
 
             public override bool Check(string text)
             {
@@ -393,7 +395,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         internal class PaserVec3 : Paser
         {
 
-            public PaserVec3(DataTypes dataTypes, Queue<byte> packetData) { }
+            public PaserVec3(DataTypes dataTypes, PacketStream packetData) { }
 
             public override bool Check(string text)
             {
@@ -414,7 +416,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         internal class PaserVec2 : Paser
         {
 
-            public PaserVec2(DataTypes dataTypes, Queue<byte> packetData) { }
+            public PaserVec2(DataTypes dataTypes, PacketStream packetData) { }
 
             public override bool Check(string text)
             {
@@ -435,7 +437,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         internal class PaserRotation : Paser
         {
 
-            public PaserRotation(DataTypes dataTypes, Queue<byte> packetData) { }
+            public PaserRotation(DataTypes dataTypes, PacketStream packetData) { }
 
             public override bool Check(string text)
             {
@@ -455,7 +457,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
         internal class PaserMessage : Paser
         {
-            public PaserMessage(DataTypes dataTypes, Queue<byte> packetData) { }
+            public PaserMessage(DataTypes dataTypes, PacketStream packetData) { }
 
             public override bool Check(string text)
             {
@@ -477,7 +479,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         {
             private byte Flags;
 
-            public PaserScoreHolder(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserScoreHolder(DataTypes dataTypes, PacketStream packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
             }
@@ -502,7 +504,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         {
             private bool Decimals;
 
-            public PaserRange(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserRange(DataTypes dataTypes, PacketStream packetData)
             {
                 Decimals = dataTypes.ReadNextBool(packetData);
             }
@@ -527,9 +529,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         {
             private string Registry;
 
-            public PaserResourceOrTag(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserResourceOrTag(DataTypes dataTypes, PacketStream packetData)
             {
-                Registry = dataTypes.ReadNextString(packetData);
+                var task = dataTypes.ReadNextStringAsync(packetData);
+                task.Wait();
+                Registry = task.Result;
             }
 
             public override bool Check(string text)
@@ -552,9 +556,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         {
             private string Registry;
 
-            public PaserResource(DataTypes dataTypes, Queue<byte> packetData)
+            public PaserResource(DataTypes dataTypes, PacketStream packetData)
             {
-                Registry = dataTypes.ReadNextString(packetData);
+                var task = dataTypes.ReadNextStringAsync(packetData);
+                task.Wait();
+                Registry = task.Result;
             }
 
             public override bool Check(string text)

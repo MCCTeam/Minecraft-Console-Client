@@ -2,18 +2,22 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.PacketPipeline;
 using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
+using static ConsoleInteractive.ConsoleReader;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -27,12 +31,15 @@ namespace MinecraftClient.Protocol.Handlers
         readonly IMinecraftComHandler handler;
         private bool encrypted = false;
         private readonly int protocolversion;
-        private Tuple<Thread, CancellationTokenSource>? netRead = null;
-        Crypto.AesCfb8Stream? s;
+
+        AesStream? s;
         readonly TcpClient c;
 
-        public Protocol16Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
+        private readonly CancellationToken CancelToken;
+
+        public Protocol16Handler(CancellationToken cancelToken, TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
         {
+            CancelToken = cancelToken;
             ConsoleIO.SetAutoCompleteEngine(this);
             if (protocolversion >= 72)
                 ChatParser.InitTranslations();
@@ -67,390 +74,398 @@ namespace MinecraftClient.Protocol.Handlers
             c = Client;
         }
 
-        private void Updater(object? o)
+        public async Task StartUpdating()
         {
-            if (((CancellationToken)o!).IsCancellationRequested)
+            if (CancelToken.IsCancellationRequested)
                 return;
 
             try
             {
-                while (!((CancellationToken)o!).IsCancellationRequested)
+                while (!CancelToken.IsCancellationRequested)
                 {
                     do
                     {
                         Thread.Sleep(100);
-                    } while (Update());
+                    } while (await Update());
                 }
             }
             catch (System.IO.IOException) { }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
 
-            if (((CancellationToken)o!).IsCancellationRequested)
+            if (CancelToken.IsCancellationRequested)
                 return;
 
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
         }
 
-        private bool Update()
+        private async Task<bool> Update()
         {
-            handler.OnUpdate();
+            await handler.OnUpdate();
             bool connection_ok = true;
             while (c.Client.Available > 0 && connection_ok)
             {
-                byte id = ReadNextByte();
-                connection_ok = ProcessPacket(id);
+                byte id = await ReadNextByte();
+                connection_ok = await ProcessPacket(id);
             }
             return connection_ok;
         }
 
-        private bool ProcessPacket(byte id)
+        private async Task<bool> ProcessPacket(byte id)
         {
             int nbr;
             switch (id)
             {
                 case 0x00:
                     byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
-                    Receive(keepalive, 1, 4, SocketFlags.None);
+                    await ReceiveAsync(keepalive, 1, 4);
                     handler.OnServerKeepAlive();
-                    Send(keepalive); break;
-                case 0x01: ReadData(4); ReadNextString(); ReadData(5); break;
-                case 0x02: ReadData(1); ReadNextString(); ReadNextString(); ReadData(4); break;
+                    await Send(keepalive); break;
+                case 0x01: await ReadData(4); await ReadNextString(); await ReadData(5); break;
+                case 0x02: await ReadData(1); await ReadNextString(); await ReadNextString(); await ReadData(4); break;
                 case 0x03:
-                    string message = ReadNextString();
+                    string message = await ReadNextString();
                     handler.OnTextReceived(new ChatMessage(message, protocolversion >= 72, 0, Guid.Empty)); break;
-                case 0x04: ReadData(16); break;
-                case 0x05: ReadData(6); ReadNextItemSlot(); break;
-                case 0x06: ReadData(12); break;
-                case 0x07: ReadData(9); break;
-                case 0x08: if (protocolversion >= 72) { ReadData(10); } else ReadData(8); break;
-                case 0x09: ReadData(8); ReadNextString(); break;
-                case 0x0A: ReadData(1); break;
-                case 0x0B: ReadData(33); break;
-                case 0x0C: ReadData(9); break;
-                case 0x0D: ReadData(41); break;
-                case 0x0E: ReadData(11); break;
-                case 0x0F: ReadData(10); ReadNextItemSlot(); ReadData(3); break;
-                case 0x10: ReadData(2); break;
-                case 0x11: ReadData(14); break;
-                case 0x12: ReadData(5); break;
-                case 0x13: if (protocolversion >= 72) { ReadData(9); } else ReadData(5); break;
-                case 0x14: ReadData(4); ReadNextString(); ReadData(16); ReadNextEntityMetaData(); break;
-                case 0x16: ReadData(8); break;
-                case 0x17: ReadData(19); ReadNextObjectData(); break;
-                case 0x18: ReadData(26); ReadNextEntityMetaData(); break;
-                case 0x19: ReadData(4); ReadNextString(); ReadData(16); break;
-                case 0x1A: ReadData(18); break;
-                case 0x1B: if (protocolversion >= 72) { ReadData(10); } break;
-                case 0x1C: ReadData(10); break;
-                case 0x1D: nbr = (int)ReadNextByte(); ReadData(nbr * 4); break;
-                case 0x1E: ReadData(4); break;
-                case 0x1F: ReadData(7); break;
-                case 0x20: ReadData(6); break;
-                case 0x21: ReadData(9); break;
-                case 0x22: ReadData(18); break;
-                case 0x23: ReadData(5); break;
-                case 0x26: ReadData(5); break;
-                case 0x27: if (protocolversion >= 72) { ReadData(9); } else ReadData(8); break;
-                case 0x28: ReadData(4); ReadNextEntityMetaData(); break;
-                case 0x29: ReadData(8); break;
-                case 0x2A: ReadData(5); break;
-                case 0x2B: ReadData(8); break;
-                case 0x2C: if (protocolversion >= 72) { ReadNextEntityProperties(protocolversion); } break;
-                case 0x33: ReadData(13); nbr = ReadNextInt(); ReadData(nbr); break;
-                case 0x34: ReadData(10); nbr = ReadNextInt(); ReadData(nbr); break;
-                case 0x35: ReadData(12); break;
-                case 0x36: ReadData(14); break;
-                case 0x37: ReadData(17); break;
-                case 0x38: ReadNextChunkBulkData(); break;
-                case 0x3C: ReadData(28); nbr = ReadNextInt(); ReadData(3 * nbr); ReadData(12); break;
-                case 0x3D: ReadData(18); break;
-                case 0x3E: ReadNextString(); ReadData(17); break;
-                case 0x3F: if (protocolversion > 51) { ReadNextString(); ReadData(32); } break;
-                case 0x46: ReadData(2); break;
-                case 0x47: ReadData(17); break;
-                case 0x64: ReadNextWindowData(protocolversion); break;
-                case 0x65: ReadData(1); break;
-                case 0x66: ReadData(7); ReadNextItemSlot(); break;
-                case 0x67: ReadData(3); ReadNextItemSlot(); break;
-                case 0x68: ReadData(1); for (nbr = ReadNextShort(); nbr > 0; nbr--) { ReadNextItemSlot(); } break;
-                case 0x69: ReadData(5); break;
-                case 0x6A: ReadData(4); break;
-                case 0x6B: ReadData(2); ReadNextItemSlot(); break;
-                case 0x6C: ReadData(2); break;
-                case 0x82: ReadData(10); ReadNextString(); ReadNextString(); ReadNextString(); ReadNextString(); break;
-                case 0x83: ReadData(4); nbr = ReadNextShort(); ReadData(nbr); break;
-                case 0x84: ReadData(11); nbr = ReadNextShort(); if (nbr > 0) { ReadData(nbr); } break;
-                case 0x85: if (protocolversion >= 74) { ReadData(13); } break;
+                case 0x04: await ReadData(16); break;
+                case 0x05: await ReadData(6); await ReadNextItemSlot(); break;
+                case 0x06: await ReadData(12); break;
+                case 0x07: await ReadData(9); break;
+                case 0x08: if (protocolversion >= 72) { await ReadData(10); } else await ReadData(8); break;
+                case 0x09: await ReadData(8); await ReadNextString(); break;
+                case 0x0A: await ReadData(1); break;
+                case 0x0B: await ReadData(33); break;
+                case 0x0C: await ReadData(9); break;
+                case 0x0D: await ReadData(41); break;
+                case 0x0E: await ReadData(11); break;
+                case 0x0F: await ReadData(10); await ReadNextItemSlot(); await ReadData(3); break;
+                case 0x10: await ReadData(2); break;
+                case 0x11: await ReadData(14); break;
+                case 0x12: await ReadData(5); break;
+                case 0x13: if (protocolversion >= 72) { await ReadData(9); } else await ReadData(5); break;
+                case 0x14: await ReadData(4); await ReadNextString(); await ReadData(16); await ReadNextEntityMetaData(); break;
+                case 0x16: await ReadData(8); break;
+                case 0x17: await ReadData(19); await ReadNextObjectData(); break;
+                case 0x18: await ReadData(26); await ReadNextEntityMetaData(); break;
+                case 0x19: await ReadData(4); await ReadNextString(); await ReadData(16); break;
+                case 0x1A: await ReadData(18); break;
+                case 0x1B: if (protocolversion >= 72) { await ReadData(10); } break;
+                case 0x1C: await ReadData(10); break;
+                case 0x1D: nbr = (int)(await ReadNextByte()); await ReadData(nbr * 4); break;
+                case 0x1E: await ReadData(4); break;
+                case 0x1F: await ReadData(7); break;
+                case 0x20: await ReadData(6); break;
+                case 0x21: await ReadData(9); break;
+                case 0x22: await ReadData(18); break;
+                case 0x23: await ReadData(5); break;
+                case 0x26: await ReadData(5); break;
+                case 0x27: if (protocolversion >= 72) { await ReadData(9); } else await ReadData(8); break;
+                case 0x28: await ReadData(4); await ReadNextEntityMetaData(); break;
+                case 0x29: await ReadData(8); break;
+                case 0x2A: await ReadData(5); break;
+                case 0x2B: await ReadData(8); break;
+                case 0x2C: if (protocolversion >= 72) { await ReadNextEntityProperties(protocolversion); } break;
+                case 0x33: await ReadData(13); nbr = await ReadNextInt(); await ReadData(nbr); break;
+                case 0x34: await ReadData(10); nbr = await ReadNextInt(); await ReadData(nbr); break;
+                case 0x35: await ReadData(12); break;
+                case 0x36: await ReadData(14); break;
+                case 0x37: await ReadData(17); break;
+                case 0x38: await ReadNextChunkBulkData(); break;
+                case 0x3C: await ReadData(28); nbr = await ReadNextInt(); await ReadData(3 * nbr); await ReadData(12); break;
+                case 0x3D: await ReadData(18); break;
+                case 0x3E: await ReadNextString(); await ReadData(17); break;
+                case 0x3F: if (protocolversion > 51) { await ReadNextString(); await ReadData(32); } break;
+                case 0x46: await ReadData(2); break;
+                case 0x47: await ReadData(17); break;
+                case 0x64: await ReadNextWindowData(protocolversion); break;
+                case 0x65: await ReadData(1); break;
+                case 0x66: await ReadData(7); await ReadNextItemSlot(); break;
+                case 0x67: await ReadData(3); await ReadNextItemSlot(); break;
+                case 0x68: await ReadData(1); for (nbr = await ReadNextShort(); nbr > 0; nbr--) { await ReadNextItemSlot(); } break;
+                case 0x69: await ReadData(5); break;
+                case 0x6A: await ReadData(4); break;
+                case 0x6B: await ReadData(2); await ReadNextItemSlot(); break;
+                case 0x6C: await ReadData(2); break;
+                case 0x82: await ReadData(10); await ReadNextString(); await ReadNextString(); await ReadNextString(); await ReadNextString(); break;
+                case 0x83: await ReadData(4); nbr = await ReadNextShort(); await ReadData(nbr); break;
+                case 0x84: await ReadData(11); nbr = await ReadNextShort(); if (nbr > 0) { await ReadData(nbr); } break;
+                case 0x85: if (protocolversion >= 74) { await ReadData(13); } break;
                 case 0xC8:
-                    if (ReadNextInt() == 2022) { ConsoleIO.WriteLogLine(Translations.mcc_player_dead, acceptnewlines: true); }
-                    if (protocolversion >= 72) { ReadData(4); } else ReadData(1);
+                    if (await ReadNextInt() == 2022) { ConsoleIO.WriteLogLine(Translations.mcc_player_dead, acceptnewlines: true); }
+                    if (protocolversion >= 72) { await ReadData(4); } else await ReadData(1);
                     break;
                 case 0xC9:
-                    string name = ReadNextString(); bool online = ReadNextByte() != 0x00; ReadData(2);
-                    Guid FakeUUID = new(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                    string name = await ReadNextString(); bool online = await ReadNextByte() != 0x00; await ReadData(2);
+                    Guid FakeUUID = new(MD5.HashData(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
                     if (online) { handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID)); } else { handler.OnPlayerLeave(FakeUUID); }
                     break;
-                case 0xCA: if (protocolversion >= 72) { ReadData(9); } else ReadData(3); break;
+                case 0xCA: if (protocolversion >= 72) { await ReadData(9); } else await ReadData(3); break;
                 case 0xCB:
-                    string resultString = ReadNextString();
+                    string resultString = await ReadNextString();
                     if (!string.IsNullOrEmpty(resultString))
                     {
                         string[] result = resultString.Split((char)0x00);
                         handler.OnAutoCompleteDone(0, result);
                     }
                     break;
-                case 0xCC: ReadNextString(); ReadData(4); break;
-                case 0xCD: ReadData(1); break;
-                case 0xCE: if (protocolversion > 51) { ReadNextString(); ReadNextString(); ReadData(1); } break;
-                case 0xCF: if (protocolversion > 51) { ReadNextString(); ReadData(1); ReadNextString(); } ReadData(4); break;
-                case 0xD0: if (protocolversion > 51) { ReadData(1); ReadNextString(); } break;
-                case 0xD1: if (protocolversion > 51) { ReadNextTeamData(); } break;
+                case 0xCC: await ReadNextString(); await ReadData(4); break;
+                case 0xCD: await ReadData(1); break;
+                case 0xCE: if (protocolversion > 51) { await ReadNextString(); await ReadNextString(); await ReadData(1); } break;
+                case 0xCF: if (protocolversion > 51) { await ReadNextString(); await ReadData(1); await ReadNextString(); } await ReadData(4); break;
+                case 0xD0: if (protocolversion > 51) { await ReadData(1); await ReadNextString(); } break;
+                case 0xD1: if (protocolversion > 51) { await ReadNextTeamData(); } break;
                 case 0xFA:
-                    string channel = ReadNextString();
-                    byte[] payload = ReadNextByteArray();
+                    string channel = await ReadNextString();
+                    byte[] payload = await ReadNextByteArray();
                     handler.OnPluginChannelMessage(channel, payload);
                     break;
                 case 0xFF:
-                    string reason = ReadNextString();
+                    string reason = await ReadNextString();
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, reason); break;
                 default: return false; //unknown packet!
             }
             return true; //packet has been successfully skipped
         }
 
-        private void StartUpdating()
-        {
-            netRead = new(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
-            netRead.Item1.Name = "ProtocolPacketHandler";
-            netRead.Item1.Start(netRead.Item2.Token);
-        }
-
-        /// <summary>
-        /// Get net read thread (main thread) ID
-        /// </summary>
-        /// <returns>Net read thread ID</returns>
-        public int GetNetMainThreadId()
-        {
-            return netRead != null ? netRead.Item1.ManagedThreadId : -1;
-        }
-
         public void Dispose()
         {
             try
             {
-                if (netRead != null)
-                {
-                    netRead.Item2.Cancel();
-                    c.Close();
-                }
+                c.Close();
             }
             catch { }
         }
 
-        private void ReadData(int offset)
+        private async Task ReadData(int offset)
         {
             if (offset > 0)
             {
                 try
                 {
                     byte[] cache = new byte[offset];
-                    Receive(cache, 0, offset, SocketFlags.None);
+                    await ReceiveAsync(cache, 0, offset);
                 }
                 catch (OutOfMemoryException) { }
             }
         }
 
-        private string ReadNextString()
+        private async Task<string> ReadNextString()
         {
-            ushort length = (ushort)ReadNextShort();
+            ushort length = (ushort)(await ReadNextShort());
             if (length > 0)
             {
                 byte[] cache = new byte[length * 2];
-                Receive(cache, 0, length * 2, SocketFlags.None);
+                await ReceiveAsync(cache, 0, length * 2);
                 string result = Encoding.BigEndianUnicode.GetString(cache);
                 return result;
             }
-            else return "";
-        }
-        public bool SendEntityAction(int PlayerEntityID, int ActionID)
-        {
-            return false;
+            else
+                return string.Empty;
         }
 
-        private byte[] ReadNextByteArray()
+        private async Task<string> ReadNextStringAsync(CancellationToken cancellationToken = default)
         {
-            short len = ReadNextShort();
+            ushort length = (ushort)(await ReadNextShortAsync());
+            if (length > 0)
+            {
+                byte[] cache = new byte[length * 2];
+                await ReceiveAsync(cache, 0, length * 2);
+                if (cancellationToken.IsCancellationRequested)
+                    return string.Empty;
+                string result = Encoding.BigEndianUnicode.GetString(cache);
+                return result;
+            }
+            else
+                return string.Empty;
+        }
+        public async Task<bool> SendEntityAction(int PlayerEntityID, int ActionID)
+        {
+            return await Task.FromResult(false);
+        }
+
+        private async Task<byte[]> ReadNextByteArray()
+        {
+            short len = await ReadNextShort();
             byte[] data = new byte[len];
-            Receive(data, 0, len, SocketFlags.None);
+            await ReceiveAsync(data, 0, len);
             return data;
         }
 
-        private short ReadNextShort()
+        private async Task<short> ReadNextShort()
         {
             byte[] tmp = new byte[2];
-            Receive(tmp, 0, 2, SocketFlags.None);
+            await ReceiveAsync(tmp, 0, 2);
             Array.Reverse(tmp);
             return BitConverter.ToInt16(tmp, 0);
         }
 
-        private int ReadNextInt()
+        private async Task<short> ReadNextShortAsync()
+        {
+            byte[] tmp = new byte[2];
+            await ReceiveAsync(tmp, 0, 2);
+            Array.Reverse(tmp);
+            return BitConverter.ToInt16(tmp, 0);
+        }
+
+        private async Task<int> ReadNextInt()
         {
             byte[] tmp = new byte[4];
-            Receive(tmp, 0, 4, SocketFlags.None);
+            await ReceiveAsync(tmp, 0, 4);
             Array.Reverse(tmp);
             return BitConverter.ToInt32(tmp, 0);
         }
 
-        private byte ReadNextByte()
+        private async Task<byte> ReadNextByte()
         {
             byte[] result = new byte[1];
-            Receive(result, 0, 1, SocketFlags.None);
+            await ReceiveAsync(result, 0, 1);
             return result[0];
         }
 
-        private void ReadNextItemSlot()
+        private async Task ReadNextItemSlot()
         {
-            short itemid = ReadNextShort();
+            short itemid = await ReadNextShort();
             //If slot not empty (item ID != -1)
             if (itemid != -1)
             {
-                ReadData(1); //Item count
-                ReadData(2); //Item damage
-                short length = ReadNextShort();
+                await ReadData(1); //Item count
+                await ReadData(2); //Item damage
+                short length = await ReadNextShort();
                 //If length of optional NBT data > 0, read it
-                if (length > 0) { ReadData(length); }
+                if (length > 0) { await ReadData(length); }
             }
         }
 
-        private void ReadNextEntityMetaData()
+        private async Task ReadNextEntityMetaData()
         {
             do
             {
                 byte[] id = new byte[1];
-                Receive(id, 0, 1, SocketFlags.None);
+                await ReceiveAsync(id, 0, 1);
                 if (id[0] == 0x7F) { break; }
                 int index = id[0] & 0x1F;
                 int type = id[0] >> 5;
                 switch (type)
                 {
-                    case 0: ReadData(1); break;        //Byte
-                    case 1: ReadData(2); break;        //Short
-                    case 2: ReadData(4); break;        //Int
-                    case 3: ReadData(4); break;        //Float
-                    case 4: ReadNextString(); break;   //String
-                    case 5: ReadNextItemSlot(); break; //Slot
-                    case 6: ReadData(12); break;       //Vector (3 Int)
+                    case 0: await ReadData(1); break;        //Byte
+                    case 1: await ReadData(2); break;        //Short
+                    case 2: await ReadData(4); break;        //Int
+                    case 3: await ReadData(4); break;        //Float
+                    case 4: await ReadNextString(); break;   //String
+                    case 5: await ReadNextItemSlot(); break; //Slot
+                    case 6: await ReadData(12); break;       //Vector (3 Int)
                 }
             } while (true);
         }
 
-        private void ReadNextObjectData()
+        private async Task ReadNextObjectData()
         {
-            int id = ReadNextInt();
-            if (id != 0) { ReadData(6); }
+            int id = await ReadNextInt();
+            if (id != 0) { await ReadData(6); }
         }
 
-        private void ReadNextTeamData()
+        private async Task ReadNextTeamData()
         {
-            ReadNextString(); //Internal Name
-            byte mode = ReadNextByte();
+            await ReadNextString(); //Internal Name
+            byte mode = await ReadNextByte();
 
             if (mode == 0 || mode == 2)
             {
-                ReadNextString(); //Display Name
-                ReadNextString(); //Prefix
-                ReadNextString(); //Suffix
-                ReadData(1); //Friendly Fire
+                await ReadNextString(); //Display Name
+                await ReadNextString(); //Prefix
+                await ReadNextString(); //Suffix
+                await ReadData(1); //Friendly Fire
             }
 
             if (mode == 0 || mode == 3 || mode == 4)
             {
-                short count = ReadNextShort();
+                short count = await ReadNextShort();
                 for (int i = 0; i < count; i++)
                 {
-                    ReadNextString(); //Players
+                    await ReadNextString(); //Players
                 }
             }
         }
 
-        private void ReadNextEntityProperties(int protocolversion)
+        private async Task ReadNextEntityProperties(int protocolversion)
         {
             if (protocolversion >= 72)
             {
                 if (protocolversion >= 74)
                 {
                     //Minecraft 1.6.2
-                    ReadNextInt(); //Entity ID
-                    int count = ReadNextInt();
+                    await ReadNextInt(); //Entity ID
+                    int count = await ReadNextInt();
                     for (int i = 0; i < count; i++)
                     {
-                        ReadNextString(); //Property name
-                        ReadData(8); //Property value (Double)
-                        short othercount = ReadNextShort();
-                        ReadData(25 * othercount);
+                        await ReadNextString(); //Property name
+                        await ReadData(8); //Property value (Double)
+                        short othercount = await ReadNextShort();
+                        await ReadData(25 * othercount);
                     }
                 }
                 else
                 {
                     //Minecraft 1.6.0 / 1.6.1
-                    ReadNextInt(); //Entity ID
-                    int count = ReadNextInt();
+                    await ReadNextInt(); //Entity ID
+                    int count = await ReadNextInt();
                     for (int i = 0; i < count; i++)
                     {
-                        ReadNextString(); //Property name
-                        ReadData(8); //Property value (Double)
+                        await ReadNextString(); //Property name
+                        await ReadData(8); //Property value (Double)
                     }
                 }
             }
         }
 
-        private void ReadNextWindowData(int protocolversion)
+        private async Task ReadNextWindowData(int protocolversion)
         {
-            ReadData(1);
-            byte windowtype = ReadNextByte();
-            ReadNextString();
-            ReadData(1);
+            await ReadData(1);
+            byte windowtype = await ReadNextByte();
+            await ReadNextString();
+            await ReadData(1);
             if (protocolversion > 51)
             {
-                ReadData(1);
+                await ReadData(1);
                 if (protocolversion >= 72 && windowtype == 0xb)
                 {
-                    ReadNextInt();
+                    await ReadNextInt();
                 }
             }
         }
 
-        private void ReadNextChunkBulkData()
+        private async Task ReadNextChunkBulkData()
         {
-            short chunkcount = ReadNextShort();
-            int datalen = ReadNextInt();
-            ReadData(1);
-            ReadData(datalen);
-            ReadData(12 * (chunkcount));
+            short chunkcount = await ReadNextShort();
+            int datalen = await ReadNextInt();
+            await ReadData(1);
+            await ReadData(datalen);
+            await ReadData(12 * (chunkcount));
         }
 
-        private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
+        /// <summary>
+        /// Network reading method. Read bytes from the socket or encrypted socket.
+        /// </summary>
+        private async Task ReceiveAsync(byte[] buffer, int start, int offset)
         {
             int read = 0;
             while (read < offset)
             {
                 if (encrypted)
-                    read += s!.Read(buffer, start + read, offset - read);
+                    read += await s!.ReadAsync(buffer.AsMemory().Slice(start + read, offset - read));
                 else
-                    read += c.Client.Receive(buffer, start + read, offset - read, f);
+                    read += await c.Client.ReceiveAsync(new ArraySegment<byte>(buffer, start + read, offset - read));
             }
         }
 
-        private void Send(byte[] buffer)
+        private async Task Send(byte[] buffer)
         {
             if (encrypted)
-                s!.Write(buffer, 0, buffer.Length);
+                await s!.WriteAsync(buffer);
             else
-                c.Client.Send(buffer);
+                await c.Client.SendAsync(buffer);
         }
 
-        private bool Handshake(string uuid, string username, string sessionID, string host, int port, SessionToken session)
+        private async Task<bool> Handshake(HttpClient httpClient, string uuid, string username, string sessionID, string host, int port, SessionToken session)
         {
             //array
             byte[] data = new byte[10 + (username.Length + host.Length) * 2];
@@ -484,27 +499,27 @@ namespace MinecraftClient.Protocol.Handlers
             Array.Reverse(sh);
             sh.CopyTo(data, 6 + (username.Length * 2) + (host.Length * 2));
 
-            Send(data);
+            await Send(data);
 
             byte[] pid = new byte[1];
-            Receive(pid, 0, 1, SocketFlags.None);
+            await ReceiveAsync(pid, 0, 1);
             while (pid[0] == 0xFA) //Skip some early plugin messages
             {
-                ProcessPacket(pid[0]);
-                Receive(pid, 0, 1, SocketFlags.None);
+                await ProcessPacket(pid[0]);
+                await ReceiveAsync(pid, 0, 1);
             }
             if (pid[0] == 0xFD)
             {
-                string serverID = ReadNextString();
-                byte[] PublicServerkey = ReadNextByteArray();
-                byte[] token = ReadNextByteArray();
+                string serverID = await ReadNextString();
+                byte[] PublicServerkey = await ReadNextByteArray();
+                byte[] token = await ReadNextByteArray();
 
                 if (serverID == "-")
                     ConsoleIO.WriteLineFormatted("§8" + Translations.mcc_server_offline, acceptnewlines: true);
                 else if (Settings.Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_handshake, serverID));
 
-                return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey, session);
+                return await StartEncryption(httpClient, uuid, sessionID, token, serverID, PublicServerkey, session);
             }
             else
             {
@@ -513,7 +528,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        private bool StartEncryption(string uuid, string username, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
+        private async Task<bool> StartEncryption(HttpClient httpClient, string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
         {
             RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
@@ -524,24 +539,27 @@ namespace MinecraftClient.Protocol.Handlers
             if (serverIDhash != "-")
             {
                 ConsoleIO.WriteLine(Translations.mcc_session);
-                string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
 
                 bool needCheckSession = true;
-                if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
-                    && serverIDhash == session.ServerIDhash && Enumerable.SequenceEqual(serverPublicKey, session.ServerPublicKey))
+
+                string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
+                if (session.SessionPreCheckTask != null && session.ServerInfoHash != null && serverHash == session.ServerInfoHash)
                 {
-                    session.SessionPreCheckTask.Wait();
-                    if (session.SessionPreCheckTask.Result) // PreCheck Successed
-                        needCheckSession = false;
+                    try
+                    {
+                        bool preCheckResult = await session.SessionPreCheckTask;
+                        if (preCheckResult) // PreCheck Successed
+                            needCheckSession = false;
+                    }
+                    catch (HttpRequestException) { }
                 }
 
                 if (needCheckSession)
                 {
-                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash))
+                    var sessionCheck = await ProtocolHandler.SessionCheckAsync(httpClient, uuid, sessionID, serverHash);
+                    if (sessionCheck)
                     {
-                        session.ServerIDhash = serverIDhash;
-                        session.ServerPublicKey = serverPublicKey;
-                        SessionCache.Store(InternalConfig.Account.Login.ToLower(), session);
+                        SessionCache.StoreServerInfo($"{InternalConfig.ServerIP}:{InternalConfig.ServerPort}", serverIDhash, serverPublicKey);
                     }
                     else
                     {
@@ -570,15 +588,15 @@ namespace MinecraftClient.Protocol.Handlers
             token_enc.CopyTo(data, 5 + (short)key_enc.Length);
 
             //Send it back
-            Send(data);
+            await Send(data);
 
             //Getting the next packet
             byte[] pid = new byte[1];
-            Receive(pid, 0, 1, SocketFlags.None);
+            await ReceiveAsync(pid, 0, 1);
             if (pid[0] == 0xFC)
             {
-                ReadData(4);
-                s = new AesCfb8Stream(c.GetStream(), secretKey);
+                await ReadData(4);
+                s = new AesStream(c.Client, secretKey);
                 encrypted = true;
                 return true;
             }
@@ -589,11 +607,11 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session)
+        public async Task<bool> Login(HttpClient httpClient, PlayerKeyPair? playerKeyPair, SessionToken session)
         {
-            if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
+            if (await Handshake(httpClient, handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
             {
-                Send(new byte[] { 0xCD, 0 });
+                await Send(new byte[] { 0xCD, 0 });
                 try
                 {
                     byte[] pid = new byte[1];
@@ -601,21 +619,20 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         if (c.Connected)
                         {
-                            Receive(pid, 0, 1, SocketFlags.None);
+                            await ReceiveAsync(pid, 0, 1);
                             while (pid[0] >= 0xC0 && pid[0] != 0xFF) //Skip some early packets or plugin messages
                             {
-                                ProcessPacket(pid[0]);
-                                Receive(pid, 0, 1, SocketFlags.None);
+                                await ProcessPacket(pid[0]);
+                                await ReceiveAsync(pid, 0, 1);
                             }
                             if (pid[0] == (byte)1)
                             {
-                                ReadData(4); ReadNextString(); ReadData(5);
-                                StartUpdating();
+                                await ReadData(4); await ReadNextString(); await ReadData(5);
                                 return true; //The Server accepted the request
                             }
                             else if (pid[0] == (byte)0xFF)
                             {
-                                string reason = ReadNextString();
+                                string reason = await ReadNextString();
                                 handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, reason);
                                 return false;
                             }
@@ -659,7 +676,7 @@ namespace MinecraftClient.Protocol.Handlers
                     msg.CopyTo(reason, 3);
                 }
 
-                Send(reason);
+                Send(reason).Wait();
             }
             catch (SocketException) { }
             catch (System.IO.IOException) { }
@@ -675,9 +692,9 @@ namespace MinecraftClient.Protocol.Handlers
             return protocolversion;
         }
 
-        public bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair)
+        public async Task<bool> SendChatMessage(string message, PlayerKeyPair? playerKeyPair)
         {
-            if (String.IsNullOrEmpty(message))
+            if (string.IsNullOrEmpty(message))
                 return true;
 
             try
@@ -694,111 +711,111 @@ namespace MinecraftClient.Protocol.Handlers
                 msg = Encoding.BigEndianUnicode.GetBytes(message);
                 msg.CopyTo(chat, 3);
 
-                Send(chat);
+                await Send(chat);
                 return true;
             }
             catch (SocketException) { return false; }
             catch (System.IO.IOException) { return false; }
         }
 
-        public bool SendRespawnPacket()
+        public async Task<bool> SendRespawnPacket()
         {
             try
             {
-                Send(new byte[] { 0xCD, 1 });
+                await Send(new byte[] { 0xCD, 1 });
                 return true;
             }
             catch (SocketException) { return false; }
         }
 
-        public bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4)
+        public async Task<bool> SendUpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendBrandInfo(string brandInfo)
+        public async Task<bool> SendBrandInfo(string brandInfo)
         {
-            return false; //Only supported since MC 1.7
+            return await Task.FromResult(false); //Only supported since MC 1.7
         }
 
-        public bool SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand)
+        public async Task<bool> SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch)
+        public async Task<bool> SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendInteractEntity(int EntityID, int type)
+        public async Task<bool> SendInteractEntity(int EntityID, int type)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
+        public async Task<bool> SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z)
+        public async Task<bool> SendInteractEntity(int EntityID, int type, float X, float Y, float Z)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendInteractEntity(int EntityID, int type, int hand)
+        public async Task<bool> SendInteractEntity(int EntityID, int type, int hand)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
+        public async Task<bool> UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
-            return false;  //Currently not implemented
+            return await Task.FromResult(false);  //Currently not implemented
         }
 
-        public bool SendUseItem(int hand, int sequenceId)
+        public async Task<bool> SendUseItem(int hand, int sequenceId)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item? item, List<Tuple<short, Item?>> changedSlots, int stateId)
+        public async Task<bool> SendWindowAction(int windowId, int slotId, WindowActionType action, Item? item, List<Tuple<short, Item?>> changedSlots, int stateId)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendAnimation(int animation, int playerid)
+        public async Task<bool> SendAnimation(int animation, int playerid)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendCreativeInventoryAction(int slot, ItemType item, int count, Dictionary<string, object>? nbt)
+        public async Task<bool> SendCreativeInventoryAction(int slot, ItemType item, int count, Dictionary<string, object>? nbt)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool ClickContainerButton(int windowId, int buttonId)
+        public async Task<bool> ClickContainerButton(int windowId, int buttonId)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendCloseWindow(int windowId)
+        public async Task<bool> SendCloseWindow(int windowId)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendPlayerBlockPlacement(int hand, Location location, Direction face, int sequenceId)
+        public async Task<bool> SendPlayerBlockPlacement(int hand, Location location, Direction face, int sequenceId)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendHeldItemChange(short slot)
+        public async Task<bool> SendHeldItemChange(short slot)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
-        public bool SendPlayerDigging(int status, Location location, Direction face, int sequenceId)
+        public async Task<bool> SendPlayerDigging(int status, Location location, Direction face, int sequenceId)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
 
         /// <summary>
@@ -806,7 +823,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="channel">Channel to send packet on</param>
         /// <param name="data">packet Data</param>
-        public bool SendPluginChannelPacket(string channel, byte[] data)
+        public async Task<bool> SendPluginChannelPacket(string channel, byte[] data)
         {
             try
             {
@@ -818,7 +835,7 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] dataLength = BitConverter.GetBytes((short)data.Length);
                 Array.Reverse(dataLength);
 
-                Send(ConcatBytes(new byte[] { 0xFA }, channelLength, channelData, dataLength, data));
+                await Send(ConcatBytes(new byte[] { 0xFA }, channelLength, channelData, dataLength, data));
 
                 return true;
             }
@@ -826,7 +843,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
         }
 
-        int IAutoComplete.AutoComplete(string BehindCursor)
+        async Task<int> IAutoComplete.AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))
                 return -1;
@@ -839,7 +856,7 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] msg = Encoding.BigEndianUnicode.GetBytes(BehindCursor);
             msg.CopyTo(autocomplete, 3);
             ConsoleIO.AutoCompleteDone = false;
-            Send(autocomplete);
+            await Send(autocomplete);
             return 0;
         }
 
@@ -851,24 +868,25 @@ namespace MinecraftClient.Protocol.Handlers
             return result.ToArray();
         }
 
-        public static bool DoPing(string host, int port, ref int protocolversion)
+        public static async Task<Tuple<bool, int, Forge.ForgeInfo?>> DoPing(string host, int port, CancellationToken cancelToken)
         {
             try
             {
+                TcpClient tcpClient = ProxyHandler.NewTcpClient(host, port, ProxyHandler.ClientType.Ingame);
+                tcpClient.ReceiveBufferSize = 1024 * 1024;
+                tcpClient.ReceiveTimeout = 5000; // MC 1.7.2+ SpigotMC servers won't respond, so we need a reasonable timeout.
+
                 string version = "";
-                TcpClient tcp = ProxyHandler.NewTcpClient(host, port);
-                tcp.ReceiveTimeout = 30000; // 30 seconds
-                tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't respond, so we need a reasonable timeout.
                 byte[] ping = new byte[2] { 0xfe, 0x01 };
-                tcp.Client.Send(ping, SocketFlags.None);
-                tcp.Client.Receive(ping, 0, 1, SocketFlags.None);
+                await tcpClient.Client.SendAsync(ping, SocketFlags.None, cancelToken);
+                await tcpClient.Client.ReceiveAsync(new ArraySegment<byte>(ping, 0, 1), cancelToken);
 
                 if (ping[0] == 0xff)
                 {
-                    Protocol16Handler ComTmp = new(tcp);
-                    string result = ComTmp.ReadNextString();
+                    Protocol16Handler ComTmp = new(tcpClient);
+                    string result = await ComTmp.ReadNextStringAsync(cancelToken);
 
-                    if (Settings.Config.Logging.DebugMessages)
+                    if (Config.Logging.DebugMessages)
                     {
                         // May contain formatting codes, cannot use WriteLineFormatted
                         Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -876,38 +894,39 @@ namespace MinecraftClient.Protocol.Handlers
                         Console.ForegroundColor = ConsoleColor.Gray;
                     }
 
+                    int protocolversion;
                     if (result.Length > 2 && result[0] == '§' && result[1] == '1')
                     {
                         string[] tmp = result.Split((char)0x00);
-                        protocolversion = (byte)Int16.Parse(tmp[1], NumberStyles.Any, CultureInfo.CurrentCulture);
+                        protocolversion = short.Parse(tmp[1], NumberStyles.Any, CultureInfo.CurrentCulture);
                         version = tmp[2];
 
-                        if (protocolversion == 127) //MC 1.7.2+
-                            return false;
+                        if (protocolversion == 127) // MC 1.7.2+
+                            return new(false, 0, null);
                     }
                     else
                     {
-                        protocolversion = (byte)39;
+                        protocolversion = 39;
                         version = "B1.8.1 - 1.3.2";
                     }
 
                     ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_version, version, protocolversion));
 
-                    return true;
+                    return new(true, protocolversion, null);
                 }
-                else return false;
             }
-            catch { return false; }
+            catch { }
+            return new(false, 0, null);
         }
 
-        public bool SelectTrade(int selectedSlot)
+        public async Task<bool> SelectTrade(int selectedSlot)
         {
-            return false; //MC 1.13+
+            return await Task.FromResult(false); //MC 1.13+
         }
 
-        public bool SendSpectate(Guid UUID)
+        public async Task<bool> SendSpectate(Guid UUID)
         {
-            return false; //Currently not implemented
+            return await Task.FromResult(false); //Currently not implemented
         }
     }
 }

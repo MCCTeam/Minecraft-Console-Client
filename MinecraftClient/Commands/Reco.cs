@@ -63,7 +63,7 @@ namespace MinecraftClient.Commands
                 }
             }
             Program.Restart(keepAccountAndServerSettings: true);
-            return String.Empty;
+            return string.Empty;
         }
     }
 }

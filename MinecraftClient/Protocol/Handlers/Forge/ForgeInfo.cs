@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace MinecraftClient.Protocol.Handlers.Forge
 {
@@ -11,16 +12,22 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// <summary>
         /// Represents an individual forge mod.
         /// </summary>
-        public class ForgeMod
+        public record ForgeMod
         {
-            public ForgeMod(String ModID, String Version)
+            public ForgeMod(string? modID, string? version)
             {
-                this.ModID = ModID;
-                this.Version = Version;
+                ModID = modID;
+                Version = ModMarker = version;
             }
 
-            public readonly String ModID;
-            public readonly String Version;
+            [JsonPropertyName("modId")]
+            public string? ModID { init; get; }
+
+            [JsonPropertyName("version")]
+            public string? Version { init; get; }
+
+            [JsonPropertyName("modmarker")]
+            public string? ModMarker { init; get; }
 
             public override string ToString()
             {
@@ -137,6 +144,17 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                 default:
                     throw new NotImplementedException("FMLVersion '" + fmlVersion + "' not implemented!");
             }
+        }
+
+        /// <summary>
+        /// Create a new ForgeInfo from the given data.
+        /// </summary>
+        /// <param name="data">The modinfo JSON tag.</param>
+        /// <param name="fmlVersion">Forge protocol version</param>
+        internal ForgeInfo(ForgeMod[] mods, FMLVersion fmlVersion)
+        {
+            Mods = new(mods);
+            Version = fmlVersion;
         }
     }
 }

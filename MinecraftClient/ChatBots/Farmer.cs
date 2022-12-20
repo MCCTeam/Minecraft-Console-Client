@@ -244,10 +244,10 @@ namespace MinecraftClient.ChatBots
             running = false;
         }
 
-        public override bool OnDisconnect(DisconnectReason reason, string message)
+        public override int OnDisconnect(DisconnectReason reason, string message)
         {
             running = false;
-            return true;
+            return base.OnDisconnect(reason, message);
         }
 
         private void MainPorcess()

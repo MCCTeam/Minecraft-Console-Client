@@ -134,7 +134,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override bool OnDisconnect(DisconnectReason reason, string message)
+        public override int OnDisconnect(DisconnectReason reason, string message)
         {
             replay!.OnShutDown();
             return base.OnDisconnect(reason, message);
