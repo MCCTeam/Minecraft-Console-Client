@@ -522,80 +522,126 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             else // 1.19.1 +
                             {
-                                byte[]? precedingSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData) : null;
-                                Guid senderUUID = dataTypes.ReadNextUUID(packetData);
-                                byte[] headerSignature = dataTypes.ReadNextByteArray(packetData);
-
-                                string signedChat = dataTypes.ReadNextString(packetData);
-                                string? decorated = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
-
-                                long timestamp = dataTypes.ReadNextLong(packetData);
-                                long salt = dataTypes.ReadNextLong(packetData);
-
-                                int lastSeenMessageListLen = dataTypes.ReadNextVarInt(packetData);
-                                LastSeenMessageList.Entry[] lastSeenMessageList = new LastSeenMessageList.Entry[lastSeenMessageListLen];
-                                for (int i = 0; i < lastSeenMessageListLen; ++i)
+                                if (protocolVersion >= MC_1_19_3_Version)
                                 {
-                                    Guid user = dataTypes.ReadNextUUID(packetData);
-                                    byte[] lastSignature = dataTypes.ReadNextByteArray(packetData);
-                                    lastSeenMessageList[i] = new(user, lastSignature);
-                                }
-                                LastSeenMessageList lastSeenMessages = new(lastSeenMessageList);
+                                    // Header section
+                                    Guid senderUUID = dataTypes.ReadNextUUID(packetData);
+                                    int index = dataTypes.ReadNextVarInt(packetData);
+                                    byte[]? messageSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData) : null;
 
-                                string? unsignedChatContent = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
+                                    // Body
+                                    string message = dataTypes.ReadNextString(packetData);
+                                    long timestamp = dataTypes.ReadNextLong(packetData);
+                                    long salt = dataTypes.ReadNextLong(packetData);
 
-                                int filterEnum = dataTypes.ReadNextVarInt(packetData);
-                                if (filterEnum == 2) // PARTIALLY_FILTERED
-                                    dataTypes.ReadNextULongArray(packetData);
+                                    // Previous Messages
+                                    int totalPreviousMessages = dataTypes.ReadNextVarInt(packetData);
+                                    List<Byte[]> previousMessageSignatures = new();
 
-                                int chatTypeId = dataTypes.ReadNextVarInt(packetData);
-                                string chatName = dataTypes.ReadNextString(packetData);
-                                string? targetName = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
-
-                                Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(chatName).Properties;
-                                string senderDisplayName = (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"]).StringValue;
-                                string? senderTeamName = null;
-                                ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
-                                if (targetName != null &&
-                                    (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
-                                    senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
-
-                                if (string.IsNullOrWhiteSpace(senderDisplayName))
-                                {
-                                    PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    if (player != null && (player.DisplayName != null || player.Name != null) && string.IsNullOrWhiteSpace(senderDisplayName))
+                                    for (int i = 0; i < totalPreviousMessages; i++)
                                     {
-                                        senderDisplayName = ChatParser.ParseText(player.DisplayName ?? player.Name);
-                                        if (string.IsNullOrWhiteSpace(senderDisplayName))
-                                            senderDisplayName = player.DisplayName ?? player.Name;
-                                        else
-                                            senderDisplayName += "§r";
-                                    }
-                                }
+                                        int messageId = dataTypes.ReadNextVarInt(packetData);
 
-                                bool verifyResult;
-                                if (!isOnlineMode)
-                                    verifyResult = false;
-                                else if (senderUUID == handler.GetUserUuid())
-                                    verifyResult = true;
+                                        if (messageId > 0)
+                                            previousMessageSignatures.Add(dataTypes.ReadNextByteArray(packetData));
+                                    }
+
+                                    // Other
+                                    string? unsignedChatContent = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
+
+                                    MessageFilterType filterType = (MessageFilterType)dataTypes.ReadNextVarInt(packetData);
+
+                                    if (filterType == MessageFilterType.PartiallyFiltered)
+                                        dataTypes.ReadNextULongArray(packetData);
+
+                                    // Network Target
+                                    int chatType = dataTypes.ReadNextInt(packetData);
+                                    string networkName = dataTypes.ReadNextString(packetData);
+                                    bool networkTargetNamePresent = dataTypes.ReadNextBool(packetData);
+                                    string? networkTargetName = null;
+
+                                    if (networkTargetNamePresent)
+                                        networkTargetName = dataTypes.ReadNextString(packetData);
+
+                                    // TODO
+                                }
                                 else
                                 {
-                                    PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    if (player == null || !player.IsMessageChainLegal())
+                                    byte[]? precedingSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData) : null;
+                                    Guid senderUUID = dataTypes.ReadNextUUID(packetData);
+                                    byte[] headerSignature = dataTypes.ReadNextByteArray(packetData);
+
+                                    string signedChat = dataTypes.ReadNextString(packetData);
+                                    string? decorated = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
+
+                                    long timestamp = dataTypes.ReadNextLong(packetData);
+                                    long salt = dataTypes.ReadNextLong(packetData);
+
+                                    int lastSeenMessageListLen = dataTypes.ReadNextVarInt(packetData);
+                                    LastSeenMessageList.Entry[] lastSeenMessageList = new LastSeenMessageList.Entry[lastSeenMessageListLen];
+                                    for (int i = 0; i < lastSeenMessageListLen; ++i)
+                                    {
+                                        Guid user = dataTypes.ReadNextUUID(packetData);
+                                        byte[] lastSignature = dataTypes.ReadNextByteArray(packetData);
+                                        lastSeenMessageList[i] = new(user, lastSignature);
+                                    }
+                                    LastSeenMessageList lastSeenMessages = new(lastSeenMessageList);
+
+                                    string? unsignedChatContent = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
+
+                                    MessageFilterType filterEnum = (MessageFilterType)dataTypes.ReadNextVarInt(packetData);
+                                    if (filterEnum == MessageFilterType.PartiallyFiltered)
+                                        dataTypes.ReadNextULongArray(packetData);
+
+                                    int chatTypeId = dataTypes.ReadNextVarInt(packetData);
+                                    string chatName = dataTypes.ReadNextString(packetData);
+                                    string? targetName = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
+
+                                    Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(chatName).Properties;
+                                    string senderDisplayName = (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"]).StringValue;
+                                    string? senderTeamName = null;
+                                    ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
+                                    if (targetName != null &&
+                                        (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
+                                        senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
+
+                                    if (string.IsNullOrWhiteSpace(senderDisplayName))
+                                    {
+                                        PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                        if (player != null && (player.DisplayName != null || player.Name != null) && string.IsNullOrWhiteSpace(senderDisplayName))
+                                        {
+                                            senderDisplayName = ChatParser.ParseText(player.DisplayName ?? player.Name);
+                                            if (string.IsNullOrWhiteSpace(senderDisplayName))
+                                                senderDisplayName = player.DisplayName ?? player.Name;
+                                            else
+                                                senderDisplayName += "§r";
+                                        }
+                                    }
+
+                                    bool verifyResult;
+                                    if (!isOnlineMode)
                                         verifyResult = false;
+                                    else if (senderUUID == handler.GetUserUuid())
+                                        verifyResult = true;
                                     else
                                     {
-                                        bool lastVerifyResult = player.IsMessageChainLegal();
-                                        verifyResult = player.VerifyMessage(signedChat, timestamp, salt, ref headerSignature, ref precedingSignature, lastSeenMessages);
-                                        if (lastVerifyResult && !verifyResult)
-                                            log.Warn(string.Format(Translations.chat_message_chain_broken, senderDisplayName));
+                                        PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                        if (player == null || !player.IsMessageChainLegal())
+                                            verifyResult = false;
+                                        else
+                                        {
+                                            bool lastVerifyResult = player.IsMessageChainLegal();
+                                            verifyResult = player.VerifyMessage(signedChat, timestamp, salt, ref headerSignature, ref precedingSignature, lastSeenMessages);
+                                            if (lastVerifyResult && !verifyResult)
+                                                log.Warn(string.Format(Translations.chat_message_chain_broken, senderDisplayName));
+                                        }
                                     }
-                                }
 
-                                ChatMessage chat = new(signedChat, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, headerSignature, verifyResult);
-                                if (isOnlineMode && !chat.LacksSender())
-                                    Acknowledge(chat);
-                                handler.OnTextReceived(chat);
+                                    ChatMessage chat = new(signedChat, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, headerSignature, verifyResult);
+                                    if (isOnlineMode && !chat.LacksSender())
+                                        Acknowledge(chat);
+                                    handler.OnTextReceived(chat);
+                                }
                             }
                             break;
                         case PacketTypesIn.CombatEvent:
@@ -625,8 +671,8 @@ namespace MinecraftClient.Protocol.Handlers
                             );
 
                             break;
-                        case PacketTypesIn.MessageHeader:
-                            if (protocolVersion >= MC_1_19_2_Version)
+                        case PacketTypesIn.MessageHeader: // 1.19.2 only
+                            if (protocolVersion == MC_1_19_2_Version)
                             {
                                 byte[]? precedingSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData) : null;
                                 Guid senderUUID = dataTypes.ReadNextUUID(packetData);
@@ -654,6 +700,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
                                 }
                             }
+
                             break;
                         case PacketTypesIn.Respawn:
                             string? dimensionTypeNameRespawn = null;
@@ -1104,7 +1151,11 @@ namespace MinecraftClient.Protocol.Handlers
                             if (hasIcon)
                                 iconBase64 = dataTypes.ReadNextString(packetData);
 
-                            bool previewsChat = dataTypes.ReadNextBool(packetData);
+
+                            bool previewsChat = false;
+
+                            if (protocolVersion < MC_1_19_3_Version)
+                                dataTypes.ReadNextBool(packetData);
 
                             handler.OnServerDataRecived(hasMotd, motd, hasIcon, iconBase64, previewsChat);
                             break;
@@ -1135,23 +1186,20 @@ namespace MinecraftClient.Protocol.Handlers
                             bool previewsChatSetting = dataTypes.ReadNextBool(packetData);
                             handler.OnChatPreviewSettingUpdate(previewsChatSetting);
                             break;
-                        case PacketTypesIn.ChatPreview:
-                            int queryID = dataTypes.ReadNextInt(packetData);
-                            bool componentIsPresent = dataTypes.ReadNextBool(packetData);
-
-                            // Currently noy implemented
-                            log.Debug("New chat preview: ");
-                            log.Debug(">> Query ID: " + queryID);
-                            log.Debug(">> Component is present: " + componentIsPresent);
-                            if (componentIsPresent)
-                            {
-                                string message = dataTypes.ReadNextString(packetData);
-                                log.Debug(">> Component: " + ChatParser.ParseText(message));
-                                //handler.OnTextReceived(message, true);
-                            }
-
-                            break;
                         case PacketTypesIn.ChatSuggestions:
+                            break;
+                        case PacketTypesIn.ProfilelessChatMessage:
+                            string message_ = dataTypes.ReadNextString(packetData);
+                            int messageType_ = dataTypes.ReadNextVarInt(packetData);
+                            string messageName = dataTypes.ReadNextString(packetData);
+                            bool hasTargetName = dataTypes.ReadNextBool(packetData);
+
+                            string? targetName_ = null;
+
+                            if (hasTargetName)
+                                targetName_ = dataTypes.ReadNextString(packetData);
+
+                            // Not clear for what this is used as the time of writting
                             break;
                         case PacketTypesIn.MapChunkBulk:
                             if (protocolVersion < MC_1_9_Version && handler.GetTerrainEnabled())
