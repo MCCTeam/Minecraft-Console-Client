@@ -728,11 +728,17 @@ namespace MinecraftClient.Protocol.Handlers
         {
             Item inputItem1 = ReadNextItemSlot(cache, itemPalette)!;
             Item outputItem = ReadNextItemSlot(cache, itemPalette)!;
+
             Item? inputItem2 = null;
-            if (ReadNextBool(cache)) //check if villager has second item
-            {
+
+            if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
                 inputItem2 = ReadNextItemSlot(cache, itemPalette);
+            else
+            {
+                if (ReadNextBool(cache)) //check if villager has second item
+                    inputItem2 = ReadNextItemSlot(cache, itemPalette);
             }
+
             bool tradeDisabled = ReadNextBool(cache);
             int numberOfTradeUses = ReadNextInt(cache);
             int maximumNumberOfTradeUses = ReadNextInt(cache);
