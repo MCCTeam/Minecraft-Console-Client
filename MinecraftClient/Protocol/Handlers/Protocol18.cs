@@ -1712,8 +1712,19 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                         case PacketTypesIn.SetExperience:
                             float experiencebar = dataTypes.ReadNextFloat(packetData);
-                            int level = dataTypes.ReadNextVarInt(packetData);
-                            int totalexperience = dataTypes.ReadNextVarInt(packetData);
+                            int totalexperience, level;
+
+                            if (protocolVersion >= MC_1_19_3_Version)
+                            {
+                                totalexperience = dataTypes.ReadNextVarInt(packetData);
+                                level = dataTypes.ReadNextVarInt(packetData);
+                            }
+                            else
+                            {
+                                level = dataTypes.ReadNextVarInt(packetData);
+                                totalexperience = dataTypes.ReadNextVarInt(packetData);
+                            }
+
                             handler.OnSetExperience(experiencebar, level, totalexperience);
                             break;
                         case PacketTypesIn.Explosion:
@@ -1911,7 +1922,9 @@ namespace MinecraftClient.Protocol.Handlers
 
             List<byte> fullLoginPacket = new();
             fullLoginPacket.AddRange(dataTypes.GetString(handler.GetUsername()));                             // Username
-            if (protocolVersion >= MC_1_19_Version)
+
+            // 1.19 - 1.19.2
+            if (protocolVersion >= MC_1_19_Version && protocolVersion < MC_1_19_3_Version)
             {
                 if (playerKeyPair == null)
                     fullLoginPacket.AddRange(dataTypes.GetBool(false));                                       // Has Sig Data
@@ -1929,6 +1942,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolVersion >= MC_1_19_2_Version)
             {
                 Guid uuid = handler.GetUserUuid();
+
                 if (uuid == Guid.Empty)
                     fullLoginPacket.AddRange(dataTypes.GetBool(false));                                       // Has UUID
                 else
@@ -1937,6 +1951,7 @@ namespace MinecraftClient.Protocol.Handlers
                     fullLoginPacket.AddRange(dataTypes.GetUUID(uuid));                                        // UUID
                 }
             }
+
             SendPacket(0x00, fullLoginPacket);
 
             while (true)
@@ -2018,7 +2033,9 @@ namespace MinecraftClient.Protocol.Handlers
             // Encryption Response packet
             List<byte> encryptionResponse = new();
             encryptionResponse.AddRange(dataTypes.GetArray(RSAService.Encrypt(secretKey, false)));     // Shared Secret
-            if (protocolVersion >= Protocol18Handler.MC_1_19_Version)
+
+            // 1.19 - 1.19.2
+            if (protocolVersion >= MC_1_19_Version && protocolVersion < MC_1_19_3_Version)
             {
                 if (playerKeyPair == null)
                 {
@@ -2039,6 +2056,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 encryptionResponse.AddRange(dataTypes.GetArray(RSAService.Encrypt(token, false)));    // Verify Token
             }
+
             SendPacket(0x01, encryptionResponse);
 
             //Start client-side encryption
