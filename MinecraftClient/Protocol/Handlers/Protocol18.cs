@@ -536,14 +536,13 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     // Previous Messages
                                     int totalPreviousMessages = dataTypes.ReadNextVarInt(packetData);
-                                    List<Byte[]> previousMessageSignatures = new();
+                                    List<Tuple<int, byte[]>> previousMessageSignatures = new();
 
                                     for (int i = 0; i < totalPreviousMessages; i++)
                                     {
                                         int messageId = dataTypes.ReadNextVarInt(packetData);
-
                                         if (messageId > 0)
-                                            previousMessageSignatures.Add(dataTypes.ReadNextByteArray(packetData));
+                                            previousMessageSignatures.Add(new Tuple<int, byte[]>(messageId, dataTypes.ReadNextByteArray(packetData)));
                                     }
 
                                     // Other
@@ -555,13 +554,30 @@ namespace MinecraftClient.Protocol.Handlers
                                         dataTypes.ReadNextULongArray(packetData);
 
                                     // Network Target
-                                    int chatType = dataTypes.ReadNextInt(packetData);
-                                    string networkName = dataTypes.ReadNextString(packetData);
-                                    bool networkTargetNamePresent = dataTypes.ReadNextBool(packetData);
-                                    string? networkTargetName = null;
+                                    int chatTypeId = dataTypes.ReadNextVarInt(packetData);
+                                    string chatName = dataTypes.ReadNextString(packetData);
+                                    string? targetName = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
 
-                                    if (networkTargetNamePresent)
-                                        networkTargetName = dataTypes.ReadNextString(packetData);
+                                    Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(chatName).Properties;
+                                    string senderDisplayName = (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"]).StringValue;
+                                    string? senderTeamName = null;
+                                    ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
+                                    if (targetName != null &&
+                                        (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
+                                        senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
+
+                                    if (string.IsNullOrWhiteSpace(senderDisplayName))
+                                    {
+                                        PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                        if (player != null && (player.DisplayName != null || player.Name != null) && string.IsNullOrWhiteSpace(senderDisplayName))
+                                        {
+                                            senderDisplayName = ChatParser.ParseText(player.DisplayName ?? player.Name);
+                                            if (string.IsNullOrWhiteSpace(senderDisplayName))
+                                                senderDisplayName = player.DisplayName ?? player.Name;
+                                            else
+                                                senderDisplayName += "§r";
+                                        }
+                                    }
 
                                     // TODO
                                 }
