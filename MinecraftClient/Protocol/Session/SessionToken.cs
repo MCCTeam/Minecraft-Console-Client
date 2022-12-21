@@ -35,7 +35,7 @@ namespace MinecraftClient.Protocol.Session
         public string? ServerInfoHash = null;
 
         [JsonIgnore]
-        public Task<bool>? SessionPreCheckTask = null;
+        public Task<Tuple<bool, string?>>? SessionPreCheckTask = null;
 
         public SessionToken()
         {

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -20,6 +21,7 @@ using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using PInvoke;
+using static MinecraftClient.Json;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
@@ -139,7 +141,7 @@ namespace MinecraftClient.Protocol
             int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760 };
 
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
-                return new Protocol18Handler(cancelToken, Client, ProtocolVersion, Handler, forgeInfo);
+                return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo, cancelToken);
 
             throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, ProtocolVersion));
         }
@@ -743,6 +745,12 @@ namespace MinecraftClient.Protocol
             public string? serverId { init; get; }
         }
 
+        private record SessionCheckFailResult
+        {
+            public string? error { init; get; }
+            public string? path { init; get; }
+        }
+
         /// <summary>
         /// Check session using Mojang's Yggdrasil authentication scheme. Allows to join an online-mode server
         /// </summary>
@@ -750,7 +758,7 @@ namespace MinecraftClient.Protocol
         /// <param name="accesstoken">Session ID</param>
         /// <param name="serverhash">Server ID</param>
         /// <returns>TRUE if session was successfully checked</returns>
-        public static async Task<bool> SessionCheckAsync(HttpClient httpClient, string uuid, string accesstoken, string serverhash)
+        public static async Task<Tuple<bool, string?>> SessionCheckAsync(HttpClient httpClient, string uuid, string accesstoken, string serverhash)
         {
             SessionCheckPayload payload = new()
             {
@@ -759,24 +767,33 @@ namespace MinecraftClient.Protocol
                 serverId = serverhash,
             };
 
-            using HttpRequestMessage request = new(HttpMethod.Post, "https://sessionserver.mojang.com/session/minecraft/join");
+            try
+            {
+                using HttpRequestMessage request = new(HttpMethod.Post, "https://sessionserver.mojang.com/session/minecraft/join");
 
-            request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-            request.Headers.UserAgent.Clear();
-            request.Headers.UserAgent.ParseAdd($"MCC/{Program.Version}");
+                request.Headers.UserAgent.Clear();
+                request.Headers.UserAgent.ParseAdd($"MCC/{Program.Version}");
 
-            using HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                using HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-            return response.IsSuccessStatusCode;
-
-            //try
-            //{
-            //    string json_request = $"{{\"accessToken\":\"{accesstoken}\",\"selectedProfile\":\"{uuid}\",\"serverId\":\"{serverhash}\"}}";
-            //    (int code, _) = await DoHTTPSPost("sessionserver.mojang.com", "/session/minecraft/join", json_request);
-            //    return (code >= 200 && code < 300);
-            //}
-            //catch { return false; }
+                if (response.IsSuccessStatusCode)
+                    return new(true, null);
+                else
+                {
+                    SessionCheckFailResult jsonData = (await response.Content.ReadFromJsonAsync<SessionCheckFailResult>())!;
+                    return new(false, jsonData.error);
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                return new(false, $"HttpRequestException: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                return new(false, $"JsonException: {e.Message}");
+            }
         }
 
         /// <summary>

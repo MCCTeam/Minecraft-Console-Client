@@ -540,30 +540,27 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 ConsoleIO.WriteLine(Translations.mcc_session);
 
-                bool needCheckSession = true;
-
                 string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
                 if (session.SessionPreCheckTask != null && session.ServerInfoHash != null && serverHash == session.ServerInfoHash)
                 {
-                    try
+                    (bool preCheckResult, string? error) = await session.SessionPreCheckTask;
+                    if (!preCheckResult)
                     {
-                        bool preCheckResult = await session.SessionPreCheckTask;
-                        if (preCheckResult) // PreCheck Successed
-                            needCheckSession = false;
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected,
+                            string.IsNullOrEmpty(error) ? Translations.mcc_session_fail : $"{Translations.mcc_session_fail} Error: {error}.");
+                        return false;
                     }
-                    catch (HttpRequestException) { }
+                    session.SessionPreCheckTask = null;
                 }
-
-                if (needCheckSession)
+                else
                 {
-                    var sessionCheck = await ProtocolHandler.SessionCheckAsync(httpClient, uuid, sessionID, serverHash);
+                    (bool sessionCheck, string? error) = await ProtocolHandler.SessionCheckAsync(httpClient, uuid, sessionID, serverHash);
                     if (sessionCheck)
-                    {
                         SessionCache.StoreServerInfo($"{InternalConfig.ServerIP}:{InternalConfig.ServerPort}", serverIDhash, serverPublicKey);
-                    }
                     else
                     {
-                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.mcc_session_fail);
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected,
+                            string.IsNullOrEmpty(error) ? Translations.mcc_session_fail : $"{Translations.mcc_session_fail} Error: {error}.");
                         return false;
                     }
                 }

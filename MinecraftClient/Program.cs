@@ -59,7 +59,9 @@ namespace MinecraftClient
         private static int CurrentThreadId;
         private static bool RestartKeepSettings = false;
         private static int RestartAfter = -1, Exitcode = 0;
-        private static CancellationTokenSource McClientCancelToken = new();
+
+        private static Task McClientInit = Task.CompletedTask;
+        private static CancellationTokenSource McClientCancelTokenSource = new();
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -126,6 +128,11 @@ namespace MinecraftClient
                 }
             }
 
+            // Setup exit cleaning code
+            ExitCleanUp.Add(() => { DoExit(); });
+
+            McClientInit = Task.Run(McClient.LoadCommandsAndChatbots);
+
             if (!string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
             {
                 InternalConfig.Username = "New Window";
@@ -166,9 +173,6 @@ namespace MinecraftClient
                     ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb.ToString()));
                 }
             }
-
-            // Setup exit cleaning code
-            ExitCleanUp.Add(() => { DoExit(); });
 
             ConsoleIO.SuppressPrinting(true);
             // Asking the user to type in missing data such as Username and Password
@@ -233,8 +237,6 @@ namespace MinecraftClient
                     McClient = null;
                 }
 
-                ConsoleInteractive.ConsoleReader.StopReadThread();
-
                 if (RestartAfter < 0 && FailureInfo.hasFailure)
                     RestartAfter = HandleFailure();
 
@@ -255,7 +257,7 @@ namespace MinecraftClient
                 RestartAfter = -1;
                 RestartKeepSettings = false;
                 FailureInfo.hasFailure = false;
-                McClientCancelToken = new CancellationTokenSource();
+                McClientCancelTokenSource = new CancellationTokenSource();
             }
 
             DoExit();
@@ -721,7 +723,6 @@ namespace MinecraftClient
             var loginTask = LoginAsync(loginHttpClient);
             var getServerInfoTask = GetServerInfoAsync(loginHttpClient, loginTask);
             var refreshPlayerKeyTask = RefreshPlayerKeyPair(loginHttpClient, loginTask);
-            var initMcClientTask = Task.Run(() => { return new McClient(McClientCancelToken.Token, InternalConfig.ServerIP, InternalConfig.ServerPort); });
 
             (result, session, playerKeyPair) = await loginTask;
             if (result == ProtocolHandler.LoginResult.Success && session != null)
@@ -732,7 +733,7 @@ namespace MinecraftClient
                     Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
 
                 if (Config.Main.Advanced.PlayerHeadAsIcon && OperatingSystem.IsWindows())
-                    _ = Task.Run(async () => { await ConsoleIcon.SetPlayerIconAsync(loginHttpClient, InternalConfig.Username); }); 
+                    _ = Task.Run(async () => { await ConsoleIcon.SetPlayerIconAsync(loginHttpClient, InternalConfig.Username); });
 
                 if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLine(string.Format(Translations.debug_session_id, session.ID));
@@ -754,8 +755,10 @@ namespace MinecraftClient
                 {
                     try
                     {
+                        await McClientInit;
+                        McClient = new McClient(InternalConfig.ServerIP, InternalConfig.ServerPort, McClientCancelTokenSource);
+
                         // Start the main TCP client
-                        McClient = await initMcClientTask;
                         await McClient.Login(loginHttpClient, session, playerKeyPair, protocolversion, forgeInfo);
                     }
                     catch (NotSupportedException)
@@ -835,23 +838,23 @@ namespace MinecraftClient
         /// Disconnect the current client from the server and restart it
         /// </summary>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
-        public static void Restart(int delayMilliseconds = 0, bool keepAccountAndServerSettings = false)
+        public static void SetRestart(int delayMilliseconds = 0, bool keepAccountAndServerSettings = false)
         {
             RestartAfter = Math.Max(0, delayMilliseconds);
             RestartKeepSettings = keepAccountAndServerSettings;
-            McClientCancelToken.Cancel();
+            McClientCancelTokenSource.Cancel();
         }
 
         /// <summary>
         /// Disconnect the current client from the server and exit the app
         /// </summary>
-        public static void Exit(int exitcode = 0, bool handleFailure = false)
+        public static void SetExit(int exitcode = 0, bool handleFailure = false)
         {
-            McClientCancelToken.Cancel();
-            Exitcode = exitcode;
             RestartAfter = -1;
+            Exitcode = exitcode;
             if (handleFailure)
                 FailureInfo.Record();
+            McClientCancelTokenSource.Cancel();
         }
 
         public static void DoExit()
@@ -904,7 +907,6 @@ namespace MinecraftClient
                     }
                 }
 
-                ConsoleIO.WriteLine(string.Empty);
                 ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_disconnected, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                 ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
 

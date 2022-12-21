@@ -45,7 +45,7 @@ namespace MinecraftClient.Commands
 
         private int DoExit(CmdResult r, int code = 0)
         {
-            Program.Exit(code);
+            Program.SetExit(code);
             return r.SetAndReturn(CmdResult.Status.Done);
         }
     }

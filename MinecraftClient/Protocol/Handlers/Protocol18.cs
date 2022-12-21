@@ -95,7 +95,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private readonly CancellationToken CancelToken;
 
-        public Protocol18Handler(CancellationToken cancelToken, TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo? forgeInfo)
+        public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo? forgeInfo, CancellationToken cancelToken)
         {
             CancelToken = cancelToken;
             ConsoleIO.SetAutoCompleteEngine(this);
@@ -213,23 +213,32 @@ namespace MinecraftClient.Protocol.Handlers
 
         private async Task MainTicker()
         {
-            var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000 / 20));
-            while (await periodicTimer.WaitForNextTickAsync(CancelToken) && !CancelToken.IsCancellationRequested)
+            using PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(1000 / 20));
+            try
             {
-                try
+                while (await periodicTimer.WaitForNextTickAsync(CancelToken) && !CancelToken.IsCancellationRequested)
                 {
-                    await handler.OnUpdate();
-                }
-                catch (Exception e)
-                {
-                    if (Config.Logging.DebugMessages)
+                    try
                     {
-                        ConsoleIO.WriteLine($"{e.GetType().Name} when ticking: {e.Message}");
-                        if (e.StackTrace != null)
-                            ConsoleIO.WriteLine(e.StackTrace);
+                        await handler.OnUpdate();
+                    }
+                    catch (Exception e)
+                    {
+                        if (Config.Logging.DebugMessages)
+                        {
+                            ConsoleIO.WriteLine($"{e.GetType().Name} when ticking: {e.Message}");
+                            if (e.StackTrace != null)
+                                ConsoleIO.WriteLine(e.StackTrace);
+                        }
                     }
                 }
             }
+            catch (AggregateException e)
+            {
+                if (e.InnerException is not OperationCanceledException)
+                    throw;
+            }
+            catch (OperationCanceledException) { }
         }
 
         /// <summary>
@@ -252,6 +261,11 @@ namespace MinecraftClient.Protocol.Handlers
                 catch (ObjectDisposedException) { break; }
                 catch (OperationCanceledException) { break; }
                 catch (NullReferenceException) { break; }
+                catch (AggregateException e)
+                {
+                    if (e.InnerException is TaskCanceledException)
+                        break;
+                }
             }
 
             if (!CancelToken.IsCancellationRequested)
@@ -1760,14 +1774,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Disconnect from the server, cancel network reading.
         /// </summary>
-        public void Dispose()
-        {
-            try
-            {
-                socketWrapper.Disconnect();
-            }
-            catch { }
-        }
+        public void Dispose() { }
 
         /// <summary>
         /// Send a packet to the server. Packet ID, compression, and encryption will be handled automatically.
@@ -1934,31 +1941,27 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 log.Info(Translations.mcc_session);
 
-                bool needCheckSession = true;
-
                 string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
                 if (session.SessionPreCheckTask != null && session.ServerInfoHash != null && serverHash == session.ServerInfoHash)
                 {
-                    try
+                    (bool preCheckResult, string? error) = await session.SessionPreCheckTask;
+                    if (!preCheckResult)
                     {
-                        bool preCheckResult = await session.SessionPreCheckTask;
-                        if (preCheckResult) // PreCheck Successed
-                            needCheckSession = false;
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected,
+                            string.IsNullOrEmpty(error) ? Translations.mcc_session_fail : $"{Translations.mcc_session_fail} Error: {error}.");
+                        return false;
                     }
-                    catch (HttpRequestException) { }
                     session.SessionPreCheckTask = null;
                 }
-
-                if (needCheckSession)
+                else
                 {
-                    var sessionCheck = await ProtocolHandler.SessionCheckAsync(httpClient, uuid, sessionID, serverHash);
+                    (bool sessionCheck, string? error) = await ProtocolHandler.SessionCheckAsync(httpClient, uuid, sessionID, serverHash);
                     if (sessionCheck)
-                    {
                         SessionCache.StoreServerInfo($"{InternalConfig.ServerIP}:{InternalConfig.ServerPort}", serverIDhash, serverPublicKey);
-                    }
                     else
                     {
-                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.mcc_session_fail);
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected,
+                            string.IsNullOrEmpty(error) ? Translations.mcc_session_fail : $"{Translations.mcc_session_fail} Error: {error}.");
                         return false;
                     }
                 }

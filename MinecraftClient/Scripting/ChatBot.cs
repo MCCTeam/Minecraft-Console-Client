@@ -38,7 +38,7 @@ namespace MinecraftClient.Scripting
         public void SetHandler(McClient handler) { _handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
         protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot).Wait(); Handler.BotLoad(bot); }
-        protected List<ChatBot> GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
+        protected ChatBot[] GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
         protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot).Wait(); }
         private McClient? _handler = null;
         private ChatBot? master = null;
@@ -945,7 +945,7 @@ namespace MinecraftClient.Scripting
                 ConsoleIO.WriteLogLine(string.Format(Translations.chatbot_reconnect, botName));
             }
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds * 10, keepAccountAndServerSettings);
+            Program.SetRestart(delaySeconds * 10, keepAccountAndServerSettings);
         }
 
         /// <summary>
@@ -953,7 +953,7 @@ namespace MinecraftClient.Scripting
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Program.Exit();
+            Program.SetExit();
         }
 
         /// <summary>

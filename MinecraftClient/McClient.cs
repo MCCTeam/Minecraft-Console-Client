@@ -103,9 +103,9 @@ namespace MinecraftClient
         private double sampleSum = 0;
 
         // ChatBot
+        private ChatBot[] chatbots = Array.Empty<ChatBot>();
+        private static ChatBot[] botsOnHold = Array.Empty<ChatBot>();
         private bool OldChatBotUpdateTrigger = false;
-        private readonly List<ChatBot> bots = new();
-        private static readonly List<ChatBot> botsOnHold = new();
         private bool networkPacketCaptureEnabled = false;
 
         public int GetServerPort() { return port; }
@@ -131,16 +131,32 @@ namespace MinecraftClient
         public int GetProtocolVersion() { return protocolversion; }
         public ILogger GetLogger() { return Log; }
         public int GetPlayerEntityID() { return playerEntityID; }
-        public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
+        public ChatBot[] GetLoadedChatBots() { return chatbots; }
 
         private TcpClient? tcpClient;
         private IMinecraftCom? handler;
-        private CancellationTokenSource? cmdprompt;
-        private readonly CancellationToken CancelToken;
-
-        private Task TimeoutDetectorTask = Task.CompletedTask;
+        private readonly CancellationTokenSource CancelTokenSource;
 
         public ILogger Log;
+
+        public static void LoadCommandsAndChatbots()
+        {
+            /* Load commands from the 'Commands' namespace */
+            Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+            foreach (Type type in cmds_classes)
+            {
+                if (type.IsSubclassOf(typeof(Command)))
+                {
+                    Command cmd = (Command)Activator.CreateInstance(type)!;
+                    cmd.RegisterCommand(dispatcher);
+                }
+            }
+
+            /* Load ChatBots */
+            botsOnHold = GetBotsToRegister();
+            foreach (ChatBot bot in botsOnHold)
+                bot.Initialize();
+        }
 
         /// <summary>
         /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
@@ -151,11 +167,10 @@ namespace MinecraftClient
         /// <param name="serverPort">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
-        public McClient(CancellationToken cancelToken, string serverHost, ushort serverPort)
+        public McClient(string serverHost, ushort serverPort, CancellationTokenSource cancelTokenSource)
         {
-            CancelToken = cancelToken;
+            CancelTokenSource = cancelTokenSource;
 
-            dispatcher = new();
             CmdResult.currentHandler = this;
             terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
             inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
@@ -179,12 +194,6 @@ namespace MinecraftClient
             Log.ChatEnabled = Config.Logging.ChatMessages;
             Log.WarnEnabled = Config.Logging.WarningMessages;
             Log.ErrorEnabled = Config.Logging.ErrorMessages;
-
-            /* Load commands from Commands namespace */
-            LoadCommands();
-
-            if (botsOnHold.Count == 0)
-                RegisterBots();
         }
 
         public async Task Login(HttpClient httpClient, SessionToken session, PlayerKeyPair? playerKeyPair, int protocolversion, ForgeInfo? forgeInfo)
@@ -204,26 +213,22 @@ namespace MinecraftClient
                 tcpClient.ReceiveBufferSize = 1024 * 1024;
                 tcpClient.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000; // Default: 30 seconds
 
-                handler = ProtocolHandler.GetProtocolHandler(CancelToken, tcpClient, protocolversion, forgeInfo, this);
+                handler = ProtocolHandler.GetProtocolHandler(CancelTokenSource.Token, tcpClient, protocolversion, forgeInfo, this);
                 Log.Info(Translations.mcc_version_supported);
 
-                TimeoutDetectorTask = Task.Run(TimeoutDetector, CancelToken);
+                _ = Task.Run(TimeoutDetector, CancelTokenSource.Token);
 
                 try
                 {
                     if (await handler.Login(httpClient, this.playerKeyPair, session))
                     {
-                        foreach (ChatBot bot in botsOnHold)
-                            BotLoad(bot, false);
-
-                        botsOnHold.Clear();
-
-                        Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-
-                        cmdprompt = new CancellationTokenSource();
-                        ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
-                        ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
-                        ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+                        chatbots = botsOnHold;
+                        botsOnHold = Array.Empty<ChatBot>();
+                        foreach (ChatBot bot in chatbots)
+                        {
+                            bot.SetHandler(this);
+                            bot.AfterGameJoined();
+                        }
 
                         return;
                     }
@@ -249,14 +254,11 @@ namespace MinecraftClient
                 Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
                 Thread.Sleep(5000);
                 ReconnectionAttemptsLeft--;
-                Program.Restart();
+                Program.SetRestart();
             }
-            else if (InternalConfig.InteractiveMode)
+            else
             {
-                ConsoleInteractive.ConsoleReader.StopReadThread();
-                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-                Program.Exit();
+                Program.SetExit();
             }
 
             throw new Exception("Initialization failed.");
@@ -264,38 +266,55 @@ namespace MinecraftClient
 
         public async Task StartUpdating()
         {
+            Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
+
+            ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+            ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+            ConsoleInteractive.ConsoleReader.BeginReadThread();
+
             await handler!.StartUpdating();
+
+            ConsoleInteractive.ConsoleReader.StopReadThread();
+            ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+            ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+
+            ConsoleIO.CancelAutocomplete();
+            ConsoleIO.WriteLine(string.Empty);
         }
 
         /// <summary>
         /// Register bots
         /// </summary>
-        private void RegisterBots(bool reload = false)
+        private static ChatBot[] GetBotsToRegister(bool reload = false)
         {
-            if (Config.ChatBot.Alerts.Enabled) { BotLoad(new Alerts()); }
-            if (Config.ChatBot.AntiAFK.Enabled) { BotLoad(new AntiAFK()); }
-            if (Config.ChatBot.AutoAttack.Enabled) { BotLoad(new AutoAttack()); }
-            if (Config.ChatBot.AutoCraft.Enabled) { BotLoad(new AutoCraft()); }
-            if (Config.ChatBot.AutoDig.Enabled) { BotLoad(new AutoDig()); }
-            if (Config.ChatBot.AutoDrop.Enabled) { BotLoad(new AutoDrop()); }
-            if (Config.ChatBot.AutoEat.Enabled) { BotLoad(new AutoEat()); }
-            if (Config.ChatBot.AutoFishing.Enabled) { BotLoad(new AutoFishing()); }
-            if (Config.ChatBot.AutoRelog.Enabled) { BotLoad(new AutoRelog()); }
-            if (Config.ChatBot.AutoRespond.Enabled) { BotLoad(new AutoRespond()); }
-            if (Config.ChatBot.ChatLog.Enabled) { BotLoad(new ChatLog()); }
-            if (Config.ChatBot.DiscordBridge.Enabled) { BotLoad(new DiscordBridge()); }
-            if (Config.ChatBot.Farmer.Enabled) { BotLoad(new Farmer()); }
-            if (Config.ChatBot.FollowPlayer.Enabled) { BotLoad(new FollowPlayer()); }
-            if (Config.ChatBot.HangmanGame.Enabled) { BotLoad(new HangmanGame()); }
-            if (Config.ChatBot.Mailer.Enabled) { BotLoad(new Mailer()); }
-            if (Config.ChatBot.Map.Enabled) { BotLoad(new Map()); }
-            if (Config.ChatBot.PlayerListLogger.Enabled) { BotLoad(new PlayerListLogger()); }
-            if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
-            if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
-            if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
-            if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
+            List<ChatBot> chatbotList = new();
+
+            if (Config.ChatBot.Alerts.Enabled) { chatbotList.Add(new Alerts()); }
+            if (Config.ChatBot.AntiAFK.Enabled) { chatbotList.Add(new AntiAFK()); }
+            if (Config.ChatBot.AutoAttack.Enabled) { chatbotList.Add(new AutoAttack()); }
+            if (Config.ChatBot.AutoCraft.Enabled) { chatbotList.Add(new AutoCraft()); }
+            if (Config.ChatBot.AutoDig.Enabled) { chatbotList.Add(new AutoDig()); }
+            if (Config.ChatBot.AutoDrop.Enabled) { chatbotList.Add(new AutoDrop()); }
+            if (Config.ChatBot.AutoEat.Enabled) { chatbotList.Add(new AutoEat()); }
+            if (Config.ChatBot.AutoFishing.Enabled) { chatbotList.Add(new AutoFishing()); }
+            if (Config.ChatBot.AutoRelog.Enabled) { chatbotList.Add(new AutoRelog()); }
+            if (Config.ChatBot.AutoRespond.Enabled) { chatbotList.Add(new AutoRespond()); }
+            if (Config.ChatBot.ChatLog.Enabled) { chatbotList.Add(new ChatLog()); }
+            if (Config.ChatBot.DiscordBridge.Enabled) { chatbotList.Add(new DiscordBridge()); }
+            if (Config.ChatBot.Farmer.Enabled) { chatbotList.Add(new Farmer()); }
+            if (Config.ChatBot.FollowPlayer.Enabled) { chatbotList.Add(new FollowPlayer()); }
+            if (Config.ChatBot.HangmanGame.Enabled) { chatbotList.Add(new HangmanGame()); }
+            if (Config.ChatBot.Mailer.Enabled) { chatbotList.Add(new Mailer()); }
+            if (Config.ChatBot.Map.Enabled) { chatbotList.Add(new Map()); }
+            if (Config.ChatBot.PlayerListLogger.Enabled) { chatbotList.Add(new PlayerListLogger()); }
+            if (Config.ChatBot.RemoteControl.Enabled) { chatbotList.Add(new RemoteControl()); }
+            // if (Config.ChatBot.ReplayCapture.Enabled && reload) { chatbotList.Add(new ReplayCapture()); }
+            if (Config.ChatBot.ScriptScheduler.Enabled) { chatbotList.Add(new ScriptScheduler()); }
+            if (Config.ChatBot.TelegramBridge.Enabled) { chatbotList.Add(new TelegramBridge()); }
             // Add your ChatBot here by uncommenting and adapting
             // BotLoad(new ChatBots.YourBot());
+
+            return chatbotList.ToArray();
         }
 
         /// <summary>
@@ -304,10 +323,13 @@ namespace MinecraftClient
         /// </summary>
         private async Task TrySendMessageToServer()
         {
-            while (nextMessageSendTime < DateTime.Now && chatQueue.TryDequeue(out string? text))
+            if (handler != null)
             {
-                await handler!.SendChatMessage(text, playerKeyPair);
-                nextMessageSendTime = DateTime.Now + TimeSpan.FromSeconds(Config.Main.Advanced.MessageCooldown);
+                while (nextMessageSendTime < DateTime.Now && chatQueue.TryDequeue(out string? text))
+                {
+                    await handler.SendChatMessage(text, playerKeyPair);
+                    nextMessageSendTime = DateTime.Now + TimeSpan.FromSeconds(Config.Main.Advanced.MessageCooldown);
+                }
             }
         }
 
@@ -317,7 +339,7 @@ namespace MinecraftClient
         public async Task OnUpdate()
         {
             OldChatBotUpdateTrigger = !OldChatBotUpdateTrigger;
-            foreach (ChatBot bot in bots.ToArray())
+            foreach (ChatBot bot in chatbots)
             {
                 await bot.OnClientTickAsync();
                 if (OldChatBotUpdateTrigger)
@@ -390,15 +412,24 @@ namespace MinecraftClient
         private async Task TimeoutDetector()
         {
             UpdateKeepAlive();
-            var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(Config.Main.Advanced.TcpTimeout));
-            while (await periodicTimer.WaitForNextTickAsync(CancelToken) && !CancelToken.IsCancellationRequested)
+            using PeriodicTimer periodicTimer = new(TimeSpan.FromSeconds(Config.Main.Advanced.TcpTimeout));
+            try
             {
-                if (lastKeepAlive.AddSeconds(Config.Main.Advanced.TcpTimeout) < DateTime.Now)
+                while (await periodicTimer.WaitForNextTickAsync(CancelTokenSource.Token) && !CancelTokenSource.IsCancellationRequested)
                 {
-                    OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_timeout);
-                    return;
+                    if (lastKeepAlive.AddSeconds(Config.Main.Advanced.TcpTimeout) < DateTime.Now)
+                    {
+                        OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_timeout);
+                        return;
+                    }
                 }
             }
+            catch (AggregateException e)
+            {
+                if (e.InnerException is not OperationCanceledException)
+                    throw;
+            }
+            catch (OperationCanceledException) { }
         }
 
         /// <summary>
@@ -414,10 +445,10 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
-            DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
+            DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, string.Empty));
 
-            botsOnHold.Clear();
-            botsOnHold.AddRange(bots);
+            botsOnHold = chatbots;
+            chatbots = Array.Empty<ChatBot>();
 
             if (handler != null)
             {
@@ -425,15 +456,7 @@ namespace MinecraftClient
                 handler.Dispose();
             }
 
-            if (cmdprompt != null)
-            {
-                cmdprompt.Cancel();
-                cmdprompt = null;
-            }
-
             tcpClient?.Close();
-
-            TimeoutDetectorTask.Wait();
         }
 
         /// <summary>
@@ -441,12 +464,6 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
-            ConsoleInteractive.ConsoleReader.StopReadThread();
-            ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-            ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-
-            ConsoleIO.CancelAutocomplete();
-
             switch (reason)
             {
                 case ChatBot.DisconnectReason.ConnectionLost:
@@ -469,8 +486,8 @@ namespace MinecraftClient
             }
 
             // Process AutoRelog last to make sure other bots can perform their cleanup tasks first (issue #1517)
-            List<ChatBot> onDisconnectBotList = bots.Where(bot => bot is not AutoRelog).ToList();
-            onDisconnectBotList.AddRange(bots.Where(bot => bot is AutoRelog));
+            List<ChatBot> onDisconnectBotList = chatbots.Where(bot => bot is not AutoRelog).ToList();
+            onDisconnectBotList.AddRange(chatbots.Where(bot => bot is AutoRelog));
 
             int restartDelay = -1;
             foreach (ChatBot bot in onDisconnectBotList)
@@ -490,9 +507,9 @@ namespace MinecraftClient
             }
 
             if (restartDelay < 0)
-                Program.Exit(handleFailure: true);
+                Program.SetExit(handleFailure: true);
             else
-                Program.Restart(restartDelay, true);
+                Program.SetRestart(restartDelay, true);
 
             handler!.Dispose();
 
@@ -601,11 +618,11 @@ namespace MinecraftClient
             {
                 dispatcher.Execute(parse);
 
-                foreach (ChatBot bot in bots.ToArray())
+                foreach (ChatBot bot in chatbots)
                 {
                     try
                     {
-                        bot.OnInternalCommand(command, string.Join(" ", Command.GetArgs(command)), result);
+                        bot.OnInternalCommand(command, string.Join(' ', Command.GetArgs(command)), result);
                     }
                     catch (Exception e)
                     {
@@ -634,32 +651,6 @@ namespace MinecraftClient
             }
         }
 
-        public void LoadCommands()
-        {
-            /* Load commands from the 'Commands' namespace */
-
-            if (!commandsLoaded)
-            {
-                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
-                foreach (Type type in cmds_classes)
-                {
-                    if (type.IsSubclassOf(typeof(Command)))
-                    {
-                        try
-                        {
-                            Command cmd = (Command)Activator.CreateInstance(type)!;
-                            cmd.RegisterCommand(dispatcher);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Warn(e.Message);
-                        }
-                    }
-                }
-                commandsLoaded = true;
-            }
-        }
-
         /// <summary>
         /// Reload settings and bots
         /// </summary>
@@ -676,10 +667,16 @@ namespace MinecraftClient
         public async Task ReloadBots()
         {
             await UnloadAllBots();
-            RegisterBots(true);
 
-            if (tcpClient!.Client.Connected)
-                bots.ForEach(bot => bot.AfterGameJoined());
+            ChatBot[] bots = GetBotsToRegister(true);
+            foreach (ChatBot bot in bots)
+            {
+                bot.SetHandler(this);
+                bot.Initialize();
+                if (handler != null)
+                    bot.AfterGameJoined();
+            }
+            chatbots = bots;
         }
 
         /// <summary>
@@ -687,8 +684,11 @@ namespace MinecraftClient
         /// </summary>
         public async Task UnloadAllBots()
         {
-            foreach (ChatBot bot in GetLoadedChatBots())
-                await BotUnLoad(bot);
+            foreach (ChatBot bot in chatbots)
+                bot.OnUnload();
+            chatbots = Array.Empty<ChatBot>();
+            registeredBotPluginChannels.Clear();
+            await Task.CompletedTask;
         }
 
         #endregion
@@ -698,14 +698,14 @@ namespace MinecraftClient
         /// <summary>
         /// Load a new bot
         /// </summary>
-        public void BotLoad(ChatBot b, bool init = true)
+        public void BotLoad(ChatBot bot, bool init = true)
         {
-            b.SetHandler(this);
-            bots.Add(b);
+            bot.SetHandler(this);
+            chatbots = new List<ChatBot>(chatbots) { bot }.ToArray();
             if (init)
-                DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
+                bot.Initialize();
             if (handler != null)
-                DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
+                bot.AfterGameJoined();
         }
 
         /// <summary>
@@ -715,7 +715,11 @@ namespace MinecraftClient
         {
             b.OnUnload();
 
-            bots.RemoveAll(item => ReferenceEquals(item, b));
+            List<ChatBot> botList = new();
+            botList.AddRange(from bot in chatbots
+                             where !ReferenceEquals(bot, b)
+                             select bot);
+            chatbots = botList.ToArray();
 
             // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
             var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
@@ -723,14 +727,6 @@ namespace MinecraftClient
             {
                 await UnregisterPluginChannel(entry.Key, b);
             }
-        }
-
-        /// <summary>
-        /// Clear bots
-        /// </summary>
-        public void BotClear()
-        {
-            bots.Clear();
         }
 
         /// <summary>
@@ -2156,18 +2152,8 @@ namespace MinecraftClient
         /// <param name="botList">Only fire the event for the specified bot list (default: all bots)</param>
         private void DispatchBotEvent(Action<ChatBot> action, IEnumerable<ChatBot>? botList = null)
         {
-            ChatBot[] selectedBots;
-
-            if (botList != null)
-            {
-                selectedBots = botList.ToArray();
-            }
-            else
-            {
-                selectedBots = bots.ToArray();
-            }
-
-            foreach (ChatBot bot in selectedBots)
+            botList ??= chatbots;
+            foreach (ChatBot bot in botList)
             {
                 try
                 {
@@ -3000,9 +2986,8 @@ namespace MinecraftClient
         /// <param name="latency">Latency</param>
         public void OnLatencyUpdate(Guid uuid, int latency)
         {
-            if (onlinePlayers.ContainsKey(uuid))
+            if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? player))
             {
-                PlayerInfo player = onlinePlayers[uuid];
                 player.Ping = latency;
                 string playerName = player.Name;
                 foreach (KeyValuePair<int, Entity> ent in entities)
