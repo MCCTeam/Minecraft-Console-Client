@@ -125,7 +125,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x02: await ReadData(1); await ReadNextString(); await ReadNextString(); await ReadData(4); break;
                 case 0x03:
                     string message = await ReadNextString();
-                    handler.OnTextReceived(new ChatMessage(message, protocolversion >= 72, 0, Guid.Empty)); break;
+                    await handler.OnTextReceivedAsync(new ChatMessage(message, protocolversion >= 72, 0, Guid.Empty)); break;
                 case 0x04: await ReadData(16); break;
                 case 0x05: await ReadData(6); await ReadNextItemSlot(); break;
                 case 0x06: await ReadData(12); break;
@@ -196,7 +196,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xC9:
                     string name = await ReadNextString(); bool online = await ReadNextByte() != 0x00; await ReadData(2);
                     Guid FakeUUID = new(MD5.HashData(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                    if (online) { handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID)); } else { handler.OnPlayerLeave(FakeUUID); }
+                    if (online) { await handler.OnPlayerJoinAsync(new PlayerInfo(name, FakeUUID)); } else { await handler.OnPlayerLeaveAsync(FakeUUID); }
                     break;
                 case 0xCA: if (protocolversion >= 72) { await ReadData(9); } else await ReadData(3); break;
                 case 0xCB:

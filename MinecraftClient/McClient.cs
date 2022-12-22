@@ -14,6 +14,7 @@ using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
+using MinecraftClient.EntityHandler;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol;
 using MinecraftClient.Protocol.Handlers.Forge;
@@ -34,15 +35,14 @@ namespace MinecraftClient
         public static int ReconnectionAttemptsLeft = 0;
 
         public static CommandDispatcher<CmdResult> dispatcher = new();
+
         private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
 
-        private static bool commandsLoaded = false;
-
         private readonly ConcurrentQueue<string> chatQueue = new();
-        private static DateTime nextMessageSendTime = DateTime.MinValue;
+        private DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private static readonly object inventoryLock = new();
-        private static readonly Dictionary<int, Container> inventories = new();
+        private readonly object inventoryLock = new();
+        private readonly Dictionary<int, Container> inventories = new();
 
         private readonly List<string> registeredServerPluginChannels = new();
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new();
@@ -53,7 +53,7 @@ namespace MinecraftClient
         private bool inventoryHandlingRequested = false;
         private bool entityHandlingEnabled;
 
-        private readonly object locationLock = new();
+        private static SemaphoreSlim locationLock = new(1, 1);
         private bool locationReceived = false;
         private readonly World world = new();
         private Queue<Location>? steps;
@@ -108,6 +108,15 @@ namespace MinecraftClient
         private bool OldChatBotUpdateTrigger = false;
         private bool networkPacketCaptureEnabled = false;
 
+        // ChatBot Async Events
+        private static int EventTypeCount = typeof(McClientEventType).GetFields().Length;
+        private static SemaphoreSlim EventCallbackWriteLock = new(1, 1);
+        private static Task[][] ChatbotEventTasks = new Task[EventTypeCount][];
+        private static Task[] WaitChatbotExecuteTask = new Task[EventTypeCount];
+        private static SemaphoreSlim[] ChatbotEventTaskLocks = new SemaphoreSlim[EventTypeCount];
+        private static Func<object?, Task>[][] ChatbotEvents = new Func<object?, Task>[EventTypeCount][];
+        private static Dictionary<ChatBot, List<Tuple<McClientEventType, Func<object?, Task>>>> ChatbotRegisteredEvents = new();
+
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
         public string GetUsername() { return username; }
@@ -141,6 +150,12 @@ namespace MinecraftClient
 
         public static void LoadCommandsAndChatbots()
         {
+            for (int i = 0; i < EventTypeCount; ++i)
+            {
+                ChatbotEventTaskLocks[i] = new(1, 1);
+                WaitChatbotExecuteTask[i] = Task.CompletedTask;
+            }
+
             /* Load commands from the 'Commands' namespace */
             Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
             foreach (Type type in cmds_classes)
@@ -153,9 +168,11 @@ namespace MinecraftClient
             }
 
             /* Load ChatBots */
-            botsOnHold = GetBotsToRegister();
+            botsOnHold = GetChatbotsToRegister();
             foreach (ChatBot bot in botsOnHold)
                 bot.Initialize();
+
+            InitializeChatbotEventCallbacks(botsOnHold).Wait();
         }
 
         /// <summary>
@@ -194,6 +211,13 @@ namespace MinecraftClient
             Log.ChatEnabled = Config.Logging.ChatMessages;
             Log.WarnEnabled = Config.Logging.WarningMessages;
             Log.ErrorEnabled = Config.Logging.ErrorMessages;
+
+            ClearInventories();
+
+            chatbots = botsOnHold;
+            botsOnHold = Array.Empty<ChatBot>();
+            foreach (ChatBot bot in chatbots)
+                bot.SetHandler(this);
         }
 
         public async Task Login(HttpClient httpClient, SessionToken session, PlayerKeyPair? playerKeyPair, int protocolversion, ForgeInfo? forgeInfo)
@@ -222,14 +246,8 @@ namespace MinecraftClient
                 {
                     if (await handler.Login(httpClient, this.playerKeyPair, session))
                     {
-                        chatbots = botsOnHold;
-                        botsOnHold = Array.Empty<ChatBot>();
-                        foreach (ChatBot bot in chatbots)
-                        {
-                            bot.SetHandler(this);
-                            bot.AfterGameJoined();
-                        }
-
+                        DispatchBotEvent(bot => bot.AfterGameJoined());
+                        await TriggerEvent(McClientEventType.GameJoin, null);
                         return;
                     }
 
@@ -274,9 +292,9 @@ namespace MinecraftClient
 
             await handler!.StartUpdating();
 
-            ConsoleInteractive.ConsoleReader.StopReadThread();
-            ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
             ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+            ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+            ConsoleInteractive.ConsoleReader.StopReadThread();
 
             ConsoleIO.CancelAutocomplete();
             ConsoleIO.WriteLine(string.Empty);
@@ -285,7 +303,7 @@ namespace MinecraftClient
         /// <summary>
         /// Register bots
         /// </summary>
-        private static ChatBot[] GetBotsToRegister(bool reload = false)
+        private static ChatBot[] GetChatbotsToRegister(bool reload = false)
         {
             List<ChatBot> chatbotList = new();
 
@@ -312,7 +330,8 @@ namespace MinecraftClient
             if (Config.ChatBot.ScriptScheduler.Enabled) { chatbotList.Add(new ScriptScheduler()); }
             if (Config.ChatBot.TelegramBridge.Enabled) { chatbotList.Add(new TelegramBridge()); }
             // Add your ChatBot here by uncommenting and adapting
-            // BotLoad(new ChatBots.YourBot());
+            // chatbotList.Add(new ChatBots.YourBot());
+            chatbotList.Add(new TestBot());
 
             return chatbotList.ToArray();
         }
@@ -351,10 +370,7 @@ namespace MinecraftClient
                     }
                     catch (Exception e)
                     {
-                        if (e is not ThreadAbortException)
-                            Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                        else
-                            throw; //ThreadAbortException should not be caught
+                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                 }
             }
@@ -365,30 +381,29 @@ namespace MinecraftClient
             {
                 for (int i = 0; i < Config.Main.Advanced.MovementSpeed / 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                 {
-                    lock (locationLock)
+                    await locationLock.WaitAsync();
+                    if (_yaw == null || _pitch == null)
                     {
-                        if (_yaw == null || _pitch == null)
+                        if (steps != null && steps.Count > 0)
                         {
-                            if (steps != null && steps.Count > 0)
-                            {
-                                location = steps.Dequeue();
-                            }
-                            else if (path != null && path.Count > 0)
-                            {
-                                Location next = path.Dequeue();
-                                steps = Movement.Move2Steps(location, next, ref motionY);
-
-                                if (Config.Main.Advanced.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
-                                    UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
-                            }
-                            else
-                            {
-                                location = Movement.HandleGravity(world, location, ref motionY);
-                            }
+                            location = steps.Dequeue();
                         }
-                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
-                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
+                        else if (path != null && path.Count > 0)
+                        {
+                            Location next = path.Dequeue();
+                            steps = Movement.Move2Steps(location, next, ref motionY);
+
+                            if (Config.Main.Advanced.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
+                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+                        }
+                        else
+                        {
+                            location = Movement.HandleGravity(world, location, ref motionY);
+                        }
                     }
+                    playerYaw = _yaw == null ? playerYaw : _yaw.Value;
+                    playerPitch = _pitch == null ? playerPitch : _pitch.Value;
+                    locationLock.Release();
                     await handler!.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
                 }
                 // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
@@ -400,8 +415,10 @@ namespace MinecraftClient
             if (Config.Main.Advanced.AutoRespawn && respawnTicks > 0)
             {
                 if (--respawnTicks == 0)
-                    await SendRespawnPacket();
+                    await SendRespawnPacketAsync();
             }
+
+            await TriggerEvent(McClientEventType.ClientTick, null);
         }
 
         #region Connection Lost and Disconnect from Server
@@ -445,7 +462,19 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
+            for (int i = 0; i < EventTypeCount; ++i)
+            {
+                ChatbotEventTaskLocks[i].Wait();
+                WaitChatbotExecuteTask[i].Wait();
+                ChatbotEventTaskLocks[i].Release();
+            }
+
             DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, string.Empty));
+
+            TriggerEvent(McClientEventType.ClientDisconnect,
+                new Tuple<ChatBot.DisconnectReason, string>(ChatBot.DisconnectReason.UserLogout, string.Empty)).Wait();
+
+            WaitChatbotExecuteTask[(int)McClientEventType.ClientDisconnect].Wait();
 
             botsOnHold = chatbots;
             chatbots = Array.Empty<ChatBot>();
@@ -518,16 +547,149 @@ namespace MinecraftClient
 
         #endregion
 
+        #region ChatBot event callback
+
+        private async Task TriggerEvent(McClientEventType eventType, object? parameter)
+        {
+            int eventId = (int)eventType;
+            Func<object?, Task>[] eventList = ChatbotEvents[eventId];
+            if (eventList.Length > 0)
+            {
+                await ChatbotEventTaskLocks[eventId].WaitAsync();
+                await WaitChatbotExecuteTask[eventId];
+                for (int i = 0; i < eventList.Length; ++i)
+                    ChatbotEventTasks[eventId][i] = eventList[i](parameter);
+                WaitChatbotExecuteTask[eventId] = WaitTaskAndHandleException(eventType);
+                ChatbotEventTaskLocks[eventId].Release();
+            }
+        }
+
+        private async Task WaitTaskAndHandleException(McClientEventType eventType)
+        {
+            Task[] taskList = ChatbotEventTasks[(int)eventType];
+            for (int i = 0; i < taskList.Length; ++i)
+            {
+                try
+                {
+                    await taskList[i];
+                }
+                catch (Exception exception)
+                {
+                    Log.Error(string.Format(Translations.mcc_chatbot_event_exception, eventType.ToString(), exception.ToString()));
+                }
+            }
+        }
+
+        private static async Task InitializeChatbotEventCallbacks(IEnumerable<ChatBot> chatbotList)
+        {
+            List<Func<object?, Task>>[] tmpCallbackList = new List<Func<object?, Task>>[EventTypeCount];
+            for (int i = 0; i < EventTypeCount; ++i)
+                tmpCallbackList[i] = new();
+
+            foreach (ChatBot bot in chatbotList)
+            {
+                Tuple<McClientEventType, Func<object?, Task>>[]? botEvents = bot.InitializeEventCallbacks();
+                if (botEvents != null)
+                {
+                    ChatbotRegisteredEvents[bot] = new(botEvents);
+                    foreach ((McClientEventType eventType, Func<object?, Task> callback) in botEvents)
+                        tmpCallbackList[(int)eventType].Add(callback);
+                }
+                else
+                {
+                    ChatbotRegisteredEvents[bot] = new();
+                }
+            }
+
+            await EventCallbackWriteLock.WaitAsync();
+            for (int i = 0; i < EventTypeCount; ++i)
+            {
+                ChatbotEvents[i] = tmpCallbackList[i].ToArray();
+                await UpdateChatbotEventTasksArray(i);
+            }
+            EventCallbackWriteLock.Release();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bot"></param>
+        /// <param name="eventType"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public static async Task RegisterEventCallback(ChatBot bot, McClientEventType eventType, Func<object?, Task> callback)
+        {
+            int eventId = (int)eventType;
+            await EventCallbackWriteLock.WaitAsync();
+
+            ChatbotEvents[eventId] = new List<Func<object?, Task>>(ChatbotEvents[eventId]) { callback }.ToArray();
+            if (ChatbotRegisteredEvents.TryGetValue(bot, out var botEvents))
+                botEvents.Add(new(eventType, callback));
+            else
+                ChatbotRegisteredEvents[bot] = new() { new(eventType, callback) };
+            await UpdateChatbotEventTasksArray(eventId);
+            EventCallbackWriteLock.Release();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bot"></param>
+        /// <param name="eventType"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public static async Task UnregisterEventCallback(ChatBot bot, McClientEventType eventType, Func<object?, Task> callback)
+        {
+            int eventId = (int)eventType;
+            await EventCallbackWriteLock.WaitAsync();
+
+            List<Func<object?, Task>> newList = new(ChatbotEvents[eventId]);
+            newList.RemoveAll(c => c == callback);
+            ChatbotEvents[eventId] = newList.ToArray();
+            if (ChatbotRegisteredEvents.TryGetValue(bot, out var botEvents))
+                botEvents.RemoveAll(c => c.Item1 == eventType && c.Item2 == callback);
+            await UpdateChatbotEventTasksArray(eventId);
+            EventCallbackWriteLock.Release();
+        }
+
+        public static async Task UnregisterChatbotEventCallback(ChatBot bot)
+        {
+            await EventCallbackWriteLock.WaitAsync();
+            if (ChatbotRegisteredEvents.TryGetValue(bot, out var botEvents))
+            {
+                foreach ((McClientEventType eventType, Func<object?, Task> callback) in botEvents)
+                {
+                    int eventId = (int)eventType;
+                    List<Func<object?, Task>> newList = new(ChatbotEvents[eventId]);
+                    newList.RemoveAll(c => c == callback);
+                    ChatbotEvents[eventId] = newList.ToArray();
+                    await UpdateChatbotEventTasksArray(eventId);
+                }
+                ChatbotRegisteredEvents.Remove(bot);
+            }
+            EventCallbackWriteLock.Release();
+        }
+
+        private static async Task UpdateChatbotEventTasksArray(int eventId)
+        {
+            await ChatbotEventTaskLocks[eventId].WaitAsync();
+            await WaitChatbotExecuteTask[eventId];
+            ChatbotEventTasks[eventId] = new Task[ChatbotEvents[eventId].Length];
+            ChatbotEventTaskLocks[eventId].Release();
+        }
+
+        #endregion
+
         #region Command prompt and internal MCC commands
 
-        private void ConsoleReaderOnMessageReceived(object? sender, string e)
+        private void ConsoleReaderOnMessageReceived(object? sender, string text)
         {
 
             if (tcpClient!.Client == null)
                 return;
 
             if (tcpClient.Client.Connected)
-                Task.Run(async () => { await HandleCommandPromptText(e); });
+                Task.Run(async () => { await HandleCommandPromptText(text); });
             else
                 return;
         }
@@ -560,14 +722,14 @@ namespace MinecraftClient
                     && Config.Main.Advanced.InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
                     && text[0] == '/')
                 {
-                    await SendText(text);
+                    await SendTextAsync(text);
                 }
                 else if (text.Length > 2
                     && Config.Main.Advanced.InternalCmdChar != MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
                     && text[0] == Config.Main.Advanced.InternalCmdChar.ToChar()
                     && text[1] == '/')
                 {
-                    await SendText(text[1..]);
+                    await SendTextAsync(text[1..]);
                 }
                 else if (text.Length > 0)
                 {
@@ -578,7 +740,7 @@ namespace MinecraftClient
                         string command = Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' ? text : text[1..];
                         if (!PerformInternalCommand(Config.AppVar.ExpandVars(command), ref result, Settings.Config.AppVar.GetVariables()) && Config.Main.Advanced.InternalCmdChar.ToChar() == '/')
                         {
-                            await SendText(text);
+                            await SendTextAsync(text);
                         }
                         else if (result.status != CmdResult.Status.NotRun && (result.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(result.result)))
                         {
@@ -587,7 +749,7 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        await SendText(text);
+                        await SendTextAsync(text);
                     }
                 }
             }
@@ -668,14 +830,20 @@ namespace MinecraftClient
         {
             await UnloadAllBots();
 
-            ChatBot[] bots = GetBotsToRegister(true);
+            ChatBot[] bots = GetChatbotsToRegister(true);
+
             foreach (ChatBot bot in bots)
             {
                 bot.SetHandler(this);
                 bot.Initialize();
-                if (handler != null)
-                    bot.AfterGameJoined();
             }
+
+            await InitializeChatbotEventCallbacks(bots);
+
+            if (handler != null)
+                foreach (ChatBot bot in bots)
+                    bot.AfterGameJoined();
+
             chatbots = bots;
         }
 
@@ -688,6 +856,11 @@ namespace MinecraftClient
                 bot.OnUnload();
             chatbots = Array.Empty<ChatBot>();
             registeredBotPluginChannels.Clear();
+
+            for (int i = 0; i < ChatbotEvents.Length; ++i)
+                ChatbotEvents[i] = Array.Empty<Func<object?, Task>>();
+            ChatbotRegisteredEvents.Clear();
+
             await Task.CompletedTask;
         }
 
@@ -698,12 +871,15 @@ namespace MinecraftClient
         /// <summary>
         /// Load a new bot
         /// </summary>
-        public void BotLoad(ChatBot bot, bool init = true)
+        public async Task BotLoad(ChatBot bot, bool init = true)
         {
             bot.SetHandler(this);
             chatbots = new List<ChatBot>(chatbots) { bot }.ToArray();
             if (init)
+            {
                 bot.Initialize();
+                await InitializeChatbotEventCallbacks(new ChatBot[] { bot });
+            }
             if (handler != null)
                 bot.AfterGameJoined();
         }
@@ -711,21 +887,22 @@ namespace MinecraftClient
         /// <summary>
         /// Unload a bot
         /// </summary>
-        public async Task BotUnLoad(ChatBot b)
+        public async Task BotUnLoad(ChatBot bot)
         {
-            b.OnUnload();
-
             List<ChatBot> botList = new();
-            botList.AddRange(from bot in chatbots
-                             where !ReferenceEquals(bot, b)
-                             select bot);
+            botList.AddRange(from botInList in chatbots
+                             where !ReferenceEquals(botInList, bot)
+                             select botInList);
             chatbots = botList.ToArray();
 
+            bot.OnUnload();
+            await UnregisterChatbotEventCallback(bot);
+
             // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
-            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
+            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(bot)).ToList();
             foreach (var entry in botRegistrations)
             {
-                await UnregisterPluginChannel(entry.Key, b);
+                await UnregisterPluginChannelAsync(entry.Key, bot);
             }
         }
 
@@ -992,23 +1169,25 @@ namespace MinecraftClient
         /// <param name="timeout">How long to wait until the path is evaluated (default: 5 seconds)</param>
         /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location goal, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
+        public async Task<bool> MoveToAsync(Location goal, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
         {
-            lock (locationLock)
+            if (handler == null)
+                return false;
+
+            if (allowDirectTeleport)
             {
-                if (allowDirectTeleport)
-                {
-                    // 1-step path to the desired location without checking anything
-                    UpdateLocation(goal, goal); // Update yaw and pitch to look at next step
-                    handler!.SendLocationUpdate(goal, Movement.IsOnGround(world, goal), _yaw, _pitch);
-                    return true;
-                }
-                else
-                {
-                    // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
-                    path = Movement.CalculatePath(world, location, goal, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
-                    return path != null;
-                }
+                await locationLock.WaitAsync();
+                // 1-step path to the desired location without checking anything
+                UpdateLocation(goal, goal); // Update yaw and pitch to look at next step
+                await handler.SendLocationUpdate(goal, Movement.IsOnGround(world, goal), _yaw, _pitch);
+                locationLock.Release();
+                return true;
+            }
+            else
+            {
+                // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
+                path = await Movement.CalculatePath(world, location, goal, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
+                return path != null;
             }
         }
 
@@ -1016,8 +1195,11 @@ namespace MinecraftClient
         /// Send a chat message or command to the server
         /// </summary>
         /// <param name="text">Text to send to the server</param>
-        public async Task SendText(string text)
+        public async Task SendTextAsync(string text)
         {
+            if (handler == null)
+                return;
+
             if (string.IsNullOrEmpty(text))
                 return;
 
@@ -1039,11 +1221,14 @@ namespace MinecraftClient
                         chatQueue.Enqueue(text[..maxLength]);
                         text = text[maxLength..];
                     }
-                    chatQueue.Enqueue(text);
+                    if (!string.IsNullOrEmpty(text))
+                        chatQueue.Enqueue(text);
                 }
             }
             else
+            {
                 chatQueue.Enqueue(text);
+            }
 
             await TrySendMessageToServer();
         }
@@ -1052,9 +1237,11 @@ namespace MinecraftClient
         /// Allow to respawn after death
         /// </summary>
         /// <returns>True if packet successfully sent</returns>
-        public async Task<bool> SendRespawnPacket()
+        public async Task<bool> SendRespawnPacketAsync()
         {
-            return await handler!.SendRespawnPacket();
+            if (handler == null)
+                return false;
+            return await handler.SendRespawnPacket();
         }
 
         /// <summary>
@@ -1062,7 +1249,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="channel">The channel to register.</param>
         /// <param name="bot">The bot to register the channel for.</param>
-        public async Task RegisterPluginChannel(string channel, ChatBot bot)
+        public async Task RegisterPluginChannelAsync(string channel, ChatBot bot)
         {
             if (registeredBotPluginChannels.TryGetValue(channel, out List<ChatBot>? channelList))
             {
@@ -1070,12 +1257,9 @@ namespace MinecraftClient
             }
             else
             {
-                List<ChatBot> bots = new()
-                {
-                    bot
-                };
+                List<ChatBot> bots = new() { bot };
                 registeredBotPluginChannels[channel] = bots;
-                await SendPluginChannelMessage("REGISTER", Encoding.UTF8.GetBytes(channel), true);
+                await SendPluginChannelMessageAsync("REGISTER", Encoding.UTF8.GetBytes(channel), true);
             }
         }
 
@@ -1084,7 +1268,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="channel">The channel to unregister.</param>
         /// <param name="bot">The bot to unregister the channel for.</param>
-        public async Task UnregisterPluginChannel(string channel, ChatBot bot)
+        public async Task UnregisterPluginChannelAsync(string channel, ChatBot bot)
         {
             if (registeredBotPluginChannels.TryGetValue(channel, out List<ChatBot>? channelList))
             {
@@ -1093,7 +1277,7 @@ namespace MinecraftClient
                 if (registeredBots.Count == 0)
                 {
                     registeredBotPluginChannels.Remove(channel);
-                    await SendPluginChannelMessage("UNREGISTER", Encoding.UTF8.GetBytes(channel), true);
+                    await SendPluginChannelMessageAsync("UNREGISTER", Encoding.UTF8.GetBytes(channel), true);
                 }
             }
         }
@@ -1106,8 +1290,11 @@ namespace MinecraftClient
         /// <param name="data">The payload for the packet.</param>
         /// <param name="sendEvenIfNotRegistered">Whether the packet should be sent even if the server or the client hasn't registered it yet.</param>
         /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
-        public async Task<bool> SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false)
+        public async Task<bool> SendPluginChannelMessageAsync(string channel, byte[] data, bool sendEvenIfNotRegistered = false)
         {
+            if (handler == null)
+                return false;
+
             if (!sendEvenIfNotRegistered)
             {
                 if (!registeredBotPluginChannels.ContainsKey(channel))
@@ -1119,34 +1306,40 @@ namespace MinecraftClient
                     return false;
                 }
             }
-            return await handler!.SendPluginChannelPacket(channel, data);
+            return await handler.SendPluginChannelPacket(channel, data);
         }
 
         /// <summary>
         /// Send the Entity Action packet with the Specified ID
         /// </summary>
         /// <returns>TRUE if the item was successfully used</returns>
-        public async Task<bool> SendEntityAction(EntityActionType entityAction)
+        public async Task<bool> SendEntityActionAsync(EntityActionType entityAction)
         {
-            return await handler!.SendEntityAction(playerEntityID, (int)entityAction);
+            if (handler == null)
+                return false;
+            return await handler.SendEntityAction(playerEntityID, (int)entityAction);
         }
 
         /// <summary>
         /// Use the item currently in the player's hand
         /// </summary>
         /// <returns>TRUE if the item was successfully used</returns>
-        public async Task<bool> UseItemOnHand()
+        public async Task<bool> UseItemOnHandAsync()
         {
-            return await handler!.SendUseItem(0, sequenceId);
+            if (handler == null)
+                return false;
+            return await handler.SendUseItem(0, sequenceId);
         }
 
         /// <summary>
         /// Use the item currently in the player's left hand
         /// </summary>
         /// <returns>TRUE if the item was successfully used</returns>
-        public async Task<bool> UseItemOnLeftHand()
+        public async Task<bool> UseItemOnOffHandAsync()
         {
-            return await handler!.SendUseItem(1, sequenceId);
+            if (handler == null)
+                return false;
+            return await handler.SendUseItem(1, sequenceId);
         }
 
         /// <summary>
@@ -1210,8 +1403,11 @@ namespace MinecraftClient
         /// Click a slot in the specified window
         /// </summary>
         /// <returns>TRUE if the slot was successfully clicked</returns>
-        public async Task<bool> DoWindowAction(int windowId, int slotId, WindowActionType action)
+        public async Task<bool> DoWindowActionAsync(int windowId, int slotId, WindowActionType action)
         {
+            if (handler == null)
+                return false;
+
             Item? item = null;
             List<Tuple<short, Item?>> changedSlots = new(); // List<Slot ID, Changed Items>
             lock (inventoryLock)
@@ -1941,9 +2137,11 @@ namespace MinecraftClient
         /// <param name="count">Item count</param>
         /// <param name="nbt">Item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        public async Task<bool> DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt = null)
+        public async Task<bool> DoCreativeGiveAsync(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt = null)
         {
-            return await handler!.SendCreativeInventoryAction(slot, itemType, count, nbt);
+            if (handler == null)
+                return false;
+            return await handler.SendCreativeInventoryAction(slot, itemType, count, nbt);
         }
 
         /// <summary>
@@ -1951,9 +2149,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="animation">0 for left arm, 1 for right arm</param>
         /// <returns>TRUE if animation successfully done</returns>
-        public async Task<bool> DoAnimation(int animation)
+        public async Task<bool> DoAnimationAsync(int animation)
         {
-            return await handler!.SendAnimation(animation, playerEntityID);
+            if (handler == null)
+                return false;
+            return await handler.SendAnimation(animation, playerEntityID);
         }
 
         /// <summary>
@@ -1962,8 +2162,11 @@ namespace MinecraftClient
         /// <param name="windowId">Window ID</param>
         /// <returns>TRUE if the window was successfully closed</returns>
         /// <remarks>Sending close window for inventory 0 can cause server to update our inventory if there are any item in the crafting area</remarks>
-        public async Task<bool> CloseInventory(int windowId)
+        public async Task<bool> CloseInventoryAsync(int windowId)
         {
+            if (handler == null)
+                return false;
+
             bool needCloseWindow = false;
             lock (inventoryLock)
             {
@@ -1975,7 +2178,7 @@ namespace MinecraftClient
                 }
             }
             if (needCloseWindow)
-                return await handler!.SendCloseWindow(windowId);
+                return await handler.SendCloseWindow(windowId);
             else
                 return false;
         }
@@ -1992,7 +2195,7 @@ namespace MinecraftClient
             lock (inventoryLock)
             {
                 inventories.Clear();
-                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, Translations.cmd_inventory_player_inventory);
             }
             return true;
         }
@@ -2004,17 +2207,20 @@ namespace MinecraftClient
         /// <param name="type">Type of interaction (interact, attack...)</param>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE if interaction succeeded</returns>
-        public async Task<bool> InteractEntity(int entityID, InteractType type, Hand hand = Hand.MainHand)
+        public async Task<bool> InteractEntityAsync(int entityID, InteractType type, Hand hand = Hand.MainHand)
         {
+            if (handler == null)
+                return false;
+
             if (entities.ContainsKey(entityID))
             {
                 if (type == InteractType.Interact)
                 {
-                    return await handler!.SendInteractEntity(entityID, (int)type, (int)hand);
+                    return await handler.SendInteractEntity(entityID, (int)type, (int)hand);
                 }
                 else
                 {
-                    return await handler!.SendInteractEntity(entityID, (int)type);
+                    return await handler.SendInteractEntity(entityID, (int)type);
                 }
             }
             else return false;
@@ -2026,9 +2232,11 @@ namespace MinecraftClient
         /// <param name="location">Location to place block to</param>
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
         /// <returns>TRUE if successfully placed</returns>
-        public async Task<bool> PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
+        public async Task<bool> PlaceBlockAsync(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return await handler!.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId);
+            if (handler == null)
+                return false;
+            return await handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId);
         }
 
         /// <summary>
@@ -2037,8 +2245,11 @@ namespace MinecraftClient
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        public async Task<bool> DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
+        public async Task<bool> DigBlockAsync(Location location, bool swingArms = true, bool lookAtBlock = true)
         {
+            if (handler == null)
+                return false;
+
             if (!GetTerrainEnabled())
                 return false;
 
@@ -2051,9 +2262,9 @@ namespace MinecraftClient
 
             // Send dig start and dig end, will need to wait for server response to know dig result
             // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
-            return (await handler!.SendPlayerDigging(0, location, blockFace, sequenceId))
-                && (!swingArms || await DoAnimation((int)Hand.MainHand))
-                && await handler!.SendPlayerDigging(2, location, blockFace, sequenceId);
+            return (await handler.SendPlayerDigging(0, location, blockFace, sequenceId))
+                && (!swingArms || await DoAnimationAsync((int)Hand.MainHand))
+                && await handler.SendPlayerDigging(2, location, blockFace, sequenceId);
         }
 
         /// <summary>
@@ -2061,13 +2272,16 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="slot">Slot to activate (0 to 8)</param>
         /// <returns>TRUE if the slot was changed</returns>
-        public async Task<bool> ChangeSlot(short slot)
+        public async Task<bool> ChangeSlotAsync(short slot)
         {
+            if (handler == null)
+                return false;
+
             if (slot < 0 || slot > 8)
                 return false;
 
             CurrentSlot = Convert.ToByte(slot);
-            return await handler!.SendHeldItemChange(slot);
+            return await handler.SendHeldItemChange(slot);
         }
 
         /// <summary>
@@ -2078,19 +2292,23 @@ namespace MinecraftClient
         /// <param name="line2">text two</param>
         /// <param name="line3">text three</param>
         /// <param name="line4">text1 four</param>
-        public async Task<bool> UpdateSign(Location location, string line1, string line2, string line3, string line4)
+        public async Task<bool> UpdateSignAsync(Location location, string line1, string line2, string line3, string line4)
         {
+            if (handler == null)
+                return false;
             // TODO Open sign editor first https://wiki.vg/Protocol#Open_Sign_Editor
-            return await handler!.SendUpdateSign(location, line1, line2, line3, line4);
+            return await handler.SendUpdateSign(location, line1, line2, line3, line4);
         }
 
         /// <summary>
         /// Select villager trade
         /// </summary>
         /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
-        public async Task<bool> SelectTrade(int selectedSlot)
+        public async Task<bool> SelectTradeAsync(int selectedSlot)
         {
-            return await handler!.SelectTrade(selectedSlot);
+            if (handler == null)
+                return false;
+            return await handler.SelectTrade(selectedSlot);
         }
 
         /// <summary>
@@ -2100,9 +2318,11 @@ namespace MinecraftClient
         /// <param name="command">command</param>
         /// <param name="mode">command block mode</param>
         /// <param name="flags">command block flags</param>
-        public async Task<bool> UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
+        public async Task<bool> UpdateCommandBlockAsync(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
-            return await handler!.UpdateCommandBlock(location, command, mode, flags);
+            if (handler == null)
+                return false;
+            return await handler.UpdateCommandBlock(location, command, mode, flags);
         }
 
         /// <summary>
@@ -2110,11 +2330,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="entity">Player to teleport to</param>
         /// Teleporting to other entityies is NOT implemented yet
-        public async Task<bool> Spectate(Entity entity)
+        public async Task<bool> SpectateAsync(Entity entity)
         {
             if (entity.Type == EntityType.Player)
             {
-                return await SpectateByUUID(entity.UUID);
+                return await SpectateByUuidAsync(entity.UUID);
             }
             else
             {
@@ -2126,11 +2346,14 @@ namespace MinecraftClient
         /// Teleport to player/entity in spectator mode
         /// </summary>
         /// <param name="UUID">UUID of player/entity to teleport to</param>
-        public async Task<bool> SpectateByUUID(Guid UUID)
+        public async Task<bool> SpectateByUuidAsync(Guid UUID)
         {
+            if (handler == null)
+                return false;
+
             if (GetGamemode() == 3)
             {
-                return await handler!.SendSpectate(UUID);
+                return await handler.SendSpectate(UUID);
             }
             else
             {
@@ -2186,22 +2409,30 @@ namespace MinecraftClient
         /// <param name="packetData">A copy of Packet Data</param>
         /// <param name="isLogin">The packet is login phase or playing phase</param>
         /// <param name="isInbound">The packet is received from server or sent by client</param>
-        public void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
+        public async Task OnNetworkPacketAsync(int packetID, byte[] packetData, bool isLogin, bool isInbound)
         {
-            DispatchBotEvent(bot => bot.OnNetworkPacket(packetID, packetData, isLogin, isInbound));
+            if (networkPacketCaptureEnabled)
+            {
+                await TriggerEvent(McClientEventType.NetworkPacket,
+                    new Tuple<int, byte[], bool, bool>(packetID, packetData, isLogin, isInbound));
+                DispatchBotEvent(bot => bot.OnNetworkPacket(packetID, new(packetData), isLogin, isInbound));
+            }
         }
 
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-        public async Task OnGameJoined()
+        public async Task OnGameJoinedAsync()
         {
+            if (handler == null)
+                return;
+
             string? bandString = Config.Main.Advanced.BrandInfo.ToBrandString();
-            if (!String.IsNullOrWhiteSpace(bandString))
-                await handler!.SendBrandInfo(bandString.Trim());
+            if (!string.IsNullOrWhiteSpace(bandString))
+                await handler.SendBrandInfo(bandString.Trim());
 
             if (Config.MCSettings.Enabled)
-                await handler!.SendClientSettings(
+                await handler.SendClientSettings(
                     Config.MCSettings.Locale,
                     Config.MCSettings.RenderDistance,
                     (byte)Config.MCSettings.Difficulty,
@@ -2218,8 +2449,7 @@ namespace MinecraftClient
                 Log.Info(Translations.extra_inventory_enabled);
             }
 
-            ClearInventories();
-
+            await TriggerEvent(McClientEventType.GameJoin, null);
             DispatchBotEvent(bot => bot.AfterGameJoined());
 
             await ConsoleIO.InitCommandList(dispatcher);
@@ -2228,7 +2458,7 @@ namespace MinecraftClient
         /// <summary>
         /// Called when the player respawns, which happens on login, respawn and world change.
         /// </summary>
-        public void OnRespawn()
+        public async Task OnRespawnAsync()
         {
             if (terrainAndMovementsRequested)
             {
@@ -2244,6 +2474,8 @@ namespace MinecraftClient
 
             entities.Clear();
             ClearInventories();
+
+            await TriggerEvent(McClientEventType.Respawn, null);
             DispatchBotEvent(bot => bot.OnRespawn());
         }
 
@@ -2262,7 +2494,7 @@ namespace MinecraftClient
         /// <returns>Current goal of movement. Location.Zero if not set.</returns>
         public Location GetCurrentMovementGoal()
         {
-            return (ClientIsMoving() || path == null) ? Location.Zero : path.Last();
+            return (!ClientIsMoving() || path == null) ? Location.Zero : path.Last();
         }
 
         /// <summary>
@@ -2305,17 +2537,10 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">The new location</param>
         /// <param name="relative">If true, the location is relative to the current location</param>
-        public void UpdateLocation(Location location, bool relative)
+        public void UpdateLocation(Location location)
         {
-            lock (locationLock)
-            {
-                if (relative)
-                {
-                    this.location += location;
-                }
-                else this.location = location;
-                locationReceived = true;
-            }
+            this.location = location;
+            locationReceived = true;
         }
 
         /// <summary>
@@ -2329,7 +2554,7 @@ namespace MinecraftClient
         {
             _yaw = yaw;
             _pitch = pitch;
-            UpdateLocation(location, false);
+            UpdateLocation(location);
         }
 
         /// <summary>
@@ -2394,7 +2619,7 @@ namespace MinecraftClient
         /// Received chat/system message from the server
         /// </summary>
         /// <param name="message">Message received</param>
-        public void OnTextReceived(ChatMessage message)
+        public async Task OnTextReceivedAsync(ChatMessage message)
         {
             UpdateKeepAlive();
 
@@ -2421,6 +2646,8 @@ namespace MinecraftClient
                 foreach (string link in links)
                     Log.Chat(string.Format(Translations.mcc_link, link));
 
+            await TriggerEvent(McClientEventType.TextReceive,
+                new Tuple<string, string>(messageText, message.content));
             DispatchBotEvent(bot => bot.GetText(messageText));
             DispatchBotEvent(bot => bot.GetText(messageText, message.content));
         }
@@ -2438,7 +2665,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="inventory">The inventory</param>
         /// <param name="inventoryID">Inventory ID</param>
-        public void OnInventoryOpen(int inventoryID, Container inventory)
+        public async Task OnInventoryOpenAsync(int inventoryID, Container inventory)
         {
             inventories[inventoryID] = inventory;
 
@@ -2446,6 +2673,8 @@ namespace MinecraftClient
             {
                 Log.Info(string.Format(Translations.extra_inventory_open, inventoryID, inventory.Title));
                 Log.Info(Translations.extra_inventory_interact);
+
+                await TriggerEvent(McClientEventType.InventoryOpen, inventoryID);
                 DispatchBotEvent(bot => bot.OnInventoryOpen(inventoryID));
             }
         }
@@ -2454,22 +2683,21 @@ namespace MinecraftClient
         /// When an inventory is close
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
-        public void OnInventoryClose(int inventoryID)
+        public async Task OnInventoryCloseAsync(int inventoryID)
         {
             lock (inventoryLock)
             {
-                if (inventories.ContainsKey(inventoryID))
-                {
-                    if (inventoryID == 0)
-                        inventories[0].Items.Clear(); // Don't delete player inventory
-                    else
-                        inventories.Remove(inventoryID);
-                }
+                if (inventoryID == 0)
+                    inventories[0].Items.Clear(); // Don't delete player inventory
+                else
+                    inventories.Remove(inventoryID);
             }
 
             if (inventoryID != 0)
             {
                 Log.Info(string.Format(Translations.extra_inventory_close, inventoryID));
+
+                await TriggerEvent(McClientEventType.InventoryClose, inventoryID);
                 DispatchBotEvent(bot => bot.OnInventoryClose(inventoryID));
             }
         }
@@ -2482,7 +2710,7 @@ namespace MinecraftClient
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="propertyId">Property ID</param>
         /// <param name="propertyValue">Property Value</param>
-        public void OnWindowProperties(byte inventoryID, short propertyId, short propertyValue)
+        public async Task OnWindowPropertiesAsync(byte inventoryID, short propertyId, short propertyValue)
         {
             if (!inventories.TryGetValue(inventoryID, out Container? inventory))
                 return;
@@ -2491,6 +2719,8 @@ namespace MinecraftClient
 
             inventory.Properties.Add(propertyId, propertyValue);
 
+            await TriggerEvent(McClientEventType.InventoryProperties,
+                new Tuple<int, int, int>(inventoryID, propertyId, propertyValue));
             DispatchBotEvent(bot => bot.OnInventoryProperties(inventoryID, propertyId, propertyValue));
 
             if (inventory.Type == ContainerType.Enchantment)
@@ -2557,6 +2787,8 @@ namespace MinecraftClient
                     };
 
 
+                    await TriggerEvent(McClientEventType.Enchantments, lastEnchantment);
+
                     DispatchBotEvent(bot => bot.OnEnchantments(
                         // Enchantments
                         topEnchantment,
@@ -2583,12 +2815,13 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
-        public void OnWindowItems(byte inventoryID, Dictionary<int, Item> itemList, int stateId)
+        public async Task OnWindowItemsAsync(byte inventoryID, Dictionary<int, Item> itemList, int stateId)
         {
             if (inventories.TryGetValue(inventoryID, out Container? container))
             {
                 container.Items = itemList;
                 container.StateID = stateId;
+                await TriggerEvent(McClientEventType.InventoryUpdate, inventoryID);
                 DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
             }
         }
@@ -2599,7 +2832,7 @@ namespace MinecraftClient
         /// <param name="inventoryID">Window ID</param>
         /// <param name="slotID">Slot ID</param>
         /// <param name="item">Item (may be null for empty slot)</param>
-        public void OnSetSlot(byte inventoryID, short slotID, Item? item, int stateId)
+        public async Task OnSetSlotAsync(byte inventoryID, short slotID, Item? item, int stateId)
         {
             lock (inventoryLock)
             {
@@ -2632,6 +2865,7 @@ namespace MinecraftClient
                     }
                 }
             }
+            await TriggerEvent(McClientEventType.InventoryUpdate, inventoryID);
             DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
         }
 
@@ -2648,7 +2882,7 @@ namespace MinecraftClient
         /// Triggered when a new player joins the game
         /// </summary>
         /// <param name="player">player info</param>
-        public void OnPlayerJoin(PlayerInfo player)
+        public async Task OnPlayerJoinAsync(PlayerInfo player)
         {
             //Ignore placeholders eg 0000tab# from TabListPlus
             if (!ChatBot.IsValidName(player.Name))
@@ -2666,6 +2900,7 @@ namespace MinecraftClient
                 onlinePlayers[player.Uuid] = player;
             }
 
+            await TriggerEvent(McClientEventType.PlayerJoin, player);
             DispatchBotEvent(bot => bot.OnPlayerJoin(player.Uuid, player.Name));
         }
 
@@ -2673,19 +2908,18 @@ namespace MinecraftClient
         /// Triggered when a player has left the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
-        public void OnPlayerLeave(Guid uuid)
+        public async Task OnPlayerLeaveAsync(Guid uuid)
         {
-            string? username = null;
+            PlayerInfo? playerInfo = null;
 
             lock (onlinePlayers)
             {
-                if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? playerInfo))
-                {
-                    username = playerInfo.Name;
+                if (onlinePlayers.TryGetValue(uuid, out playerInfo))
                     onlinePlayers.Remove(uuid);
-                }
             }
 
+            await TriggerEvent(McClientEventType.PlayerLeave,
+                new Tuple<Guid, PlayerInfo?>(uuid, playerInfo));
             DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, username));
         }
 
@@ -2694,12 +2928,14 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="playerEntity">Victim's entity</param>
         /// <param name="killerEntity">Killer's entity</param>
-        public void OnPlayerKilled(int killerEntityId, string chatMessage)
+        public async Task OnPlayerKilledAsync(int killerEntityId, string chatMessage)
         {
-            if (!entities.ContainsKey(killerEntityId))
+            if (!entities.TryGetValue(killerEntityId, out Entity? killer))
                 return;
 
-            DispatchBotEvent(bot => bot.OnKilled(entities[killerEntityId], chatMessage));
+            await TriggerEvent(McClientEventType.PlayerKilled,
+                new Tuple<Entity, string>(killer, chatMessage));
+            DispatchBotEvent(bot => bot.OnKilled(killer, chatMessage));
         }
 
         /// <summary>
@@ -2738,29 +2974,37 @@ namespace MinecraftClient
         /// <summary>
         /// Called when an entity spawned
         /// </summary>
-        public void OnSpawnEntity(Entity entity)
+        public async Task OnSpawnEntity(Entity entity)
         {
             // The entity should not already exist, but if it does, let's consider the previous one is being destroyed
             if (entities.ContainsKey(entity.ID))
-                OnDestroyEntities(new[] { entity.ID });
+                await OnDestroyEntities(new[] { entity.ID });
 
             entities.Add(entity.ID, entity);
+
+            await TriggerEvent(McClientEventType.EntitySpawn, entity);
             DispatchBotEvent(bot => bot.OnEntitySpawn(entity));
         }
 
         /// <summary>
         /// Called when an entity effects
         /// </summary>
-        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<string, object>? factorCodec)
+        public async Task OnEntityEffect(int entityid, Effect effect)
         {
-            if (entities.TryGetValue(entityid, out Entity? entity))
-                DispatchBotEvent(bot => bot.OnEntityEffect(entity, effect, amplifier, duration, flags));
-        }
+            if (!entities.TryGetValue(entityid, out Entity? entity))
+                return;
 
+            await TriggerEvent(McClientEventType.EntityEffect,
+                new Tuple<Entity, Effect>(entity, effect));
+
+            byte flag = (byte)((effect.IsFromBeacon ? 1 : 0) | (effect.ShowParticles ? 2 : 0) | (effect.ShowIcon ? 2 : 0));
+            DispatchBotEvent(bot => bot.OnEntityEffect(entity, effect.Type, effect.EffectLevel - 1, effect.DurationInTick, flag));
+        }
+        
         /// <summary>
         /// Called when a player spawns or enters the client's render distance
         /// </summary>
-        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte yaw, byte pitch)
+        public async Task OnSpawnPlayer(int entityID, Guid uuid, Location location, byte yaw, byte pitch)
         {
             Entity playerEntity;
             if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? player))
@@ -2770,7 +3014,7 @@ namespace MinecraftClient
             }
             else
                 playerEntity = new(entityID, EntityType.Player, location, uuid, null, yaw, pitch);
-            OnSpawnEntity(playerEntity);
+            await OnSpawnEntity(playerEntity);
         }
 
         /// <summary>
@@ -2779,14 +3023,17 @@ namespace MinecraftClient
         /// <param name="entityid"> Entity ID</param>
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2-5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
-        public void OnEntityEquipment(int entityid, int slot, Item? item)
+        public async Task OnEntityEquipment(int entityid, int slot, Item? item)
         {
             if (entities.TryGetValue(entityid, out Entity? entity))
             {
                 entity.Equipment.Remove(slot);
                 if (item != null)
                     entity.Equipment[slot] = item;
-                DispatchBotEvent(bot => bot.OnEntityEquipment(entities[entityid], slot, item));
+
+                await TriggerEvent(McClientEventType.EntityEquipment,
+                    new Tuple<Entity, int, Item?>(entity, slot, item));
+                DispatchBotEvent(bot => bot.OnEntityEquipment(entity, slot, item));
             }
         }
 
@@ -2807,6 +3054,9 @@ namespace MinecraftClient
             {
                 if (playerInfo.Name == username)
                     this.gamemode = gamemode;
+
+                await TriggerEvent(McClientEventType.GamemodeUpdate, 
+                    new Tuple<PlayerInfo, int>(playerInfo, gamemode));
                 DispatchBotEvent(bot => bot.OnGamemodeUpdate(playerInfo.Name, uuid, gamemode));
             }
         }
@@ -2814,12 +3064,13 @@ namespace MinecraftClient
         /// <summary>
         /// Called when entities dead/despawn.
         /// </summary>
-        public void OnDestroyEntities(int[] Entities)
+        public async Task OnDestroyEntities(int[] Entities)
         {
             foreach (int a in Entities)
             {
                 if (entities.TryGetValue(a, out Entity? entity))
                 {
+                    await TriggerEvent(McClientEventType.EntityDespawn, entity);
                     DispatchBotEvent(bot => bot.OnEntityDespawn(entity));
                     entities.Remove(a);
                 }
@@ -2834,13 +3085,15 @@ namespace MinecraftClient
         /// <param name="Dy"></param>
         /// <param name="Dz"></param>
         /// <param name="onGround"></param>
-        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, bool onGround)
+        public async Task OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, bool onGround)
         {
             if (entities.TryGetValue(EntityID, out Entity? entity))
             {
                 entity.Location.X += Dx;
                 entity.Location.Y += Dy;
                 entity.Location.Z += Dz;
+
+                await TriggerEvent(McClientEventType.EntityMove, entity);
                 DispatchBotEvent(bot => bot.OnEntityMove(entity));
             }
         }
@@ -2853,11 +3106,13 @@ namespace MinecraftClient
         /// <param name="Y"></param>
         /// <param name="Z"></param>
         /// <param name="onGround"></param>
-        public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
+        public async Task OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
         {
             if (entities.TryGetValue(EntityID, out Entity? entity))
             {
                 entity.Location = new Location(X, Y, Z);
+
+                await TriggerEvent(McClientEventType.EntityMove, entity);
                 DispatchBotEvent(bot => bot.OnEntityMove(entity));
             }
         }
@@ -2867,10 +3122,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="prop"></param>
-        public void OnEntityProperties(int EntityID, Dictionary<string, Double> prop)
+        public async Task OnEntityProperties(int EntityID, Dictionary<string, double> prop)
         {
             if (EntityID == playerEntityID)
             {
+                await TriggerEvent(McClientEventType.PlayerPropertyReceive, prop);
                 DispatchBotEvent(bot => bot.OnPlayerProperty(prop));
             }
         }
@@ -2880,10 +3136,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="entityID">Entity ID</param>
         /// <param name="status">Status ID</param>
-        public void OnEntityStatus(int entityID, byte status)
+        public async Task OnEntityStatus(int entityID, byte status)
         {
             if (entityID == playerEntityID)
             {
+                await TriggerEvent(McClientEventType.PlayerStatusUpdate, status);
                 DispatchBotEvent(bot => bot.OnPlayerStatus(status));
             }
         }
@@ -2893,7 +3150,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="WorldAge"></param>
         /// <param name="TimeOfDay"></param>
-        public void OnTimeUpdate(long WorldAge, long TimeOfDay)
+        public async Task OnTimeUpdate(long WorldAge, long TimeOfDay)
         {
             // TimeUpdate sent every server tick hence used as timeout detect
             UpdateKeepAlive();
@@ -2902,7 +3159,7 @@ namespace MinecraftClient
             {
                 DateTime currentTime = DateTime.Now;
                 long tickDiff = WorldAge - lastAge;
-                Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
+                double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
                 lastAge = WorldAge;
                 lastTime = currentTime;
                 if (tps <= 20 && tps > 0)
@@ -2918,6 +3175,7 @@ namespace MinecraftClient
                     sampleSum += tps;
                     averageTPS = sampleSum / tpsSamples.Count;
                     serverTPS = tps;
+                    await TriggerEvent(McClientEventType.ServerTpsUpdate, tps);
                     DispatchBotEvent(bot => bot.OnServerTpsUpdate(tps));
                 }
             }
@@ -2926,6 +3184,9 @@ namespace MinecraftClient
                 lastAge = WorldAge;
                 lastTime = DateTime.Now;
             }
+
+            await TriggerEvent(McClientEventType.TimeUpdate,
+                new Tuple<long, long>(WorldAge, TimeOfDay));
             DispatchBotEvent(bot => bot.OnTimeUpdate(WorldAge, TimeOfDay));
         }
 
@@ -2933,10 +3194,14 @@ namespace MinecraftClient
         /// Called when client player's health changed, e.g. getting attack
         /// </summary>
         /// <param name="health">Player current health</param>
-        public void OnUpdateHealth(float health, int food)
+        public async Task OnUpdateHealth(float health, int food)
         {
             playerHealth = health;
             playerFoodSaturation = food;
+
+            await TriggerEvent(McClientEventType.HealthUpdate, 
+                new Tuple<float, int>(health, food));
+            DispatchBotEvent(bot => bot.OnHealthUpdate(health, food));
 
             if (health <= 0)
             {
@@ -2949,10 +3214,10 @@ namespace MinecraftClient
                 {
                     Log.Info(string.Format(Translations.mcc_player_dead, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                 }
+
+                await TriggerEvent(McClientEventType.Death, null);
                 DispatchBotEvent(bot => bot.OnDeath());
             }
-
-            DispatchBotEvent(bot => bot.OnHealthUpdate(health, food));
         }
 
         /// <summary>
@@ -2961,10 +3226,13 @@ namespace MinecraftClient
         /// <param name="Experiencebar">Between 0 and 1</param>
         /// <param name="Level">Level</param>
         /// <param name="TotalExperience">Total Experience</param>
-        public void OnSetExperience(float Experiencebar, int Level, int TotalExperience)
+        public async Task OnSetExperience(float Experiencebar, int Level, int TotalExperience)
         {
             playerLevel = Level;
             playerTotalExperience = TotalExperience;
+
+            await TriggerEvent(McClientEventType.ExperienceChange,
+                new Tuple<float, int, int>(Experiencebar, Level, TotalExperience));
             DispatchBotEvent(bot => bot.OnSetExperience(Experiencebar, Level, TotalExperience));
         }
 
@@ -2974,8 +3242,10 @@ namespace MinecraftClient
         /// <param name="location">Explosion location</param>
         /// <param name="strength">Explosion strength</param>
         /// <param name="affectedBlocks">Amount of affected blocks</param>
-        public void OnExplosion(Location location, float strength, int affectedBlocks)
+        public async Task OnExplosion(Location location, float strength, int affectedBlocks)
         {
+            await TriggerEvent(McClientEventType.Explosion,
+                new Tuple<Location, float, int>(location, strength, affectedBlocks));
             DispatchBotEvent(bot => bot.OnExplosion(location, strength, affectedBlocks));
         }
 
@@ -2984,22 +3254,19 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="uuid">player uuid</param>
         /// <param name="latency">Latency</param>
-        public void OnLatencyUpdate(Guid uuid, int latency)
+        public async Task OnLatencyUpdate(Guid uuid, int latency)
         {
             if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? player))
             {
                 player.Ping = latency;
+
+                await TriggerEvent(McClientEventType.PlayerLatencyUpdate,
+                    new Tuple<PlayerInfo, int>(player, latency));
+
                 string playerName = player.Name;
-                foreach (KeyValuePair<int, Entity> ent in entities)
-                {
-                    if (ent.Value.UUID == uuid && ent.Value.Name == playerName)
-                    {
-                        ent.Value.Latency = latency;
-                        DispatchBotEvent(bot => bot.OnLatencyUpdate(ent.Value, playerName, uuid, latency));
-                        break;
-                    }
-                }
                 DispatchBotEvent(bot => bot.OnLatencyUpdate(playerName, uuid, latency));
+                if (player.entity != null)
+                    DispatchBotEvent(bot => bot.OnLatencyUpdate(player.entity, playerName, uuid, latency));
             }
         }
 
@@ -3007,9 +3274,11 @@ namespace MinecraftClient
         /// Called when held item change
         /// </summary>
         /// <param name="slot"> item slot</param>
-        public void OnHeldItemChange(byte slot)
+        public async Task OnHeldItemChange(byte slot)
         {
             CurrentSlot = slot;
+
+            await TriggerEvent(McClientEventType.HeldItemChange, slot);
             DispatchBotEvent(bot => bot.OnHeldItemChange(slot));
         }
 
@@ -3027,9 +3296,19 @@ namespace MinecraftClient
         /// <param name="mapCoulmnX">x offset of the westernmost column</param>
         /// <param name="mapRowZ">z offset of the northernmost row</param>
         /// <param name="colors">a byte array of colors on the map</param>
-        public void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapCoulmnZ, byte[]? colors)
+        public async Task OnMapData(MapData mapData)
         {
-            DispatchBotEvent(bot => bot.OnMapData(mapid, scale, trackingPosition, locked, icons, columnsUpdated, rowsUpdated, mapCoulmnX, mapCoulmnZ, colors));
+            await TriggerEvent(McClientEventType.MapDataReceive, mapData);
+            DispatchBotEvent(bot => bot.OnMapData(mapData.MapId,
+                                                  mapData.Scale,
+                                                  mapData.TrackingPosition,
+                                                  mapData.Locked,
+                                                  mapData.Icons,
+                                                  mapData.ColumnsUpdated,
+                                                  mapData.RowsUpdated,
+                                                  mapData.MapCoulmnX,
+                                                  mapData.MapRowZ,
+                                                  mapData.Colors));
         }
 
         /// <summary>
@@ -3042,9 +3321,17 @@ namespace MinecraftClient
         /// <param name="stay"> Stay</param>
         /// <param name="fadeout"> Fade Out</param>
         /// <param name="json"> json text</param>
-        public void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json)
+        public async Task OnTitle(TitlePacket title)
         {
-            DispatchBotEvent(bot => bot.OnTitle(action, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json));
+            await TriggerEvent(McClientEventType.TitleReceive, title);
+            DispatchBotEvent(bot => bot.OnTitle(title.Action,
+                                                title.TitleText,
+                                                title.SubtitleText,
+                                                title.ActionbarText,
+                                                title.FadeIn,
+                                                title.Stay,
+                                                title.FadeOut,
+                                                title.JsonText));
         }
 
         /// <summary>

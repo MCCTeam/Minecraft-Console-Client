@@ -129,7 +129,7 @@ namespace MinecraftClient
             public ChatBotConfig ChatBot
             {
                 get { return ChatBotConfigHealper.Config; }
-                set { ChatBotConfigHealper.Config = value; }
+                set { ChatBotConfigHealper.Config = value; ChatBotConfigHealper.Config.OnSettingUpdate(); }
             }
 
         }
@@ -797,6 +797,9 @@ namespace MinecraftClient
 
                 public void OnSettingUpdate()
                 {
+                    if (General.ConsoleColorMode == ConsoleColorModeType.legacy_4bit)
+                        ConsoleIO.WriteLineFormatted("§8" + Translations.config_legacy_color, true);
+
                     // Reader
                     ConsoleInteractive.ConsoleReader.DisplayUesrInput = General.Display_Input;
 
@@ -806,7 +809,7 @@ namespace MinecraftClient
                     ConsoleInteractive.ConsoleWriter.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
 
                     // Buffer
-                    General.History_Input_Records = 
+                    General.History_Input_Records =
                         ConsoleInteractive.ConsoleBuffer.SetBackreadBufferLimit(General.History_Input_Records);
 
                     // Suggestion
@@ -1252,6 +1255,8 @@ namespace MinecraftClient
             [TomlDoNotInlineObject]
             public class ChatBotConfig
             {
+                public void OnSettingUpdate() { }
+
                 [TomlPrecedingComment("$ChatBot.Alerts$")]
                 public ChatBots.Alerts.Configs Alerts
                 {

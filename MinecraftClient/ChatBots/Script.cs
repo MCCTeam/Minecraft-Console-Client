@@ -130,7 +130,7 @@ namespace MinecraftClient.ChatBots
             //Load the given file from the startup parameters
             if (LookForScript(ref file!))
             {
-                lines = System.IO.File.ReadAllLines(file, Encoding.UTF8);
+                lines = File.ReadAllLines(file, Encoding.UTF8);
                 csharp = file.EndsWith(".cs");
                 thread = null;
 

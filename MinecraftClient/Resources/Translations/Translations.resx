@@ -2040,4 +2040,20 @@ Logging in...</value>
   <data name="config.invaild_login_method" xml:space="preserve">
     <value>[Settings] Only Microsoft accounts support logging in using the browser method.</value>
   </data>
+  <data name="config.invaild_file_extension" xml:space="preserve">
+    <value>Invalid file extension {0} in {1}, requires {2}.</value>
+  </data>
+  <data name="config.file_not_exist" xml:space="preserve">
+    <value>File {0} does not exist.</value>
+  </data>
+  <data name="config.legacy_color" xml:space="preserve">
+    <value>You are using an older color scheme and some colors may not be displayed correctly. It is recommended that you switch to a modern terminal for a better display experience.</value>
+  </data>
+  <data name="cmd.inventory.player_inventory" xml:space="preserve">
+    <value>Player Inventory</value>
+  </data>
+  <data name="mcc.chatbot_event_exception" xml:space="preserve">
+    <value>An exception occurred while processing event {0}:
+{1}</value>
+  </data>
 </root>

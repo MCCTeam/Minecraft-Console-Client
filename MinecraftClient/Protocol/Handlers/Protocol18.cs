@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MinecraftClient.Commands;
 using MinecraftClient.Crypto;
+using MinecraftClient.EntityHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Logger;
@@ -70,6 +71,8 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_18_2_Version = 758;
         internal const int MC_1_19_Version = 759;
         internal const int MC_1_19_2_Version = 760;
+
+        private ulong CurrentTick = 0;
 
         private int autocomplete_transaction_id = 0;
         private readonly Dictionary<int, short> window_actions = new();
@@ -218,6 +221,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 while (await periodicTimer.WaitForNextTickAsync(CancelToken) && !CancelToken.IsCancellationRequested)
                 {
+                    ++CurrentTick;
                     try
                     {
                         await handler.OnUpdate();
@@ -226,7 +230,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         if (Config.Logging.DebugMessages)
                         {
-                            ConsoleIO.WriteLine($"{e.GetType().Name} when ticking: {e.Message}");
+                            ConsoleIO.WriteLine($"{e.GetType().Name} on tick: {e.Message}");
                             if (e.StackTrace != null)
                                 ConsoleIO.WriteLine(e.StackTrace);
                         }
@@ -314,7 +318,7 @@ namespace MinecraftClient.Protocol.Handlers
                             await SendPacket(PacketTypesOut.Pong, packetData);
                             break;
                         case PacketTypesIn.JoinGame:
-                            Task OnGameJoinedTask = handler.OnGameJoined();
+                            Task OnGameJoinedTask = handler.OnGameJoinedAsync();
 
                             int playerEntityID = await dataTypes.ReadNextIntAsync(packetData);
                             handler.OnReceivePlayerEntityID(playerEntityID);
@@ -439,7 +443,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                     senderUUID = Guid.Empty;
 
-                                handler.OnTextReceived(new(message, true, messageType, senderUUID));
+                                await handler.OnTextReceivedAsync(new(message, true, messageType, senderUUID));
                             }
                             else if (protocolVersion == MC_1_19_Version) // 1.19
                             {
@@ -477,7 +481,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
                                 ChatMessage chat = new(signedChat, true, messageType, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult);
-                                handler.OnTextReceived(chat);
+                                await handler.OnTextReceivedAsync(chat);
                             }
                             else // 1.19.1 +
                             {
@@ -554,7 +558,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 ChatMessage chat = new(signedChat, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, headerSignature, verifyResult);
                                 if (isOnlineMode && !chat.LacksSender())
                                     await Acknowledge(chat);
-                                handler.OnTextReceived(chat);
+                                await handler.OnTextReceivedAsync(chat);
                             }
                             break;
                         case PacketTypesIn.CombatEvent:
@@ -567,7 +571,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     await dataTypes.SkipNextVarIntAsync(packetData);
 
-                                    handler.OnPlayerKilled(
+                                    await handler.OnPlayerKilledAsync(
                                         await dataTypes.ReadNextIntAsync(packetData),
                                         ChatParser.ParseText(await dataTypes.ReadNextStringAsync(packetData))
                                     );
@@ -578,7 +582,7 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.DeathCombatEvent:
                             await dataTypes.SkipNextVarIntAsync(packetData);
 
-                            handler.OnPlayerKilled(
+                            await handler.OnPlayerKilledAsync(
                                 await dataTypes.ReadNextIntAsync(packetData),
                                 ChatParser.ParseText(await dataTypes.ReadNextStringAsync(packetData))
                             );
@@ -673,7 +677,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     await dataTypes.SkipNextLocationAsync(packetData);   // Death location
                                 }
                             }
-                            handler.OnRespawn();
+                            await handler.OnRespawnAsync();
                             break;
                         case PacketTypesIn.PlayerPositionAndLook:
                             {
@@ -907,7 +911,21 @@ namespace MinecraftClient.Protocol.Handlers
                                 colors = await dataTypes.ReadNextByteArrayAsync(packetData);
                             }
 
-                            handler.OnMapData(mapid, scale, trackingPosition, locked, icons, columnsUpdated, rowsUpdated, mapCoulmnX, mapRowZ, colors);
+                            MapData mapData = new()
+                            {
+                                MapId = mapid,
+                                Scale = scale,
+                                TrackingPosition = trackingPosition,
+                                Locked = locked,
+                                Icons = icons,
+                                ColumnsUpdated = columnsUpdated,
+                                RowsUpdated = rowsUpdated,
+                                MapCoulmnX = mapCoulmnX,
+                                MapRowZ = mapRowZ,
+                                Colors = colors,
+                            };
+
+                            await handler.OnMapData(mapData);
                             break;
                         case PacketTypesIn.TradeList:
                             if (protocolVersion >= MC_1_14_Version && handler.GetInventoryEnabled())
@@ -985,7 +1003,20 @@ namespace MinecraftClient.Protocol.Handlers
                                         fadeout = await dataTypes.ReadNextIntAsync(packetData);
                                     }
                                 }
-                                handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
+
+                                TitlePacket title = new()
+                                {
+                                    Action = action2,
+                                    TitleText = titletext,
+                                    SubtitleText = subtitletext,
+                                    ActionbarText = actionbartext,
+                                    Stay = stay,
+                                    FadeIn = fadein,
+                                    FadeOut = fadeout,
+                                    JsonText = json,
+                                };
+
+                                await handler.OnTitle(title);
                             }
                             break;
                         case PacketTypesIn.MultiBlockChange:
@@ -1253,14 +1284,14 @@ namespace MinecraftClient.Protocol.Handlers
                                                 }
                                             }
 
-                                            handler.OnPlayerJoin(new PlayerInfo(uuid, name, properties, gameMode, ping, displayName, keyExpiration, publicKey, signature));
+                                            await handler.OnPlayerJoinAsync(new PlayerInfo(uuid, name, properties, gameMode, ping, displayName, keyExpiration, publicKey, signature));
                                             break;
                                         case 0x01: //Update gamemode
                                             await handler.OnGamemodeUpdate(uuid, await dataTypes.ReadNextVarIntAsync(packetData));
                                             break;
                                         case 0x02: //Update latency
                                             int latency = await dataTypes.ReadNextVarIntAsync(packetData);
-                                            handler.OnLatencyUpdate(uuid, latency); //Update latency;
+                                            await handler.OnLatencyUpdate(uuid, latency); //Update latency;
                                             break;
                                         case 0x03: //Update display name
                                             if (await dataTypes.ReadNextBoolAsync(packetData))
@@ -1273,7 +1304,7 @@ namespace MinecraftClient.Protocol.Handlers
                                             }
                                             break;
                                         case 0x04: //Player Leave
-                                            handler.OnPlayerLeave(uuid);
+                                            await handler.OnPlayerLeaveAsync(uuid);
                                             break;
                                         default:
                                             //Unknown player list item type
@@ -1288,8 +1319,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 short ping = await dataTypes.ReadNextShortAsync(packetData);
                                 Guid FakeUUID = new(MD5.HashData(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
                                 if (online)
-                                    handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID));
-                                else handler.OnPlayerLeave(FakeUUID);
+                                    await handler.OnPlayerJoinAsync(new PlayerInfo(name, FakeUUID));
+                                else
+                                    await handler.OnPlayerLeaveAsync(FakeUUID);
                             }
                             break;
                         case PacketTypesIn.TabComplete:
@@ -1344,7 +1376,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     string title = await dataTypes.ReadNextStringAsync(packetData);
                                     byte slots = await dataTypes.ReadNextByteAsync(packetData);
                                     Container inventory = new(windowID, inventoryType, ChatParser.ParseText(title));
-                                    handler.OnInventoryOpen(windowID, inventory);
+                                    await handler.OnInventoryOpenAsync(windowID, inventory);
                                 }
                                 else
                                 {
@@ -1353,7 +1385,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     int windowType = await dataTypes.ReadNextVarIntAsync(packetData);
                                     string title = await dataTypes.ReadNextStringAsync(packetData);
                                     Container inventory = new(windowID, windowType, ChatParser.ParseText(title));
-                                    handler.OnInventoryOpen(windowID, inventory);
+                                    await handler.OnInventoryOpenAsync(windowID, inventory);
                                 }
                             }
                             break;
@@ -1362,7 +1394,7 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 byte windowID = await dataTypes.ReadNextByteAsync(packetData);
                                 lock (window_actions) { window_actions[windowID] = 0; }
-                                handler.OnInventoryClose(windowID);
+                                await handler.OnInventoryCloseAsync(windowID);
                             }
                             break;
                         case PacketTypesIn.WindowItems:
@@ -1395,7 +1427,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (protocolVersion >= MC_1_17_1_Version) // Carried Item - 1.17.1 and above
                                     await dataTypes.ReadNextItemSlotAsync(packetData, itemPalette);
 
-                                handler.OnWindowItems(windowId, inventorySlots, stateId);
+                                await handler.OnWindowItemsAsync(windowId, inventorySlots, stateId);
                             }
                             break;
                         case PacketTypesIn.WindowProperty:
@@ -1403,7 +1435,7 @@ namespace MinecraftClient.Protocol.Handlers
                             short propertyId = await dataTypes.ReadNextShortAsync(packetData);
                             short propertyValue = await dataTypes.ReadNextShortAsync(packetData);
 
-                            handler.OnWindowProperties(containerId, propertyId, propertyValue);
+                            await handler.OnWindowPropertiesAsync(containerId, propertyId, propertyValue);
                             break;
                         case PacketTypesIn.SetSlot:
                             if (handler.GetInventoryEnabled())
@@ -1414,7 +1446,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     stateId = await dataTypes.ReadNextVarIntAsync(packetData); // State ID - 1.17.1 and above
                                 short slotID = await dataTypes.ReadNextShortAsync(packetData);
                                 Item? item = await dataTypes.ReadNextItemSlotAsync(packetData, itemPalette);
-                                handler.OnSetSlot(windowID, slotID, item, stateId);
+                                await handler.OnSetSlotAsync(windowID, slotID, item, stateId);
                             }
                             break;
                         case PacketTypesIn.WindowConfirmation:
@@ -1452,7 +1484,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (handler.GetEntityHandlingEnabled())
                             {
                                 Entity entity = await dataTypes.ReadNextEntity(packetData, entityPalette, false);
-                                handler.OnSpawnEntity(entity);
+                                await handler.OnSpawnEntity(entity);
                             }
                             break;
                         case PacketTypesIn.EntityEquipment:
@@ -1469,14 +1501,14 @@ namespace MinecraftClient.Protocol.Handlers
                                         hasNext = bitsData >> 7 == 1;
                                         int slot2 = bitsData >> 1;
                                         Item? item = await dataTypes.ReadNextItemSlotAsync(packetData, itemPalette);
-                                        handler.OnEntityEquipment(entityid, slot2, item);
+                                        await handler.OnEntityEquipment(entityid, slot2, item);
                                     } while (hasNext);
                                 }
                                 else
                                 {
                                     int slot2 = await dataTypes.ReadNextVarIntAsync(packetData);
                                     Item? item = await dataTypes.ReadNextItemSlotAsync(packetData, itemPalette);
-                                    handler.OnEntityEquipment(entityid, slot2, item);
+                                    await handler.OnEntityEquipment(entityid, slot2, item);
                                 }
                             }
                             break;
@@ -1487,7 +1519,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 // packet before 1.15 has metadata at the end
                                 // this is not handled in dataTypes.ReadNextEntity()
                                 // we are simply ignoring leftover data in packet
-                                handler.OnSpawnEntity(entity);
+                                await handler.OnSpawnEntity(entity);
                             }
                             break;
                         case PacketTypesIn.SpawnPlayer:
@@ -1503,17 +1535,17 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 Location EntityLocation = new(X, Y, Z);
 
-                                handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
+                                await handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
                             }
                             break;
                         case PacketTypesIn.EntityEffect:
                             if (handler.GetEntityHandlingEnabled())
                             {
                                 int entityid = await dataTypes.ReadNextVarIntAsync(packetData);
-                                Effects effect = Effects.Speed;
+                                EffectType effectType = EffectType.Speed;
                                 int effectId = protocolVersion >= MC_1_18_2_Version ?
                                     await dataTypes.ReadNextVarIntAsync(packetData) : await dataTypes.ReadNextByteAsync(packetData);
-                                if (Enum.TryParse(effectId.ToString(), out effect))
+                                if (Enum.TryParse(effectId.ToString(), out effectType))
                                 {
                                     int amplifier = await dataTypes.ReadNextByteAsync(packetData);
                                     int duration = await dataTypes.ReadNextVarIntAsync(packetData);
@@ -1529,7 +1561,19 @@ namespace MinecraftClient.Protocol.Handlers
                                             factorCodec = await dataTypes.ReadNextNbtAsync(packetData);
                                     }
 
-                                    handler.OnEntityEffect(entityid, effect, amplifier, duration, flags, hasFactorData, factorCodec);
+                                    Effect effect = new()
+                                    {
+                                        Type = effectType,
+                                        EffectLevel = amplifier,
+                                        StartTick = CurrentTick,
+                                        DurationInTick = duration,
+                                        IsFromBeacon = (flags & 0x01) > 0,
+                                        ShowParticles = (flags & 0x02) > 0,
+                                        ShowIcon = (flags & 0x04) > 0,
+                                        FactorData = factorCodec,
+                                    };
+
+                                    await handler.OnEntityEffect(entityid, effect);
                                 }
                             }
                             break;
@@ -1544,7 +1588,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     entityList[i] = await dataTypes.ReadNextVarIntAsync(packetData);
                                 }
-                                handler.OnDestroyEntities(entityList);
+                                await handler.OnDestroyEntities(entityList);
                             }
                             break;
                         case PacketTypesIn.EntityPosition:
@@ -1558,7 +1602,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 DeltaX /= 128 * 32;
                                 DeltaY /= 128 * 32;
                                 DeltaZ /= 128 * 32;
-                                handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                                await handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
                             }
                             break;
                         case PacketTypesIn.EntityPositionAndRotation:
@@ -1574,7 +1618,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 DeltaX /= 128 * 32;
                                 DeltaY /= 128 * 32;
                                 DeltaZ /= 128 * 32;
-                                handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                                await handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
                             }
                             break;
                         case PacketTypesIn.EntityProperties:
@@ -1609,7 +1653,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     if (op2.Count > 0) _value *= op2.Aggregate((a, _x) => a * _x);
                                     keys.Add(_key, _value);
                                 }
-                                handler.OnEntityProperties(EntityID, keys);
+                                await handler.OnEntityProperties(EntityID, keys);
                             }
                             break;
                         case PacketTypesIn.EntityMetadata:
@@ -1641,20 +1685,20 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int entityId = await dataTypes.ReadNextIntAsync(packetData);
                                 byte status = await dataTypes.ReadNextByteAsync(packetData);
-                                handler.OnEntityStatus(entityId, status);
+                                await handler.OnEntityStatus(entityId, status);
                             }
                             break;
                         case PacketTypesIn.TimeUpdate:
                             long WorldAge = await dataTypes.ReadNextLongAsync(packetData);
                             long TimeOfday = await dataTypes.ReadNextLongAsync(packetData);
-                            handler.OnTimeUpdate(WorldAge, TimeOfday);
+                            await handler.OnTimeUpdate(WorldAge, TimeOfday);
                             break;
                         case PacketTypesIn.SystemChat:
                             string systemMessage = await dataTypes.ReadNextStringAsync(packetData);
                             int msgType = await dataTypes.ReadNextVarIntAsync(packetData);
                             if (msgType == 1 && !Config.Main.Advanced.ShowSystemMessages)
                                 break;
-                            handler.OnTextReceived(new(systemMessage, true, msgType, Guid.Empty, true));
+                            await handler.OnTextReceivedAsync(new(systemMessage, true, msgType, Guid.Empty, true));
                             break;
                         case PacketTypesIn.EntityTeleport:
                             if (handler.GetEntityHandlingEnabled())
@@ -1666,7 +1710,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte EntityYaw = await dataTypes.ReadNextByteAsync(packetData);
                                 byte EntityPitch = await dataTypes.ReadNextByteAsync(packetData);
                                 bool OnGround = await dataTypes.ReadNextBoolAsync(packetData);
-                                handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
+                                await handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
                             }
                             break;
                         case PacketTypesIn.UpdateHealth:
@@ -1677,13 +1721,13 @@ namespace MinecraftClient.Protocol.Handlers
                             else
                                 food = await dataTypes.ReadNextShortAsync(packetData);
                             await dataTypes.SkipNextFloatAsync(packetData); // Food Saturation
-                            handler.OnUpdateHealth(health, food);
+                            await handler.OnUpdateHealth(health, food);
                             break;
                         case PacketTypesIn.SetExperience:
                             float experiencebar = await dataTypes.ReadNextFloatAsync(packetData);
                             int level = await dataTypes.ReadNextVarIntAsync(packetData);
                             int totalexperience = await dataTypes.ReadNextVarIntAsync(packetData);
-                            handler.OnSetExperience(experiencebar, level, totalexperience);
+                            await handler.OnSetExperience(experiencebar, level, totalexperience);
                             break;
                         case PacketTypesIn.Explosion:
                             Location explosionLocation = new(await dataTypes.ReadNextFloatAsync(packetData), await dataTypes.ReadNextFloatAsync(packetData), await dataTypes.ReadNextFloatAsync(packetData));
@@ -1700,11 +1744,11 @@ namespace MinecraftClient.Protocol.Handlers
                             float playerVelocityY = await dataTypes.ReadNextFloatAsync(packetData);
                             float playerVelocityZ = await dataTypes.ReadNextFloatAsync(packetData);
 
-                            handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
+                            await handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
                             break;
                         case PacketTypesIn.HeldItemChange:
                             byte slot = await dataTypes.ReadNextByteAsync(packetData);
-                            handler.OnHeldItemChange(slot);
+                            await handler.OnHeldItemChange(slot);
                             break;
                         case PacketTypesIn.ScoreboardObjective:
                             string objectivename = await dataTypes.ReadNextStringAsync(packetData);
@@ -1772,6 +1816,15 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public ulong GetCurrentTick()
+        {
+            return CurrentTick;
+        }
+
+        /// <summary>
         /// Disconnect from the server, cancel network reading.
         /// </summary>
         public void Dispose() { }
@@ -1805,8 +1858,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (handler.GetNetworkPacketCaptureEnabled())
             {
-                List<byte> clone = packetData.ToList();
-                handler.OnNetworkPacket(packetID, clone, login_phase, false);
+                await handler.OnNetworkPacketAsync(packetID, packetData.ToArray(), login_phase, false);
             }
             // log.Info("[C -> S] Sending packet " + packetID + " > " + dataTypes.ByteArrayToString(packetData.ToArray()));
 
@@ -2248,7 +2300,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="acknowledgment">Message acknowledgment</param>
         /// <returns>True if properly sent</returns>
-        public async Task<bool> SendMessageAcknowledgment(LastSeenMessageList.Acknowledgment acknowledgment)
+        public async Task<bool> SendMessageAckAsync(LastSeenMessageList.Acknowledgment acknowledgment)
         {
             try
             {
@@ -2279,7 +2331,7 @@ namespace MinecraftClient.Protocol.Handlers
                 lastReceivedMessage = null;
 
                 if (pendingAcknowledgments++ > 64)
-                    await SendMessageAcknowledgment(ConsumeAcknowledgment());
+                    await SendMessageAckAsync(ConsumeAcknowledgment());
             }
         }
 

@@ -3644,6 +3644,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Player Inventory.
+        /// </summary>
+        internal static string cmd_inventory_player_inventory {
+            get {
+                return ResourceManager.GetString("cmd.inventory.player_inventory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Right.
         /// </summary>
         internal static string cmd_inventory_right {
@@ -4131,6 +4140,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File {0} does not exist..
+        /// </summary>
+        internal static string config_file_not_exist {
+            get {
+                return ResourceManager.GetString("config.file_not_exist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid file extension {0} in {1}, requires {2}..
+        /// </summary>
+        internal static string config_invaild_file_extension {
+            get {
+                return ResourceManager.GetString("config.invaild_file_extension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [Settings] The language code is invalid!.
         /// </summary>
         internal static string config_invaild_language {
@@ -4145,6 +4172,15 @@ namespace MinecraftClient {
         internal static string config_invaild_login_method {
             get {
                 return ResourceManager.GetString("config.invaild_login_method", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are using an older color scheme and some colors may not be displayed correctly. It is recommended that you switch to a modern terminal for a better display experience..
+        /// </summary>
+        internal static string config_legacy_color {
+            get {
+                return ResourceManager.GetString("config.legacy_color", resourceCulture);
             }
         }
         
@@ -5127,6 +5163,16 @@ namespace MinecraftClient {
         internal static string mcc_browser_open {
             get {
                 return ResourceManager.GetString("mcc.browser_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An exception occurred while processing event {0}:
+        ///{1}.
+        /// </summary>
+        internal static string mcc_chatbot_event_exception {
+            get {
+                return ResourceManager.GetString("mcc.chatbot_event_exception", resourceCulture);
             }
         }
         

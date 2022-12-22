@@ -356,11 +356,12 @@ namespace MinecraftClient.ChatBots
 
             for (int base_y = 0; base_y < map.Height; base_y += scale)
             {
-                int last_R = -1, last_G = -1, last_B = -1;
+                string lastFg = string.Empty, lagtBg = string.Empty;
                 for (int base_x = 0; base_x < map.Width; base_x += scale)
                 {
-                    int RL = 0, GL = 0, BL = 0, RR = 0, GR = 0, BR = 0;
-                    double mid_dx = (double)(scale - 1) / 2;
+                    int RUL = 0, GUL = 0, BUL = 0, RUR = 0, GUR = 0, BUR = 0;
+                    int RDL = 0, GDL = 0, BDL = 0, RDR = 0, GDR = 0, BDR = 0;
+                    double mid = (double)(scale - 1) / 2;
                     for (int dy = 0; dy < scale; ++dy)
                     {
                         for (int dx = 0; dx < scale; ++dx)
@@ -368,40 +369,57 @@ namespace MinecraftClient.ChatBots
                             int x = Math.Min(base_x + dx, map.Width - 1);
                             int y = Math.Min(base_y + dy, map.Height - 1);
                             ColorRGBA color = MapColors.ColorByteToRGBA(map.Colors![x + y * map.Width]);
-                            if (dx <= mid_dx)
+                            if (dx <= mid)
                             {
-                                RL += color.R; GL += color.G; BL += color.B;
+                                if (dy <= mid)
+                                {
+                                    RUL += color.R; GUL += color.G; BUL += color.B;
+                                }
+                                if (dy >= mid)
+                                {
+                                    RDL += color.R; GDL += color.G; BDL += color.B;
+                                }
                             }
-                            if (dx >= mid_dx)
+                            if (dx >= mid)
                             {
-                                RR += color.R; GR += color.G; BR += color.B;
+                                if (dy <= mid)
+                                {
+                                    RUR += color.R; GUR += color.G; BUR += color.B;
+                                }
+                                if (dy >= mid)
+                                {
+                                    RDR += color.R; GDR += color.G; BDR += color.B;
+                                }
                             }
                         }
                     }
 
-                    int pixel_cnt = ((scale + 1) / 2) * scale;
-                    RL = (int)Math.Round((double)RL / pixel_cnt);
-                    GL = (int)Math.Round((double)GL / pixel_cnt);
-                    BL = (int)Math.Round((double)BL / pixel_cnt);
-                    RR = (int)Math.Round((double)RR / pixel_cnt);
-                    GR = (int)Math.Round((double)GR / pixel_cnt);
-                    BR = (int)Math.Round((double)BR / pixel_cnt);
+                    int pixel_cnt = ((scale + 1) / 2) * ((scale + 1) / 2);
+                    RDL = (int)Math.Round((double)RDL / pixel_cnt);
+                    GDL = (int)Math.Round((double)GDL / pixel_cnt);
+                    BDL = (int)Math.Round((double)BDL / pixel_cnt);
+                    RDR = (int)Math.Round((double)RDR / pixel_cnt);
+                    GDR = (int)Math.Round((double)GDR / pixel_cnt);
+                    BDR = (int)Math.Round((double)BDR / pixel_cnt);
 
-                    if (RL == last_R && GL == last_G && BL == last_B)
-                        sb.Append(' ');
-                    else
-                    {
-                        sb.Append(ColorHelper.GetColorEscapeCode((byte)RL, (byte)GL, (byte)BL, false)).Append(' ');
-                        last_R = RL; last_G = GL; last_B = BL;
-                    }
+                    RUL = (int)Math.Round((double)RUL / pixel_cnt);
+                    GUL = (int)Math.Round((double)GUL / pixel_cnt);
+                    BUL = (int)Math.Round((double)BUL / pixel_cnt);
+                    RUR = (int)Math.Round((double)RUR / pixel_cnt);
+                    GUR = (int)Math.Round((double)GUR / pixel_cnt);
+                    BUR = (int)Math.Round((double)BUR / pixel_cnt);
 
-                    if (RR == last_R && GR == last_G && BR == last_B)
-                        sb.Append(' ');
-                    else
-                    {
-                        sb.Append(ColorHelper.GetColorEscapeCode((byte)RR, (byte)GR, (byte)BR, false)).Append(' ');
-                        last_R = RR; last_G = GR; last_B = BR;
-                    }
+                    string colorCode = ColorHelper.GetColorEscapeCode((byte)RUL, (byte)GUL, (byte)BUL, true);
+                    if (lastFg != colorCode) { sb.Append(colorCode); lastFg = colorCode; }
+                    colorCode = ColorHelper.GetColorEscapeCode((byte)RDL, (byte)GDL, (byte)BDL, false);
+                    if (lagtBg != colorCode) { sb.Append(colorCode); lagtBg = colorCode; }
+                    sb.Append('▀');
+
+                    colorCode = ColorHelper.GetColorEscapeCode((byte)RUR, (byte)GUR, (byte)BUR, true);
+                    if (lastFg != colorCode) { sb.Append(colorCode); lastFg = colorCode; }
+                    colorCode = ColorHelper.GetColorEscapeCode((byte)RDR, (byte)GDR, (byte)BDR, false);
+                    if (lagtBg != colorCode) { sb.Append(colorCode); lagtBg = colorCode; }
+                    sb.Append('▀');
                 }
                 if (base_y >= map.Height - scale)
                     sb.Append(ColorHelper.GetResetEscapeCode());

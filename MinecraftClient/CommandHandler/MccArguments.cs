@@ -1,6 +1,7 @@
 ﻿using System;
 using Brigadier.NET.Context;
 using MinecraftClient.CommandHandler.ArgumentType;
+using MinecraftClient.EntityHandler;
 
 namespace MinecraftClient.CommandHandler
 {
@@ -31,9 +32,9 @@ namespace MinecraftClient.CommandHandler
             return new EntityTypeArgumentType();
         }
 
-        public static Mapping.EntityType GetEntityType<TSource>(CommandContext<TSource> context, string name)
+        public static EntityType GetEntityType<TSource>(CommandContext<TSource> context, string name)
         {
-            return context.GetArgument<Mapping.EntityType>(name);
+            return context.GetArgument<EntityType>(name);
         }
 
         public static ItemTypeArgumentType ItemType()

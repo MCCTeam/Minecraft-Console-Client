@@ -54,7 +54,7 @@ namespace MinecraftClient.Commands
             Block block = handler.GetWorld().GetBlock(blockToBreak);
             if (block.Type == Material.Air)
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_no_block);
-            else if (handler.DigBlock(blockToBreak).Result)
+            else if (handler.DigBlockAsync(blockToBreak).Result)
             {
                 blockToBreak = blockToBreak.ToCenter();
                 return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_dig_dig, blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.GetTypeString()));
@@ -74,7 +74,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_too_far);
             else if (block.Type == Material.Air)
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_no_block);
-            else if (handler.DigBlock(blockLoc, lookAtBlock: false).Result)
+            else if (handler.DigBlockAsync(blockLoc, lookAtBlock: false).Result)
                 return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_dig_dig, blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
             else
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_fail);

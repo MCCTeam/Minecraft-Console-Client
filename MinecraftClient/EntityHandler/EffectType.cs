@@ -1,9 +1,9 @@
-﻿namespace MinecraftClient.Inventory
+﻿namespace MinecraftClient.EntityHandler
 {
     /// <summary>
     /// Represents a Minecraft effects
     /// </summary>
-    public enum Effects
+    public enum EffectType
     {
         Speed = 1,
         Slowness = 2,

@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Mapping
+﻿namespace MinecraftClient.EntityHandler
 {
     public static class EntityTypeExtensions
     {

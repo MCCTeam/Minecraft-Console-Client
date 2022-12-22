@@ -27,7 +27,7 @@ namespace MinecraftClient.Protocol.PacketPipeline
         public int CompressionThreshold { get; set; } = 0;
 
 
-        private SemaphoreSlim SendSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim SendSemaphore = new(1, 1);
 
         private Task LastSendTask = Task.CompletedTask;
 
@@ -78,7 +78,8 @@ namespace MinecraftClient.Protocol.PacketPipeline
         /// <param name="buffer">data to send</param>
         public async Task SendAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            await SendSemaphore.WaitAsync();
+            await SendSemaphore.WaitAsync(cancellationToken);
+            if (cancellationToken.IsCancellationRequested) return;
             await LastSendTask;
             LastSendTask = WriteStream.WriteAsync(buffer, cancellationToken).AsTask();
             SendSemaphore.Release();
@@ -86,7 +87,6 @@ namespace MinecraftClient.Protocol.PacketPipeline
 
         public async Task<Tuple<int, PacketStream>> GetNextPacket(bool handleCompress, CancellationToken cancellationToken = default)
         {
-            // ConsoleIO.WriteLine("GetNextPacket");
             if (packetStream != null)
             {
                 await packetStream.DisposeAsync();
@@ -105,9 +105,18 @@ namespace MinecraftClient.Protocol.PacketPipeline
                     ZlibBaseStream zlibBaseStream = new(AesStream ?? ReadStream, packetSize: packetSize - readed);
                     ZLibStream zlibStream = new(zlibBaseStream, CompressionMode.Decompress, leaveOpen: false);
 
-                    zlibBaseStream.BufferSize = 16;
-                    (packetID, readed) = await ReceiveVarIntRaw(zlibStream, cancellationToken);
-                    zlibBaseStream.BufferSize = 512;
+                    if (AesStream == null || AesStream.HwAccelerateEnable)
+                    {
+                        zlibBaseStream.BufferSize = 64;
+                        (packetID, readed) = await ReceiveVarIntRaw(zlibStream, cancellationToken);
+                        zlibBaseStream.BufferSize = 1024;
+                    }
+                    else
+                    {
+                        zlibBaseStream.BufferSize = 16;
+                        (packetID, readed) = await ReceiveVarIntRaw(zlibStream, cancellationToken);
+                        zlibBaseStream.BufferSize = 256;
+                    }
 
                     // ConsoleIO.WriteLine("packetID = " + packetID + ", readed = " + zlibBaseStream.packetReaded + ", size = " + packetSize + " -> " + sizeUncompressed);
 
@@ -131,7 +140,7 @@ namespace MinecraftClient.Protocol.PacketPipeline
             byte[] b = new byte[1];
             while (true)
             {
-                await stream.ReadAsync(b);
+                await stream.ReadAsync(b, cancellationToken);
                 i |= (b[0] & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
                 if ((b[0] & 0x80) != 128) break;

@@ -5,7 +5,7 @@ using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Context;
 using Brigadier.NET.Exceptions;
 using Brigadier.NET.Suggestion;
-using MinecraftClient.Mapping;
+using MinecraftClient.EntityHandler;
 
 namespace MinecraftClient.CommandHandler.ArgumentType
 {

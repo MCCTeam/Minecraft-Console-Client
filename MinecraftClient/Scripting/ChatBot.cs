@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Brigadier.NET;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.EntityHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.Settings;
@@ -37,7 +38,7 @@ namespace MinecraftClient.Scripting
         //Handler will be automatically set on bot loading, don't worry about this
         public void SetHandler(McClient handler) { _handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
-        protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot).Wait(); Handler.BotLoad(bot); }
+        protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot).Wait(); Handler.BotLoad(bot).Wait(); }
         protected ChatBot[] GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
         protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot).Wait(); }
         private McClient? _handler = null;
@@ -104,6 +105,12 @@ namespace MinecraftClient.Scripting
         /// If you want to send a message when the bot is loaded, use AfterGameJoined.
         /// </summary>
         public virtual void Initialize() { }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public virtual Tuple<McClientEventType, Func<object?, Task>>[]? InitializeEventCallbacks() { return null; }
 
         /// <summary>
         /// This method is called when the bot is being unloaded, you can use it to free up resources like DB connections
@@ -261,14 +268,6 @@ namespace MinecraftClient.Scripting
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
 
         /// <summary>
-        /// Called when the Game Mode has been updated for a player
-        /// </summary>
-        /// <param name="playername">Player Name</param>
-        /// <param name="uuid">Player UUID</param>
-        /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
-        public virtual async Task OnGamemodeUpdateAsync(string playername, Guid uuid, int gamemode) { await Task.CompletedTask; }
-
-        /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
         /// <param name="playername">Player Name</param>
@@ -337,7 +336,7 @@ namespace MinecraftClient.Scripting
         /// <param name="amplifier">effect amplifier</param>
         /// <param name="duration">effect duration</param>
         /// <param name="flags">effect flags</param>
-        public virtual void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags) { }
+        public virtual void OnEntityEffect(Entity entity, EffectType effect, int amplifier, int duration, byte flags) { }
 
         /// <summary>
         /// Called when a scoreboard objective updated
@@ -518,7 +517,7 @@ namespace MinecraftClient.Scripting
         protected bool SendText(string text, bool sendImmediately = false)
         {
             LogToConsole("Sending '" + text + "'");
-            Handler.SendText(text).Wait();
+            Handler.SendTextAsync(text).Wait();
             return true;
         }
 
@@ -982,7 +981,7 @@ namespace MinecraftClient.Scripting
         /// <param name="localVars">Local variables for use in the Script</param>
         protected void RunScript(string filename, string? playername = null, Dictionary<string, object>? localVars = null)
         {
-            Handler.BotLoad(new ChatBots.Script(filename, playername, localVars));
+            Handler.BotLoad(new ChatBots.Script(filename, playername, localVars)).Wait();
         }
 
         /// <summary>
@@ -991,7 +990,7 @@ namespace MinecraftClient.Scripting
         /// <param name="chatBot">ChatBot to load</param>
         protected void BotLoad(ChatBot chatBot)
         {
-            Handler.BotLoad(chatBot);
+            Handler.BotLoad(chatBot).Wait();
         }
 
         /// <summary>
@@ -1037,7 +1036,7 @@ namespace MinecraftClient.Scripting
         /// </summary>
         private bool SendEntityAction(Protocol.EntityActionType entityAction)
         {
-            return Handler.SendEntityAction(entityAction).Result;
+            return Handler.SendEntityActionAsync(entityAction).Result;
         }
 
         /// <summary>
@@ -1045,7 +1044,7 @@ namespace MinecraftClient.Scripting
         /// </summary>
         private async Task<bool> SendEntityActionAsync(Protocol.EntityActionType entityAction)
         {
-            return await Handler.SendEntityAction(entityAction);
+            return await Handler.SendEntityActionAsync(entityAction);
         }
 
         /// <summary>
@@ -1056,7 +1055,7 @@ namespace MinecraftClient.Scripting
         /// <param name="lookAtBlock">Also look at the block before digging</param>
         protected bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
         {
-            return Handler.DigBlock(location, swingArms, lookAtBlock).Result;
+            return Handler.DigBlockAsync(location, swingArms, lookAtBlock).Result;
         }
 
         /// <summary>
@@ -1064,7 +1063,7 @@ namespace MinecraftClient.Scripting
         /// </summary>
         protected bool SetSlot(int slotNum)
         {
-            return Handler.ChangeSlot((short)slotNum).Result;
+            return Handler.ChangeSlotAsync((short)slotNum).Result;
         }
 
         /// <summary>
@@ -1116,7 +1115,7 @@ namespace MinecraftClient.Scripting
         /// <returns>True if a path has been found</returns>
         protected bool MoveToLocation(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout);
+            return Handler.MoveToAsync(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout).Result;
         }
 
         /// <summary>
@@ -1297,7 +1296,7 @@ namespace MinecraftClient.Scripting
         protected void RegisterPluginChannel(string channel)
         {
             registeredPluginChannels.Add(channel);
-            Handler.RegisterPluginChannel(channel, this).Wait();
+            Handler.RegisterPluginChannelAsync(channel, this).Wait();
         }
 
         /// <summary>
@@ -1307,7 +1306,7 @@ namespace MinecraftClient.Scripting
         protected void UnregisterPluginChannel(string channel)
         {
             registeredPluginChannels.RemoveAll(chan => chan == channel);
-            Handler.UnregisterPluginChannel(channel, this).Wait();
+            Handler.UnregisterPluginChannelAsync(channel, this).Wait();
         }
 
         /// <summary>
@@ -1327,7 +1326,7 @@ namespace MinecraftClient.Scripting
                     return false;
                 }
             }
-            return Handler.SendPluginChannelMessage(channel, data, sendEvenIfNotRegistered).Result;
+            return Handler.SendPluginChannelMessageAsync(channel, data, sendEvenIfNotRegistered).Result;
         }
 
         /// <summary>
@@ -1349,7 +1348,7 @@ namespace MinecraftClient.Scripting
         [Obsolete("Prefer using InteractType enum instead of int for interaction type")]
         protected bool InteractEntity(int EntityID, int type, Hand hand = Hand.MainHand)
         {
-            return Handler.InteractEntity(EntityID, (InteractType)type, hand).Result;
+            return Handler.InteractEntityAsync(EntityID, (InteractType)type, hand).Result;
         }
 
         /// <summary>
@@ -1361,7 +1360,7 @@ namespace MinecraftClient.Scripting
         /// <returns>TRUE in case of success</returns>
         protected bool InteractEntity(int EntityID, InteractType type, Hand hand = Hand.MainHand)
         {
-            return Handler.InteractEntity(EntityID, type, hand).Result;
+            return Handler.InteractEntityAsync(EntityID, type, hand).Result;
         }
 
         /// <summary>
@@ -1375,7 +1374,7 @@ namespace MinecraftClient.Scripting
         /// <returns>TRUE if item given successfully</returns>
         protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt = null)
         {
-            return Handler.DoCreativeGive(slot, itemType, count, nbt).Result;
+            return Handler.DoCreativeGiveAsync(slot, itemType, count, nbt).Result;
         }
 
         /// <summary>
@@ -1397,7 +1396,7 @@ namespace MinecraftClient.Scripting
         /// <returns>TRUE if animation successfully done</returns>
         public bool SendAnimation(Hand hand = Hand.MainHand)
         {
-            return Handler.DoAnimation((int)hand).Result;
+            return Handler.DoAnimationAsync((int)hand).Result;
         }
 
         /// <summary>
@@ -1406,7 +1405,7 @@ namespace MinecraftClient.Scripting
         /// <returns>TRUE if successful</returns>
         protected bool UseItemInHand()
         {
-            return Handler.UseItemOnHand().Result;
+            return Handler.UseItemOnHandAsync().Result;
         }
 
         /// <summary>
@@ -1415,7 +1414,7 @@ namespace MinecraftClient.Scripting
         /// <returns>TRUE if successful</returns>
         protected bool UseItemInLeftHand()
         {
-            return Handler.UseItemOnLeftHand().Result;
+            return Handler.UseItemOnOffHandAsync().Result;
         }
 
         /// <summary>
@@ -1436,7 +1435,7 @@ namespace MinecraftClient.Scripting
         /// <returns>TRUE if successfully placed</returns>
         public bool SendPlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return Handler.PlaceBlock(location, blockFace, hand).Result;
+            return Handler.PlaceBlockAsync(location, blockFace, hand).Result;
         }
 
         /// <summary>
@@ -1467,7 +1466,7 @@ namespace MinecraftClient.Scripting
         /// <returns>TRUE in case of success</returns>
         protected bool WindowAction(int inventoryId, int slot, WindowActionType actionType)
         {
-            return Handler.DoWindowAction(inventoryId, slot, actionType).Result;
+            return Handler.DoWindowActionAsync(inventoryId, slot, actionType).Result;
         }
 
         /// <summary>
@@ -1487,7 +1486,7 @@ namespace MinecraftClient.Scripting
         /// <returns>True if success</returns>
         protected bool ChangeSlot(short slot)
         {
-            return Handler.ChangeSlot(slot).Result;
+            return Handler.ChangeSlotAsync(slot).Result;
         }
 
         /// <summary>
@@ -1518,7 +1517,7 @@ namespace MinecraftClient.Scripting
         /// <param name="line4"> text1 four</param>
         protected bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
-            return Handler.UpdateSign(location, line1, line2, line3, line4).Result;
+            return Handler.UpdateSignAsync(location, line1, line2, line3, line4).Result;
         }
 
         /// <summary>
@@ -1527,7 +1526,7 @@ namespace MinecraftClient.Scripting
         /// <param name="selectedSlot">Trade slot to select, starts at 0.</param>
         protected bool SelectTrade(int selectedSlot)
         {
-            return Handler.SelectTrade(selectedSlot).Result;
+            return Handler.SelectTradeAsync(selectedSlot).Result;
         }
 
         /// <summary>
@@ -1536,7 +1535,7 @@ namespace MinecraftClient.Scripting
         /// <param name="entity">player to teleport to</param>
         protected bool SpectatorTeleport(Entity entity)
         {
-            return Handler.Spectate(entity).Result;
+            return Handler.SpectateAsync(entity).Result;
         }
 
         /// <summary>
@@ -1545,7 +1544,7 @@ namespace MinecraftClient.Scripting
         /// <param name="uuid">uuid of entity to teleport to</param>
         protected bool SpectatorTeleport(Guid UUID)
         {
-            return Handler.SpectateByUUID(UUID).Result;
+            return Handler.SpectateByUuidAsync(UUID).Result;
         }
 
         /// <summary>
@@ -1557,7 +1556,7 @@ namespace MinecraftClient.Scripting
         /// <param name="flags">command block flags</param>
         protected bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
-            return Handler.UpdateCommandBlock(location, command, mode, flags).Result;
+            return Handler.UpdateCommandBlockAsync(location, command, mode, flags).Result;
         }
 
         /// <summary>
@@ -1567,7 +1566,7 @@ namespace MinecraftClient.Scripting
         /// <returns>True if success</returns>
         protected bool CloseInventory(int inventoryID)
         {
-            return Handler.CloseInventory(inventoryID).Result;
+            return Handler.CloseInventoryAsync(inventoryID).Result;
         }
 
         /// <summary>
@@ -1585,7 +1584,7 @@ namespace MinecraftClient.Scripting
         protected bool Respawn()
         {
             if (Handler.GetHealth() <= 0)
-                return Handler.SendRespawnPacket().Result;
+                return Handler.SendRespawnPacketAsync().Result;
             else return false;
         }
 

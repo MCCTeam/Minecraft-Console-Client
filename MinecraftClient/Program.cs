@@ -56,7 +56,6 @@ namespace MinecraftClient
         private static bool useMcVersionOnce = false;
         private static string settingsIniPath = "MinecraftClient.ini";
 
-        private static int CurrentThreadId;
         private static bool RestartKeepSettings = false;
         private static int RestartAfter = -1, Exitcode = 0;
 
@@ -92,6 +91,8 @@ namespace MinecraftClient
             // Build information to facilitate processing of bug reports
             if (BuildInfo != null)
                 ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+
+            ConsoleIO.WriteLine("\u001b[33m\u001b[46m▀\u001b[0m");
 
             string? specifiedSettingFile = null;
             if (args.Length >= 1 && File.Exists(args[0]) && Settings.ToLowerIfNeed(Path.GetExtension(args[0])) == ".ini")
@@ -193,8 +194,6 @@ namespace MinecraftClient
             ConsoleIO.SuppressPrinting(false);
 
             startupargs = args;
-
-            CurrentThreadId = Environment.CurrentManagedThreadId;
 
             // Check for updates
             AsyncTaskHandler.CheckUpdate = Task.Run(async () =>
@@ -419,7 +418,6 @@ namespace MinecraftClient
             }
             else if (!loadSucceed)
             {
-                ConsoleInteractive.ConsoleReader.StopReadThread();
                 while (true)
                 {
                     ConsoleIO.WriteLine(string.Empty);
@@ -724,6 +722,7 @@ namespace MinecraftClient
             var getServerInfoTask = GetServerInfoAsync(loginHttpClient, loginTask);
             var refreshPlayerKeyTask = RefreshPlayerKeyPair(loginHttpClient, loginTask);
 
+            // Todo: Detailed status display of login steps.
             (result, session, playerKeyPair) = await loginTask;
             if (result == ProtocolHandler.LoginResult.Success && session != null)
             {
@@ -806,11 +805,6 @@ namespace MinecraftClient
                 FailureInfo.Record(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);
                 return;
             }
-        }
-
-        public static int GetMainThreadId()
-        {
-            return CurrentThreadId;
         }
 
         /// <summary>
@@ -988,7 +982,7 @@ namespace MinecraftClient
         public static Type[] GetTypesInNamespace(string nameSpace, Assembly? assembly = null)
         {
             if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
-            return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
+            return assembly.GetTypes().Where(t => string.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
         }
 
         /// <summary>
@@ -998,7 +992,7 @@ namespace MinecraftClient
         {
             if (typeof(Program)
                 .Assembly
-                .GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
+                .GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)
                 .FirstOrDefault() is AssemblyConfigurationAttribute attribute)
                 BuildInfo = attribute.Configuration;
         }

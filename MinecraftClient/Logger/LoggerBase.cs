@@ -78,17 +78,17 @@
 
         protected virtual void Log(object msg)
         {
-            ConsoleIO.WriteLineFormatted(msg.ToString() ?? string.Empty);
+            ConsoleIO.WriteLineFormatted(msg.ToString() ?? string.Empty, true);
         }
 
         protected virtual void Log(string msg)
         {
-            ConsoleIO.WriteLineFormatted(msg);
+            ConsoleIO.WriteLineFormatted(msg, true);
         }
 
         protected virtual void Log(string msg, params object[] args)
         {
-            ConsoleIO.WriteLineFormatted(string.Format(msg, args));
+            ConsoleIO.WriteLineFormatted(string.Format(msg, args), true);
         }
     }
 }

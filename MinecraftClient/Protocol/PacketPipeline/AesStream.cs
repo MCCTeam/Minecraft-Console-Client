@@ -15,6 +15,7 @@ namespace MinecraftClient.Protocol.PacketPipeline
         private const int BufferSize = 1024;
 
         public Socket Client;
+        public bool HwAccelerateEnable { init; get; }
         private bool inStreamEnded = false;
 
         private readonly IAesHandler Aes;
@@ -44,11 +45,20 @@ namespace MinecraftClient.Protocol.PacketPipeline
             AesBufSend = new byte[BlockSize];
 
             if (FasterAesX86.IsSupported())
+            {
+                HwAccelerateEnable = true;
                 Aes = new FasterAesX86(key);
-            else if (FasterAesArm.IsSupported())
+            }
+            else if (false && FasterAesArm.IsSupported()) // Further testing required
+            {
+                HwAccelerateEnable = true;
                 Aes = new FasterAesArm(key);
+            }
             else
+            {
+                HwAccelerateEnable = false;
                 Aes = new BasicAes(key);
+            }
 
             key.CopyTo(InputBuf.Slice(0, BlockSize));
             key.CopyTo(OutputBuf.Slice(0, BlockSize));
