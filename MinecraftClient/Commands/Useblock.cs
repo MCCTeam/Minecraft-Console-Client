@@ -48,7 +48,7 @@ namespace MinecraftClient.Commands
             Location current = handler.GetCurrentLocation();
             block = block.ToAbsolute(current).ToFloor();
             Location blockCenter = block.ToCenter();
-            bool res = handler.PlaceBlock(block, Direction.Down);
+            bool res = handler.PlaceBlockAsync(block, Direction.Down).Result;
             return r.SetAndReturn(string.Format(Translations.cmd_useblock_use, blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed"), res);
         }
     }

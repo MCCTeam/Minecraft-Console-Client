@@ -53,7 +53,7 @@ namespace MinecraftClient.Commands
         private int DoListBot(CmdResult r)
         {
             McClient handler = CmdResult.currentHandler!;
-            int length = handler.GetLoadedChatBots().Count;
+            int length = handler.GetLoadedChatBots().Length;
             if (length == 0)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_bots_noloaded);
 
@@ -73,22 +73,30 @@ namespace MinecraftClient.Commands
             McClient handler = CmdResult.currentHandler!;
             if (botName.ToLower().Equals("all", StringComparison.OrdinalIgnoreCase))
             {
-                if (handler.GetLoadedChatBots().Count == 0)
+                if (handler.GetLoadedChatBots().Length == 0)
                     return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_bots_noloaded);
                 else
                 {
-                    handler.UnloadAllBots();
+                    handler.UnloadAllBots().Wait();
                     return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_bots_unloaded_all);
                 }
             }
             else
             {
-                ChatBot? bot = handler.GetLoadedChatBots().Find(bot => bot.GetType().Name.ToLower() == botName.ToLower());
-                if (bot == null)
+                ChatBot? target = null;
+                foreach (ChatBot bot in handler.GetLoadedChatBots())
+                {
+                    if (bot.GetType().Name.Equals(botName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        target = bot;
+                        break;
+                    }
+                }
+                if (target == null)
                     return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_bots_notfound, botName));
                 else
                 {
-                    handler.BotUnLoad(bot);
+                    handler.BotUnLoad(target).Wait();
                     return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.cmd_bots_unloaded, botName));
                 }
             }

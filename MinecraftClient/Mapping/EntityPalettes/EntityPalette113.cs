@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MinecraftClient.EntityHandler;
 
 namespace MinecraftClient.Mapping.EntityPalettes
 {

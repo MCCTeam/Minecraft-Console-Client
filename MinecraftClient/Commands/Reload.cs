@@ -40,7 +40,7 @@ namespace MinecraftClient.Commands
         {
             McClient handler = CmdResult.currentHandler!;
             handler.Log.Info(Translations.cmd_reload_started);
-            handler.ReloadSettings();
+            handler.ReloadSettings().Wait();
             handler.Log.Warn(Translations.cmd_reload_warning1);
             handler.Log.Warn(Translations.cmd_reload_warning2);
             handler.Log.Warn(Translations.cmd_reload_warning3);

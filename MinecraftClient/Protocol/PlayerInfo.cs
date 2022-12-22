@@ -22,7 +22,7 @@ namespace MinecraftClient.Protocol
 
         // Entity info
 
-        public Mapping.Entity? entity;
+        public EntityHandler.Entity? entity;
 
         // For message signature
 

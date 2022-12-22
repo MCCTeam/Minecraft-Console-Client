@@ -29,14 +29,17 @@ namespace MinecraftClient
         /// Get the translated version of command description.
         /// </summary>
         /// <returns>Translated command description</returns>
-        public string GetCmdDescTranslated()
+        public string GetCmdDescTranslated(bool ListAllUsage = true)
         {
             char cmdChar = Settings.Config.Main.Advanced.InternalCmdChar.ToChar();
 
             StringBuilder sb = new();
             string s = (string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc)) ? string.Empty : ": "; // If either one is empty, no colon :
-            sb.Append("§e").Append(cmdChar).Append(CmdUsage).Append("§r").Append(s).AppendLine(CmdDesc);
-            sb.Append(McClient.dispatcher.GetAllUsageString(CmdName, false));
+            sb.Append("§e").Append(cmdChar).Append(CmdUsage).Append("§r").Append(s);
+            if (ListAllUsage)
+                sb.AppendLine(CmdDesc).Append(McClient.dispatcher.GetAllUsageString(CmdName, false));
+            else
+                sb.Append(CmdDesc);
             return sb.ToString();
         }
 

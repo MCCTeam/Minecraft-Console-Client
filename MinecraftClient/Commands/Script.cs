@@ -41,7 +41,7 @@ namespace MinecraftClient.Commands
         private int DoExecuteScript(CmdResult r, string command, Dictionary<string, object>? localVars)
         {
             McClient handler = CmdResult.currentHandler!;
-            handler.BotLoad(new ChatBots.Script(command.Trim(), null, localVars));
+            handler.BotLoad(new ChatBots.Script(command.Trim(), null, localVars)).Wait();
             return r.SetAndReturn(CmdResult.Status.Done);
         }
     }

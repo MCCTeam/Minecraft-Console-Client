@@ -39,7 +39,7 @@ namespace MinecraftClient.Commands
         private int DoRespawn(CmdResult r)
         {
             McClient handler = CmdResult.currentHandler!;
-            handler.SendRespawnPacket();
+            handler.SendRespawnPacketAsync().Wait();
             return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_respawn_done);
         }
     }

@@ -1,15 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.ProfileKey
 {
     public class PublicKey
     {
+        [JsonInclude]
+        [JsonPropertyName("Key")]
         public byte[] Key { get; set; }
+
+        [JsonInclude]
+        [JsonPropertyName("Signature")]
         public byte[]? Signature { get; set; }
+
+        [JsonInclude]
+        [JsonPropertyName("SignatureV2")]
         public byte[]? SignatureV2 { get; set; }
 
+        [JsonIgnore]
         private readonly RSA rsa;
 
         public PublicKey(string pemKey, string? sig = null, string? sigV2 = null)
@@ -34,6 +45,12 @@ namespace MinecraftClient.Protocol.ProfileKey
             rsa.ImportSubjectPublicKeyInfo(Key, out _);
 
             Signature = signature;
+        }
+
+        [JsonConstructor]
+        public PublicKey(byte[] Key, byte[]? Signature, byte[]? SignatureV2) : this(Key, Signature!)
+        {
+            this.SignatureV2 = SignatureV2;
         }
 
         public bool VerifyData(byte[] data, byte[] signature)

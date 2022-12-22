@@ -42,7 +42,7 @@ namespace MinecraftClient.Commands
             McClient handler = CmdResult.currentHandler!;
             if (sneaking)
             {
-                var result = handler.SendEntityAction(Protocol.EntityActionType.StopSneaking);
+                var result = handler.SendEntityActionAsync(Protocol.EntityActionType.StopSneaking).Result;
                 if (result)
                     sneaking = false;
                 if (result)
@@ -52,7 +52,7 @@ namespace MinecraftClient.Commands
             }
             else
             {
-                var result = handler.SendEntityAction(Protocol.EntityActionType.StartSneaking);
+                var result = handler.SendEntityActionAsync(Protocol.EntityActionType.StartSneaking).Result;
                 if (result)
                     sneaking = true;
                 if (result)

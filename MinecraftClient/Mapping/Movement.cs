@@ -140,17 +140,10 @@ namespace MinecraftClient.Mapping
         /// <param name="timeout">How long to wait before stopping computation</param>
         /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
+        public static async Task<Queue<Location>?> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
         {
-            CancellationTokenSource cts = new();
-            Task<Queue<Location>?> pathfindingTask = Task.Factory.StartNew(() => Movement.CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
-            pathfindingTask.Wait(timeout);
-            if (!pathfindingTask.IsCompleted)
-            {
-                cts.Cancel();
-                pathfindingTask.Wait();
-            }
-            return pathfindingTask.Result;
+            CancellationTokenSource cts = new(timeout);
+            return await Task.Run(() => { return CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token); }, cts.Token);
         }
 
         /// <summary>

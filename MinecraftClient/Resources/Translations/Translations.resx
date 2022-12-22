@@ -822,7 +822,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Ignoring profile key token string '{0}': {1}</value>
   </data>
   <data name="cache.loaded" xml:space="preserve">
-    <value>Loaded session: {0}:{1}</value>
+    <value>Reads {0} session cache and {1} signature key caches from the disk cache.</value>
   </data>
   <data name="cache.loaded_keys" xml:space="preserve">
     <value>Loaded profile key, it will be refresh at {0}</value>
@@ -1499,8 +1499,8 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="config.load.fail" xml:space="preserve">
     <value>Failed to load settings:</value>
   </data>
-  <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
-    <value>The language code is invalid!</value>
+  <data name="config.invaild_language" xml:space="preserve">
+    <value>[Settings] The language code is invalid!</value>
   </data>
   <data name="config.saving" xml:space="preserve">
     <value>The current setting is saved as {0}</value>
@@ -1884,7 +1884,7 @@ Type '{0}quit' to leave the server.</value>
     <value>Link: {0}</value>
   </data>
   <data name="mcc.login" xml:space="preserve">
-    <value>Login :</value>
+    <value>Login:</value>
   </data>
   <data name="mcc.login_basic_io" xml:space="preserve">
     <value>Please type the username or email of your choice.</value>
@@ -1964,7 +1964,7 @@ MCC is running with default settings.</value>
     <value>Cached session is still valid for {0}.</value>
   </data>
   <data name="mcc.settings_generated" xml:space="preserve">
-    <value>Settings file MinecraftClient.ini has been generated.</value>
+    <value>The configuration file is saved as {0}</value>
   </data>
   <data name="mcc.unknown_version" xml:space="preserve">
     <value>Unknown or not supported MC version {0}.
@@ -2027,5 +2027,33 @@ Logging in...</value>
   </data>
   <data name="proxy.connected" xml:space="preserve">
     <value>Connected to proxy {0}:{1}</value>
+  </data>
+  <data name="mcc.load_from_args_fail" xml:space="preserve">
+    <value>Exceptions occur when applying settings from command line parameters ({0}), and some entries may be ignored.</value>
+  </data>
+  <data name="mcc.unhandled_exception" xml:space="preserve">
+    <value>Error: Unhandled exception:</value>
+  </data>
+  <data name="mcc.network_timeout" xml:space="preserve">
+    <value>Timed out when requesting {0}.</value>
+  </data>
+  <data name="config.invaild_login_method" xml:space="preserve">
+    <value>[Settings] Only Microsoft accounts support logging in using the browser method.</value>
+  </data>
+  <data name="config.invaild_file_extension" xml:space="preserve">
+    <value>Invalid file extension {0} in {1}, requires {2}.</value>
+  </data>
+  <data name="config.file_not_exist" xml:space="preserve">
+    <value>File {0} does not exist.</value>
+  </data>
+  <data name="config.legacy_color" xml:space="preserve">
+    <value>You are using an older color scheme and some colors may not be displayed correctly. It is recommended that you switch to a modern terminal for a better display experience.</value>
+  </data>
+  <data name="cmd.inventory.player_inventory" xml:space="preserve">
+    <value>Player Inventory</value>
+  </data>
+  <data name="mcc.chatbot_event_exception" xml:space="preserve">
+    <value>An exception occurred while processing event {0}:
+{1}</value>
   </data>
 </root>

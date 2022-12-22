@@ -58,7 +58,7 @@ namespace MinecraftClient.Commands
             var p = inventories[inventoryId];
             int[] targetItems = p.SearchItem(itemType);
             foreach (int slot in targetItems)
-                handler.DoWindowAction(inventoryId, slot, WindowActionType.DropItemStack);
+                handler.DoWindowActionAsync(inventoryId, slot, WindowActionType.DropItemStack).Wait();
 
             return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_dropItem_dropped, Item.GetTypeString(itemType), inventoryId));
         }

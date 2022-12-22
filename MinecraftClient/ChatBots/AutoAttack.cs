@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using MinecraftClient.Mapping;
+using MinecraftClient.EntityHandler;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 

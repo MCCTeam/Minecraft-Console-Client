@@ -5,6 +5,7 @@ using System.Text;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
+using MinecraftClient.EntityHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using MinecraftClient.Scripting;
@@ -535,7 +536,7 @@ namespace MinecraftClient.ChatBots
             StopFishing();
         }
 
-        public override bool OnDisconnect(DisconnectReason reason, string message)
+        public override int OnDisconnect(DisconnectReason reason, string message)
         {
             StopFishing();
 

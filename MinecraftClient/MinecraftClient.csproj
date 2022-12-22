@@ -29,7 +29,6 @@
   <ItemGroup>
     <PackageReference Include="Brigadier.NET" Version="1.2.13" />
     <PackageReference Include="DnsClient" Version="1.7.0" />
-    <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="DSharpPlus" Version="4.2.0" />
     <PackageReference Include="DynamicExpresso.Core" Version="2.13.0" />
     <PackageReference Include="FuzzySharp" Version="2.0.2" />

@@ -1,21 +1,34 @@
 ﻿using System;
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.ProfileKey
 {
     public class PrivateKey
     {
+        [JsonInclude]
+        [JsonPropertyName("Key")]
         public byte[] Key { get; set; }
 
+        [JsonIgnore]
         private readonly RSA rsa;
 
+        [JsonIgnore]
         private byte[]? precedingSignature = null;
 
         public PrivateKey(string pemKey)
         {
             Key = KeyUtils.DecodePemKey(pemKey, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----");
 
+            rsa = RSA.Create();
+            rsa.ImportPkcs8PrivateKey(Key, out _);
+        }
+
+        [JsonConstructor]
+        public PrivateKey(byte[] Key)
+        {
+            this.Key = Key;
             rsa = RSA.Create();
             rsa.ImportPkcs8PrivateKey(Key, out _);
         }

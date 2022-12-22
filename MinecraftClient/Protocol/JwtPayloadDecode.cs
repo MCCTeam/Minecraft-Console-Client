@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 
 namespace MinecraftClient.Protocol
@@ -6,11 +7,10 @@ namespace MinecraftClient.Protocol
     // Thanks to https://stackoverflow.com/questions/60404612/parse-jwt-token-to-get-the-payload-content-only-without-external-library-in-c-sh
     public static class JwtPayloadDecode
     {
-        public static string GetPayload(string token)
+        public static MemoryStream GetPayload(string token)
         {
             var content = token.Split('.')[1];
-            var jsonPayload = Encoding.UTF8.GetString(Decode(content));
-            return jsonPayload;
+            return new MemoryStream(Decode(content));
         }
 
         private static byte[] Decode(string input)
@@ -23,7 +23,7 @@ namespace MinecraftClient.Protocol
                 case 0: break; // No pad chars in this case
                 case 2: output += "=="; break; // Two pad chars
                 case 3: output += "="; break; // One pad char
-                default: throw new System.ArgumentOutOfRangeException(nameof(input), "Illegal base64url string!");
+                default: throw new ArgumentOutOfRangeException(nameof(input), "Illegal base64url string!");
             }
             var converted = Convert.FromBase64String(output); // Standard base64 decoder
             return converted;

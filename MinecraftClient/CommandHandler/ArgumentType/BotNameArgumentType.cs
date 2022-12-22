@@ -19,7 +19,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
             McClient? client = CmdResult.currentHandler;
             if (client != null)
             {
-                var botList = client.GetLoadedChatBots();
+                Scripting.ChatBot[] botList = client.GetLoadedChatBots();
                 foreach (var bot in botList)
                     builder.Suggest(bot.GetType().Name);
             }

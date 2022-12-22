@@ -97,8 +97,9 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override bool OnDisconnect(DisconnectReason reason, string message)
+        public override int OnDisconnect(DisconnectReason reason, string message)
         {
+            bool triggerReco = false;
             if (reason == DisconnectReason.UserLogout)
             {
                 LogDebugToConsole(Translations.bot_autoRelog_ignore_user_logout);
@@ -113,44 +114,77 @@ namespace MinecraftClient.ChatBots
                 if (Config.Ignore_Kick_Message)
                 {
                     Configs._BotRecoAttempts++;
-                    LaunchDelayedReconnection(null);
-                    return true;
+                    LogDebugToConsole(Translations.bot_autoRelog_reconnect_always);
+                    triggerReco = true;
                 }
-
-                foreach (string msg in Config.Kick_Messages)
+                else
                 {
-                    if (comp.Contains(msg))
+                    foreach (string msg in Config.Kick_Messages)
                     {
-                        Configs._BotRecoAttempts++;
-                        LaunchDelayedReconnection(msg);
-                        return true;
+                        if (comp.Contains(msg))
+                        {
+                            Configs._BotRecoAttempts++;
+                            LogDebugToConsole(string.Format(Translations.bot_autoRelog_reconnect, msg));
+                            triggerReco = true;
+                            break;
+                        }
+                    }
+
+                    if (!triggerReco)
+                        LogDebugToConsole(Translations.bot_autoRelog_reconnect_ignore);
+                }
+            }
+
+            if (triggerReco)
+            {
+                double delay = random.NextDouble() * (Config.Delay.max - Config.Delay.min) + Config.Delay.min;
+                LogToConsole(string.Format(Translations.bot_autoRelog_wait, delay));
+                return (int)Math.Floor(delay * 1000);
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        public static int OnDisconnectStatic(DisconnectReason reason, string message)
+        {
+            bool triggerReco = false;
+            if (Config.Enabled
+                && reason != DisconnectReason.UserLogout
+                && (Config.Retries < 0 || Configs._BotRecoAttempts < Config.Retries))
+            {
+                message = GetVerbatim(message);
+                string comp = message.ToLower();
+
+                if (Config.Ignore_Kick_Message)
+                {
+                    Configs._BotRecoAttempts++;
+                    triggerReco = true;
+                }
+                else
+                {
+                    foreach (string msg in Config.Kick_Messages)
+                    {
+                        if (comp.Contains(msg))
+                        {
+                            Configs._BotRecoAttempts++;
+                            triggerReco = true;
+                            break;
+                        }
                     }
                 }
-
-                LogDebugToConsole(Translations.bot_autoRelog_reconnect_ignore);
             }
 
-            return false;
-        }
-
-        private void LaunchDelayedReconnection(string? msg)
-        {
-            double delay = random.NextDouble() * (Config.Delay.max - Config.Delay.min) + Config.Delay.min;
-            LogDebugToConsole(string.Format(string.IsNullOrEmpty(msg) ? Translations.bot_autoRelog_reconnect_always : Translations.bot_autoRelog_reconnect, msg));
-            LogToConsole(string.Format(Translations.bot_autoRelog_wait, delay));
-            System.Threading.Thread.Sleep((int)Math.Floor(delay * 1000));
-            ReconnectToTheServer();
-        }
-
-        public static bool OnDisconnectStatic(DisconnectReason reason, string message)
-        {
-            if (Config.Enabled)
+            if (triggerReco)
             {
-                AutoRelog bot = new();
-                bot.Initialize();
-                return bot.OnDisconnect(reason, message);
+                double delay = random.NextDouble() * (Config.Delay.max - Config.Delay.min) + Config.Delay.min;
+                return (int)Math.Floor(delay * 1000);
             }
-            return false;
+            else
+            {
+                return -1;
+            }
         }
     }
 }

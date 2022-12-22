@@ -1,4 +1,5 @@
 ﻿using System;
+using MinecraftClient.EntityHandler;
 
 namespace MinecraftClient.Mapping
 {

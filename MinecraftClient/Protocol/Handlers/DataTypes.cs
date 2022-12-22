@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
+using MinecraftClient.EntityHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Protocol.PacketPipeline;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -19,6 +25,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private readonly int protocolversion;
 
+        private const int BufferLength = 32;
+        private static readonly Memory<byte> Buffer = new byte[BufferLength];
+
         /// <summary>
         /// Initialize a new DataTypes instance
         /// </summary>
@@ -31,14 +40,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read some data from a cache of bytes and remove it from the cache
         /// </summary>
-        /// <param name="offset">Amount of bytes to read</param>
+        /// <param name="length">Amount of bytes to read</param>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The data read from the cache as an array</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public byte[] ReadData(int offset, Queue<byte> cache)
+        public byte[] ReadData(int length, Queue<byte> cache)
         {
-            byte[] result = new byte[offset];
-            for (int i = 0; i < offset; i++)
+            byte[] result = new byte[length];
+            for (int i = 0; i < length; i++)
                 result[i] = cache.Dequeue();
             return result;
         }
@@ -46,25 +54,24 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read some data from a cache of bytes and remove it from the cache
         /// </summary>
-        /// <param name="cache">Cache of bytes to read from</param>
-        /// <param name="dest">Storage results</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public void ReadDataReverse(Queue<byte> cache, Span<byte> dest)
+        /// <param name="length">Amount of bytes to read</param>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The data read from the cache as an array</returns>
+        public async Task<byte[]> ReadDataAsync(int length, PacketStream stream)
         {
-            for (int i = (dest.Length - 1); i >= 0; --i)
-                dest[i] = cache.Dequeue();
+            byte[] result = new byte[length];
+            await stream.ReadExactlyAsync(result);
+            return result;
         }
 
         /// <summary>
         /// Remove some data from the cache
         /// </summary>
-        /// <param name="offset">Amount of bytes to drop</param>
-        /// <param name="cache">Cache of bytes to drop</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public void DropData(int offset, Queue<byte> cache)
+        /// <param name="length">Amount of bytes to drop</param>
+        /// <param name="stream">Cache of bytes to drop</param>
+        public async Task DropDataAsync(int length, PacketStream stream)
         {
-            while (offset-- > 0)
-                cache.Dequeue();
+            await stream.Skip(length);
         }
 
         /// <summary>
@@ -72,7 +79,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The string</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public string ReadNextString(Queue<byte> cache)
         {
             int length = ReadNextVarInt(cache);
@@ -84,97 +90,242 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a string from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The string</returns>
+        public async Task<string> ReadNextStringAsync(PacketStream stream)
+        {
+            return await ReadNextUtf8StringAsync(stream, ReadNextVarInt(stream));
+        }
+
+        /// <summary>
+        /// Read a string from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The string</returns>
+        public async Task<string> ReadNextUtf8StringAsync(PacketStream stream, int length)
+        {
+            Memory<byte> strByte = length > BufferLength ? new byte[length] : Buffer[..length];
+            await stream.ReadExactlyAsync(strByte);
+            return Encoding.UTF8.GetString(strByte.Span);
+        }
+
+        /// <summary>
+        /// Read a string from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The string</returns>
+        public async Task<string> ReadNextAsciiStringAsync(PacketStream stream, int length)
+        {
+            Memory<byte> strByte = length > BufferLength ? new byte[length] : Buffer[..length];
+            await stream.ReadExactlyAsync(strByte);
+            return Encoding.ASCII.GetString(strByte.Span);
+        }
+
+        /// <summary>
         /// Skip a string from a cache of bytes and remove it from the cache
         /// </summary>
-        /// <param name="cache">Cache of bytes to read from</param>
-        public void SkipNextString(Queue<byte> cache)
+        /// <param name="stream">Cache of bytes to read from</param>
+        public async Task SkipNextStringAsync(PacketStream stream)
         {
-            int length = ReadNextVarInt(cache);
-            DropData(length, cache);
+            int length = ReadNextVarInt(stream);
+            await DropDataAsync(length, stream);
         }
 
         /// <summary>
         /// Read a boolean from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The boolean value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public bool ReadNextBool(Queue<byte> cache)
         {
             return ReadNextByte(cache) != 0x00;
         }
 
         /// <summary>
+        /// Read a boolean from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The boolean value</returns>
+        public bool ReadNextBool(PacketStream stream)
+        {
+            return ReadNextByte(stream) != 0x00;
+        }
+
+        /// <summary>
+        /// Read a boolean from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The boolean value</returns>
+        public async Task<bool> ReadNextBoolAsync(PacketStream stream)
+        {
+            return (await ReadNextByteAsync(stream)) != 0x00;
+        }
+
+        /// <summary>
         /// Read a short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The short integer value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public short ReadNextShort(Queue<byte> cache)
+        public short ReadNextShort(PacketStream stream)
         {
-            Span<byte> rawValue = stackalloc byte[2];
-            for (int i = (2 - 1); i >= 0; --i) //Endianness
-                rawValue[i] = cache.Dequeue();
-            return BitConverter.ToInt16(rawValue);
+            Span<byte> buf = Buffer[..2].Span;
+            buf[1] = ReadNextByte(stream);
+            buf[0] = ReadNextByte(stream);
+            return BinaryPrimitives.ReadInt16LittleEndian(buf);
+        }
+
+        /// <summary>
+        /// Read a short integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The short integer value</returns>
+        public async Task<short> ReadNextShortAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..2];
+            await stream.ReadExactlyAsync(buf);
+            return BinaryPrimitives.ReadInt16BigEndian(buf.Span);
+        }
+
+        /// <summary>
+        /// Read a short integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The short integer value</returns>
+        public async Task SkipNextShortAsync(PacketStream stream)
+        {
+            await DropDataAsync(2, stream);
         }
 
         /// <summary>
         /// Read an integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The integer value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public int ReadNextInt(Queue<byte> cache)
         {
             Span<byte> rawValue = stackalloc byte[4];
-            for (int i = (4 - 1); i >= 0; --i) //Endianness
+            for (int i = (4 - 1); i >= 0; --i) // Endianness
                 rawValue[i] = cache.Dequeue();
             return BitConverter.ToInt32(rawValue);
+        }
+
+        /// <summary>
+        /// Read an integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The integer value</returns>
+        public int ReadNextInt(PacketStream stream)
+        {
+            Span<byte> buf = Buffer[..4].Span;
+            buf[3] = ReadNextByte(stream);
+            buf[2] = ReadNextByte(stream);
+            buf[1] = ReadNextByte(stream);
+            buf[0] = ReadNextByte(stream);
+            return BinaryPrimitives.ReadInt32LittleEndian(buf);
+        }
+
+        /// <summary>
+        /// Read an integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The integer value</returns>
+        public async Task<int> ReadNextIntAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..4];
+            await stream.ReadExactlyAsync(buf);
+            return BinaryPrimitives.ReadInt32BigEndian(buf.Span);
         }
 
         /// <summary>
         /// Read a long integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned long integer value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public long ReadNextLong(Queue<byte> cache)
+        public long ReadNextLong(PacketStream stream)
         {
-            Span<byte> rawValue = stackalloc byte[8];
-            for (int i = (8 - 1); i >= 0; --i) //Endianness
-                rawValue[i] = cache.Dequeue();
-            return BitConverter.ToInt64(rawValue);
+            Span<byte> buf = Buffer[..8].Span;
+            buf[7] = ReadNextByte(stream);
+            buf[6] = ReadNextByte(stream);
+            buf[5] = ReadNextByte(stream);
+            buf[4] = ReadNextByte(stream);
+            buf[3] = ReadNextByte(stream);
+            buf[2] = ReadNextByte(stream);
+            buf[1] = ReadNextByte(stream);
+            buf[0] = ReadNextByte(stream);
+            return BinaryPrimitives.ReadInt64LittleEndian(buf);
+        }
+
+        /// <summary>
+        /// Read a long integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The unsigned long integer value</returns>
+        public async Task<long> ReadNextLongAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..8];
+            await stream.ReadExactlyAsync(buf);
+            return BinaryPrimitives.ReadInt64BigEndian(buf.Span);
+        }
+
+        /// <summary>
+        /// Read a long integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The unsigned long integer value</returns>
+        public async Task SkipNextLongAsync(PacketStream stream)
+        {
+            await DropDataAsync(8, stream);
         }
 
         /// <summary>
         /// Read an unsigned short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public ushort ReadNextUShort(Queue<byte> cache)
+        public ushort ReadNextUShort(PacketStream stream)
         {
-            Span<byte> rawValue = stackalloc byte[2];
-            for (int i = (2 - 1); i >= 0; --i) //Endianness
-                rawValue[i] = cache.Dequeue();
-            return BitConverter.ToUInt16(rawValue);
+            Span<byte> buf = Buffer[..2].Span;
+            buf[1] = ReadNextByte(stream);
+            buf[0] = ReadNextByte(stream);
+            return BinaryPrimitives.ReadUInt16LittleEndian(buf);
+        }
+
+        /// <summary>
+        /// Read an unsigned short integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The unsigned short integer value</returns>
+        public async Task<ushort> ReadNextUShortAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..2];
+            await stream.ReadExactlyAsync(buf);
+            return BinaryPrimitives.ReadUInt16BigEndian(buf.Span);
         }
 
         /// <summary>
         /// Read an unsigned long integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned long integer value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public ulong ReadNextULong(Queue<byte> cache)
+        public ulong ReadNextULong(PacketStream stream)
         {
-            Span<byte> rawValue = stackalloc byte[8];
-            for (int i = (8 - 1); i >= 0; --i) //Endianness
-                rawValue[i] = cache.Dequeue();
-            return BitConverter.ToUInt64(rawValue);
+            Span<byte> buf = Buffer[..8].Span;
+            buf[7] = ReadNextByte(stream);
+            buf[6] = ReadNextByte(stream);
+            buf[5] = ReadNextByte(stream);
+            buf[4] = ReadNextByte(stream);
+            buf[3] = ReadNextByte(stream);
+            buf[2] = ReadNextByte(stream);
+            buf[1] = ReadNextByte(stream);
+            buf[0] = ReadNextByte(stream);
+            return BinaryPrimitives.ReadUInt64LittleEndian(buf);
+        }
+
+        /// <summary>
+        /// Read a long integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The unsigned long integer value</returns>
+        public async Task<ulong> ReadNextULongAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..8];
+            await stream.ReadExactlyAsync(buf);
+            return BinaryPrimitives.ReadUInt64BigEndian(buf.Span);
         }
 
         /// <summary>
         /// Read a Location encoded as an ulong field and remove it from the cache
         /// </summary>
         /// <returns>The Location value</returns>
-        public Location ReadNextLocation(Queue<byte> cache)
+        public Location ReadNextLocation(PacketStream stream)
         {
-            ulong locEncoded = ReadNextULong(cache);
+            ulong locEncoded = ReadNextULong(stream);
             int x, y, z;
             if (protocolversion >= Protocol18Handler.MC_1_14_Version)
             {
@@ -198,16 +349,41 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Read several little endian unsigned short integers at once from a cache of bytes and remove them from the cache
+        /// Read a Location encoded as an ulong field and remove it from the cache
         /// </summary>
-        /// <returns>The unsigned short integer value</returns>
-        public ushort[] ReadNextUShortsLittleEndian(int amount, Queue<byte> cache)
+        /// <returns>The Location value</returns>
+        public async Task<Location> ReadNextLocationAsync(PacketStream stream)
         {
-            byte[] rawValues = ReadData(2 * amount, cache);
-            ushort[] result = new ushort[amount];
-            for (int i = 0; i < amount; i++)
-                result[i] = BitConverter.ToUInt16(rawValues, i * 2);
-            return result;
+            ulong locEncoded = await ReadNextULongAsync(stream);
+            int x, y, z;
+            if (protocolversion >= Protocol18Handler.MC_1_14_Version)
+            {
+                x = (int)(locEncoded >> 38);
+                y = (int)(locEncoded & 0xFFF);
+                z = (int)(locEncoded << 26 >> 38);
+            }
+            else
+            {
+                x = (int)(locEncoded >> 38);
+                y = (int)((locEncoded >> 26) & 0xFFF);
+                z = (int)(locEncoded << 38 >> 38);
+            }
+            if (x >= 0x02000000) // 33,554,432
+                x -= 0x04000000; // 67,108,864
+            if (y >= 0x00000800) //      2,048
+                y -= 0x00001000; //      4,096
+            if (z >= 0x02000000) // 33,554,432
+                z -= 0x04000000; // 67,108,864
+            return new Location(x, y, z);
+        }
+
+        /// <summary>
+        /// Read a Location encoded as an ulong field and remove it from the cache
+        /// </summary>
+        /// <returns>The Location value</returns>
+        public async Task SkipNextLocationAsync(PacketStream stream)
+        {
+            await SkipNextLongAsync(stream);
         }
 
         /// <summary>
@@ -227,38 +403,80 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a uuid from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The uuid</returns>
+        public async Task<Guid> ReadNextUUIDAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..16];
+            await stream.ReadExactlyAsync(buf);
+            return new Guid(buf.Span).ToLittleEndian();
+        }
+
+        /// <summary>
+        /// Read a uuid from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The uuid</returns>
+        public async Task SkipNextUUIDAsync(PacketStream stream)
+        {
+            await DropDataAsync(16, stream);
+        }
+
+        /// <summary>
         /// Read a byte array from a cache of bytes and remove it from the cache
         /// </summary>
-        /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="stream">Cache of bytes to read from</param>
         /// <returns>The byte array</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public byte[] ReadNextByteArray(Queue<byte> cache)
+        public async Task<byte[]> ReadNextByteArrayAsync(PacketStream stream)
         {
             int len = protocolversion >= Protocol18Handler.MC_1_8_Version
-                ? ReadNextVarInt(cache)
-                : ReadNextShort(cache);
-            return ReadData(len, cache);
+                ? await ReadNextVarIntAsync(stream)
+                : await ReadNextShortAsync(stream);
+            return await ReadDataAsync(len, stream);
         }
 
         /// <summary>
         /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
         /// </summary>
         /// <returns>The unsigned long integer values</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public ulong[] ReadNextULongArray(Queue<byte> cache)
+        public ulong[] ReadNextULongArray(PacketStream stream)
         {
-            int len = ReadNextVarInt(cache);
+            int len = ReadNextVarInt(stream);
             ulong[] result = new ulong[len];
             for (int i = 0; i < len; i++)
-                result[i] = ReadNextULong(cache);
+                result[i] = ReadNextULong(stream);
             return result;
+        }
+
+        /// <summary>
+        /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
+        /// </summary>
+        /// <returns>The unsigned long integer values</returns>
+        public async Task<ulong[]> ReadNextULongArrayAsync(PacketStream stream)
+        {
+            int len = await ReadNextVarIntAsync(stream);
+            ulong[] result = new ulong[len];
+            for (int i = 0; i < len; i++)
+                result[i] = await ReadNextULongAsync(stream);
+            return result;
+        }
+
+        /// <summary>
+        /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
+        /// </summary>
+        /// <returns>The unsigned long integer values</returns>
+        public async Task SkipNextULongArray(PacketStream stream)
+        {
+            int len = await ReadNextVarIntAsync(stream);
+            await DropDataAsync(len * 8, stream);
         }
 
         /// <summary>
         /// Read a double from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The double value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public double ReadNextDouble(Queue<byte> cache)
         {
             Span<byte> rawValue = stackalloc byte[8];
@@ -268,10 +486,38 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a double from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The double value</returns>
+        public double ReadNextDouble(PacketStream stream)
+        {
+            Span<byte> buf = Buffer[..8].Span;
+            buf[7] = ReadNextByte(stream);
+            buf[6] = ReadNextByte(stream);
+            buf[5] = ReadNextByte(stream);
+            buf[4] = ReadNextByte(stream);
+            buf[3] = ReadNextByte(stream);
+            buf[2] = ReadNextByte(stream);
+            buf[1] = ReadNextByte(stream);
+            buf[0] = ReadNextByte(stream);
+            return BinaryPrimitives.ReadDoubleLittleEndian(buf);
+        }
+
+        /// <summary>
+        /// Read a double from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The double value</returns>
+        public async Task<double> ReadNextDoubleAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..8];
+            await stream.ReadExactlyAsync(buf);
+            return BinaryPrimitives.ReadDoubleBigEndian(buf.Span);
+        }
+
+        /// <summary>
         /// Read a float from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The float value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public float ReadNextFloat(Queue<byte> cache)
         {
             Span<byte> rawValue = stackalloc byte[4];
@@ -281,22 +527,74 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Read an integer from the network
+        /// Read a float from a cache of bytes and remove it from the cache
         /// </summary>
+        /// <returns>The float value</returns>
+        public float ReadNextFloat(PacketStream stream)
+        {
+            Span<byte> buf = Buffer[..4].Span;
+            buf[3] = ReadNextByte(stream);
+            buf[2] = ReadNextByte(stream);
+            buf[1] = ReadNextByte(stream);
+            buf[0] = ReadNextByte(stream);
+            return BinaryPrimitives.ReadSingleLittleEndian(buf);
+        }
+
+        /// <summary>
+        /// Read a float from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The float value</returns>
+        public async Task<float> ReadNextFloatAsync(PacketStream stream)
+        {
+            Memory<byte> buf = Buffer[..4];
+            await stream.ReadExactlyAsync(buf);
+            return BinaryPrimitives.ReadSingleBigEndian(buf.Span);
+        }
+
+        /// <summary>
+        /// Read a float from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The float value</returns>
+        public async Task SkipNextFloatAsync(PacketStream stream)
+        {
+            await DropDataAsync(4, stream);
+        }
+
+        /// <summary>
+        /// Read an integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
         /// <returns>The integer</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadNextVarIntRAW(SocketWrapper socket)
+        public int ReadNextVarInt(PacketStream stream)
         {
             int i = 0;
             int j = 0;
             byte b;
-            while (true)
+            do
             {
-                b = socket.ReadDataRAW(1)[0];
+                b = ReadNextByte(stream);
                 i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
-                if ((b & 0x80) != 128) break;
-            }
+            } while ((b & 0x80) == 128);
+            return i;
+        }
+
+        /// <summary>
+        /// Read an integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The integer</returns>
+        public async Task<int> ReadNextVarIntAsync(PacketStream stream)
+        {
+            int i = 0;
+            int j = 0;
+            byte b;
+            do
+            {
+                b = await ReadNextByteAsync(stream);
+                i |= (b & 0x7F) << j++ * 7;
+                if (j > 5) throw new OverflowException("VarInt too big");
+            } while ((b & 0x80) == 128);
             return i;
         }
 
@@ -305,7 +603,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The integer</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public int ReadNextVarInt(Queue<byte> cache)
         {
             int i = 0;
@@ -323,12 +620,22 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Skip a VarInt from a cache of bytes with better performance
         /// </summary>
-        /// <param name="cache">Cache of bytes to read from</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public void SkipNextVarInt(Queue<byte> cache)
+        /// <param name="stream">Cache of bytes to read from</param>
+        public void SkipNextVarInt(PacketStream stream)
         {
             while (true)
-                if ((ReadNextByte(cache) & 0x80) != 128)
+                if ((((byte)ReadNextByte(stream)) & 0x80) != 128)
+                    break;
+        }
+
+        /// <summary>
+        /// Skip a VarInt from a cache of bytes with better performance
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        public async Task SkipNextVarIntAsync(PacketStream stream)
+        {
+            while (true)
+                if (((await ReadNextByteAsync(stream)) & 0x80) != 128)
                     break;
         }
 
@@ -337,16 +644,35 @@ namespace MinecraftClient.Protocol.Handlers
         /// This is only done with forge.  It looks like it's a normal short, except that if the high
         /// bit is set, it has an extra byte.
         /// </summary>
-        /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="stream">Cache of bytes to read from</param>
         /// <returns>The int</returns>
-        public int ReadNextVarShort(Queue<byte> cache)
+        public int ReadNextVarShort(PacketStream stream)
         {
-            ushort low = ReadNextUShort(cache);
+            ushort low = ReadNextUShort(stream);
             byte high = 0;
             if ((low & 0x8000) != 0)
             {
                 low &= 0x7FFF;
-                high = ReadNextByte(cache);
+                high = ReadNextByte(stream);
+            }
+            return ((high & 0xFF) << 15) | low;
+        }
+
+        /// <summary>
+        /// Read an "extended short", which is actually an int of some kind, from the cache of bytes.
+        /// This is only done with forge.  It looks like it's a normal short, except that if the high
+        /// bit is set, it has an extra byte.
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The int</returns>
+        public async Task<int> ReadNextVarShortAsync(PacketStream stream)
+        {
+            ushort low = await ReadNextUShortAsync(stream);
+            byte high = 0;
+            if ((low & 0x8000) != 0)
+            {
+                low &= 0x7FFF;
+                high = await ReadNextByteAsync(stream);
             }
             return ((high & 0xFF) << 15) | low;
         }
@@ -354,24 +680,45 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read a long from a cache of bytes and remove it from the cache
         /// </summary>
-        /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="stream">Cache of bytes to read from</param>
         /// <returns>The long value</returns>
-        public long ReadNextVarLong(Queue<byte> cache)
+        public long ReadNextVarLong(PacketStream stream)
         {
             int numRead = 0;
             long result = 0;
             byte read;
             do
             {
-                read = ReadNextByte(cache);
+                read = ReadNextByte(stream);
                 long value = (read & 0x7F);
                 result |= (value << (7 * numRead));
 
                 numRead++;
                 if (numRead > 10)
-                {
                     throw new OverflowException("VarLong is too big");
-                }
+            } while ((read & 0x80) != 0);
+            return result;
+        }
+
+        /// <summary>
+        /// Read a long from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="stream">Cache of bytes to read from</param>
+        /// <returns>The long value</returns>
+        public async Task<long> ReadNextVarLongAsync(PacketStream stream)
+        {
+            int numRead = 0;
+            long result = 0;
+            byte read;
+            do
+            {
+                read = await ReadNextByteAsync(stream);
+                long value = (read & 0x7F);
+                result |= (value << (7 * numRead));
+
+                numRead++;
+                if (numRead > 10)
+                    throw new OverflowException("VarLong is too big");
             } while ((read & 0x80) != 0);
             return result;
         }
@@ -380,7 +727,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single byte from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The byte that was read</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public byte ReadNextByte(Queue<byte> cache)
         {
             byte result = cache.Dequeue();
@@ -388,28 +734,46 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a single byte from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The byte that was read</returns>
+        public byte ReadNextByte(PacketStream stream)
+        {
+            return stream.ReadByte();
+        }
+
+        /// <summary>
+        /// Read a single byte from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The byte that was read</returns>
+        public async Task<byte> ReadNextByteAsync(PacketStream stream)
+        {
+            return await stream.ReadByteAsync();
+        }
+
+        /// <summary>
         /// Read an uncompressed Named Binary Tag blob and remove it from the cache
         /// </summary>
-        public Dictionary<string, object> ReadNextNbt(Queue<byte> cache)
+        public async Task<Dictionary<string, object>> ReadNextNbtAsync(PacketStream stream)
         {
-            return ReadNextNbt(cache, true);
+            return await ReadNextNbtAsync(stream, true);
         }
 
         /// <summary>
         /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public Item? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
+        public async Task<Item?> ReadNextItemSlotAsync(PacketStream stream, ItemPalette itemPalette)
         {
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {
                 // MC 1.13 and greater
-                bool itemPresent = ReadNextBool(cache);
+                bool itemPresent = await ReadNextBoolAsync(stream);
                 if (itemPresent)
                 {
-                    ItemType type = itemPalette.FromId(ReadNextVarInt(cache));
-                    byte itemCount = ReadNextByte(cache);
-                    Dictionary<string, object> nbt = ReadNextNbt(cache);
+                    ItemType type = itemPalette.FromId(await ReadNextVarIntAsync(stream));
+                    byte itemCount = await ReadNextByteAsync(stream);
+                    Dictionary<string, object> nbt = await ReadNextNbtAsync(stream);
                     return new Item(type, itemCount, nbt);
                 }
                 else return null;
@@ -417,12 +781,12 @@ namespace MinecraftClient.Protocol.Handlers
             else
             {
                 // MC 1.12.2 and lower
-                short itemID = ReadNextShort(cache);
+                short itemID = await ReadNextShortAsync(stream);
                 if (itemID == -1)
                     return null;
-                byte itemCount = ReadNextByte(cache);
-                short itemDamage = ReadNextShort(cache);
-                Dictionary<string, object> nbt = ReadNextNbt(cache);
+                byte itemCount = await ReadNextByteAsync(stream);
+                short itemDamage = await ReadNextShortAsync(stream);
+                Dictionary<string, object> nbt = await ReadNextNbtAsync(stream);
                 return new Item(itemPalette.FromId(itemID), itemCount, nbt);
             }
         }
@@ -433,47 +797,47 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="entityPalette">Mappings for converting entity type Ids to EntityType</param>
         /// <param name="living">TRUE for living entities (layout differs)</param>
         /// <returns>Entity information</returns>
-        public Entity ReadNextEntity(Queue<byte> cache, EntityPalette entityPalette, bool living)
+        public async Task<Entity> ReadNextEntity(PacketStream stream, EntityPalette entityPalette, bool living)
         {
-            int entityID = ReadNextVarInt(cache);
+            int entityID = await ReadNextVarIntAsync(stream);
             if (protocolversion > Protocol18Handler.MC_1_8_Version)
-                ReadNextUUID(cache);
+                await SkipNextUUIDAsync(stream);
 
             EntityType entityType;
             // Entity type data type change from byte to varint after 1.14
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
-                entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+                entityType = entityPalette.FromId(await ReadNextVarIntAsync(stream), living);
             else
-                entityType = entityPalette.FromId(ReadNextByte(cache), living);
+                entityType = entityPalette.FromId(await ReadNextByteAsync(stream), living);
 
-            double entityX = ReadNextDouble(cache);
-            double entityY = ReadNextDouble(cache);
-            double entityZ = ReadNextDouble(cache);
-            byte entityPitch = ReadNextByte(cache);
-            byte entityYaw = ReadNextByte(cache);
+            double entityX = await ReadNextDoubleAsync(stream);
+            double entityY = await ReadNextDoubleAsync(stream);
+            double entityZ = await ReadNextDoubleAsync(stream);
+            byte entityPitch = await ReadNextByteAsync(stream);
+            byte entityYaw = await ReadNextByteAsync(stream);
 
             int metadata = -1;
             if (living)
             {
                 if (protocolversion == Protocol18Handler.MC_1_18_2_Version)
-                    entityYaw = ReadNextByte(cache);
+                    entityYaw = await ReadNextByteAsync(stream);
                 else
-                    entityPitch = ReadNextByte(cache);
+                    entityPitch = await ReadNextByteAsync(stream);
             }
             else
             {
                 if (protocolversion >= Protocol18Handler.MC_1_19_Version)
                 {
-                    entityYaw = ReadNextByte(cache);
-                    metadata = ReadNextVarInt(cache);
+                    entityYaw = await ReadNextByteAsync(stream);
+                    metadata = await ReadNextVarIntAsync(stream);
                 }
                 else
-                    metadata = ReadNextInt(cache);
+                    metadata = await ReadNextIntAsync(stream);
             }
 
-            short velocityX = ReadNextShort(cache);
-            short velocityY = ReadNextShort(cache);
-            short velocityZ = ReadNextShort(cache);
+            short velocityX = await ReadNextShortAsync(stream);
+            short velocityY = await ReadNextShortAsync(stream);
+            short velocityZ = await ReadNextShortAsync(stream);
 
             return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, metadata);
         }
@@ -481,38 +845,36 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read an uncompressed Named Binary Tag blob and remove it from the cache (internal)
         /// </summary>
-        private Dictionary<string, object> ReadNextNbt(Queue<byte> cache, bool root)
+        private async Task<Dictionary<string, object>> ReadNextNbtAsync(PacketStream stream, bool root)
         {
             Dictionary<string, object> nbtData = new();
 
             if (root)
             {
-                if (cache.Peek() == 0) // TAG_End
-                {
-                    cache.Dequeue();
+                byte head = await ReadNextByteAsync(stream); // Tag type (TAG_Compound)
+
+                if (head == 0) // TAG_End
                     return nbtData;
-                }
-                if (cache.Peek() != 10) // TAG_Compound
-                    throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
-                ReadNextByte(cache); // Tag type (TAG_Compound)
+
+                if (head != 10) // TAG_Compound
+                    throw new InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
 
                 // NBT root name
-                string rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
+                string rootName = await ReadNextAsciiStringAsync(stream, await ReadNextUShortAsync(stream));
 
-                if (!String.IsNullOrEmpty(rootName))
-                    nbtData[""] = rootName;
+                if (!string.IsNullOrEmpty(rootName))
+                    nbtData[string.Empty] = rootName;
             }
 
             while (true)
             {
-                int fieldType = ReadNextByte(cache);
+                byte fieldType = await ReadNextByteAsync(stream);
 
-                if (fieldType == 0) // TAG_End
+                if (fieldType == 0x00) // TAG_End
                     return nbtData;
 
-                int fieldNameLength = ReadNextUShort(cache);
-                string fieldName = Encoding.ASCII.GetString(ReadData(fieldNameLength, cache));
-                object fieldValue = ReadNbtField(cache, fieldType);
+                string fieldName = await ReadNextAsciiStringAsync(stream, await ReadNextUShortAsync(stream));
+                object fieldValue = await ReadNbtFieldAsync(stream, fieldType);
 
                 // This will override previous tags with the same name
                 nbtData[fieldName] = fieldValue;
@@ -522,62 +884,62 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read a single Named Binary Tag field of the specified type and remove it from the cache
         /// </summary>
-        private object ReadNbtField(Queue<byte> cache, int fieldType)
+        private async Task<object> ReadNbtFieldAsync(PacketStream stream, byte fieldType)
         {
             switch (fieldType)
             {
                 case 1: // TAG_Byte
-                    return ReadNextByte(cache);
+                    return await ReadNextByteAsync(stream);
                 case 2: // TAG_Short
-                    return ReadNextShort(cache);
+                    return await ReadNextShortAsync(stream);
                 case 3: // TAG_Int
-                    return ReadNextInt(cache);
+                    return await ReadNextIntAsync(stream);
                 case 4: // TAG_Long
-                    return ReadNextLong(cache);
+                    return await ReadNextLongAsync(stream);
                 case 5: // TAG_Float
-                    return ReadNextFloat(cache);
+                    return await ReadNextFloatAsync(stream);
                 case 6: // TAG_Double
-                    return ReadNextDouble(cache);
+                    return await ReadNextDoubleAsync(stream);
                 case 7: // TAG_Byte_Array
-                    return ReadData(ReadNextInt(cache), cache);
+                    return await ReadDataAsync(await ReadNextIntAsync(stream), stream);
                 case 8: // TAG_String
-                    return Encoding.UTF8.GetString(ReadData(ReadNextUShort(cache), cache));
+                    return await ReadNextUtf8StringAsync(stream, await ReadNextUShortAsync(stream));
                 case 9: // TAG_List
-                    int listType = ReadNextByte(cache);
-                    int listLength = ReadNextInt(cache);
+                    byte listType = await ReadNextByteAsync(stream);
+                    int listLength = await ReadNextIntAsync(stream);
                     object[] listItems = new object[listLength];
                     for (int i = 0; i < listLength; i++)
-                        listItems[i] = ReadNbtField(cache, listType);
+                        listItems[i] = await ReadNbtFieldAsync(stream, listType);
                     return listItems;
                 case 10: // TAG_Compound
-                    return ReadNextNbt(cache, false);
+                    return await ReadNextNbtAsync(stream, false);
                 case 11: // TAG_Int_Array
                     listType = 3;
-                    listLength = ReadNextInt(cache);
+                    listLength = await ReadNextIntAsync(stream);
                     listItems = new object[listLength];
                     for (int i = 0; i < listLength; i++)
-                        listItems[i] = ReadNbtField(cache, listType);
+                        listItems[i] = await ReadNbtFieldAsync(stream, listType);
                     return listItems;
                 case 12: // TAG_Long_Array
                     listType = 4;
-                    listLength = ReadNextInt(cache);
+                    listLength = await ReadNextIntAsync(stream);
                     listItems = new object[listLength];
                     for (int i = 0; i < listLength; i++)
-                        listItems[i] = ReadNbtField(cache, listType);
+                        listItems[i] = await ReadNbtFieldAsync(stream, listType);
                     return listItems;
                 default:
-                    throw new System.IO.InvalidDataException("Failed to decode NBT: Unknown field type " + fieldType);
+                    throw new InvalidDataException("Failed to decode NBT: Unknown field type " + fieldType);
             }
         }
 
-        public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette)
+        public async Task<Dictionary<int, object?>> ReadNextMetadataAsync(PacketStream stream, ItemPalette itemPalette)
         {
             Dictionary<int, object?> data = new();
-            byte key = ReadNextByte(cache);
+            byte key = await ReadNextByteAsync(stream);
 
             while (key != 0xff)
             {
-                int type = ReadNextVarInt(cache);
+                int type = await ReadNextVarIntAsync(stream);
 
                 // starting from 1.13, Optional Chat is inserted as number 5 in 1.13 and IDs after 5 got shifted.
                 // Increase type ID by 1 if
@@ -601,121 +963,117 @@ namespace MinecraftClient.Protocol.Handlers
                 switch (type)
                 {
                     case 0: // byte
-                        value = ReadNextByte(cache);
+                        value = await ReadNextByteAsync(stream);
                         break;
                     case 1: // VarInt
-                        value = ReadNextVarInt(cache);
+                        value = await ReadNextVarIntAsync(stream);
                         break;
                     case 2: // Float
-                        value = ReadNextFloat(cache);
+                        value = await ReadNextFloatAsync(stream);
                         break;
                     case 3: // String
-                        value = ReadNextString(cache);
+                        value = await ReadNextStringAsync(stream);
                         break;
                     case 4: // Chat
-                        value = ReadNextString(cache);
+                        value = await ReadNextStringAsync(stream);
                         break;
                     case 5: // Optional Chat
-                        if (ReadNextBool(cache))
-                            value = ReadNextString(cache);
+                        if (await ReadNextBoolAsync(stream))
+                            value = await ReadNextStringAsync(stream);
                         break;
                     case 6: // Slot
-                        value = ReadNextItemSlot(cache, itemPalette);
+                        value = await ReadNextItemSlotAsync(stream, itemPalette);
                         break;
                     case 7: // Boolean
-                        value = ReadNextBool(cache);
+                        value = await ReadNextBoolAsync(stream);
                         break;
                     case 8: // Rotation (3x floats)
                         value = new List<float>
                         {
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache)
+                            await ReadNextFloatAsync(stream),
+                            await ReadNextFloatAsync(stream),
+                            await ReadNextFloatAsync(stream)
                         };
                         break;
                     case 9: // Position
-                        value = ReadNextLocation(cache);
+                        value = await ReadNextLocationAsync(stream);
                         break;
                     case 10: // Optional Position
-                        if (ReadNextBool(cache))
-                        {
-                            value = ReadNextLocation(cache);
-                        }
+                        if (await ReadNextBoolAsync(stream))
+                            value = await ReadNextLocationAsync(stream);
                         break;
                     case 11: // Direction (VarInt)
-                        value = ReadNextVarInt(cache);
+                        value = await ReadNextVarIntAsync(stream);
                         break;
                     case 12: // Optional UUID
-                        if (ReadNextBool(cache))
-                        {
-                            value = ReadNextUUID(cache);
-                        }
+                        if (await ReadNextBoolAsync(stream))
+                            value = await ReadNextUUIDAsync(stream);
                         break;
                     case 13: // Optional BlockID (VarInt)
-                        value = ReadNextVarInt(cache);
+                        value = await ReadNextVarIntAsync(stream);
                         break;
                     case 14: // NBT
-                        value = ReadNextNbt(cache);
+                        value = await ReadNextNbtAsync(stream);
                         break;
                     case 15: // Particle
                              // Currecutly not handled. Reading data only
-                        int ParticleID = ReadNextVarInt(cache);
+                        int ParticleID = await ReadNextVarIntAsync(stream);
                         switch (ParticleID)
                         {
                             case 3:
-                                ReadNextVarInt(cache);
+                                await SkipNextVarIntAsync(stream);
                                 break;
                             case 14:
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
+                                await SkipNextFloatAsync(stream);
+                                await SkipNextFloatAsync(stream);
+                                await SkipNextFloatAsync(stream);
+                                await SkipNextFloatAsync(stream);
                                 break;
                             case 23:
-                                ReadNextVarInt(cache);
+                                await SkipNextVarIntAsync(stream);
                                 break;
                             case 32:
-                                ReadNextItemSlot(cache, itemPalette);
+                                await ReadNextItemSlotAsync(stream, itemPalette);
                                 break;
                         }
                         break;
                     case 16: // Villager Data (3x VarInt)
                         value = new List<int>
                         {
-                            ReadNextVarInt(cache),
-                            ReadNextVarInt(cache),
-                            ReadNextVarInt(cache)
+                            await ReadNextVarIntAsync(stream),
+                            await ReadNextVarIntAsync(stream),
+                            await ReadNextVarIntAsync(stream)
                         };
                         break;
                     case 17: // Optional VarInt
-                        if (ReadNextBool(cache))
+                        if (await ReadNextBoolAsync(stream))
                         {
-                            value = ReadNextVarInt(cache);
+                            value = await ReadNextVarIntAsync(stream);
                         }
                         break;
                     case 18: // Pose
-                        value = ReadNextVarInt(cache);
+                        value = await ReadNextVarIntAsync(stream);
                         break;
                     case 19: // Cat Variant
-                        value = ReadNextVarInt(cache);
+                        value = await ReadNextVarIntAsync(stream);
                         break;
                     case 20: // Frog Varint
-                        value = ReadNextVarInt(cache);
+                        value = await ReadNextVarIntAsync(stream);
                         break;
                     case 21: // GlobalPos at 1.19.2+; Painting Variant at 1.19-
                         if (protocolversion <= Protocol18Handler.MC_1_19_Version)
-                            value = ReadNextVarInt(cache);
+                            value = await ReadNextVarIntAsync(stream);
                         else
                             value = null; // Dimension and blockPos, currently not in use
                         break;
                     case 22: // Painting Variant
-                        value = ReadNextVarInt(cache);
+                        value = await ReadNextVarIntAsync(stream);
                         break;
                     default:
-                        throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + type + ". Is this up to date for new MC Version?");
+                        throw new InvalidDataException("Unknown Metadata Type ID " + type + ". Is this up to date for new MC Version?");
                 }
                 data[key] = value;
-                key = ReadNextByte(cache);
+                key = await ReadNextByteAsync(stream);
             }
             return data;
         }
@@ -724,22 +1082,20 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single villager trade from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public VillagerTrade ReadNextTrade(Queue<byte> cache, ItemPalette itemPalette)
+        public async Task<VillagerTrade> ReadNextTradeAsync(PacketStream stream, ItemPalette itemPalette)
         {
-            Item inputItem1 = ReadNextItemSlot(cache, itemPalette)!;
-            Item outputItem = ReadNextItemSlot(cache, itemPalette)!;
+            Item inputItem1 = (await ReadNextItemSlotAsync(stream, itemPalette))!;
+            Item outputItem = (await ReadNextItemSlotAsync(stream, itemPalette))!;
             Item? inputItem2 = null;
-            if (ReadNextBool(cache)) //check if villager has second item
-            {
-                inputItem2 = ReadNextItemSlot(cache, itemPalette);
-            }
-            bool tradeDisabled = ReadNextBool(cache);
-            int numberOfTradeUses = ReadNextInt(cache);
-            int maximumNumberOfTradeUses = ReadNextInt(cache);
-            int xp = ReadNextInt(cache);
-            int specialPrice = ReadNextInt(cache);
-            float priceMultiplier = ReadNextFloat(cache);
-            int demand = ReadNextInt(cache);
+            if (await ReadNextBoolAsync(stream)) //check if villager has second item
+                inputItem2 = await ReadNextItemSlotAsync(stream, itemPalette);
+            bool tradeDisabled = await ReadNextBoolAsync(stream);
+            int numberOfTradeUses = await ReadNextIntAsync(stream);
+            int maximumNumberOfTradeUses = await ReadNextIntAsync(stream);
+            int xp = await ReadNextIntAsync(stream);
+            int specialPrice = await ReadNextIntAsync(stream);
+            float priceMultiplier = await ReadNextFloatAsync(stream);
+            int demand = await ReadNextIntAsync(stream);
             return new VillagerTrade(inputItem1, outputItem, inputItem2, tradeDisabled, numberOfTradeUses, maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);
         }
 
@@ -773,8 +1129,8 @@ namespace MinecraftClient.Protocol.Handlers
                 // NBT root name
                 string? rootName = null;
 
-                if (nbt.ContainsKey(""))
-                    rootName = nbt[""] as string;
+                if (nbt.TryGetValue("", out object? rootNameObj))
+                    rootName = rootNameObj as string;
 
                 rootName ??= "";
 
@@ -809,106 +1165,91 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Binary data for the passed object</returns>
         private byte[] GetNbtField(object obj, out byte fieldType)
         {
-            if (obj is byte)
+            switch (obj)
             {
-                fieldType = 1; // TAG_Byte
-                return new[] { (byte)obj };
-            }
-            else if (obj is short)
-            {
-                fieldType = 2; // TAG_Short
-                return GetShort((short)obj);
-            }
-            else if (obj is int)
-            {
-                fieldType = 3; // TAG_Int
-                return GetInt((int)obj);
-            }
-            else if (obj is long)
-            {
-                fieldType = 4; // TAG_Long
-                return GetLong((long)obj);
-            }
-            else if (obj is float)
-            {
-                fieldType = 5; // TAG_Float
-                return GetFloat((float)obj);
-            }
-            else if (obj is double)
-            {
-                fieldType = 6; // TAG_Double
-                return GetDouble((double)obj);
-            }
-            else if (obj is byte[])
-            {
-                fieldType = 7; // TAG_Byte_Array
-                return (byte[])obj;
-            }
-            else if (obj is string)
-            {
-                fieldType = 8; // TAG_String
-                byte[] stringBytes = Encoding.UTF8.GetBytes((string)obj);
-                return ConcatBytes(GetUShort((ushort)stringBytes.Length), stringBytes);
-            }
-            else if (obj is object[])
-            {
-                fieldType = 9; // TAG_List
+                case byte:
+                    fieldType = 1; // TAG_Byte
+                    return new[] { (byte)obj };
+                case short:
+                    fieldType = 2; // TAG_Short
+                    return GetShort((short)obj);
+                case int:
+                    fieldType = 3; // TAG_Int
+                    return GetInt((int)obj);
+                case long:
+                    fieldType = 4; // TAG_Long
+                    return GetLong((long)obj);
+                case float:
+                    fieldType = 5; // TAG_Float
+                    return GetFloat((float)obj);
+                case double:
+                    fieldType = 6; // TAG_Double
+                    return GetDouble((double)obj);
+                case byte[]:
+                    fieldType = 7; // TAG_Byte_Array
+                    return (byte[])obj;
+                case string:
+                    {
+                        fieldType = 8; // TAG_String
+                        byte[] stringBytes = Encoding.UTF8.GetBytes((string)obj);
+                        return ConcatBytes(GetUShort((ushort)stringBytes.Length), stringBytes);
+                    }
+                case object[]:
+                    {
+                        fieldType = 9; // TAG_List
 
-                List<object> list = new((object[])obj);
-                int arrayLengthTotal = list.Count;
+                        List<object> list = new((object[])obj);
+                        int arrayLengthTotal = list.Count;
 
-                // Treat empty list as TAG_Byte, length 0
-                if (arrayLengthTotal == 0)
-                    return ConcatBytes(new[] { (byte)1 }, GetInt(0));
+                        // Treat empty list as TAG_Byte, length 0
+                        if (arrayLengthTotal == 0)
+                            return ConcatBytes(new[] { (byte)1 }, GetInt(0));
 
-                // Encode first list item, retain its type
-                string firstItemTypeString = list[0].GetType().Name;
-                byte[] firstItemBytes = GetNbtField(list[0], out byte firstItemType);
-                list.RemoveAt(0);
+                        // Encode first list item, retain its type
+                        string firstItemTypeString = list[0].GetType().Name;
+                        byte[] firstItemBytes = GetNbtField(list[0], out byte firstItemType);
+                        list.RemoveAt(0);
 
-                // Encode further list items, check they have the same type
-                List<byte> subsequentItemsBytes = new();
-                foreach (object item in list)
-                {
-                    subsequentItemsBytes.AddRange(GetNbtField(item, out byte subsequentItemType));
-                    if (subsequentItemType != firstItemType)
-                        throw new System.IO.InvalidDataException(
-                            "GetNbt: Cannot encode object[] list with mixed types: " + firstItemTypeString + ", " + item.GetType().Name + " into NBT!");
-                }
+                        // Encode further list items, check they have the same type
+                        List<byte> subsequentItemsBytes = new();
+                        foreach (object item in list)
+                        {
+                            subsequentItemsBytes.AddRange(GetNbtField(item, out byte subsequentItemType));
+                            if (subsequentItemType != firstItemType)
+                                throw new InvalidDataException(
+                                    "GetNbt: Cannot encode object[] list with mixed types: " + firstItemTypeString + ", " + item.GetType().Name + " into NBT!");
+                        }
 
-                // Build NBT list: type, length, item array
-                return ConcatBytes(new[] { firstItemType }, GetInt(arrayLengthTotal), firstItemBytes, subsequentItemsBytes.ToArray());
-            }
-            else if (obj is Dictionary<string, object>)
-            {
-                fieldType = 10; // TAG_Compound
-                return GetNbt((Dictionary<string, object>)obj, false);
-            }
-            else if (obj is int[])
-            {
-                fieldType = 11; // TAG_Int_Array
+                        // Build NBT list: type, length, item array
+                        return ConcatBytes(new[] { firstItemType }, GetInt(arrayLengthTotal), firstItemBytes, subsequentItemsBytes.ToArray());
+                    }
+                case Dictionary<string, object>:
+                    fieldType = 10; // TAG_Compound
+                    return GetNbt((Dictionary<string, object>)obj, false);
+                case int[]:
+                    {
+                        fieldType = 11; // TAG_Int_Array
 
-                int[] srcIntList = (int[])obj;
-                List<byte> encIntList = new();
-                encIntList.AddRange(GetInt(srcIntList.Length));
-                foreach (int item in srcIntList)
-                    encIntList.AddRange(GetInt(item));
-                return encIntList.ToArray();
-            }
-            else if (obj is long[])
-            {
-                fieldType = 12; // TAG_Long_Array
+                        int[] srcIntList = (int[])obj;
+                        List<byte> encIntList = new();
+                        encIntList.AddRange(GetInt(srcIntList.Length));
+                        foreach (int item in srcIntList)
+                            encIntList.AddRange(GetInt(item));
+                        return encIntList.ToArray();
+                    }
+                case long[]:
+                    {
+                        fieldType = 12; // TAG_Long_Array
 
-                long[] srcLongList = (long[])obj;
-                List<byte> encLongList = new();
-                encLongList.AddRange(GetInt(srcLongList.Length));
-                foreach (long item in srcLongList)
-                    encLongList.AddRange(GetLong(item));
-                return encLongList.ToArray();
-            }
-            else
-            {
-                throw new System.IO.InvalidDataException("GetNbt: Cannot encode data type " + obj.GetType().Name + " into NBT!");
+                        long[] srcLongList = (long[])obj;
+                        List<byte> encLongList = new();
+                        encLongList.AddRange(GetInt(srcLongList.Length));
+                        foreach (long item in srcLongList)
+                            encLongList.AddRange(GetLong(item));
+                        return encLongList.ToArray();
+                    }
+                default:
+                    throw new InvalidDataException("GetNbt: Cannot encode data type " + obj.GetType().Name + " into NBT!");
             }
         }
 

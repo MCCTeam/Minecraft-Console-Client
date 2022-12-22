@@ -1,16 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Services.Description;
 using DnsClient;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using PInvoke;
+using static MinecraftClient.Json;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
@@ -32,46 +43,36 @@ namespace MinecraftClient.Protocol
         /// <param name="domain">Input domain name, updated with target host if any, else left untouched</param>
         /// <param name="port">Updated with target port if any, else left untouched</param>
         /// <returns>TRUE if a Minecraft Service was found.</returns>
-        public static bool MinecraftServiceLookup(ref string domain, ref ushort port)
+        public static async Task<Tuple<bool, string, ushort>> MinecraftServiceLookupAsync(string domain)
         {
-            bool foundService = false;
-            string domainVal = domain;
-            ushort portVal = port;
-
-            if (!String.IsNullOrEmpty(domain) && domain.Any(c => char.IsLetter(c)))
+            if (!string.IsNullOrEmpty(domain) && domain.Any(char.IsLetter))
             {
-                AutoTimeout.Perform(() =>
+                CancellationTokenSource cancelToken = new(1000 *
+                    (Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30));
+                try
                 {
-                    try
+                    ConsoleIO.WriteLine(string.Format(Translations.mcc_resolve, domain));
+                    var lookupClient = new LookupClient();
+                    var response = await lookupClient.QueryAsync($"_minecraft._tcp.{domain}", QueryType.SRV, cancellationToken: cancelToken.Token);
+                    if (!cancelToken.IsCancellationRequested && !response.HasError && response.Answers.SrvRecords().Any())
                     {
-                        ConsoleIO.WriteLine(string.Format(Translations.mcc_resolve, domainVal));
-                        var lookupClient = new LookupClient();
-                        var response = lookupClient.Query(new DnsQuestion($"_minecraft._tcp.{domainVal}", QueryType.SRV));
-                        if (response.HasError != true && response.Answers.SrvRecords().Any())
-                        {
-                            //Order SRV records by priority and weight, then randomly
-                            var result = response.Answers.SrvRecords()
-                                .OrderBy(record => record.Priority)
-                                .ThenByDescending(record => record.Weight)
-                                .ThenBy(record => Guid.NewGuid())
-                                .First();
-                            string target = result.Target.Value.Trim('.');
-                            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_found, target, result.Port, domainVal));
-                            domainVal = target;
-                            portVal = result.Port;
-                            foundService = true;
-                        }
+                        //Order SRV records by priority and weight, then randomly
+                        var result = response.Answers.SrvRecords()
+                            .OrderBy(record => record.Priority)
+                            .ThenByDescending(record => record.Weight)
+                            .ThenBy(record => Guid.NewGuid())
+                            .First();
+                        string target = result.Target.Value.Trim('.');
+                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_found, target, result.Port, domain));
+                        return new(true, target, result.Port);
                     }
-                    catch (Exception e)
-                    {
-                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_not_found, domainVal, e.GetType().FullName, e.Message));
-                    }
-                }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30));
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_not_found, domain, e.GetType().FullName, e.Message));
+                }
             }
-
-            domain = domainVal;
-            port = portVal;
-            return foundService;
+            return new(false, string.Empty, 25565);
         }
 
         /// <summary>
@@ -81,43 +82,46 @@ namespace MinecraftClient.Protocol
         /// <param name="serverPort">Server Port to ping</param>
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
-        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo? forgeInfo)
+        public static async Task<Tuple<bool, int, ForgeInfo?>> GetServerInfoAsync(string serverIP, ushort serverPort, int protocolversion)
         {
-            bool success = false;
-            int protocolversionTmp = 0;
-            ForgeInfo? forgeInfoTmp = null;
-            if (AutoTimeout.Perform(() =>
+            Tuple<bool, int, ForgeInfo?>? result = null;
+
+            CancellationTokenSource cancelTokenSource = new(1000 *
+                (Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30));
+            try
             {
-                try
-                {
-                    if (Protocol18Handler.DoPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp)
-                        || Protocol16Handler.DoPing(serverIP, serverPort, ref protocolversionTmp))
-                    {
-                        success = true;
-                    }
-                    else
-                        ConsoleIO.WriteLineFormatted("§8" + Translations.error_unexpect_response, acceptnewlines: true);
-                }
-                catch (Exception e)
-                {
-                    ConsoleIO.WriteLineFormatted(String.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
-                }
-            }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30)))
-            {
-                if (protocolversion != 0 && protocolversion != protocolversionTmp)
-                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_version_different, acceptnewlines: true);
-                if (protocolversion == 0 && protocolversionTmp <= 1)
-                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_no_version_report, acceptnewlines: true);
-                if (protocolversion == 0)
-                    protocolversion = protocolversionTmp;
-                forgeInfo = forgeInfoTmp;
-                return success;
+                result = await Protocol18Handler.DoPing(serverIP, serverPort, cancelTokenSource.Token);
+                if (!result.Item1)
+                    result = await Protocol16Handler.DoPing(serverIP, serverPort, cancelTokenSource.Token);
             }
-            else
+            catch (OperationCanceledException)
             {
                 ConsoleIO.WriteLineFormatted("§8" + Translations.error_connection_timeout, acceptnewlines: true);
-                return false;
             }
+            catch (Exception e)
+            {
+                ConsoleIO.WriteLineFormatted(string.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
+            }
+
+            if (result != null)
+            {
+                if (!result.Item1)
+                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_unexpect_response, acceptnewlines: true);
+
+                if (protocolversion != 0 && protocolversion != result.Item2)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_version_different, acceptnewlines: true);
+                    return new(true, protocolversion, result.Item3);
+                }
+                else
+                {
+                    if (result.Item2 <= 1)
+                        ConsoleIO.WriteLineFormatted("§8" + Translations.error_no_version_report, acceptnewlines: true);
+                    return result;
+                }
+            }
+
+            return new(false, 0, null);
         }
 
         /// <summary>
@@ -127,17 +131,17 @@ namespace MinecraftClient.Protocol
         /// <param name="ProtocolVersion">Protocol version to handle</param>
         /// <param name="Handler">Handler with the appropriate callbacks</param>
         /// <returns></returns>
-        public static IMinecraftCom GetProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo? forgeInfo, IMinecraftComHandler Handler)
+        public static IMinecraftCom GetProtocolHandler(CancellationToken cancelToken, TcpClient Client, int ProtocolVersion, ForgeInfo? forgeInfo, IMinecraftComHandler Handler)
         {
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
 
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
-                return new Protocol16Handler(Client, ProtocolVersion, Handler);
+                return new Protocol16Handler(cancelToken, Client, ProtocolVersion, Handler);
 
             int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760 };
 
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
-                return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
+                return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo, cancelToken);
 
             throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, ProtocolVersion));
         }
@@ -319,14 +323,10 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                try
-                {
-                    return Int32.Parse(MCVersion, NumberStyles.Any, CultureInfo.CurrentCulture);
-                }
-                catch
-                {
+                if (int.TryParse(MCVersion, NumberStyles.Any, CultureInfo.CurrentCulture, out int versionId))
+                    return versionId;
+                else
                     return 0;
-                }
             }
         }
 
@@ -338,59 +338,59 @@ namespace MinecraftClient.Protocol
         /// <returns>The 1.X.X version number, or 0.0 if could not determine protocol version</returns>
         public static string ProtocolVersion2MCVer(int protocol)
         {
-            switch (protocol)
+            return protocol switch
             {
-                case 22: return "1.0";
-                case 23: return "1.1";
-                case 28: return "1.2.3";
-                case 29: return "1.2.5";
-                case 39: return "1.3.2";
-                // case 47: return "1.4.2";
-                case 48: return "1.4.3";
-                case 49: return "1.4.5";
-                case 51: return "1.4.6";
-                case 60: return "1.5.1";
-                case 62: return "1.5.2";
-                case 72: return "1.6";
-                case 73: return "1.6.1";
-                case 3: return "1.7.1";
-                case 4: return "1.7.2";
-                case 5: return "1.7.6";
-                case 47: return "1.8";
-                case 107: return "1.9";
-                case 108: return "1.9.1";
-                case 109: return "1.9.2";
-                case 110: return "1.9.3";
-                case 210: return "1.10";
-                case 315: return "1.11";
-                case 316: return "1.11.1";
-                case 335: return "1.12";
-                case 338: return "1.12.1";
-                case 340: return "1.12.2";
-                case 393: return "1.13";
-                case 401: return "1.13.1";
-                case 404: return "1.13.2";
-                case 477: return "1.14";
-                case 480: return "1.14.1";
-                case 485: return "1.14.2";
-                case 490: return "1.14.3";
-                case 498: return "1.14.4";
-                case 573: return "1.15";
-                case 575: return "1.15.1";
-                case 578: return "1.15.2";
-                case 735: return "1.16";
-                case 736: return "1.16.1";
-                case 751: return "1.16.2";
-                case 753: return "1.16.3";
-                case 754: return "1.16.5";
-                case 755: return "1.17";
-                case 756: return "1.17.1";
-                case 757: return "1.18.1";
-                case 758: return "1.18.2";
-                case 759: return "1.19";
-                case 760: return "1.19.2";
-                default: return "0.0";
-            }
+                22 => "1.0",
+                23 => "1.1",
+                28 => "1.2.3",
+                29 => "1.2.5",
+                39 => "1.3.2",
+                // 47 => "1.4.2", // 47 conflicts with 1.8
+                48 => "1.4.3",
+                49 => "1.4.5",
+                51 => "1.4.6",
+                60 => "1.5.1",
+                62 => "1.5.2",
+                72 => "1.6",
+                73 => "1.6.1",
+                3 => "1.7.1",
+                4 => "1.7.2",
+                5 => "1.7.6",
+                47 => "1.8",
+                107 => "1.9",
+                108 => "1.9.1",
+                109 => "1.9.2",
+                110 => "1.9.3",
+                210 => "1.10",
+                315 => "1.11",
+                316 => "1.11.1",
+                335 => "1.12",
+                338 => "1.12.1",
+                340 => "1.12.2",
+                393 => "1.13",
+                401 => "1.13.1",
+                404 => "1.13.2",
+                477 => "1.14",
+                480 => "1.14.1",
+                485 => "1.14.2",
+                490 => "1.14.3",
+                498 => "1.14.4",
+                573 => "1.15",
+                575 => "1.15.1",
+                578 => "1.15.2",
+                735 => "1.16",
+                736 => "1.16.1",
+                751 => "1.16.2",
+                753 => "1.16.3",
+                754 => "1.16.5",
+                755 => "1.17",
+                756 => "1.17.1",
+                757 => "1.18.1",
+                758 => "1.18.2",
+                759 => "1.19",
+                760 => "1.19.2",
+                _ => "0.0",
+            };
         }
 
         /// <summary>
@@ -423,20 +423,31 @@ namespace MinecraftClient.Protocol
         /// <param name="pass">Password</param>
         /// <param name="session">In case of successful login, will contain session information for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
-        public static LoginResult GetLogin(string user, string pass, LoginType type, out SessionToken session)
+        public static async Task<Tuple<LoginResult, SessionToken?>> GetLoginAsync(HttpClient httpClient, string user, string pass, LoginType type)
         {
+            httpClient.DefaultRequestHeaders.UserAgent.Clear();
             if (type == LoginType.microsoft)
             {
                 if (Config.Main.General.Method == LoginMethod.mcc)
-                    return MicrosoftMCCLogin(user, pass, out session);
+                {
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"MCC/{Program.Version}");
+                    return await MicrosoftMCCLoginAsync(httpClient, user, pass);
+                }
                 else
-                    return MicrosoftBrowserLogin(out session, user);
+                {
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(XboxLive.UserAgent);
+                    return await MicrosoftBrowserLoginAsync(httpClient, user);
+                }
             }
             else if (type == LoginType.mojang)
             {
-                return MojangLogin(user, pass, out session);
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"MCC/{Program.Version}");
+                return await MojangLoginAsync(user, pass);
             }
-            else throw new InvalidOperationException("Account type must be Mojang or Microsoft");
+            else
+            {
+                throw new InvalidOperationException("Account type must be Mojang or Microsoft");
+            }
         }
 
         /// <summary>
@@ -446,82 +457,77 @@ namespace MinecraftClient.Protocol
         /// <param name="pass"></param>
         /// <param name="session"></param>
         /// <returns></returns>
-        private static LoginResult MojangLogin(string user, string pass, out SessionToken session)
+        private static async Task<Tuple<LoginResult, SessionToken?>> MojangLoginAsync(string user, string pass)
         {
-            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
-
             try
             {
-                string result = "";
-                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
+                string clientID = Guid.NewGuid().ToString().Replace("-", "");
+                string json_request = $"{{\"agent\": {{ \"name\": \"Minecraft\", \"version\": 1 }}, \"username\": \"{JsonEncode(user)}\", \"password\": \"{JsonEncode(pass)}\", \"clientToken\": \"{JsonEncode(clientID)}\" }}";
+                (int code, string result) = await DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
                     {
-                        return LoginResult.NotPremium;
+                        return new(LoginResult.NotPremium, null);
                     }
                     else
                     {
                         Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        if (loginResponse.Properties.TryGetValue("accessToken", out Json.JSONData? accessToken)
+                            && loginResponse.Properties.TryGetValue("selectedProfile", out Json.JSONData? selectedProfile)
+                            && selectedProfile.Properties.TryGetValue("id", out Json.JSONData? selectedProfileId)
+                            && selectedProfile.Properties.TryGetValue("name", out Json.JSONData? selectedProfileName))
                         {
-                            session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
-                            return LoginResult.Success;
+                            SessionToken session = new()
+                            {
+                                ClientID = clientID,
+                                ID = accessToken.StringValue,
+                                PlayerID = selectedProfileId.StringValue,
+                                PlayerName = selectedProfileName.StringValue
+                            };
+                            return new(LoginResult.Success, session);
                         }
-                        else return LoginResult.InvalidResponse;
+                        else
+                            return new(LoginResult.InvalidResponse, null);
                     }
                 }
                 else if (code == 403)
                 {
                     if (result.Contains("UserMigratedException"))
-                    {
-                        return LoginResult.AccountMigrated;
-                    }
-                    else return LoginResult.WrongPassword;
+                        return new(LoginResult.AccountMigrated, null);
+                    else
+                        return new(LoginResult.WrongPassword, null);
                 }
                 else if (code == 503)
                 {
-                    return LoginResult.ServiceUnavailable;
+                    return new(LoginResult.ServiceUnavailable, null);
                 }
                 else
                 {
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.error_http_code, code));
-                    return LoginResult.OtherError;
+                    return new(LoginResult.OtherError, null);
                 }
             }
-            catch (System.Security.Authentication.AuthenticationException e)
+            catch (AuthenticationException e)
             {
-                if (Settings.Config.Logging.DebugMessages)
-                {
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
-                }
-                return LoginResult.SSLError;
+                return new(LoginResult.SSLError, null);
             }
             catch (System.IO.IOException e)
             {
-                if (Settings.Config.Logging.DebugMessages)
-                {
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
-                }
                 if (e.Message.Contains("authentication"))
-                {
-                    return LoginResult.SSLError;
-                }
-                else return LoginResult.OtherError;
+                    return new(LoginResult.SSLError, null);
+                else
+                    return new(LoginResult.OtherError, null);
             }
             catch (Exception e)
             {
-                if (Settings.Config.Logging.DebugMessages)
-                {
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
-                }
-                return LoginResult.OtherError;
+                return new(LoginResult.OtherError, null);
             }
         }
 
@@ -533,24 +539,22 @@ namespace MinecraftClient.Protocol
         /// <param name="password"></param>
         /// <param name="session"></param>
         /// <returns></returns>
-        private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
+        private static async Task<Tuple<LoginResult, SessionToken?>> MicrosoftMCCLoginAsync(HttpClient httpClient, string email, string password)
         {
             try
             {
-                var msaResponse = XboxLive.UserLogin(email, password, XboxLive.PreAuth());
+                var msaResponse = await XboxLive.UserLoginAsync(httpClient, email, password, await XboxLive.PreAuthAsync(httpClient));
                 // Remove refresh token for MCC sign method
                 msaResponse.RefreshToken = string.Empty;
-                return MicrosoftLogin(msaResponse, out session);
+                return await MicrosoftLoginAsync(httpClient, msaResponse);
             }
             catch (Exception e)
             {
-                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+                SessionToken session = new() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
                 ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
-                if (Settings.Config.Logging.DebugMessages)
-                {
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
-                }
-                return LoginResult.WrongPassword; // Might not always be wrong password
+                return new(LoginResult.WrongPassword, session); // Might not always be wrong password
             }
         }
 
@@ -564,64 +568,83 @@ namespace MinecraftClient.Protocol
         /// </remarks>
         /// <param name="session"></param>
         /// <returns></returns>
-        public static LoginResult MicrosoftBrowserLogin(out SessionToken session, string loginHint = "")
+        public static async Task<Tuple<LoginResult, SessionToken?>> MicrosoftBrowserLoginAsync(HttpClient httpClient, string? loginHint = null)
         {
-            if (string.IsNullOrEmpty(loginHint))
-                Microsoft.OpenBrowser(Microsoft.SignInUrl);
-            else
-                Microsoft.OpenBrowser(Microsoft.GetSignInUrlWithHint(loginHint));
-            ConsoleIO.WriteLine(Translations.mcc_browser_open);
-            ConsoleIO.WriteLine("\n" + Microsoft.SignInUrl + "\n");
+            string link = string.IsNullOrEmpty(loginHint) ? Microsoft.SignInUrl : Microsoft.GetSignInUrlWithHint(loginHint);
 
-            ConsoleIO.WriteLine(Translations.mcc_browser_login_code);
+            Microsoft.OpenBrowser(link);
+
+            ConsoleIO.SuppressPrinting(true);
+            ConsoleIO.WriteLine(Translations.mcc_browser_open, ignoreSuppress: true);
+            ConsoleIO.WriteLine($"\n{link}\n", ignoreSuppress: true);
+
+            ConsoleIO.WriteLine(Translations.mcc_browser_login_code, ignoreSuppress: true);
             string code = ConsoleIO.ReadLine();
-            ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, "Microsoft"));
+            ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, "Microsoft"), ignoreSuppress: true);
+            ConsoleIO.SuppressPrinting(false);
 
-            var msaResponse = Microsoft.RequestAccessToken(code);
-            return MicrosoftLogin(msaResponse, out session);
+            var msaResponse = await Microsoft.RequestAccessTokenAsync(httpClient, code);
+            return await MicrosoftLoginAsync(httpClient, msaResponse);
         }
 
-        public static LoginResult MicrosoftLoginRefresh(string refreshToken, out SessionToken session)
+        public static async Task<Tuple<LoginResult, SessionToken?>> MicrosoftLoginRefreshAsync(HttpClient httpClient, string refreshToken)
         {
-            var msaResponse = Microsoft.RefreshAccessToken(refreshToken);
-            return MicrosoftLogin(msaResponse, out session);
+            var msaResponse = await Microsoft.RefreshAccessTokenAsync(httpClient, refreshToken);
+            return await MicrosoftLoginAsync(httpClient, msaResponse);
         }
 
-        private static LoginResult MicrosoftLogin(Microsoft.LoginResponse msaResponse, out SessionToken session)
+        private static async Task<Tuple<LoginResult, SessionToken?>> MicrosoftLoginAsync(HttpClient httpClient, Microsoft.LoginResponse msaResponse)
         {
-            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
-
             try
             {
-                var xblResponse = XboxLive.XblAuthenticate(msaResponse);
-                var xsts = XboxLive.XSTSAuthenticate(xblResponse); // Might throw even password correct
+                var xblResponse = await XboxLive.XblAuthenticateAsync(httpClient, msaResponse);
+                var xsts = await XboxLive.XSTSAuthenticateAsync(httpClient, xblResponse); // Might throw even password correct
 
-                string accessToken = MinecraftWithXbox.LoginWithXbox(xsts.UserHash, xsts.Token);
-                bool hasGame = MinecraftWithXbox.UserHasGame(accessToken);
+                string accessToken = await MinecraftWithXbox.LoginWithXboxAsync(httpClient, xsts.UserHash, xsts.Token);
+                bool hasGame = await MinecraftWithXbox.CheckUserHasGameAsync(httpClient, accessToken);
                 if (hasGame)
                 {
-                    var profile = MinecraftWithXbox.GetUserProfile(accessToken);
-                    session.PlayerName = profile.UserName;
-                    session.PlayerID = profile.UUID;
-                    session.ID = accessToken;
-                    session.RefreshToken = msaResponse.RefreshToken;
+                    var profile = await MinecraftWithXbox.GetUserProfileAsync(httpClient, accessToken);
+                    SessionToken session = new()
+                    {
+                        ClientID = Guid.NewGuid().ToString().Replace("-", ""),
+                        PlayerName = profile.UserName,
+                        PlayerID = profile.UUID,
+                        ID = accessToken,
+                        RefreshToken = msaResponse.RefreshToken
+                    };
                     InternalConfig.Account.Login = msaResponse.Email;
-                    return LoginResult.Success;
+                    return new(LoginResult.Success, session);
                 }
                 else
                 {
-                    return LoginResult.NotPremium;
+                    return new(LoginResult.NotPremium, null);
                 }
             }
             catch (Exception e)
             {
                 ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
-                if (Settings.Config.Logging.DebugMessages)
+                if (Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
-                return LoginResult.WrongPassword; // Might not always be wrong password
+                return new(LoginResult.WrongPassword, null); // Might not always be wrong password
             }
+        }
+
+        private record JwtPayloadInSessionId
+        {
+            public string? xuid { init; get; }
+            public string? agg { init; get; }
+            public string? sub { init; get; }
+            public long nbf { init; get; }
+            public string? auth { init; get; }
+            public string[]? roles { init; get; }
+            public string? iss { init; get; }
+            public long exp { init; get; }
+            public long iat { init; get; }
+            public string? platform { init; get; }
+            public string? yuid { init; get; }
         }
 
         /// <summary>
@@ -629,27 +652,35 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="session">Session token to validate</param>
         /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
-        public static LoginResult GetTokenValidation(SessionToken session)
+        public static async Task<LoginResult> GetTokenValidation(SessionToken session)
         {
-            var payload = JwtPayloadDecode.GetPayload(session.ID);
-            var json = Json.ParseJson(payload);
-            var expTimestamp = long.Parse(json.Properties["exp"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
-            var now = DateTime.Now;
-            var tokenExp = UnixTimeStampToDateTime(expTimestamp);
-            if (Settings.Config.Logging.DebugMessages)
+            try
             {
-                ConsoleIO.WriteLine("Access token expiration time is " + tokenExp.ToString());
+                Stream payload = JwtPayloadDecode.GetPayload(session.ID);
+                JwtPayloadInSessionId jsonPayload = (await JsonSerializer.DeserializeAsync<JwtPayloadInSessionId>(payload))!;
+
+                var now = DateTime.Now.AddMinutes(1);
+                var tokenExp = UnixTimeStampToDateTime(jsonPayload.exp);
+
+                if (Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLine("Access token expiration time is " + tokenExp.ToString());
+
+                if (now < tokenExp)
+                {
+                    // Still valid
+                    return LoginResult.Success;
+                }
+                else
+                {
+                    // Token expired
+                    return LoginResult.LoginRequired;
+                }
             }
-            if (now < tokenExp)
-            {
-                // Still valid
-                return LoginResult.Success;
-            }
-            else
-            {
-                // Token expired
-                return LoginResult.LoginRequired;
-            }
+            catch (JsonException) { }
+            catch (FormatException) { }
+            catch (ArgumentException) { }
+            catch (IndexOutOfRangeException) { }
+            return LoginResult.LoginRequired;
         }
 
         /// <summary>
@@ -658,50 +689,66 @@ namespace MinecraftClient.Protocol
         /// <param name="user">Login</param>
         /// <param name="session">In case of successful token refresh, will contain session information for multiplayer</param>
         /// <returns>Returns the status of the new token request (Success, Failure, etc.)</returns>
-        public static LoginResult GetNewToken(SessionToken currentsession, out SessionToken session)
+        public static async Task<Tuple<LoginResult, SessionToken?>> GetNewToken(SessionToken currentsession)
         {
-            session = new SessionToken();
             try
             {
-                string result = "";
-                string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/refresh", json_request, ref result);
+                string json_request = $"{{ \"accessToken\": \"{JsonEncode(currentsession.ID)}\", \"clientToken\": \"{JsonEncode(currentsession.ClientID)}\", \"selectedProfile\": {{ \"id\": \"{JsonEncode(currentsession.PlayerID)}\", \"name\": \"{JsonEncode(currentsession.PlayerName)}\" }} }}";
+                (int code, string result) = await DoHTTPSPost("authserver.mojang.com", "/refresh", json_request);
                 if (code == 200)
                 {
                     if (result == null)
                     {
-                        return LoginResult.NullError;
+                        return new(LoginResult.NullError, null);
                     }
                     else
                     {
                         Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        if (loginResponse.Properties.TryGetValue("accessToken", out Json.JSONData? accessToken)
+                            && loginResponse.Properties.TryGetValue("selectedProfile", out Json.JSONData? selectedProfile)
+                            && selectedProfile.Properties.TryGetValue("id", out Json.JSONData? selectedProfileId)
+                            && selectedProfile.Properties.TryGetValue("name", out Json.JSONData? selectedProfileName))
                         {
-                            session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
-                            return LoginResult.Success;
+
+                            SessionToken session = new()
+                            {
+                                ID = accessToken.StringValue,
+                                PlayerID = selectedProfileId.StringValue,
+                                PlayerName = selectedProfileName.StringValue
+                            };
+                            return new(LoginResult.Success, session);
                         }
-                        else return LoginResult.InvalidResponse;
+                        else
+                            return new(LoginResult.InvalidResponse, null);
                     }
                 }
                 else if (code == 403 && result.Contains("InvalidToken"))
                 {
-                    return LoginResult.InvalidToken;
+                    return new(LoginResult.InvalidToken, null);
                 }
                 else
                 {
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.error_auth, code));
-                    return LoginResult.OtherError;
+                    return new(LoginResult.OtherError, null);
                 }
             }
             catch
             {
-                return LoginResult.OtherError;
+                return new(LoginResult.OtherError, null);
             }
+        }
+
+        private record SessionCheckPayload
+        {
+            public string? accessToken { init; get; }
+            public string? selectedProfile { init; get; }
+            public string? serverId { init; get; }
+        }
+
+        private record SessionCheckFailResult
+        {
+            public string? error { init; get; }
+            public string? path { init; get; }
         }
 
         /// <summary>
@@ -711,16 +758,42 @@ namespace MinecraftClient.Protocol
         /// <param name="accesstoken">Session ID</param>
         /// <param name="serverhash">Server ID</param>
         /// <returns>TRUE if session was successfully checked</returns>
-        public static bool SessionCheck(string uuid, string accesstoken, string serverhash)
+        public static async Task<Tuple<bool, string?>> SessionCheckAsync(HttpClient httpClient, string uuid, string accesstoken, string serverhash)
         {
+            SessionCheckPayload payload = new()
+            {
+                accessToken = accesstoken,
+                selectedProfile = uuid,
+                serverId = serverhash,
+            };
+
             try
             {
-                string result = "";
-                string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
-                int code = DoHTTPSPost("sessionserver.mojang.com", "/session/minecraft/join", json_request, ref result);
-                return (code >= 200 && code < 300);
+                using HttpRequestMessage request = new(HttpMethod.Post, "https://sessionserver.mojang.com/session/minecraft/join");
+
+                request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+                request.Headers.UserAgent.Clear();
+                request.Headers.UserAgent.ParseAdd($"MCC/{Program.Version}");
+
+                using HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                if (response.IsSuccessStatusCode)
+                    return new(true, null);
+                else
+                {
+                    SessionCheckFailResult jsonData = (await response.Content.ReadFromJsonAsync<SessionCheckFailResult>())!;
+                    return new(false, jsonData.error);
+                }
             }
-            catch { return false; }
+            catch (HttpRequestException e)
+            {
+                return new(false, $"HttpRequestException: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                return new(false, $"JsonException: {e.Message}");
+            }
         }
 
         /// <summary>
@@ -730,37 +803,30 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Player UUID</param>
         /// <param name="accesstoken">Access token</param>
         /// <returns>List of ID of available Realms worlds</returns>
-        public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
+        public static async Task<List<string>> RealmsListWorldsAsync(HttpClient httpClient, string username, string uuid, string accesstoken)
         {
             List<string> realmsWorldsResult = new(); // Store world ID
             try
             {
-                string result = "";
                 string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-                DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
+                (_, string result) = await DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies);
                 Json.JSONData realmsWorlds = Json.ParseJson(result);
-                if (realmsWorlds.Properties.ContainsKey("servers")
-                    && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
-                    && realmsWorlds.Properties["servers"].DataArray.Count > 0)
+                if (realmsWorlds.Properties.TryGetValue("servers", out Json.JSONData? servers)
+                    && servers.Type == Json.JSONData.DataType.Array
+                    && servers.DataArray.Count > 0)
                 {
                     List<string> availableWorlds = new(); // Store string to print
                     int index = 0;
-                    foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
+                    foreach (Json.JSONData realmsServer in servers.DataArray)
                     {
-                        if (realmsServer.Properties.ContainsKey("name")
-                            && realmsServer.Properties.ContainsKey("owner")
-                            && realmsServer.Properties.ContainsKey("id")
-                            && realmsServer.Properties.ContainsKey("expired"))
+                        if (realmsServer.Properties.TryGetValue("name", out Json.JSONData? name)
+                            && realmsServer.Properties.TryGetValue("owner", out Json.JSONData? owner)
+                            && realmsServer.Properties.TryGetValue("id", out Json.JSONData? id)
+                            && realmsServer.Properties.TryGetValue("expired", out Json.JSONData? expired)
+                            && expired.StringValue == "false")
                         {
-                            if (realmsServer.Properties["expired"].StringValue == "false")
-                            {
-                                availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
-                                    index++,
-                                    realmsServer.Properties["id"].StringValue,
-                                    realmsServer.Properties["name"].StringValue,
-                                    realmsServer.Properties["owner"].StringValue));
-                                realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
-                            }
+                            availableWorlds.Add($"[{index++}] {name.StringValue} ({owner.StringValue}) - {id.StringValue}");
+                            realmsWorldsResult.Add(id.StringValue);
                         }
                     }
                     if (availableWorlds.Count > 0)
@@ -792,13 +858,12 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Player UUID</param>
         /// <param name="accesstoken">Access token</param>
         /// <returns>Server address (host:port) or empty string if failure</returns>
-        public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid, string accesstoken)
+        public static async Task<string> GetRealmsWorldServerAddress(HttpClient httpClient, string worldId, string username, string uuid, string accesstoken)
         {
             try
             {
-                string result = "";
                 string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-                int statusCode = DoHTTPSGet("pc.realms.minecraft.net", "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
+                (int statusCode, string result) = await DoHTTPSGet("pc.realms.minecraft.net", $"/worlds/v1/{worldId}/join/pc", cookies);
                 if (statusCode == 200)
                 {
                     Json.JSONData serverAddress = Json.ParseJson(result);
@@ -835,9 +900,9 @@ namespace MinecraftClient.Protocol
         /// <param name="cookies">Cookies for making the request</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
+        private static async Task<Tuple<int, string>> DoHTTPSGet(string host, string endpoint, string cookies)
         {
-            List<String> http_request = new()
+            List<string> http_request = new()
             {
                 "GET " + endpoint + " HTTP/1.1",
                 "Cookie: " + cookies,
@@ -850,7 +915,7 @@ namespace MinecraftClient.Protocol
                 "",
                 ""
             };
-            return DoHTTPSRequest(http_request, host, ref result);
+            return await DoHTTPSRequest(http_request, host);
         }
 
         /// <summary>
@@ -861,20 +926,20 @@ namespace MinecraftClient.Protocol
         /// <param name="request">Request payload</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSPost(string host, string endpoint, string request, ref string result)
+        private static async Task<Tuple<int, string>> DoHTTPSPost(string host, string endpoint, string request)
         {
-            List<String> http_request = new()
+            List<string> http_request = new()
             {
-                "POST " + endpoint + " HTTP/1.1",
-                "Host: " + host,
-                "User-Agent: MCC/" + Program.Version,
+                $"POST {endpoint} HTTP/1.1",
+                $"Host: {host}",
+                $"User-Agent: MCC/{Program.Version}",
                 "Content-Type: application/json",
-                "Content-Length: " + Encoding.ASCII.GetBytes(request).Length,
+                $"Content-Length: {Encoding.ASCII.GetBytes(request).Length}",
                 "Connection: close",
                 "",
                 request
             };
-            return DoHTTPSRequest(http_request, host, ref result);
+            return await DoHTTPSRequest(http_request, host);
         }
 
         /// <summary>
@@ -885,57 +950,62 @@ namespace MinecraftClient.Protocol
         /// <param name="host">Host to connect to</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSRequest(List<string> headers, string host, ref string result)
+        private static async Task<Tuple<int, string>> DoHTTPSRequest(List<string> headers, string host)
         {
-            string? postResult = null;
-            int statusCode = 520;
-            Exception? exception = null;
-            AutoTimeout.Perform(() =>
+            string postResult = string.Empty;
+
+            var cancelToken = new CancellationTokenSource(30 * 1000).Token;
+
+            if (Config.Logging.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.debug_request, host));
+
+            TcpClient client = ProxyHandler.NewTcpClient(host, 443, ProxyHandler.ClientType.Login);
+            SslStream stream = new(client.GetStream());
+
+            SslClientAuthenticationOptions sslOptions = new() // Enable TLS 1.2. Hotfix for #1780
             {
-                try
-                {
-                    if (Settings.Config.Logging.DebugMessages)
-                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.debug_request, host));
+                TargetHost = host,
+                ClientCertificates = null,
+                EnabledSslProtocols = SslProtocols.Tls12,
+                CertificateRevocationCheckMode = X509RevocationMode.Online,
+                EncryptionPolicy = EncryptionPolicy.RequireEncryption,
+            };
+            Task sslAuth = stream.AuthenticateAsClientAsync(sslOptions, cancelToken);
+            if (cancelToken.IsCancellationRequested)
+                throw new TimeoutException(string.Format(Translations.mcc_network_timeout, host));
 
-                    TcpClient client = ProxyHandler.NewTcpClient(host, 443, true);
-                    SslStream stream = new(client.GetStream());
-                    stream.AuthenticateAsClient(host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1780
+            if (Config.Logging.DebugMessages)
+                foreach (string line in headers)
+                    ConsoleIO.WriteLineFormatted("§8> " + line);
 
-                    if (Settings.Config.Logging.DebugMessages)
-                        foreach (string line in headers)
-                            ConsoleIO.WriteLineFormatted("§8> " + line);
+            await sslAuth;
+            await stream.WriteAsync(Encoding.ASCII.GetBytes(string.Join("\r\n", headers.ToArray())), cancelToken);
+            if (cancelToken.IsCancellationRequested)
+                throw new TimeoutException(string.Format(Translations.mcc_network_timeout, host));
 
-                    stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
-                    System.IO.StreamReader sr = new(stream);
-                    string raw_result = sr.ReadToEnd();
+            using System.IO.StreamReader sr = new(stream);
+            string raw_result = await sr.ReadToEndAsync(cancelToken);
+            sr.Dispose();
+            if (cancelToken.IsCancellationRequested)
+                throw new TimeoutException(string.Format(Translations.mcc_network_timeout, host));
 
-                    if (Settings.Config.Logging.DebugMessages)
-                    {
-                        ConsoleIO.WriteLine("");
-                        foreach (string line in raw_result.Split('\n'))
-                            ConsoleIO.WriteLineFormatted("§8< " + line);
-                    }
+            if (Config.Logging.DebugMessages)
+            {
+                ConsoleIO.WriteLine(string.Empty);
+                foreach (string line in raw_result.Split('\n'))
+                    ConsoleIO.WriteLineFormatted("§8< " + line);
+            }
 
-                    if (raw_result.StartsWith("HTTP/1.1"))
-                    {
-                        postResult = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..];
-                        statusCode = int.Parse(raw_result.Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
-                    }
-                    else statusCode = 520; //Web server is returning an unknown error
-                }
-                catch (Exception e)
-                {
-                    if (e is not System.Threading.ThreadAbortException)
-                    {
-                        exception = e;
-                    }
-                }
-            }, TimeSpan.FromSeconds(30));
-            if (postResult != null)
-                result = postResult;
-            if (exception != null)
-                throw exception;
-            return statusCode;
+            int statusCode;
+            if (raw_result.StartsWith("HTTP/1.1"))
+            {
+                postResult = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..];
+                statusCode = int.Parse(raw_result.Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
+            }
+            else
+                statusCode = 520; //Web server is returning an unknown error
+
+            return new(statusCode, postResult);
         }
 
         /// <summary>

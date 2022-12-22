@@ -437,10 +437,9 @@ namespace MinecraftClient.ChatBots
             StopDigging();
         }
 
-        public override bool OnDisconnect(DisconnectReason reason, string message)
+        public override int OnDisconnect(DisconnectReason reason, string message)
         {
             StopDigging();
-
             return base.OnDisconnect(reason, message);
         }
     }

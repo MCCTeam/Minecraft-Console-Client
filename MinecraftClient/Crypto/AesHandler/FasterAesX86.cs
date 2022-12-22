@@ -4,15 +4,15 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace MinecraftClient.Crypto
+namespace MinecraftClient.Crypto.AesHandler
 {
     // Using the AES-NI instruction set
     // https://gist.github.com/Thealexbarney/9f75883786a9f3100408ff795fb95d85
-    public class FastAes
+    public class FasterAesX86 : IAesHandler
     {
         private Vector128<byte>[] RoundKeys { get; }
 
-        public FastAes(Span<byte> key)
+        public FasterAesX86(Span<byte> key)
         {
             RoundKeys = KeyExpansion(key);
         }
@@ -23,11 +23,10 @@ namespace MinecraftClient.Crypto
         /// <returns>Is it supported</returns>
         public static bool IsSupported()
         {
-            return Sse2.IsSupported && Aes.IsSupported;
+            return Aes.IsSupported && Sse2.IsSupported;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public void EncryptEcb(ReadOnlySpan<byte> plaintext, Span<byte> destination)
+        public override void EncryptEcb(Span<byte> plaintext, Span<byte> destination)
         {
             Vector128<byte>[] keys = RoundKeys;
 

@@ -30,7 +30,7 @@ namespace MinecraftClient.WinAPI
             SETICON = 0x0080,
         }
 
-        private static void SetWindowIcon(System.Drawing.Icon icon)
+        private static void SetWindowIcon(Icon icon)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -43,55 +43,40 @@ namespace MinecraftClient.WinAPI
         /// <summary>
         /// Asynchronously download the player's skin and set the head as console icon
         /// </summary>
-        [SupportedOSPlatform("windows")]
-        public static void SetPlayerIconAsync(string playerName)
+        public static async Task SetPlayerIconAsync(HttpClient httpClient, string playerName)
         {
-            Thread t = new(new ThreadStart(delegate
+            if (!OperatingSystem.IsWindows())
+                return;
+
+            try
             {
-                HttpClient httpClient = new();
+                using Stream imageStream = await httpClient.GetStreamAsync($"https://minotar.net/helm/{playerName}/100.png");
                 try
                 {
-                    Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
-                    httpWebRequest.Wait();
-                    Stream imageStream = httpWebRequest.Result;
-                    try
-                    {
-                        Bitmap skin = new(Image.FromStream(imageStream)); //Read skin from network
-                        SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
-                        SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
-                    }
-                    catch (ArgumentException)
-                    {
-                        /* Invalid image in HTTP response */
-                    }
-                    imageStream.Dispose();
-                    httpWebRequest.Dispose();
+                    Bitmap skin = new(Image.FromStream(imageStream)); //Read skin from network
+                    SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
+                    SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
                 }
-                catch (AggregateException ae)
+                catch (ArgumentException)
                 {
-                    bool needRevert = false;
-                    foreach (var ex in ae.InnerExceptions)
-                    {
-                        if (ex is HttpRequestException || ex is TaskCanceledException) //Skin not found? Reset to default icon
-                            needRevert = true;
-                    }
-                    if (needRevert)
-                        RevertToMCCIcon();
-                }
-                catch (HttpRequestException) //Skin not found? Reset to default icon
-                {
-                    RevertToMCCIcon();
-                }
-                finally
-                {
-                    httpClient.Dispose();
+                    /* Invalid image in HTTP response */
                 }
             }
-            ))
+            catch (AggregateException ae)
             {
-                Name = "Player skin icon setter"
-            };
-            t.Start();
+                bool needRevert = false;
+                foreach (var ex in ae.InnerExceptions)
+                {
+                    if (ex is HttpRequestException || ex is TaskCanceledException) //Skin not found? Reset to default icon
+                        needRevert = true;
+                }
+                if (needRevert)
+                    RevertToMCCIcon();
+            }
+            catch (HttpRequestException) //Skin not found? Reset to default icon
+            {
+                RevertToMCCIcon();
+            }
         }
 
         /// <summary>

@@ -21,15 +21,18 @@ namespace MinecraftClient.CommandHandler.ArgumentType
             McClient? client = CmdResult.currentHandler;
             if (client != null)
             {
-                var bot = (Map?)client.GetLoadedChatBots().Find(bot => bot.GetType().Name == "Map");
-                if (bot != null)
+                foreach (var bot in client.GetLoadedChatBots())
                 {
-                    var mapList = bot.cachedMaps;
-                    foreach (var map in mapList)
+                    if (bot.GetType() == typeof(Map))
                     {
-                        string mapName = map.Key.ToString();
-                        if (mapName.StartsWith(builder.RemainingLowerCase, StringComparison.InvariantCultureIgnoreCase))
-                            builder.Suggest(mapName);
+                        var mapList = ((Map)bot).cachedMaps;
+                        foreach (var map in mapList)
+                        {
+                            string mapName = map.Key.ToString();
+                            if (mapName.StartsWith(builder.RemainingLowerCase, StringComparison.InvariantCultureIgnoreCase))
+                                builder.Suggest(mapName);
+                        }
+                        break;
                     }
                 }
             }

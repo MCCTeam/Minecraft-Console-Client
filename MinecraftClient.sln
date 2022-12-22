@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinecraftClient", "MinecraftClient\MinecraftClient.csproj", "{1E2FACE4-F5CA-4323-9641-740C6A551770}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6EA6A06-0EF8-4931-93EA-68EB02D69FE9} = {B6EA6A06-0EF8-4931-93EA-68EB02D69FE9}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleInteractive", "ConsoleInteractive\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj", "{93DA4D71-EFAD-4493-BE21-A105AF663660}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftProtocolLibrary", "MinecraftProtocolLibrary\MinecraftProtocolLibrary\MinecraftProtocolLibrary.csproj", "{B6EA6A06-0EF8-4931-93EA-68EB02D69FE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,13 +26,17 @@ Global
 		{93DA4D71-EFAD-4493-BE21-A105AF663660}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93DA4D71-EFAD-4493-BE21-A105AF663660}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93DA4D71-EFAD-4493-BE21-A105AF663660}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6EA6A06-0EF8-4931-93EA-68EB02D69FE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6EA6A06-0EF8-4931-93EA-68EB02D69FE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6EA6A06-0EF8-4931-93EA-68EB02D69FE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6EA6A06-0EF8-4931-93EA-68EB02D69FE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_ShowErrorsInErrorList = False
-		SolutionGuid = {6DED60F4-9CF4-4DB3-8966-582B2EBE8487}
 		RESX_SortFileContentOnSave = False
+		SolutionGuid = {6DED60F4-9CF4-4DB3-8966-582B2EBE8487}
+		RESX_ShowErrorsInErrorList = False
 	EndGlobalSection
 EndGlobal

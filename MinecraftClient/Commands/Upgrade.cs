@@ -1,4 +1,5 @@
-﻿using Brigadier.NET;
+﻿using System.Threading.Tasks;
+using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 
@@ -71,7 +72,7 @@ namespace MinecraftClient.Commands
 
         private static int CheckUpdate(CmdResult r)
         {
-            UpgradeHelper.CheckUpdate(forceUpdate: true);
+            Task.Run(async () => { await UpgradeHelper.CheckUpdate(forceUpdate: true); });
             return r.SetAndReturn(CmdResult.Status.Done, Translations.mcc_update_start);
         }
     }

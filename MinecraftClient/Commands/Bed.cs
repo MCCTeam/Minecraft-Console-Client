@@ -57,7 +57,7 @@ namespace MinecraftClient.Commands
         private static int DoLeaveBed(CmdResult r)
         {
             McClient handler = CmdResult.currentHandler!;
-            return r.SetAndReturn(Translations.cmd_bed_leaving, handler.SendEntityAction(Protocol.EntityActionType.LeaveBed));
+            return r.SetAndReturn(Translations.cmd_bed_leaving, handler.SendEntityActionAsync(Protocol.EntityActionType.LeaveBed).Result);
         }
 
         private static int DoSleepBedWithRadius(CmdResult r, double radius)
@@ -113,7 +113,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.FailChunkNotLoad,
                     string.Format(Translations.cmd_move_chunk_not_loaded, bedLocation.X, bedLocation.Y, bedLocation.Z));
 
-            if (handler.MoveTo(bedLocation))
+            if (handler.MoveToAsync(bedLocation).Result)
             {
                 Task.Factory.StartNew(() =>
                 {
@@ -137,7 +137,7 @@ namespace MinecraftClient.Commands
 
                     handler.Log.Info(string.Format(Translations.cmd_bed_moving, bedLocation.X, bedLocation.Y, bedLocation.Z));
 
-                    bool res = handler.PlaceBlock(bedLocation, Direction.Down);
+                    bool res = handler.PlaceBlockAsync(bedLocation, Direction.Down).Result;
 
                     handler.Log.Info(string.Format(
                         Translations.cmd_bed_trying_to_use,
@@ -174,7 +174,7 @@ namespace MinecraftClient.Commands
                 blockCenter.X,
                 blockCenter.Y,
                 blockCenter.Z,
-                handler.PlaceBlock(block, Direction.Down) ? Translations.cmd_bed_in : Translations.cmd_bed_not_in
+                handler.PlaceBlockAsync(block, Direction.Down).Result ? Translations.cmd_bed_in : Translations.cmd_bed_not_in
             ));
         }
     }

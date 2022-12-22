@@ -1699,7 +1699,8 @@ namespace MinecraftClient {
         ///   Looks up a localized string similar to Connect to a server via a proxy instead of connecting directly
         ///If Mojang session services are blocked on your network, set Enabled_Login=true to login using proxy.
         ///If the connection to the Minecraft game server is blocked by the firewall, set Enabled_Ingame=true to use a proxy to connect to the game server.
-        ////!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!.
+        ////!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!
+        ///Use &quot;custom&quot;, &quot;follow_system&quot; or &quot;disable&quot;..
         /// </summary>
         internal static string Proxy {
             get {
@@ -1710,27 +1711,27 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to Whether to connect to the game server through a proxy..
         /// </summary>
-        internal static string Proxy_Enabled_Ingame {
+        internal static string Proxy_Ingame_Proxy {
             get {
-                return ResourceManager.GetString("Proxy.Enabled_Ingame", resourceCulture);
+                return ResourceManager.GetString("Proxy.Ingame_Proxy", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Whether to connect to the login server through a proxy..
         /// </summary>
-        internal static string Proxy_Enabled_Login {
+        internal static string Proxy_Login_Proxy {
             get {
-                return ResourceManager.GetString("Proxy.Enabled_Login", resourceCulture);
+                return ResourceManager.GetString("Proxy.Login_Proxy", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Whether to download MCC updates via proxy..
         /// </summary>
-        internal static string Proxy_Enabled_Update {
+        internal static string Proxy_MCC_Update_Proxy {
             get {
-                return ResourceManager.GetString("Proxy.Enabled_Update", resourceCulture);
+                return ResourceManager.GetString("Proxy.MCC_Update_Proxy", resourceCulture);
             }
         }
         

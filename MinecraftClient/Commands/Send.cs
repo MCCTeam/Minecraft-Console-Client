@@ -37,7 +37,7 @@ namespace MinecraftClient.Commands
         private int DoSendText(CmdResult r, string command)
         {
             McClient handler = CmdResult.currentHandler!;
-            handler.SendText(command);
+            handler.SendTextAsync(command).Wait();
             return r.SetAndReturn(CmdResult.Status.Done);
         }
     }

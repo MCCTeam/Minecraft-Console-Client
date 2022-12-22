@@ -49,7 +49,7 @@ namespace MinecraftClient.Commands
         private static int DoAnimation(CmdResult r, bool mainhand)
         {
             McClient handler = CmdResult.currentHandler!;
-            return r.SetAndReturn(handler.DoAnimation(mainhand ? 1 : 0));
+            return r.SetAndReturn(handler.DoAnimationAsync(mainhand ? 1 : 0).Result);
         }
     }
 }

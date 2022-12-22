@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Message;
 
-namespace MinecraftClient.Mapping
+namespace MinecraftClient.EntityHandler
 {
     /// <summary>
     /// Represents an entity evolving into a Minecraft world

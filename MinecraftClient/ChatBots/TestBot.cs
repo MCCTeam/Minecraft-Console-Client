@@ -1,4 +1,6 @@
-﻿using MinecraftClient.Scripting;
+﻿using System;
+using System.Threading.Tasks;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.ChatBots
 {
@@ -8,6 +10,19 @@ namespace MinecraftClient.ChatBots
 
     public class TestBot : ChatBot
     {
+        //public override Tuple<McClientEventType, Func<object?, Task>>[]? InitializeEventCallbacks()
+        //{
+        //    return new Tuple<McClientEventType, Func<object?, Task>>[]
+        //    {
+        //        new(McClientEventType.ClientTick, async (object? o) =>
+        //        {
+        //            await Task.CompletedTask;
+        //            LogToConsole("test aaa");
+        //            throw new Exception("dwadwa");
+        //        })
+        //    };
+        //}
+
         public override void GetText(string text)
         {
             string message = "";

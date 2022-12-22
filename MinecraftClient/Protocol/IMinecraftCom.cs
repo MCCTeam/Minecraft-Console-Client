@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.ProfileKey;
@@ -19,7 +22,12 @@ namespace MinecraftClient.Protocol
         /// Start the login procedure once connected to the server
         /// </summary>
         /// <returns>True if login was successful</returns>
-        bool Login(PlayerKeyPair? playerKeyPair, Session.SessionToken session);
+        Task<bool> Login(HttpClient httpClient, PlayerKeyPair? playerKeyPair, Session.SessionToken session);
+
+        /// <summary>
+        /// Start processing game packets.
+        /// </summary>
+        Task StartUpdating();
 
         /// <summary>
         /// Disconnect from the server
@@ -46,20 +54,20 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="message">Text to send</param>
         /// <returns>True if successfully sent</returns>
-        bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair = null);
+        Task<bool> SendChatMessage(string message, PlayerKeyPair? playerKeyPair = null);
 
         /// <summary>
         /// Allow to respawn after death
         /// </summary>
         /// <returns>True if packet successfully sent</returns>
-        bool SendRespawnPacket();
+        Task<bool> SendRespawnPacket();
 
         /// <summary>
         /// Inform the server of the client being used to connect
         /// </summary>
         /// <param name="brandInfo">Client string describing the client</param>
         /// <returns>True if brand info was successfully sent</returns>
-        bool SendBrandInfo(string brandInfo);
+        Task<bool> SendBrandInfo(string brandInfo);
 
         /// <summary>
         /// Inform the server of the client's Minecraft settings
@@ -72,7 +80,7 @@ namespace MinecraftClient.Protocol
         /// <param name="skinParts">Show skin layers</param>
         /// <param name="mainHand">1.9+ main hand</param>
         /// <returns>True if client settings were successfully sent</returns>
-        bool SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand);
+        Task<bool> SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand);
 
         /// <summary>
         /// Send a location update telling that we moved to that location
@@ -82,7 +90,7 @@ namespace MinecraftClient.Protocol
         /// <param name="yaw">The new yaw (optional)</param>
         /// <param name="pitch">The new pitch (optional)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch);
+        Task<bool> SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch);
 
         /// <summary>
         /// Send a plugin channel packet to the server.
@@ -91,7 +99,7 @@ namespace MinecraftClient.Protocol
         /// <param name="channel">Channel to send packet on</param>
         /// <param name="data">packet Data</param>
         /// <returns>True if message was successfully sent</returns>
-        bool SendPluginChannelPacket(string channel, byte[] data);
+        Task<bool> SendPluginChannelPacket(string channel, byte[] data);
 
         /// <summary>
         /// Send Entity Action packet to the server.
@@ -99,14 +107,14 @@ namespace MinecraftClient.Protocol
         /// <param name="entityID">PlayerID</param>
         /// <param name="type">Type of packet to send</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendEntityAction(int EntityID, int type);
+        Task<bool> SendEntityAction(int EntityID, int type);
 
         /// <summary>
         /// Send a held item change packet to the server.
         /// </summary>
         /// <param name="slot">New active slot in the inventory hotbar</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendHeldItemChange(short slot);
+        Task<bool> SendHeldItemChange(short slot);
 
         /// <summary>
         /// Send an entity interaction packet to the server.
@@ -114,7 +122,7 @@ namespace MinecraftClient.Protocol
         /// <param name="EntityID">Entity ID to interact with</param>
         /// <param name="type">Type of interaction (0: interact, 1: attack, 2: interact at)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendInteractEntity(int EntityID, int type);
+        Task<bool> SendInteractEntity(int EntityID, int type);
 
         /// <summary>
         /// Send an entity interaction packet to the server.
@@ -126,7 +134,7 @@ namespace MinecraftClient.Protocol
         /// <param name="Z">Z coordinate for "interact at"</param>
         /// <param name="hand">Player hand (0: main hand, 1: off hand)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand);
+        Task<bool> SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand);
 
         /// <summary>
         /// Send an entity interaction packet to the server.
@@ -137,7 +145,7 @@ namespace MinecraftClient.Protocol
         /// <param name="Y">Y coordinate for "interact at"</param>
         /// <param name="Z">Z coordinate for "interact at"</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z);
+        Task<bool> SendInteractEntity(int EntityID, int type, float X, float Y, float Z);
 
         /// <summary>
         /// Send an entity interaction packet to the server.
@@ -146,7 +154,7 @@ namespace MinecraftClient.Protocol
         /// <param name="type">Type of interaction (0: interact, 1: attack, 2: interact at)</param>
         /// <param name="hand">Only if Type is interact or interact at; 0: main hand, 1: off hand</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendInteractEntity(int EntityID, int type, int hand);
+        Task<bool> SendInteractEntity(int EntityID, int type, int hand);
 
         /// <summary>
         /// Send a use item packet to the server
@@ -154,7 +162,7 @@ namespace MinecraftClient.Protocol
         /// <param name="hand">0: main hand, 1: off hand</param>
         /// <param name="sequenceId">Sequence ID used for synchronization</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendUseItem(int hand, int sequenceId);
+        Task<bool> SendUseItem(int hand, int sequenceId);
 
         /// <summary>
         /// Send a click window slot packet to the server
@@ -166,7 +174,7 @@ namespace MinecraftClient.Protocol
         /// <param name="changedSlots">Slots that have been changed in this event: List<SlotID, Changed Items> </param>
         /// <param name="stateId">Inventory's stateId</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item? item, List<Tuple<short, Item?>> changedSlots, int stateId);
+        Task<bool> SendWindowAction(int windowId, int slotId, WindowActionType action, Item? item, List<Tuple<short, Item?>> changedSlots, int stateId);
 
         /// <summary>
         /// Request Creative Mode item creation into regular/survival Player Inventory
@@ -177,7 +185,7 @@ namespace MinecraftClient.Protocol
         /// <param name="count">Item count</param>
         /// <param name="nbt">Optional item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt);
+        Task<bool> SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt);
 
         /// <summary>
         /// Send a click container button packet to the server.
@@ -187,7 +195,7 @@ namespace MinecraftClient.Protocol
         /// <param name="buttonId">Id of the clicked button</param>
         /// <returns>True if packet was successfully sent</returns>
 
-        bool ClickContainerButton(int windowId, int buttonId);
+        Task<bool> ClickContainerButton(int windowId, int buttonId);
 
         /// <summary>
         /// Plays animation
@@ -195,13 +203,13 @@ namespace MinecraftClient.Protocol
         /// <param name="animation">0 for left arm, 1 for right arm</param>
         /// <param name="playerid">Player Entity ID</param>
         /// <returns>TRUE if item given successfully</returns>
-        bool SendAnimation(int animation, int playerid);
+        Task<bool> SendAnimation(int animation, int playerid);
 
         /// <summary>
         /// Send a close window packet to the server
         /// </summary>
         /// <param name="windowId">Id of the window being closed</param>
-        bool SendCloseWindow(int windowId);
+        Task<bool> SendCloseWindow(int windowId);
 
         /// <summary>
         /// Send player block placement packet to the server
@@ -211,7 +219,7 @@ namespace MinecraftClient.Protocol
         /// <param name="face">Block face</param>
         /// <param name="sequenceId">Sequence ID (use for synchronization)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendPlayerBlockPlacement(int hand, Location location, Direction face, int sequenceId);
+        Task<bool> SendPlayerBlockPlacement(int hand, Location location, Direction face, int sequenceId);
 
         /// <summary>
         /// Send player blog digging packet to the server. This packet needs to be called at least twice: Once to begin digging, then a second time to finish digging
@@ -221,7 +229,7 @@ namespace MinecraftClient.Protocol
         /// <param name="face">Block face</param>
         /// <param name="sequenceId">Sequence ID (use for synchronization)</param>
         /// <returns>True if packet was succcessfully sent</returns>
-        bool SendPlayerDigging(int status, Location location, Direction face, int sequenceId);
+        Task<bool> SendPlayerDigging(int status, Location location, Direction face, int sequenceId);
 
         /// <summary>
         /// Change text on a sign
@@ -232,7 +240,7 @@ namespace MinecraftClient.Protocol
         /// <param name="line3">New line 3</param>
         /// <param name="line4">New line 4</param>
         /// <returns>True if packet was succcessfully sent</returns>
-        bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4);
+        Task<bool> SendUpdateSign(Location location, string line1, string line2, string line3, string line4);
 
         /// <summary>
         /// Update command block
@@ -241,24 +249,18 @@ namespace MinecraftClient.Protocol
         /// <param name="command">command</param>
         /// <param name="mode">command block mode</param>
         /// <param name="flags">command block flags</param>
-        bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags);
+        Task<bool> UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags);
 
         /// <summary>
         /// Select villager trade
         /// </summary>
         /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
-        bool SelectTrade(int selectedSlot);
+        Task<bool> SelectTrade(int selectedSlot);
 
         /// <summary>
         /// Spectate a player/entity
         /// </summary>
         /// <param name="uuid">The uuid of the player/entity to spectate/teleport to.</param>
-        bool SendSpectate(Guid uuid);
-
-        /// <summary>
-        /// Get net read thread (main thread) ID
-        /// </summary>
-        /// <returns>Net read thread ID</returns>
-        int GetNetMainThreadId();
+        Task<bool> SendSpectate(Guid uuid);
     }
 }

@@ -44,7 +44,7 @@ namespace MinecraftClient.Commands
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(Status.FailNeedInventory);
 
-            if (handler.ChangeSlot((short)(slot - 1)))
+            if (handler.ChangeSlotAsync((short)(slot - 1)).Result)
                 return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_changeSlot_changed, slot));
             else
                 return r.SetAndReturn(Status.Fail, Translations.cmd_changeSlot_fail);

@@ -2,3 +2,6 @@
 	path = ConsoleInteractive
 	url = https://github.com/breadbyte/ConsoleInteractive
 	branch = main
+[submodule "MinecraftProtocolLibrary"]
+	path = MinecraftProtocolLibrary
+	url = https://github.com/BruceChenQAQ/Minecraft-Protocol-Library.git

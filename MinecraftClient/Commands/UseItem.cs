@@ -43,7 +43,7 @@ namespace MinecraftClient.Commands
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(Status.FailNeedInventory);
 
-            handler.UseItemOnHand();
+            handler.UseItemOnHandAsync().Wait();
             return r.SetAndReturn(Status.Done, Translations.cmd_useitem_use);
         }
     }

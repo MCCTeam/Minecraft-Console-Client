@@ -5,6 +5,7 @@ using System.Text;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.EntityHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.CommandHandler.CmdResult;
@@ -166,12 +167,12 @@ namespace MinecraftClient.Commands
                         {
                             if (action == ActionType.Attack)
                             {
-                                handler.InteractEntity(entity2.Key, InteractType.Attack);
+                                handler.InteractEntityAsync(entity2.Key, InteractType.Attack).Wait();
                                 actionst = Translations.cmd_entityCmd_attacked;
                             }
                             else if (action == ActionType.Use)
                             {
-                                handler.InteractEntity(entity2.Key, InteractType.Interact);
+                                handler.InteractEntityAsync(entity2.Key, InteractType.Interact).Wait();
                                 actionst = Translations.cmd_entityCmd_used;
                             }
                             actioncount++;
@@ -251,7 +252,7 @@ namespace MinecraftClient.Commands
             {
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_latency}: {latency}");
             }
-            else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
+            else if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
             {
                 string? displayName = item.DisplayName;
                 if (string.IsNullOrEmpty(displayName))
@@ -311,10 +312,10 @@ namespace MinecraftClient.Commands
             switch (action)
             {
                 case ActionType.Attack:
-                    handler.InteractEntity(entity.ID, InteractType.Attack);
+                    handler.InteractEntityAsync(entity.ID, InteractType.Attack).Wait();
                     return Translations.cmd_entityCmd_attacked;
                 case ActionType.Use:
-                    handler.InteractEntity(entity.ID, InteractType.Interact);
+                    handler.InteractEntityAsync(entity.ID, InteractType.Interact).Wait();
                     return Translations.cmd_entityCmd_used;
                 case ActionType.List:
                     return GetEntityInfoDetailed(handler, entity);

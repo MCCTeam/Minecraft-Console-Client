@@ -39,8 +39,8 @@ namespace MinecraftClient.Inventory
             if (ValidateSlots(source, dest, destContainer) &&
                 HasItem(source) &&
                 ((destContainer != null && !HasItem(dest, destContainer)) || (destContainer == null && !HasItem(dest))))
-                return mc.DoWindowAction(c.ID, source, WindowActionType.LeftClick)
-                    && mc.DoWindowAction(destContainer == null ? c.ID : destContainer.ID, dest, WindowActionType.LeftClick);
+                return mc.DoWindowActionAsync(c.ID, source, WindowActionType.LeftClick).Result
+                    && mc.DoWindowActionAsync(destContainer == null ? c.ID : destContainer.ID, dest, WindowActionType.LeftClick).Result;
             else return false;
         }
 
@@ -57,9 +57,9 @@ namespace MinecraftClient.Inventory
             if (ValidateSlots(slot1, slot2, destContainer) &&
                 HasItem(slot1) &&
                 (destContainer != null && HasItem(slot2, destContainer) || (destContainer == null && HasItem(slot2))))
-                return mc.DoWindowAction(c.ID, slot1, WindowActionType.LeftClick)
-                    && mc.DoWindowAction(destContainer == null ? c.ID : destContainer.ID, slot2, WindowActionType.LeftClick)
-                    && mc.DoWindowAction(c.ID, slot1, WindowActionType.LeftClick);
+                return mc.DoWindowActionAsync(c.ID, slot1, WindowActionType.LeftClick).Result
+                    && mc.DoWindowActionAsync(destContainer == null ? c.ID : destContainer.ID, slot2, WindowActionType.LeftClick).Result
+                    && mc.DoWindowActionAsync(c.ID, slot1, WindowActionType.LeftClick).Result;
             else return false;
         }
 
@@ -104,14 +104,14 @@ namespace MinecraftClient.Inventory
                             break;
                         }
                 }
-                mc.DoWindowAction(c.ID, source, WindowActionType.LeftClick); // grab item
-                mc.DoWindowAction(c.ID, -999, startDragging);
+                mc.DoWindowActionAsync(c.ID, source, WindowActionType.LeftClick).Wait(); // grab item
+                mc.DoWindowActionAsync(c.ID, -999, startDragging).Wait();
                 foreach (var slot in availableSlots)
                 {
-                    mc.DoWindowAction(c.ID, slot, addDragging);
+                    mc.DoWindowActionAsync(c.ID, slot, addDragging).Wait();
                 }
-                mc.DoWindowAction(c.ID, -999, endDragging);
-                mc.DoWindowAction(c.ID, source, WindowActionType.LeftClick); // put down item left (if any)
+                mc.DoWindowActionAsync(c.ID, -999, endDragging).Wait();
+                mc.DoWindowActionAsync(c.ID, source, WindowActionType.LeftClick).Wait(); // put down item left (if any)
                 return true;
             }
             else return false;

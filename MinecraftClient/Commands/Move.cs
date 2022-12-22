@@ -145,7 +145,7 @@ namespace MinecraftClient.Commands
 
             Location current = handler.GetCurrentLocation();
             Location currentCenter = new(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
-            handler.MoveTo(currentCenter, allowDirectTeleport: true);
+            handler.MoveToAsync(currentCenter, allowDirectTeleport: true).Wait();
             return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_move_walk, currentCenter, current));
         }
 
@@ -162,7 +162,7 @@ namespace MinecraftClient.Commands
 
             if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
             {
-                if (handler.MoveTo(goal, allowUnsafe: takeRisk))
+                if (handler.MoveToAsync(goal, allowUnsafe: takeRisk).Result)
                     return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_move_moving, direction.ToString()));
                 else
                     return r.SetAndReturn(Status.Fail, takeRisk ? Translations.cmd_move_dir_fail : Translations.cmd_move_suggestforce);
@@ -188,8 +188,8 @@ namespace MinecraftClient.Commands
             if (takeRisk || Movement.PlayerFitsHere(handler.GetWorld(), goal))
             {
                 if (current.ToFloor() == goal.ToFloor())
-                    handler.MoveTo(goal, allowDirectTeleport: true);
-                else if (!handler.MoveTo(goal, allowUnsafe: takeRisk))
+                    handler.MoveToAsync(goal, allowDirectTeleport: true).Wait();
+                else if (!handler.MoveToAsync(goal, allowUnsafe: takeRisk).Result)
                     return r.SetAndReturn(Status.Fail, takeRisk ? string.Format(Translations.cmd_move_fail, goal) : string.Format(Translations.cmd_move_suggestforce, goal));
                 return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_move_walk, goal, current));
             }
