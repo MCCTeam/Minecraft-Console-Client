@@ -19,7 +19,7 @@ unzip MinecraftClient-linux.zip
 rm -- MinecraftClient-linux.zip
 
 # Set Executable
-chmod +x /opt/start-latest.sh
+chmod +x ./MinecraftClient
 
 # Start the Client
 ./MinecraftClient
