@@ -1208,14 +1208,9 @@ namespace MinecraftClient.Protocol.Handlers
                             string message_ = dataTypes.ReadNextString(packetData);
                             int messageType_ = dataTypes.ReadNextVarInt(packetData);
                             string messageName = dataTypes.ReadNextString(packetData);
-                            bool hasTargetName = dataTypes.ReadNextBool(packetData);
+                            string? targetName_ = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
 
-                            string? targetName_ = null;
-
-                            if (hasTargetName)
-                                targetName_ = dataTypes.ReadNextString(packetData);
-
-                            // Not clear for what this is used as the time of writting
+                            // Not clear for what this is used for as the time of writing
                             break;
                         case PacketTypesIn.MapChunkBulk:
                             if (protocolVersion < MC_1_9_Version && handler.GetTerrainEnabled())
