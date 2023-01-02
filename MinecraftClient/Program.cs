@@ -287,7 +287,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
+            if (OperatingSystem.IsWindows() && !string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
             {
                 InternalConfig.Username = "New Window";
                 Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
@@ -463,7 +463,7 @@ namespace MinecraftClient
                 InternalConfig.Username = session.PlayerName;
                 bool isRealms = false;
 
-                if (Config.Main.Advanced.ConsoleTitle != "")
+                if (OperatingSystem.IsWindows() && !string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
                     Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
 
                 if (Config.Main.Advanced.PlayerHeadAsIcon && OperatingSystem.IsWindows())
@@ -614,7 +614,7 @@ namespace MinecraftClient
                         client = new McClient(session, playerKeyPair, InternalConfig.ServerIP, InternalConfig.ServerPort, protocolversion, forgeInfo);
 
                         //Update console title
-                        if (Config.Main.Advanced.ConsoleTitle != "")
+                        if (OperatingSystem.IsWindows() && !string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
                             Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
                     }
                     catch (NotSupportedException)

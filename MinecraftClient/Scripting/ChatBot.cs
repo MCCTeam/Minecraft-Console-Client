@@ -1672,11 +1672,6 @@ namespace MinecraftClient.Scripting
 
             }
 
-            public string Run(McClient handler, string command, Dictionary<string, object>? localVars)
-            {
-                return Runner(command, GetArgs(command));
-            }
-
             /// <summary>
             /// ChatBotCommand Constructor
             /// </summary>

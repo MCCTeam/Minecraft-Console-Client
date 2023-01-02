@@ -88,6 +88,7 @@ namespace MinecraftClient.Scripting
                         "using System.Net;",
                         "using System.Threading;",
                         "using MinecraftClient;",
+                        "using MinecraftClient.Scripting;",
                         "using MinecraftClient.Mapping;",
                         "using MinecraftClient.Inventory;",
                         string.Join("\n", libs),

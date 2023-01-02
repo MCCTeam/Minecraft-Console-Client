@@ -203,7 +203,7 @@ namespace MinecraftClient
                         Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
                         cmdprompt = new CancellationTokenSource();
-                        ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
+                        ConsoleInteractive.ConsoleReader.BeginReadThread();
                         ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
                         ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
                     }
