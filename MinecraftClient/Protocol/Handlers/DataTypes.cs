@@ -241,6 +241,18 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a byte array with given length from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="length">Length of the bytes array</param>
+        /// <returns>The byte array</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public byte[] ReadNextByteArray(Queue<byte> cache, int length)
+        {
+            return ReadData(length, cache);
+        }
+
+        /// <summary>
         /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
         /// </summary>
         /// <returns>The unsigned long integer values</returns>

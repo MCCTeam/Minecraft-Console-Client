@@ -522,12 +522,14 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             else // 1.19.1 +
                             {
+                                // 1.19.3+
                                 if (protocolVersion >= MC_1_19_3_Version)
                                 {
                                     // Header section
                                     Guid senderUUID = dataTypes.ReadNextUUID(packetData);
                                     int index = dataTypes.ReadNextVarInt(packetData);
-                                    byte[]? messageSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData) : null;
+                                    // Signature is fixed size of 256 bytes
+                                    byte[]? messageSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData, 256) : null;
 
                                     // Body
                                     string message = dataTypes.ReadNextString(packetData);
@@ -541,8 +543,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     for (int i = 0; i < totalPreviousMessages; i++)
                                     {
                                         int messageId = dataTypes.ReadNextVarInt(packetData);
-                                        if (messageId > 0)
-                                            previousMessageSignatures.Add(new Tuple<int, byte[]>(messageId, dataTypes.ReadNextByteArray(packetData)));
+                                        if (messageId == 0) // from botcraft implementation. Only read if id is 0. Byte array is fixed size of 256 bytes
+                                            previousMessageSignatures.Add(new Tuple<int, byte[]>(messageId, dataTypes.ReadNextByteArray(packetData, 256)));
                                     }
 
                                     // Other
@@ -579,10 +581,13 @@ namespace MinecraftClient.Protocol.Handlers
                                         }
                                     }
 
-                                    // TODO
+                                    // TODO: Verify the message
+                                    ChatMessage chat = new(message, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, false);
+                                    handler.OnTextReceived(chat);
                                 }
                                 else
                                 {
+                                    // 1.19.1 - 1.19.2
                                     byte[]? precedingSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData) : null;
                                     Guid senderUUID = dataTypes.ReadNextUUID(packetData);
                                     byte[] headerSignature = dataTypes.ReadNextByteArray(packetData);
@@ -2483,7 +2488,8 @@ namespace MinecraftClient.Protocol.Handlers
                     if (!isOnlineMode || playerKeyPair == null || !Config.Signature.LoginWithSecureProfile || !Config.Signature.SignChat)
                     {
                         fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
-                        fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt
+                        if (protocolVersion < MC_1_19_3_Version)
+                            fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt (1.19 - 1.19.2)
                     }
                     else
                     {
@@ -2493,21 +2499,33 @@ namespace MinecraftClient.Protocol.Handlers
 
                         // Signature Length & Signature: (VarInt) and Byte Array
                         Guid uuid = handler.GetUserUuid();
-                        byte[] sign = (protocolVersion >= MC_1_19_2_Version) ?
-                            playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment!.lastSeen) :
-                            playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
-                        fields.AddRange(dataTypes.GetVarInt(sign.Length));
+                        byte[] sign;
+                        if (protocolVersion < MC_1_19_2_Version) // 1.19.1 or lower
+                            sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
+                        else if (protocolVersion < MC_1_19_3_Version) // 1.19.2
+                            sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment!.lastSeen);
+                        else // 1.19.3
+                            sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt); // TODO?
+
+                        if (protocolVersion < MC_1_19_3_Version)
+                            fields.AddRange(dataTypes.GetVarInt(sign.Length));
+                        else
+                            fields.AddRange(dataTypes.GetBool(true));
                         fields.AddRange(sign);
                     }
 
                     // Signed Preview: Boolean
-                    fields.AddRange(dataTypes.GetBool(false));
+                    if (protocolVersion < MC_1_19_3_Version)
+                        fields.AddRange(dataTypes.GetBool(false));
+                    else
+                        fields.AddRange(dataTypes.GetVarInt(1)); // message count
 
                     if (protocolVersion >= MC_1_19_2_Version)
                     {
                         // Message Acknowledgment
                         fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
                     }
+                    
                 }
                 SendPacket(PacketTypesOut.ChatMessage, fields);
                 return true;
