@@ -30,7 +30,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x15, PacketTypesIn.PluginMessage },              // (Wiki name: Plugin Message (clientbound))
             { 0x16, PacketTypesIn.HideMessage },                // Added in 1.19.1
             { 0x17, PacketTypesIn.Disconnect },                 //
-            { 0x18, PacketTypesIn.ProfilelessChatMessage },     // Added in 1.19.3 - TODO
+            { 0x18, PacketTypesIn.ProfilelessChatMessage },     // Added in 1.19.3 (Wiki name: Disguised Chat Message)
             { 0x19, PacketTypesIn.EntityStatus },               // (Wiki name: Entity Event)
             { 0x1A, PacketTypesIn.Explosion },                  // Changed in 1.19 (Location fields are now Double instead of Float) (Wiki name: Explosion) 
             { 0x1B, PacketTypesIn.UnloadChunk },                // (Wiki name: Forget Chunk)
@@ -123,33 +123,33 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x03, PacketTypesOut.MessageAcknowledgment },       // Added in 1.19.1
             { 0x04, PacketTypesOut.ChatCommand },                 // Added in 1.19
             { 0x05, PacketTypesOut.ChatMessage },                 // Changed in 1.19 (Completely changed) (Wiki name: Chat)
-            { 0x06, PacketTypesOut.ChatPreview },                 // Added in 1.19 (Wiki name: Chat Preview (serverbound))
-            { 0x07, PacketTypesOut.ClientStatus },                // (Wiki name: Client Command)
-            { 0x08, PacketTypesOut.ClientSettings },              // (Wiki name: Client Information)
-            { 0x09, PacketTypesOut.TabComplete },                 // (Wiki name: Command Suggestions Request)
-            { 0x0A, PacketTypesOut.ClickWindowButton },           // (Wiki name: Click Container Button)
-            { 0x0B, PacketTypesOut.ClickWindow },                 // (Wiki name: Click Container)
-            { 0x0C, PacketTypesOut.CloseWindow },                 // (Wiki name: Close Container (serverbound))
-            { 0x0D, PacketTypesOut.PluginMessage },               // (Wiki name: Plugin Message (serverbound))
-            { 0x0E, PacketTypesOut.EditBook },                    //
-            { 0x0F, PacketTypesOut.EntityNBTRequest },            // (Wiki name: Query Entity Tag)
-            { 0x10, PacketTypesOut.InteractEntity },              // (Wiki name: Interact)
-            { 0x11, PacketTypesOut.GenerateStructure },           // (Wiki name: Jigsaw Generate)
-            { 0x12, PacketTypesOut.KeepAlive },                   //
-            { 0x13, PacketTypesOut.LockDifficulty },              //
-            { 0x14, PacketTypesOut.PlayerPosition },              // (Wiki name: Move Player Position)
-            { 0x15, PacketTypesOut.PlayerPositionAndRotation },   // (Wiki name: Set Player Position and Rotation)
-            { 0x16, PacketTypesOut.PlayerRotation },              // (Wiki name: Set Player Rotation)
-            { 0x17, PacketTypesOut.PlayerMovement },              // (Wiki name: Set Player On Ground)
-            { 0x18, PacketTypesOut.VehicleMove },                 // (Wiki name: Move Vehicle (serverbound))
-            { 0x19, PacketTypesOut.SteerBoat },                   // (Wiki name: Paddle Boat)
-            { 0x1A, PacketTypesOut.PickItem },                    //
-            { 0x1B, PacketTypesOut.CraftRecipeRequest },          // (Wiki name: Place recipe)
-            { 0x1C, PacketTypesOut.PlayerAbilities },             //
-            { 0x1D, PacketTypesOut.PlayerDigging },               // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Player Action) 
-            { 0x1E, PacketTypesOut.EntityAction },                // (Wiki name: Player Command)
-            { 0x1F, PacketTypesOut.SteerVehicle },                // (Wiki name: Player Input)
-            { 0x20, PacketTypesOut.Pong },                        // (Wiki name: Pong (play))
+            { 0x06, PacketTypesOut.ClientStatus },                // (Wiki name: Client Command)
+            { 0x07, PacketTypesOut.ClientSettings },              // (Wiki name: Client Information)
+            { 0x08, PacketTypesOut.TabComplete },                 // (Wiki name: Command Suggestions Request)
+            { 0x09, PacketTypesOut.ClickWindowButton },           // (Wiki name: Click Container Button)
+            { 0x0A, PacketTypesOut.ClickWindow },                 // (Wiki name: Click Container)
+            { 0x0B, PacketTypesOut.CloseWindow },                 // (Wiki name: Close Container (serverbound))
+            { 0x0C, PacketTypesOut.PluginMessage },               // (Wiki name: Plugin Message (serverbound))
+            { 0x0D, PacketTypesOut.EditBook },                    //
+            { 0x0E, PacketTypesOut.EntityNBTRequest },            // (Wiki name: Query Entity Tag)
+            { 0x0F, PacketTypesOut.InteractEntity },              // (Wiki name: Interact)
+            { 0x10, PacketTypesOut.GenerateStructure },           // (Wiki name: Jigsaw Generate)
+            { 0x11, PacketTypesOut.KeepAlive },                   //
+            { 0x12, PacketTypesOut.LockDifficulty },              //
+            { 0x13, PacketTypesOut.PlayerPosition },              // (Wiki name: Move Player Position)
+            { 0x14, PacketTypesOut.PlayerPositionAndRotation },   // (Wiki name: Set Player Position and Rotation)
+            { 0x15, PacketTypesOut.PlayerRotation },              // (Wiki name: Set Player Rotation)
+            { 0x16, PacketTypesOut.PlayerMovement },              // (Wiki name: Set Player On Ground)
+            { 0x17, PacketTypesOut.VehicleMove },                 // (Wiki name: Move Vehicle (serverbound))
+            { 0x18, PacketTypesOut.SteerBoat },                   // (Wiki name: Paddle Boat)
+            { 0x19, PacketTypesOut.PickItem },                    //
+            { 0x1A, PacketTypesOut.CraftRecipeRequest },          // (Wiki name: Place recipe)
+            { 0x1B, PacketTypesOut.PlayerAbilities },             //
+            { 0x1C, PacketTypesOut.PlayerDigging },               // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Player Action) 
+            { 0x1D, PacketTypesOut.EntityAction },                // (Wiki name: Player Command)
+            { 0x1E, PacketTypesOut.SteerVehicle },                // (Wiki name: Player Input)
+            { 0x1F, PacketTypesOut.Pong },                        // (Wiki name: Pong (play))
+            { 0x20, PacketTypesOut.PlayerSession },               // Added in 1.19.3
             { 0x21, PacketTypesOut.SetDisplayedRecipe },          // (Wiki name: Recipe Book Change Settings)
             { 0x22, PacketTypesOut.SetRecipeBookState },          // (Wiki name: Recipe Book Seen Recipe)
             { 0x23, PacketTypesOut.NameItem },                    // (Wiki name: Rename Item)
