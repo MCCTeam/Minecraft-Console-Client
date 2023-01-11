@@ -909,5 +909,10 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
+
+        public bool SendPlayerSession(PlayerKeyPair? playerKeyPair)
+        {
+            return false;
+        }
     }
 }

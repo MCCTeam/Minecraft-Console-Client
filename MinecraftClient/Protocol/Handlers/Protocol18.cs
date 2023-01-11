@@ -2490,6 +2490,8 @@ namespace MinecraftClient.Protocol.Handlers
                         fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
                         if (protocolVersion < MC_1_19_3_Version)
                             fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt (1.19 - 1.19.2)
+                        else
+                            fields.AddRange(dataTypes.GetBool(false)); // Has signature: bool (1.19.3)
                     }
                     else
                     {
@@ -2507,23 +2509,34 @@ namespace MinecraftClient.Protocol.Handlers
                         else // 1.19.3
                             sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt); // TODO?
 
-                        if (protocolVersion < MC_1_19_3_Version)
-                            fields.AddRange(dataTypes.GetVarInt(sign.Length));
-                        else
+                        if (protocolVersion >= MC_1_19_3_Version)
                             fields.AddRange(dataTypes.GetBool(true));
+                        else
+                            fields.AddRange(dataTypes.GetVarInt(sign.Length));
                         fields.AddRange(sign);
                     }
 
                     // Signed Preview: Boolean
-                    if (protocolVersion < MC_1_19_3_Version)
-                        fields.AddRange(dataTypes.GetBool(false));
-                    else
+                    if (protocolVersion >= MC_1_19_3_Version)
                         fields.AddRange(dataTypes.GetVarInt(1)); // message count
+                    else
+                        fields.AddRange(dataTypes.GetBool(false));
 
                     if (protocolVersion >= MC_1_19_2_Version)
                     {
-                        // Message Acknowledgment
-                        fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
+                        if (protocolVersion >= MC_1_19_3_Version)
+                        {
+                            // 1.19.3
+                            // Acknowledged: BitSet (no idea what is this)
+                            //fields.AddRange(dataTypes.GetVarInt(0));
+                            fields.AddRange(new byte[3] {0,0,0 });
+                        }
+                        else
+                        {
+                            // 1.19.2
+                            // Message Acknowledgment
+                            fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
+                        }
                     }
                     
                 }
@@ -3166,6 +3179,40 @@ namespace MinecraftClient.Protocol.Handlers
                     List<byte> packet = new();
                     packet.AddRange(dataTypes.GetUUID(UUID));
                     SendPacket(PacketTypesOut.Spectate, packet);
+                    return true;
+                }
+                catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
+            }
+            else { return false; }
+        }
+
+        public bool SendPlayerSession(PlayerKeyPair? playerKeyPair)
+        {
+            if (protocolVersion >= MC_1_19_3_Version)
+            {
+                try
+                {
+                    List<byte> packet = new();
+
+                    var uuid = Guid.NewGuid();
+
+                    byte[] timestampByte = BitConverter.GetBytes(playerKeyPair.GetExpirationMilliseconds());
+                    Array.Reverse(timestampByte);
+                    var signature = KeyUtils.ComputeHash(timestampByte.Concat(playerKeyPair.PublicKey.Key).ToArray());
+
+                    packet.AddRange(dataTypes.GetUUID(uuid));
+                    packet.AddRange(dataTypes.GetLong(playerKeyPair.GetExpirationMilliseconds()));
+                    packet.AddRange(dataTypes.GetVarInt(playerKeyPair.PublicKey.Key.Length));
+                    packet.AddRange(playerKeyPair.PublicKey.Key);
+                    //packet.AddRange(dataTypes.GetVarInt(signature.Length));
+                    //packet.AddRange(signature);
+                    packet.AddRange(dataTypes.GetVarInt(playerKeyPair.PublicKey.SignatureV2.Length));
+                    packet.AddRange(playerKeyPair.PublicKey.SignatureV2);
+
+                    SendPacket(PacketTypesOut.PlayerSession, packet);
+
                     return true;
                 }
                 catch (SocketException) { return false; }

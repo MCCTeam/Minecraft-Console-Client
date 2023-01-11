@@ -124,6 +124,15 @@ namespace MinecraftClient.Protocol.Keys
             return data.ToArray();
         }
 
+        public static byte[] GetSignatureData(string message, DateTimeOffset timestamp, ref byte[] salt, Guid sender, Guid sessionUuid)
+        {
+            List<byte> data = new();
+
+            // TODO!
+
+            return data.ToArray();
+        }
+
         // https://github.com/mono/mono/blob/master/mcs/class/System.Json/System.Json/JsonValue.cs
         public static string EscapeString(string src)
         {

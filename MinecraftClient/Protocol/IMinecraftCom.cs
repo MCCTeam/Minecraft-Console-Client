@@ -256,6 +256,12 @@ namespace MinecraftClient.Protocol
         bool SendSpectate(Guid uuid);
 
         /// <summary>
+        /// Send player session
+        /// </summary>
+        /// <returns></returns>
+        bool SendPlayerSession(PlayerKeyPair? playerKeyPair);
+
+        /// <summary>
         /// Get net read thread (main thread) ID
         /// </summary>
         /// <returns>Net read thread ID</returns>
