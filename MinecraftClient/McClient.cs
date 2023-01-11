@@ -9,6 +9,7 @@ using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol;
+using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
@@ -1125,6 +1126,11 @@ namespace MinecraftClient
                 else
                     return null;
             }
+        }
+
+        public PlayerKeyPair? GetPlayerKeyPair()
+        {
+            return playerKeyPair;
         }
 
         #endregion
@@ -2401,6 +2407,10 @@ namespace MinecraftClient
                     Config.MCSettings.ChatColors,
                     Config.MCSettings.Skin.GetByte(),
                     (byte)Config.MCSettings.MainHand);
+
+            if (protocolversion >= Protocol18Handler.MC_1_19_3_Version
+                && playerKeyPair != null)
+                handler.SendPlayerSession(playerKeyPair);
 
 
             if (inventoryHandlingRequested)

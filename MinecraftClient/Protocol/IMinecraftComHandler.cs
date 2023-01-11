@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol
@@ -27,6 +28,7 @@ namespace MinecraftClient.Protocol
         string[] GetOnlinePlayers();
         Dictionary<string, string> GetOnlinePlayersWithUUID();
         PlayerInfo? GetPlayerInfo(Guid uuid);
+        PlayerKeyPair? GetPlayerKeyPair();
         Location GetCurrentLocation();
         World GetWorld();
         bool GetIsSupportPreviewsChat();
