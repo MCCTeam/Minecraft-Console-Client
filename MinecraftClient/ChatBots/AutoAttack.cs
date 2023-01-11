@@ -33,7 +33,7 @@ namespace MinecraftClient.ChatBots
             public InteractType Interaction = InteractType.Attack;
 
             [TomlInlineComment("$ChatBot.AutoAttack.Attack_Range$")]
-            public int Attack_Range = 4;
+            public double Attack_Range = 4.0;
 
             [TomlInlineComment("$ChatBot.AutoAttack.Attack_Hostile$")]
             public bool Attack_Hostile = true;
@@ -54,6 +54,12 @@ namespace MinecraftClient.ChatBots
                     LogToConsole(BotName, Translations.bot_autoAttack_invalidcooldown);
                     Cooldown_Time.value = 1.0;
                 }
+
+                if (Attack_Range < 1.0)
+                    Attack_Range = 1.0;
+
+                if (Attack_Range > 4.0)
+                    Attack_Range = 4.0;
             }
 
             public enum AttackMode { single, multi };
@@ -111,8 +117,6 @@ namespace MinecraftClient.ChatBots
             attackHostile = Config.Attack_Hostile;
             attackPassive = Config.Attack_Passive;
             attackRange = Config.Attack_Range;
-            if (attackRange < 1) attackRange = 1;
-            if (attackRange > 4) attackRange = 4;
         }
 
         public override void Initialize()
