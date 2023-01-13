@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,30 @@ namespace MinecraftClient.Protocol
 
         public static Dictionary<int, MessageType>? ChatId2Type;
 
+        public static void ReadChatType(Dictionary<string, object> registryCodec)
+        {
+            Dictionary<int, MessageType> chatTypeDictionary = ChatId2Type ?? new();
+            var chatTypeListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:chat_type"])["value"]);
+            foreach (var (chatName, chatId) in from Dictionary<string, object> chatTypeNbt in chatTypeListNbt
+                                               let chatName = (string)chatTypeNbt["name"]
+                                               let chatId = (int)chatTypeNbt["id"]
+                                               select (chatName, chatId))
+            {
+                chatTypeDictionary[chatId] = chatName switch
+                {
+                    "minecraft:chat" => MessageType.CHAT,
+                    "minecraft:emote_command" => MessageType.EMOTE_COMMAND,
+                    "minecraft:msg_command_incoming" => MessageType.MSG_COMMAND_INCOMING,
+                    "minecraft:msg_command_outgoing" => MessageType.MSG_COMMAND_OUTGOING,
+                    "minecraft:say_command" => MessageType.SAY_COMMAND,
+                    "minecraft:team_msg_command_incoming" => MessageType.TEAM_MSG_COMMAND_INCOMING,
+                    "minecraft:team_msg_command_outgoing" => MessageType.TEAM_MSG_COMMAND_OUTGOING,
+                    _ => MessageType.CHAT,
+                };
+            }
+            ChatId2Type = chatTypeDictionary;
+        }
+
         /// <summary>
         /// The main function to convert text from MC 1.6+ JSON to MC 1.5.2 formatted text
         /// </summary>
@@ -47,7 +72,7 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the translated text</returns>
         public static string ParseSignedChat(ChatMessage message, List<string>? links = null)
         {
-            string sender = message.displayName!;
+            string sender = message.isSenderJson ? ParseText(message.displayName!) : message.displayName!;
             string content;
             if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
             {
@@ -66,7 +91,7 @@ namespace MinecraftClient.Protocol
             List<string> usingData = new();
 
             MessageType chatType;
-            if (message.isSystemChat)
+            if (message.chatTypeId == -1)
                 chatType = MessageType.RAW_MSG;
             else if (!ChatId2Type!.TryGetValue(message.chatTypeId, out chatType))
                 chatType = MessageType.CHAT;
@@ -119,7 +144,7 @@ namespace MinecraftClient.Protocol
             if (message.isSystemChat)
             {
                 if (Config.Signature.MarkSystemMessage)
-                    color = "§z §r ";     // Custom color code §z : Background Gray
+                    color = "§z▍§r";     // Custom color code §z : Background Gray
             }
             else
             {
@@ -128,18 +153,18 @@ namespace MinecraftClient.Protocol
                     if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
                     {
                         if (Config.Signature.MarkModifiedMsg)
-                            color = "§x §r "; // Custom color code §x : Background Yellow
+                            color = "§x▍§r"; // Custom color code §x : Background Yellow
                     }
                     else
                     {
                         if (Config.Signature.MarkLegallySignedMsg)
-                            color = "§y §r "; // Custom color code §y : Background Green
+                            color = "§y▍§r"; // Custom color code §y : Background Green
                     }
                 }
                 else
                 {
                     if (Config.Signature.MarkIllegallySignedMsg)
-                        color = "§w §r "; // Custom color code §w : Background Red
+                        color = "§w▍§r"; // Custom color code §w : Background Red
                 }
             }
             return color + text;

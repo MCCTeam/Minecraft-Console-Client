@@ -377,6 +377,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 for (int i = 0; i < worldCount; i++)
                                     dataTypes.ReadNextString(packetData);                 // Dimension Names (World Names) - 1.16 and above
                                 var registryCodec = dataTypes.ReadNextNbt(packetData);    // Registry Codec (Dimension Codec) - 1.16 and above
+                                if (protocolVersion >= MC_1_19_Version)
+                                    ChatParser.ReadChatType(registryCodec);
                                 if (handler.GetTerrainEnabled())
                                     World.StoreDimensionList(registryCodec);
                             }
@@ -455,9 +457,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                             }
 
-                            if (protocolVersion >= MC_1_19_3_Version)
-                                SendPlayerSession(handler.GetPlayerKeyPair());
-
                             break;
                         case PacketTypesIn.DeclareCommands:
                             if (protocolVersion >= MC_1_19_Version)
@@ -486,7 +485,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                     senderUUID = Guid.Empty;
 
-                                handler.OnTextReceived(new(message, true, messageType, senderUUID));
+                                handler.OnTextReceived(new(message, null, true, messageType, senderUUID));
                             }
                             else if (protocolVersion == MC_1_19_Version) // 1.19
                             {
@@ -608,25 +607,31 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 // 1.19.3+
                                 // Header section
+                                // net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket#write
                                 Guid senderUUID = dataTypes.ReadNextUUID(packetData);
                                 int index = dataTypes.ReadNextVarInt(packetData);
                                 // Signature is fixed size of 256 bytes
                                 byte[]? messageSignature = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextByteArray(packetData, 256) : null;
 
                                 // Body
+                                // net.minecraft.network.message.MessageBody.Serialized#write
                                 string message = dataTypes.ReadNextString(packetData);
                                 long timestamp = dataTypes.ReadNextLong(packetData);
                                 long salt = dataTypes.ReadNextLong(packetData);
 
                                 // Previous Messages
+                                // net.minecraft.network.message.LastSeenMessageList.Indexed#write
+                                // net.minecraft.network.message.MessageSignatureData.Indexed#write
                                 int totalPreviousMessages = dataTypes.ReadNextVarInt(packetData);
-                                List<Tuple<int, byte[]>> previousMessageSignatures = new();
-
+                                Tuple<int, byte[]?>[] previousMessageSignatures = new Tuple<int, byte[]?>[totalPreviousMessages];
                                 for (int i = 0; i < totalPreviousMessages; i++)
                                 {
-                                    int messageId = dataTypes.ReadNextVarInt(packetData);
-                                    if (messageId == 0) // from botcraft implementation. Only read if id is 0. Byte array is fixed size of 256 bytes
-                                        previousMessageSignatures.Add(new Tuple<int, byte[]>(messageId, dataTypes.ReadNextByteArray(packetData, 256)));
+                                    // net.minecraft.network.message.MessageSignatureData.Indexed#fromBuf
+                                    int messageId = dataTypes.ReadNextVarInt(packetData) - 1;
+                                    if (messageId == -1)
+                                        previousMessageSignatures[i] = new Tuple<int, byte[]?>(messageId, dataTypes.ReadNextByteArray(packetData, 256));
+                                    else
+                                        previousMessageSignatures[i] = new Tuple<int, byte[]?>(messageId, null);
                                 }
 
                                 // Other
@@ -638,14 +643,16 @@ namespace MinecraftClient.Protocol.Handlers
                                     dataTypes.ReadNextULongArray(packetData);
 
                                 // Network Target
+                                // net.minecraft.network.message.MessageType.Serialized#write
                                 int chatTypeId = dataTypes.ReadNextVarInt(packetData);
                                 string chatName = dataTypes.ReadNextString(packetData);
                                 string? targetName = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
 
-                                Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(chatName).Properties;
+                                ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
+
+                                Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(targetName ?? chatName).Properties;
                                 string senderDisplayName = (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"]).StringValue;
                                 string? senderTeamName = null;
-                                ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
                                 if (targetName != null &&
                                     (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
                                     senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
@@ -663,12 +670,67 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
                                 }
 
-                                // TODO: Verify the message
-                                ChatMessage chat = new(message, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, false);
+                                // Todo: verify message
+                                bool verifyResult;
+                                if (!isOnlineMode)
+                                    verifyResult = false;
+                                else if (senderUUID == handler.GetUserUuid())
+                                    verifyResult = true;
+                                else
+                                {
+                                    PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                    if (player == null || !player.IsMessageChainLegal())
+                                        verifyResult = false;
+                                    else
+                                    {
+                                        verifyResult = false;
+                                        //bool lastVerifyResult = player.IsMessageChainLegal();
+                                        //verifyResult = player.VerifyMessage(message, timestamp, salt, ref headerSignature, ref precedingSignature, lastSeenMessages);
+                                        //if (lastVerifyResult && !verifyResult)
+                                        //    log.Warn(string.Format(Translations.chat_message_chain_broken, senderDisplayName));
+                                    }
+                                }
+
+                                ChatMessage chat = new(message, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult);
                                 if (isOnlineMode && !chat.LacksSender() && messageSignature != null)
                                     Acknowledge(chat);
                                 handler.OnTextReceived(chat);
                             }
+                            break;
+                        case PacketTypesIn.SystemChat:
+                            string systemMessage = dataTypes.ReadNextString(packetData);
+                            if (protocolVersion >= MC_1_19_3_Version)
+                            {
+                                bool isOverlay = dataTypes.ReadNextBool(packetData);
+                                if (isOverlay)
+                                {
+                                    if (!Config.Main.Advanced.ShowXPBarMessages)
+                                        break;
+                                }
+                                else
+                                {
+                                    if (!Config.Main.Advanced.ShowSystemMessages)
+                                        break;
+                                }
+                                handler.OnTextReceived(new(systemMessage, null, true, -1, Guid.Empty, true));
+                            }
+                            else
+                            {
+                                int msgType = dataTypes.ReadNextVarInt(packetData);
+                                if ((msgType == 1 && !Config.Main.Advanced.ShowSystemMessages))
+                                    break;
+                                handler.OnTextReceived(new(systemMessage, null, true, msgType, Guid.Empty, true));
+                            }
+                            break;
+                        case PacketTypesIn.ProfilelessChatMessage:
+                            string message_ = dataTypes.ReadNextString(packetData);
+                            int messageType_ = dataTypes.ReadNextVarInt(packetData);
+                            string messageName = dataTypes.ReadNextString(packetData);
+                            string? targetName_ = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
+                            ChatMessage profilelessChat = new(message_, messageName, true, messageType_, Guid.Empty, true);
+                            profilelessChat.isSenderJson = true;
+                            profilelessChat.teamName = targetName_;
+                            handler.OnTextReceived(profilelessChat);
                             break;
                         case PacketTypesIn.CombatEvent:
                             // 1.8 - 1.16.5
@@ -1214,14 +1276,6 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                         case PacketTypesIn.ChatSuggestions:
                             break;
-                        case PacketTypesIn.ProfilelessChatMessage:
-                            string message_ = dataTypes.ReadNextString(packetData);
-                            int messageType_ = dataTypes.ReadNextVarInt(packetData);
-                            string messageName = dataTypes.ReadNextString(packetData);
-                            string? targetName_ = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
-
-                            // Not clear for what this is used for as the time of writing
-                            break;
                         case PacketTypesIn.MapChunkBulk:
                             if (protocolVersion < MC_1_9_Version && handler.GetTerrainEnabled())
                             {
@@ -1296,14 +1350,13 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.PlayerInfo:
                             if (protocolVersion >= MC_1_19_3_Version)
                             {
-                                // int actions = dataTypes.ReadNextVarInt(packetData);
-                                ulong actionBitset = dataTypes.ReadNextByte(packetData);
+                                byte actionBitset = dataTypes.ReadNextByte(packetData);
                                 int numberOfActions = dataTypes.ReadNextVarInt(packetData);
                                 for (int i = 0; i < numberOfActions; i++)
                                 {
                                     Guid playerUuid = dataTypes.ReadNextUUID(packetData);
 
-                                    if ((actionBitset & (1ul << 0)) > 0) // Actions bit 0: add player
+                                    if ((actionBitset & (1 << 0)) > 0) // Actions bit 0: add player
                                     {
                                         string name = dataTypes.ReadNextString(packetData);
                                         int numberOfProperties = dataTypes.ReadNextVarInt(packetData);
@@ -1318,7 +1371,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
 
                                     PlayerInfo player = handler.GetPlayerInfo(playerUuid)!;
-                                    if ((actionBitset & (1ul << 1)) > 0) // Actions bit 1: initialize chat
+                                    if ((actionBitset & (1 << 1)) > 0) // Actions bit 1: initialize chat
                                     {
                                         bool hasSignatureData = dataTypes.ReadNextBool(packetData);
                                         if (hasSignatureData)
@@ -1334,20 +1387,20 @@ namespace MinecraftClient.Protocol.Handlers
                                             player.ClearPublicKey();
                                         }
                                     }
-                                    if ((actionBitset & (1ul << 2)) > 0) // Actions bit 2: update gamemode
+                                    if ((actionBitset & 1 << 2) > 0) // Actions bit 2: update gamemode
                                     {
                                         handler.OnGamemodeUpdate(playerUuid, dataTypes.ReadNextVarInt(packetData));
                                     }
-                                    if ((actionBitset & (1ul << 3)) > 0) // Actions bit 3: update listed
+                                    if ((actionBitset & (1 << 3)) > 0) // Actions bit 3: update listed
                                     {
                                         player.Listed = dataTypes.ReadNextBool(packetData);
                                     }
-                                    if ((actionBitset & (1ul << 4)) > 0) // Actions bit 4: update latency
+                                    if ((actionBitset & (1 << 4)) > 0) // Actions bit 4: update latency
                                     {
                                         int latency = dataTypes.ReadNextVarInt(packetData);
                                         handler.OnLatencyUpdate(playerUuid, latency); //Update latency;
                                     }
-                                    if ((actionBitset & (1ul << 5)) > 0) // Actions bit 5: update display name
+                                    if ((actionBitset & (1 << 5)) > 0) // Actions bit 5: update display name
                                     {
                                         if (dataTypes.ReadNextBool(packetData))
                                             player.DisplayName = dataTypes.ReadNextString(packetData);
@@ -1810,13 +1863,6 @@ namespace MinecraftClient.Protocol.Handlers
                             long WorldAge = dataTypes.ReadNextLong(packetData);
                             long TimeOfday = dataTypes.ReadNextLong(packetData);
                             handler.OnTimeUpdate(WorldAge, TimeOfday);
-                            break;
-                        case PacketTypesIn.SystemChat:
-                            string systemMessage = dataTypes.ReadNextString(packetData);
-                            int msgType = dataTypes.ReadNextVarInt(packetData);
-                            if ((msgType == 1 && !Config.Main.Advanced.ShowSystemMessages))
-                                break;
-                            handler.OnTextReceived(new(systemMessage, true, msgType, Guid.Empty, true));
                             break;
                         case PacketTypesIn.EntityTeleport:
                             if (handler.GetEntityHandlingEnabled())
@@ -2498,9 +2544,12 @@ namespace MinecraftClient.Protocol.Handlers
 
             try
             {
-                LastSeenMessageList.Acknowledgment? acknowledgment =
-                    (protocolVersion >= MC_1_19_2_Version) ? ConsumeAcknowledgment() : null;
+                LastSeenMessageList.Acknowledgment? acknowledgment_1_19_2 =
+                    (protocolVersion == MC_1_19_2_Version) ? ConsumeAcknowledgment() : null;
 
+                (LastSeenMessageList.AcknowledgedMessage[] acknowledgment_1_19_3, byte[] bitset_1_19_3, int messageCount_1_19_3) =
+                    (protocolVersion >= MC_1_19_3_Version) ? lastSeenMessagesCollector.Collect_1_19_3() : new(Array.Empty<LastSeenMessageList.AcknowledgedMessage>(), Array.Empty<byte>(), 0);
+                
                 List<byte> fields = new();
 
                 // Command: String
@@ -2529,34 +2578,37 @@ namespace MinecraftClient.Protocol.Handlers
                     foreach ((string argName, string message) in needSigned)
                     {
                         fields.AddRange(dataTypes.GetString(argName));        // Argument name: String
-                        byte[] sign = (protocolVersion >= MC_1_19_2_Version) ?
-                            playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment!.lastSeen) :
-                            playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
-                        fields.AddRange(DataTypes.GetVarInt(sign.Length));    // Signature length: VarInt
-                        fields.AddRange(sign);                                // Signature: Byte Array
+
+                        byte[] sign;
+                        if (protocolVersion == MC_1_19_Version)
+                            sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
+                        else if (protocolVersion == MC_1_19_2_Version)
+                            sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment_1_19_2!.lastSeen);
+                        else // protocolVersion >= MC_1_19_3_Version
+                            sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, chatUuid, messageIndex++, timeNow, ref salt, acknowledgment_1_19_3);
+
+                        if (protocolVersion <= MC_1_19_2_Version)
+                            fields.AddRange(DataTypes.GetVarInt(sign.Length));    // Signature length: VarInt
+
+                        fields.AddRange(sign);                                    // Signature: Byte Array
                     }
                 }
 
-                if (protocolVersion < MC_1_19_3_Version)
-                {
-                    // Signed Preview: Boolean (1.19.2)
-                    fields.AddRange(dataTypes.GetBool(false));
-                }
-                else
-                {
-                    fields.AddRange(dataTypes.GetVarInt(messageCount)); // Message count (1.19.3)
-                }
+                if (protocolVersion <= MC_1_19_2_Version)
+                    fields.AddRange(dataTypes.GetBool(false)); // Signed Preview: Boolean
 
                 if (protocolVersion == MC_1_19_2_Version)
                 {
                     // Message Acknowledgment (1.19.2)
-                    fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
+                    fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment_1_19_2!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
                 }
                 else if (protocolVersion >= MC_1_19_3_Version)
                 {
-                    // 1.19.3
-                    // Acknowledged: BitSet (no idea what is this)
-                    fields.AddRange(new byte[3] { 0, 0, 0 });
+                    // message count
+                    fields.AddRange(DataTypes.GetVarInt(messageCount_1_19_3));
+
+                    // Acknowledged: BitSet
+                    fields.AddRange(bitset_1_19_3);
                 }
 
                 SendPacket(PacketTypesOut.ChatCommand, fields);
@@ -2575,7 +2627,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if properly sent</returns>
         public bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair)
         {
-            if (String.IsNullOrEmpty(message))
+            if (string.IsNullOrEmpty(message))
                 return true;
 
             // Process Chat Command - 1.19 and above
@@ -2622,8 +2674,8 @@ namespace MinecraftClient.Protocol.Handlers
                             sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, timeNow, ref salt);
                         else if (protocolVersion == MC_1_19_2_Version) // 1.19.2
                             sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, timeNow, ref salt, acknowledgment_1_19_2!.lastSeen);
-                        else // 1.19.3+
-                            sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, handler.GetPlayerInfo(playerUuid)!.ChatUuid, messageIndex++, timeNow, ref salt, acknowledgment_1_19_3);
+                        else // protocolVersion >= MC_1_19_3_Version
+                            sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, chatUuid, messageIndex++, timeNow, ref salt, acknowledgment_1_19_3);
 
                         if (protocolVersion >= MC_1_19_3_Version)
                             fields.AddRange(dataTypes.GetBool(true));
@@ -3317,28 +3369,6 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(playerKeyPair.PublicKey.SignatureV2);
 
                     SendPacket(PacketTypesOut.PlayerSession, packet);
-
-                    return true;
-                }
-                catch (SocketException) { return false; }
-                catch (System.IO.IOException) { return false; }
-                catch (ObjectDisposedException) { return false; }
-            }
-            else { return false; }
-        }
-
-        public bool SendMessageAcknowledgment(int messageCount)
-        {
-            if (protocolVersion >= MC_1_19_3_Version)
-            {
-                try
-                {
-                    List<byte> packet = new();
-
-                    packet.AddRange(dataTypes.GetVarInt(messageCount));
-
-                    SendPacket(PacketTypesOut.MessageAcknowledgment, packet);
-
                     return true;
                 }
                 catch (SocketException) { return false; }

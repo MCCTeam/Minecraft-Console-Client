@@ -64,6 +64,7 @@ namespace MinecraftClient
         private double motionY;
         public enum MovementType { Sneak, Walk, Sprint }
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
+        private bool CanSendMessage = false;
 
         private readonly string host;
         private readonly int port;
@@ -286,6 +287,9 @@ namespace MinecraftClient
         /// </summary>
         private void TrySendMessageToServer()
         {
+            if (!CanSendMessage)
+                return;
+
             while (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
             {
                 string text = chatQueue.Dequeue();
@@ -2411,7 +2415,7 @@ namespace MinecraftClient
             if (protocolversion >= Protocol18Handler.MC_1_19_3_Version
                 && playerKeyPair != null)
                 handler.SendPlayerSession(playerKeyPair);
-
+            CanSendMessage = true;
 
             if (inventoryHandlingRequested)
             {
