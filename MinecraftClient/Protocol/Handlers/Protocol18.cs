@@ -79,6 +79,8 @@ namespace MinecraftClient.Protocol.Handlers
         private int pendingAcknowledgments = 0;
         private readonly LastSeenMessagesCollector lastSeenMessagesCollector = new(5);
         private LastSeenMessageList.Entry? lastReceivedMessage = null;
+        private Guid playerSessionUuid = Guid.NewGuid();
+        private int messageCount = 0;
         readonly Protocol18Forge pForge;
         readonly Protocol18Terrain pTerrain;
         readonly IMinecraftComHandler handler;
@@ -2437,13 +2439,26 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
 
-                // Signed Preview: Boolean
-                fields.AddRange(dataTypes.GetBool(false));
-
-                if (protocolVersion >= MC_1_19_2_Version)
+                if (protocolVersion < MC_1_19_3_Version)
                 {
-                    // Message Acknowledgment
+                    // Signed Preview: Boolean (1.19.2)
+                    fields.AddRange(dataTypes.GetBool(false));
+                }
+                else
+                {
+                    fields.AddRange(dataTypes.GetVarInt(messageCount)); // Message count (1.19.3)
+                }
+
+                if (protocolVersion == MC_1_19_2_Version)
+                {
+                    // Message Acknowledgment (1.19.2)
                     fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
+                }
+                else if (protocolVersion >= MC_1_19_3_Version)
+                {
+                    // 1.19.3
+                    // Acknowledged: BitSet (no idea what is this)
+                    fields.AddRange(new byte[3] { 0, 0, 0 });
                 }
 
                 SendPacket(PacketTypesOut.ChatCommand, fields);
@@ -2502,12 +2517,21 @@ namespace MinecraftClient.Protocol.Handlers
                         // Signature Length & Signature: (VarInt) and Byte Array
                         Guid uuid = handler.GetUserUuid();
                         byte[] sign;
-                        if (protocolVersion < MC_1_19_2_Version) // 1.19.1 or lower
+                        if (protocolVersion < MC_1_19_2_Version)
+                        {
+                            // 1.19.1 or lower
                             sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
-                        else if (protocolVersion < MC_1_19_3_Version) // 1.19.2
+                        }
+                        else if (protocolVersion < MC_1_19_3_Version)
+                        {
+                            // 1.19.2
                             sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment!.lastSeen);
-                        else // 1.19.3
-                            sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt); // TODO?
+                        }
+                        else
+                        {
+                            // 1.19.3
+                            sign = playerKeyPair.PrivateKey.SignMessage(message, timeNow, ref salt, messageCount, uuid, playerSessionUuid);
+                        }
 
                         if (protocolVersion >= MC_1_19_3_Version)
                             fields.AddRange(dataTypes.GetBool(true));
@@ -2516,11 +2540,14 @@ namespace MinecraftClient.Protocol.Handlers
                         fields.AddRange(sign);
                     }
 
-                    // Signed Preview: Boolean
+                    
                     if (protocolVersion >= MC_1_19_3_Version)
-                        fields.AddRange(dataTypes.GetVarInt(1)); // message count
+                        fields.AddRange(dataTypes.GetVarInt(messageCount)); // Message count (1.19.3)
                     else
-                        fields.AddRange(dataTypes.GetBool(false));
+                        fields.AddRange(dataTypes.GetBool(false)); // Signed Preview: Boolean (1.19.2)
+
+                    //if (protocolVersion >= MC_1_19_3_Version)
+                    //    messageCount++;
 
                     if (protocolVersion >= MC_1_19_2_Version)
                     {
@@ -3196,13 +3223,11 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     List<byte> packet = new();
 
-                    var uuid = Guid.NewGuid();
-
                     byte[] timestampByte = BitConverter.GetBytes(playerKeyPair.GetExpirationMilliseconds());
                     Array.Reverse(timestampByte);
                     var signature = KeyUtils.ComputeHash(timestampByte.Concat(playerKeyPair.PublicKey.Key).ToArray());
 
-                    packet.AddRange(dataTypes.GetUUID(uuid));
+                    packet.AddRange(dataTypes.GetUUID(playerSessionUuid));
                     packet.AddRange(dataTypes.GetLong(playerKeyPair.GetExpirationMilliseconds()));
                     packet.AddRange(dataTypes.GetVarInt(playerKeyPair.PublicKey.Key.Length));
                     packet.AddRange(playerKeyPair.PublicKey.Key);
@@ -3212,6 +3237,27 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(playerKeyPair.PublicKey.SignatureV2);
 
                     SendPacket(PacketTypesOut.PlayerSession, packet);
+
+                    return true;
+                }
+                catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
+            }
+            else { return false; }
+        }
+
+        public bool SendMessageAcknowledgment(int messageCount)
+        {
+            if (protocolVersion >= MC_1_19_3_Version)
+            {
+                try
+                {
+                    List<byte> packet = new();
+
+                    packet.AddRange(dataTypes.GetVarInt(messageCount));
+
+                    SendPacket(PacketTypesOut.MessageAcknowledgment, packet);
 
                     return true;
                 }
