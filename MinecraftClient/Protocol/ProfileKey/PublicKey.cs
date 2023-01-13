@@ -58,7 +58,7 @@ namespace MinecraftClient.Protocol.Keys
         }
 
         /// <summary>
-        /// Verify message - 1.19.1 and above
+        /// Verify message - 1.19.1 and 1.19.2
         /// </summary>
         /// <param name="message">Message content</param>
         /// <param name="uuid">Sender uuid</param>
@@ -79,7 +79,7 @@ namespace MinecraftClient.Protocol.Keys
         }
 
         /// <summary>
-        /// Verify message head - 1.19.1 and above
+        /// Verify message head - 1.19.1 and 1.19.2
         /// </summary>
         /// <param name="bodyDigest">Message body hash</param>
         /// <param name="signature">Message signature</param>

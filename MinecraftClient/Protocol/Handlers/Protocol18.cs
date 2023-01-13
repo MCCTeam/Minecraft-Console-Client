@@ -670,29 +670,28 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
                                 }
 
-                                // Todo: verify message
                                 bool verifyResult;
-                                if (!isOnlineMode)
+                                if (!isOnlineMode || messageSignature == null)
                                     verifyResult = false;
-                                else if (senderUUID == handler.GetUserUuid())
-                                    verifyResult = true;
                                 else
                                 {
-                                    PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    if (player == null || !player.IsMessageChainLegal())
-                                        verifyResult = false;
+                                    if (senderUUID == handler.GetUserUuid())
+                                        verifyResult = true;
                                     else
                                     {
-                                        verifyResult = false;
-                                        //bool lastVerifyResult = player.IsMessageChainLegal();
-                                        //verifyResult = player.VerifyMessage(message, timestamp, salt, ref headerSignature, ref precedingSignature, lastSeenMessages);
-                                        //if (lastVerifyResult && !verifyResult)
-                                        //    log.Warn(string.Format(Translations.chat_message_chain_broken, senderDisplayName));
+                                        PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                        if (player == null || !player.IsMessageChainLegal())
+                                            verifyResult = false;
+                                        else
+                                        {
+                                            verifyResult = false;
+                                            verifyResult = player.VerifyMessage(message, senderUUID, player.ChatUuid, index, timestamp, salt, ref messageSignature, previousMessageSignatures);
+                                        }
                                     }
                                 }
 
                                 ChatMessage chat = new(message, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult);
-                                if (isOnlineMode && !chat.LacksSender() && messageSignature != null)
+                                if (isOnlineMode && !chat.LacksSender() && verifyResult)
                                     Acknowledge(chat);
                                 handler.OnTextReceived(chat);
                             }
@@ -727,9 +726,8 @@ namespace MinecraftClient.Protocol.Handlers
                             int messageType_ = dataTypes.ReadNextVarInt(packetData);
                             string messageName = dataTypes.ReadNextString(packetData);
                             string? targetName_ = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
-                            ChatMessage profilelessChat = new(message_, messageName, true, messageType_, Guid.Empty, true);
+                            ChatMessage profilelessChat = new(message_, targetName_ ?? messageName, true, messageType_, Guid.Empty, true);
                             profilelessChat.isSenderJson = true;
-                            profilelessChat.teamName = targetName_;
                             handler.OnTextReceived(profilelessChat);
                             break;
                         case PacketTypesIn.CombatEvent:
@@ -2549,7 +2547,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 (LastSeenMessageList.AcknowledgedMessage[] acknowledgment_1_19_3, byte[] bitset_1_19_3, int messageCount_1_19_3) =
                     (protocolVersion >= MC_1_19_3_Version) ? lastSeenMessagesCollector.Collect_1_19_3() : new(Array.Empty<LastSeenMessageList.AcknowledgedMessage>(), Array.Empty<byte>(), 0);
-                
+
                 List<byte> fields = new();
 
                 // Command: String
