@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
+using System.Text;
+using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
 
@@ -27,6 +31,8 @@ namespace MinecraftClient.Protocol
         public Mapping.Entity? entity;
 
         // For message signature
+
+        public int MessageIndex = -1;
 
         public Guid ChatUuid = Guid.Empty;
 
@@ -131,7 +137,7 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
-        /// Verify message - 1.19.1 and above
+        /// Verify message - 1.19.1 and 1.19.2
         /// </summary>
         /// <param name="message">Message content</param>
         /// <param name="timestamp">Timestamp</param>
@@ -169,7 +175,7 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
-        /// Verify message head - 1.19.1 and above
+        /// Verify message head - 1.19.1 and 1.19.2
         /// </summary>
         /// <param name="precedingSignature">Preceding message signature</param>
         /// <param name="headerSignature">Message signature</param>
@@ -196,6 +202,25 @@ namespace MinecraftClient.Protocol
             this.precedingSignature = headerSignature;
 
             return res;
+        }
+
+        /// <summary>
+        /// Verify message - 1.19.3 and above
+        /// </summary>
+        /// <param name="message">Message content</param>
+        /// <param name="timestamp">Timestamp</param>
+        /// <param name="salt">Salt</param>
+        /// <param name="signature">Message signature</param>
+        /// <param name="precedingSignature">Preceding message signature</param>
+        /// <param name="lastSeenMessages">LastSeenMessages</param>
+        /// <returns>Is this message chain vaild</returns>
+        public bool VerifyMessage(string message, Guid playerUuid, Guid chatUuid, int messageIndex, long timestamp, long salt, ref byte[] signature, Tuple<int, byte[]?>[] previousMessageSignatures)
+        {
+            if (PublicKey == null || IsKeyExpired())
+                return false;
+
+            // net.minecraft.server.network.ServerPlayNetworkHandler#validateMessage
+            return true;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace MinecraftClient.Protocol.Message
 
         public bool? isSignatureLegal;
 
-        public ChatMessage(string content, bool isJson, int chatType, Guid senderUUID, string? unsignedContent, string displayName, string? teamName, long timestamp, byte[] signature, bool isSignatureLegal)
+        public ChatMessage(string content, bool isJson, int chatType, Guid senderUUID, string? unsignedContent, string displayName, string? teamName, long timestamp, byte[]? signature, bool isSignatureLegal)
         {
             isSignedChat = true;
             isSystemChat = false;
