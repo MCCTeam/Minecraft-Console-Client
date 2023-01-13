@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using ImageMagick;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Keys
@@ -124,11 +125,36 @@ namespace MinecraftClient.Protocol.Keys
             return data.ToArray();
         }
 
-        public static byte[] GetSignatureData(string message, DateTimeOffset timestamp, ref byte[] salt, Guid sender, Guid sessionUuid)
+        public static byte[] GetSignatureData(string message, DateTimeOffset timestamp, ref byte[] salt, int messageCount, Guid sender, Guid sessionUuid)
         {
             List<byte> data = new();
 
             // TODO!
+            byte[] unknownInt1 = BitConverter.GetBytes(1);
+            Array.Reverse(unknownInt1);
+            data.AddRange(unknownInt1);
+
+            data.AddRange(sender.ToBigEndianBytes());
+            data.AddRange(sessionUuid.ToBigEndianBytes());
+
+            byte[] msgCountByte = BitConverter.GetBytes(messageCount);
+            Array.Reverse(msgCountByte);
+            data.AddRange(msgCountByte);
+            data.AddRange(salt);
+
+            byte[] timestampByte = BitConverter.GetBytes(timestamp.ToUnixTimeSeconds());
+            Array.Reverse(timestampByte);
+            data.AddRange(timestampByte);
+
+            byte[] msgByte = Encoding.UTF8.GetBytes(message);
+            byte[] msgLengthByte = BitConverter.GetBytes(msgByte.Length);
+            Array.Reverse(msgLengthByte);
+            data.AddRange(msgLengthByte);
+            data.AddRange(msgByte);
+
+            byte[] unknownInt2 = BitConverter.GetBytes(0);
+            Array.Reverse(unknownInt2);
+            data.AddRange(unknownInt2);
 
             return data.ToArray();
         }

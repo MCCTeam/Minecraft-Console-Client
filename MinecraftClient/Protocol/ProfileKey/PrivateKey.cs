@@ -64,5 +64,10 @@ namespace MinecraftClient.Protocol.Keys
             return msgSign;
         }
 
+        public byte[] SignMessage(string message, DateTimeOffset timestamp, ref byte[] salt, int messageCount, Guid sender, Guid sessionUuid)
+        {
+            byte[] data = KeyUtils.GetSignatureData(message, timestamp, ref salt, messageCount, sender, sessionUuid);
+            return SignData(data);
+        }
     }
 }
