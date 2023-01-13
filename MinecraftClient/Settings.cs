@@ -465,6 +465,12 @@ namespace MinecraftClient
                         Advanced.MinTerminalWidth = 1;
                     if (Advanced.MinTerminalHeight < 1)
                         Advanced.MinTerminalHeight = 1;
+
+                    if (Advanced.TemporaryFixBadpacket && !Advanced.TerrainAndMovements)
+                    {
+                        Advanced.TerrainAndMovements = true;
+                        ConsoleIO.WriteLineFormatted("§c[Settings]You need to enable TerrainAndMovements before enabling TemporaryFixBadpacket.");
+                    }
                 }
 
                 [TomlDoNotInlineObject]
@@ -1046,27 +1052,27 @@ namespace MinecraftClient
                         catch (ArgumentException)
                         {
                             checkResult = false;
-                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.Public = " + Public);
+                            ConsoleIO.WriteLineFormatted("§c[Settings]Illegal regular expression: ChatFormat.Public = " + Public);
                         }
 
                         try { _ = new Regex(Private); }
                         catch (ArgumentException)
                         {
                             checkResult = false;
-                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.Private = " + Private);
+                            ConsoleIO.WriteLineFormatted("§c[Settings]Illegal regular expression: ChatFormat.Private = " + Private);
                         }
 
                         try { _ = new Regex(TeleportRequest); }
                         catch (ArgumentException)
                         {
                             checkResult = false;
-                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.TeleportRequest = " + TeleportRequest);
+                            ConsoleIO.WriteLineFormatted("§c[Settings]Illegal regular expression: ChatFormat.TeleportRequest = " + TeleportRequest);
                         }
 
                         if (!checkResult)
                         {
                             UserDefined = false;
-                            ConsoleIO.WriteLineFormatted("§cChatFormat: User-defined regular expressions are disabled.");
+                            ConsoleIO.WriteLineFormatted("§c[Settings]ChatFormat: User-defined regular expressions are disabled.");
                         }
                     }
                 }

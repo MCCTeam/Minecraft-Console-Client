@@ -1497,7 +1497,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Temporary fix for Badpacket issue on some servers..
+        ///   Looks up a localized string similar to Temporary fix for Badpacket issue on some servers. Need to enable &quot;TerrainAndMovements&quot; first..
         /// </summary>
         internal static string Main_Advanced_temporary_fix_badpacket {
             get {

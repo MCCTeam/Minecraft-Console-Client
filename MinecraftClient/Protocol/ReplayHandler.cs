@@ -233,7 +233,7 @@ namespace MinecraftClient.Protocol
             // build raw packet
             // format: packetID + packetData
             List<byte> rawPacket = new();
-            rawPacket.AddRange(dataTypes.GetVarInt(packetID).ToArray());
+            rawPacket.AddRange(DataTypes.GetVarInt(packetID).ToArray());
             rawPacket.AddRange(packetData.ToArray());
             // build format
             // format: timestamp + packetLength + RawPacket
@@ -376,7 +376,7 @@ namespace MinecraftClient.Protocol
         private byte[] GetSpawnPlayerPacket(int entityID, Guid playerUUID, Location location, double pitch, double yaw)
         {
             List<byte> packet = new();
-            packet.AddRange(dataTypes.GetVarInt(entityID));
+            packet.AddRange(DataTypes.GetVarInt(entityID));
             packet.AddRange(playerUUID.ToBigEndianBytes());
             packet.AddRange(dataTypes.GetDouble(location.X));
             packet.AddRange(dataTypes.GetDouble(location.Y));
