@@ -20,15 +20,19 @@ namespace MinecraftClient.Protocol
 
         public string? DisplayName;
 
+        public bool Listed = true;
+
         // Entity info
 
         public Mapping.Entity? entity;
 
         // For message signature
 
-        private readonly PublicKey? PublicKey;
+        public Guid ChatUuid = Guid.Empty;
 
-        private readonly DateTime? KeyExpiresAt;
+        private PublicKey? PublicKey;
+
+        private DateTime? KeyExpiresAt;
 
         private bool lastMessageVerified;
 
@@ -69,6 +73,28 @@ namespace MinecraftClient.Protocol
             Ping = 0;
             lastMessageVerified = true;
             precedingSignature = null;
+        }
+
+        public void ClearPublicKey()
+        {
+            ChatUuid = Guid.Empty;
+            PublicKey = null;
+            KeyExpiresAt = null;
+        }
+
+        public void SetPublicKey(Guid chatUuid, long publicKeyExpiryTime, byte[] encodedPublicKey, byte[] publicKeySignature)
+        {
+            ChatUuid = chatUuid;
+            KeyExpiresAt = DateTimeOffset.FromUnixTimeMilliseconds(publicKeyExpiryTime).UtcDateTime;
+            try
+            {
+                PublicKey = new PublicKey(encodedPublicKey, publicKeySignature);
+                lastMessageVerified = true;
+            }
+            catch (System.Security.Cryptography.CryptographicException)
+            {
+                PublicKey = null;
+            }
         }
 
         public bool IsMessageChainLegal()

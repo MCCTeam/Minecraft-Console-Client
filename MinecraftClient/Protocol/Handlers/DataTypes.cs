@@ -935,7 +935,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="paramInt">Integer to encode</param>
         /// <returns>Byte array for this integer</returns>
-        public byte[] GetVarInt(int paramInt)
+        public static byte[] GetVarInt(int paramInt)
         {
             List<byte> bytes = new();
             while ((paramInt & -128) != 0)
@@ -966,7 +966,19 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="number">Long to process</param>
         /// <returns>Array ready to send</returns>
-        public byte[] GetLong(long number)
+        public static byte[] GetLong(long number)
+        {
+            byte[] theLong = BitConverter.GetBytes(number);
+            Array.Reverse(theLong);
+            return theLong;
+        }
+
+        /// <summary>
+        /// Get byte array representing a long integer
+        /// </summary>
+        /// <param name="number">Long to process</param>
+        /// <returns>Array ready to send</returns>
+        public static byte[] GetULong(ulong number)
         {
             byte[] theLong = BitConverter.GetBytes(number);
             Array.Reverse(theLong);
@@ -978,7 +990,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="number">Integer to process</param>
         /// <returns>Array ready to send</returns>
-        public byte[] GetInt(int number)
+        public static byte[] GetInt(int number)
         {
             byte[] theInt = BitConverter.GetBytes(number);
             Array.Reverse(theInt);
@@ -1161,7 +1173,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="uuid">UUID of Player/Entity</param>
         /// <returns>UUID representation</returns>
-        public byte[] GetUUID(Guid UUID)
+        public static byte[] GetUUID(Guid UUID)
         {
             return UUID.ToBigEndianBytes();
         }
@@ -1206,11 +1218,11 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 List<byte> fields = new();
                 fields.AddRange(GetVarInt(msgList.entries.Length));                    // Message list size
-                foreach (Message.LastSeenMessageList.Entry entry in msgList.entries)
+                foreach (Message.LastSeenMessageList.AcknowledgedMessage entry in msgList.entries)
                 {
                     fields.AddRange(entry.profileId.ToBigEndianBytes());               // UUID
-                    fields.AddRange(GetVarInt(entry.lastSignature.Length));            // Signature length
-                    fields.AddRange(entry.lastSignature);                              // Signature data
+                    fields.AddRange(GetVarInt(entry.signature.Length));            // Signature length
+                    fields.AddRange(entry.signature);                              // Signature data
                 }
                 return fields.ToArray();
             }
@@ -1232,8 +1244,8 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 fields.AddRange(GetBool(true));
                 fields.AddRange(ack.lastReceived.profileId.ToBigEndianBytes());         // Has last received message
-                fields.AddRange(GetVarInt(ack.lastReceived.lastSignature.Length));      // Last received message signature length
-                fields.AddRange(ack.lastReceived.lastSignature);                        // Last received message signature data
+                fields.AddRange(GetVarInt(ack.lastReceived.signature.Length));      // Last received message signature length
+                fields.AddRange(ack.lastReceived.signature);                        // Last received message signature data
             }
             return fields.ToArray();
         }

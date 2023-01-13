@@ -57,9 +57,9 @@ namespace MinecraftClient.Protocol.Message
             this.senderUUID = senderUUID;
         }
 
-        public LastSeenMessageList.Entry? ToLastSeenMessageEntry()
+        public LastSeenMessageList.AcknowledgedMessage? ToLastSeenMessageEntry()
         {
-            return signature != null ? new LastSeenMessageList.Entry(senderUUID, signature) : null;
+            return signature != null ? new LastSeenMessageList.AcknowledgedMessage(senderUUID, signature, true) : null;
         }
 
         public bool LacksSender()

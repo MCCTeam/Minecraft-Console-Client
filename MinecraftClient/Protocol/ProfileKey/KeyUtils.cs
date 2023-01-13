@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using ImageMagick;
+using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
+using static MinecraftClient.Protocol.Message.LastSeenMessageList;
 
 namespace MinecraftClient.Protocol.Keys
 {
@@ -107,6 +108,33 @@ namespace MinecraftClient.Protocol.Keys
             data.Add(70);
 
             lastSeenMessages.WriteForSign(data);
+
+            return data.ToArray();
+        }
+
+        public static byte[] GetSignatureData_1_19_3(string message, Guid playerUuid, Guid chatUuid, int messageIndex, DateTimeOffset timestamp, ref byte[] salt, AcknowledgedMessage[] lastSeenMessages)
+        {
+            List<byte> data = new();
+
+            // net.minecraft.network.message.SignedMessage#update
+            data.AddRange(DataTypes.GetInt(1));
+
+            // message link
+            // net.minecraft.network.message.MessageLink#update
+            data.AddRange(DataTypes.GetUUID(playerUuid));
+            data.AddRange(DataTypes.GetUUID(chatUuid));
+            data.AddRange(DataTypes.GetInt(messageIndex));
+
+            // message body
+            // net.minecraft.network.message.MessageBody#update
+            data.AddRange(salt);
+            data.AddRange(DataTypes.GetLong(timestamp.ToUnixTimeSeconds()));
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+            data.AddRange(DataTypes.GetInt(messageBytes.Length));
+            data.AddRange(messageBytes);
+            data.AddRange(DataTypes.GetInt(lastSeenMessages.Length));
+            foreach (AcknowledgedMessage ack in lastSeenMessages)
+                data.AddRange(ack.signature);
 
             return data.ToArray();
         }
