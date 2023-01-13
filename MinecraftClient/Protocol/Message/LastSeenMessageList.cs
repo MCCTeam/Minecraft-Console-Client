@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Permissions;
 using static MinecraftClient.Protocol.Message.LastSeenMessageList;
 
@@ -120,7 +121,7 @@ namespace MinecraftClient.Protocol.Message
         {
             // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.MessageSignatureData, boolean)
             // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.AcknowledgedMessage)
-            if (entry == lastEntry)
+            if (lastEntry != null && entry.signature.SequenceEqual(lastEntry.signature))
                 return false;
             lastEntry = entry;
 
