@@ -107,28 +107,30 @@ namespace MinecraftClient.Protocol.Handlers
             randomGen = RandomNumberGenerator.Create();
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_2_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_3_Version)
             {
                 log.Error("§c" + Translations.extra_terrainandmovement_disabled);
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_2_Version))
+            if (handler.GetInventoryEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_3_Version))
             {
                 log.Error("§c" + Translations.extra_inventory_disabled);
                 handler.SetInventoryEnabled(false);
             }
-            if (handler.GetEntityHandlingEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_2_Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_3_Version))
             {
                 log.Error("§c" + Translations.extra_entity_disabled);
                 handler.SetEntityHandlingEnabled(false);
             }
 
             // Block palette
-            if (protocolVersion > MC_1_19_2_Version && handler.GetTerrainEnabled())
+            if (protocolVersion > MC_1_19_3_Version && handler.GetTerrainEnabled())
                 throw new NotImplementedException(Translations.exception_palette_block);
 
-            if (protocolVersion >= MC_1_19_Version)
+            if (protocolVersion >= MC_1_19_3_Version)
+                Block.Palette = new Palette1193();
+            else if (protocolVersion >= MC_1_19_Version)
                 Block.Palette = new Palette119();
             else if (protocolVersion >= MC_1_17_Version)
                 Block.Palette = new Palette117();
@@ -144,10 +146,12 @@ namespace MinecraftClient.Protocol.Handlers
                 Block.Palette = new Palette112();
 
             // Entity palette
-            if (protocolVersion > MC_1_19_2_Version && handler.GetEntityHandlingEnabled())
+            if (protocolVersion > MC_1_19_3_Version && handler.GetEntityHandlingEnabled())
                 throw new NotImplementedException(Translations.exception_palette_entity);
 
-            if (protocolVersion >= MC_1_19_Version)
+            if (protocolVersion >= MC_1_19_3_Version)
+                entityPalette = new EntityPalette1193();
+            else if (protocolVersion >= MC_1_19_Version)
                 entityPalette = new EntityPalette119();
             else if (protocolVersion >= MC_1_17_Version)
                 entityPalette = new EntityPalette117();
@@ -165,10 +169,12 @@ namespace MinecraftClient.Protocol.Handlers
                 entityPalette = new EntityPalette112();
 
             // Item palette
-            if (protocolVersion > MC_1_19_2_Version && handler.GetInventoryEnabled())
+            if (protocolVersion > MC_1_19_3_Version && handler.GetInventoryEnabled())
                 throw new NotImplementedException(Translations.exception_palette_item);
 
-            if (protocolVersion >= MC_1_19_Version)
+            if (protocolVersion >= MC_1_19_3_Version)
+                itemPalette = new ItemPalette1193();
+            else if (protocolVersion >= MC_1_19_Version)
                 itemPalette = new ItemPalette119();
             else if (protocolVersion >= MC_1_18_1_Version)
                 itemPalette = new ItemPalette118();
@@ -1851,7 +1857,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 Dictionary<int, object?> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
 
                                 int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
-                                if (protocolVersion > MC_1_19_2_Version)
+                                if (protocolVersion > MC_1_19_3_Version)
                                     throw new NotImplementedException(Translations.exception_palette_healthfield);
                                 else if (protocolVersion >= MC_1_17_Version) // 1.17 and above
                                     healthField = 9;
