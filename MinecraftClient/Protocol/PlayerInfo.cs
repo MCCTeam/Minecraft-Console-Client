@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
-using System.Text;
-using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
 using MinecraftClient.Protocol.ProfileKey;
 
