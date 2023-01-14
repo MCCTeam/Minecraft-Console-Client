@@ -798,7 +798,7 @@ namespace MinecraftClient
                     ConsoleInteractive.ConsoleWriter.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
 
                     // Buffer
-                    General.History_Input_Records = 
+                    General.History_Input_Records =
                         ConsoleInteractive.ConsoleBuffer.SetBackreadBufferLimit(General.History_Input_Records);
 
                     // Suggestion
