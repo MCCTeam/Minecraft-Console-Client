@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using MinecraftClient.Protocol.Message;
 
-namespace MinecraftClient.Protocol.Keys
+namespace MinecraftClient.Protocol.ProfileKey
 {
     public class PublicKey
     {

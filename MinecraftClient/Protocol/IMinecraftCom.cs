@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
-using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.ProfileKey;
 
 namespace MinecraftClient.Protocol
 {

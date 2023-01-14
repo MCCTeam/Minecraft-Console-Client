@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Protocol.Message.LastSeenMessageList;
 
-namespace MinecraftClient.Protocol.Keys
+namespace MinecraftClient.Protocol.ProfileKey
 {
     public class PrivateKey
     {

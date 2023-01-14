@@ -9,7 +9,7 @@ namespace MinecraftClient.Crypto
 {
     public class AesCfb8Stream : Stream
     {
-        public static readonly int blockSize = 16;
+        public const int blockSize = 16;
 
         private readonly Aes? Aes = null;
         private readonly FastAes? FastAes = null;
@@ -109,7 +109,7 @@ namespace MinecraftClient.Crypto
             if (inStreamEnded)
                 return 0;
 
-            Span<byte> blockOutput = FastAes != null ? stackalloc byte[blockSize] : null;
+            Span<byte> blockOutput = stackalloc byte[blockSize];
 
             byte[] inputBuf = new byte[blockSize + required];
             Array.Copy(ReadStreamIV, inputBuf, blockSize);
@@ -135,18 +135,12 @@ namespace MinecraftClient.Crypto
                 }
                 else
                 {
-                    OrderablePartitioner<Tuple<int, int>> rangePartitioner = curRead <= 256 ?
-                        Partitioner.Create(readed, processEnd, 32) : Partitioner.Create(readed, processEnd);
-                    Parallel.ForEach(rangePartitioner, (range, loopState) =>
+                    for (int idx = readed; idx < processEnd; idx++)
                     {
-                        Span<byte> blockOutput = stackalloc byte[blockSize];
-                        for (int idx = range.Item1; idx < range.Item2; idx++)
-                        {
-                            ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
-                            Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);
-                            buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
-                        }
-                    });
+                        ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
+                        Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);
+                        buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
+                    }
                 }
             }
 

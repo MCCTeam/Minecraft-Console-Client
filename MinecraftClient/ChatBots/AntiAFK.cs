@@ -1,5 +1,6 @@
 ﻿using System;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots

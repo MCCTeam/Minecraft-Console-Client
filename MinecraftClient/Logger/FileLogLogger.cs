@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Logger
 {

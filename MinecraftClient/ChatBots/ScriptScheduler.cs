@@ -1,4 +1,5 @@
 ﻿using System;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 using static MinecraftClient.ChatBots.ScriptScheduler.Configs;
 

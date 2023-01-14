@@ -1,4 +1,6 @@
 ﻿using System;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -32,17 +34,9 @@ namespace MinecraftClient.ChatBots
             string command = "", sender = "";
             if (IsPrivateMessage(text, ref command, ref sender) && Settings.Config.Main.Advanced.BotOwners.Contains(sender.ToLower().Trim()))
             {
-                string? response = "";
+                CmdResult response = new();
                 PerformInternalCommand(command, ref response);
-                response = GetVerbatim(response);
-                foreach (char disallowedChar in McClient.GetDisallowedChatCharacters())
-                {
-                    response = response.Replace(disallowedChar.ToString(), String.Empty);
-                }
-                if (response.Length > 0)
-                {
-                    SendPrivateMessage(sender, response);
-                }
+                SendPrivateMessage(sender, response.ToString());
             }
             else if (Config.AutoTpaccept
                 && IsTeleportRequest(text, ref sender)
