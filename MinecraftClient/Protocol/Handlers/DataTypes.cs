@@ -591,6 +591,9 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 int type = ReadNextVarInt(cache);
 
+                // Value's data type is depended on Type
+                object? value = null;
+
                 // starting from 1.13, Optional Chat is inserted as number 5 in 1.13 and IDs after 5 got shifted.
                 // Increase type ID by 1 if
                 // - below 1.13
@@ -598,13 +601,20 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion < Protocol18Handler.MC_1_13_Version)
                 {
                     if (type > 4)
+                        ++type;
+                }
+                else if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                {
+                    if (type == 2)
                     {
-                        type += 1;
+                        value = ReadNextVarLong(cache);
+                        type = -1;
+                    }
+                    else if (type >= 3)
+                    {
+                        --type;
                     }
                 }
-
-                // Value's data type is depended on Type
-                object? value = null;
 
                 // This is backward compatible since new type is appended to the end
                 // Version upgrade note
@@ -612,6 +622,8 @@ namespace MinecraftClient.Protocol.Handlers
                 // - Add new type if any
                 switch (type)
                 {
+                    case -1: // already readed
+                        break;
                     case 0: // byte
                         value = ReadNextByte(cache);
                         break;
