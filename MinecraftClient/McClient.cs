@@ -1107,13 +1107,10 @@ namespace MinecraftClient
         /// <returns>Player info</returns>
         public PlayerInfo? GetPlayerInfo(Guid uuid)
         {
-            lock (onlinePlayers)
-            {
-                if (onlinePlayers.ContainsKey(uuid))
-                    return onlinePlayers[uuid];
-                else
-                    return null;
-            }
+            if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? player))
+                return player;
+            else
+                return null;
         }
 
         public PlayerKeyPair? GetPlayerKeyPair()

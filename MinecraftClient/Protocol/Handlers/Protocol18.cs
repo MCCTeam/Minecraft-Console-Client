@@ -1351,6 +1351,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     Guid playerUuid = dataTypes.ReadNextUUID(packetData);
 
+                                    PlayerInfo player;
                                     if ((actionBitset & (1 << 0)) > 0) // Actions bit 0: add player
                                     {
                                         string name = dataTypes.ReadNextString(packetData);
@@ -1362,10 +1363,23 @@ namespace MinecraftClient.Protocol.Handlers
                                             if (dataTypes.ReadNextBool(packetData))
                                                 dataTypes.SkipNextString(packetData);
                                         }
-                                        handler.OnPlayerJoin(new(name, playerUuid));
+                                        player = new(name, playerUuid);
+                                        handler.OnPlayerJoin(player);
+                                    }
+                                    else
+                                    {
+                                        PlayerInfo? playerGet = handler.GetPlayerInfo(playerUuid);
+                                        if (playerGet == null)
+                                        {
+                                            player = new(string.Empty, playerUuid);
+                                            handler.OnPlayerJoin(player);
+                                        }
+                                        else
+                                        {
+                                            player = playerGet;
+                                        }
                                     }
 
-                                    PlayerInfo player = handler.GetPlayerInfo(playerUuid)!;
                                     if ((actionBitset & (1 << 1)) > 0) // Actions bit 1: initialize chat
                                     {
                                         bool hasSignatureData = dataTypes.ReadNextBool(packetData);
