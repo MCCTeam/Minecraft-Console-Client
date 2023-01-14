@@ -459,7 +459,7 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                         case PacketTypesIn.DeclareCommands:
                             if (protocolVersion >= MC_1_19_Version)
-                                DeclareCommands.Read(dataTypes, packetData);
+                                DeclareCommands.Read(dataTypes, packetData, protocolVersion);
                             break;
                         case PacketTypesIn.ChatMessage:
                             int messageType = 0;
@@ -1997,9 +1997,9 @@ namespace MinecraftClient.Protocol.Handlers
                     innerException);
             }
 #else
-            catch (SocketException) { }
-            catch (ThreadAbortException) { }
-            catch (ObjectDisposedException) { }
+            catch (SocketException) { throw; }
+            catch (ThreadAbortException) { throw; }
+            catch (ObjectDisposedException) { throw; }
 #endif
         }
 

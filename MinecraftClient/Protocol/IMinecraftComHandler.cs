@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
-using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol
