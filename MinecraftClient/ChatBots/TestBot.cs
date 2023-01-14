@@ -1,4 +1,6 @@
-﻿namespace MinecraftClient.ChatBots
+﻿using MinecraftClient.Scripting;
+
+namespace MinecraftClient.ChatBots
 {
     /// <summary>
     /// Example of message receiving.

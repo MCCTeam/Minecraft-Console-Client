@@ -4,17 +4,22 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Brigadier.NET;
+using Brigadier.NET.Exceptions;
 using MinecraftClient.ChatBots;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using MinecraftClient.Scripting;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient
@@ -26,8 +31,7 @@ namespace MinecraftClient
     {
         public static int ReconnectionAttemptsLeft = 0;
 
-        private static readonly List<string> cmd_names = new();
-        private static readonly Dictionary<string, Command> cmds = new();
+        public static CommandDispatcher<CmdResult> dispatcher = new();
         private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
 
         private static bool commandsLoaded = false;
@@ -148,6 +152,7 @@ namespace MinecraftClient
         /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
         public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo)
         {
+            CmdResult.currentHandler = this;
             terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
             inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
             entityHandlingEnabled = Config.Main.Advanced.EntityHandling;
@@ -200,9 +205,9 @@ namespace MinecraftClient
                         Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
                         cmdprompt = new CancellationTokenSource();
-                        ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
+                        ConsoleInteractive.ConsoleReader.BeginReadThread();
                         ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
-                        ConsoleInteractive.ConsoleReader.OnKeyInput += ConsoleIO.AutocompleteHandler;
+                        ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
                     }
                     else
                     {
@@ -226,7 +231,7 @@ namespace MinecraftClient
 
             return;
 
-            Retry:
+        Retry:
             if (timeoutdetector != null)
             {
                 timeoutdetector.Item2.Cancel();
@@ -243,7 +248,7 @@ namespace MinecraftClient
             {
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
+                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
                 Program.HandleFailure();
             }
 
@@ -455,6 +460,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            ConsoleIO.CancelAutocomplete();
+
             handler.Dispose();
 
             world.Clear();
@@ -513,7 +520,7 @@ namespace MinecraftClient
             {
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
+                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
                 Program.HandleFailure();
             }
         }
@@ -552,7 +559,9 @@ namespace MinecraftClient
                 switch (command[0].ToLower())
                 {
                     case "autocomplete":
-                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
+                        int id = handler.AutoComplete(command[1]);
+                        while (!ConsoleIO.AutoCompleteDone) { Thread.Sleep(100); }
+                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + ConsoleIO.AutoCompleteResult); }
                         else ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
                         break;
                 }
@@ -560,66 +569,42 @@ namespace MinecraftClient
             else
             {
                 text = text.Trim();
-                if (text.Length > 0)
+
+                if (text.Length > 1
+                    && Config.Main.Advanced.InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                    && text[0] == '/')
                 {
-                    if (Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' || text[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
+                    SendText(text);
+                }
+                else if (text.Length > 2
+                    && Config.Main.Advanced.InternalCmdChar != MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                    && text[0] == Config.Main.Advanced.InternalCmdChar.ToChar()
+                    && text[1] == '/')
+                {
+                    SendText(text[1..]);
+                }
+                else if (text.Length > 0)
+                {
+                    if (Config.Main.Advanced.InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                        || text[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
                     {
-                        string? response_msg = "";
+                        CmdResult result = new();
                         string command = Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' ? text : text[1..];
-                        if (!PerformInternalCommand(Config.AppVar.ExpandVars(command), ref response_msg, Settings.Config.AppVar.GetVariables()) && Config.Main.Advanced.InternalCmdChar.ToChar() == '/')
+                        if (!PerformInternalCommand(Config.AppVar.ExpandVars(command), ref result, Settings.Config.AppVar.GetVariables()) && Config.Main.Advanced.InternalCmdChar.ToChar() == '/')
                         {
                             SendText(text);
                         }
-                        else if (!String.IsNullOrEmpty(response_msg))
+                        else if (result.status != CmdResult.Status.NotRun && (result.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(result.result)))
                         {
-                            Log.Info(response_msg);
+                            Log.Info(result);
                         }
                     }
-                    else SendText(text);
+                    else
+                    {
+                        SendText(text);
+                    }
                 }
             }
-        }
-
-        /// <summary>
-        /// Register a custom console command
-        /// </summary>
-        /// <param name="cmdName">Name of the command</param>
-        /// <param name="cmdDesc">Description/usage of the command</param>
-        /// <param name="callback">Method for handling the command</param>
-        /// <returns>True if successfully registered</returns>
-        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, ChatBot.CommandRunner callback)
-        {
-            if (cmds.ContainsKey(cmdName.ToLower()))
-            {
-                return false;
-            }
-            else
-            {
-                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
-                cmds.Add(cmdName.ToLower(), cmd);
-                cmd_names.Add(cmdName.ToLower());
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Unregister a console command
-        /// </summary>
-        /// <remarks>
-        /// There is no check for the command is registered by above method or is embedded command.
-        /// Which mean this can unload any command
-        /// </remarks>
-        /// <param name="cmdName">The name of command to be unregistered</param>
-        /// <returns></returns>
-        public bool UnregisterCommand(string cmdName)
-        {
-            if (cmds.ContainsKey(cmdName.ToLower()))
-            {
-                cmds.Remove(cmdName.ToLower());
-                cmd_names.Remove(cmdName.ToLower());
-                return true;
-            }
-            else return false;
         }
 
         /// <summary>
@@ -629,37 +614,29 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string? response_msg, Dictionary<string, object>? localVars = null)
+        public bool PerformInternalCommand(string command, ref CmdResult result, Dictionary<string, object>? localVars = null)
         {
             /* Process the provided command */
-
-            string command_name = command.Split(' ')[0].ToLower();
-            if (command_name == "help")
+            ParseResults<CmdResult> parse;
+            try
             {
-                if (Command.HasArg(command))
-                {
-                    string help_cmdname = Command.GetArgs(command)[0].ToLower();
-                    if (help_cmdname == "help")
-                    {
-                        response_msg = Translations.icmd_help;
-                    }
-                    else if (cmds.ContainsKey(help_cmdname))
-                    {
-                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
-                    }
-                    else response_msg = string.Format(Translations.icmd_unknown, command_name);
-                }
-                else response_msg = string.Format(Translations.icmd_list, String.Join(", ", cmd_names.ToArray()), Config.Main.Advanced.InternalCmdChar.ToChar());
+                parse = dispatcher.Parse(command, result);
             }
-            else if (cmds.ContainsKey(command_name))
+            catch (Exception e)
             {
-                response_msg = cmds[command_name].Run(this, command, localVars);
+                Log.Debug("Parse fail: " + e.GetFullMessage());
+                return false;
+            }
+
+            try
+            {
+                dispatcher.Execute(parse);
 
                 foreach (ChatBot bot in bots.ToArray())
                 {
                     try
                     {
-                        bot.OnInternalCommand(command_name, string.Join(" ", Command.GetArgs(command)), response_msg);
+                        bot.OnInternalCommand(command, string.Join(" ", Command.GetArgs(command)), result);
                     }
                     catch (Exception e)
                     {
@@ -670,14 +647,22 @@ namespace MinecraftClient
                         else throw; //ThreadAbortException should not be caught
                     }
                 }
-            }
-            else
-            {
-                response_msg = string.Format(Translations.icmd_unknown, command_name);
-                return false;
-            }
 
-            return true;
+                return true;
+            }
+            catch (CommandSyntaxException e)
+            {
+                if (parse.Context.Nodes.Count == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    Log.Info("§e" + e.Message ?? e.StackTrace ?? "Incorrect argument.");
+                    Log.Info(dispatcher.GetAllUsageString(parse.Context.Nodes[0].Node.Name, false));
+                    return true;
+                }
+            }
         }
 
         public void LoadCommands()
@@ -694,10 +679,7 @@ namespace MinecraftClient
                         try
                         {
                             Command cmd = (Command)Activator.CreateInstance(type)!;
-                            cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
-                            cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
-                            foreach (string alias in cmd.GetCMDAliases())
-                                cmds[Settings.ToLowerIfNeed(alias)] = cmd;
+                            cmd.RegisterCommand(dispatcher);
                         }
                         catch (Exception e)
                         {
@@ -849,7 +831,8 @@ namespace MinecraftClient
             }
 
             b.OnUnload();
-            bots.RemoveAll(item => object.ReferenceEquals(item, b));
+
+            bots.RemoveAll(item => ReferenceEquals(item, b));
 
             // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
             var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
@@ -1069,9 +1052,10 @@ namespace MinecraftClient
             if (InvokeRequired)
                 return InvokeOnMainThread(() => GetInventory(inventoryID));
 
-            if (inventories.ContainsKey(inventoryID))
-                return inventories[inventoryID];
-            return null;
+            if (inventories.TryGetValue(inventoryID, out Container? inv))
+                return inv;
+            else
+                return null;
         }
 
         /// <summary>
@@ -2427,6 +2411,8 @@ namespace MinecraftClient
             ClearInventories();
 
             DispatchBotEvent(bot => bot.AfterGameJoined());
+
+            ConsoleIO.InitCommandList(dispatcher);
         }
 
         /// <summary>
@@ -3447,6 +3433,16 @@ namespace MinecraftClient
         {
             world.SetBlock(location, block);
             DispatchBotEvent(bot => bot.OnBlockChange(location, block));
+        }
+
+        /// <summary>
+        /// Called when "AutoComplete" completes.
+        /// </summary>
+        /// <param name="transactionId">The number of this result.</param>
+        /// <param name="result">All commands.</param>
+        public void OnAutoCompleteDone(int transactionId, string[] result)
+        {
+            ConsoleIO.OnAutoCompleteDone(transactionId, result);
         }
 
         /// <summary>

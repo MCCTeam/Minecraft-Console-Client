@@ -1076,6 +1076,61 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Console-related settings..
+        /// </summary>
+        internal static string Console {
+            get {
+                return ResourceManager.GetString("Console", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The settings for command completion suggestions.
+        ///Custom colors are only available when using &quot;vt100_24bit&quot; color mode..
+        /// </summary>
+        internal static string Console_CommandSuggestion {
+            get {
+                return ResourceManager.GetString("Console.CommandSuggestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Whether to display command suggestions in the console..
+        /// </summary>
+        internal static string Console_CommandSuggestion_Enable {
+            get {
+                return ResourceManager.GetString("Console.CommandSuggestion.Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable this option if the arrows in the command suggestions are not displayed properly in your terminal..
+        /// </summary>
+        internal static string Console_CommandSuggestion_Use_Basic_Arrow {
+            get {
+                return ResourceManager.GetString("Console.CommandSuggestion.Use_Basic_Arrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use &quot;disable&quot;, &quot;legacy_4bit&quot;, &quot;vt100_4bit&quot;, &quot;vt100_8bit&quot; or &quot;vt100_24bit&quot;. If a garbled code like &quot;←[0m&quot; appears on the terminal, you can try switching to &quot;legacy_4bit&quot; mode, or just disable it..
+        /// </summary>
+        internal static string Console_General_ConsoleColorMode {
+            get {
+                return ResourceManager.GetString("Console.General.ConsoleColorMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can use &quot;Ctrl+P&quot; to print out the current input and cursor position..
+        /// </summary>
+        internal static string Console_General_Display_Input {
+            get {
+                return ResourceManager.GetString("Console.General.Display_Input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Startup Config File
         ///Please do not record extraneous data in this file as it will be overwritten by MCC.
         ///
@@ -1502,15 +1557,6 @@ namespace MinecraftClient {
         internal static string Main_Advanced_temporary_fix_badpacket {
             get {
                 return ResourceManager.GetString("Main.Advanced.temporary_fix_badpacket", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &quot;none&quot;, &quot;bit_4&quot;, &quot;bit_8&quot; or &quot;bit_24&quot;. This can be checked by opening the debug log..
-        /// </summary>
-        internal static string Main_Advanced_TerminalColorDepth {
-            get {
-                return ResourceManager.GetString("Main.Advanced.TerminalColorDepth", resourceCulture);
             }
         }
         

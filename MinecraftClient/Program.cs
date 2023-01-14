@@ -12,11 +12,13 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol;
 using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
+using MinecraftClient.Scripting;
 using MinecraftClient.WinAPI;
 using Tomlet;
 using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
@@ -97,9 +99,7 @@ namespace MinecraftClient
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null)
-            {
                 ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
-            }
 
             //Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")
@@ -287,7 +287,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (Config.Main.Advanced.ConsoleTitle != "")
+            if (OperatingSystem.IsWindows() && !string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
             {
                 InternalConfig.Username = "New Window";
                 Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
@@ -318,28 +318,28 @@ namespace MinecraftClient
                 Random random = new();
                 { // Test 8 bit color
                     StringBuilder sb = new();
-                    sb.Append("[0123456789]: (8bit)[");
+                    sb.Append("[0123456789]: (vt100 8bit)[");
                     for (int i = 0; i < 10; ++i)
                     {
                         sb.Append(ColorHelper.GetColorEscapeCode((byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  true,
-                                                                 TerminalColorDepthType.bit_8)).Append(i);
+                                                                 ConsoleColorModeType.vt100_8bit)).Append(i);
                     }
                     sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
                     ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb.ToString()));
                 }
                 { // Test 24 bit color
                     StringBuilder sb = new();
-                    sb.Append("[0123456789]: (24bit)[");
+                    sb.Append("[0123456789]: (vt100 24bit)[");
                     for (int i = 0; i < 10; ++i)
                     {
                         sb.Append(ColorHelper.GetColorEscapeCode((byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  (byte)random.Next(255),
                                                                  true,
-                                                                 TerminalColorDepthType.bit_24)).Append(i);
+                                                                 ConsoleColorModeType.vt100_24bit)).Append(i);
                     }
                     sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
                     ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb.ToString()));
@@ -463,7 +463,7 @@ namespace MinecraftClient
                 InternalConfig.Username = session.PlayerName;
                 bool isRealms = false;
 
-                if (Config.Main.Advanced.ConsoleTitle != "")
+                if (OperatingSystem.IsWindows() && !string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
                     Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
 
                 if (Config.Main.Advanced.PlayerHeadAsIcon && OperatingSystem.IsWindows())
@@ -543,7 +543,7 @@ namespace MinecraftClient
                 }
 
                 //Retrieve server info if version is not manually set OR if need to retrieve Forge information
-                if (!isRealms && (protocolversion == 0 || (Config.Main.Advanced.EnableForge == ForgeConfigType.auto) || 
+                if (!isRealms && (protocolversion == 0 || (Config.Main.Advanced.EnableForge == ForgeConfigType.auto) ||
                     ((Config.Main.Advanced.EnableForge == ForgeConfigType.force) && !ProtocolHandler.ProtocolMayForceForge(protocolversion))))
                 {
                     if (protocolversion != 0)
@@ -557,9 +557,9 @@ namespace MinecraftClient
                     }
                 }
 
-                if (Config.Main.General.AccountType == LoginType.microsoft 
+                if (Config.Main.General.AccountType == LoginType.microsoft
                     && (InternalConfig.Account.Password != "-" || Config.Main.General.Method == LoginMethod.browser)
-                    && Config.Signature.LoginWithSecureProfile 
+                    && Config.Signature.LoginWithSecureProfile
                     && protocolversion >= 759 /* 1.19 and above */)
                 {
                     // Load cached profile key from disk if necessary
@@ -614,7 +614,7 @@ namespace MinecraftClient
                         client = new McClient(session, playerKeyPair, InternalConfig.ServerIP, InternalConfig.ServerPort, protocolversion, forgeInfo);
 
                         //Update console title
-                        if (Config.Main.Advanced.ConsoleTitle != "")
+                        if (OperatingSystem.IsWindows() && !string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
                             Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
                     }
                     catch (NotSupportedException)
@@ -657,7 +657,7 @@ namespace MinecraftClient
         /// </summary>
         public static void ReloadSettings(bool keepAccountAndServerSettings = false)
         {
-            if(Settings.LoadFromFile(settingsIniPath, keepAccountAndServerSettings).Item1)
+            if (Settings.LoadFromFile(settingsIniPath, keepAccountAndServerSettings).Item1)
                 ConsoleIO.WriteLine(string.Format(Translations.config_load, settingsIniPath));
         }
 
@@ -694,6 +694,7 @@ namespace MinecraftClient
         public static void DoExit(int exitcode = 0)
         {
             WriteBackSettings(true);
+            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
             if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
@@ -781,7 +782,7 @@ namespace MinecraftClient
 
                                     if (command.StartsWith("reco"))
                                     {
-                                        message = new Commands.Reco().Run(null, Config.AppVar.ExpandVars(command), null);
+                                        message = Commands.Reco.DoReconnect(Config.AppVar.ExpandVars(command));
                                         if (message == "")
                                         {
                                             exitThread = true;
@@ -790,7 +791,7 @@ namespace MinecraftClient
                                     }
                                     else if (command.StartsWith("connect"))
                                     {
-                                        message = new Commands.Connect().Run(null, Config.AppVar.ExpandVars(command), null);
+                                        message = Commands.Connect.DoConnect(Config.AppVar.ExpandVars(command));
                                         if (message == "")
                                         {
                                             exitThread = true;
@@ -799,7 +800,7 @@ namespace MinecraftClient
                                     }
                                     else if (command.StartsWith("exit") || command.StartsWith("quit"))
                                     {
-                                        message = new Commands.Exit().Run(null, Config.AppVar.ExpandVars(command), null);
+                                        message = Commands.Exit.DoExit(Config.AppVar.ExpandVars(command));
                                     }
                                     else if (command.StartsWith("help"))
                                     {
@@ -818,7 +819,7 @@ namespace MinecraftClient
                                 }
                                 else
                                 {
-                                    _ = new Commands.Exit().Run(null, Config.AppVar.ExpandVars(command), null);
+                                    Commands.Exit.DoExit(Config.AppVar.ExpandVars(command));
                                 }
                             }
 

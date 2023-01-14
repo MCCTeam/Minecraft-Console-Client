@@ -27,6 +27,15 @@ namespace MinecraftClient.Mapping
         public double Z;
 
         /// <summary>
+        /// Identifies whether the coordinates are absolute or relative.
+        /// true for relative coordinates, false for absolute coordinates.
+        /// X-axis: ((Status & (1 << 0)) > 0)
+        /// Y-axis: ((Status & (1 << 1)) > 0)
+        /// Z-axis: ((Status & (1 << 2)) > 0)
+        /// </summary>
+        public byte Status;
+
+        /// <summary>
         /// Create a new location
         /// </summary>
         public Location(double x, double y, double z)
@@ -34,6 +43,18 @@ namespace MinecraftClient.Mapping
             X = x;
             Y = y;
             Z = z;
+            Status = 0;
+        }
+
+        /// <summary>
+        /// Create a new location
+        /// </summary>
+        public Location(double x, double y, double z, byte status)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            Status = status;
         }
 
         /// <summary>
@@ -44,6 +65,7 @@ namespace MinecraftClient.Mapping
             X = loc.X;
             Y = loc.Y;
             Z = loc.Z;
+            Status = loc.Status;
         }
 
         /// <summary>
@@ -60,6 +82,19 @@ namespace MinecraftClient.Mapping
             X = chunkX * Chunk.SizeX + blockX;
             Y = blockY;
             Z = chunkZ * Chunk.SizeZ + blockZ;
+            Status = 0;
+        }
+
+        public Location ToAbsolute(Location based)
+        {
+            if ((Status & (1 << 0)) > 0)
+                X += based.X;
+            if ((Status & (1 << 1)) > 0)
+                Y += based.Y;
+            if ((Status & (1 << 2)) > 0)
+                Z += based.Z;
+            Status = 0;
+            return this;
         }
 
         /// <summary>

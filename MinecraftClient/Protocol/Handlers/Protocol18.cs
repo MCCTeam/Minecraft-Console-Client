@@ -19,10 +19,11 @@ using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Handlers.packet.s2c;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
-using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using MinecraftClient.Scripting;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -65,9 +66,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_19_3_Version = 761;
 
         private int compression_treshold = 0;
-        private bool autocomplete_received = false;
         private int autocomplete_transaction_id = 0;
-        private readonly List<string> autocomplete_result = new();
         private readonly Dictionary<int, short> window_actions = new();
         private bool login_phase = true;
         private readonly int protocolVersion;
@@ -1514,6 +1513,7 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             break;
                         case PacketTypesIn.TabComplete:
+                            int old_transaction_id = autocomplete_transaction_id;
                             if (protocolVersion >= MC_1_13_Version)
                             {
                                 autocomplete_transaction_id = dataTypes.ReadNextVarInt(packetData);
@@ -1522,20 +1522,19 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             int autocomplete_count = dataTypes.ReadNextVarInt(packetData);
-                            autocomplete_result.Clear();
 
+                            string[] autocomplete_result = new string[autocomplete_count];
                             for (int i = 0; i < autocomplete_count; i++)
                             {
-                                autocomplete_result.Add(dataTypes.ReadNextString(packetData));
+                                autocomplete_result[i] = dataTypes.ReadNextString(packetData);
                                 if (protocolVersion >= MC_1_13_Version)
                                 {
-                                    // Skip optional tooltip for each tab-complete result
+                                    // Skip optional tooltip for each tab-complete resul`t
                                     if (dataTypes.ReadNextBool(packetData))
                                         dataTypes.SkipNextString(packetData);
                                 }
                             }
-
-                            autocomplete_received = true;
+                            handler.OnAutoCompleteDone(old_transaction_id, autocomplete_result);
                             break;
                         case PacketTypesIn.PluginMessage:
                             String channel = dataTypes.ReadNextString(packetData);
@@ -2320,11 +2319,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="BehindCursor">Text behind cursor</param>
         /// <returns>Completed text</returns>
-        IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
+        int IAutoComplete.AutoComplete(string BehindCursor)
         {
-
-            if (String.IsNullOrEmpty(BehindCursor))
-                return Array.Empty<string>();
+            if (string.IsNullOrEmpty(BehindCursor))
+                return -1;
 
             byte[] transaction_id = DataTypes.GetVarInt(autocomplete_transaction_id);
             byte[] assume_command = new byte[] { 0x00 };
@@ -2337,16 +2335,14 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolVersion >= MC_1_13_Version)
                 {
                     tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, transaction_id);
-                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, dataTypes.GetString(BehindCursor));
+                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, dataTypes.GetString(BehindCursor.Replace(' ', (char)0x00)));
                 }
                 else
                 {
                     tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, dataTypes.GetString(BehindCursor));
 
                     if (protocolVersion >= MC_1_9_Version)
-                    {
                         tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, assume_command);
-                    }
 
                     tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, has_position);
                 }
@@ -2355,22 +2351,9 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 tabcomplete_packet = dataTypes.ConcatBytes(dataTypes.GetString(BehindCursor));
             }
-
-            autocomplete_received = false;
-            autocomplete_result.Clear();
-            autocomplete_result.Add(BehindCursor);
+            ConsoleIO.AutoCompleteDone = false;
             SendPacket(PacketTypesOut.TabComplete, tabcomplete_packet);
-
-            int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
-            ThreadStart start = new(delegate
-                        {
-                            while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
-                            if (autocomplete_result.Count > 0)
-                                ConsoleIO.WriteLineFormatted("§8" + String.Join(" ", autocomplete_result), false);
-                        });
-            Thread t1 = new(start);
-            t1.Start();
-            return autocomplete_result;
+            return autocomplete_transaction_id;
         }
 
         /// <summary>

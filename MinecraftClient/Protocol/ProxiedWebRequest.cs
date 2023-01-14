@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -193,7 +193,7 @@ namespace MinecraftClient.Protocol
             response.Body = rbody ?? "";
             response.StatusCode = statusCode;
             response.Headers = headers;
-            
+
             try
             {
                 stream.Close();

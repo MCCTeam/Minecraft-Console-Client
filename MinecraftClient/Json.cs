@@ -103,7 +103,7 @@ namespace MinecraftClient
                                         && IsHex(toparse[cursorpos + 5]))
                                     {
                                         //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
-                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4), 
+                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4),
                                             System.Globalization.NumberStyles.HexNumber));
                                         cursorpos += 6; continue;
                                     }

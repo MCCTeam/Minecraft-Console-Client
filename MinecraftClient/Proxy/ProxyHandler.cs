@@ -82,7 +82,7 @@ namespace MinecraftClient.Proxy
                         case Configs.ProxyType.SOCKS5: innerProxytype = ProxyType.Socks5; break;
                     }
 
-                    if (!string.IsNullOrWhiteSpace(Config.Username)&& !string.IsNullOrWhiteSpace(Config.Password))
+                    if (!string.IsNullOrWhiteSpace(Config.Username) && !string.IsNullOrWhiteSpace(Config.Password))
                         proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port, Config.Username, Config.Password);
                     else
                         proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port);

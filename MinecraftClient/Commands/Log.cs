@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 
 namespace MinecraftClient.Commands
 {
@@ -8,14 +10,35 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "log <text>"; } }
         public override string CmdDesc { get { return Translations.cmd_log_desc; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
-            if (HasArg(command))
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Then(l => l.Argument("String", Arguments.GreedyString())
+                    .Executes(r => DoLog(r.Source, Arguments.GetString(r, "String"))))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty)))
+            );
+        }
+
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                ConsoleIO.WriteLogLine(GetArg(command));
-                return "";
-            }
-            else return GetCmdDescTranslated();
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int DoLog(CmdResult r, string command)
+        {
+            return r.SetAndReturn(CmdResult.Status.Done, command);
         }
     }
 }

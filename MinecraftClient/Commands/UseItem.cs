@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -8,14 +11,40 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "useitem"; } }
         public override string CmdDesc { get { return Translations.cmd_useitem_desc; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
-            if (handler.GetInventoryEnabled())
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Executes(r => DoUseItem(r.Source))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
+        }
+
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                handler.UseItemOnHand();
-                return Translations.cmd_useitem_use;
-            }
-            else return Translations.extra_inventory_required;
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int DoUseItem(CmdResult r)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetInventoryEnabled())
+                return r.SetAndReturn(Status.FailNeedInventory);
+
+            handler.UseItemOnHand();
+            return r.SetAndReturn(Status.Done, Translations.cmd_useitem_use);
         }
     }
 }

@@ -1,6 +1,17 @@
 ﻿//MCCScript 1.0
 //using System.Collections.Specialized;
 //using MinecraftClient.Protocol;
+//using MinecraftClient.Scripting;
+//using MinecraftClient;
+//using static MinecraftClient.Scripting.ChatBot;
+//using System.Collections.Generic;
+//using System.Linq;
+//using System.Text;
+//using System;
+//using Brigadier.NET.Builder;
+//using MinecraftClient.CommandHandler.Patch;
+//using MinecraftClient.CommandHandler;
+//using Brigadier.NET;
 
 MCC.LoadBot(new DiscordWebhook());
 
@@ -278,6 +289,8 @@ class MessageCache
 
 class DiscordWebhook : ChatBot
 {
+    public const string CommandName = "discordWebhook";
+
     private WebhoookSettings settings = new WebhoookSettings();
     private SkinAPI sAPI;
     private MessageCache cache;
@@ -292,8 +305,19 @@ class DiscordWebhook : ChatBot
     {
         LogToConsole("Made by Daenges.\nSpecial thanks to Crafatar for providing the beautiful avatars!");
         LogToConsole("Please set a Webhook with '/dw changeurl [URL]'. For further information type '/discordwebhook help'.");
-        RegisterChatBotCommand("discordWebhook", "/DiscordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype'", GetHelp(), CommandHandler);
-        RegisterChatBotCommand("dw", "/DiscordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype'", GetHelp(), CommandHandler);
+
+        Handler.dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Argument("Commands", Arguments.GreedyString())
+                    .Executes(r => {
+                        CommandHandler(Arguments.GetString(r, "Commands").Split(' ', StringSplitOptions.TrimEntries));
+                        return r.Source.SetAndReturn(CmdResult.Status.Done);
+                    }))
+        );
+    }
+
+    public override void OnUnload()
+    {
+        Handler.dispatcher.Unregister(CommandName);
     }
 
     public override void Update()
@@ -454,7 +478,7 @@ class DiscordWebhook : ChatBot
             {
                 StringBuilder requestData = new StringBuilder();
 
-                requestData.Append("{");
+                requestData.Append('{');
                 requestData.Append("\"username\": \"" + msg.SenderName + "\", ");
                 requestData.Append("\"content\": \"" + Sanizize(msg.Content) + "\", ");
                 requestData.Append("\"avatar_url\": \"" + (msg.SenderName == "[Server]" ? sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(msg.SenderUUID)) + "\"");
@@ -530,10 +554,9 @@ class DiscordWebhook : ChatBot
     /// <summary>
     /// Handles all commands.
     /// </summary>
-    /// <param name="cmd">Whole command</param>
     /// <param name="args">Only arguments</param>
     /// <returns></returns>
-    public string CommandHandler(string cmd, string[] args)
+    public string CommandHandler(string[] args)
     {
         if (args.Length > 0)
         {

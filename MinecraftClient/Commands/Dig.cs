@@ -1,6 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -10,49 +13,71 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "dig <x> <y> <z>"; } }
         public override string CmdDesc { get { return Translations.cmd_dig_desc; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
-            if (!handler.GetTerrainEnabled())
-                return Translations.extra_terrainandmovement_required;
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                )
+            );
 
-            string[] args = GetArgs(command);
-            if (args.Length == 0)
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Executes(r => DigLookAt(r.Source))
+                .Then(l => l.Argument("Location", MccArguments.Location())
+                    .Executes(r => DigAt(r.Source, MccArguments.GetLocation(r, "Location"))))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
+        }
+
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                (bool hasBlock, Location blockLoc, Block block) = RaycastHelper.RaycastBlock(handler, 4.5, false);
-                if (!hasBlock)
-                    return Translations.cmd_dig_too_far;
-                else if (block.Type == Material.Air)
-                    return Translations.cmd_dig_no_block;
-                else if (handler.DigBlock(blockLoc, lookAtBlock: false))
-                    return string.Format(Translations.cmd_dig_dig, blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString());
-                else
-                    return Translations.cmd_dig_fail;
-            }
-            else if (args.Length == 3)
+#pragma warning disable format // @formatter:off
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int DigAt(CmdResult r, Location blockToBreak)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            Location current = handler.GetCurrentLocation();
+            blockToBreak = blockToBreak.ToAbsolute(current);
+            if (blockToBreak.DistanceSquared(current.EyesLocation()) > 25)
+                return r.SetAndReturn(Status.Fail, Translations.cmd_dig_too_far);
+            Block block = handler.GetWorld().GetBlock(blockToBreak);
+            if (block.Type == Material.Air)
+                return r.SetAndReturn(Status.Fail, Translations.cmd_dig_no_block);
+            else if (handler.DigBlock(blockToBreak))
             {
-                try
-                {
-                    Location current = handler.GetCurrentLocation();
-                    Location blockToBreak = Location.Parse(current.ToFloor(), args[0], args[1], args[2]);
-                    if (blockToBreak.DistanceSquared(current.EyesLocation()) > 25)
-                        return Translations.cmd_dig_too_far;
-                    Block block = handler.GetWorld().GetBlock(blockToBreak);
-                    if (block.Type == Material.Air)
-                        return Translations.cmd_dig_no_block;
-                    else if (handler.DigBlock(blockToBreak))
-                    {
-                        blockToBreak = blockToBreak.ToCenter();
-                        return string.Format(Translations.cmd_dig_dig, blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.GetTypeString());
-                    }
-                    else
-                        return Translations.cmd_dig_fail;
-                }
-                catch (FormatException) { return GetCmdDescTranslated(); }
+                blockToBreak = blockToBreak.ToCenter();
+                return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_dig_dig, blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.GetTypeString()));
             }
             else
-            {
-                return GetCmdDescTranslated();
-            }
+                return r.SetAndReturn(Status.Fail, Translations.cmd_dig_fail);
+        }
+
+        private int DigLookAt(CmdResult r)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            (bool hasBlock, Location blockLoc, Block block) = RaycastHelper.RaycastBlock(handler, 4.5, false);
+            if (!hasBlock)
+                return r.SetAndReturn(Status.Fail, Translations.cmd_dig_too_far);
+            else if (block.Type == Material.Air)
+                return r.SetAndReturn(Status.Fail, Translations.cmd_dig_no_block);
+            else if (handler.DigBlock(blockLoc, lookAtBlock: false))
+                return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_dig_dig, blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
+            else
+                return r.SetAndReturn(Status.Fail, Translations.cmd_dig_fail);
         }
     }
 }

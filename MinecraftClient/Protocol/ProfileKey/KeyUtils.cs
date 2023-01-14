@@ -6,7 +6,7 @@ using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Protocol.Message.LastSeenMessageList;
 
-namespace MinecraftClient.Protocol.Keys
+namespace MinecraftClient.Protocol.ProfileKey
 {
     static class KeyUtils
     {
@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol.Keys
             }
             catch (Exception e)
             {
-                int code = (response == null) ? 0 : response.StatusCode;
+                int code = response == null ? 0 : response.StatusCode;
                 ConsoleIO.WriteLineFormatted("§cFetch profile key failed: HttpCode = " + code + ", Error = " + e.Message);
                 if (Settings.Config.Logging.DebugMessages)
                 {
@@ -57,7 +57,7 @@ namespace MinecraftClient.Protocol.Keys
             }
         }
 
-        public static byte[] DecodePemKey(String key, String prefix, String suffix)
+        public static byte[] DecodePemKey(string key, string prefix, string suffix)
         {
             int i = key.IndexOf(prefix);
             if (i != -1)
@@ -66,8 +66,8 @@ namespace MinecraftClient.Protocol.Keys
                 int j = key.IndexOf(suffix, i);
                 key = key[i..j];
             }
-            key = key.Replace("\r", String.Empty);
-            key = key.Replace("\n", String.Empty);
+            key = key.Replace("\r", string.Empty);
+            key = key.Replace("\n", string.Empty);
             return Convert.FromBase64String(key);
         }
 
@@ -198,11 +198,11 @@ namespace MinecraftClient.Protocol.Keys
                 char c = src[i];
                 bool needEscape = c < 32 || c == '"' || c == '\\';
                 // Broken lead surrogate
-                needEscape = needEscape || (c >= '\uD800' && c <= '\uDBFF' &&
-                    (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF'));
+                needEscape = needEscape || c >= '\uD800' && c <= '\uDBFF' &&
+                    (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF');
                 // Broken tail surrogate
-                needEscape = needEscape || (c >= '\uDC00' && c <= '\uDFFF' &&
-                    (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF'));
+                needEscape = needEscape || c >= '\uDC00' && c <= '\uDFFF' &&
+                    (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF');
                 // To produce valid JavaScript
                 needEscape = needEscape || c == '\u2028' || c == '\u2029';
 

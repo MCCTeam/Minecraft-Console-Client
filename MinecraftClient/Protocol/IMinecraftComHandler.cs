@@ -5,6 +5,7 @@ using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol
 {
@@ -457,6 +458,13 @@ namespace MinecraftClient.Protocol
         /// <param name="location">The location of the block.</param>
         /// <param name="block">The block</param>
         public void OnBlockChange(Location location, Block block);
+
+        /// <summary>
+        /// Called when "AutoComplete" completes.
+        /// </summary>
+        /// <param name="transactionId">The number of this result.</param>
+        /// <param name="result">All commands.</param>
+        public void OnAutoCompleteDone(int transactionId, string[] result);
 
         /// <summary>
         /// Send a click container button packet to the server.

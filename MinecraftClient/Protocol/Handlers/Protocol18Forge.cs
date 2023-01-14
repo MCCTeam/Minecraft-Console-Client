@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Protocol.Message;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol.Handlers
 {

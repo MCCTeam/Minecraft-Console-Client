@@ -1,4 +1,15 @@
 ﻿//MCCScript 1.0
+//using MinecraftClient.Inventory;
+//using MinecraftClient.Mapping;
+//using MinecraftClient.Scripting;
+//using System.Collections.Generic;
+//using System.Threading;
+//using System;
+//using Brigadier.NET.Builder;
+//using MinecraftClient.CommandHandler.Patch;
+//using Brigadier.NET;
+//using MinecraftClient.CommandHandler;
+//using System.Linq;
 
 MCC.LoadBot(new SugarCaneFarmer());
 
@@ -102,6 +113,8 @@ class SugarCaneFarmerBase : ChatBot
 
 class SugarCaneFarmer : SugarCaneFarmerBase
 {
+    public const string CommandName = "sugarcane";
+
     public enum CoordinateType { X, Y, Z };
 
     /// <summary>
@@ -137,7 +150,19 @@ class SugarCaneFarmer : SugarCaneFarmerBase
     public override void Initialize()
     {
         LogToConsole("Sugar Cane farming bot created by Daenges.");
-        RegisterChatBotCommand("sugarcane", "Farm sugar cane automatically", "/sugarcane [range x|y|z]/[stop]", commandHandler);
+
+        Handler.dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Argument("Commands", Arguments.GreedyString())
+                    .Executes(r => {
+                        CommandHandler(Arguments.GetString(r, "Commands").Split(' ', StringSplitOptions.TrimEntries));
+                        return r.Source.SetAndReturn(CmdResult.Status.Done);
+                    }))
+        );
+    }
+
+    public override void OnUnload()
+    {
+        Handler.dispatcher.Unregister(CommandName);
     }
 
     /// <summary>
@@ -188,7 +213,7 @@ class SugarCaneFarmer : SugarCaneFarmerBase
         LogToConsole("[FARMING STOPPED]");
     }
 
-    private string commandHandler(string command, string[] args)
+    private string CommandHandler(string[] args)
     {
         if (args.Length == 1)
         {
