@@ -75,6 +75,7 @@ namespace MinecraftClient.Protocol.Handlers
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
         private float LastYaw, LastPitch;
 
+        private object MessageSigningLock = new();
         private Guid chatUuid = Guid.Empty;
         private int pendingAcknowledgments = 0, messageIndex = 0;
         private LastSeenMessagesCollector lastSeenMessagesCollector;
@@ -696,10 +697,14 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
                                 ChatMessage chat = new(message, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult);
-                                if (isOnlineMode && !chat.LacksSender() && messageSignature != null)
+                                lock (MessageSigningLock)
                                     Acknowledge(chat);
                                 handler.OnTextReceived(chat);
                             }
+                            break;
+                        case PacketTypesIn.HideMessage:
+                            byte[] hideMessageSignature = dataTypes.ReadNextByteArray(packetData);
+                            ConsoleIO.WriteLine($"HideMessage was not processed! (SigLen={hideMessageSignature.Length})");
                             break;
                         case PacketTypesIn.SystemChat:
                             string systemMessage = dataTypes.ReadNextString(packetData);
@@ -2524,13 +2529,14 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (protocolVersion >= MC_1_19_3_Version)
                 {
-                    lastSeenMessagesCollector.Add_1_19_3(entry, true);
-                    lastReceivedMessage = null;
-                    if (lastSeenMessagesCollector.messageCount > 64)
+                    if (lastSeenMessagesCollector.Add_1_19_3(entry, true))
                     {
-                        int messageCount = lastSeenMessagesCollector.ResetMessageCount();
-                        if (messageCount > 0)
-                            SendMessageAcknowledgment(messageCount);
+                        if (lastSeenMessagesCollector.messageCount > 64)
+                        {
+                            int messageCount = lastSeenMessagesCollector.ResetMessageCount();
+                            if (messageCount > 0)
+                                SendMessageAcknowledgment(messageCount);
+                        }
                     }
                 }
                 else
@@ -2561,74 +2567,77 @@ namespace MinecraftClient.Protocol.Handlers
 
             try
             {
-                LastSeenMessageList.Acknowledgment? acknowledgment_1_19_2 =
-                    (protocolVersion == MC_1_19_2_Version) ? ConsumeAcknowledgment() : null;
-
-                (LastSeenMessageList.AcknowledgedMessage[] acknowledgment_1_19_3, byte[] bitset_1_19_3, int messageCount_1_19_3) =
-                    (protocolVersion >= MC_1_19_3_Version) ? lastSeenMessagesCollector.Collect_1_19_3() : new(Array.Empty<LastSeenMessageList.AcknowledgedMessage>(), Array.Empty<byte>(), 0);
-
-                List<byte> fields = new();
-
-                // Command: String
-                fields.AddRange(dataTypes.GetString(command));
-
-                // Timestamp: Instant(Long)
-                DateTimeOffset timeNow = DateTimeOffset.UtcNow;
-                fields.AddRange(DataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
-
                 List<Tuple<string, string>>? needSigned = null;               // List< Argument Name, Argument Value >
                 if (playerKeyPair != null && isOnlineMode && protocolVersion >= MC_1_19_Version
                     && Config.Signature.LoginWithSecureProfile && Config.Signature.SignMessageInCommand)
                     needSigned = DeclareCommands.CollectSignArguments(command);
 
-                if (needSigned == null || needSigned!.Count == 0)
+                lock (MessageSigningLock)
                 {
-                    fields.AddRange(DataTypes.GetLong(0));                    // Salt: Long
-                    fields.AddRange(DataTypes.GetVarInt(0));                  // Signature Length: VarInt
-                }
-                else
-                {
-                    Guid uuid = handler.GetUserUuid();
-                    byte[] salt = GenerateSalt();
-                    fields.AddRange(salt);                                    // Salt: Long
-                    fields.AddRange(DataTypes.GetVarInt(needSigned.Count));   // Signature Length: VarInt
-                    foreach ((string argName, string message) in needSigned)
+                    LastSeenMessageList.Acknowledgment? acknowledgment_1_19_2 =
+                    (protocolVersion == MC_1_19_2_Version) ? ConsumeAcknowledgment() : null;
+
+                    (LastSeenMessageList.AcknowledgedMessage[] acknowledgment_1_19_3, byte[] bitset_1_19_3, int messageCount_1_19_3) =
+                        (protocolVersion >= MC_1_19_3_Version) ? lastSeenMessagesCollector.Collect_1_19_3() : new(Array.Empty<LastSeenMessageList.AcknowledgedMessage>(), Array.Empty<byte>(), 0);
+
+                    List<byte> fields = new();
+
+                    // Command: String
+                    fields.AddRange(dataTypes.GetString(command));
+
+                    // Timestamp: Instant(Long)
+                    DateTimeOffset timeNow = DateTimeOffset.UtcNow;
+                    fields.AddRange(DataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
+
+                    if (needSigned == null || needSigned!.Count == 0)
                     {
-                        fields.AddRange(dataTypes.GetString(argName));        // Argument name: String
-
-                        byte[] sign;
-                        if (protocolVersion == MC_1_19_Version)
-                            sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
-                        else if (protocolVersion == MC_1_19_2_Version)
-                            sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment_1_19_2!.lastSeen);
-                        else // protocolVersion >= MC_1_19_3_Version
-                            sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, chatUuid, messageIndex++, timeNow, ref salt, acknowledgment_1_19_3);
-
-                        if (protocolVersion <= MC_1_19_2_Version)
-                            fields.AddRange(DataTypes.GetVarInt(sign.Length));    // Signature length: VarInt
-
-                        fields.AddRange(sign);                                    // Signature: Byte Array
+                        fields.AddRange(DataTypes.GetLong(0));                    // Salt: Long
+                        fields.AddRange(DataTypes.GetVarInt(0));                  // Signature Length: VarInt
                     }
+                    else
+                    {
+                        Guid uuid = handler.GetUserUuid();
+                        byte[] salt = GenerateSalt();
+                        fields.AddRange(salt);                                    // Salt: Long
+                        fields.AddRange(DataTypes.GetVarInt(needSigned.Count));   // Signature Length: VarInt
+                        foreach ((string argName, string message) in needSigned)
+                        {
+                            fields.AddRange(dataTypes.GetString(argName));        // Argument name: String
+
+                            byte[] sign;
+                            if (protocolVersion == MC_1_19_Version)
+                                sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
+                            else if (protocolVersion == MC_1_19_2_Version)
+                                sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment_1_19_2!.lastSeen);
+                            else // protocolVersion >= MC_1_19_3_Version
+                                sign = playerKeyPair!.PrivateKey.SignMessage(message, uuid, chatUuid, messageIndex++, timeNow, ref salt, acknowledgment_1_19_3);
+
+                            if (protocolVersion <= MC_1_19_2_Version)
+                                fields.AddRange(DataTypes.GetVarInt(sign.Length));    // Signature length: VarInt
+
+                            fields.AddRange(sign);                                    // Signature: Byte Array
+                        }
+                    }
+
+                    if (protocolVersion <= MC_1_19_2_Version)
+                        fields.AddRange(dataTypes.GetBool(false)); // Signed Preview: Boolean
+
+                    if (protocolVersion == MC_1_19_2_Version)
+                    {
+                        // Message Acknowledgment (1.19.2)
+                        fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment_1_19_2!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
+                    }
+                    else if (protocolVersion >= MC_1_19_3_Version)
+                    {
+                        // message count
+                        fields.AddRange(DataTypes.GetVarInt(messageCount_1_19_3));
+
+                        // Acknowledged: BitSet
+                        fields.AddRange(bitset_1_19_3);
+                    }
+
+                    SendPacket(PacketTypesOut.ChatCommand, fields);
                 }
-
-                if (protocolVersion <= MC_1_19_2_Version)
-                    fields.AddRange(dataTypes.GetBool(false)); // Signed Preview: Boolean
-
-                if (protocolVersion == MC_1_19_2_Version)
-                {
-                    // Message Acknowledgment (1.19.2)
-                    fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment_1_19_2!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
-                }
-                else if (protocolVersion >= MC_1_19_3_Version)
-                {
-                    // message count
-                    fields.AddRange(DataTypes.GetVarInt(messageCount_1_19_3));
-
-                    // Acknowledged: BitSet
-                    fields.AddRange(bitset_1_19_3);
-                }
-
-                SendPacket(PacketTypesOut.ChatCommand, fields);
                 return true;
             }
             catch (SocketException) { return false; }
@@ -2660,62 +2669,65 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (protocolVersion >= MC_1_19_Version)
                 {
-                    LastSeenMessageList.Acknowledgment? acknowledgment_1_19_2 =
+                    lock (MessageSigningLock)
+                    {
+                        LastSeenMessageList.Acknowledgment? acknowledgment_1_19_2 =
                         (protocolVersion == MC_1_19_2_Version) ? ConsumeAcknowledgment() : null;
 
-                    (LastSeenMessageList.AcknowledgedMessage[] acknowledgment_1_19_3, byte[] bitset_1_19_3, int messageCount_1_19_3) =
-                        (protocolVersion >= MC_1_19_3_Version) ? lastSeenMessagesCollector.Collect_1_19_3() : new(Array.Empty<LastSeenMessageList.AcknowledgedMessage>(), Array.Empty<byte>(), 0);
+                        (LastSeenMessageList.AcknowledgedMessage[] acknowledgment_1_19_3, byte[] bitset_1_19_3, int messageCount_1_19_3) =
+                            (protocolVersion >= MC_1_19_3_Version) ? lastSeenMessagesCollector.Collect_1_19_3() : new(Array.Empty<LastSeenMessageList.AcknowledgedMessage>(), Array.Empty<byte>(), 0);
 
-                    // Timestamp: Instant(Long)
-                    DateTimeOffset timeNow = DateTimeOffset.UtcNow;
-                    fields.AddRange(DataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
+                        // Timestamp: Instant(Long)
+                        DateTimeOffset timeNow = DateTimeOffset.UtcNow;
+                        fields.AddRange(DataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    if (!isOnlineMode || playerKeyPair == null || !Config.Signature.LoginWithSecureProfile || !Config.Signature.SignChat)
-                    {
-                        fields.AddRange(DataTypes.GetLong(0));   // Salt: Long
-                        if (protocolVersion < MC_1_19_3_Version)
-                            fields.AddRange(DataTypes.GetVarInt(0)); // Signature Length: VarInt (1.19 - 1.19.2)
+                        if (!isOnlineMode || playerKeyPair == null || !Config.Signature.LoginWithSecureProfile || !Config.Signature.SignChat)
+                        {
+                            fields.AddRange(DataTypes.GetLong(0));   // Salt: Long
+                            if (protocolVersion < MC_1_19_3_Version)
+                                fields.AddRange(DataTypes.GetVarInt(0)); // Signature Length: VarInt (1.19 - 1.19.2)
+                            else
+                                fields.AddRange(dataTypes.GetBool(false)); // Has signature: bool (1.19.3)
+                        }
                         else
-                            fields.AddRange(dataTypes.GetBool(false)); // Has signature: bool (1.19.3)
-                    }
-                    else
-                    {
-                        // Salt: Long
-                        byte[] salt = GenerateSalt();
-                        fields.AddRange(salt);
+                        {
+                            // Salt: Long
+                            byte[] salt = GenerateSalt();
+                            fields.AddRange(salt);
 
-                        // Signature Length & Signature: (VarInt) and Byte Array
-                        Guid playerUuid = handler.GetUserUuid();
-                        byte[] sign;
-                        if (protocolVersion == MC_1_19_Version) // 1.19.1 or lower
-                            sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, timeNow, ref salt);
-                        else if (protocolVersion == MC_1_19_2_Version) // 1.19.2
-                            sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, timeNow, ref salt, acknowledgment_1_19_2!.lastSeen);
-                        else // protocolVersion >= MC_1_19_3_Version
-                            sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, chatUuid, messageIndex++, timeNow, ref salt, acknowledgment_1_19_3);
+                            // Signature Length & Signature: (VarInt) and Byte Array
+                            Guid playerUuid = handler.GetUserUuid();
+                            byte[] sign;
+                            if (protocolVersion == MC_1_19_Version) // 1.19.1 or lower
+                                sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, timeNow, ref salt);
+                            else if (protocolVersion == MC_1_19_2_Version) // 1.19.2
+                                sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, timeNow, ref salt, acknowledgment_1_19_2!.lastSeen);
+                            else // protocolVersion >= MC_1_19_3_Version
+                                sign = playerKeyPair.PrivateKey.SignMessage(message, playerUuid, chatUuid, messageIndex++, timeNow, ref salt, acknowledgment_1_19_3);
+
+                            if (protocolVersion >= MC_1_19_3_Version)
+                                fields.AddRange(dataTypes.GetBool(true));
+                            else
+                                fields.AddRange(DataTypes.GetVarInt(sign.Length));
+                            fields.AddRange(sign);
+                        }
+
+                        if (protocolVersion <= MC_1_19_2_Version)
+                            fields.AddRange(dataTypes.GetBool(false)); // Signed Preview: Boolean
 
                         if (protocolVersion >= MC_1_19_3_Version)
-                            fields.AddRange(dataTypes.GetBool(true));
-                        else
-                            fields.AddRange(DataTypes.GetVarInt(sign.Length));
-                        fields.AddRange(sign);
-                    }
+                        {
+                            // message count
+                            fields.AddRange(DataTypes.GetVarInt(messageCount_1_19_3));
 
-                    if (protocolVersion <= MC_1_19_2_Version)
-                        fields.AddRange(dataTypes.GetBool(false)); // Signed Preview: Boolean
-
-                    if (protocolVersion >= MC_1_19_3_Version)
-                    {
-                        // message count
-                        fields.AddRange(DataTypes.GetVarInt(messageCount_1_19_3));
-
-                        // Acknowledged: BitSet
-                        fields.AddRange(bitset_1_19_3);
-                    }
-                    else if (protocolVersion == MC_1_19_2_Version)
-                    {
-                        // Message Acknowledgment
-                        fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment_1_19_2!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
+                            // Acknowledged: BitSet
+                            fields.AddRange(bitset_1_19_3);
+                        }
+                        else if (protocolVersion == MC_1_19_2_Version)
+                        {
+                            // Message Acknowledgment
+                            fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment_1_19_2!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
+                        }
                     }
                 }
                 SendPacket(PacketTypesOut.ChatMessage, fields);
