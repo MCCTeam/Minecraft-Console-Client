@@ -684,23 +684,73 @@ namespace MinecraftClient.Protocol.Handlers
                     case 15: // Particle
                              // Currecutly not handled. Reading data only
                         int ParticleID = ReadNextVarInt(cache);
-                        switch (ParticleID)
+                        // Need to check the exact version where the change occurred!!!!!
+                        if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
                         {
-                            case 3:
-                                ReadNextVarInt(cache);
-                                break;
-                            case 14:
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                break;
-                            case 23:
-                                ReadNextVarInt(cache);
-                                break;
-                            case 32:
-                                ReadNextItemSlot(cache, itemPalette);
-                                break;
+                            switch (ParticleID)
+                            {
+                                case 2:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 3:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 14:
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    break;
+                                case 15:
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    break;
+                                case 24:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 35:
+                                    ReadNextItemSlot(cache, itemPalette);
+                                    break;
+                                case 36:
+                                    string positionSourceType = ReadNextString(cache);
+                                    if (positionSourceType == "minecraft:block")
+                                    {
+                                        ReadNextLocation(cache);
+                                    }
+                                    else if (positionSourceType == "minecraft:entity")
+                                    {
+                                        ReadNextVarInt(cache);
+                                        ReadNextFloat(cache);
+                                    }
+                                    ReadNextVarInt(cache);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (ParticleID)
+                            {
+                                case 3:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 14:
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    break;
+                                case 23:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 32:
+                                    ReadNextItemSlot(cache, itemPalette);
+                                    break;
+                            }
                         }
                         break;
                     case 16: // Villager Data (3x VarInt)
@@ -730,7 +780,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion <= Protocol18Handler.MC_1_19_Version)
                             value = ReadNextVarInt(cache);
                         else
-                            value = null; // Dimension and blockPos, currently not in use
+                        {
+                            // Dimension and blockPos, currently not in use
+                            value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
+                        }
                         break;
                     case 22: // Painting Variant
                         value = ReadNextVarInt(cache);
