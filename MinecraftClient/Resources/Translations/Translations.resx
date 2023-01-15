@@ -2028,4 +2028,10 @@ Logging in...</value>
   <data name="proxy.connected" xml:space="preserve">
     <value>Connected to proxy {0}:{1}</value>
   </data>
+  <data name="cmd.dig.end" xml:space="preserve">
+    <value>Mining of the block located at {0} ends.</value>
+  </data>
+  <data name="cmd.dig.cancel" xml:space="preserve">
+    <value>Cancel mining the block located at {0}.</value>
+  </data>
 </root>

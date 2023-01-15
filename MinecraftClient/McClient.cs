@@ -87,6 +87,10 @@ namespace MinecraftClient
 
         private int playerEntityID;
 
+        private object DigLock = new();
+        private Tuple<Location, Direction>? LastDigPosition;
+        private int RemainingDiggingTime = 0;
+
         // player health and hunger
         private float playerHealth;
         private int playerFoodSaturation;
@@ -378,6 +382,22 @@ namespace MinecraftClient
                 {
                     Action taskToRun = threadTasks.Dequeue();
                     taskToRun();
+                }
+            }
+
+            lock (DigLock)
+            {
+                if (RemainingDiggingTime > 0)
+                {
+                    if (--RemainingDiggingTime == 0 && LastDigPosition != null)
+                    {
+                        handler.SendPlayerDigging(2, LastDigPosition.Item1, LastDigPosition.Item2, sequenceId++);
+                        Log.Info(string.Format(Translations.cmd_dig_end, LastDigPosition.Item1));
+                    }
+                    else
+                    {
+                        DoAnimation((int)Hand.MainHand);
+                    }
                 }
             }
         }
@@ -1299,7 +1319,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
-            return InvokeOnMainThread(() => handler.SendUseItem(0, sequenceId));
+            return InvokeOnMainThread(() => handler.SendUseItem(0, sequenceId++));
         }
 
         /// <summary>
@@ -1308,7 +1328,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnLeftHand()
         {
-            return InvokeOnMainThread(() => handler.SendUseItem(1, sequenceId));
+            return InvokeOnMainThread(() => handler.SendUseItem(1, sequenceId++));
         }
 
         /// <summary>
@@ -2193,7 +2213,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId));
+            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++));
         }
 
         /// <summary>
@@ -2202,26 +2222,44 @@ namespace MinecraftClient
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
+        public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
         {
             if (!GetTerrainEnabled())
                 return false;
 
             if (InvokeRequired)
-                return InvokeOnMainThread(() => DigBlock(location, swingArms, lookAtBlock));
+                return InvokeOnMainThread(() => DigBlock(location, swingArms, lookAtBlock, duration));
 
             // TODO select best face from current player location
             Direction blockFace = Direction.Down;
 
-            // Look at block before attempting to break it
-            if (lookAtBlock)
-                UpdateLocation(GetCurrentLocation(), location);
+            lock (DigLock)
+            {
+                if (RemainingDiggingTime > 0 && LastDigPosition != null)
+                {
+                    handler.SendPlayerDigging(1, LastDigPosition.Item1, LastDigPosition.Item2, sequenceId++);
+                    Log.Info(string.Format(Translations.cmd_dig_cancel, LastDigPosition.Item1));
+                }
 
-            // Send dig start and dig end, will need to wait for server response to know dig result
-            // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
-            return handler.SendPlayerDigging(0, location, blockFace, sequenceId)
-                && (!swingArms || DoAnimation((int)Hand.MainHand))
-                && handler.SendPlayerDigging(2, location, blockFace, sequenceId);
+                // Look at block before attempting to break it
+                if (lookAtBlock)
+                    UpdateLocation(GetCurrentLocation(), location);
+
+                // Send dig start and dig end, will need to wait for server response to know dig result
+                // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
+                bool result = handler.SendPlayerDigging(0, location, blockFace, sequenceId++)
+                    && (!swingArms || DoAnimation((int)Hand.MainHand));
+
+                if (duration <= 0)
+                    result &= handler.SendPlayerDigging(2, location, blockFace, sequenceId++);
+                else
+                {
+                    LastDigPosition = new(location, blockFace);
+                    RemainingDiggingTime = Settings.DoubleToTick(duration);
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
