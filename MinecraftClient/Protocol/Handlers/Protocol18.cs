@@ -466,7 +466,10 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                         case PacketTypesIn.DeclareCommands:
                             if (protocolVersion >= MC_1_19_Version)
+                            {
                                 DeclareCommands.Read(dataTypes, packetData, protocolVersion);
+                                handler.OnDeclareCommands();
+                            }
                             break;
                         case PacketTypesIn.ChatMessage:
                             int messageType = 0;

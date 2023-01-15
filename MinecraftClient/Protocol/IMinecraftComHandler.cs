@@ -466,6 +466,8 @@ namespace MinecraftClient.Protocol
         /// <param name="result">All commands.</param>
         public void OnAutoCompleteDone(int transactionId, string[] result);
 
+        public void OnDeclareCommands();
+
         /// <summary>
         /// Send a click container button packet to the server.
         /// Used for Enchanting table, Lectern, stone cutter and loom
