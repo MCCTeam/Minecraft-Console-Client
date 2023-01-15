@@ -2434,7 +2434,9 @@ namespace MinecraftClient
             if (protocolversion >= Protocol18Handler.MC_1_19_3_Version
                 && playerKeyPair != null)
                 handler.SendPlayerSession(playerKeyPair);
-            CanSendMessage = true;
+
+            if (protocolversion < Protocol18Handler.MC_1_19_3_Version)
+                CanSendMessage = true;
 
             if (inventoryHandlingRequested)
             {
@@ -3478,6 +3480,11 @@ namespace MinecraftClient
         public void OnAutoCompleteDone(int transactionId, string[] result)
         {
             ConsoleIO.OnAutoCompleteDone(transactionId, result);
+        }
+
+        public void OnDeclareCommands()
+        {
+            CanSendMessage = true;
         }
 
         /// <summary>
