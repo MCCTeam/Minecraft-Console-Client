@@ -2705,6 +2705,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel mining the block located at {0}..
+        /// </summary>
+        internal static string cmd_dig_cancel {
+            get {
+                return ResourceManager.GetString("cmd.dig.cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attempt to break a block.
         /// </summary>
         internal static string cmd_dig_desc {
@@ -2719,6 +2728,15 @@ namespace MinecraftClient {
         internal static string cmd_dig_dig {
             get {
                 return ResourceManager.GetString("cmd.dig.dig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mining of the block located at {0} ends..
+        /// </summary>
+        internal static string cmd_dig_end {
+            get {
+                return ResourceManager.GetString("cmd.dig.end", resourceCulture);
             }
         }
         
