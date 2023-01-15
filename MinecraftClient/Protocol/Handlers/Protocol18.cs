@@ -696,7 +696,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
                                 ChatMessage chat = new(message, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult);
-                                if (isOnlineMode && !chat.LacksSender() && verifyResult)
+                                if (isOnlineMode && !chat.LacksSender() && messageSignature != null)
                                     Acknowledge(chat);
                                 handler.OnTextReceived(chat);
                             }
