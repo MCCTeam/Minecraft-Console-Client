@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MinecraftClient.Protocol.Handlers;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Inventory
 {
@@ -158,7 +159,7 @@ namespace MinecraftClient.Inventory
 
         public static string GetEnchantmentName(Enchantment enchantment)
         {
-            string? trans = Protocol.ChatParser.TranslateString("enchantment.minecraft." + enchantment.ToString().ToUnderscoreCase());
+            string? trans = ChatParser.TranslateString("enchantment.minecraft." + enchantment.ToString().ToUnderscoreCase());
             if (string.IsNullOrEmpty(trans))
                 return "Unknown Enchantment with ID: " + ((short)enchantment) + " (Probably not named in the code yet)";
             else

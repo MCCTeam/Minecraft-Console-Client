@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -115,7 +117,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override void OnInternalCommand(string commandName, string commandParams, string result)
+        public override void OnInternalCommand(string commandName, string commandParams, CmdResult result)
         {
             if (saveInternal)
             {

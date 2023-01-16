@@ -139,9 +139,9 @@ namespace MinecraftClient.Mapping
                 try
                 {
                     var monsterSpawnLightLevelObj = nbt["monster_spawn_light_level"];
-                    try 
-                    { 
-                        monsterSpawnMinLightLevel = monsterSpawnMaxLightLevel = Convert.ToInt32(monsterSpawnLightLevelObj); 
+                    try
+                    {
+                        monsterSpawnMinLightLevel = monsterSpawnMaxLightLevel = Convert.ToInt32(monsterSpawnLightLevelObj);
                     }
                     catch (Exception)
                     {

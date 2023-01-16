@@ -409,6 +409,7 @@ FodyWeavers.xsd
 # translations
 /MinecraftClient/Resources/Translations/Translations.*.resx
 /MinecraftClient/Resources/AsciiArt/AsciiArt.*.resx
+/MinecraftClient/Resources/ConfigComments/ConfigComments.*.resx
 
 /docs/.vuepress/translations/*.json
 !/docs/.vuepress/translations/en.json

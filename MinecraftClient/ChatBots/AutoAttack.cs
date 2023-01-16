@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots

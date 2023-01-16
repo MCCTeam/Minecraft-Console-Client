@@ -1,5 +1,5 @@
 ﻿using System;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
+using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
 
 namespace MinecraftClient
 {
@@ -75,14 +75,37 @@ namespace MinecraftClient
 
         public static string GetColorEscapeCode(byte R, byte G, byte B, bool foreground)
         {
-            return GetColorEscapeCode(R, G, B, foreground, Settings.Config.Main.Advanced.TerminalColorDepth);
+            return GetColorEscapeCode(R, G, B, foreground, Settings.Config.Console.General.ConsoleColorMode);
         }
 
-        public static string GetColorEscapeCode(byte R, byte G, byte B, bool foreground, TerminalColorDepthType colorDepth)
+        public static string GetColorEscapeCode(byte R, byte G, byte B, bool foreground, ConsoleColorModeType colorDepth)
         {
             switch (colorDepth)
             {
-                case TerminalColorDepthType.bit_4:
+                case ConsoleColorModeType.disable:
+                    return string.Empty;
+
+                case ConsoleColorModeType.legacy_4bit:
+                    {
+                        ColorRGBA color = new(R, G, B);
+                        int best_idx = 0;
+                        double min_distance = ColorMap4[0].Item1.Distance(color);
+                        for (int i = 1; i < ColorMap4.Length; ++i)
+                        {
+                            double distance = ColorMap4[i].Item1.Distance(color);
+                            if (distance < min_distance)
+                            {
+                                min_distance = distance;
+                                best_idx = i;
+                            }
+                        }
+                        if (foreground)
+                            return $"§{best_idx:X}";
+                        else
+                            return $"§§{best_idx:X}";
+                    }
+
+                case ConsoleColorModeType.vt100_4bit:
                     {
                         ColorRGBA color = new(R, G, B);
                         int best_idx = 0;
@@ -99,7 +122,7 @@ namespace MinecraftClient
                         return string.Format("\u001b[{0}m", ColorMap4[best_idx].Item2 - (foreground ? 10 : 0));
                     }
 
-                case TerminalColorDepthType.bit_8:
+                case ConsoleColorModeType.vt100_8bit:
                     {
                         ColorRGBA color = new(R, G, B);
                         int R_idx = (int)(R <= 95 ? Math.Round(R / 95.0) : 1 + Math.Round((R - 95.0) / 40.0));
@@ -126,7 +149,7 @@ namespace MinecraftClient
                             return string.Format("\u001B[{0};5;{1}m", (foreground ? 38 : 48), ColorMap8[best_idx].Item2);
                     }
 
-                case TerminalColorDepthType.bit_24:
+                case ConsoleColorModeType.vt100_24bit:
                     return string.Format("\u001B[{0};2;{1};{2};{3}m", (foreground ? 38 : 48), R, G, B);
 
                 default:

@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.ChatBots
 {
