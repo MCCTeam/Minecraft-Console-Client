@@ -18,5 +18,8 @@ unzip MinecraftClient-linux.zip
 # Remove the ZIP
 rm -- MinecraftClient-linux.zip
 
+# Set Executable
+chmod +x ./MinecraftClient
+
 # Start the Client
 ./MinecraftClient

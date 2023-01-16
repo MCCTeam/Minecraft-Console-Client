@@ -189,6 +189,9 @@ You need to enable Entity Handling to use this bot
   <data name="ChatBot.AutoAttack.Attack_Passive" xml:space="preserve">
     <value>Allow attacking passive mobs.</value>
   </data>
+  <data name="ChatBot.AutoAttack.Attack_Range" xml:space="preserve">
+    <value>Capped between 1 to 4</value>
+  </data>
   <data name="ChatBot.AutoAttack.Cooldown_Time" xml:space="preserve">
     <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
   </data>
