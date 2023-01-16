@@ -535,6 +535,25 @@ When this happens, you'll need to configure chat format below, see https://mccte
   <data name="ChatFormat.UserDefined" xml:space="preserve">
     <value>Whether to use the custom regular expressions below for detection.</value>
   </data>
+  <data name="Console" xml:space="preserve">
+    <value>Console-related settings.</value>
+  </data>
+  <data name="Console.CommandSuggestion" xml:space="preserve">
+    <value>The settings for command completion suggestions.
+Custom colors are only available when using "vt100_24bit" color mode.</value>
+  </data>
+  <data name="Console.CommandSuggestion.Enable" xml:space="preserve">
+    <value>Whether to display command suggestions in the console.</value>
+  </data>
+  <data name="Console.CommandSuggestion.Use_Basic_Arrow" xml:space="preserve">
+    <value>Enable this option if the arrows in the command suggestions are not displayed properly in your terminal.</value>
+  </data>
+  <data name="Console.General.ConsoleColorMode" xml:space="preserve">
+    <value>Use "disable", "legacy_4bit", "vt100_4bit", "vt100_8bit" or "vt100_24bit". If a garbled code like "←[0m" appears on the terminal, you can try switching to "legacy_4bit" mode, or just disable it.</value>
+  </data>
+  <data name="Console.General.Display_Input" xml:space="preserve">
+    <value>You can use "Ctrl+P" to print out the current input and cursor position.</value>
+  </data>
   <data name="Head" xml:space="preserve">
     <value>Startup Config File
 Please do not record extraneous data in this file as it will be overwritten by MCC.
@@ -682,9 +701,6 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
   </data>
   <data name="Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
     <value>Temporary fix for Badpacket issue on some servers.</value>
-  </data>
-  <data name="Main.Advanced.TerminalColorDepth" xml:space="preserve">
-    <value>Use "none", "bit_4", "bit_8" or "bit_24". This can be checked by opening the debug log.</value>
   </data>
   <data name="Main.Advanced.terrain_and_movements" xml:space="preserve">
     <value>Uses more ram, cpu, bandwidth but allows you to move around.</value>

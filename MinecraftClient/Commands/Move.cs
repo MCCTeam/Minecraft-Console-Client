@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -11,107 +13,190 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]"; } }
         public override string CmdDesc { get { return Translations.cmd_move_desc + " \"-f\": " + Translations.cmd_move_desc_force; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
-            List<string> args = GetArgs(command.ToLower()).ToList();
-            bool takeRisk = false;
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Then(l => l.Literal("enable")
+                        .Executes(r => GetUsage(r.Source, "enable")))
+                    .Then(l => l.Literal("gravity")
+                        .Executes(r => GetUsage(r.Source, "gravity")))
+                    .Then(l => l.Literal("direction")
+                        .Executes(r => GetUsage(r.Source, "direction")))
+                    .Then(l => l.Literal("center")
+                        .Executes(r => GetUsage(r.Source, "center")))
+                    .Then(l => l.Literal("get")
+                        .Executes(r => GetUsage(r.Source, "get")))
+                    .Then(l => l.Literal("location")
+                        .Executes(r => GetUsage(r.Source, "location")))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => GetUsage(r.Source, "-f")))
+                )
+            );
 
-            if (args.Count < 1)
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Then(l => l.Literal("on")
+                    .Executes(r => SetMovementEnable(r.Source, enable: true)))
+                .Then(l => l.Literal("off")
+                    .Executes(r => SetMovementEnable(r.Source, enable: false)))
+                .Then(l => l.Literal("gravity")
+                    .Executes(r => SetGravityEnable(r.Source, enable: null))
+                    .Then(l => l.Literal("on")
+                        .Executes(r => SetGravityEnable(r.Source, enable: true)))
+                    .Then(l => l.Literal("off")
+                        .Executes(r => SetGravityEnable(r.Source, enable: false))))
+                .Then(l => l.Literal("up")
+                    .Executes(r => MoveOnDirection(r.Source, Direction.Up, false))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => MoveOnDirection(r.Source, Direction.Up, true))))
+                .Then(l => l.Literal("down")
+                    .Executes(r => MoveOnDirection(r.Source, Direction.Down, false))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => MoveOnDirection(r.Source, Direction.Down, true))))
+                .Then(l => l.Literal("east")
+                    .Executes(r => MoveOnDirection(r.Source, Direction.East, false))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => MoveOnDirection(r.Source, Direction.East, true))))
+                .Then(l => l.Literal("west")
+                    .Executes(r => MoveOnDirection(r.Source, Direction.West, false))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => MoveOnDirection(r.Source, Direction.West, true))))
+                .Then(l => l.Literal("north")
+                    .Executes(r => MoveOnDirection(r.Source, Direction.North, false))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => MoveOnDirection(r.Source, Direction.North, true))))
+                .Then(l => l.Literal("south")
+                    .Executes(r => MoveOnDirection(r.Source, Direction.South, false))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => MoveOnDirection(r.Source, Direction.South, true))))
+                .Then(l => l.Literal("center")
+                    .Executes(r => MoveToCenter(r.Source)))
+                .Then(l => l.Literal("get")
+                    .Executes(r => GetCurrentLocation(r.Source)))
+                .Then(l => l.Argument("location", MccArguments.Location())
+                    .Executes(r => MoveToLocation(r.Source, MccArguments.GetLocation(r, "location"), false))
+                    .Then(l => l.Literal("-f")
+                        .Executes(r => MoveToLocation(r.Source, MccArguments.GetLocation(r, "location"), true))))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
+        }
+
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                string desc = GetCmdDescTranslated();
+#pragma warning disable format // @formatter:off
+                "enable"    =>  GetCmdDescTranslated(),
+                "gravity"   =>  GetCmdDescTranslated(),
+                "direction" =>  GetCmdDescTranslated(),
+                "center"    =>  GetCmdDescTranslated(),
+                "get"       =>  GetCmdDescTranslated(),
+                "location"  =>  GetCmdDescTranslated(),
+                "-f"        =>  GetCmdDescTranslated(),
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
 
-                if (handler.GetTerrainEnabled())
-                    handler.Log.Info(World.GetChunkLoadingStatus(handler.GetWorld()));
-
-                return desc;
-            }
-
-            if (args.Contains("-f"))
-            {
-                takeRisk = true;
-                args.Remove("-f");
-            }
-
-            if (args[0] == "on")
+        private int SetMovementEnable(CmdResult r, bool enable)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (enable)
             {
                 handler.SetTerrainEnabled(true);
-                return Translations.cmd_move_enable;
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_move_enable);
             }
-            else if (args[0] == "off")
+            else
             {
                 handler.SetTerrainEnabled(false);
-                return Translations.cmd_move_disable;
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_move_disable);
             }
-            else if (args[0] == "gravity")
+        }
+
+        private int SetGravityEnable(CmdResult r, bool? enable)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (enable.HasValue)
+                Settings.InternalConfig.GravityEnabled = enable.Value;
+
+            if (Settings.InternalConfig.GravityEnabled)
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_move_gravity_enabled);
+            else
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_move_gravity_disabled);
+        }
+
+        private int GetCurrentLocation(CmdResult r)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            return r.SetAndReturn(Status.Done, handler.GetCurrentLocation().ToString());
+        }
+
+        private int MoveToCenter(CmdResult r)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            Location current = handler.GetCurrentLocation();
+            Location currentCenter = new(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
+            handler.MoveTo(currentCenter, allowDirectTeleport: true);
+            return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_move_walk, currentCenter, current));
+        }
+
+        private int MoveOnDirection(CmdResult r, Direction direction, bool takeRisk)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            Location goal = Movement.Move(handler.GetCurrentLocation(), direction);
+
+            if (!Movement.CheckChunkLoading(handler.GetWorld(), handler.GetCurrentLocation(), goal))
+                return r.SetAndReturn(Status.FailChunkNotLoad, string.Format(Translations.cmd_move_chunk_not_loaded, goal.X, goal.Y, goal.Z));
+
+            if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
             {
-                if (args.Count >= 2)
-                    Settings.InternalConfig.GravityEnabled = (args[1] == "on");
-                if (Settings.InternalConfig.GravityEnabled)
-                    return Translations.cmd_move_gravity_enabled;
-                else return Translations.cmd_move_gravity_disabled;
+                if (handler.MoveTo(goal, allowUnsafe: takeRisk))
+                    return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_move_moving, direction.ToString()));
+                else
+                    return r.SetAndReturn(Status.Fail, takeRisk ? Translations.cmd_move_dir_fail : Translations.cmd_move_suggestforce);
             }
-            else if (handler.GetTerrainEnabled())
+            else
             {
-                if (args.Count == 1)
-                {
-                    Direction direction;
-                    switch (args[0])
-                    {
-                        case "up": direction = Direction.Up; break;
-                        case "down": direction = Direction.Down; break;
-                        case "east": direction = Direction.East; break;
-                        case "west": direction = Direction.West; break;
-                        case "north": direction = Direction.North; break;
-                        case "south": direction = Direction.South; break;
-                        case "center":
-                            Location current = handler.GetCurrentLocation();
-                            Location currentCenter = new(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
-                            handler.MoveTo(currentCenter, allowDirectTeleport: true);
-                            return string.Format(Translations.cmd_move_walk, currentCenter, current);
-                        case "get": return handler.GetCurrentLocation().ToString();
-                        default: return string.Format(Translations.cmd_look_unknown, args[0]);
-                    }
-
-                    Location goal = Movement.Move(handler.GetCurrentLocation(), direction);
-
-                    if (!Movement.CheckChunkLoading(handler.GetWorld(), handler.GetCurrentLocation(), goal))
-                        return string.Format(Translations.cmd_move_chunk_not_loaded, goal.X, goal.Y, goal.Z);
-
-                    if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
-                    {
-                        if (handler.MoveTo(goal, allowUnsafe: takeRisk))
-                            return string.Format(Translations.cmd_move_moving, args[0]);
-                        else
-                            return takeRisk ? Translations.cmd_move_dir_fail : Translations.cmd_move_suggestforce;
-                    }
-                    else return Translations.cmd_move_dir_fail;
-                }
-                else if (args.Count == 3)
-                {
-                    try
-                    {
-                        Location current = handler.GetCurrentLocation(), currentCenter = current.ToCenter();
-                        Location goal = Location.Parse(current, args[0], args[1], args[2]);
-
-                        if (!Movement.CheckChunkLoading(handler.GetWorld(), current, goal))
-                            return string.Format(Translations.cmd_move_chunk_not_loaded, goal.X, goal.Y, goal.Z);
-
-                        if (takeRisk || Movement.PlayerFitsHere(handler.GetWorld(), goal))
-                        {
-                            if (current.ToFloor() == goal.ToFloor())
-                                handler.MoveTo(goal, allowDirectTeleport: true);
-                            else if (!handler.MoveTo(goal, allowUnsafe: takeRisk))
-                                return takeRisk ? string.Format(Translations.cmd_move_fail, goal) : string.Format(Translations.cmd_move_suggestforce, goal);
-                            return string.Format(Translations.cmd_move_walk, goal, current);
-                        }
-                        else
-                            return string.Format(Translations.cmd_move_suggestforce, goal);
-                    }
-                    catch (FormatException) { return GetCmdDescTranslated(); }
-                }
-                else return GetCmdDescTranslated();
+                return r.SetAndReturn(Status.Fail, Translations.cmd_move_dir_fail);
             }
-            else return Translations.extra_terrainandmovement_required;
+        }
+
+        private int MoveToLocation(CmdResult r, Location goal, bool takeRisk)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            Location current = handler.GetCurrentLocation(), currentCenter = current.ToCenter();
+            goal.ToAbsolute(current);
+
+            if (!Movement.CheckChunkLoading(handler.GetWorld(), current, goal))
+                return r.SetAndReturn(Status.FailChunkNotLoad, string.Format(Translations.cmd_move_chunk_not_loaded, goal.X, goal.Y, goal.Z));
+
+            if (takeRisk || Movement.PlayerFitsHere(handler.GetWorld(), goal))
+            {
+                if (current.ToFloor() == goal.ToFloor())
+                    handler.MoveTo(goal, allowDirectTeleport: true);
+                else if (!handler.MoveTo(goal, allowUnsafe: takeRisk))
+                    return r.SetAndReturn(Status.Fail, takeRisk ? string.Format(Translations.cmd_move_fail, goal) : string.Format(Translations.cmd_move_suggestforce, goal));
+                return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_move_walk, goal, current));
+            }
+            else
+            {
+                return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_move_suggestforce, goal));
+            }
         }
     }
 }

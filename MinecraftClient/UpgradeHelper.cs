@@ -63,7 +63,7 @@ namespace MinecraftClient
                 {
                     string OSInfo = GetOSIdentifier();
                     if (Settings.Config.Logging.DebugMessages || string.IsNullOrEmpty(OSInfo))
-                        ConsoleIO.WriteLine(string.Format("OS: {0}, Arch: {1}, Framework: {2}", 
+                        ConsoleIO.WriteLine(string.Format("OS: {0}, Arch: {1}, Framework: {2}",
                             RuntimeInformation.OSDescription, RuntimeInformation.ProcessArchitecture, RuntimeInformation.FrameworkDescription));
                     if (string.IsNullOrEmpty(OSInfo))
                     {
@@ -308,7 +308,7 @@ namespace MinecraftClient
             {
                 string proxyAddress;
                 if (!string.IsNullOrWhiteSpace(Settings.Config.Proxy.Username) && !string.IsNullOrWhiteSpace(Settings.Config.Proxy.Password))
-                    proxyAddress = string.Format("{0}://{3}:{4}@{1}:{2}", 
+                    proxyAddress = string.Format("{0}://{3}:{4}@{1}:{2}",
                         Settings.Config.Proxy.Proxy_Type.ToString().ToLower(),
                         Settings.Config.Proxy.Server.Host,
                         Settings.Config.Proxy.Server.Port,

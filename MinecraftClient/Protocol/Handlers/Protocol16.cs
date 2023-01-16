@@ -9,10 +9,11 @@ using System.Threading;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
-using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using MinecraftClient.Scripting;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -24,8 +25,6 @@ namespace MinecraftClient.Protocol.Handlers
     class Protocol16Handler : IMinecraftCom
     {
         readonly IMinecraftComHandler handler;
-        private bool autocomplete_received = false;
-        private string autocomplete_result = "";
         private bool encrypted = false;
         private readonly int protocolversion;
         private Tuple<Thread, CancellationTokenSource>? netRead = null;
@@ -193,7 +192,14 @@ namespace MinecraftClient.Protocol.Handlers
                     if (online) { handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID)); } else { handler.OnPlayerLeave(FakeUUID); }
                     break;
                 case 0xCA: if (protocolversion >= 72) { ReadData(9); } else ReadData(3); break;
-                case 0xCB: autocomplete_result = ReadNextString(); autocomplete_received = true; break;
+                case 0xCB:
+                    string resultString = ReadNextString();
+                    if (!string.IsNullOrEmpty(resultString))
+                    {
+                        string[] result = resultString.Split((char)0x00);
+                        handler.OnAutoCompleteDone(0, result);
+                    }
+                    break;
                 case 0xCC: ReadNextString(); ReadData(4); break;
                 case 0xCD: ReadData(1); break;
                 case 0xCE: if (protocolversion > 51) { ReadNextString(); ReadNextString(); ReadData(1); } break;
@@ -820,27 +826,21 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
         }
 
-        IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
+        int IAutoComplete.AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))
-                return Array.Empty<string>();
+                return -1;
 
             byte[] autocomplete = new byte[3 + (BehindCursor.Length * 2)];
             autocomplete[0] = 0xCB;
             byte[] msglen = BitConverter.GetBytes((short)BehindCursor.Length);
-            Array.Reverse(msglen); msglen.CopyTo(autocomplete, 1);
+            Array.Reverse(msglen);
+            msglen.CopyTo(autocomplete, 1);
             byte[] msg = Encoding.BigEndianUnicode.GetBytes(BehindCursor);
             msg.CopyTo(autocomplete, 3);
-
-            autocomplete_received = false;
-            autocomplete_result = BehindCursor;
+            ConsoleIO.AutoCompleteDone = false;
             Send(autocomplete);
-
-            int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
-            while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
-            if (!String.IsNullOrEmpty(autocomplete_result) && autocomplete_received)
-                ConsoleIO.WriteLineFormatted("§8" + autocomplete_result.Replace((char)0x00, ' '), false);
-            return autocomplete_result.Split((char)0x00);
+            return 0;
         }
 
         private static byte[] ConcatBytes(params byte[][] bytes)

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Brigadier.NET;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 
 namespace MinecraftClient
 {
@@ -28,8 +31,13 @@ namespace MinecraftClient
         /// <returns>Translated command description</returns>
         public string GetCmdDescTranslated()
         {
-            string s = (string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc)) ? "" : ": "; // If either one is empty, no colon :
-            return CmdUsage + s + CmdDesc;
+            char cmdChar = Settings.Config.Main.Advanced.InternalCmdChar.ToChar();
+
+            StringBuilder sb = new();
+            string s = (string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc)) ? string.Empty : ": "; // If either one is empty, no colon :
+            sb.Append("§e").Append(cmdChar).Append(CmdUsage).Append("§r").Append(s).AppendLine(CmdDesc);
+            sb.Append(McClient.dispatcher.GetAllUsageString(CmdName, false));
+            return sb.ToString();
         }
 
         /// <summary>
@@ -38,18 +46,9 @@ namespace MinecraftClient
         public abstract string CmdUsage { get; }
 
         /// <summary>
-        /// Perform the command
+        /// Register the command.
         /// </summary>
-        /// <param name="command">The full command, eg: 'mycommand arg1 arg2'</param>
-        /// <param name="localVars">Local variables passed along with the command (may be null)</param>
-        /// <returns>A confirmation/error message, or "" if no message</returns>
-        public abstract string Run(McClient handler, string command, Dictionary<string, object>? localVars);
-
-        /// <summary>
-        /// Return a list of aliases for this command.
-        /// Override this method if you wish to put aliases to the command
-        /// </summary>
-        public virtual IEnumerable<string> GetCMDAliases() { return Array.Empty<string>(); }
+        public abstract void RegisterCommand(CommandDispatcher<CmdResult> dispatcher);
 
         /// <summary>
         /// Check if at least one argument has been passed to the command

@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -11,70 +13,107 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "look <x y z|yaw pitch|up|down|east|west|north|south>"; } }
         public override string CmdDesc { get { return Translations.cmd_look_desc; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
-            if (handler.GetTerrainEnabled())
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Then(l => l.Literal("direction")
+                        .Executes(r => GetUsage(r.Source, "direction")))
+                    .Then(l => l.Literal("angle")
+                        .Executes(r => GetUsage(r.Source, "angle")))
+                    .Then(l => l.Literal("location")
+                        .Executes(r => GetUsage(r.Source, "location")))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Executes(r => LogCurrentLooking(r.Source))
+                .Then(l => l.Literal("up")
+                    .Executes(r => LookAtDirection(r.Source, Direction.Up)))
+                .Then(l => l.Literal("down")
+                    .Executes(r => LookAtDirection(r.Source, Direction.Down)))
+                .Then(l => l.Literal("east")
+                    .Executes(r => LookAtDirection(r.Source, Direction.East)))
+                .Then(l => l.Literal("west")
+                    .Executes(r => LookAtDirection(r.Source, Direction.West)))
+                .Then(l => l.Literal("north")
+                    .Executes(r => LookAtDirection(r.Source, Direction.North)))
+                .Then(l => l.Literal("south")
+                    .Executes(r => LookAtDirection(r.Source, Direction.South)))
+                .Then(l => l.Argument("Yaw", Arguments.Float())
+                    .Then(l => l.Argument("Pitch", Arguments.Float())
+                        .Executes(r => LookAtAngle(r.Source, Arguments.GetFloat(r, "Yaw"), Arguments.GetFloat(r, "Pitch")))))
+                .Then(l => l.Argument("Location", MccArguments.Location())
+                    .Executes(r => LookAtLocation(r.Source, MccArguments.GetLocation(r, "Location"))))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
+        }
+
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                string[] args = GetArgs(command);
-                if (args.Length == 0)
-                {
-                    const double maxDistance = 8.0;
-                    (bool hasBlock, Location target, Block block) = RaycastHelper.RaycastBlock(handler, maxDistance, false);
-                    if (!hasBlock)
-                        return string.Format(Translations.cmd_look_noinspection, maxDistance);
-                    else
-                    {
-                        Location current = handler.GetCurrentLocation(), target_center = target.ToCenter();
-                        return string.Format(Translations.cmd_look_inspection, block.Type, target.X, target.Y, target.Z,
-                            current.Distance(target_center), current.EyesLocation().Distance(target_center));
-                    }
-                }
-                else if (args.Length == 1)
-                {
-                    string dirStr = GetArg(command).Trim().ToLower();
-                    Direction direction;
-                    switch (dirStr)
-                    {
-                        case "up": direction = Direction.Up; break;
-                        case "down": direction = Direction.Down; break;
-                        case "east": direction = Direction.East; break;
-                        case "west": direction = Direction.West; break;
-                        case "north": direction = Direction.North; break;
-                        case "south": direction = Direction.South; break;
-                        default: return string.Format(Translations.cmd_look_unknown, dirStr);
-                    }
+#pragma warning disable format // @formatter:off
+                "direction"  =>  GetCmdDescTranslated(),
+                "angle"      =>  GetCmdDescTranslated(),
+                "location"   =>  GetCmdDescTranslated(),
+                _            =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
 
-                    handler.UpdateLocation(handler.GetCurrentLocation(), direction);
-                    return "Looking " + dirStr;
-                }
-                else if (args.Length == 2)
-                {
-                    try
-                    {
-                        float yaw = float.Parse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture);
-                        float pitch = float.Parse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture);
+        private int LogCurrentLooking(CmdResult r)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
 
-                        handler.UpdateLocation(handler.GetCurrentLocation(), yaw, pitch);
-                        return string.Format(Translations.cmd_look_at, yaw.ToString("0.00"), pitch.ToString("0.00"));
-                    }
-                    catch (FormatException) { return GetCmdDescTranslated(); }
-                }
-                else if (args.Length == 3)
-                {
-                    try
-                    {
-                        Location current = handler.GetCurrentLocation();
-                        Location block = Location.Parse(current, args[0], args[1], args[2]);
-                        handler.UpdateLocation(current, block);
-
-                        return string.Format(Translations.cmd_look_block, block);
-                    }
-                    catch (FormatException) { return CmdUsage; }
-                    
-                }
-                else return GetCmdDescTranslated();
+            const double maxDistance = 8.0;
+            (bool hasBlock, Location target, Block block) = RaycastHelper.RaycastBlock(handler, maxDistance, false);
+            if (!hasBlock)
+            {
+                return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_look_noinspection, maxDistance));
             }
-            else return Translations.extra_terrainandmovement_required;
+            else
+            {
+                Location current = handler.GetCurrentLocation(), target_center = target.ToCenter();
+                return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_look_inspection, block.Type, target.X, target.Y, target.Z,
+                    current.Distance(target_center), current.EyesLocation().Distance(target_center)));
+            }
+        }
+
+        private int LookAtDirection(CmdResult r, Direction direction)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            handler.UpdateLocation(handler.GetCurrentLocation(), direction);
+            return r.SetAndReturn(Status.Done, "Looking " + direction.ToString());
+        }
+
+        private int LookAtAngle(CmdResult r, float yaw, float pitch)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            handler.UpdateLocation(handler.GetCurrentLocation(), yaw, pitch);
+            return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_look_at, yaw.ToString("0.00"), pitch.ToString("0.00")));
+        }
+
+        private int LookAtLocation(CmdResult r, Location location)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            Location current = handler.GetCurrentLocation();
+            handler.UpdateLocation(current, location);
+            return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_look_block, location));
         }
     }
 }
