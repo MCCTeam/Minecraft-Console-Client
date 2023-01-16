@@ -259,6 +259,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Capped between 1 to 4.
+        /// </summary>
+        internal static string ChatBot_AutoAttack_Attack_Range {
+            get {
+                return ResourceManager.GetString("ChatBot.AutoAttack.Attack_Range", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to How long to wait between each attack. Set &quot;Custom = false&quot; to let MCC calculate it..
         /// </summary>
         internal static string ChatBot_AutoAttack_Cooldown_Time {
