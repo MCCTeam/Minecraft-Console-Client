@@ -525,7 +525,7 @@ namespace MinecraftClient
                     public string MinecraftVersion = "auto";
 
                     [TomlInlineComment("$Main.Advanced.mc_forge$")]
-                    public ForgeConfigType EnableForge = ForgeConfigType.auto;
+                    public ForgeConfigType EnableForge = ForgeConfigType.no;
 
                     [TomlInlineComment("$Main.Advanced.brand_info$")]
                     public BrandInfoType BrandInfo = BrandInfoType.mcc;
