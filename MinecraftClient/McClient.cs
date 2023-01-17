@@ -2415,7 +2415,7 @@ namespace MinecraftClient
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-        public void OnGameJoined()
+        public void OnGameJoined(bool isOnlineMode)
         {
             string? bandString = Config.Main.Advanced.BrandInfo.ToBrandString();
             if (!String.IsNullOrWhiteSpace(bandString))
@@ -2432,7 +2432,7 @@ namespace MinecraftClient
                     (byte)Config.MCSettings.MainHand);
 
             if (protocolversion >= Protocol18Handler.MC_1_19_3_Version
-                && playerKeyPair != null)
+                && playerKeyPair != null && isOnlineMode)
                 handler.SendPlayerSession(playerKeyPair);
 
             if (protocolversion < Protocol18Handler.MC_1_19_3_Version)

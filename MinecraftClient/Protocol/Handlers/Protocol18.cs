@@ -367,7 +367,7 @@ namespace MinecraftClient.Protocol.Handlers
                             SendPacket(PacketTypesOut.Pong, packetData);
                             break;
                         case PacketTypesIn.JoinGame:
-                            handler.OnGameJoined();
+                            handler.OnGameJoined(isOnlineMode);
                             int playerEntityID = dataTypes.ReadNextInt(packetData);
                             handler.OnReceivePlayerEntityID(playerEntityID);
 
@@ -3383,7 +3383,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool SendPlayerSession(PlayerKeyPair? playerKeyPair)
         {
-            if (playerKeyPair == null)
+            if (playerKeyPair == null || !isOnlineMode)
                 return false;
 
             if (protocolVersion >= MC_1_19_3_Version)

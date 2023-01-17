@@ -80,7 +80,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-        void OnGameJoined();
+        void OnGameJoined(bool isOnlineMode);
 
         /// <summary>
         /// Received chat/system message from the server
