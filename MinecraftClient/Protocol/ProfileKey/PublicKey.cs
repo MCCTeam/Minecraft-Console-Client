@@ -24,6 +24,12 @@ namespace MinecraftClient.Protocol.ProfileKey
 
             if (!string.IsNullOrEmpty(sigV2))
                 SignatureV2 = Convert.FromBase64String(sigV2!);
+
+            if (SignatureV2 == null || SignatureV2.Length == 0)
+                SignatureV2 = Signature;
+
+            if (Signature == null || Signature.Length == 0)
+                Signature = SignatureV2;
         }
 
         public PublicKey(byte[] key, byte[] signature)
