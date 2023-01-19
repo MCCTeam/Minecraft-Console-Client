@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -296,6 +297,15 @@ namespace MinecraftClient.Protocol.Message
             catch (IOException)
             {
                 ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_save_fail, languageFilePath), acceptnewlines: true);
+            }
+            catch (Exception e)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + Translations.chat_fail, acceptnewlines: true);
+                if (Config.Logging.DebugMessages)
+                {
+                    ConsoleIO.WriteLine(e.Message);
+                    ConsoleIO.WriteLine(e.StackTrace ?? "");
+                }
             }
             finally
             {
