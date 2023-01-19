@@ -625,7 +625,12 @@ namespace MinecraftClient
                     {
                         throw;
                     }
-                    catch (Exception) { }
+                    catch (Exception e)
+                    {
+                        ConsoleIO.WriteLine(e.Message);
+                        ConsoleIO.WriteLine(e.StackTrace ?? "");
+                        HandleFailure(); // Other error
+                    }
                 }
                 else HandleFailure(Translations.error_determine, true);
             }
