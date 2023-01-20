@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -238,7 +239,7 @@ namespace MinecraftClient.Protocol.Message
 
             string languageFilePath = "lang" + Path.DirectorySeparatorChar + Config.Main.Advanced.Language + ".json";
 
-            // Load the external dictionnary of translation rules or display an error message
+            // Load the external dictionary of translation rules or display an error message
             if (File.Exists(languageFilePath))
             {
                 try
@@ -272,18 +273,18 @@ namespace MinecraftClient.Protocol.Message
                     if (Config.Logging.DebugMessages)
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_request, translation_file_location));
 
-                    Task<Stream> fetch_file = httpClient.GetStreamAsync(translation_file_location);
-                    fetch_file.Wait();
-                    TranslationRules = JsonSerializer.Deserialize<Dictionary<string, string>>(fetch_file.Result)!;
-                    fetch_file.Dispose();
+                    Task<Dictionary<string, string>?> fetckFileTask = httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
+                    fetckFileTask.Wait();
+                    if (fetckFileTask.Result != null && fetckFileTask.Result.Count > 0)
+                    {
+                        TranslationRules = fetckFileTask.Result;
+                        TranslationRules["Version"] = TranslationsFile_Version;
+                        File.WriteAllText(languageFilePath, JsonSerializer.Serialize(TranslationRules, typeof(Dictionary<string, string>)), Encoding.UTF8);
 
-                    TranslationRules["Version"] = TranslationsFile_Version;
-
-                    File.WriteAllText(languageFilePath, JsonSerializer.Serialize(TranslationRules, typeof(Dictionary<string, string>)), Encoding.UTF8);
-
-                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, languageFilePath));
-
-                    return;
+                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, languageFilePath));
+                        return;
+                    }
+                    fetckFileTask.Dispose();
                 }
                 else
                 {
