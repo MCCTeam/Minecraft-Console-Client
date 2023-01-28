@@ -8,9 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
-using MinecraftClient;
 
-namespace DynamicRun.Builder
+namespace MinecraftClient.Scripting.DynamicRun.Builder
 {
     internal class CompileRunner
     {

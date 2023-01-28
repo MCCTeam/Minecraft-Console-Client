@@ -14,11 +14,9 @@ using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using MinecraftClient;
-using MinecraftClient.Scripting;
 using SingleFileExtractor.Core;
 
-namespace DynamicRun.Builder
+namespace MinecraftClient.Scripting.DynamicRun.Builder
 {
     internal class Compiler
     {
@@ -38,7 +36,7 @@ namespace DynamicRun.Builder
                     Failures = failures.ToList()
                 };
             }
-            
+
             peStream.Seek(0, SeekOrigin.Begin);
 
             return new CompileResult()
@@ -55,20 +53,20 @@ namespace DynamicRun.Builder
             var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp9);
 
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
-            
+
             var references = new List<MetadataReference>();
 
             // Find if any additional assembly DLL exists in the base directory where the .exe exists.
-            foreach (var assembly in additionalAssemblies) 
+            foreach (var assembly in additionalAssemblies)
             {
                 var dllPath = Path.Combine(AppContext.BaseDirectory, assembly);
-                if (File.Exists(dllPath)) 
+                if (File.Exists(dllPath))
                 {
                     references.Add(MetadataReference.CreateFromFile(dllPath));
                     // Store the reference in our Assembly Resolver for future reference.
                     AssemblyResolver.AddAssembly(Assembly.LoadFile(dllPath).FullName!, dllPath);
                 }
-                else 
+                else
                 {
                     ConsoleIO.WriteLogLine($"[Script Error] {assembly} is defined in script, but cannot find DLL! Script may not run.");
                 }
@@ -79,7 +77,7 @@ namespace DynamicRun.Builder
             var SystemPrivateCoreLib = typeof(object).Assembly.Location;    // System.Private.CoreLib
             var SystemConsole = typeof(Console).Assembly.Location;          // System.Console
             var MinecraftClientDll = typeof(Program).Assembly.Location;     // The path to MinecraftClient.dll
-            
+
             // We're on a self-contained binary, so we need to extract the executable to get the assemblies.
             if (string.IsNullOrEmpty(MinecraftClientDll))
             {

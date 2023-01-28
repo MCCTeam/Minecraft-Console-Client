@@ -148,7 +148,7 @@
     <value>Auto-crafting ChatBot command alias</value>
   </data>
   <data name="bot.autoCraft.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information. You may use /ac as command alias.</value>
+    <value>Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information.</value>
   </data>
   <data name="bot.autoCraft.close_inventory" xml:space="preserve">
     <value>Inventory #{0} was closed by AutoCraft</value>
@@ -220,7 +220,7 @@
     <value>Action timeout! Reason: {0}</value>
   </data>
   <data name="bot.autodig.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /digbot help &lt;cmd name&gt; for more information.</value>
+    <value>Available commands: {0}. Use /autodig help &lt;cmd name&gt; for more information.</value>
   </data>
   <data name="bot.autodig.cmd" xml:space="preserve">
     <value>Auto-digging ChatBot command</value>
@@ -229,7 +229,7 @@
     <value>Digging block timeout, retry.</value>
   </data>
   <data name="bot.autodig.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /digbot help &lt;command name&gt;</value>
+    <value>Get the command description. Usage: /autodig help &lt;command name&gt;</value>
   </data>
   <data name="bot.autodig.help.start" xml:space="preserve">
     <value>Start the automatic digging bot.</value>
@@ -864,13 +864,10 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Done. File saved as '{0}'</value>
   </data>
   <data name="chat.download" xml:space="preserve">
-    <value>Downloading '{0}.lang' from Mojang servers...</value>
+    <value>Downloading '{0}.json' from Mojang servers...</value>
   </data>
   <data name="chat.fail" xml:space="preserve">
     <value>Failed to download the file.</value>
-  </data>
-  <data name="chat.from_dir" xml:space="preserve">
-    <value>Defaulting to en_GB.lang from your Minecraft directory.</value>
   </data>
   <data name="chat.loaded" xml:space="preserve">
     <value>Translations file loaded.</value>
@@ -884,6 +881,12 @@ Some messages won't be properly printed without this file.</value>
   </data>
   <data name="chat.request" xml:space="preserve">
     <value>Performing request to {0}</value>
+  </data>
+  <data name="chat.save_fail" xml:space="preserve">
+    <value>Failed to save the file {0}.</value>
+  </data>
+  <data name="chat.use_default" xml:space="preserve">
+    <value>Switch to use Minecraft's default language resource "en_us.json".</value>
   </data>
   <data name="chatbot.reconnect" xml:space="preserve">
     <value>[{0}] Disconnecting and Reconnecting to the Server</value>
@@ -922,7 +925,7 @@ Some messages won't be properly printed without this file.</value>
     <value>Could not lay in bed. Are you trying to sleep in a bed? (PS: You must use the head block coordinates of the bed)</value>
   </data>
   <data name="cmd.bed.searching" xml:space="preserve">
-    <value>Searching for a bed in radius of {0}...</value>
+    <value>Searching for a bed in radius of {0:0.00}...</value>
   </data>
   <data name="cmd.bed.trying_to_use" xml:space="preserve">
     <value>Trying to sleep in a bed on location (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}). Result: {3}</value>
@@ -1449,10 +1452,10 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
     <value>set a custom %variable% randomly to a given value.</value>
   </data>
   <data name="cmd.setrnd.format" xml:space="preserve">
-    <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
+    <value>setrnd variable -7 to 17 OR setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="cmd.setrndnum.format" xml:space="preserve">
-    <value>setrnd variable -7to17</value>
+    <value>setrnd variable -7 to 17</value>
   </data>
   <data name="cmd.setrndstr.format" xml:space="preserve">
     <value>setrnd variable string1 "\"string2\" string3"</value>
@@ -1486,6 +1489,9 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   </data>
   <data name="config.backup.fail" xml:space="preserve">
     <value>Failed to write to backup file {0}</value>
+  </data>
+  <data name="config.commandsuggestion.illegal_color" xml:space="preserve">
+    <value>The color code {1} in {0} is in illegal format and the default value has been restored.</value>
   </data>
   <data name="config.load" xml:space="preserve">
     <value>Settings have been loaded from {0}</value>
@@ -1803,7 +1809,8 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
     <value>help &lt;cmdname&gt;: show brief help about a command.</value>
   </data>
   <data name="icmd.list" xml:space="preserve">
-    <value>help &lt;cmdname&gt;. Available commands: {0}. For server help, use '{1}send /help' instead.</value>
+    <value>help &lt;cmdname&gt;. Available commands:
+{0}For server help, use '{1}send /help' instead.</value>
   </data>
   <data name="icmd.unknown" xml:space="preserve">
     <value>Unknown command '{0}'. Use 'help' for command list.</value>
@@ -1893,7 +1900,7 @@ Type '{0}quit' to leave the server.</value>
     <value>Please type the password for {0}.</value>
   </data>
   <data name="mcc.password_hidden" xml:space="preserve">
-    <value>Password(invisible): {0}</value>
+    <value>Password(invisible): </value>
   </data>
   <data name="mcc.player_dead" xml:space="preserve">
     <value>You are dead. Type '{0}respawn' to respawn.</value>
@@ -2020,5 +2027,11 @@ Logging in...</value>
   </data>
   <data name="proxy.connected" xml:space="preserve">
     <value>Connected to proxy {0}:{1}</value>
+  </data>
+  <data name="cmd.dig.end" xml:space="preserve">
+    <value>Mining of the block located at {0} ends.</value>
+  </data>
+  <data name="cmd.dig.cancel" xml:space="preserve">
+    <value>Cancel mining the block located at {0}.</value>
   </data>
 </root>

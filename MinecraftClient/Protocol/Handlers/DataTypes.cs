@@ -241,6 +241,18 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a byte array with given length from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="length">Length of the bytes array</param>
+        /// <returns>The byte array</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public byte[] ReadNextByteArray(Queue<byte> cache, int length)
+        {
+            return ReadData(length, cache);
+        }
+
+        /// <summary>
         /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
         /// </summary>
         /// <returns>The unsigned long integer values</returns>
@@ -579,6 +591,9 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 int type = ReadNextVarInt(cache);
 
+                // Value's data type is depended on Type
+                object? value = null;
+
                 // starting from 1.13, Optional Chat is inserted as number 5 in 1.13 and IDs after 5 got shifted.
                 // Increase type ID by 1 if
                 // - below 1.13
@@ -586,13 +601,20 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion < Protocol18Handler.MC_1_13_Version)
                 {
                     if (type > 4)
+                        ++type;
+                }
+                else if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                {
+                    if (type == 2)
                     {
-                        type += 1;
+                        value = ReadNextVarLong(cache);
+                        type = -1;
+                    }
+                    else if (type >= 3)
+                    {
+                        --type;
                     }
                 }
-
-                // Value's data type is depended on Type
-                object? value = null;
 
                 // This is backward compatible since new type is appended to the end
                 // Version upgrade note
@@ -600,6 +622,8 @@ namespace MinecraftClient.Protocol.Handlers
                 // - Add new type if any
                 switch (type)
                 {
+                    case -1: // already readed
+                        break;
                     case 0: // byte
                         value = ReadNextByte(cache);
                         break;
@@ -660,23 +684,73 @@ namespace MinecraftClient.Protocol.Handlers
                     case 15: // Particle
                              // Currecutly not handled. Reading data only
                         int ParticleID = ReadNextVarInt(cache);
-                        switch (ParticleID)
+                        // Need to check the exact version where the change occurred!!!!!
+                        if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
                         {
-                            case 3:
-                                ReadNextVarInt(cache);
-                                break;
-                            case 14:
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                break;
-                            case 23:
-                                ReadNextVarInt(cache);
-                                break;
-                            case 32:
-                                ReadNextItemSlot(cache, itemPalette);
-                                break;
+                            switch (ParticleID)
+                            {
+                                case 2:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 3:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 14:
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    break;
+                                case 15:
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    break;
+                                case 24:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 35:
+                                    ReadNextItemSlot(cache, itemPalette);
+                                    break;
+                                case 36:
+                                    string positionSourceType = ReadNextString(cache);
+                                    if (positionSourceType == "minecraft:block")
+                                    {
+                                        ReadNextLocation(cache);
+                                    }
+                                    else if (positionSourceType == "minecraft:entity")
+                                    {
+                                        ReadNextVarInt(cache);
+                                        ReadNextFloat(cache);
+                                    }
+                                    ReadNextVarInt(cache);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (ParticleID)
+                            {
+                                case 3:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 14:
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    ReadNextFloat(cache);
+                                    break;
+                                case 23:
+                                    ReadNextVarInt(cache);
+                                    break;
+                                case 32:
+                                    ReadNextItemSlot(cache, itemPalette);
+                                    break;
+                            }
                         }
                         break;
                     case 16: // Villager Data (3x VarInt)
@@ -706,7 +780,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion <= Protocol18Handler.MC_1_19_Version)
                             value = ReadNextVarInt(cache);
                         else
-                            value = null; // Dimension and blockPos, currently not in use
+                        {
+                            // Dimension and blockPos, currently not in use
+                            value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
+                        }
                         break;
                     case 22: // Painting Variant
                         value = ReadNextVarInt(cache);
@@ -728,11 +805,17 @@ namespace MinecraftClient.Protocol.Handlers
         {
             Item inputItem1 = ReadNextItemSlot(cache, itemPalette)!;
             Item outputItem = ReadNextItemSlot(cache, itemPalette)!;
+
             Item? inputItem2 = null;
-            if (ReadNextBool(cache)) //check if villager has second item
-            {
+
+            if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
                 inputItem2 = ReadNextItemSlot(cache, itemPalette);
+            else
+            {
+                if (ReadNextBool(cache)) //check if villager has second item
+                    inputItem2 = ReadNextItemSlot(cache, itemPalette);
             }
+
             bool tradeDisabled = ReadNextBool(cache);
             int numberOfTradeUses = ReadNextInt(cache);
             int maximumNumberOfTradeUses = ReadNextInt(cache);
@@ -917,7 +1000,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="paramInt">Integer to encode</param>
         /// <returns>Byte array for this integer</returns>
-        public byte[] GetVarInt(int paramInt)
+        public static byte[] GetVarInt(int paramInt)
         {
             List<byte> bytes = new();
             while ((paramInt & -128) != 0)
@@ -948,7 +1031,19 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="number">Long to process</param>
         /// <returns>Array ready to send</returns>
-        public byte[] GetLong(long number)
+        public static byte[] GetLong(long number)
+        {
+            byte[] theLong = BitConverter.GetBytes(number);
+            Array.Reverse(theLong);
+            return theLong;
+        }
+
+        /// <summary>
+        /// Get byte array representing a long integer
+        /// </summary>
+        /// <param name="number">Long to process</param>
+        /// <returns>Array ready to send</returns>
+        public static byte[] GetULong(ulong number)
         {
             byte[] theLong = BitConverter.GetBytes(number);
             Array.Reverse(theLong);
@@ -960,7 +1055,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="number">Integer to process</param>
         /// <returns>Array ready to send</returns>
-        public byte[] GetInt(int number)
+        public static byte[] GetInt(int number)
         {
             byte[] theInt = BitConverter.GetBytes(number);
             Array.Reverse(theInt);
@@ -1143,7 +1238,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="uuid">UUID of Player/Entity</param>
         /// <returns>UUID representation</returns>
-        public byte[] GetUUID(Guid UUID)
+        public static byte[] GetUUID(Guid UUID)
         {
             return UUID.ToBigEndianBytes();
         }
@@ -1188,11 +1283,11 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 List<byte> fields = new();
                 fields.AddRange(GetVarInt(msgList.entries.Length));                    // Message list size
-                foreach (Message.LastSeenMessageList.Entry entry in msgList.entries)
+                foreach (Message.LastSeenMessageList.AcknowledgedMessage entry in msgList.entries)
                 {
                     fields.AddRange(entry.profileId.ToBigEndianBytes());               // UUID
-                    fields.AddRange(GetVarInt(entry.lastSignature.Length));            // Signature length
-                    fields.AddRange(entry.lastSignature);                              // Signature data
+                    fields.AddRange(GetVarInt(entry.signature.Length));            // Signature length
+                    fields.AddRange(entry.signature);                              // Signature data
                 }
                 return fields.ToArray();
             }
@@ -1214,8 +1309,8 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 fields.AddRange(GetBool(true));
                 fields.AddRange(ack.lastReceived.profileId.ToBigEndianBytes());         // Has last received message
-                fields.AddRange(GetVarInt(ack.lastReceived.lastSignature.Length));      // Last received message signature length
-                fields.AddRange(ack.lastReceived.lastSignature);                        // Last received message signature data
+                fields.AddRange(GetVarInt(ack.lastReceived.signature.Length));      // Last received message signature length
+                fields.AddRange(ack.lastReceived.signature);                        // Last received message signature data
             }
             return fields.ToArray();
         }

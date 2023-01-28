@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Inventory
 {
@@ -64,7 +65,7 @@ namespace MinecraftClient.Inventory
                     {
                         string? displayName = displayProperties["Name"] as string;
                         if (!String.IsNullOrEmpty(displayName))
-                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString() ?? string.Empty);
+                            return ChatParser.ParseText(displayProperties["Name"].ToString() ?? string.Empty);
                     }
                 }
                 return null;
@@ -85,7 +86,7 @@ namespace MinecraftClient.Inventory
                     {
                         object[] displayName = (object[])displayProperties["Lore"];
                         lores.AddRange(from string st in displayName
-                                       let str = MinecraftClient.Protocol.ChatParser.ParseText(st.ToString())
+                                       let str = ChatParser.ParseText(st.ToString())
                                        select str);
                         return lores.ToArray();
                     }
@@ -117,10 +118,10 @@ namespace MinecraftClient.Inventory
         {
             string type_str = type.ToString();
             string type_renamed = type_str.ToUnderscoreCase();
-            string? res1 = Protocol.ChatParser.TranslateString("item.minecraft." + type_renamed);
+            string? res1 = ChatParser.TranslateString("item.minecraft." + type_renamed);
             if (!string.IsNullOrEmpty(res1))
                 return res1;
-            string? res2 = Protocol.ChatParser.TranslateString("block.minecraft." + type_renamed);
+            string? res2 = ChatParser.TranslateString("block.minecraft." + type_renamed);
             if (!string.IsNullOrEmpty(res2))
                 return res2;
             return type_str;
@@ -145,8 +146,8 @@ namespace MinecraftClient.Inventory
                         short level = (short)enchantment["lvl"];
                         string id = ((string)enchantment["id"]).Replace(':', '.');
                         sb.AppendFormat(" | {0} {1}",
-                                        Protocol.ChatParser.TranslateString("enchantment." + id) ?? id,
-                                        Protocol.ChatParser.TranslateString("enchantment.level." + level) ?? level.ToString());
+                                        ChatParser.TranslateString("enchantment." + id) ?? id,
+                                        ChatParser.TranslateString("enchantment.level." + level) ?? level.ToString());
                     }
                 }
             }

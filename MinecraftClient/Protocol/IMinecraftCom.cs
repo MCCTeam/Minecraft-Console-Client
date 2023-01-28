@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
-using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.ProfileKey;
 
 namespace MinecraftClient.Protocol
 {
@@ -254,6 +254,12 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="uuid">The uuid of the player/entity to spectate/teleport to.</param>
         bool SendSpectate(Guid uuid);
+
+        /// <summary>
+        /// Send player session
+        /// </summary>
+        /// <returns></returns>
+        bool SendPlayerSession(PlayerKeyPair? playerKeyPair);
 
         /// <summary>
         /// Get net read thread (main thread) ID

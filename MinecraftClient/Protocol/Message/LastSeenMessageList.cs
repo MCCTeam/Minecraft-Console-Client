@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using static MinecraftClient.Protocol.Message.LastSeenMessageList;
 
 namespace MinecraftClient.Protocol.Message
 {
@@ -8,38 +10,45 @@ namespace MinecraftClient.Protocol.Message
     /// </summary>
     public class LastSeenMessageList
     {
-        public static readonly LastSeenMessageList EMPTY = new(Array.Empty<Entry>());
+        public static readonly LastSeenMessageList EMPTY = new(Array.Empty<AcknowledgedMessage>());
         public static readonly int MAX_ENTRIES = 5;
 
-        public Entry[] entries;
+        public AcknowledgedMessage[] entries;
 
-        public LastSeenMessageList(Entry[] list)
+        public LastSeenMessageList(AcknowledgedMessage[] list)
         {
             entries = list;
         }
 
         public void WriteForSign(List<byte> data)
         {
-            foreach (Entry entry in entries)
+            foreach (AcknowledgedMessage entry in entries)
             {
                 data.Add(70);
                 data.AddRange(entry.profileId.ToBigEndianBytes());
-                data.AddRange(entry.lastSignature);
+                data.AddRange(entry.signature);
             }
         }
 
         /// <summary>
         ///  A pair of a player's UUID and the signature of the last message they saw, used as an entry of LastSeenMessageList.
         /// </summary>
-        public class Entry
+        public record AcknowledgedMessage
         {
+            public bool pending;
             public Guid profileId;
-            public byte[] lastSignature;
+            public byte[] signature;
 
-            public Entry(Guid profileId, byte[] lastSignature)
+            public AcknowledgedMessage(Guid profileId, byte[] lastSignature, bool pending)
             {
                 this.profileId = profileId;
-                this.lastSignature = lastSignature;
+                this.signature = lastSignature;
+                this.pending = pending;
+            }
+
+            public AcknowledgedMessage UnmarkAsPending()
+            {
+                return this.pending ? new AcknowledgedMessage(profileId, signature, false) : this;
             }
         }
 
@@ -50,9 +59,9 @@ namespace MinecraftClient.Protocol.Message
         public class Acknowledgment
         {
             public LastSeenMessageList lastSeen;
-            public Entry? lastReceived;
+            public AcknowledgedMessage? lastReceived;
 
-            public Acknowledgment(LastSeenMessageList lastSeenMessageList, Entry? lastReceivedMessage)
+            public Acknowledgment(LastSeenMessageList lastSeenMessageList, AcknowledgedMessage? lastReceivedMessage)
             {
                 lastSeen = lastSeenMessageList;
                 lastReceived = lastReceivedMessage;
@@ -70,24 +79,26 @@ namespace MinecraftClient.Protocol.Message
     /// </summary>
     public class LastSeenMessagesCollector
     {
-        private readonly LastSeenMessageList.Entry[] entries;
-        private int size = 0;
+        private readonly LastSeenMessageList.AcknowledgedMessage?[] acknowledgedMessages;
+        private int nextIndex = 0;
+        internal int messageCount { private set; get; } = 0;
+        private LastSeenMessageList.AcknowledgedMessage? lastEntry = null;
         private LastSeenMessageList lastSeenMessages;
 
         public LastSeenMessagesCollector(int size)
         {
             lastSeenMessages = LastSeenMessageList.EMPTY;
-            entries = new LastSeenMessageList.Entry[size];
+            acknowledgedMessages = new LastSeenMessageList.AcknowledgedMessage[size];
         }
 
-        public void Add(LastSeenMessageList.Entry entry)
+        public void Add_1_19_2(LastSeenMessageList.AcknowledgedMessage entry)
         {
-            LastSeenMessageList.Entry? lastEntry = entry;
+            LastSeenMessageList.AcknowledgedMessage? lastEntry = entry;
 
-            for (int i = 0; i < size; ++i)
+            for (int i = 0; i < messageCount; ++i)
             {
-                LastSeenMessageList.Entry curEntry = entries[i];
-                entries[i] = lastEntry;
+                LastSeenMessageList.AcknowledgedMessage curEntry = acknowledgedMessages[i]!;
+                acknowledgedMessages[i] = lastEntry;
                 lastEntry = curEntry;
                 if (curEntry.profileId == entry.profileId)
                 {
@@ -96,13 +107,49 @@ namespace MinecraftClient.Protocol.Message
                 }
             }
 
-            if (lastEntry != null && size < entries.Length)
-                entries[size++] = lastEntry;
+            if (lastEntry != null && messageCount < acknowledgedMessages.Length)
+                acknowledgedMessages[messageCount++] = lastEntry;
 
-            LastSeenMessageList.Entry[] msgList = new LastSeenMessageList.Entry[size];
-            for (int i = 0; i < size; ++i)
-                msgList[i] = entries[i];
+            LastSeenMessageList.AcknowledgedMessage[] msgList = new LastSeenMessageList.AcknowledgedMessage[messageCount];
+            for (int i = 0; i < messageCount; ++i)
+                msgList[i] = acknowledgedMessages[i]!;
             lastSeenMessages = new LastSeenMessageList(msgList);
+        }
+
+        public bool Add_1_19_3(LastSeenMessageList.AcknowledgedMessage entry, bool displayed)
+        {
+            // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.MessageSignatureData, boolean)
+            // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.AcknowledgedMessage)
+            if (lastEntry != null && entry.signature.SequenceEqual(lastEntry.signature))
+                return false;
+            lastEntry = entry;
+
+            int index = nextIndex;
+            nextIndex = (index + 1) % acknowledgedMessages.Length;
+
+            ++messageCount;
+            acknowledgedMessages[index] = displayed ? entry : null;
+
+            return true;
+        }
+
+        public Tuple<AcknowledgedMessage[], byte[], int> Collect_1_19_3()
+        {
+            // net.minecraft.network.message.LastSeenMessagesCollector#collect
+            int count = ResetMessageCount();
+            byte[] bitset = new byte[3]; // new Bitset(20); Todo: Use a complete bitset implementation.
+            List<AcknowledgedMessage> objectList = new(acknowledgedMessages.Length);
+            for (int j = 0; j < acknowledgedMessages.Length; ++j)
+            {
+                int k = (nextIndex + j) % acknowledgedMessages.Length;
+                AcknowledgedMessage? acknowledgedMessage = acknowledgedMessages[k];
+                if (acknowledgedMessage == null)
+                    continue;
+                bitset[j / 8] |= (byte)(1 << (j % 8)); // bitSet.set(j, true);
+                objectList.Add(acknowledgedMessage);
+                acknowledgedMessages[k] = acknowledgedMessage.UnmarkAsPending();
+            }
+            return new(objectList.ToArray(), bitset, count);
         }
 
         public LastSeenMessageList GetLastSeenMessages()
@@ -110,5 +157,12 @@ namespace MinecraftClient.Protocol.Message
             return lastSeenMessages;
         }
 
+        public int ResetMessageCount()
+        {
+            // net.minecraft.network.message.LastSeenMessagesCollector#resetMessageCount
+            int cnt = messageCount;
+            messageCount = 0;
+            return cnt;
+        }
     }
 }

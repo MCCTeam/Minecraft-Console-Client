@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 using static MinecraftClient.ChatBots.AutoDrop.Configs;
 
@@ -9,6 +13,8 @@ namespace MinecraftClient.ChatBots
 {
     public class AutoDrop : ChatBot
     {
+        public const string CommandName = "autodrop";
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -38,110 +44,6 @@ namespace MinecraftClient.ChatBots
         private readonly int updateDebounceValue = 2;
         private int inventoryUpdated = -1;
 
-        public string CommandHandler(string cmd, string[] args)
-        {
-            if (args.Length > 0)
-            {
-                switch (args[0].ToLower())
-                {
-                    case "on":
-                        Config.Enabled = true;
-                        inventoryUpdated = 0;
-                        OnUpdateFinish();
-                        return Translations.bot_autoDrop_on;
-                    case "off":
-                        Config.Enabled = false;
-                        return Translations.bot_autoDrop_off;
-                    case "add":
-                        if (args.Length >= 2)
-                        {
-                            if (Enum.TryParse(args[1], true, out ItemType item))
-                            {
-                                Config.Items.Add(item);
-                                return string.Format(Translations.bot_autoDrop_added, item.ToString());
-                            }
-                            else
-                            {
-                                return string.Format(Translations.bot_autoDrop_incorrect_name, args[1]);
-                            }
-                        }
-                        else
-                        {
-                            return Translations.cmd_inventory_help_usage + ": add <item name>";
-                        }
-                    case "remove":
-                        if (args.Length >= 2)
-                        {
-                            if (Enum.TryParse(args[1], true, out ItemType item))
-                            {
-                                if (Config.Items.Contains(item))
-                                {
-                                    Config.Items.Remove(item);
-                                    return string.Format(Translations.bot_autoDrop_removed, item.ToString());
-                                }
-                                else
-                                {
-                                    return Translations.bot_autoDrop_not_in_list;
-                                }
-                            }
-                            else
-                            {
-                                return string.Format(Translations.bot_autoDrop_incorrect_name, args[1]);
-                            }
-                        }
-                        else
-                        {
-                            return Translations.cmd_inventory_help_usage + ": remove <item name>";
-                        }
-                    case "list":
-                        if (Config.Items.Count > 0)
-                        {
-                            return string.Format(Translations.bot_autoDrop_list, Config.Items.Count, string.Join("\n", Config.Items));
-                        }
-                        else
-                        {
-                            return Translations.bot_autoDrop_no_item;
-                        }
-                    case "mode":
-                        if (args.Length >= 2)
-                        {
-                            switch (args[1].ToLower())
-                            {
-                                case "include":
-                                    Config.Mode = DropMode.include;
-                                    break;
-                                case "exclude":
-                                    Config.Mode = DropMode.exclude;
-                                    break;
-                                case "everything":
-                                    Config.Mode = DropMode.everything;
-                                    break;
-                                default:
-                                    return Translations.bot_autoDrop_unknown_mode; // Unknwon mode. Available modes: Include, Exclude, Everything
-                            }
-                            inventoryUpdated = 0;
-                            OnUpdateFinish();
-                            return string.Format(Translations.bot_autoDrop_switched, Config.Mode.ToString()); // Switched to {0} mode.
-                        }
-                        else
-                        {
-                            return Translations.bot_autoDrop_unknown_mode;
-                        }
-                    default:
-                        return GetHelp();
-                }
-            }
-            else
-            {
-                return GetHelp();
-            }
-        }
-
-        private static string GetHelp()
-        {
-            return string.Format(Translations.general_available_cmd, "on, off, add, remove, list, mode");
-        }
-
         public override void Initialize()
         {
             if (!GetInventoryEnabled())
@@ -151,8 +53,114 @@ namespace MinecraftClient.ChatBots
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("autodrop", Translations.bot_autoDrop_cmd, GetHelp(), CommandHandler);
-            RegisterChatBotCommand("ad", Translations.bot_autoDrop_alias, GetHelp(), CommandHandler);
+
+            McClient.dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Then(l => l.Literal("add")
+                        .Executes(r => OnCommandHelp(r.Source, "add")))
+                    .Then(l => l.Literal("remove")
+                        .Executes(r => OnCommandHelp(r.Source, "remove")))
+                    .Then(l => l.Literal("mode")
+                        .Executes(r => OnCommandHelp(r.Source, "mode")))
+                )
+            );
+
+            McClient.dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("on")
+                    .Executes(r => OnCommandEnable(r.Source, true)))
+                .Then(l => l.Literal("off")
+                    .Executes(r => OnCommandEnable(r.Source, false)))
+                .Then(l => l.Literal("add")
+                    .Then(l => l.Argument("ItemType", MccArguments.ItemType())
+                        .Executes(r => OnCommandAdd(r.Source, MccArguments.GetItemType(r, "ItemType")))))
+                .Then(l => l.Literal("remove")
+                    .Then(l => l.Argument("ItemType", MccArguments.ItemType())
+                        .Executes(r => OnCommandRemove(r.Source, MccArguments.GetItemType(r, "ItemType")))))
+                .Then(l => l.Literal("list")
+                    .Executes(r => OnCommandList(r.Source)))
+                .Then(l => l.Literal("mode")
+                    .Then(l => l.Literal("include")
+                        .Executes(r => OnCommandMode(r.Source, DropMode.include)))
+                    .Then(l => l.Literal("exclude")
+                        .Executes(r => OnCommandMode(r.Source, DropMode.exclude)))
+                    .Then(l => l.Literal("everything")
+                        .Executes(r => OnCommandMode(r.Source, DropMode.everything))))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
+        }
+
+        public override void OnUnload()
+        {
+            McClient.dispatcher.Unregister(CommandName);
+            McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+        }
+
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                "add"       =>   Translations.cmd_inventory_help_usage + ": add <item name>",
+                "remove"    =>   Translations.cmd_inventory_help_usage + ": remove <item name>",
+                "mode"      =>   Translations.bot_autoDrop_unknown_mode,
+                _           =>   string.Format(Translations.general_available_cmd, "on, off, add, remove, list, mode")
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int OnCommandEnable(CmdResult r, bool enable)
+        {
+            if (enable)
+            {
+                Config.Enabled = true;
+                inventoryUpdated = 0;
+                OnUpdateFinish();
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autoDrop_on);
+            }
+            else
+            {
+                Config.Enabled = false;
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autoDrop_off);
+            }
+        }
+
+        private int OnCommandAdd(CmdResult r, ItemType item)
+        {
+            Config.Items.Add(item);
+            return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_autoDrop_added, item.ToString()));
+        }
+
+        private int OnCommandRemove(CmdResult r, ItemType item)
+        {
+            if (Config.Items.Contains(item))
+            {
+                Config.Items.Remove(item);
+                return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_autoDrop_removed, item.ToString()));
+            }
+            else
+            {
+                return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_autoDrop_not_in_list);
+            }
+        }
+
+        private int OnCommandList(CmdResult r)
+        {
+            if (Config.Items.Count > 0)
+                return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_autoDrop_list, Config.Items.Count, string.Join("\n", Config.Items)));
+            else
+                return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_autoDrop_no_item);
+        }
+
+        private int OnCommandMode(CmdResult r, DropMode mode)
+        {
+            Config.Mode = mode;
+            inventoryUpdated = 0;
+            OnUpdateFinish();
+            return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_autoDrop_switched, Config.Mode.ToString()));
         }
 
         public override void Update()

@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 using static MinecraftClient.Settings;
 
@@ -304,12 +306,12 @@ namespace MinecraftClient.ChatBots
                 {
                     Dictionary<string, object> localVars = new();
                     string? toPerform = rule.Match(sender, message, msgType, localVars);
-                    if (!String.IsNullOrEmpty(toPerform))
+                    if (!string.IsNullOrEmpty(toPerform))
                     {
-                        string? response = null;
+                        CmdResult response = new();
                         LogToConsole(string.Format(Translations.bot_autoRespond_match_run, toPerform));
                         PerformInternalCommand(toPerform, ref response, localVars);
-                        if (!String.IsNullOrEmpty(response))
+                        if (response.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(response.result))
                             LogToConsole(response);
                     }
                 }

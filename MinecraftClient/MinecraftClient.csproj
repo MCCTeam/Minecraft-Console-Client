@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <PublishUrl>publish\</PublishUrl>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -27,21 +27,23 @@
     <Content Include="Resources\AppIcon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DnsClient" Version="1.6.1" />
+    <PackageReference Include="Brigadier.NET" Version="1.2.13" />
+    <PackageReference Include="DnsClient" Version="1.7.0" />
     <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="DSharpPlus" Version="4.2.0" />
     <PackageReference Include="DynamicExpresso.Core" Version="2.13.0" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.0" />
+    <PackageReference Include="FuzzySharp" Version="2.0.2" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
     <PackageReference Include="Samboy063.Tomlet" Version="5.0.1" />
     <PackageReference Include="SingleFileExtractor.Core" Version="1.0.1" />
 	<PackageReference Include="starksoft.aspen" Version="1.1.8">
 		<NoWarn>NU1701</NoWarn>
 	</PackageReference>
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
     <PackageReference Include="Telegram.Bot" Version="18.0.0" />
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +85,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ConfigComments.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\MinecraftAssets.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MinecraftAssets.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\Translations\Translations.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -98,6 +105,11 @@
     <EmbeddedResource Update="Resources\ConfigComments\ConfigComments.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ConfigComments.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>MinecraftClient</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\MinecraftAssets.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MinecraftAssets.Designer.cs</LastGenOutput>
       <CustomToolNamespace>MinecraftClient</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Translations\Translations.resx">

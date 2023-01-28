@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol.Session
 {

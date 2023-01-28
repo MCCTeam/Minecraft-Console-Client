@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Settings;
 
-namespace MinecraftClient.Protocol
+namespace MinecraftClient.Protocol.Message
 {
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
@@ -28,6 +31,30 @@ namespace MinecraftClient.Protocol
 
         public static Dictionary<int, MessageType>? ChatId2Type;
 
+        public static void ReadChatType(Dictionary<string, object> registryCodec)
+        {
+            Dictionary<int, MessageType> chatTypeDictionary = ChatId2Type ?? new();
+            var chatTypeListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:chat_type"])["value"]);
+            foreach (var (chatName, chatId) in from Dictionary<string, object> chatTypeNbt in chatTypeListNbt
+                                               let chatName = (string)chatTypeNbt["name"]
+                                               let chatId = (int)chatTypeNbt["id"]
+                                               select (chatName, chatId))
+            {
+                chatTypeDictionary[chatId] = chatName switch
+                {
+                    "minecraft:chat" => MessageType.CHAT,
+                    "minecraft:emote_command" => MessageType.EMOTE_COMMAND,
+                    "minecraft:msg_command_incoming" => MessageType.MSG_COMMAND_INCOMING,
+                    "minecraft:msg_command_outgoing" => MessageType.MSG_COMMAND_OUTGOING,
+                    "minecraft:say_command" => MessageType.SAY_COMMAND,
+                    "minecraft:team_msg_command_incoming" => MessageType.TEAM_MSG_COMMAND_INCOMING,
+                    "minecraft:team_msg_command_outgoing" => MessageType.TEAM_MSG_COMMAND_OUTGOING,
+                    _ => MessageType.CHAT,
+                };
+            }
+            ChatId2Type = chatTypeDictionary;
+        }
+
         /// <summary>
         /// The main function to convert text from MC 1.6+ JSON to MC 1.5.2 formatted text
         /// </summary>
@@ -47,7 +74,7 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the translated text</returns>
         public static string ParseSignedChat(ChatMessage message, List<string>? links = null)
         {
-            string sender = message.displayName!;
+            string sender = message.isSenderJson ? ParseText(message.displayName!) : message.displayName!;
             string content;
             if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
             {
@@ -66,7 +93,7 @@ namespace MinecraftClient.Protocol
             List<string> usingData = new();
 
             MessageType chatType;
-            if (message.isSystemChat)
+            if (message.chatTypeId == -1)
                 chatType = MessageType.RAW_MSG;
             else if (!ChatId2Type!.TryGetValue(message.chatTypeId, out chatType))
                 chatType = MessageType.CHAT;
@@ -119,7 +146,7 @@ namespace MinecraftClient.Protocol
             if (message.isSystemChat)
             {
                 if (Config.Signature.MarkSystemMessage)
-                    color = "§z §r ";     // Custom color code §z : Background Gray
+                    color = "§7▌§r";     // Background Gray
             }
             else
             {
@@ -128,18 +155,18 @@ namespace MinecraftClient.Protocol
                     if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
                     {
                         if (Config.Signature.MarkModifiedMsg)
-                            color = "§x §r "; // Custom color code §x : Background Yellow
+                            color = "§6▌§r"; // Background Yellow
                     }
                     else
                     {
                         if (Config.Signature.MarkLegallySignedMsg)
-                            color = "§y §r "; // Custom color code §y : Background Green
+                            color = "§2▌§r"; // Background Green
                     }
                 }
                 else
                 {
                     if (Config.Signature.MarkIllegallySignedMsg)
-                        color = "§w §r "; // Custom color code §w : Background Red
+                        color = "§4▌§r"; // Background Red
                 }
             }
             return color + text;
@@ -187,7 +214,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Set of translation rules for formatting text
         /// </summary>
-        private static readonly Dictionary<string, string> TranslationRules = new();
+        private static Dictionary<string, string> TranslationRules = new();
 
         /// <summary>
         /// Initialize translation rules.
@@ -200,90 +227,94 @@ namespace MinecraftClient.Protocol
         /// </summary>
         private static void InitRules()
         {
-            //Small default dictionnary of translation rules
-            TranslationRules["chat.type.admin"] = "[%s: %s]";
-            TranslationRules["chat.type.announcement"] = "§d[%s] %s";
-            TranslationRules["chat.type.emote"] = " * %s %s";
-            TranslationRules["chat.type.text"] = "<%s> %s";
-            TranslationRules["multiplayer.player.joined"] = "§e%s joined the game.";
-            TranslationRules["multiplayer.player.left"] = "§e%s left the game.";
-            TranslationRules["commands.message.display.incoming"] = "§7%s whispers to you: %s";
-            TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
+            if (Config.Main.Advanced.Language == "en_us")
+            {
+                TranslationRules = JsonSerializer.Deserialize<Dictionary<string, string>>((byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
+                return;
+            }
 
             //Language file in a subfolder, depending on the language setting
             if (!Directory.Exists("lang"))
                 Directory.CreateDirectory("lang");
 
-            string Language_File = "lang" + Path.DirectorySeparatorChar + Config.Main.Advanced.Language + ".lang";
+            string languageFilePath = "lang" + Path.DirectorySeparatorChar + Config.Main.Advanced.Language + ".json";
 
-            //File not found? Try downloading language file from Mojang's servers?
-            if (!File.Exists(Language_File))
+            // Load the external dictionary of translation rules or display an error message
+            if (File.Exists(languageFilePath))
             {
-                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_download, Config.Main.Advanced.Language));
-                HttpClient httpClient = new();
                 try
                 {
-                    Task<string> fetch_index = httpClient.GetStringAsync(Settings.TranslationsFile_Website_Index);
-                    fetch_index.Wait();
-                    string assets_index = fetch_index.Result;
-                    fetch_index.Dispose();
-
-                    string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Config.Main.Advanced.Language.ToLower() + ".json" }, StringSplitOptions.None);
-                    tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
-                    string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
-                    string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
-                    if (Settings.Config.Logging.DebugMessages)
-                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_request, translation_file_location));
-
-                    Task<string> fetch_file = httpClient.GetStringAsync(translation_file_location);
-                    fetch_file.Wait();
-                    string translation_file = fetch_file.Result;
-                    fetch_file.Dispose();
-
-                    StringBuilder stringBuilder = new();
-                    foreach (KeyValuePair<string, Json.JSONData> entry in Json.ParseJson(translation_file).Properties)
-                        stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue.Replace("\n", "\\n").Replace("\r", String.Empty)).Append(Environment.NewLine);
-                    File.WriteAllText(Language_File, stringBuilder.ToString());
-
-                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, Language_File));
+                    TranslationRules = JsonSerializer.Deserialize<Dictionary<string, string>>(File.OpenRead(languageFilePath))!;
                 }
-                catch
+                catch (IOException) { }
+                catch (JsonException) { }
+            }
+
+            if (TranslationRules.TryGetValue("Version", out string? version) && version == Settings.TranslationsFile_Version)
+            {
+                if (Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLineFormatted(Translations.chat_loaded, acceptnewlines: true);
+                return;
+            }
+
+            // Try downloading language file from Mojang's servers?
+            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_download, Config.Main.Advanced.Language));
+            HttpClient httpClient = new();
+            try
+            {
+                Task<string> fetch_index = httpClient.GetStringAsync(TranslationsFile_Website_Index);
+                fetch_index.Wait();
+                Match match = Regex.Match(fetch_index.Result, $"minecraft/lang/{Config.Main.Advanced.Language}.json" + @""":\s\{""hash"":\s""([\d\w]{40})""");
+                fetch_index.Dispose();
+                if (match.Success && match.Groups.Count == 2)
+                {
+                    string hash = match.Groups[1].Value;
+                    string translation_file_location = TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
+                    if (Config.Logging.DebugMessages)
+                        ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_request, translation_file_location));
+
+                    Task<Dictionary<string, string>?> fetckFileTask = httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
+                    fetckFileTask.Wait();
+                    if (fetckFileTask.Result != null && fetckFileTask.Result.Count > 0)
+                    {
+                        TranslationRules = fetckFileTask.Result;
+                        TranslationRules["Version"] = TranslationsFile_Version;
+                        File.WriteAllText(languageFilePath, JsonSerializer.Serialize(TranslationRules, typeof(Dictionary<string, string>)), Encoding.UTF8);
+
+                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, languageFilePath));
+                        return;
+                    }
+                    fetckFileTask.Dispose();
+                }
+                else
                 {
                     ConsoleIO.WriteLineFormatted("§8" + Translations.chat_fail, acceptnewlines: true);
                 }
+            }
+            catch (HttpRequestException)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + Translations.chat_fail, acceptnewlines: true);
+            }
+            catch (IOException)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_save_fail, languageFilePath), acceptnewlines: true);
+            }
+            catch (Exception e)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + Translations.chat_fail, acceptnewlines: true);
+                if (Config.Logging.DebugMessages)
+                {
+                    ConsoleIO.WriteLine(e.Message);
+                    ConsoleIO.WriteLine(e.StackTrace ?? "");
+                }
+            }
+            finally
+            {
                 httpClient.Dispose();
             }
 
-            //Download Failed? Defaulting to en_GB.lang if the game is installed
-            if (!File.Exists(Language_File) //Try en_GB.lang
-              && File.Exists(Settings.TranslationsFile_FromMCDir))
-            {
-                Language_File = Settings.TranslationsFile_FromMCDir;
-                ConsoleIO.WriteLineFormatted("§8" + Translations.chat_from_dir, acceptnewlines: true);
-            }
-
-            //Load the external dictionnary of translation rules or display an error message
-            if (File.Exists(Language_File))
-            {
-                foreach (var line in File.ReadLines(Language_File))
-                {
-                    if (line.Length > 0)
-                    {
-                        string[] splitted = line.Split('=');
-                        if (splitted.Length == 2)
-                        {
-                            TranslationRules[splitted[0]] = splitted[1];
-                        }
-                    }
-                }
-
-                if (Settings.Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted("§8" + Translations.chat_loaded, acceptnewlines: true);
-            }
-            else //No external dictionnary found.
-            {
-                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_not_found, Language_File));
-            }
+            TranslationRules = JsonSerializer.Deserialize<Dictionary<string, string>>((byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
+            ConsoleIO.WriteLine(Translations.chat_use_default);
         }
 
         public static string? TranslateString(string rulename)

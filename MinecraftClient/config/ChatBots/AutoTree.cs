@@ -1,4 +1,16 @@
 ﻿//MCCScript 1.0
+//using Brigadier.NET;
+//using Brigadier.NET.Builder;
+//using MinecraftClient;
+//using MinecraftClient.CommandHandler;
+//using MinecraftClient.CommandHandler.Patch;
+//using MinecraftClient.Inventory;
+//using MinecraftClient.Mapping;
+//using MinecraftClient.Scripting;
+//using System.Collections.Generic;
+//using System.Linq;
+//using static MinecraftClient.ChatBots.AutoCraft.Configs;
+//using System.Text;
 
 MCC.LoadBot(new AutoTree());
 
@@ -6,6 +18,8 @@ MCC.LoadBot(new AutoTree());
 
 public class AutoTree : ChatBot
 {
+    public const string CommandName = "autotree";
+
     // Auto sapling placer - made for auto tree machine
     // Put your bot in designed position for placing sapling
     // Set the tree type by "/autotree type <Acacia|Birch|Oak|DarkOak|Jungle|Spruce>"
@@ -60,7 +74,8 @@ public class AutoTree : ChatBot
             }
         }
     }
-    public override void Initialize()
+
+    public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
     {
         if (!GetTerrainEnabled())
         {
@@ -74,9 +89,69 @@ public class AutoTree : ChatBot
         }
         else
         {
-            RegisterChatBotCommand("autotree", "AutoTree ChatBot command", "Available commands: toggle, set, type", CommandHandler);
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Then(l => l.Literal("set")
+                        .Executes(r => OnCommandHelp(r.Source, "set")))
+                    .Then(l => l.Literal("type")
+                        .Executes(r => OnCommandHelp(r.Source, "type")))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("toggle")
+                    .Executes(r => { return r.Source.SetAndReturn(CmdResult.Status.Done, Toggle() ? "Now is running" : "Now is stopping"); }))
+                .Then(l => l.Literal("set")
+                    .Then(l => l.Argument("Location", MccArguments.Location())
+                        .Executes(r => OnCommandSet(r.Source, MccArguments.GetLocation(r, "Location")))))
+                .Then(l => l.Literal("type")
+                    .Then(l => l.Argument("TreeType", Arguments.String())
+                        .Executes(r => OnCommandType(r.Source, Arguments.GetString(r, "TreeType")))))
+                .Then(l => l.Literal("_help")
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
+
             LogToConsole("Loaded.");
         }
+    }
+
+    public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+    {
+        dispatcher.Unregister(CommandName);
+        dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+    }
+
+    private int OnCommandHelp(CmdResult r, string? cmd)
+    {
+        return r.SetAndReturn(cmd switch
+        {
+#pragma warning disable format // @formatter:off
+                "set"       =>   "Set the location for placing sapling. Usage: set <x> <y> <z>",
+                "type"      =>   "Set the tree type. Usage: type <Acacia|Birch|Oak|DarkOak|Jungle|Spruce>",
+                _           =>   "Available commands: toggle, set, type"
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+    }
+
+    private int OnCommandSet(CmdResult r, Location location)
+    {
+        SetLocation(location.ToAbsolute(GetCurrentLocation()));
+        return r.SetAndReturn(CmdResult.Status.Done, "Location set to " + location.ToString());
+    }
+
+    private int OnCommandType(CmdResult r, string treeType)
+    {
+        for (int i = 0; i < saplingItems.Length; i++)
+        {
+            if (saplingItems[i].ToString().ToLower().StartsWith(treeType))
+            {
+                treeTypeIndex = i;
+                break;
+            }
+        }
+        return r.SetAndReturn(CmdResult.Status.Done, "Tree sapling type set to " + saplingItems[treeTypeIndex].ToString());
     }
 
     public bool SetTreeType(int index)
@@ -103,7 +178,7 @@ public class AutoTree : ChatBot
     public bool SwitchToSapling()
     {
         Container p = GetPlayerInventory();
-        if (p.Items.ContainsKey(GetCurrentSlot() - 36) 
+        if (p.Items.ContainsKey(GetCurrentSlot() - 36)
             && p.Items[GetCurrentSlot() - 36].Type == saplingItems[treeTypeIndex])
         {
             // Already selected
@@ -121,60 +196,6 @@ public class AutoTree : ChatBot
         {
             ChangeSlot((short)(result[0] - 36));
             return true;
-        }
-    }
-
-    public string CommandHandler(string cmd, string[] args)
-    {
-        if (args.Length <= 0)
-        {
-            return "Available commands: toggle, set, type";
-        }
-        string subCommand = args[0].ToLower();
-        switch (subCommand)
-        {
-            case "toggle":
-                {
-                    return Toggle() ? "Now is running" : "Now is stopping";
-                }
-            case "set":
-                {
-                    if (args.Length < 4)
-                    {
-                        return "Set the location for placing sapling. Usage: set <x> <y> <z>";
-                    }
-                    try
-                    {
-                        int x = int.Parse(args[1]);
-                        int y = int.Parse(args[2]);
-                        int z = int.Parse(args[3]);
-                        var l = new Location(x, y, z);
-                        SetLocation(l);
-                        return "Location set to " + l.ToString();
-                    }
-                    catch
-                    {
-                        return "Please input numbers. Usage: set <x> <y> <z>";
-                    }
-                }
-            case "type":
-                {
-                    if (args.Length < 2)
-                    {
-                        return "Set the tree type. Usage: type <Acacia|Birch|Oak|DarkOak|Jungle|Spruce>";
-                    }
-                    string typeString = args[1].ToLower();
-                    for (int i = 0; i < saplingItems.Length; i++)
-                    {
-                        if (saplingItems[i].ToString().ToLower().StartsWith(typeString))
-                        {
-                            treeTypeIndex = i;
-                            break;
-                        }
-                    }
-                    return "Tree sapling type set to " + saplingItems[treeTypeIndex].ToString();
-                }
-            default: return "Available commands: toggle, set, type";
         }
     }
 }

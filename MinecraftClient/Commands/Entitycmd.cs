@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
 {
@@ -13,6 +16,187 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "entity"; } }
         public override string CmdUsage { get { return "entity [near] <id|entitytype> <attack|use>"; } }
         public override string CmdDesc { get { return string.Empty; } }
+
+        private enum ActionType { Attack, Use, List };
+
+        public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
+        {
+            dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CmdName)
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Then(l => l.Literal("near")
+                        .Executes(r => GetUsage(r.Source, "near")))
+                    .Then(l => l.Literal("attack")
+                        .Executes(r => GetUsage(r.Source, "attack")))
+                    .Then(l => l.Literal("use")
+                        .Executes(r => GetUsage(r.Source, "use")))
+                    .Then(l => l.Literal("list")
+                        .Executes(r => GetUsage(r.Source, "list")))
+                )
+            );
+
+            dispatcher.Register(l => l.Literal(CmdName)
+                .Executes(r => GetFullEntityList(r.Source))
+                .Then(l => l.Literal("near")
+                    .Executes(r => GetClosetEntityList(r.Source))
+                    .Then(l => l.Argument("EntityID", Arguments.Integer())
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))
+                        .Then(l => l.Literal("attack")
+                            .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Attack)))
+                        .Then(l => l.Literal("use")
+                            .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Use)))
+                        .Then(l => l.Literal("list")
+                            .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))))
+                    .Then(l => l.Argument("EntityType", MccArguments.EntityType())
+                        .Executes(r => OperateWithType(r.Source, true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))
+                        .Then(l => l.Literal("attack")
+                            .Executes(r => OperateWithType(r.Source, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.Attack)))
+                        .Then(l => l.Literal("use")
+                            .Executes(r => OperateWithType(r.Source, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.Use)))
+                        .Then(l => l.Literal("list")
+                            .Executes(r => OperateWithType(r.Source, near: true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List)))))
+                .Then(l => l.Argument("EntityID", Arguments.Integer())
+                    .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))
+                    .Then(l => l.Literal("attack")
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Attack)))
+                    .Then(l => l.Literal("use")
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.Use)))
+                    .Then(l => l.Literal("list")
+                        .Executes(r => OperateWithId(r.Source, Arguments.GetInteger(r, "EntityID"), ActionType.List))))
+                .Then(l => l.Argument("EntityType", MccArguments.EntityType())
+                    .Executes(r => OperateWithType(r.Source, true, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))
+                    .Then(l => l.Literal("attack")
+                        .Executes(r => OperateWithType(r.Source, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.Attack)))
+                    .Then(l => l.Literal("use")
+                        .Executes(r => OperateWithType(r.Source, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.Use)))
+                    .Then(l => l.Literal("list")
+                        .Executes(r => OperateWithType(r.Source, near: false, MccArguments.GetEntityType(r, "EntityType"), ActionType.List))))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => GetUsage(r.Source, string.Empty))
+                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
+            );
+        }
+
+        private int GetUsage(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                "near"      =>  GetCmdDescTranslated(),
+                "attack"    =>  GetCmdDescTranslated(),
+                "use"       =>  GetCmdDescTranslated(),
+                "list"      =>  GetCmdDescTranslated(),
+                _           =>  GetCmdDescTranslated(),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int GetFullEntityList(CmdResult r)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetEntityHandlingEnabled())
+                return r.SetAndReturn(Status.FailNeedEntity);
+
+            Dictionary<int, Entity> entities = handler.GetEntities();
+            StringBuilder response = new();
+            response.AppendLine(Translations.cmd_entityCmd_entities);
+            foreach (var entity2 in entities)
+                response.AppendLine(GetEntityInfoShort(entity2.Value));
+            response.Append(GetCmdDescTranslated());
+            handler.Log.Info(response.ToString());
+
+            return r.SetAndReturn(Status.Done);
+        }
+
+        private int GetClosetEntityList(CmdResult r)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetEntityHandlingEnabled())
+                return r.SetAndReturn(Status.FailNeedEntity);
+
+            if (TryGetClosetEntity(handler.GetEntities(), handler.GetCurrentLocation(), null, out Entity? closest))
+            {
+                handler.Log.Info(GetEntityInfoDetailed(handler, closest));
+                return r.SetAndReturn(Status.Done);
+            }
+            else
+                return r.SetAndReturn(Status.Fail, Translations.cmd_entityCmd_not_found);
+        }
+
+        private int OperateWithId(CmdResult r, int entityID, ActionType action)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetEntityHandlingEnabled())
+                return r.SetAndReturn(Status.FailNeedEntity);
+
+            if (handler.GetEntities().TryGetValue(entityID, out Entity? entity))
+            {
+                handler.Log.Info(InteractionWithEntity(handler, entity, action));
+                return r.SetAndReturn(Status.Done);
+            }
+            else
+                return r.SetAndReturn(Status.Fail, Translations.cmd_entityCmd_not_found);
+        }
+
+        private int OperateWithType(CmdResult r, bool near, EntityType entityType, ActionType action)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetEntityHandlingEnabled())
+                return r.SetAndReturn(Status.FailNeedEntity);
+
+            if (near)
+            {
+                if (TryGetClosetEntity(handler.GetEntities(), handler.GetCurrentLocation(), entityType, out Entity? closest))
+                {
+                    handler.Log.Info(InteractionWithEntity(handler, closest, action));
+                    return r.SetAndReturn(Status.Done);
+                }
+                else
+                    return r.SetAndReturn(Status.Fail, Translations.cmd_entityCmd_not_found);
+            }
+            else
+            {
+                if (action == ActionType.Attack || action == ActionType.Use)
+                {
+                    string actionst = Translations.cmd_entityCmd_attacked;
+                    int actioncount = 0;
+                    foreach (var entity2 in handler.GetEntities())
+                    {
+                        if (entity2.Value.Type == entityType)
+                        {
+                            if (action == ActionType.Attack)
+                            {
+                                handler.InteractEntity(entity2.Key, InteractType.Attack);
+                                actionst = Translations.cmd_entityCmd_attacked;
+                            }
+                            else if (action == ActionType.Use)
+                            {
+                                handler.InteractEntity(entity2.Key, InteractType.Interact);
+                                actionst = Translations.cmd_entityCmd_used;
+                            }
+                            actioncount++;
+                        }
+                    }
+                    handler.Log.Info(actioncount + " " + actionst);
+                    return r.SetAndReturn(Status.Done);
+                }
+                else
+                {
+                    StringBuilder response = new();
+                    response.AppendLine(Translations.cmd_entityCmd_entities);
+                    foreach (var entity2 in handler.GetEntities())
+                    {
+                        if (entity2.Value.Type == entityType)
+                        {
+                            response.AppendLine(GetEntityInfoShort(entity2.Value));
+                        }
+                    }
+                    response.Append(GetCmdDescTranslated());
+                    handler.Log.Info(response.ToString());
+                    return r.SetAndReturn(Status.Done);
+                }
+            }
+        }
 
         private static string GetEntityInfoShort(Entity entity)
         {
@@ -122,122 +306,21 @@ namespace MinecraftClient.Commands
             return find;
         }
 
-        private static string InteractionWithEntity(McClient handler, Entity entity, string action)
+        private static string InteractionWithEntity(McClient handler, Entity entity, ActionType action)
         {
             switch (action)
             {
-                case "attack":
+                case ActionType.Attack:
                     handler.InteractEntity(entity.ID, InteractType.Attack);
                     return Translations.cmd_entityCmd_attacked;
-                case "use":
+                case ActionType.Use:
                     handler.InteractEntity(entity.ID, InteractType.Interact);
                     return Translations.cmd_entityCmd_used;
-                default:
+                case ActionType.List:
                     return GetEntityInfoDetailed(handler, entity);
+                default:
+                    goto case ActionType.List;
             }
-        }
-
-        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
-        {
-            if (handler.GetEntityHandlingEnabled())
-            {
-                string[] args = GetArgs(command);
-                if (args.Length > 0)
-                {
-                    if (int.TryParse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture, out int entityID))
-                    {
-                        if (handler.GetEntities().TryGetValue(entityID, out Entity? entity))
-                            return InteractionWithEntity(handler, entity, args.Length > 1 ? args[1].ToLower() : "list");
-                        else
-                            return Translations.cmd_entityCmd_not_found;
-                    }
-                    else if (Enum.TryParse(args[0], true, out EntityType interacttype))
-                    {
-                        string action = args.Length > 1
-                        ? args[1].ToLower()
-                        : "list";
-                        if (action == "attack" || action == "use")
-                        {
-                            string actionst = Translations.cmd_entityCmd_attacked;
-                            int actioncount = 0;
-                            foreach (var entity2 in handler.GetEntities())
-                            {
-                                if (entity2.Value.Type == interacttype)
-                                {
-                                    if (action == "attack")
-                                    {
-                                        handler.InteractEntity(entity2.Key, InteractType.Attack);
-                                        actionst = Translations.cmd_entityCmd_attacked;
-                                        actioncount++;
-                                    }
-                                    else if (action == "use")
-                                    {
-                                        handler.InteractEntity(entity2.Key, InteractType.Interact);
-                                        actionst = Translations.cmd_entityCmd_used;
-                                        actioncount++;
-                                    }
-                                    else return GetCmdDescTranslated();
-                                }
-                            }
-                            return actioncount + " " + actionst;
-                        }
-
-                        StringBuilder response = new();
-                        response.AppendLine(Translations.cmd_entityCmd_entities);
-                        foreach (var entity2 in handler.GetEntities())
-                        {
-                            if (entity2.Value.Type == interacttype)
-                            {
-                                response.AppendLine(GetEntityInfoShort(entity2.Value));
-                            }
-                        }
-                        response.Append(GetCmdDescTranslated());
-                        return response.ToString();
-                    }
-                    else if (args[0] == "near")
-                    {
-                        if (args.Length > 1)
-                        {
-                            if (Enum.TryParse(args[1], true, out EntityType entityType))
-                            {
-                                if (TryGetClosetEntity(handler.GetEntities(), handler.GetCurrentLocation(), entityType, out Entity? closest))
-                                    return InteractionWithEntity(handler, closest, args.Length > 2 ? args[2].ToLower() : "list");
-                                else
-                                    return Translations.cmd_entityCmd_not_found;
-                            }
-                            else if (int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int entityID2))
-                            {
-                                if (handler.GetEntities().TryGetValue(entityID2, out Entity? entity))
-                                    return InteractionWithEntity(handler, entity, args.Length > 1 ? args[1].ToLower() : "list");
-                                else
-                                    return Translations.cmd_entityCmd_not_found;
-                            }
-                            else return GetCmdDescTranslated();
-                        }
-                        else
-                        {
-                            if (TryGetClosetEntity(handler.GetEntities(), handler.GetCurrentLocation(), null, out Entity? closest))
-                                return GetEntityInfoDetailed(handler, closest);
-                            else
-                                return Translations.cmd_entityCmd_not_found;
-                        }
-                    }
-                    else return GetCmdDescTranslated();
-                }
-                else
-                {
-                    Dictionary<int, Entity> entities = handler.GetEntities();
-                    StringBuilder response = new();
-                    response.AppendLine(Translations.cmd_entityCmd_entities);
-                    foreach (var entity2 in entities)
-                    {
-                        response.AppendLine(GetEntityInfoShort(entity2.Value));
-                    }
-                    response.Append(GetCmdDescTranslated());
-                    return response.ToString();
-                }
-            }
-            else return Translations.extra_entity_required;
         }
     }
 }

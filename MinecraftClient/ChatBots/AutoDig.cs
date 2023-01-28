@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET.Builder;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
     public class AutoDig : ChatBot
     {
+        public const string CommandName = "autodig";
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -60,7 +66,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (Auto_Start_Delay >= 0)
                     Auto_Start_Delay = Math.Max(0.1, Auto_Start_Delay);
-                
+
                 if (Dig_Timeout >= 0)
                     Dig_Timeout = Math.Max(0.1, Dig_Timeout);
 
@@ -117,32 +123,68 @@ namespace MinecraftClient.ChatBots
             if (!inventoryEnabled && Config.Auto_Tool_Switch)
                 LogToConsole(Translations.bot_autodig_no_inv_handle);
 
-            RegisterChatBotCommand("digbot", Translations.bot_autodig_cmd, GetHelp(), CommandHandler);
+            McClient.dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Then(l => l.Literal("start")
+                        .Executes(r => OnCommandHelp(r.Source, "start")))
+                    .Then(l => l.Literal("stop")
+                        .Executes(r => OnCommandHelp(r.Source, "stop")))
+                    .Then(l => l.Literal("help")
+                        .Executes(r => OnCommandHelp(r.Source, "help")))
+                )
+            );
+
+            var cmd = McClient.dispatcher.Register(l => l.Literal(CommandName)
+                .Then(l => l.Literal("start")
+                    .Executes(r => OnCommandStart(r.Source)))
+                .Then(l => l.Literal("stop")
+                    .Executes(r => OnCommandStop(r.Source)))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
+
+            McClient.dispatcher.Register(l => l.Literal("digbot")
+                .Redirect(cmd)
+            );
         }
 
-        public string CommandHandler(string cmd, string[] args)
+        public override void OnUnload()
         {
-            if (args.Length > 0)
+            McClient.dispatcher.Unregister("digbot");
+            McClient.dispatcher.Unregister(CommandName);
+            McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+        }
+
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
             {
-                switch (args[0])
-                {
-                    case "start":
-                        lock (stateLock)
-                        {
-                            counter = 0;
-                            state = State.WaitingStart;
-                        }
-                        return Translations.bot_autodig_start;
-                    case "stop":
-                        StopDigging();
-                        return Translations.bot_autodig_stop;
-                    case "help":
-                        return GetCommandHelp(args.Length >= 2 ? args[1] : "");
-                    default:
-                        return GetHelp();
-                }
+#pragma warning disable format // @formatter:off
+                "start"     =>   Translations.bot_autodig_help_start,
+                "stop"      =>   Translations.bot_autodig_help_stop,
+                "help"      =>   Translations.bot_autodig_help_help,
+                _           =>   string.Format(Translations.bot_autodig_available_cmd, "start, stop, help")
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int OnCommandStart(CmdResult r)
+        {
+            lock (stateLock)
+            {
+                counter = 0;
+                state = State.WaitingStart;
             }
-            else return GetHelp();
+            return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autodig_start);
+        }
+
+        private int OnCommandStop(CmdResult r)
+        {
+            StopDigging();
+            return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_autodig_stop);
         }
 
         private void StartDigging()
@@ -240,7 +282,7 @@ namespace MinecraftClient.ChatBots
                 else if ((Config.List_Type == Configs.ListType.whitelist && Config.Blocks.Contains(block.Type)) ||
                         (Config.List_Type == Configs.ListType.blacklist && !Config.Blocks.Contains(block.Type)))
                 {
-                    if (Config.Mode == Configs.ModeType.lookat || 
+                    if (Config.Mode == Configs.ModeType.lookat ||
                         (Config.Mode == Configs.ModeType.both && Config._Locations.Contains(blockLoc)))
                     {
                         if (DigBlock(blockLoc, lookAtBlock: false))
@@ -288,8 +330,8 @@ namespace MinecraftClient.ChatBots
                 foreach (Location location in Config._Locations)
                 {
                     Block block = GetWorld().GetBlock(location);
-                    if (block.Type != Material.Air && 
-                        ((Config.List_Type == Configs.ListType.whitelist && Config.Blocks.Contains(block.Type)) || 
+                    if (block.Type != Material.Air &&
+                        ((Config.List_Type == Configs.ListType.whitelist && Config.Blocks.Contains(block.Type)) ||
                         (Config.List_Type == Configs.ListType.blacklist && !Config.Blocks.Contains(block.Type))))
                     {
                         double distance = current.Distance(location);
@@ -400,24 +442,6 @@ namespace MinecraftClient.ChatBots
             StopDigging();
 
             return base.OnDisconnect(reason, message);
-        }
-
-        private static string GetHelp()
-        {
-            return string.Format(Translations.bot_autodig_available_cmd, "start, stop, help");
-        }
-
-        private string GetCommandHelp(string cmd)
-        {
-            return cmd.ToLower() switch
-            {
-#pragma warning disable format // @formatter:off
-                "start"     =>   Translations.bot_autodig_help_start,
-                "stop"      =>   Translations.bot_autodig_help_stop,
-                "help"      =>   Translations.bot_autodig_help_help,
-                _           =>    GetHelp(),
-#pragma warning restore format // @formatter:on
-            };
         }
     }
 }

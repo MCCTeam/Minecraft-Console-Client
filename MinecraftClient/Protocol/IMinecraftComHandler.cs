@@ -4,6 +4,8 @@ using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.ProfileKey;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol
 {
@@ -27,6 +29,7 @@ namespace MinecraftClient.Protocol
         string[] GetOnlinePlayers();
         Dictionary<string, string> GetOnlinePlayersWithUUID();
         PlayerInfo? GetPlayerInfo(Guid uuid);
+        PlayerKeyPair? GetPlayerKeyPair();
         Location GetCurrentLocation();
         World GetWorld();
         bool GetIsSupportPreviewsChat();
@@ -77,7 +80,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-        void OnGameJoined();
+        void OnGameJoined(bool isOnlineMode);
 
         /// <summary>
         /// Received chat/system message from the server
@@ -455,6 +458,15 @@ namespace MinecraftClient.Protocol
         /// <param name="location">The location of the block.</param>
         /// <param name="block">The block</param>
         public void OnBlockChange(Location location, Block block);
+
+        /// <summary>
+        /// Called when "AutoComplete" completes.
+        /// </summary>
+        /// <param name="transactionId">The number of this result.</param>
+        /// <param name="result">All commands.</param>
+        public void OnAutoCompleteDone(int transactionId, string[] result);
+
+        public void OnDeclareCommands();
 
         /// <summary>
         /// Send a click container button packet to the server.

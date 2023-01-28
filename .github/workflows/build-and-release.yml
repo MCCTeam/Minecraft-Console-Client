@@ -8,7 +8,7 @@ on:
   
 env:
   PROJECT: "MinecraftClient"
-  target-version: "net6.0"
+  target-version: "net7.0"
   compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
         submodules: 'true'
 
     - name: Download translations from crowdin
-      uses: crowdin/github-action@1.5.0
+      uses: crowdin/github-action@1.6.0
       with:
         upload_sources: true
         upload_translations: false

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MinecraftClient.Inventory;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Mapping
 {
@@ -155,11 +156,16 @@ namespace MinecraftClient.Mapping
             Pitch = pitch * (1F / 256) * 360;
         }
 
+        public static string GetTypeString(EntityType type)
+        {
+            string typeStr = type.ToString();
+            string? trans = ChatParser.TranslateString("entity.minecraft." + typeStr.ToUnderscoreCase());
+            return string.IsNullOrEmpty(trans) ? typeStr : trans;
+        }
+
         public string GetTypeString()
         {
-            string typeStr = Type.ToString();
-            string? trans = Protocol.ChatParser.TranslateString("entity.minecraft." + typeStr.ToUnderscoreCase());
-            return string.IsNullOrEmpty(trans) ? typeStr : trans;
+            return GetTypeString(Type);
         }
     }
 }
