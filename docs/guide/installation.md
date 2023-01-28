@@ -145,7 +145,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-        **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `'-r linux-64` with an appropriate `-r <your RID>` (Example for arm: `-r linux-arm64`)**
+        **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `-r linux-64` with an appropriate `-r RID_NAME` (Example for arm: `-r linux-arm64`)**
 
         </div>
 
@@ -157,7 +157,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-        **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `'-r osx-64` with an appropriate `-r <your RID>` (Example for arm: `-r osx.12-arm64`)**
+        **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `-r osx-64` with an appropriate `-r RID_NAME` (Example for arm: `-r osx.12-arm64`)**
 
         </div>
 
