@@ -17,10 +17,10 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
-    - name: Sync translations from crowdin
-      uses: crowdin/github-action@1.5.0
+    - name: Download translations from crowdin
+      uses: crowdin/github-action@1.6.0
       with:
-        upload_sources: true
+        upload_sources: false
         upload_translations: false
         download_translations: true
 
