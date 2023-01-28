@@ -118,7 +118,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x02: ReadData(1); ReadNextString(); ReadNextString(); ReadData(4); break;
                 case 0x03:
                     string message = ReadNextString();
-                    handler.OnTextReceived(new ChatMessage(message, protocolversion >= 72, 0, Guid.Empty)); break;
+                    handler.OnTextReceived(new ChatMessage(message, null, protocolversion >= 72, -1, Guid.Empty)); break;
                 case 0x04: ReadData(16); break;
                 case 0x05: ReadData(6); ReadNextItemSlot(); break;
                 case 0x06: ReadData(12); break;
@@ -908,6 +908,11 @@ namespace MinecraftClient.Protocol.Handlers
         public bool SendSpectate(Guid UUID)
         {
             return false; //Currently not implemented
+        }
+
+        public bool SendPlayerSession(PlayerKeyPair? playerKeyPair)
+        {
+            return false;
         }
     }
 }

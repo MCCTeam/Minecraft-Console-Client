@@ -20,7 +20,7 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
-                .Then(l => l.Argument("Script", Arguments.GreedyString())
+                .Then(l => l.Argument("Script", MccArguments.ScriptName())
                     .Executes(r => DoExecuteScript(r.Source, Arguments.GetString(r, "Script"), null)))
                 .Then(l => l.Literal("_help")
                     .Executes(r => GetUsage(r.Source, string.Empty))

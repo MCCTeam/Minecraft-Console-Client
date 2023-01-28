@@ -100,7 +100,7 @@ namespace MinecraftClient.ChatBots
         private Double attackSpeed = 4;
         private Double attackCooldownSeconds;
         private readonly bool overrideAttackSpeed = false;
-        private readonly int attackRange = 4;
+        private readonly double attackRange = 4.0;
         private Double serverTPS;
         private float health = 100;
         private readonly bool attackHostile = true;

@@ -8,7 +8,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         private static int RootIdx;
         private static CommandNode[] Nodes = Array.Empty<CommandNode>();
 
-        public static void Read(DataTypes dataTypes, Queue<byte> packetData)
+        public static void Read(DataTypes dataTypes, Queue<byte> packetData, int protocolVersion)
         {
             int count = dataTypes.ReadNextVarInt(packetData);
             Nodes = new CommandNode[count];
@@ -21,7 +21,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 for (int j = 0; j < childCount; ++j)
                     childs[j] = dataTypes.ReadNextVarInt(packetData);
 
-                int redirectNode = ((flags & 0x08) > 0) ? dataTypes.ReadNextVarInt(packetData) : -1;
+                int redirectNode = ((flags & 0x08) == 0x08) ? dataTypes.ReadNextVarInt(packetData) : -1;
 
                 string? name = ((flags & 0x03) == 1 || (flags & 0x03) == 2) ? dataTypes.ReadNextString(packetData) : null;
 
@@ -29,28 +29,51 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 Paser? paser = null;
                 if ((flags & 0x03) == 2)
                 {
-                    paser = paserId switch
-                    {
-                        1 => new PaserFloat(dataTypes, packetData),
-                        2 => new PaserDouble(dataTypes, packetData),
-                        3 => new PaserInteger(dataTypes, packetData),
-                        4 => new PaserLong(dataTypes, packetData),
-                        5 => new PaserString(dataTypes, packetData),
-                        6 => new PaserEntity(dataTypes, packetData),
-                        8 => new PaserBlockPos(dataTypes, packetData),
-                        9 => new PaserColumnPos(dataTypes, packetData),
-                        10 => new PaserVec3(dataTypes, packetData),
-                        11 => new PaserVec2(dataTypes, packetData),
-                        18 => new PaserMessage(dataTypes, packetData),
-                        27 => new PaserRotation(dataTypes, packetData),
-                        29 => new PaserScoreHolder(dataTypes, packetData),
-                        43 => new PaserResourceOrTag(dataTypes, packetData),
-                        44 => new PaserResource(dataTypes, packetData),
-                        _ => new PaserEmpty(dataTypes, packetData),
-                    };
+                    if (protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                        paser = paserId switch
+                        {
+                            1 => new PaserFloat(dataTypes, packetData),
+                            2 => new PaserDouble(dataTypes, packetData),
+                            3 => new PaserInteger(dataTypes, packetData),
+                            4 => new PaserLong(dataTypes, packetData),
+                            5 => new PaserString(dataTypes, packetData),
+                            6 => new PaserEntity(dataTypes, packetData),
+                            8 => new PaserBlockPos(dataTypes, packetData),
+                            9 => new PaserColumnPos(dataTypes, packetData),
+                            10 => new PaserVec3(dataTypes, packetData),
+                            11 => new PaserVec2(dataTypes, packetData),
+                            18 => new PaserMessage(dataTypes, packetData),
+                            27 => new PaserRotation(dataTypes, packetData),
+                            29 => new PaserScoreHolder(dataTypes, packetData),
+                            43 => new PaserResourceOrTag(dataTypes, packetData),
+                            44 => new PaserResource(dataTypes, packetData),
+                            _ => new PaserEmpty(dataTypes, packetData),
+                        };
+                    else // protocolVersion >= MC_1_19_3_Version
+                        paser = paserId switch
+                        {
+                            1 => new PaserFloat(dataTypes, packetData),
+                            2 => new PaserDouble(dataTypes, packetData),
+                            3 => new PaserInteger(dataTypes, packetData),
+                            4 => new PaserLong(dataTypes, packetData),
+                            5 => new PaserString(dataTypes, packetData),
+                            6 => new PaserEntity(dataTypes, packetData),
+                            8 => new PaserBlockPos(dataTypes, packetData),
+                            9 => new PaserColumnPos(dataTypes, packetData),
+                            10 => new PaserVec3(dataTypes, packetData),
+                            11 => new PaserVec2(dataTypes, packetData),
+                            18 => new PaserMessage(dataTypes, packetData),
+                            27 => new PaserRotation(dataTypes, packetData),
+                            29 => new PaserScoreHolder(dataTypes, packetData),
+                            41 => new PaserResourceOrTag(dataTypes, packetData),
+                            42 => new PaserResourceOrTag(dataTypes, packetData),
+                            43 => new PaserResource(dataTypes, packetData),
+                            44 => new PaserResource(dataTypes, packetData),
+                            _ => new PaserEmpty(dataTypes, packetData),
+                        };
                 }
 
-                string? suggestionsType = ((flags & 0x10) > 0) ? dataTypes.ReadNextString(packetData) : null;
+                string? suggestionsType = ((flags & 0x10) == 0x10) ? dataTypes.ReadNextString(packetData) : null;
 
                 Nodes[i] = new(flags, childs, redirectNode, name, paser, suggestionsType);
             }

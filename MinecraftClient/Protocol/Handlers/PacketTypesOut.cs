@@ -36,6 +36,7 @@
         PlayerPosition,              //
         PlayerPositionAndRotation,   //
         PlayerRotation,              //
+        PlayerSession,               // Added in 1.19.3
         PluginMessage,               //
         Pong,                        //
         PrepareCraftingGrid,         // For 1.12 - 1.12.1 only

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using MinecraftClient.Protocol.Message;
+using static MinecraftClient.Protocol.Message.LastSeenMessageList;
 
 namespace MinecraftClient.Protocol.ProfileKey
 {
@@ -43,7 +44,7 @@ namespace MinecraftClient.Protocol.ProfileKey
         }
 
         /// <summary>
-        /// Sign message - 1.19.1 and above
+        /// Sign message - 1.19.1 and 1.19.2
         /// </summary>
         /// <param name="message">Message content</param>
         /// <param name="uuid">Sender uuid</param>
@@ -62,6 +63,22 @@ namespace MinecraftClient.Protocol.ProfileKey
             precedingSignature = msgSign;
 
             return msgSign;
+        }
+
+        /// <summary>
+        /// Sign message - 1.19.3 and above
+        /// </summary>
+        /// <param name="message">Message content</param>
+        /// <param name="uuid">Sender uuid</param>
+        /// <param name="timestamp">Timestamp</param>
+        /// <param name="salt">Salt</param>
+        /// <param name="lastSeenMessages">LastSeenMessageList</param>
+        /// <returns>Signature data</returns>
+        public byte[] SignMessage(string message, Guid playerUuid, Guid chatUuid, int messageIndex, DateTimeOffset timestamp, ref byte[] salt, AcknowledgedMessage[] lastSeenMessages)
+        {
+            byte[] bodySignData = KeyUtils.GetSignatureData_1_19_3(message, playerUuid, chatUuid, messageIndex, timestamp, ref salt, lastSeenMessages);
+
+            return SignData(bodySignData);
         }
 
     }

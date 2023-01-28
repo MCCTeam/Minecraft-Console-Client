@@ -703,7 +703,7 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
     <value>Messages displayed above xp bar, set this to false in case of xp bar spam.</value>
   </data>
   <data name="Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
-    <value>Temporary fix for Badpacket issue on some servers.</value>
+    <value>Temporary fix for Badpacket issue on some servers. Need to enable "TerrainAndMovements" first.</value>
   </data>
   <data name="Main.Advanced.terrain_and_movements" xml:space="preserve">
     <value>Uses more ram, cpu, bandwidth but allows you to move around.</value>
