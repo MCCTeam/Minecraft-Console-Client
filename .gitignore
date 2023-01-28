@@ -415,3 +415,4 @@ FodyWeavers.xsd
 !/docs/.vuepress/translations/en.json
 
 /docs/l10n/
+/docs/.vuepress/public/MCC-README/
