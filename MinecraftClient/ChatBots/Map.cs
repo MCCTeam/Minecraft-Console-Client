@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
 using ImageMagick;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Mapping;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
     public class Map : ChatBot
     {
+        public const string CommandName = "maps";
+
         public static Configs Config = new();
 
         public struct QueuedMap
@@ -63,7 +69,7 @@ namespace MinecraftClient.ChatBots
 
         private readonly string baseDirectory = @"Rendered_Maps";
 
-        private readonly Dictionary<int, McMap> cachedMaps = new();
+        internal readonly Dictionary<int, McMap> cachedMaps = new();
 
         private readonly Queue<QueuedMap> discordQueue = new();
 
@@ -74,12 +80,77 @@ namespace MinecraftClient.ChatBots
 
             DeleteRenderedMaps();
 
-            RegisterChatBotCommand("maps", "bot.map.cmd.desc", "maps list|render <id> or maps l|r <id>", OnMapCommand);
+            McClient.dispatcher.Register(l => l.Literal("help")
+                .Then(l => l.Literal(CommandName)
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                )
+            );
+
+            McClient.dispatcher.Register(l => l.Literal(CommandName)
+                .Executes(r => OnCommandList(r.Source))
+                .Then(l => l.Literal("list")
+                    .Executes(r => OnCommandList(r.Source)))
+                .Then(l => l.Literal("render")
+                    .Then(l => l.Argument("MapID", MccArguments.MapBotMapId())
+                        .Executes(r => OnCommandRender(r.Source, Arguments.GetInteger(r, "MapID")))))
+                .Then(l => l.Literal("_help")
+                    .Executes(r => OnCommandHelp(r.Source, string.Empty))
+                    .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+            );
         }
 
         public override void OnUnload()
         {
+            McClient.dispatcher.Unregister(CommandName);
+            McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             DeleteRenderedMaps();
+        }
+
+        private int OnCommandHelp(CmdResult r, string? cmd)
+        {
+            return r.SetAndReturn(cmd switch
+            {
+#pragma warning disable format // @formatter:off
+                _           =>   Translations.error_usage + ": /maps <list/render <id>>"
+                                   + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
+#pragma warning restore format // @formatter:on
+            });
+        }
+
+        private int OnCommandList(CmdResult r)
+        {
+            if (cachedMaps.Count == 0)
+                return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_map_no_maps);
+
+            LogToConsole(Translations.bot_map_received);
+
+            foreach (var (key, value) in new SortedDictionary<int, McMap>(cachedMaps))
+                LogToConsole(string.Format(Translations.bot_map_list_item, key, value.LastUpdated));
+
+            return r.SetAndReturn(CmdResult.Status.Done);
+        }
+
+        private int OnCommandRender(CmdResult r, int mapId)
+        {
+            if (!cachedMaps.ContainsKey(mapId))
+                return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.bot_map_cmd_not_found, mapId));
+
+            try
+            {
+                McMap map = cachedMaps[mapId];
+                if (Config.Save_To_File)
+                    SaveToFile(map);
+
+                if (Config.Render_In_Console)
+                    RenderInConsole(map);
+
+                return r.SetAndReturn(CmdResult.Status.Done);
+            }
+            catch (Exception e)
+            {
+                LogDebugToConsole(e.StackTrace!);
+                return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.bot_map_failed_to_render, mapId));
+            }
         }
 
         private void DeleteRenderedMaps()
@@ -92,56 +163,6 @@ namespace MinecraftClient.ChatBots
                 foreach (FileInfo file in files)
                     file.Delete();
             }
-        }
-
-        public string OnMapCommand(string command, string[] args)
-        {
-            if (args.Length == 0 || (args.Length == 1 && (args[0].ToLower().Equals("list") || args[0].ToLower().Equals("l"))))
-            {
-                if (cachedMaps.Count == 0)
-                    return Translations.bot_map_no_maps;
-
-                LogToConsole(Translations.bot_map_received);
-
-                foreach (var (key, value) in new SortedDictionary<int, McMap>(cachedMaps))
-                    LogToConsole(string.Format(Translations.bot_map_list_item, key, value.LastUpdated));
-
-                return "";
-            }
-
-            if (args.Length > 1)
-            {
-                if (args[0].ToLower().Equals("render") || args[0].ToLower().Equals("r"))
-                {
-                    if (args.Length < 2)
-                        return "maps <list/render <id>> | maps <l/r <id>>";
-
-                    if (int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int mapId))
-                    {
-                        if (!cachedMaps.ContainsKey(mapId))
-                            return string.Format(Translations.bot_map_cmd_not_found, mapId);
-
-                        try
-                        {
-                            McMap map = cachedMaps[mapId];
-                            if (Config.Save_To_File)
-                                SaveToFile(map);
-
-                            if (Config.Render_In_Console)
-                                RenderInConsole(map);
-
-                            return "";
-                        }
-                        catch (Exception e)
-                        {
-                            LogDebugToConsole(e.StackTrace!);
-                            return string.Format(Translations.bot_map_failed_to_render, mapId);
-                        }
-                    }
-                    return Translations.bot_map_cmd_invalid_id;
-                }
-            }
-            return "";
         }
 
         public override void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapRowZ, byte[]? colors)
@@ -320,13 +341,11 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private void RenderInConsole(McMap map)
+        private static void RenderInConsole(McMap map)
         {
             StringBuilder sb = new();
-
             int consoleWidth = Math.Max(Console.BufferWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2;
             int consoleHeight = Math.Max(Console.BufferHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 1;
-
             int scaleX = (map.Width + consoleWidth - 1) / consoleWidth;
             int scaleY = (map.Height + consoleHeight - 1) / consoleHeight;
             int scale = Math.Max(scaleX, scaleY);
@@ -335,11 +354,12 @@ namespace MinecraftClient.ChatBots
 
             for (int base_y = 0; base_y < map.Height; base_y += scale)
             {
-                int last_R = -1, last_G = -1, last_B = -1;
+                string lastFg = string.Empty, lagtBg = string.Empty;
                 for (int base_x = 0; base_x < map.Width; base_x += scale)
                 {
-                    int RL = 0, GL = 0, BL = 0, RR = 0, GR = 0, BR = 0;
-                    double mid_dx = (double)(scale - 1) / 2;
+                    int RUL = 0, GUL = 0, BUL = 0, RUR = 0, GUR = 0, BUR = 0;
+                    int RDL = 0, GDL = 0, BDL = 0, RDR = 0, GDR = 0, BDR = 0;
+                    double mid = (double)(scale - 1) / 2;
                     for (int dy = 0; dy < scale; ++dy)
                     {
                         for (int dx = 0; dx < scale; ++dx)
@@ -347,40 +367,57 @@ namespace MinecraftClient.ChatBots
                             int x = Math.Min(base_x + dx, map.Width - 1);
                             int y = Math.Min(base_y + dy, map.Height - 1);
                             ColorRGBA color = MapColors.ColorByteToRGBA(map.Colors![x + y * map.Width]);
-                            if (dx <= mid_dx)
+                            if (dx <= mid)
                             {
-                                RL += color.R; GL += color.G; BL += color.B;
+                                if (dy <= mid)
+                                {
+                                    RUL += color.R; GUL += color.G; BUL += color.B;
+                                }
+                                if (dy >= mid)
+                                {
+                                    RDL += color.R; GDL += color.G; BDL += color.B;
+                                }
                             }
-                            if (dx >= mid_dx)
+                            if (dx >= mid)
                             {
-                                RR += color.R; GR += color.G; BR += color.B;
+                                if (dy <= mid)
+                                {
+                                    RUR += color.R; GUR += color.G; BUR += color.B;
+                                }
+                                if (dy >= mid)
+                                {
+                                    RDR += color.R; GDR += color.G; BDR += color.B;
+                                }
                             }
                         }
                     }
 
-                    int pixel_cnt = ((scale + 1) / 2) * scale;
-                    RL = (int)Math.Round((double)RL / pixel_cnt);
-                    GL = (int)Math.Round((double)GL / pixel_cnt);
-                    BL = (int)Math.Round((double)BL / pixel_cnt);
-                    RR = (int)Math.Round((double)RR / pixel_cnt);
-                    GR = (int)Math.Round((double)GR / pixel_cnt);
-                    BR = (int)Math.Round((double)BR / pixel_cnt);
+                    int pixel_cnt = ((scale + 1) / 2) * ((scale + 1) / 2);
+                    RDL = (int)Math.Round((double)RDL / pixel_cnt);
+                    GDL = (int)Math.Round((double)GDL / pixel_cnt);
+                    BDL = (int)Math.Round((double)BDL / pixel_cnt);
+                    RDR = (int)Math.Round((double)RDR / pixel_cnt);
+                    GDR = (int)Math.Round((double)GDR / pixel_cnt);
+                    BDR = (int)Math.Round((double)BDR / pixel_cnt);
 
-                    if (RL == last_R && GL == last_G && BL == last_B)
-                        sb.Append(' ');
-                    else
-                    {
-                        sb.Append(ColorHelper.GetColorEscapeCode((byte)RL, (byte)GL, (byte)BL, false)).Append(' ');
-                        last_R = RL; last_G = GL; last_B = BL;
-                    }
+                    RUL = (int)Math.Round((double)RUL / pixel_cnt);
+                    GUL = (int)Math.Round((double)GUL / pixel_cnt);
+                    BUL = (int)Math.Round((double)BUL / pixel_cnt);
+                    RUR = (int)Math.Round((double)RUR / pixel_cnt);
+                    GUR = (int)Math.Round((double)GUR / pixel_cnt);
+                    BUR = (int)Math.Round((double)BUR / pixel_cnt);
 
-                    if (RR == last_R && GR == last_G && BR == last_B)
-                        sb.Append(' ');
-                    else
-                    {
-                        sb.Append(ColorHelper.GetColorEscapeCode((byte)RR, (byte)GR, (byte)BR, false)).Append(' ');
-                        last_R = RR; last_G = GR; last_B = BR;
-                    }
+                    string colorCode = ColorHelper.GetColorEscapeCode((byte)RUL, (byte)GUL, (byte)BUL, true);
+                    if (lastFg != colorCode) { sb.Append(colorCode); lastFg = colorCode; }
+                    colorCode = ColorHelper.GetColorEscapeCode((byte)RDL, (byte)GDL, (byte)BDL, false);
+                    if (lagtBg != colorCode) { sb.Append(colorCode); lagtBg = colorCode; }
+                    sb.Append('▀');
+
+                    colorCode = ColorHelper.GetColorEscapeCode((byte)RUR, (byte)GUR, (byte)BUR, true);
+                    if (lastFg != colorCode) { sb.Append(colorCode); lastFg = colorCode; }
+                    colorCode = ColorHelper.GetColorEscapeCode((byte)RDR, (byte)GDR, (byte)BDR, false);
+                    if (lagtBg != colorCode) { sb.Append(colorCode); lagtBg = colorCode; }
+                    sb.Append('▀');
                 }
                 if (base_y >= map.Height - scale)
                     sb.Append(ColorHelper.GetResetEscapeCode());
@@ -406,7 +443,7 @@ namespace MinecraftClient.ChatBots
         public DateTime LastUpdated { get; set; }
     }
 
-    class MapColors
+    internal class MapColors
     {
         // When colors are updated in a new update, you can get them using the game code: net\minecraft\world\level\material\MaterialColor.java
         public static Dictionary<byte, byte[]> Colors = new()

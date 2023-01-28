@@ -5,6 +5,8 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using MinecraftClient.CommandHandler;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.ChatBots
 {
@@ -84,7 +86,7 @@ namespace MinecraftClient.ChatBots
         public static bool LookForScript(ref string filename)
         {
             //Automatically look in subfolders and try to add ".txt" file extension
-            char dir_slash = Path.DirectorySeparatorChar;
+             char dir_slash = Path.DirectorySeparatorChar;
             string[] files = new string[]
             {
                 filename,
@@ -209,11 +211,22 @@ namespace MinecraftClient.ChatBots
                                         sleepticks = ticks;
                                         break;
                                     default:
-                                        if (!PerformInternalCommand(instruction_line))
+                                        CmdResult response = new();
+                                        if (PerformInternalCommand(instruction_line, ref response))
+                                        {
+                                            if (instruction_name.ToLower() != "log")
+                                            {
+                                                LogToConsole(instruction_line);
+                                            }
+                                            if (response.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(response.result))
+                                            {
+                                                LogToConsole(response);
+                                            }
+                                        }
+                                        else
                                         {
                                             Update(); //Unknown command : process next line immediately
                                         }
-                                        else if (instruction_name.ToLower() != "log") { LogToConsole(instruction_line); }
                                         break;
                                 }
                             }

@@ -1,4 +1,4 @@
-name: Sync Translations
+name: Upload translation sources
 
 on:
   workflow_dispatch:
@@ -15,12 +15,12 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
-    - name: Sync translations from crowdin
-      uses: crowdin/github-action@1.5.0
+    - name: Upload translation sources to crowdin
+      uses: crowdin/github-action@1.6.0
       with:
         upload_sources: true
         upload_translations: false
-        download_translations: true
+        download_translations: false
 
         localization_branch_name: l10n_master
         create_pull_request: false 

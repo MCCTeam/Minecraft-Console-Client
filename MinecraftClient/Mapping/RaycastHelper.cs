@@ -36,7 +36,7 @@ namespace MinecraftClient.Mapping
         {
             if (start == end)
                 return new(false, Location.Zero, Block.Air);
-            
+
             double start_x = MathHelper.Lerp(-1.0E-7, start.X, end.X);
             double start_y = MathHelper.Lerp(-1.0E-7, start.Y, end.Y);
             double start_z = MathHelper.Lerp(-1.0E-7, start.Z, end.Z);
@@ -87,7 +87,7 @@ namespace MinecraftClient.Mapping
                     res_location.Z += dz_sign;
                     z_frac += z_step;
                 }
-                
+
                 block = CheckRaycastResult(world, res_location, includeFluids);
                 if (block.Type != Material.Air)
                     return new(true, res_location, block);

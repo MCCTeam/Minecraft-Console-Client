@@ -1,4 +1,5 @@
 ﻿using System;
+using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -43,7 +44,7 @@ namespace MinecraftClient.ChatBots
 
                 if (Delay.min > Delay.max)
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
-                
+
                 if (Retries == -1)
                     Retries = int.MaxValue;
 
@@ -83,6 +84,11 @@ namespace MinecraftClient.ChatBots
         }
 
         public override void Initialize()
+        {
+            _Initialize();
+        }
+
+        private void _Initialize()
         {
             McClient.ReconnectionAttemptsLeft = Config.Retries;
             if (Config.Ignore_Kick_Message)

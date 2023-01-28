@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
+using static MinecraftClient.Protocol.Message.LastSeenMessageList;
 
-namespace MinecraftClient.Protocol.Keys
+namespace MinecraftClient.Protocol.ProfileKey
 {
     static class KeyUtils
     {
@@ -45,7 +47,7 @@ namespace MinecraftClient.Protocol.Keys
             }
             catch (Exception e)
             {
-                int code = (response == null) ? 0 : response.StatusCode;
+                int code = response == null ? 0 : response.StatusCode;
                 ConsoleIO.WriteLineFormatted("§cFetch profile key failed: HttpCode = " + code + ", Error = " + e.Message);
                 if (Settings.Config.Logging.DebugMessages)
                 {
@@ -55,7 +57,7 @@ namespace MinecraftClient.Protocol.Keys
             }
         }
 
-        public static byte[] DecodePemKey(String key, String prefix, String suffix)
+        public static byte[] DecodePemKey(string key, string prefix, string suffix)
         {
             int i = key.IndexOf(prefix);
             if (i != -1)
@@ -64,8 +66,8 @@ namespace MinecraftClient.Protocol.Keys
                 int j = key.IndexOf(suffix, i);
                 key = key[i..j];
             }
-            key = key.Replace("\r", String.Empty);
-            key = key.Replace("\n", String.Empty);
+            key = key.Replace("\r", string.Empty);
+            key = key.Replace("\n", string.Empty);
             return Convert.FromBase64String(key);
         }
 
@@ -110,6 +112,33 @@ namespace MinecraftClient.Protocol.Keys
             return data.ToArray();
         }
 
+        public static byte[] GetSignatureData_1_19_3(string message, Guid playerUuid, Guid chatUuid, int messageIndex, DateTimeOffset timestamp, ref byte[] salt, AcknowledgedMessage[] lastSeenMessages)
+        {
+            List<byte> data = new();
+
+            // net.minecraft.network.message.SignedMessage#update
+            data.AddRange(DataTypes.GetInt(1));
+
+            // message link
+            // net.minecraft.network.message.MessageLink#update
+            data.AddRange(DataTypes.GetUUID(playerUuid));
+            data.AddRange(DataTypes.GetUUID(chatUuid));
+            data.AddRange(DataTypes.GetInt(messageIndex));
+
+            // message body
+            // net.minecraft.network.message.MessageBody#update
+            data.AddRange(salt);
+            data.AddRange(DataTypes.GetLong(timestamp.ToUnixTimeSeconds()));
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+            data.AddRange(DataTypes.GetInt(messageBytes.Length));
+            data.AddRange(messageBytes);
+            data.AddRange(DataTypes.GetInt(lastSeenMessages.Length));
+            foreach (AcknowledgedMessage ack in lastSeenMessages)
+                data.AddRange(ack.signature);
+
+            return data.ToArray();
+        }
+
         public static byte[] GetSignatureData(byte[]? precedingSignature, Guid sender, byte[] bodySign)
         {
             List<byte> data = new();
@@ -120,6 +149,40 @@ namespace MinecraftClient.Protocol.Keys
             data.AddRange(sender.ToBigEndianBytes());
 
             data.AddRange(bodySign);
+
+            return data.ToArray();
+        }
+
+        public static byte[] GetSignatureData(string message, DateTimeOffset timestamp, ref byte[] salt, int messageCount, Guid sender, Guid sessionUuid)
+        {
+            List<byte> data = new();
+
+            // TODO!
+            byte[] unknownInt1 = BitConverter.GetBytes(1);
+            Array.Reverse(unknownInt1);
+            data.AddRange(unknownInt1);
+
+            data.AddRange(sender.ToBigEndianBytes());
+            data.AddRange(sessionUuid.ToBigEndianBytes());
+
+            byte[] msgCountByte = BitConverter.GetBytes(messageCount);
+            Array.Reverse(msgCountByte);
+            data.AddRange(msgCountByte);
+            data.AddRange(salt);
+
+            byte[] timestampByte = BitConverter.GetBytes(timestamp.ToUnixTimeSeconds());
+            Array.Reverse(timestampByte);
+            data.AddRange(timestampByte);
+
+            byte[] msgByte = Encoding.UTF8.GetBytes(message);
+            byte[] msgLengthByte = BitConverter.GetBytes(msgByte.Length);
+            Array.Reverse(msgLengthByte);
+            data.AddRange(msgLengthByte);
+            data.AddRange(msgByte);
+
+            byte[] unknownInt2 = BitConverter.GetBytes(0);
+            Array.Reverse(unknownInt2);
+            data.AddRange(unknownInt2);
 
             return data.ToArray();
         }
@@ -135,11 +198,11 @@ namespace MinecraftClient.Protocol.Keys
                 char c = src[i];
                 bool needEscape = c < 32 || c == '"' || c == '\\';
                 // Broken lead surrogate
-                needEscape = needEscape || (c >= '\uD800' && c <= '\uDBFF' &&
-                    (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF'));
+                needEscape = needEscape || c >= '\uD800' && c <= '\uDBFF' &&
+                    (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF');
                 // Broken tail surrogate
-                needEscape = needEscape || (c >= '\uDC00' && c <= '\uDFFF' &&
-                    (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF'));
+                needEscape = needEscape || c >= '\uDC00' && c <= '\uDFFF' &&
+                    (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF');
                 // To produce valid JavaScript
                 needEscape = needEscape || c == '\u2028' || c == '\u2029';
 

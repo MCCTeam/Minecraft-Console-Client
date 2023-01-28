@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using MinecraftClient.Mapping.BlockPalettes;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Mapping
 {
@@ -115,7 +116,7 @@ namespace MinecraftClient.Mapping
         public string GetTypeString()
         {
             string typeStr = Type.ToString();
-            string? trans = Protocol.ChatParser.TranslateString("block.minecraft." + typeStr.ToUnderscoreCase());
+            string? trans = ChatParser.TranslateString("block.minecraft." + typeStr.ToUnderscoreCase());
             return string.IsNullOrEmpty(trans) ? typeStr : trans;
         }
 

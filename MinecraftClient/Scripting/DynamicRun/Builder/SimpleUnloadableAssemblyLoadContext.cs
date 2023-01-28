@@ -7,7 +7,7 @@ https://github.com/laurentkempe/DynamicRun/blob/master/LICENSE
 using System.Reflection;
 using System.Runtime.Loader;
 
-namespace DynamicRun.Builder
+namespace MinecraftClient.Scripting.DynamicRun.Builder
 {
     internal class SimpleUnloadableAssemblyLoadContext : AssemblyLoadContext
     {
