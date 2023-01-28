@@ -110,5 +110,10 @@ namespace MinecraftClient.CommandHandler
         {
             return new HotbarSlotArgumentType();
         }
+
+        public static ScriptNameArgumentType ScriptName()
+        {
+            return new ScriptNameArgumentType();
+        }
     }
 }

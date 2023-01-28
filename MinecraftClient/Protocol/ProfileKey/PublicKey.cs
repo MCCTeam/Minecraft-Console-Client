@@ -24,6 +24,12 @@ namespace MinecraftClient.Protocol.ProfileKey
 
             if (!string.IsNullOrEmpty(sigV2))
                 SignatureV2 = Convert.FromBase64String(sigV2!);
+
+            if (SignatureV2 == null || SignatureV2.Length == 0)
+                SignatureV2 = Signature;
+
+            if (Signature == null || Signature.Length == 0)
+                Signature = SignatureV2;
         }
 
         public PublicKey(byte[] key, byte[] signature)
@@ -58,7 +64,7 @@ namespace MinecraftClient.Protocol.ProfileKey
         }
 
         /// <summary>
-        /// Verify message - 1.19.1 and above
+        /// Verify message - 1.19.1 and 1.19.2
         /// </summary>
         /// <param name="message">Message content</param>
         /// <param name="uuid">Sender uuid</param>
@@ -79,7 +85,7 @@ namespace MinecraftClient.Protocol.ProfileKey
         }
 
         /// <summary>
-        /// Verify message head - 1.19.1 and above
+        /// Verify message head - 1.19.1 and 1.19.2
         /// </summary>
         /// <param name="bodyDigest">Message body hash</param>
         /// <param name="signature">Message signature</param>

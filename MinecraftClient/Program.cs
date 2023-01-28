@@ -46,7 +46,7 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.19.2";
+        public const string MCHighestVersion = "1.19.3";
         public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
@@ -621,7 +621,16 @@ namespace MinecraftClient
                     {
                         HandleFailure(Translations.error_unsupported, true);
                     }
-                    catch (Exception) { }
+                    catch (NotImplementedException)
+                    {
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        ConsoleIO.WriteLine(e.Message);
+                        ConsoleIO.WriteLine(e.StackTrace ?? "");
+                        HandleFailure(); // Other error
+                    }
                 }
                 else HandleFailure(Translations.error_determine, true);
             }

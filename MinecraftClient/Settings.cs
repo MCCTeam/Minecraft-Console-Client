@@ -35,7 +35,7 @@ namespace MinecraftClient
         // Other Settings
         public const string TranslationsFile_Version = "1.19.3";
         public const string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/c492375ded5da34b646b8c5c0842a0028bc69cec/2.json";
-        public const string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
+        public const string TranslationsFile_Website_Download = "https://resources.download.minecraft.net";
 
         public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
 
@@ -472,6 +472,12 @@ namespace MinecraftClient
                         Advanced.MinTerminalWidth = 1;
                     if (Advanced.MinTerminalHeight < 1)
                         Advanced.MinTerminalHeight = 1;
+
+                    if (Advanced.TemporaryFixBadpacket && !Advanced.TerrainAndMovements)
+                    {
+                        Advanced.TerrainAndMovements = true;
+                        ConsoleIO.WriteLineFormatted("§c[Settings]You need to enable TerrainAndMovements before enabling TemporaryFixBadpacket.");
+                    }
                 }
 
                 [TomlDoNotInlineObject]
@@ -519,7 +525,7 @@ namespace MinecraftClient
                     public string MinecraftVersion = "auto";
 
                     [TomlInlineComment("$Main.Advanced.mc_forge$")]
-                    public ForgeConfigType EnableForge = ForgeConfigType.auto;
+                    public ForgeConfigType EnableForge = ForgeConfigType.no;
 
                     [TomlInlineComment("$Main.Advanced.brand_info$")]
                     public BrandInfoType BrandInfo = BrandInfoType.mcc;
@@ -792,7 +798,7 @@ namespace MinecraftClient
                     ConsoleInteractive.ConsoleWriter.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
 
                     // Buffer
-                    General.History_Input_Records = 
+                    General.History_Input_Records =
                         ConsoleInteractive.ConsoleBuffer.SetBackreadBufferLimit(General.History_Input_Records);
 
                     // Suggestion
@@ -1204,27 +1210,27 @@ namespace MinecraftClient
                         catch (ArgumentException)
                         {
                             checkResult = false;
-                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.Public = " + Public);
+                            ConsoleIO.WriteLineFormatted("§c[Settings]Illegal regular expression: ChatFormat.Public = " + Public);
                         }
 
                         try { _ = new Regex(Private); }
                         catch (ArgumentException)
                         {
                             checkResult = false;
-                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.Private = " + Private);
+                            ConsoleIO.WriteLineFormatted("§c[Settings]Illegal regular expression: ChatFormat.Private = " + Private);
                         }
 
                         try { _ = new Regex(TeleportRequest); }
                         catch (ArgumentException)
                         {
                             checkResult = false;
-                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.TeleportRequest = " + TeleportRequest);
+                            ConsoleIO.WriteLineFormatted("§c[Settings]Illegal regular expression: ChatFormat.TeleportRequest = " + TeleportRequest);
                         }
 
                         if (!checkResult)
                         {
                             UserDefined = false;
-                            ConsoleIO.WriteLineFormatted("§cChatFormat: User-defined regular expressions are disabled.");
+                            ConsoleIO.WriteLineFormatted("§c[Settings]ChatFormat: User-defined regular expressions are disabled.");
                         }
                     }
                 }

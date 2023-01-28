@@ -264,9 +264,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                         int[] palette = new int[paletteLength];
                         for (int i = 0; i < paletteLength; i++)
-                        {
                             palette[i] = dataTypes.ReadNextVarInt(cache);
-                        }
 
                         // Bit mask covering bitsPerBlock bits
                         // EG, if bitsPerBlock = 5, valueMask = 00011111 in binary

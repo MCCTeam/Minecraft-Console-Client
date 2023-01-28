@@ -23,6 +23,7 @@
         Bee,
         Blaze,
         Boat,
+        Camel,
         Cat,
         CaveSpider,
         ChestBoat,

@@ -26,7 +26,7 @@ jobs:
         submodules: 'true'
 
     - name: Download translations from crowdin
-      uses: crowdin/github-action@1.5.0
+      uses: crowdin/github-action@1.6.0
       with:
         upload_sources: true
         upload_translations: false

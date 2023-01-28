@@ -23,8 +23,12 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Executes(r => DigLookAt(r.Source))
+                .Then(l => l.Argument("Duration", Arguments.Double())
+                    .Executes(r => DigLookAt(r.Source, Arguments.GetDouble(r, "Duration"))))
                 .Then(l => l.Argument("Location", MccArguments.Location())
-                    .Executes(r => DigAt(r.Source, MccArguments.GetLocation(r, "Location"))))
+                    .Executes(r => DigAt(r.Source, MccArguments.GetLocation(r, "Location")))
+                    .Then(l => l.Argument("Duration", Arguments.Double())
+                        .Executes(r => DigAt(r.Source, MccArguments.GetLocation(r, "Location"), Arguments.GetDouble(r, "Duration")))))
                 .Then(l => l.Literal("_help")
                     .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
@@ -41,7 +45,7 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int DigAt(CmdResult r, Location blockToBreak)
+        private int DigAt(CmdResult r, Location blockToBreak, double duration = 0)
         {
             McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
@@ -54,7 +58,7 @@ namespace MinecraftClient.Commands
             Block block = handler.GetWorld().GetBlock(blockToBreak);
             if (block.Type == Material.Air)
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_no_block);
-            else if (handler.DigBlock(blockToBreak))
+            else if (handler.DigBlock(blockToBreak, duration: duration))
             {
                 blockToBreak = blockToBreak.ToCenter();
                 return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_dig_dig, blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.GetTypeString()));
@@ -63,7 +67,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_fail);
         }
 
-        private int DigLookAt(CmdResult r)
+        private int DigLookAt(CmdResult r, double duration = 0)
         {
             McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
@@ -74,7 +78,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_too_far);
             else if (block.Type == Material.Air)
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_no_block);
-            else if (handler.DigBlock(blockLoc, lookAtBlock: false))
+            else if (handler.DigBlock(blockLoc, lookAtBlock: false, duration: duration))
                 return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_dig_dig, blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
             else
                 return r.SetAndReturn(Status.Fail, Translations.cmd_dig_fail);
