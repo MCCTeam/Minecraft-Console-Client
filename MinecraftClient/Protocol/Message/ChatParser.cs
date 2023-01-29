@@ -302,11 +302,9 @@ namespace MinecraftClient.Protocol.Message
             catch (Exception e)
             {
                 ConsoleIO.WriteLineFormatted("§8" + Translations.chat_fail, acceptnewlines: true);
-                if (Config.Logging.DebugMessages)
-                {
-                    ConsoleIO.WriteLine(e.Message);
-                    ConsoleIO.WriteLine(e.StackTrace ?? "");
-                }
+                ConsoleIO.WriteLine(e.Message);
+                if (Config.Logging.DebugMessages && !string.IsNullOrEmpty(e.StackTrace))
+                    ConsoleIO.WriteLine(e.StackTrace);
             }
             finally
             {

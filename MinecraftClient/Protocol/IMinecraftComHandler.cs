@@ -466,7 +466,7 @@ namespace MinecraftClient.Protocol
         /// <param name="result">All commands.</param>
         public void OnAutoCompleteDone(int transactionId, string[] result);
 
-        public void OnDeclareCommands();
+        public void SetCanSendMessage(bool canSendMessage);
 
         /// <summary>
         /// Send a click container button packet to the server.
