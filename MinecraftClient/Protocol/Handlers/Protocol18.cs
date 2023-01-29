@@ -75,8 +75,9 @@ namespace MinecraftClient.Protocol.Handlers
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
         private float LastYaw, LastPitch;
 
+        private bool receiveDeclareCommands = false, receivePlayerInfo = false;
         private object MessageSigningLock = new();
-        private Guid chatUuid = Guid.Empty;
+        private Guid chatUuid = Guid.NewGuid();
         private int pendingAcknowledgments = 0, messageIndex = 0;
         private LastSeenMessagesCollector lastSeenMessagesCollector;
         private LastSeenMessageList.AcknowledgedMessage? lastReceivedMessage = null;
@@ -367,7 +368,19 @@ namespace MinecraftClient.Protocol.Handlers
                             SendPacket(PacketTypesOut.Pong, packetData);
                             break;
                         case PacketTypesIn.JoinGame:
+                            { // Temporary fix
+                                log.Debug("Receive JoinGame");
+
+                                receiveDeclareCommands = receivePlayerInfo = false;
+
+                                messageIndex = 0;
+                                pendingAcknowledgments = 0;
+
+                                lastReceivedMessage = null;
+                                lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
+                            }
                             handler.OnGameJoined(isOnlineMode);
+
                             int playerEntityID = dataTypes.ReadNextInt(packetData);
                             handler.OnReceivePlayerEntityID(playerEntityID);
 
@@ -467,8 +480,11 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.DeclareCommands:
                             if (protocolVersion >= MC_1_19_Version)
                             {
+                                log.Debug("Receive DeclareCommands");
                                 DeclareCommands.Read(dataTypes, packetData, protocolVersion);
-                                handler.OnDeclareCommands();
+                                receiveDeclareCommands = true;
+                                if (receivePlayerInfo)
+                                    handler.SetCanSendMessage(true);
                             }
                             break;
                         case PacketTypesIn.ChatMessage:
@@ -1404,10 +1420,28 @@ namespace MinecraftClient.Protocol.Handlers
                                             byte[] encodedPublicKey = dataTypes.ReadNextByteArray(packetData);
                                             byte[] publicKeySignature = dataTypes.ReadNextByteArray(packetData);
                                             player.SetPublicKey(chatUuid, publicKeyExpiryTime, encodedPublicKey, publicKeySignature);
+
+                                            if (playerUuid == handler.GetUserUuid())
+                                            {
+                                                log.Debug("Receive ChatUuid = " + chatUuid);
+                                                this.chatUuid = chatUuid;
+                                        }
                                         }
                                         else
                                         {
                                             player.ClearPublicKey();
+
+                                            if (playerUuid == handler.GetUserUuid())
+                                            {
+                                                log.Debug("Receive ChatUuid = Empty");
+                                            }
+                                        }
+
+                                        if (playerUuid == handler.GetUserUuid())
+                                        {
+                                            receivePlayerInfo = true;
+                                            if (receiveDeclareCommands)
+                                                handler.SetCanSendMessage(true);
                                         }
                                     }
                                     if ((actionBitset & 1 << 2) > 0) // Actions bit 2: update gamemode
@@ -3392,13 +3426,14 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     List<byte> packet = new();
 
-                    chatUuid = Guid.NewGuid();
                     packet.AddRange(DataTypes.GetUUID(chatUuid));
                     packet.AddRange(DataTypes.GetLong(playerKeyPair.GetExpirationMilliseconds()));
                     packet.AddRange(DataTypes.GetVarInt(playerKeyPair.PublicKey.Key.Length));
                     packet.AddRange(playerKeyPair.PublicKey.Key);
                     packet.AddRange(DataTypes.GetVarInt(playerKeyPair.PublicKey.SignatureV2!.Length));
                     packet.AddRange(playerKeyPair.PublicKey.SignatureV2);
+
+                    log.Debug($"SendPlayerSession MessageUUID = {chatUuid.ToString()},  len(PublicKey) = {playerKeyPair.PublicKey.Key.Length}, len(SignatureV2) = {playerKeyPair.PublicKey.SignatureV2!.Length}");
 
                     SendPacket(PacketTypesOut.PlayerSession, packet);
                     return true;

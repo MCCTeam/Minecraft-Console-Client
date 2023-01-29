@@ -2417,6 +2417,11 @@ namespace MinecraftClient
         /// </summary>
         public void OnGameJoined(bool isOnlineMode)
         {
+            if (protocolversion < Protocol18Handler.MC_1_19_3_Version || playerKeyPair == null || !isOnlineMode)
+                SetCanSendMessage(true);
+            else
+                SetCanSendMessage(false);
+
             string? bandString = Config.Main.Advanced.BrandInfo.ToBrandString();
             if (!String.IsNullOrWhiteSpace(bandString))
                 handler.SendBrandInfo(bandString.Trim());
@@ -2434,9 +2439,6 @@ namespace MinecraftClient
             if (protocolversion >= Protocol18Handler.MC_1_19_3_Version
                 && playerKeyPair != null && isOnlineMode)
                 handler.SendPlayerSession(playerKeyPair);
-
-            if (protocolversion < Protocol18Handler.MC_1_19_3_Version)
-                CanSendMessage = true;
 
             if (inventoryHandlingRequested)
             {
@@ -3482,9 +3484,10 @@ namespace MinecraftClient
             ConsoleIO.OnAutoCompleteDone(transactionId, result);
         }
 
-        public void OnDeclareCommands()
+        public void SetCanSendMessage(bool canSendMessage)
         {
-            CanSendMessage = true;
+            CanSendMessage = canSendMessage;
+            Log.Debug("CanSendMessage = " + canSendMessage);
         }
 
         /// <summary>

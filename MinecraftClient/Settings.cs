@@ -705,7 +705,7 @@ namespace MinecraftClient
                 public bool SignMessageInCommand = true;
 
                 [TomlInlineComment("$Signature.MarkLegallySignedMsg$")]
-                public bool MarkLegallySignedMsg = false;
+                public bool MarkLegallySignedMsg = true;
 
                 [TomlInlineComment("$Signature.MarkModifiedMsg$")]
                 public bool MarkModifiedMsg = true;
@@ -714,7 +714,7 @@ namespace MinecraftClient
                 public bool MarkIllegallySignedMsg = true;
 
                 [TomlInlineComment("$Signature.MarkSystemMessage$")]
-                public bool MarkSystemMessage = false;
+                public bool MarkSystemMessage = true;
 
                 [TomlInlineComment("$Signature.ShowModifiedChat$")]
                 public bool ShowModifiedChat = true;
