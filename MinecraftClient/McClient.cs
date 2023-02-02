@@ -2157,7 +2157,9 @@ namespace MinecraftClient
             {
                 if (windowId != 0)
                     inventories.Remove(windowId);
-                return handler.SendCloseWindow(windowId);
+                bool result = handler.SendCloseWindow(windowId);
+                DispatchBotEvent(bot => bot.OnInventoryClose(windowId));
+                return result;
             }
             return false;
         }

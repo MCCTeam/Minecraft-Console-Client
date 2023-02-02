@@ -9,12 +9,12 @@ on:
 env:
   PROJECT: "MinecraftClient"
   target-version: "net7.0"
-  compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
+  compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None"
 
 jobs:
   Build:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
+    if: ${{ !contains(github.event.head_commit.message, 'skip ci') }}
     timeout-minutes: 15
 
     steps:
@@ -45,14 +45,18 @@ jobs:
     - name: Setup Project Path
       run: |
         echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
-    
+        
     - name: Setup Output Paths
       run: |
-        echo win-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
         echo win-x86-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x86/publish/ >> $GITHUB_ENV
-        echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
-        echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
+        echo win-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo win-arm32-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-arm/publish/ >> $GITHUB_ENV
+        echo win-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-arm64/publish/ >> $GITHUB_ENV
+        echo linux-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
+        echo linux-arm32-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-arm/publish/ >> $GITHUB_ENV
         echo linux-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-arm64/publish/ >> $GITHUB_ENV
+        echo osx-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
+        echo osx-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-arm64/publish/ >> $GITHUB_ENV
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v2.1.0
@@ -68,42 +72,55 @@ jobs:
       run: |
         COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
         echo '' >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
+        echo build-version-info=${{ steps.date-version.outputs.time }}-${{ github.run_number }} >> $GITHUB_ENV
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
-
-    - name: Build for Windows x64
-      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
-
-    - name: Zip Windows x64 Build
-      run: zip -qq -r windows-x64.zip *
-      working-directory: ${{ env.win-x64-out-path }}
 
     - name: Build for Windows x86
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x86 ${{ env.compile-flags }}
-
+      
     - name: Zip Windows x86 Build
       run: zip -qq -r windows-x86.zip *
       working-directory: ${{ env.win-x86-out-path }}
 
-    - name: Build for Linux
+    - name: Build for Windows x64
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
+      
+    - name: Zip Windows x64 Build
+      run: zip -qq -r windows-x64.zip *
+      working-directory: ${{ env.win-x64-out-path }}
+
+    - name: Build for Windows ARM32
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-arm ${{ env.compile-flags }}
+
+    - name: Build for Windows ARM64
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-arm64 ${{ env.compile-flags }}
+
+    - name: Build for Linux X64
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-x64 ${{ env.compile-flags }}
 
-    - name: Zip Linux Build
+    - name: Zip Linux X64 Build
       run: zip -qq -r linux.zip *
-      working-directory: ${{ env.linux-out-path }}
+      working-directory: ${{ env.linux-x64-out-path }}
 
-    - name: Build for ARM64 Linux
+    - name: Build for Linux ARM32
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-arm ${{ env.compile-flags }}
+
+    - name: Build for Linux ARM64
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-arm64 ${{ env.compile-flags }}
-      
+            
     - name: Zip ARM64 Linux Build
       run: zip -qq -r linux-arm64.zip *
       working-directory: ${{ env.linux-arm64-out-path }}
 
-    - name: Build for OSX
+    - name: Build for OSX X64
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r osx-x64 ${{ env.compile-flags }}
-
+      
     - name: Zip OSX Build
       run: zip -qq -r osx.zip *
-      working-directory: ${{ env.osx-out-path }}
+      working-directory: ${{ env.osx-x64-out-path }}
+
+    - name: Build for OSX ARM64
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r osx-arm64 ${{ env.compile-flags }}
 
     - name: Get Release DateTime
       id: date-release
@@ -112,7 +129,88 @@ jobs:
         timeZone: 0
         format: 'YYYYMMDD'
 
-    - name: Windows x64 Release
+    - name: Windows X86 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-x86-out-path }}${{ env.PROJECT }}.exe
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-Windows-X86.exe
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Windows X64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-x64-out-path }}${{ env.PROJECT }}.exe
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-Windows-X64.exe
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Windows ARM32 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-arm32-out-path }}${{ env.PROJECT }}.exe
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-Windows-Arm32.exe
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Windows ARM64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-arm64-out-path }}${{ env.PROJECT }}.exe
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-Windows-Arm64.exe
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Linux X64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-x64-out-path }}${{ env.PROJECT }}
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-Linux-X64
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Linux ARM32 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-arm32-out-path }}${{ env.PROJECT }}
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-Linux-Arm32
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Linux ARM64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-arm64-out-path }}${{ env.PROJECT }}
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-Linux-Arm64
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: OSX X64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.osx-x64-out-path }}${{ env.PROJECT }}
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-OSX-X64
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: OSX ARM64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-x64-out-path }}windows-x64.zip
+        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-OSX-Arm64
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Windows X64 Release (transition version)
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -121,7 +219,7 @@ jobs:
         assetName: ${{ env.PROJECT }}-windows-x64.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
-    - name: Windows x86 Release
+    - name: Windows X86 Release (transition version)
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -130,16 +228,16 @@ jobs:
         assetName: ${{ env.PROJECT }}-windows-x86.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
-    - name: Linux Release
+    - name: Linux X64 Release (transition version)
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ env.linux-out-path }}linux.zip
+        filePath: ${{ env.linux-x64-out-path }}linux.zip
         assetName: ${{ env.PROJECT }}-linux.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
-    - name: Linux ARM64 Release
+    - name: Linux ARM64 Release (transition version)
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -148,12 +246,12 @@ jobs:
         assetName: ${{ env.PROJECT }}-linux-arm64.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
-    - name: OSX Release
+    - name: OSX X64 Release (transition version)
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ env.osx-out-path }}osx.zip
+        filePath: ${{ env.osx-x64-out-path }}osx.zip
         assetName: ${{ env.PROJECT }}-osx.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 

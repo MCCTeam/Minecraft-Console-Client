@@ -125,31 +125,45 @@ namespace MinecraftClient
 
                             try
                             {
-                                string downloadUrl = $"{GithubReleaseUrl}/download/{latestVersion}/MinecraftClient-{OSInfo}.zip";
+                                string downloadUrl = $"{GithubReleaseUrl}/download/{latestVersion}/";
+                                string fileNameWithoutExtension = $"MinecraftClient-{latestVersion}-{OSInfo}";
+                                string fileName = fileNameWithoutExtension + GetExecutableFileExtension();
                                 downloadStartTime = DateTime.Now;
                                 lastNotifyTime = DateTime.MinValue;
                                 lastBytesTransferred = 0;
-                                using HttpResponseMessage response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                                using Stream zipFileStream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
-                                if (!cancellationToken.IsCancellationRequested)
+                                bool hasFile = true;
+                                HttpResponseMessage response = await httpClient.GetAsync(downloadUrl + fileName, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                                if (!response.IsSuccessStatusCode)
                                 {
-                                    using ZipArchive zipArchive = new(zipFileStream, ZipArchiveMode.Read);
-                                    ConsoleIO.WriteLine(Translations.mcc_update_download_complete);
-                                    foreach (var archiveEntry in zipArchive.Entries)
+                                    fileName = fileNameWithoutExtension + ".zip";
+                                    response = await httpClient.GetAsync(downloadUrl + fileName, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                                    if (!response.IsSuccessStatusCode)
                                     {
-                                        if (archiveEntry.Name.StartsWith("MinecraftClient"))
-                                        {
-                                            string fileName = $"MinecraftClient-{latestVersion}{Path.GetExtension(archiveEntry.Name)}";
-                                            archiveEntry.ExtractToFile(fileName, true);
-                                            ConsoleIO.WriteLineFormatted("§e" + string.Format(Translations.mcc_update_save_as, fileName), true);
-                                            break;
-                                        }
+                                        hasFile = false;
+                                        ConsoleIO.WriteLine($"{Translations.mcc_update_download_fail} File {fileNameWithoutExtension}{GetExecutableFileExtension()} not found.");
                                     }
-                                    zipArchive.Dispose();
                                 }
 
-                                zipFileStream.Dispose();
+                                if (hasFile)
+                                {
+                                    using (FileStream fileStream = File.Create(fileName))
+                                    {
+                                        await response.Content.CopyToAsync(fileStream);
+                                    }
+
+                                    ConsoleIO.WriteLineFormatted("§e" + string.Format(Translations.mcc_update_save_as, fileName), true);
+
+                                    if (!OperatingSystem.IsWindows())
+                                        File.SetUnixFileMode(fileName, UnixFileMode.UserRead
+                                                                       | UnixFileMode.UserWrite
+                                                                       | UnixFileMode.UserExecute
+                                                                       | UnixFileMode.GroupRead
+                                                                       | UnixFileMode.GroupExecute
+                                                                       | UnixFileMode.OtherRead
+                                                                       | UnixFileMode.OtherExecute);
+                                }
+
                                 response.Dispose();
                             }
                             catch (TaskCanceledException) { }
@@ -225,26 +239,47 @@ namespace MinecraftClient
 
         private static string GetOSIdentifier()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                    return "linux-arm64";
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                    return "linux";
-            }
+            string OSPlatformName;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                OSPlatformName = "Windows";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                OSPlatformName = "Linux";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                OSPlatformName = "OSX";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                OSPlatformName = "FreeBSD";
+            else
+                return string.Empty;
+
+            string architecture = RuntimeInformation.ProcessArchitecture switch
             {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                    return "osx";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                    return "windows-x64";
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                    return "windows-x86";
-            }
-            return string.Empty;
+                Architecture.X86 => "X86",
+                Architecture.X64 => "X64",
+                Architecture.Arm => "Arm32",
+                Architecture.Arm64 => "Arm64",
+                Architecture.Wasm => "Wasm",
+                Architecture.S390x => "S390x",
+                Architecture.LoongArch64 => "LoongArch64",
+                Architecture.Armv6 => "Armv6",
+                Architecture.Ppc64le => "Ppc64le",
+                _ => RuntimeInformation.ProcessArchitecture.ToString(),
+            };
+
+            return OSPlatformName + '-' + architecture;
+        }
+
+        private static string GetExecutableFileExtension()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return ".exe";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return string.Empty;
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return string.Empty;
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                return string.Empty;
+            else
+                return string.Empty;
         }
 
         private static bool CompareVersionInfo(string? current, string? latest)
