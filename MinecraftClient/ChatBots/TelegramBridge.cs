@@ -345,6 +345,17 @@ namespace MinecraftClient.ChatBots
             {
                 var command = text[1..];
 
+                if (command.ToLower().Contains("quit") || command.ToLower().Contains("exit"))
+                {
+                    await botClient.SendTextMessageAsync(
+                        chatId: chatId,
+                        replyToMessageId: message.MessageId,
+                        text: "This command has been disabled due to Telegram caching causing issues, please stop your client manually.",
+                        cancellationToken: _cancellationToken,
+                        parseMode: ParseMode.Markdown);
+                    return;;
+                }
+
                 CmdResult result = new();
                 PerformInternalCommand(command, ref result);
 
