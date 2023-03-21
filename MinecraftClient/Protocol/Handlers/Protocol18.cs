@@ -1955,18 +1955,8 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.SetExperience:
                             float experiencebar = dataTypes.ReadNextFloat(packetData);
                             int totalexperience, level;
-
-                            if (protocolVersion >= MC_1_19_3_Version)
-                            {
-                                totalexperience = dataTypes.ReadNextVarInt(packetData);
-                                level = dataTypes.ReadNextVarInt(packetData);
-                            }
-                            else
-                            {
-                                level = dataTypes.ReadNextVarInt(packetData);
-                                totalexperience = dataTypes.ReadNextVarInt(packetData);
-                            }
-
+                            level = dataTypes.ReadNextVarInt(packetData);
+                            totalexperience = dataTypes.ReadNextVarInt(packetData);
                             handler.OnSetExperience(experiencebar, level, totalexperience);
                             break;
                         case PacketTypesIn.Explosion:
