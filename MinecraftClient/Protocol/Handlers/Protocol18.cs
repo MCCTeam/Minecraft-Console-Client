@@ -110,13 +110,13 @@ namespace MinecraftClient.Protocol.Handlers
             randomGen = RandomNumberGenerator.Create();
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_3_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_4_Version)
             {
                 log.Error("§c" + Translations.extra_terrainandmovement_disabled);
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_3_Version))
+            if (handler.GetInventoryEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_4_Version))
             {
                 log.Error("§c" + Translations.extra_inventory_disabled);
                 handler.SetInventoryEnabled(false);
@@ -128,10 +128,12 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             // Block palette
-            if (protocolVersion > MC_1_19_3_Version && handler.GetTerrainEnabled())
+            if (protocolVersion > MC_1_19_4_Version && handler.GetTerrainEnabled())
                 throw new NotImplementedException(Translations.exception_palette_block);
 
-            if (protocolVersion >= MC_1_19_3_Version)
+            if (protocolVersion >= MC_1_19_4_Version)
+                Block.Palette = new Palette1194();
+            else if (protocolVersion >= MC_1_19_3_Version)
                 Block.Palette = new Palette1193();
             else if (protocolVersion >= MC_1_19_Version)
                 Block.Palette = new Palette119();
@@ -149,10 +151,12 @@ namespace MinecraftClient.Protocol.Handlers
                 Block.Palette = new Palette112();
 
             // Entity palette
-            if (protocolVersion > MC_1_19_3_Version && handler.GetEntityHandlingEnabled())
+            if (protocolVersion > MC_1_19_4_Version && handler.GetEntityHandlingEnabled())
                 throw new NotImplementedException(Translations.exception_palette_entity);
 
-            if (protocolVersion >= MC_1_19_3_Version)
+            if (protocolVersion >= MC_1_19_4_Version)
+                entityPalette = new EntityPalette1194();
+            else if (protocolVersion >= MC_1_19_3_Version)
                 entityPalette = new EntityPalette1193();
             else if (protocolVersion >= MC_1_19_Version)
                 entityPalette = new EntityPalette119();
@@ -172,10 +176,12 @@ namespace MinecraftClient.Protocol.Handlers
                 entityPalette = new EntityPalette112();
 
             // Item palette
-            if (protocolVersion > MC_1_19_3_Version && handler.GetInventoryEnabled())
+            if (protocolVersion > MC_1_19_4_Version && handler.GetInventoryEnabled())
                 throw new NotImplementedException(Translations.exception_palette_item);
 
-            if (protocolVersion >= MC_1_19_3_Version)
+            if (protocolVersion >= MC_1_19_4_Version)
+                itemPalette = new ItemPalette1194();
+            else if (protocolVersion >= MC_1_19_3_Version)
                 itemPalette = new ItemPalette1193();
             else if (protocolVersion >= MC_1_19_Version)
                 itemPalette = new ItemPalette119();
