@@ -64,6 +64,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_19_Version = 759;
         internal const int MC_1_19_2_Version = 760;
         internal const int MC_1_19_3_Version = 761;
+        internal const int MC_1_19_4_Version = 762;
 
         private int compression_treshold = 0;
         private int autocomplete_transaction_id = 0;
@@ -477,6 +478,35 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             break;
+                        case PacketTypesIn.Bundle: // Empty as of 1.19.4, just skip
+                            return true;
+                        case PacketTypesIn.DamageEvent:
+                            dataTypes.SkipNextVarInt(packetData);
+                            var sourceType = dataTypes.ReadNextVarInt(packetData);
+
+                            if (sourceType != 0)
+                            {
+                                if(dataTypes.ReadNextBool(packetData))
+                                    dataTypes.SkipNextVarInt(packetData);
+                                
+                                if(dataTypes.ReadNextBool(packetData))
+                                    dataTypes.SkipNextVarInt(packetData);
+                                    
+                                if(dataTypes.ReadNextBool(packetData))
+                                    dataTypes.ReadNextLocation(packetData);
+                            }
+                            
+                            // TODO: Write a function to use this data
+                            break;
+                        case PacketTypesIn.HurtAnimation:
+                            dataTypes.SkipNextVarInt(packetData);
+                            dataTypes.ReadNextFloat(packetData);
+                            // TODO: Write a function to use this data
+                            break;
+                        case PacketTypesIn.ChunksBiomes:
+                            // TODO: Use ?
+                            // Not clear for what this is used as right of now.
+                            return true;
                         case PacketTypesIn.DeclareCommands:
                             if (protocolVersion >= MC_1_19_Version)
                             {
@@ -925,8 +955,11 @@ namespace MinecraftClient.Protocol.Handlers
                                     LastYaw = yaw; LastPitch = pitch;
                                 }
 
-                                if (protocolVersion >= MC_1_17_Version)
-                                    dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 and above
+                                if (protocolVersion >= MC_1_17_Version && protocolVersion < MC_1_19_4_Version)
+                                    dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 and abo
+                                
+                                if(protocolVersion < MC_1_19_4_Version)
+                                    dataTypes.ReadNextVarInt(packetData);
                             }
                             break;
                         case PacketTypesIn.ChunkData:
@@ -1257,9 +1290,20 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                         case PacketTypesIn.ServerData:
                             string motd = "-";
-                            bool hasMotd = dataTypes.ReadNextBool(packetData);
-                            if (hasMotd)
+
+                            bool hasMotd = false;
+                            if (protocolVersion < MC_1_19_4_Version)
+                            {
+                                hasMotd = dataTypes.ReadNextBool(packetData);
+                                
+                                if (hasMotd)
+                                    motd = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                            }
+                            else
+                            {
+                                hasMotd = true;
                                 motd = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                            }
 
                             string iconBase64 = "-";
                             bool hasIcon = dataTypes.ReadNextBool(packetData);
@@ -1899,7 +1943,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 Dictionary<int, object?> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
 
                                 int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
-                                if (protocolVersion > MC_1_19_3_Version)
+                                if (protocolVersion > MC_1_19_4_Version)
                                     throw new NotImplementedException(Translations.exception_palette_healthfield);
                                 else if (protocolVersion >= MC_1_17_Version) // 1.17 and above
                                     healthField = 9;
