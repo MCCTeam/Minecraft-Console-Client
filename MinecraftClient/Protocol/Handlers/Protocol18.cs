@@ -957,9 +957,6 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 if (protocolVersion >= MC_1_17_Version && protocolVersion < MC_1_19_4_Version)
                                     dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 and abo
-                                
-                                if(protocolVersion < MC_1_19_4_Version)
-                                    dataTypes.ReadNextVarInt(packetData);
                             }
                             break;
                         case PacketTypesIn.ChunkData:
