@@ -9,6 +9,7 @@
         ActionBar,                  //
         Advancements,               //
         AttachEntity,               //
+        Bundle,                     // Added in 1.19.4
         BlockAction,                //
         BlockBreakAnimation,        //
         BlockChange,                //
@@ -20,12 +21,14 @@
         ChatMessage,                //
         ChatPreview,                // Added in 1.19
         ChatSuggestions,            // Added in 1.19.1 (1.19.2)
+        ChunksBiomes,               // Added in 1.19.4
         ChunkData,                  //
         ClearTiles,                 //
         CloseWindow,                //
         CollectItem,                //
         CombatEvent,                //
         CraftRecipeResponse,        //
+        DamageEvent,                // Added in 1.19.4
         DeathCombatEvent,           //
         DeclareCommands,            //
         DeclareRecipes,             //
@@ -54,6 +57,7 @@
         FeatureFlags,               // Added in 1.19.3
         HeldItemChange,             //
         HideMessage,                // Added in 1.19.1 (1.19.2)
+        HurtAnimation,              // Added in 1.19.4
         InitializeWorldBorder,      //
         JoinGame,                   //
         KeepAlive,                  //
