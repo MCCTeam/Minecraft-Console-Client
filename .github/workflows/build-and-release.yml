@@ -86,12 +86,21 @@ jobs:
     timeout-minutes: 15
   
     steps:   
-    - name: Cache
-      uses: actions/cache@v3.2.4
+    - name: Check cache
+      uses: actions/cache/restore@v3
       id: cache-check
       with:
         path: ${{ github.workspace }}/*
-        key: 'translation-${{ github.sha }}'
+        key: "translation-${{ github.sha }}"
+        lookup-only: true
+        restore-keys: "translation-"
+  
+    - name: Checkout
+      uses: actions/checkout@v3
+      if: steps.cache-check.outputs.cache-hit != 'true'
+      with:
+        fetch-depth: 0
+        submodules: 'true'
   
     - name: Download translations from crowdin
       uses: crowdin/github-action@v1.6.0
@@ -110,6 +119,13 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
         CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+      
+    - name: Save cache
+      uses: actions/cache/save@v3
+      if: steps.cache-check.outputs.cache-hit != 'true'
+      with:
+        path:  ${{ github.workspace }}/*
+        key: "translation-${{ github.sha }}"
         
   build-transition-version:
     runs-on: ubuntu-latest
