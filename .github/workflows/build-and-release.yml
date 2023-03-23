@@ -14,7 +14,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.fetch-translation.result != 'failure' }}
+    if: ${{ always() && needs.fetch-translations.result != 'failure' }}
     needs: [determine-build, fetch-translations]
     timeout-minutes: 15
     strategy:
@@ -122,7 +122,7 @@ jobs:
         
   build-transition-version:
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.fetch-translation.result != 'failure' }}
+    if: ${{ always() && needs.fetch-translations.result != 'failure' }}
     needs: [determine-build, fetch-translations]
     timeout-minutes: 15
     strategy:
