@@ -24,7 +24,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-      if: ${{ jobs.fetch-translations.result == 'skipped' }}
+      if: ${{ always() && needs.fetch-translations.result == 'skipped' }}
       with:
         fetch-depth: 0
         submodules: 'true'
@@ -123,7 +123,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-      if: ${{ jobs.fetch-translations.result == 'skipped' }}
+      if: ${{ always() && needs.fetch-translations.result == 'skipped' }}
       with:
         fetch-depth: 0
         submodules: 'true'
