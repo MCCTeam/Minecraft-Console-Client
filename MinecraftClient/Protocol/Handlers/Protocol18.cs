@@ -477,6 +477,8 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             break;
+                        case PacketTypesIn.SpawnPainting: // Just skip, no need for this
+                            return true;
                         case PacketTypesIn.DeclareCommands:
                             if (protocolVersion >= MC_1_19_Version)
                             {
