@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: determine-build
     # Translations will only be fetched in the MCCTeam repository, since it needs crowdin secrets.
-    if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
+    if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' || github.repository == 'breadbyte' }}
     timeout-minutes: 15
   
     steps:   
