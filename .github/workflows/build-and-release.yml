@@ -14,7 +14,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
+    if: ${{ always() && needs.fetch-translations.result != 'failure' }}
     needs: [determine-build, fetch-translations]
     timeout-minutes: 15
     strategy:
@@ -24,6 +24,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+      if: ${{ always() && needs.fetch-translations.result == 'skipped' }}
       with:
         fetch-depth: 0
         submodules: 'true'
@@ -80,23 +81,32 @@ jobs:
       fail-fast: true
     runs-on: ubuntu-latest
     needs: determine-build
-    # Only works in MCCTeam repository, since it needs crowdin secrets.
+    # Translations will only be fetched in the MCCTeam repository, since it needs crowdin secrets.
     if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
     timeout-minutes: 15
   
     steps:   
-    - name: Cache
-      uses: actions/cache@v3.2.4
+    - name: Check cache
+      uses: actions/cache/restore@v3
       id: cache-check
       with:
         path: ${{ github.workspace }}/*
-        key: 'translation-${{ github.sha }}'
+        key: "translation-${{ github.sha }}"
+        lookup-only: true
+        restore-keys: "translation-"
   
+    - name: Checkout
+      uses: actions/checkout@v3
+      if: steps.cache-check.outputs.cache-hit != 'true'
+      with:
+        fetch-depth: 0
+        submodules: 'true'
+
     - name: Download translations from crowdin
       uses: crowdin/github-action@v1.6.0
       if: steps.cache-check.outputs.cache-hit != 'true'
       with:
-        upload_sources: true
+        upload_sources: false
         upload_translations: false
         download_translations: true
 
@@ -109,10 +119,17 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
         CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+      
+    - name: Save cache
+      uses: actions/cache/save@v3
+      if: steps.cache-check.outputs.cache-hit != 'true'
+      with:
+        path:  ${{ github.workspace }}/*
+        key: "translation-${{ github.sha }}"
         
   build-transition-version:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
+    if: ${{ always() && needs.fetch-translations.result != 'failure' }}
     needs: [determine-build, fetch-translations]
     timeout-minutes: 15
     strategy:
@@ -123,6 +140,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+      if: ${{ always() && needs.fetch-translations.result == 'skipped' }}
       with:
         fetch-depth: 0
         submodules: 'true'
@@ -175,7 +193,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
         filePath: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
-        # ${{ env.PROJECT }}-linux.zip
         assetName: ${{ env.PROJECT }}-${{ (contains(matrix.target, 'linux-x64') && 'linux.zip') || (contains(matrix.target, 'win-x86') && 'windows-x86.zip') || (contains(matrix.target, 'win-x64') && 'windows-x64.zip') || (contains(matrix.target, 'linux-arm64') && 'linux-arm64.zip') || (contains(matrix.target, 'osx-x64') && 'osx.zip') }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
         
