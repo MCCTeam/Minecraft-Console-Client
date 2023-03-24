@@ -2,6 +2,9 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping.EntityMetadataPalettes;
 
+/// <summary>
+/// 1.13 - 1.19.2
+/// </summary>
 public class EntityMetadataPalette1191 : EntityMetadataPalette
 {
     private readonly Dictionary<int, EntityMetaDataType> entityMetadataMappings = new()
@@ -27,7 +30,7 @@ public class EntityMetadataPalette1191 : EntityMetadataPalette
         { 18, EntityMetaDataType.Pose },
         { 19, EntityMetaDataType.CatVariant },
         { 20, EntityMetaDataType.FrogVariant },
-        { 21, EntityMetaDataType.GlobalPosition },
+        { 21, EntityMetaDataType.OptionalGlobalPosition },
         { 22, EntityMetaDataType.PaintingVariant }
     };
         

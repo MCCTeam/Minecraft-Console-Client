@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping.EntityMetadataPalettes;
 
-public class EntityMetadataPalette111 : EntityMetadataPalette
+public class EntityMetadataPalette1122 : EntityMetadataPalette
 {
-    // 1.11 : https://wiki.vg/index.php?title=Entity_metadata&oldid=8269
+    // 1.9 - 1.12.2
     private readonly Dictionary<int, EntityMetaDataType> entityMetadataMappings = new()
     {
         { 0, EntityMetaDataType.Byte },
@@ -19,7 +19,8 @@ public class EntityMetadataPalette111 : EntityMetadataPalette
         { 9, EntityMetaDataType.OptionalPosition },
         { 10, EntityMetaDataType.Direction },
         { 11, EntityMetaDataType.OptionalUuid },
-        { 12, EntityMetaDataType.OptionalBlockId }
+        { 12, EntityMetaDataType.OptionalBlockId },
+        { 13, EntityMetaDataType.Nbt },
     };
         
     public override Dictionary<int, EntityMetaDataType> GetEntityMetadataMappingsList()
