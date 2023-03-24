@@ -28,7 +28,7 @@ public class EntityMetadataPalette1193 : EntityMetadataPalette
         { 19, EntityMetaDataType.Pose },
         { 20, EntityMetaDataType.CatVariant },
         { 21, EntityMetaDataType.FrogVariant },
-        { 22, EntityMetaDataType.OptionalGlobalPosition },
+        { 22, EntityMetaDataType.GlobalPosition },
         { 23, EntityMetaDataType.PaintingVariant }
     };
         
