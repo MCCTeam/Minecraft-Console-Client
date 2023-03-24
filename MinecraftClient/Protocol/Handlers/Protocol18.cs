@@ -86,6 +86,7 @@ namespace MinecraftClient.Protocol.Handlers
         readonly Protocol18Terrain pTerrain;
         readonly IMinecraftComHandler handler;
         readonly EntityPalette entityPalette;
+        readonly EntityMetadataPalette entityMetadataPalette;
         readonly ItemPalette itemPalette;
         readonly PacketTypePalette packetPalette;
         readonly SocketWrapper socketWrapper;
@@ -178,6 +179,8 @@ namespace MinecraftClient.Protocol.Handlers
                 entityPalette = new EntityPalette113();
             else
                 entityPalette = new EntityPalette112();
+
+            entityMetadataPalette = EntityMetadataPalette.GetPalette(protocolVersion);
 
             // Item palette
             if (protocolVersion > MC_1_19_4_Version && handler.GetInventoryEnabled())
@@ -2132,8 +2135,9 @@ namespace MinecraftClient.Protocol.Handlers
                             if (handler.GetEntityHandlingEnabled())
                             {
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                Dictionary<int, object?> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
+                                Dictionary<int, object?> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette, entityMetadataPalette);
 
+                                // Also make a palette for field? Will be a lot of work
                                 int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
                                 if (protocolVersion > MC_1_19_4_Version)
                                     throw new NotImplementedException(Translations.exception_palette_healthfield);

@@ -590,361 +590,216 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         //TODO: Refactor this to use new Entity Metadata Palettes
-        public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette)
+        public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette, EntityMetadataPalette metadataPalette)
         {
+            if (protocolversion <= Protocol18Handler.MC_1_8_Version)
+                throw new NotImplementedException(); // Require sepcial implementation
+
             Dictionary<int, object?> data = new();
             byte key = ReadNextByte(cache);
 
             while (key != 0xff)
             {
-                int type = ReadNextVarInt(cache);
+                int typeId = ReadNextVarInt(cache);
+                EntityMetaDataType type;
+                try
+                {
+                    type = metadataPalette.GetDataType(typeId);
+                }
+                catch (KeyNotFoundException)
+                {
+                    throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId +
+                                                                    ". Is this up to date for new MC Version?");
+                }
 
                 // Value's data type is depended on Type
                 object? value = null;
 
-                // starting from 1.13, Optional Chat is inserted as number 5 in 1.13 and IDs after 5 got shifted.
-                // Increase type ID by 1 if
-                // - below 1.13
-                // - type ID larger than 4
-                if (protocolversion < Protocol18Handler.MC_1_13_Version)
+                switch (type)
                 {
-                    if (type > 4)
-                        ++type;
-                }
-
-                // Temporary
-                if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
-                {
-                    switch (type)
-                    {
-                        case 0: // byte
-                            value = ReadNextByte(cache);
-                            break;
-                        case 1: // VarInt
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 2: // Long
-                            value = ReadNextLong(cache);
-                            break;
-                            ;
-                        case 3: // Float
-                            value = ReadNextFloat(cache);
-                            break;
-                        case 4: // String
+                    case EntityMetaDataType.Byte: // byte
+                        value = ReadNextByte(cache);
+                        break;
+                    case EntityMetaDataType.VarInt: // VarInt
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.VarLong: // Long
+                        value = ReadNextVarLong(cache);
+                        break;
+                    case EntityMetaDataType.Float: // Float
+                        value = ReadNextFloat(cache);
+                        break;
+                    case EntityMetaDataType.String: // String
+                        value = ReadNextString(cache);
+                        break;
+                    case EntityMetaDataType.Chat: // Chat
+                        value = ReadNextString(cache);
+                        break;
+                    case EntityMetaDataType.OptionalChat: // Optional Chat
+                        if (ReadNextBool(cache))
                             value = ReadNextString(cache);
-                            break;
-                        case 5: // Chat
-                            value = ReadNextString(cache);
-                            break;
-                        case 6: // Optional Chat
-                            if (ReadNextBool(cache))
-                                value = ReadNextString(cache);
-                            break;
-                        case 7: // Slot
-                            value = ReadNextItemSlot(cache, itemPalette);
-                            break;
-                        case 8: // Boolean
-                            value = ReadNextBool(cache);
-                            break;
-                        case 9: // Rotation (3x floats)
-                            value = new List<float>
-                            {
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache)
-                            };
-                            break;
-                        case 10: // Position
+                        break;
+                    case EntityMetaDataType.Slot: // Slot
+                        value = ReadNextItemSlot(cache, itemPalette);
+                        break;
+                    case EntityMetaDataType.Boolean: // Boolean
+                        value = ReadNextBool(cache);
+                        break;
+                    case EntityMetaDataType.Rotation: // Rotation (3x floats)
+                        value = new List<float>
+                        {
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache)
+                        };
+                        break;
+                    case EntityMetaDataType.Position: // Position
+                        value = ReadNextLocation(cache);
+                        break;
+                    case EntityMetaDataType.OptionalPosition: // Optional Position
+                        if (ReadNextBool(cache))
+                        {
                             value = ReadNextLocation(cache);
-                            break;
-                        case 11: // Optional Position
-                            if (ReadNextBool(cache))
-                            {
-                                value = ReadNextLocation(cache);
-                            }
-
-                            break;
-                        case 12: // Direction (VarInt)
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 13: // Optional UUID
-                            if (ReadNextBool(cache))
-                            {
-                                value = ReadNextUUID(cache);
-                            }
-
-                            break;
-                        case 14: // BlockID (VarInt)
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 15: // Optional BlockID (VarInt)
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 16: // NBT
-                            value = ReadNextNbt(cache);
-                            break;
-                        case 17: // Particle
-                            // Currently not handled. Reading data only
-                            int ParticleID = ReadNextVarInt(cache);
-                            // TODO: Go through wiki history and write for every version
-                            // 1.19.3 - https://wiki.vg/index.php?title=Data_types&oldid=17986
-                            // 1.18 - https://wiki.vg/index.php?title=Data_types&oldid=17180
-                            // 1.17 - https://wiki.vg/index.php?title=Data_types&oldid=16740
-                            // 1.15 - https://wiki.vg/index.php?title=Data_types&oldid=15338
-                            // 1.13 - https://wiki.vg/index.php?title=Data_types&oldid=14271
-                            switch (ParticleID)
-                            {
-                                case 2:
+                        }
+                        break;
+                    case EntityMetaDataType.Direction: // Direction (VarInt)
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.OptionalUuid: // Optional UUID
+                        if (ReadNextBool(cache))
+                        {
+                            value = ReadNextUUID(cache);
+                        }
+                        break;
+                    case EntityMetaDataType.BlockId: // BlockID (VarInt)
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.OptionalBlockId: // Optional BlockID (VarInt)
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.Nbt: // NBT
+                        value = ReadNextNbt(cache);
+                        break;
+                    case EntityMetaDataType.Particle: // Particle
+                        // Currently not handled. Reading data only
+                        int ParticleID = ReadNextVarInt(cache);
+                        // TODO: Go through wiki history and write for every version
+                        // 1.19.3 - https://wiki.vg/index.php?title=Data_types&oldid=17986
+                        // 1.18 - https://wiki.vg/index.php?title=Data_types&oldid=17180
+                        // 1.17 - https://wiki.vg/index.php?title=Data_types&oldid=16740
+                        // 1.15 - https://wiki.vg/index.php?title=Data_types&oldid=15338
+                        // 1.13 - https://wiki.vg/index.php?title=Data_types&oldid=14271
+                        switch (ParticleID)
+                        {
+                            case 2:
+                                ReadNextVarInt(cache);
+                                break;
+                            case 3:
+                                ReadNextVarInt(cache);
+                                break;
+                            case 14:
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                break;
+                            case 15:
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                break;
+                            case 25:
+                                ReadNextVarInt(cache);
+                                break;
+                            case 30:
+                                ReadNextFloat(cache);
+                                break;
+                            case 39:
+                                ReadNextItemSlot(cache, itemPalette);
+                                break;
+                            case 40:
+                                string positionSourceType = ReadNextString(cache);
+                                if (positionSourceType == "minecraft:block")
+                                {
+                                    ReadNextLocation(cache);
+                                }
+                                else if (positionSourceType == "minecraft:entity")
+                                {
                                     ReadNextVarInt(cache);
-                                    break;
-                                case 3:
-                                    ReadNextVarInt(cache);
-                                    break;
-                                case 14:
                                     ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    break;
-                                case 15:
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    break;
-                                case 25:
-                                    ReadNextVarInt(cache);
-                                    break;
-                                case 30:
-                                    ReadNextFloat(cache);
-                                    break;
-                                case 39:
-                                    ReadNextItemSlot(cache, itemPalette);
-                                    break;
-                                case 40:
-                                    string positionSourceType = ReadNextString(cache);
-                                    if (positionSourceType == "minecraft:block")
-                                    {
-                                        ReadNextLocation(cache);
-                                    }
-                                    else if (positionSourceType == "minecraft:entity")
-                                    {
-                                        ReadNextVarInt(cache);
-                                        ReadNextFloat(cache);
-                                    }
+                                }
 
-                                    ReadNextVarInt(cache);
-                                    break;
-                            }
+                                ReadNextVarInt(cache);
+                                break;
+                        }
 
-                            break;
-                        case 18: // Villager Data (3x VarInt)
-                            value = new List<int>
-                            {
-                                ReadNextVarInt(cache),
-                                ReadNextVarInt(cache),
-                                ReadNextVarInt(cache)
-                            };
-                            break;
-                        case 19: // Optional VarInt
-                            if (ReadNextBool(cache))
-                            {
-                                value = ReadNextVarInt(cache);
-                            }
-
-                            break;
-                        case 20: // Pose
+                        break;
+                    case EntityMetaDataType.VillagerData: // Villager Data (3x VarInt)
+                        value = new List<int>
+                        {
+                            ReadNextVarInt(cache),
+                            ReadNextVarInt(cache),
+                            ReadNextVarInt(cache)
+                        };
+                        break;
+                    case EntityMetaDataType.OptionalVarInt: // Optional VarInt
+                        if (ReadNextBool(cache))
+                        {
                             value = ReadNextVarInt(cache);
-                            break;
-                        case 21: // Cat Variant
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 22: // Frog Varint
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 23: // GlobalPos at 1.19.2+; Painting Variant at 1.19-
-                            if (protocolversion <= Protocol18Handler.MC_1_19_Version)
-                            {
-                                value = ReadNextVarInt(cache);
-                            }
-                            else
-                            {
-                                // Dimension and blockPos, currently not in use
-                                value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
-                            }
-
-                            break;
-                        case 24: // Painting Variant
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 25: // Sniffer state
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 26: // Vector 3f
-                            value = new List<float>
-                            {
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache)
-                            };
-                            break;
-                        case 27: // Quaternion
-                            value = new List<float>
-                            {
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache)
-                            };
-                            break;
-
-                        default:
-                            throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + type +
-                                                                     ". Is this up to date for new MC Version?");
-                    }
-
-                    data[key] = value;
-                    key = ReadNextByte(cache);
+                        }
+                        break;
+                    case EntityMetaDataType.Pose: // Pose
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.CatVariant: // Cat Variant
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.FrogVariant: // Frog Varint
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.GlobalPosition: // GlobalPos
+                        // Dimension and blockPos, currently not in use
+                        value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
+                        break;
+                    case EntityMetaDataType.OptionalGlobalPosition:
+                        if (ReadNextBool(cache))
+                        {
+                            value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
+                        }
+                        break;
+                    case EntityMetaDataType.PaintingVariant: // Painting Variant
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.SnifferState: // Sniffer state
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case EntityMetaDataType.Vector3: // Vector 3f
+                        value = new List<float>
+                        {
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache)
+                        };
+                        break;
+                    case EntityMetaDataType.Quaternion: // Quaternion
+                        value = new List<float>
+                        {
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache)
+                        };
+                        break;
                 }
-                else
-                {
-                    // This is backward compatible since new type is appended to the end
-                    // Version upgrade note
-                    // - Check type ID got shifted or not
-                    // - Add new type if any
-                    switch (type)
-                    {
-                        case 0: // byte
-                            value = ReadNextByte(cache);
-                            break;
-                        case 1: // VarInt
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 2: // Float
-                            value = ReadNextFloat(cache);
-                            break;
-                        case 3: // String
-                            value = ReadNextString(cache);
-                            break;
-                        case 4: // Chat
-                            value = ReadNextString(cache);
-                            break;
-                        case 5: // Optional Chat
-                            if (ReadNextBool(cache))
-                                value = ReadNextString(cache);
-                            break;
-                        case 6: // Slot
-                            value = ReadNextItemSlot(cache, itemPalette);
-                            break;
-                        case 7: // Boolean
-                            value = ReadNextBool(cache);
-                            break;
-                        case 8: // Rotation (3x floats)
-                            value = new List<float>
-                            {
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache),
-                                ReadNextFloat(cache)
-                            };
-                            break;
-                        case 9: // Position
-                            value = ReadNextLocation(cache);
-                            break;
-                        case 10: // Optional Position
-                            if (ReadNextBool(cache))
-                            {
-                                value = ReadNextLocation(cache);
-                            }
 
-                            break;
-                        case 11: // Direction (VarInt)
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 12: // Optional UUID
-                            if (ReadNextBool(cache))
-                            {
-                                value = ReadNextUUID(cache);
-                            }
-
-                            break;
-                        case 13: // Optional BlockID (VarInt)
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 14: // NBT
-                            value = ReadNextNbt(cache);
-                            break;
-                        case 15: // Particle
-                            int ParticleID = ReadNextVarInt(cache);
-                            switch (ParticleID)
-                            {
-                                case 3:
-                                    ReadNextVarInt(cache);
-                                    break;
-                                case 14:
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    ReadNextFloat(cache);
-                                    break;
-                                case 23:
-                                    ReadNextVarInt(cache);
-                                    break;
-                                case 32:
-                                    ReadNextItemSlot(cache, itemPalette);
-                                    break;
-                            }
-
-                            break;
-                        case 16: // Villager Data (3x VarInt)
-                            value = new List<int>
-                            {
-                                ReadNextVarInt(cache),
-                                ReadNextVarInt(cache),
-                                ReadNextVarInt(cache)
-                            };
-                            break;
-                        case 17: // Optional VarInt
-                            if (ReadNextBool(cache))
-                            {
-                                value = ReadNextVarInt(cache);
-                            }
-
-                            break;
-                        case 18: // Pose
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 19: // Cat Variant
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 20: // Frog Varint
-                            value = ReadNextVarInt(cache);
-                            break;
-                        case 21: // GlobalPos at 1.19.2+; Painting Variant at 1.19-
-                            if (protocolversion <= Protocol18Handler.MC_1_19_Version)
-                                value = ReadNextVarInt(cache);
-                            else
-                            {
-                                // Dimension and blockPos, currently not in use
-                                value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
-                            }
-
-                            break;
-                        case 22: // Painting Variant
-                            value = ReadNextVarInt(cache);
-                            break;
-                        default:
-                            throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + type +
-                                                                     ". Is this up to date for new MC Version?");
-                    }
-
-                    data[key] = value;
-                    key = ReadNextByte(cache);
-                }
+                data[key] = value;
+                key = ReadNextByte(cache);
             }
-
+            ConsoleIO.WriteLine($"Entity MetaData finished {data.Count}");
             return data;
         }
 

@@ -25,6 +25,7 @@ public enum EntityMetaDataType
     Pose,
     CatVariant,
     FrogVariant,
+    GlobalPosition,
     OptionalGlobalPosition,
     PaintingVariant,
     SnifferState,
