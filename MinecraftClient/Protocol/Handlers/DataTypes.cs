@@ -418,13 +418,18 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The item that was read or NULL for an empty slot</returns>
         public Item? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
+            // MC 1.13.2 and greater
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {
-                // MC 1.13 and greater
                 bool itemPresent = ReadNextBool(cache);
                 if (itemPresent)
                 {
-                    ItemType type = itemPalette.FromId(ReadNextVarInt(cache));
+                    int itemID = ReadNextVarInt(cache);
+                    
+                    if (itemID == -1)
+                        return null;
+                    
+                    ItemType type = itemPalette.FromId(itemID);
                     byte itemCount = ReadNextByte(cache);
                     Dictionary<string, object> nbt = ReadNextNbt(cache);
                     return new Item(type, itemCount, nbt);
@@ -433,12 +438,17 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                // MC 1.12.2 and lower
+                // MC 1.13 and lower
                 short itemID = ReadNextShort(cache);
+                
                 if (itemID == -1)
                     return null;
+                
                 byte itemCount = ReadNextByte(cache);
-                short itemDamage = ReadNextShort(cache);
+                
+                if(protocolversion < Protocol18Handler.MC_1_13_Version)
+                    ReadNextShort(cache);
+                
                 Dictionary<string, object> nbt = ReadNextNbt(cache);
                 return new Item(itemPalette.FromId(itemID), itemCount, nbt);
             }
