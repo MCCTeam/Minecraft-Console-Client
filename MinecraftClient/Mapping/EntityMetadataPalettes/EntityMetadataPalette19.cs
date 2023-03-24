@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping.EntityMetadataPalettes;
 
+// TODO: Use this for 1.8
 public class EntityMetadataPalette19 : EntityMetadataPalette
 {
     // 1.8 : https://wiki.vg/index.php?title=Entity_metadata&oldid=6220 (Requires a different algorithm)

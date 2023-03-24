@@ -2,6 +2,9 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping.EntityMetadataPalettes;
 
+/// <summary>
+/// For 1.19.4
+/// </summary>
 public class EntityMetadataPalette1194 : EntityMetadataPalette
 {
     private readonly Dictionary<int, EntityMetaDataType> entityMetadataMappings = new()

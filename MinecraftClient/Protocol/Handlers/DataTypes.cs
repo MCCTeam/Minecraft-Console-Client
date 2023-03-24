@@ -681,62 +681,8 @@ namespace MinecraftClient.Protocol.Handlers
                         value = ReadNextNbt(cache);
                         break;
                     case EntityMetaDataType.Particle: // Particle
-                        // Currently not handled. Reading data only
-                        int ParticleID = ReadNextVarInt(cache);
-                        // TODO: Go through wiki history and write for every version
-                        // 1.19.3 - https://wiki.vg/index.php?title=Data_types&oldid=17986
-                        // 1.18 - https://wiki.vg/index.php?title=Data_types&oldid=17180
-                        // 1.17 - https://wiki.vg/index.php?title=Data_types&oldid=16740
-                        // 1.15 - https://wiki.vg/index.php?title=Data_types&oldid=15338
-                        // 1.13 - https://wiki.vg/index.php?title=Data_types&oldid=14271
-                        switch (ParticleID)
-                        {
-                            case 2:
-                                ReadNextVarInt(cache);
-                                break;
-                            case 3:
-                                ReadNextVarInt(cache);
-                                break;
-                            case 14:
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                break;
-                            case 15:
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                ReadNextFloat(cache);
-                                break;
-                            case 25:
-                                ReadNextVarInt(cache);
-                                break;
-                            case 30:
-                                ReadNextFloat(cache);
-                                break;
-                            case 39:
-                                ReadNextItemSlot(cache, itemPalette);
-                                break;
-                            case 40:
-                                string positionSourceType = ReadNextString(cache);
-                                if (positionSourceType == "minecraft:block")
-                                {
-                                    ReadNextLocation(cache);
-                                }
-                                else if (positionSourceType == "minecraft:entity")
-                                {
-                                    ReadNextVarInt(cache);
-                                    ReadNextFloat(cache);
-                                }
-
-                                ReadNextVarInt(cache);
-                                break;
-                        }
-
+                        // Skip data only, not used
+                        ReadParticleData(cache, itemPalette);
                         break;
                     case EntityMetaDataType.VillagerData: // Villager Data (3x VarInt)
                         value = new List<int>
@@ -766,8 +712,11 @@ namespace MinecraftClient.Protocol.Handlers
                         value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
                         break;
                     case EntityMetaDataType.OptionalGlobalPosition:
+                        // FIXME: wiki.vg is bool + string + location
+                        //        but minecraft-data is bool + string
                         if (ReadNextBool(cache))
                         {
+                            // Dimension and blockPos, currently not in use
                             value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
                         }
                         break;
@@ -799,7 +748,6 @@ namespace MinecraftClient.Protocol.Handlers
                 data[key] = value;
                 key = ReadNextByte(cache);
             }
-            ConsoleIO.WriteLine($"Entity MetaData finished {data.Count}");
             return data;
         }
 
