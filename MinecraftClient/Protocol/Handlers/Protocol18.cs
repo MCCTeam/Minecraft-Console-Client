@@ -522,32 +522,6 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             break;
-                        case PacketTypesIn.Bundle: // Empty as of 1.19.4, just skip
-                            return true;
-                        case PacketTypesIn.DamageEvent:
-                            dataTypes.SkipNextVarInt(packetData);
-                            dataTypes.SkipNextVarInt(packetData);
-                            dataTypes.SkipNextVarInt(packetData);
-                            dataTypes.SkipNextVarInt(packetData);
-
-                            if (dataTypes.ReadNextBool(packetData))
-                            {
-                                dataTypes.ReadNextDouble(packetData);
-                                dataTypes.ReadNextDouble(packetData);
-                                dataTypes.ReadNextDouble(packetData);
-                            }
-
-                            // TODO: Write a function to use this data ?
-                            break;
-                        case PacketTypesIn.HurtAnimation:
-                            dataTypes.SkipNextVarInt(packetData);
-                            dataTypes.ReadNextFloat(packetData);
-                            // TODO: Write a function to use this data
-                            break;
-                        case PacketTypesIn.ChunksBiomes:
-                            // TODO: Use ?
-                            // Not clear for what this is used as right of now.
-                            return true;
                         case PacketTypesIn.DeclareCommands:
                             if (protocolVersion >= MC_1_19_Version)
                             {
@@ -907,6 +881,29 @@ namespace MinecraftClient.Protocol.Handlers
                             );
 
                             break;
+                        case PacketTypesIn.DamageEvent: // 1.19.4
+                            if (handler.GetEntityHandlingEnabled() && protocolVersion >= MC_1_19_4_Version)
+                            {
+                                var entityId = dataTypes.ReadNextVarInt(packetData);
+                                var sourceTypeId = dataTypes.ReadNextVarInt(packetData);
+                                var sourceCauseId = dataTypes.ReadNextVarInt(packetData);
+                                var sourceDirectId = dataTypes.ReadNextVarInt(packetData);
+
+                                Location? sourcePos;
+                                if (dataTypes.ReadNextBool(packetData))
+                                {
+                                    sourcePos = new Location()
+                                    {
+                                        X = dataTypes.ReadNextDouble(packetData),
+                                        Y = dataTypes.ReadNextDouble(packetData),
+                                        Z = dataTypes.ReadNextDouble(packetData)
+                                    };
+                                }
+
+                                // TODO: Write a function to use this data ? But seems not too useful
+                            }
+
+                            break;
                         case PacketTypesIn.MessageHeader: // 1.19.2 only
                             if (protocolVersion == MC_1_19_2_Version)
                             {
@@ -1067,7 +1064,7 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             if (protocolVersion >= MC_1_17_Version && protocolVersion < MC_1_19_4_Version)
-                                dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 and abo
+                                dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 to 1.19.3
                         }
                             break;
                         case PacketTypesIn.ChunkData:
@@ -1157,6 +1154,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                             }
 
+                            break;
+                        case PacketTypesIn.ChunksBiomes: // 1.19.4
+                            // Biomes are not handled by MCC
                             break;
                         case PacketTypesIn.MapData:
                             if (protocolVersion < MC_1_8_Version)
