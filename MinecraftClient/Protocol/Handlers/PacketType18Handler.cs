@@ -60,7 +60,7 @@ namespace MinecraftClient.Protocol.Handlers
                 p = new PacketPalette1122();
             else if (protocol < Protocol18Handler.MC_1_14_Version)
                 p = new PacketPalette113();
-            else if (protocol <= Protocol18Handler.MC_1_15_Version)
+            else if (protocol < Protocol18Handler.MC_1_15_Version)
                 p = new PacketPalette114();
             else if (protocol <= Protocol18Handler.MC_1_15_2_Version)
                 p = new PacketPalette115();
