@@ -618,8 +618,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 catch (KeyNotFoundException)
                 {
-                    throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId +
-                                                                    ". Is this up to date for new MC Version?");
+                    throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId + ". Is this up to date for new MC Version?");
                 }
 
                 // Value's data type is depended on Type
@@ -816,11 +815,6 @@ namespace MinecraftClient.Protocol.Handlers
                 case 16:
                     if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
                         ReadDustParticleColorTransition(cache);
-                    break;
-                case 20:
-                    // 1.13 - 1.14.4
-                    if (protocolversion < Protocol18Handler.MC_1_15_Version)
-                        ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 23:
                     // 1.15 - 1.16.5
