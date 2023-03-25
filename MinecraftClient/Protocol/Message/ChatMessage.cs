@@ -4,15 +4,19 @@ namespace MinecraftClient.Protocol.Message
 {
     public class ChatMessage
     {
-        // in 1.19 and above,  isSignedChat = true
+        /// <summary>
+        /// In 1.19 and above,  isSignedChat = true
+        /// </summary>
         public bool isSignedChat;
 
         public string content;
 
         public bool isJson, isSenderJson;
 
-        //  0: chat (chat box), 1: system message (chat box), 2: game info (above hotbar), 3: say command,
-        //  4: msg command,     5: team msg command,          6: emote command,            7: tellraw command
+        /// <summary>
+        ///  0: chat (chat box), 1: system message (chat box), 2: game info (above hotbar), 3: say command,
+        ///  4: msg command,     5: team msg command,          6: emote command,            7: tellraw command
+        /// </summary>
         public int chatTypeId;
 
         public Guid senderUUID;
