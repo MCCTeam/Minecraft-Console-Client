@@ -2634,11 +2634,41 @@ namespace MinecraftClient
             List<string> links = new();
             string messageText;
 
+            // Used for 1.19+ to mark: system message, legal / illegal signature
+            string color = string.Empty;
+
             if (message.isSignedChat)
             {
                 if (!Config.Signature.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
                     return;
                 messageText = ChatParser.ParseSignedChat(message, links);
+                
+                if (message.isSystemChat)
+                {
+                    if (Config.Signature.MarkSystemMessage)
+                        color = "§7▌§r";     // Background Gray
+                }
+                else
+                {
+                    if ((bool)message.isSignatureLegal!)
+                    {
+                        if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
+                        {
+                            if (Config.Signature.MarkModifiedMsg)
+                                color = "§6▌§r"; // Background Yellow
+                        }
+                        else
+                        {
+                            if (Config.Signature.MarkLegallySignedMsg)
+                                color = "§2▌§r"; // Background Green
+                        }
+                    }
+                    else
+                    {
+                        if (Config.Signature.MarkIllegallySignedMsg)
+                            color = "§4▌§r"; // Background Red
+                    }
+                }
             }
             else
             {
@@ -2648,7 +2678,7 @@ namespace MinecraftClient
                     messageText = message.content;
             }
 
-            Log.Chat(messageText);
+            Log.Chat(color + messageText);
 
             if (Config.Main.Advanced.ShowChatLinks)
                 foreach (string link in links)

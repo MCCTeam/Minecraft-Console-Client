@@ -142,34 +142,7 @@ namespace MinecraftClient.Protocol.Message
                 default:
                     goto case MessageType.CHAT;
             }
-            string color = string.Empty;
-            if (message.isSystemChat)
-            {
-                if (Config.Signature.MarkSystemMessage)
-                    color = "§7▌§r";     // Background Gray
-            }
-            else
-            {
-                if ((bool)message.isSignatureLegal!)
-                {
-                    if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
-                    {
-                        if (Config.Signature.MarkModifiedMsg)
-                            color = "§6▌§r"; // Background Yellow
-                    }
-                    else
-                    {
-                        if (Config.Signature.MarkLegallySignedMsg)
-                            color = "§2▌§r"; // Background Green
-                    }
-                }
-                else
-                {
-                    if (Config.Signature.MarkIllegallySignedMsg)
-                        color = "§4▌§r"; // Background Red
-                }
-            }
-            return color + text;
+            return text;
         }
 
         /// <summary>
