@@ -350,7 +350,7 @@ namespace MinecraftClient.ChatBots
                     await botClient.SendTextMessageAsync(
                         chatId: chatId,
                         replyToMessageId: message.MessageId,
-                        text: "This command has been disabled due to Telegram caching causing issues, please stop your client manually.",
+                        text: $"{Translations.bot_TelegramBridge_quit_disabled}",
                         cancellationToken: _cancellationToken,
                         parseMode: ParseMode.Markdown);
                     return;;
