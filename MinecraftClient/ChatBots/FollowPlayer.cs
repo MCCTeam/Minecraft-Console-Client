@@ -151,12 +151,6 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-
-            if (_updateCounter < Settings.DoubleToTick(Config.Update_Limit))
-                return;
-
-            _updateCounter = 0;
-
             if (entity.Type != EntityType.Player)
                 return;
 
@@ -165,6 +159,11 @@ namespace MinecraftClient.ChatBots
 
             if (_playerToFollow != entity.Name.ToLower())
                 return;
+
+            if (_updateCounter < Settings.DoubleToTick(Config.Update_Limit))
+                return;
+
+            _updateCounter = 0;
 
             if (!CanMoveThere(entity.Location))
                 return;
