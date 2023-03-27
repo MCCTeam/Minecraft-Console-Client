@@ -16,8 +16,8 @@ public abstract class EntityMetadataPalette
 
     public static EntityMetadataPalette GetPalette(int protocolVersion)
     {
-        if (protocolVersion < Protocol18Handler.MC_1_9_Version)
-            throw new NotImplementedException();
+        if (protocolVersion <= Protocol18Handler.MC_1_8_Version)
+            return new EntityMetadataPalette18();   // 1.8
         else if (protocolVersion <= Protocol18Handler.MC_1_12_2_Version)
             return new EntityMetadataPalette1122(); // 1.9 - 1.12.2
         else if (protocolVersion <= Protocol18Handler.MC_1_19_2_Version)

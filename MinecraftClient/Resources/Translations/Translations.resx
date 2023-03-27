@@ -2034,4 +2034,7 @@ Logging in...</value>
   <data name="cmd.dig.cancel" xml:space="preserve">
     <value>Cancel mining the block located at {0}.</value>
   </data>
+  <data name="bot.TelegramBridge.quit_disabled" xml:space="preserve">
+    <value>This command has been disabled due to Telegram caching causing issues, please stop your client manually.</value>
+  </data>
 </root>
