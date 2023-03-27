@@ -599,18 +599,31 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        //TODO: Refactor this to use new Entity Metadata Palettes
+        /// <summary>
+        /// Read a Entity MetaData and remove it from the cache
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="itemPalette"></param>
+        /// <param name="metadataPalette"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        /// <exception cref="System.IO.InvalidDataException"></exception>
         public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette, EntityMetadataPalette metadataPalette)
         {
-            if (protocolversion <= Protocol18Handler.MC_1_8_Version)
-                throw new NotImplementedException(); // Require sepcial implementation
-
             Dictionary<int, object?> data = new();
             byte key = ReadNextByte(cache);
+            byte terminteValue = protocolversion <= Protocol18Handler.MC_1_8_Version
+                ? (byte)0x7f  // 1.8 (https://wiki.vg/index.php?title=Entity_metadata&oldid=6220#Entity_Metadata_Format)
+                : (byte)0xff; // 1.9+
 
-            while (key != 0xff)
+            while (key != terminteValue)
             {
-                int typeId = ReadNextVarInt(cache);
+                if (protocolversion <= Protocol18Handler.MC_1_8_Version)
+                    key = (byte)(key & 0x1f);
+
+                int typeId = protocolversion <= Protocol18Handler.MC_1_8_Version
+                    ? key >> 5 // 1.8
+                    : ReadNextVarInt(cache); // 1.9+
                 EntityMetaDataType type;
                 try
                 {
@@ -626,6 +639,20 @@ namespace MinecraftClient.Protocol.Handlers
 
                 switch (type)
                 {
+                    case EntityMetaDataType.Short: // 1.8 only
+                        value = ReadNextShort(cache);
+                        break;
+                    case EntityMetaDataType.Int: // 1.8 only
+                        value = ReadNextInt(cache);
+                        break;
+                    case EntityMetaDataType.Vector3Int: // 1.8 only
+                        value = new List<int>()
+                        {
+                            ReadNextInt(cache),
+                            ReadNextInt(cache),
+                            ReadNextInt(cache),
+                        };
+                        break;
                     case EntityMetaDataType.Byte: // byte
                         value = ReadNextByte(cache);
                         break;
@@ -760,7 +787,11 @@ namespace MinecraftClient.Protocol.Handlers
             return data;
         }
 
-        // Currently not handled. Reading data only
+        /// <summary>
+        /// Currently not handled. Reading data only
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="itemPalette"></param>
         protected void ReadParticleData(Queue<byte> cache, ItemPalette itemPalette)
         {
             if (protocolversion < Protocol18Handler.MC_1_13_Version)
