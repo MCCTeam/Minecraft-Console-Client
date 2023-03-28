@@ -84,6 +84,8 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 // Create a temporary file to copy the executable to.
                 var executablePath = Environment.ProcessPath;
                 var tempPath = Path.Combine(Path.GetTempPath(), "mcc-scripting");
+                Directory.CreateDirectory(tempPath);
+                
                 var tempFile = Path.Combine(tempPath, "mcc-executable");
                 var useExisting = false;
 
