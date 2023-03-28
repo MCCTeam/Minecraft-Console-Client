@@ -79,60 +79,75 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
             var MinecraftClientDll = typeof(Program).Assembly.Location;     // The path to MinecraftClient.dll
 
             // We're on a self-contained binary, so we need to extract the executable to get the assemblies.
-            if (string.IsNullOrEmpty(MinecraftClientDll))
+            if (string.IsNullOrEmpty(MinecraftClientDll)) 
             {
                 // Create a temporary file to copy the executable to.
-                var executableDir = AppContext.BaseDirectory;
-                var executablePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Path.Combine(executableDir, "MinecraftClient.exe") : Path.Combine(executableDir, "MinecraftClient");
-                var tempFileName = Path.GetTempFileName();
-                if (File.Exists(executablePath))
+                var executablePath = Environment.ProcessPath;
+                var tempPath = Path.Combine(Path.GetTempPath(), "mcc-scripting");
+                var tempFile = Path.Combine(tempPath, "mcc-executable");
+                var useExisting = false;
+
+                // Check if we already have the executable in the temporary path.
+                foreach (var file in Directory.EnumerateFiles(tempPath)) 
                 {
-                    // Copy the executable to a temporary path.
-                    ExecutableReader e = new();
-                    File.Delete(tempFileName);
-                    File.Copy(executablePath, tempFileName);
-
-                    // Access the contents of the executable.
-                    var viewAccessor = MemoryMappedFile.CreateFromFile(tempFileName, FileMode.Open).CreateViewAccessor();
-                    var manifest = e.ReadManifest(viewAccessor);
-                    var files = manifest.Files;
-
-                    Stream? assemblyStream;
-
-                    var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()!;
-                    assemblyrefs.Add(new("MinecraftClient"));
-                    assemblyrefs.Add(new("System.Private.CoreLib"));
-
-                    foreach (var refs in assemblyrefs)
+                    if (file.EndsWith("mcc-executable")) 
                     {
-                        var loadedAssembly = Assembly.Load(refs);
-                        if (string.IsNullOrEmpty(loadedAssembly.Location))
-                        {
-                            // Check if we can access the file from the executable.
-                            var reference = files.FirstOrDefault(x => x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
-                            var refCount = files.Count(x => x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
-                            if (refCount > 1)
-                            {
-                                // Safety net for the case where the assembly is referenced multiple times.
-                                // Should not happen normally, but we can make exceptions when it does happen.
-                                throw new InvalidOperationException("Too many references to the same assembly. Assembly name: " + refs.Name);
-                            }
-                            if (reference == null)
-                            {
-                                throw new InvalidOperationException("The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
-                            }
+                        useExisting = true;
+                        break;
+                    }
+                }
+                
+                if (!File.Exists(executablePath)) 
+                {
+                    throw new FileNotFoundException("[Script Error] Could not locate the current folder of MCC for scripting.");
+                }
 
-                            assemblyStream = GetStreamForFileEntry(viewAccessor, reference);
-                            references.Add(MetadataReference.CreateFromStream(assemblyStream!));
-                            continue;
+                // Copy the executable to a temporary path.
+                if (!useExisting)
+                    File.Copy(executablePath, tempFile);
+
+                // Access the contents of the executable.
+                ExecutableReader e = new();
+                var viewAccessor = MemoryMappedFile.CreateFromFile(tempFile, FileMode.Open).CreateViewAccessor();
+                var manifest = e.ReadManifest(viewAccessor);
+                var files = manifest.Files;
+
+                Stream? assemblyStream;
+
+                var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()!;
+                assemblyrefs.Add(new("MinecraftClient"));
+                assemblyrefs.Add(new("System.Private.CoreLib"));
+
+                foreach (var refs in assemblyrefs) {
+                    var loadedAssembly = Assembly.Load(refs);
+                    if (string.IsNullOrEmpty(loadedAssembly.Location)) {
+                        // Check if we can access the file from the executable.
+                        var reference = files.FirstOrDefault(x =>
+                            x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
+                        var refCount = files.Count(x => x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
+                        if (refCount > 1) {
+                            // Safety net for the case where the assembly is referenced multiple times.
+                            // Should not happen normally, but we can make exceptions when it does happen.
+                            throw new InvalidOperationException(
+                                "[Script Error] Too many references to the same assembly. Assembly name: " + refs.Name);
                         }
-                        references.Add(MetadataReference.CreateFromFile(loadedAssembly.Location));
+
+                        if (reference == null) {
+                            throw new InvalidOperationException(
+                                "[Script Error] The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
+                        }
+
+                        assemblyStream = GetStreamForFileEntry(viewAccessor, reference);
+                        references.Add(MetadataReference.CreateFromStream(assemblyStream!));
+                        continue;
                     }
 
-                    // Cleanup.
-                    viewAccessor.Flush();
-                    viewAccessor.Dispose();
+                    references.Add(MetadataReference.CreateFromFile(loadedAssembly.Location));
                 }
+
+                // Cleanup.
+                viewAccessor.Flush();
+                viewAccessor.Dispose();
             }
             else
             {
@@ -154,7 +169,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
         private static Stream? GetStreamForFileEntry(MemoryMappedViewAccessor viewAccessor, FileEntry file)
         {
             if (typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, file }) is not Stream stream)
-                throw new InvalidOperationException("The executable does not contain the assembly. Assembly name: " + file.RelativePath);
+                throw new InvalidOperationException("[Script Error] The executable does not contain the assembly. Assembly name: " + file.RelativePath);
 
             return stream;
         }
