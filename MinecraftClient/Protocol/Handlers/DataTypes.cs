@@ -645,12 +645,11 @@ namespace MinecraftClient.Protocol.Handlers
 
             while (key != terminteValue)
             {
-                if (protocolversion <= Protocol18Handler.MC_1_8_Version)
-                    key = (byte)(key & 0x1f);
-
                 int typeId = protocolversion <= Protocol18Handler.MC_1_8_Version
                     ? key >> 5 // 1.8
                     : ReadNextVarInt(cache); // 1.9+
+                
+                
                 EntityMetaDataType type;
                 try
                 {
@@ -660,6 +659,9 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId + ". Is this up to date for new MC Version?");
                 }
+                
+                if (protocolversion <= Protocol18Handler.MC_1_8_Version)
+                    key = (byte)(key & 0x1f);
 
                 // Value's data type is depended on Type
                 object? value = null;
