@@ -463,47 +463,74 @@ namespace MinecraftClient.Protocol.Handlers
         public Entity ReadNextEntity(Queue<byte> cache, EntityPalette entityPalette, bool living)
         {
             int entityID = ReadNextVarInt(cache);
-            if (protocolversion > Protocol18Handler.MC_1_8_Version)
-                ReadNextUUID(cache);
+            Guid entityUUID = Guid.Empty;
 
+            // UUID field added in 1.9 +
+            if (protocolversion >= Protocol18Handler.MC_1_9_Version)
+                entityUUID = ReadNextUUID(cache);
+
+            // Entity type data type change from byte to varint in 1.13.2
             EntityType entityType;
-            // Entity type data type change from byte to varint after 1.14
-            if (protocolversion > Protocol18Handler.MC_1_13_Version)
-                entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
-            else
-                entityType = entityPalette.FromId(ReadNextByte(cache), living);
 
-            double entityX = ReadNextDouble(cache);
-            double entityY = ReadNextDouble(cache);
-            double entityZ = ReadNextDouble(cache);
-            byte entityPitch = ReadNextByte(cache);
-            byte entityYaw = ReadNextByte(cache);
-
-            int metadata = -1;
             if (living)
             {
-                if (protocolversion == Protocol18Handler.MC_1_18_2_Version)
-                    entityYaw = ReadNextByte(cache);
-                else
-                    entityPitch = ReadNextByte(cache);
+                // For living entities the Type field was changed to VarInt from Byte in 1.11 +
+                if (protocolversion >= Protocol18Handler.MC_1_11_Version)
+                    entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+                else entityType = entityPalette.FromId(ReadNextByte(cache), living);
             }
             else
             {
+                // For non-living entities the Type field was changed to VarInt from Byte in 1.13.2 +
+                if (protocolversion >= Protocol18Handler.MC_1_13_2_Version)
+                    entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+                else entityType = entityPalette.FromId(ReadNextByte(cache), living);
+            }
+
+            Double entityX, entityY, entityZ;
+
+            if (protocolversion < Protocol18Handler.MC_1_9_Version)
+            {
+                entityX = (Double)ReadNextInt(cache); // X
+                entityY = (Double)ReadNextInt(cache); // Y
+                entityZ = (Double)ReadNextInt(cache); // Z
+            }
+            else
+            {
+                entityX = ReadNextDouble(cache); // X
+                entityY = ReadNextDouble(cache); // Y
+                entityZ = ReadNextDouble(cache); // Z
+            }
+
+
+            int metadata = -1;
+            byte entityPitch, entityYaw;
+
+            if (living)
+            {
+                entityYaw = ReadNextByte(cache); // Yaw
+                entityPitch = ReadNextByte(cache); // Pitch
+                entityPitch = ReadNextByte(cache); // Head Pitch
+            }
+            else
+            {
+                entityPitch = ReadNextByte(cache); // Pitch
+                entityYaw = ReadNextByte(cache); // Yaw
+
                 if (protocolversion >= Protocol18Handler.MC_1_19_Version)
-                {
-                    entityYaw = ReadNextByte(cache);
-                    metadata = ReadNextVarInt(cache);
-                }
-                else
-                    metadata = ReadNextInt(cache);
+                    entityYaw = ReadNextByte(cache); // Head Yaw
+
+                // Data
+                if (protocolversion >= Protocol18Handler.MC_1_19_Version)
+                    ReadNextVarInt(cache);
+                else ReadNextInt(cache);
             }
 
             short velocityX = ReadNextShort(cache);
             short velocityY = ReadNextShort(cache);
             short velocityZ = ReadNextShort(cache);
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
-                metadata);
+            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, metadata);
         }
 
         /// <summary>
