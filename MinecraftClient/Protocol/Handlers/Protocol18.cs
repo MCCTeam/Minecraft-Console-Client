@@ -120,7 +120,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             if (handler.GetInventoryEnabled() &&
-                (protocolVersion < MC_1_8_Version || protocolVersion > MC_1_19_4_Version))
+                (protocolVersion < MC_1_9_Version || protocolVersion > MC_1_19_4_Version))
             {
                 log.Error("§c" + Translations.extra_inventory_disabled);
                 handler.SetInventoryEnabled(false);
@@ -2001,13 +2001,26 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
                                 Guid UUID = dataTypes.ReadNextUUID(packetData);
-                                double X = dataTypes.ReadNextDouble(packetData);
-                                double Y = dataTypes.ReadNextDouble(packetData);
-                                double Z = dataTypes.ReadNextDouble(packetData);
+
+                                double x, y, z;
+
+                                if (protocolVersion < MC_1_9_Version)
+                                {
+                                    x = dataTypes.ReadNextInt(packetData) / 32.0D;
+                                    y = dataTypes.ReadNextInt(packetData) / 32.0D;
+                                    z = dataTypes.ReadNextInt(packetData) / 32.0D;
+                                }
+                                else
+                                {
+                                    x = dataTypes.ReadNextDouble(packetData);
+                                    y = dataTypes.ReadNextDouble(packetData);
+                                    z = dataTypes.ReadNextDouble(packetData);
+                                }
+
                                 byte Yaw = dataTypes.ReadNextByte(packetData);
                                 byte Pitch = dataTypes.ReadNextByte(packetData);
 
-                                Location EntityLocation = new(X, Y, Z);
+                                Location EntityLocation = new(x, y, z);
 
                                 handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
                             }
@@ -2098,9 +2111,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 if (protocolVersion < MC_1_9_Version)
                                 {
-                                    DeltaX = Convert.ToDouble(dataTypes.ReadNextByte(packetData));
-                                    DeltaY = Convert.ToDouble(dataTypes.ReadNextByte(packetData));
-                                    DeltaZ = Convert.ToDouble(dataTypes.ReadNextByte(packetData));
+                                    DeltaX = dataTypes.ReadNextByte(packetData) / 32.0D;
+                                    DeltaY = dataTypes.ReadNextByte(packetData) / 32.0D;
+                                    DeltaZ = dataTypes.ReadNextByte(packetData) / 32.0D;
                                 }
                                 else
                                 {
@@ -2216,25 +2229,25 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
 
-                                Double X, Y, Z;
+                                double x, y, z;
 
                                 if (protocolVersion < MC_1_9_Version)
                                 {
-                                    X = Convert.ToDouble(dataTypes.ReadNextInt(packetData));
-                                    Y = Convert.ToDouble(dataTypes.ReadNextInt(packetData));
-                                    Z = Convert.ToDouble(dataTypes.ReadNextInt(packetData));
+                                    x = dataTypes.ReadNextInt(packetData) / 32.0D;
+                                    y = dataTypes.ReadNextInt(packetData) / 32.0D;
+                                    z = dataTypes.ReadNextInt(packetData) / 32.0D;
                                 }
                                 else
                                 {
-                                    X = dataTypes.ReadNextDouble(packetData);
-                                    Y = dataTypes.ReadNextDouble(packetData);
-                                    Z = dataTypes.ReadNextDouble(packetData);
+                                    x = dataTypes.ReadNextDouble(packetData);
+                                    y = dataTypes.ReadNextDouble(packetData);
+                                    z = dataTypes.ReadNextDouble(packetData);
                                 }
 
                                 byte EntityYaw = dataTypes.ReadNextByte(packetData);
                                 byte EntityPitch = dataTypes.ReadNextByte(packetData);
                                 bool OnGround = dataTypes.ReadNextBool(packetData);
-                                handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
+                                handler.OnEntityTeleport(EntityID, x, y, z, OnGround);
                             }
 
                             break;

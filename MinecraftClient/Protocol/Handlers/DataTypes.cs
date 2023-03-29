@@ -491,9 +491,9 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (protocolversion < Protocol18Handler.MC_1_9_Version)
             {
-                entityX = (Double)ReadNextInt(cache); // X
-                entityY = (Double)ReadNextInt(cache); // Y
-                entityZ = (Double)ReadNextInt(cache); // Z
+                entityX = ReadNextInt(cache) / 32.0D; // X
+                entityY = ReadNextInt(cache) / 32.0D; // Y
+                entityZ = ReadNextInt(cache) / 32.0D; // Z
             }
             else
             {
