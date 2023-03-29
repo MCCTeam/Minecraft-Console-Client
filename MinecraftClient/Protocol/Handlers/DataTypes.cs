@@ -463,47 +463,74 @@ namespace MinecraftClient.Protocol.Handlers
         public Entity ReadNextEntity(Queue<byte> cache, EntityPalette entityPalette, bool living)
         {
             int entityID = ReadNextVarInt(cache);
-            if (protocolversion > Protocol18Handler.MC_1_8_Version)
-                ReadNextUUID(cache);
+            Guid entityUUID = Guid.Empty;
 
+            // UUID field added in 1.9 +
+            if (protocolversion >= Protocol18Handler.MC_1_9_Version)
+                entityUUID = ReadNextUUID(cache);
+
+            // Entity type data type change from byte to varint in 1.13.2
             EntityType entityType;
-            // Entity type data type change from byte to varint after 1.14
-            if (protocolversion > Protocol18Handler.MC_1_13_Version)
-                entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
-            else
-                entityType = entityPalette.FromId(ReadNextByte(cache), living);
 
-            double entityX = ReadNextDouble(cache);
-            double entityY = ReadNextDouble(cache);
-            double entityZ = ReadNextDouble(cache);
-            byte entityPitch = ReadNextByte(cache);
-            byte entityYaw = ReadNextByte(cache);
-
-            int metadata = -1;
             if (living)
             {
-                if (protocolversion == Protocol18Handler.MC_1_18_2_Version)
-                    entityYaw = ReadNextByte(cache);
-                else
-                    entityPitch = ReadNextByte(cache);
+                // For living entities the Type field was changed to VarInt from Byte in 1.11 +
+                if (protocolversion >= Protocol18Handler.MC_1_11_Version)
+                    entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+                else entityType = entityPalette.FromId(ReadNextByte(cache), living);
             }
             else
             {
+                // For non-living entities the Type field was changed to VarInt from Byte in 1.13.2 +
+                if (protocolversion >= Protocol18Handler.MC_1_13_2_Version)
+                    entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+                else entityType = entityPalette.FromId(ReadNextByte(cache), living);
+            }
+
+            Double entityX, entityY, entityZ;
+
+            if (protocolversion < Protocol18Handler.MC_1_9_Version)
+            {
+                entityX = ReadNextInt(cache) / 32.0D; // X
+                entityY = ReadNextInt(cache) / 32.0D; // Y
+                entityZ = ReadNextInt(cache) / 32.0D; // Z
+            }
+            else
+            {
+                entityX = ReadNextDouble(cache); // X
+                entityY = ReadNextDouble(cache); // Y
+                entityZ = ReadNextDouble(cache); // Z
+            }
+
+
+            int metadata = -1;
+            byte entityPitch, entityYaw;
+
+            if (living)
+            {
+                entityYaw = ReadNextByte(cache); // Yaw
+                entityPitch = ReadNextByte(cache); // Pitch
+                entityPitch = ReadNextByte(cache); // Head Pitch
+            }
+            else
+            {
+                entityPitch = ReadNextByte(cache); // Pitch
+                entityYaw = ReadNextByte(cache); // Yaw
+
                 if (protocolversion >= Protocol18Handler.MC_1_19_Version)
-                {
-                    entityYaw = ReadNextByte(cache);
-                    metadata = ReadNextVarInt(cache);
-                }
-                else
-                    metadata = ReadNextInt(cache);
+                    entityYaw = ReadNextByte(cache); // Head Yaw
+
+                // Data
+                if (protocolversion >= Protocol18Handler.MC_1_19_Version)
+                    ReadNextVarInt(cache);
+                else ReadNextInt(cache);
             }
 
             short velocityX = ReadNextShort(cache);
             short velocityY = ReadNextShort(cache);
             short velocityZ = ReadNextShort(cache);
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
-                metadata);
+            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, metadata);
         }
 
         /// <summary>
@@ -599,18 +626,30 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        //TODO: Refactor this to use new Entity Metadata Palettes
+        /// <summary>
+        /// Read a Entity MetaData and remove it from the cache
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="itemPalette"></param>
+        /// <param name="metadataPalette"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        /// <exception cref="System.IO.InvalidDataException"></exception>
         public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette, EntityMetadataPalette metadataPalette)
         {
-            if (protocolversion <= Protocol18Handler.MC_1_8_Version)
-                throw new NotImplementedException(); // Require sepcial implementation
-
             Dictionary<int, object?> data = new();
             byte key = ReadNextByte(cache);
+            byte terminteValue = protocolversion <= Protocol18Handler.MC_1_8_Version
+                ? (byte)0x7f  // 1.8 (https://wiki.vg/index.php?title=Entity_metadata&oldid=6220#Entity_Metadata_Format)
+                : (byte)0xff; // 1.9+
 
-            while (key != 0xff)
+            while (key != terminteValue)
             {
-                int typeId = ReadNextVarInt(cache);
+                int typeId = protocolversion <= Protocol18Handler.MC_1_8_Version
+                    ? key >> 5 // 1.8
+                    : ReadNextVarInt(cache); // 1.9+
+                
+                
                 EntityMetaDataType type;
                 try
                 {
@@ -620,12 +659,29 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId + ". Is this up to date for new MC Version?");
                 }
+                
+                if (protocolversion <= Protocol18Handler.MC_1_8_Version)
+                    key = (byte)(key & 0x1f);
 
                 // Value's data type is depended on Type
                 object? value = null;
 
                 switch (type)
                 {
+                    case EntityMetaDataType.Short: // 1.8 only
+                        value = ReadNextShort(cache);
+                        break;
+                    case EntityMetaDataType.Int: // 1.8 only
+                        value = ReadNextInt(cache);
+                        break;
+                    case EntityMetaDataType.Vector3Int: // 1.8 only
+                        value = new List<int>()
+                        {
+                            ReadNextInt(cache),
+                            ReadNextInt(cache),
+                            ReadNextInt(cache),
+                        };
+                        break;
                     case EntityMetaDataType.Byte: // byte
                         value = ReadNextByte(cache);
                         break;
@@ -760,7 +816,11 @@ namespace MinecraftClient.Protocol.Handlers
             return data;
         }
 
-        // Currently not handled. Reading data only
+        /// <summary>
+        /// Currently not handled. Reading data only
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="itemPalette"></param>
         protected void ReadParticleData(Queue<byte> cache, ItemPalette itemPalette)
         {
             if (protocolversion < Protocol18Handler.MC_1_13_Version)
