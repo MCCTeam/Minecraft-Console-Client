@@ -241,27 +241,27 @@ namespace MinecraftClient
         {
             string OSPlatformName;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                OSPlatformName = "Windows";
+                OSPlatformName = "win";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                OSPlatformName = "Linux";
+                OSPlatformName = "linux";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                OSPlatformName = "OSX";
+                OSPlatformName = "osx";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
-                OSPlatformName = "FreeBSD";
+                OSPlatformName = "freebsd";
             else
                 return string.Empty;
 
             string architecture = RuntimeInformation.ProcessArchitecture switch
             {
-                Architecture.X86 => "X86",
-                Architecture.X64 => "X64",
-                Architecture.Arm => "Arm32",
-                Architecture.Arm64 => "Arm64",
-                Architecture.Wasm => "Wasm",
-                Architecture.S390x => "S390x",
-                Architecture.LoongArch64 => "LoongArch64",
-                Architecture.Armv6 => "Armv6",
-                Architecture.Ppc64le => "Ppc64le",
+                Architecture.X86 => "x86",
+                Architecture.X64 => "x64",
+                Architecture.Arm => "arm32",
+                Architecture.Arm64 => "arm64",
+                Architecture.Wasm => "wasm",
+                Architecture.S390x => "s390x",
+                Architecture.LoongArch64 => "loongarch64",
+                Architecture.Armv6 => "armv6",
+                Architecture.Ppc64le => "ppc64le",
                 _ => RuntimeInformation.ProcessArchitecture.ToString(),
             };
 
