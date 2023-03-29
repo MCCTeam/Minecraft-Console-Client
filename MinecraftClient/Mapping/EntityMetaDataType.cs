@@ -3,6 +3,9 @@ namespace MinecraftClient.Mapping;
 public enum EntityMetaDataType
 {
     Byte,
+    Short,      // 1.8 only
+    Int,        // 1.8 only
+    Vector3Int, // 1.8 only (not used by the game)
     VarInt,
     VarLong,
     Float,
