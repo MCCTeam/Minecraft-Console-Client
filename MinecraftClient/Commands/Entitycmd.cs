@@ -314,7 +314,11 @@ namespace MinecraftClient.Commands
                     handler.InteractEntity(entity.ID, InteractType.Attack);
                     return Translations.cmd_entityCmd_attacked;
                 case ActionType.Use:
-                    handler.InteractEntity(entity.ID, InteractType.Interact);
+                    bool shouldInteractAt = entity.Type == EntityType.ArmorStand ||
+                                            entity.Type == EntityType.ChestMinecart ||
+                                            entity.Type == EntityType.ChestBoat;
+                    
+                    handler.InteractEntity(entity.ID, shouldInteractAt ? InteractType.InteractAt : InteractType.Interact);
                     return Translations.cmd_entityCmd_used;
                 case ActionType.List:
                     return GetEntityInfoDetailed(handler, entity);

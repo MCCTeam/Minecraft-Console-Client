@@ -2195,16 +2195,26 @@ namespace MinecraftClient
 
             if (entities.ContainsKey(entityID))
             {
-                if (type == InteractType.Interact)
+                switch (type)
                 {
-                    return handler.SendInteractEntity(entityID, (int)type, (int)hand);
-                }
-                else
-                {
-                    return handler.SendInteractEntity(entityID, (int)type);
+                    case InteractType.Interact:
+                        return handler.SendInteractEntity(entityID, (int)type, (int)hand);
+                    
+                    case InteractType.InteractAt:
+                        return handler.SendInteractEntity(
+                            EntityID: entityID, 
+                            type: (int)type, 
+                            X: (float)entities[entityID].Location.X, 
+                            Y: (float)entities[entityID].Location.Y, 
+                            Z: (float)entities[entityID].Location.Z, 
+                            hand: (int)hand);
+                    
+                    default:
+                        return handler.SendInteractEntity(entityID, (int)type);
                 }
             }
-            else return false;
+            
+            return false;
         }
 
         /// <summary>
