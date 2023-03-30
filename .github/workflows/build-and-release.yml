@@ -50,7 +50,7 @@ jobs:
       run: |
         echo target-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/${{ matrix.target }}/publish/ >> $GITHUB_ENV
         echo assembly-info=${{ env.project-path }}/Properties/AssemblyInfo.cs >> $GITHUB_ENV
-        echo build-version-info=${{ env.date_dashed }}-${{ github.run_number }} >> $GITHUB_ENV
+        echo build-version-info=${{ env.date }}-${{ github.run_number }} >> $GITHUB_ENV
         echo commit=$(echo ${{ github.sha }} | cut -c 1-7) >> $GITHUB_ENV
         
     - name: Setup Environment Variables (late)
