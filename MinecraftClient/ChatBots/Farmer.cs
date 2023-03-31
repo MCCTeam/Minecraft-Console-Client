@@ -571,7 +571,17 @@ namespace MinecraftClient.ChatBots
             switch (cropType)
             {
                 case CropType.Beetroot:
-                    if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion == Protocol18Handler.MC_1_19_4_Version)
+                    {
+                        if (block.BlockId == 12356)
+                            return true;
+                    }
+                    else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
+                    {
+                        if (block.BlockId == 11887)
+                            return true;
+                    }
+                    else if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                     {
                         if (block.BlockId == 10103)
                             return true;
@@ -600,7 +610,17 @@ namespace MinecraftClient.ChatBots
                     break;
 
                 case CropType.Carrot:
-                    if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion == Protocol18Handler.MC_1_19_4_Version)
+                    {
+                        if (block.BlockId == 8598)
+                            return true;
+                    }
+                    else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
+                    {
+                        if (block.BlockId == 8370)
+                            return true;
+                    }
+                    else if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                     {
                         if (block.BlockId == 6930)
                             return true;
@@ -630,7 +650,17 @@ namespace MinecraftClient.ChatBots
 
                 // Checkin for stems and attached stems instead of Melons themselves
                 case CropType.Melon:
-                    if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion == Protocol18Handler.MC_1_19_4_Version)
+                    {
+                        if (block.BlockId == 6808 || block.BlockId == 6606)
+                            return true;
+                    }
+                    else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
+                    {
+                        if (block.BlockId == 6582 || block.BlockId == 6832)
+                            return true;
+                    }
+                    else if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                     {
                         if (block.BlockId == 5166 || block.BlockId == 5150)
                             return true;
@@ -656,10 +686,19 @@ namespace MinecraftClient.ChatBots
                             return true;
                     }
                     break;
-
-                // Checkin for stems and attached stems instead of Melons themselves
+                
                 case CropType.Netherwart:
-                    if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion == Protocol18Handler.MC_1_19_4_Version)
+                    {
+                        if (block.BlockId == 7384)
+                            return true;
+                    }
+                    else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
+                    {
+                        if (block.BlockId == 7158)
+                            return true;
+                    }
+                    else if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                     {
                         if (block.BlockId == 5718)
                             return true;
@@ -688,7 +727,17 @@ namespace MinecraftClient.ChatBots
 
                 // Checkin for stems and attached stems instead of Pumpkins themselves
                 case CropType.Pumpkin:
-                    if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion == Protocol18Handler.MC_1_19_4_Version)
+                    {
+                        if (block.BlockId == 5845 || block.BlockId == 6824)
+                            return true;
+                    }
+                    else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
+                    {
+                        if (block.BlockId == 5683 || block.BlockId == 6598)
+                            return true;
+                    }
+                    else if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                     {
                         if (block.BlockId == 5158 || block.BlockId == 5146)
                             return true;
@@ -716,7 +765,17 @@ namespace MinecraftClient.ChatBots
                     break;
 
                 case CropType.Potato:
-                    if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion == Protocol18Handler.MC_1_19_4_Version)
+                    {
+                        if (block.BlockId == 8606)
+                            return true;
+                    }
+                    else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
+                    {
+                        if (block.BlockId == 8378)
+                            return true;
+                    }
+                    else if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                     {
                         if (block.BlockId == 6938)
                             return true;
@@ -745,7 +804,17 @@ namespace MinecraftClient.ChatBots
                     break;
 
                 case CropType.Wheat:
-                    if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion == Protocol18Handler.MC_1_19_4_Version)
+                    {
+                        if (block.BlockId == 4281)
+                            return true;
+                    }
+                    else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
+                    {
+                        if (block.BlockId == 4233)
+                            return true;
+                    }
+                    else if (protocolVersion >= Protocol18Handler.MC_1_19_Version && protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                     {
                         if (block.BlockId == 3619)
                             return true;
