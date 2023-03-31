@@ -45,35 +45,15 @@ namespace MinecraftClient.Commands
             {
                 var interpreter = new Interpreter();
                 interpreter.SetVariable("MCC", handler);
+                interpreter.SetVariable("random", new Random());
 
                 foreach (KeyValuePair<string, object> entry in Settings.Config.AppVar.GetVariables())
                     interpreter.SetVariable(entry.Key, entry.Value);
 
                 var result = interpreter.Eval<bool>(expressionText);
-
-                bool shouldExec = result;
-
-                /*if (result is bool)
-                    shouldExec = (bool)result;
-                else if (result is string)
-                    shouldExec = !string.IsNullOrEmpty((string)result) && ((string)result).Trim().Contains("true", StringComparison.OrdinalIgnoreCase);
-                else if (result is int)
-                    shouldExec = (int)result > 0;
-                else if (result is double)
-                    shouldExec = (double)result > 0;
-                else if (result is float)
-                    shouldExec = (float)result > 0;
-                else if (result is Int16)
-                    shouldExec = (Int16)result > 0;
-                else if (result is Int32)
-                    shouldExec = (Int32)result > 0;
-                else if (result is Int64)
-                    shouldExec = (Int64)result > 0;
-                */
-
                 handler.Log.Debug("[Execif] Result Type: " + result.GetType().Name);
 
-                if (shouldExec)
+                if (result)
                 {
                     CmdResult output = new();
                     handler.PerformInternalCommand(resultCommand, ref output);
