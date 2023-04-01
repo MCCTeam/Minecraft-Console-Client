@@ -977,6 +977,37 @@ namespace MinecraftClient.Scripting
         {
             Handler.BotLoad(chatBot);
         }
+        
+        /// <summary>
+        /// Set an App Variable
+        /// </summary>
+        /// <param name="name">App variable name</param>
+        /// <param name="value">App variable value</param>
+        /// <returns>void</returns>
+        protected void SetAppVar(string name, object value)
+        {
+            Config.AppVar.SetVar(name, value);
+        }
+        
+        /// <summary>
+        /// Get a value from an App Variable
+        /// </summary>
+        /// <param name="name">App variable name</param>
+        /// <returns>App Variable value</returns>
+        protected object? GetAppVar(string name)
+        {
+            return Config.AppVar.GetVar(name);
+        }
+        
+        /// <summary>
+        /// Replaces variables in text with their values from the App Var registry
+        /// </summary>
+        /// <param name="text">Your text with variables</param>
+        /// <returns>text with variables replaced with their values</returns>
+        protected string ExpandAppVars(string text)
+        {
+            return Config.AppVar.ExpandVars(text);
+        }
 
         /// <summary>
         /// Check whether Terrain and Movements is enabled.
