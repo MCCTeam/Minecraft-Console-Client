@@ -2349,7 +2349,6 @@ namespace MinecraftClient.Protocol.Handlers
 
                 return true; //Packet processed
             }
-#if Release
             catch (Exception innerException)
             {
                 if (innerException is ThreadAbortException || innerException is SocketException || innerException.InnerException is SocketException)
@@ -2363,20 +2362,6 @@ namespace MinecraftClient.Protocol.Handlers
                         innerException.GetType()),
                     innerException);
             }
-#else
-            catch (SocketException)
-            {
-                throw;
-            }
-            catch (ThreadAbortException)
-            {
-                throw;
-            }
-            catch (ObjectDisposedException)
-            {
-                throw;
-            }
-#endif
         }
 
         /// <summary>
