@@ -504,6 +504,7 @@ namespace MinecraftClient.Protocol.Handlers
 
 
             int metadata = -1;
+            bool hasData = false;
             byte entityPitch, entityYaw;
 
             if (living)
@@ -523,12 +524,25 @@ namespace MinecraftClient.Protocol.Handlers
                 // Data
                 if (protocolversion >= Protocol18Handler.MC_1_19_Version)
                     ReadNextVarInt(cache);
-                else ReadNextInt(cache);
+                else hasData = ReadNextInt(cache) == 1;
             }
 
-            short velocityX = ReadNextShort(cache);
-            short velocityY = ReadNextShort(cache);
-            short velocityZ = ReadNextShort(cache);
+            // In 1.8 those 3 fields for Velocity are optional
+            if (protocolversion < Protocol18Handler.MC_1_9_Version)
+            {
+                if (hasData)
+                {
+                    ReadNextShort(cache);
+                    ReadNextShort(cache);
+                    ReadNextShort(cache);
+                }
+            }
+            else
+            {
+                ReadNextShort(cache);
+                ReadNextShort(cache);
+                ReadNextShort(cache);
+            }
 
             return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, metadata);
         }
