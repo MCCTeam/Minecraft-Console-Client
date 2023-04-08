@@ -76,6 +76,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 string? suggestionsType = ((flags & 0x10) == 0x10) ? dataTypes.ReadNextString(packetData) : null;
 
                 Nodes[i] = new(flags, childs, redirectNode, name, paser, suggestionsType);
+                
+                // Quick dirty fix to a crashreal
+                // TODO: Investigate further, see if this breaks some commands from being added to the auto completion list
+                if (name != null && name.ToLower().Equals("end"))
+                    break;
             }
             RootIdx = dataTypes.ReadNextVarInt(packetData);
 
