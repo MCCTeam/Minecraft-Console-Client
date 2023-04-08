@@ -25,57 +25,58 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
                 string? name = ((flags & 0x03) == 1 || (flags & 0x03) == 2) ? dataTypes.ReadNextString(packetData) : null;
 
-                int paserId = ((flags & 0x03) == 2) ? dataTypes.ReadNextVarInt(packetData) : -1;
-                Paser? paser = null;
+                int parserId = ((flags & 0x03) == 2) ? dataTypes.ReadNextVarInt(packetData) : -1;
+                Parser? parser = null;
                 if ((flags & 0x03) == 2)
                 {
                     if (protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
-                        paser = paserId switch
+                        parser = parserId switch
                         {
-                            1 => new PaserFloat(dataTypes, packetData),
-                            2 => new PaserDouble(dataTypes, packetData),
-                            3 => new PaserInteger(dataTypes, packetData),
-                            4 => new PaserLong(dataTypes, packetData),
-                            5 => new PaserString(dataTypes, packetData),
-                            6 => new PaserEntity(dataTypes, packetData),
-                            8 => new PaserBlockPos(dataTypes, packetData),
-                            9 => new PaserColumnPos(dataTypes, packetData),
-                            10 => new PaserVec3(dataTypes, packetData),
-                            11 => new PaserVec2(dataTypes, packetData),
-                            18 => new PaserMessage(dataTypes, packetData),
-                            27 => new PaserRotation(dataTypes, packetData),
-                            29 => new PaserScoreHolder(dataTypes, packetData),
-                            43 => new PaserResourceOrTag(dataTypes, packetData),
-                            44 => new PaserResource(dataTypes, packetData),
-                            _ => new PaserEmpty(dataTypes, packetData),
+                            1 => new ParserFloat(dataTypes, packetData),
+                            2 => new ParserDouble(dataTypes, packetData),
+                            3 => new ParserInteger(dataTypes, packetData),
+                            4 => new ParserLong(dataTypes, packetData),
+                            5 => new ParserString(dataTypes, packetData),
+                            6 => new ParserEntity(dataTypes, packetData),
+                            8 => new ParserBlockPos(dataTypes, packetData),
+                            9 => new ParserColumnPos(dataTypes, packetData),
+                            10 => new ParserVec3(dataTypes, packetData),
+                            11 => new ParserVec2(dataTypes, packetData),
+                            18 => new ParserMessage(dataTypes, packetData),
+                            27 => new ParserRotation(dataTypes, packetData),
+                            29 => new ParserScoreHolder(dataTypes, packetData),
+                            43 => new ParserResourceOrTag(dataTypes, packetData),
+                            44 => new ParserResource(dataTypes, packetData),
+                            _ => new ParserEmpty(dataTypes, packetData),
                         };
                     else // protocolVersion >= MC_1_19_3_Version
-                        paser = paserId switch
+                        parser = parserId switch
                         {
-                            1 => new PaserFloat(dataTypes, packetData),
-                            2 => new PaserDouble(dataTypes, packetData),
-                            3 => new PaserInteger(dataTypes, packetData),
-                            4 => new PaserLong(dataTypes, packetData),
-                            5 => new PaserString(dataTypes, packetData),
-                            6 => new PaserEntity(dataTypes, packetData),
-                            8 => new PaserBlockPos(dataTypes, packetData),
-                            9 => new PaserColumnPos(dataTypes, packetData),
-                            10 => new PaserVec3(dataTypes, packetData),
-                            11 => new PaserVec2(dataTypes, packetData),
-                            18 => new PaserMessage(dataTypes, packetData),
-                            27 => new PaserRotation(dataTypes, packetData),
-                            29 => new PaserScoreHolder(dataTypes, packetData),
-                            41 => new PaserResourceOrTag(dataTypes, packetData),
-                            42 => new PaserResourceOrTag(dataTypes, packetData),
-                            43 => new PaserResource(dataTypes, packetData),
-                            44 => new PaserResource(dataTypes, packetData),
-                            _ => new PaserEmpty(dataTypes, packetData),
+                            1 => new ParserFloat(dataTypes, packetData),
+                            2 => new ParserDouble(dataTypes, packetData),
+                            3 => new ParserInteger(dataTypes, packetData),
+                            4 => new ParserLong(dataTypes, packetData),
+                            5 => new ParserString(dataTypes, packetData),
+                            6 => new ParserEntity(dataTypes, packetData),
+                            8 => new ParserBlockPos(dataTypes, packetData),
+                            9 => new ParserColumnPos(dataTypes, packetData),
+                            10 => new ParserVec3(dataTypes, packetData),
+                            11 => new ParserVec2(dataTypes, packetData),
+                            18 => new ParserMessage(dataTypes, packetData),
+                            27 => new ParserRotation(dataTypes, packetData),
+                            29 => new ParserScoreHolder(dataTypes, packetData),
+                            40 => new ParserTime(dataTypes, packetData),
+                            41 => new ParserResourceOrTag(dataTypes, packetData),
+                            42 => new ParserResourceOrTag(dataTypes, packetData),
+                            43 => new ParserResource(dataTypes, packetData),
+                            44 => new ParserResource(dataTypes, packetData),
+                            _ => new ParserEmpty(dataTypes, packetData),
                         };
                 }
 
                 string? suggestionsType = ((flags & 0x10) == 0x10) ? dataTypes.ReadNextString(packetData) : null;
 
-                Nodes[i] = new(flags, childs, redirectNode, name, paser, suggestionsType);
+                Nodes[i] = new(flags, childs, redirectNode, name, parser, suggestionsType);
             }
             RootIdx = dataTypes.ReadNextVarInt(packetData);
 
@@ -149,7 +150,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             public int[] Clildren;
             public int RedirectNode;
             public string? Name;
-            public Paser? Paser;
+            public Parser? Paser;
             public string? SuggestionsType;
 
 
@@ -157,7 +158,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                         int[] Clildren,
                         int RedirectNode = -1,
                         string? Name = null,
-                        Paser? Paser = null,
+                        Parser? Paser = null,
                         string? SuggestionsType = null)
             {
                 this.Flags = Flags;
@@ -169,7 +170,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal abstract class Paser
+        internal abstract class Parser
         {
             public abstract string GetName();
 
@@ -178,10 +179,10 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             public abstract bool Check(string text);
         }
 
-        internal class PaserEmpty : Paser
+        internal class ParserEmpty : Parser
         {
 
-            public PaserEmpty(DataTypes dataTypes, Queue<byte> packetData) { }
+            public ParserEmpty(DataTypes dataTypes, Queue<byte> packetData) { }
 
             public override bool Check(string text)
             {
@@ -199,12 +200,12 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserFloat : Paser
+        internal class ParserFloat : Parser
         {
             private byte Flags;
             private float Min = float.MinValue, Max = float.MaxValue;
 
-            public PaserFloat(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserFloat(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -229,12 +230,12 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserDouble : Paser
+        internal class ParserDouble : Parser
         {
             private byte Flags;
             private double Min = double.MinValue, Max = double.MaxValue;
 
-            public PaserDouble(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserDouble(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -259,12 +260,12 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserInteger : Paser
+        internal class ParserInteger : Parser
         {
             private byte Flags;
             private int Min = int.MinValue, Max = int.MaxValue;
 
-            public PaserInteger(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserInteger(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -289,12 +290,12 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserLong : Paser
+        internal class ParserLong : Parser
         {
             private byte Flags;
             private long Min = long.MinValue, Max = long.MaxValue;
 
-            public PaserLong(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserLong(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
                 if ((Flags & 0x01) > 0)
@@ -319,13 +320,13 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserString : Paser
+        internal class ParserString : Parser
         {
             private StringType Type;
 
             private enum StringType { SINGLE_WORD, QUOTABLE_PHRASE, GREEDY_PHRASE };
 
-            public PaserString(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserString(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Type = (StringType)dataTypes.ReadNextVarInt(packetData);
             }
@@ -346,11 +347,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserEntity : Paser
+        internal class ParserEntity : Parser
         {
             private byte Flags;
 
-            public PaserEntity(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserEntity(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
             }
@@ -371,10 +372,10 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserBlockPos : Paser
+        internal class ParserBlockPos : Parser
         {
 
-            public PaserBlockPos(DataTypes dataTypes, Queue<byte> packetData) { }
+            public ParserBlockPos(DataTypes dataTypes, Queue<byte> packetData) { }
 
             public override bool Check(string text)
             {
@@ -392,10 +393,10 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserColumnPos : Paser
+        internal class ParserColumnPos : Parser
         {
 
-            public PaserColumnPos(DataTypes dataTypes, Queue<byte> packetData) { }
+            public ParserColumnPos(DataTypes dataTypes, Queue<byte> packetData) { }
 
             public override bool Check(string text)
             {
@@ -413,10 +414,10 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserVec3 : Paser
+        internal class ParserVec3 : Parser
         {
 
-            public PaserVec3(DataTypes dataTypes, Queue<byte> packetData) { }
+            public ParserVec3(DataTypes dataTypes, Queue<byte> packetData) { }
 
             public override bool Check(string text)
             {
@@ -434,10 +435,10 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserVec2 : Paser
+        internal class ParserVec2 : Parser
         {
 
-            public PaserVec2(DataTypes dataTypes, Queue<byte> packetData) { }
+            public ParserVec2(DataTypes dataTypes, Queue<byte> packetData) { }
 
             public override bool Check(string text)
             {
@@ -455,10 +456,10 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserRotation : Paser
+        internal class ParserRotation : Parser
         {
 
-            public PaserRotation(DataTypes dataTypes, Queue<byte> packetData) { }
+            public ParserRotation(DataTypes dataTypes, Queue<byte> packetData) { }
 
             public override bool Check(string text)
             {
@@ -476,9 +477,9 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserMessage : Paser
+        internal class ParserMessage : Parser
         {
-            public PaserMessage(DataTypes dataTypes, Queue<byte> packetData) { }
+            public ParserMessage(DataTypes dataTypes, Queue<byte> packetData) { }
 
             public override bool Check(string text)
             {
@@ -496,11 +497,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserScoreHolder : Paser
+        internal class ParserScoreHolder : Parser
         {
             private byte Flags;
 
-            public PaserScoreHolder(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserScoreHolder(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Flags = dataTypes.ReadNextByte(packetData);
             }
@@ -521,11 +522,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserRange : Paser
+        internal class ParserRange : Parser
         {
             private bool Decimals;
 
-            public PaserRange(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserRange(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Decimals = dataTypes.ReadNextBool(packetData);
             }
@@ -546,11 +547,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserResourceOrTag : Paser
+        internal class ParserResourceOrTag : Parser
         {
             private string Registry;
 
-            public PaserResourceOrTag(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserResourceOrTag(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Registry = dataTypes.ReadNextString(packetData);
             }
@@ -571,11 +572,11 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        internal class PaserResource : Paser
+        internal class ParserResource : Parser
         {
             private string Registry;
 
-            public PaserResource(DataTypes dataTypes, Queue<byte> packetData)
+            public ParserResource(DataTypes dataTypes, Queue<byte> packetData)
             {
                 Registry = dataTypes.ReadNextString(packetData);
             }
@@ -593,6 +594,32 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             public override string GetName()
             {
                 return "minecraft:resource";
+            }
+        }
+
+        /// <summary>
+        /// Undocumented parser type for 1.19.4+
+        /// </summary>
+        internal class ParserTime : Parser
+        {
+            public ParserTime(DataTypes dataTypes, Queue<byte> packetData)
+            {
+                dataTypes.ReadNextInt(packetData);
+            }
+
+            public override bool Check(string text)
+            {
+                return true;
+            }
+
+            public override int GetArgCnt()
+            {
+                return 1;
+            }
+
+            public override string GetName()
+            {
+                return "minecraft:time";
             }
         }
     }
