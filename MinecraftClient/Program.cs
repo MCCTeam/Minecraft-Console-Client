@@ -17,6 +17,7 @@ using MinecraftClient.Protocol.Session;
 using MinecraftClient.Scripting;
 using MinecraftClient.WinAPI;
 using Tomlet;
+using Sentry;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
@@ -284,6 +285,23 @@ namespace MinecraftClient
 
                     Console.WriteLine(string.Format(Translations.mcc_generator_done, dataGenerator, dataPath));
                     return;
+                }
+            }
+
+            // Sentry integration
+            if (BuildInfo != null)
+            {
+                if (Config.Logging.DebugMessages) // TODO: Add setting to let user disable telemetry
+                {
+                    ConsoleIO.WriteLine("Telemetry is enabled. Crash report will be sent to Sentry");
+                    using (SentrySdk.Init(o =>
+                    {
+                        // Maybe don't hardcode the url? Add it during building?
+                        o.Dsn = "https://41fdd209ee704cda8f0e8deb37ce48da@o4504977948672000.ingest.sentry.io/4504977964335104";
+                        o.Release = BuildInfo ?? "Development Build";
+                        o.TracesSampleRate = 1.0;
+                        o.IsGlobalModeEnabled = true;
+                    })) { }
                 }
             }
 
