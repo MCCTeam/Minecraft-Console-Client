@@ -49,7 +49,29 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                             44 => new ParserResource(dataTypes, packetData),
                             _ => new ParserEmpty(dataTypes, packetData),
                         };
-                    else // protocolVersion >= MC_1_19_3_Version
+                    else if (protocolVersion <= Protocol18Handler.MC_1_19_3_Version) // 1.19.3
+                        parser = parserId switch
+                        {
+                            1 => new ParserFloat(dataTypes, packetData),
+                            2 => new ParserDouble(dataTypes, packetData),
+                            3 => new ParserInteger(dataTypes, packetData),
+                            4 => new ParserLong(dataTypes, packetData),
+                            5 => new ParserString(dataTypes, packetData),
+                            6 => new ParserEntity(dataTypes, packetData),
+                            8 => new ParserBlockPos(dataTypes, packetData),
+                            9 => new ParserColumnPos(dataTypes, packetData),
+                            10 => new ParserVec3(dataTypes, packetData),
+                            11 => new ParserVec2(dataTypes, packetData),
+                            18 => new ParserMessage(dataTypes, packetData),
+                            27 => new ParserRotation(dataTypes, packetData),
+                            29 => new ParserScoreHolder(dataTypes, packetData),
+                            41 => new ParserResourceOrTag(dataTypes, packetData),
+                            42 => new ParserResourceOrTag(dataTypes, packetData),
+                            43 => new ParserResource(dataTypes, packetData),
+                            44 => new ParserResource(dataTypes, packetData),
+                            _ => new ParserEmpty(dataTypes, packetData),
+                        };
+                    else // 1.19.4+
                         parser = parserId switch
                         {
                             1 => new ParserFloat(dataTypes, packetData),
