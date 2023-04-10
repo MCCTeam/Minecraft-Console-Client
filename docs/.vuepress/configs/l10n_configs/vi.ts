@@ -59,6 +59,7 @@ export const defaultThemeConfig_vi: DefaultThemeLocaleData = {
         "/l10n/vi/guide/installation.md", 
         "/l10n/vi/guide/usage.md", 
         "/l10n/vi/guide/configuration.md", 
+        "/l10n/vi/guide/creating-text-script.md",
         "/l10n/vi/guide/chat-bots.md", 
         "/l10n/vi/guide/creating-bots.md", 
         "/l10n/vi/guide/contibuting.md"

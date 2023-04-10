@@ -59,6 +59,7 @@ export const defaultThemeConfig_ro: DefaultThemeLocaleData = {
         "/l10n/ro/guide/installation.md", 
         "/l10n/ro/guide/usage.md", 
         "/l10n/ro/guide/configuration.md", 
+        "/l10n/ro/guide/creating-text-script.md",
         "/l10n/ro/guide/chat-bots.md", 
         "/l10n/ro/guide/creating-bots.md", 
         "/l10n/ro/guide/contibuting.md"

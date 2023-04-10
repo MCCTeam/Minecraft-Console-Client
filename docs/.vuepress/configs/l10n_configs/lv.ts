@@ -59,6 +59,7 @@ export const defaultThemeConfig_lv: DefaultThemeLocaleData = {
         "/l10n/lv/guide/installation.md", 
         "/l10n/lv/guide/usage.md", 
         "/l10n/lv/guide/configuration.md", 
+        "/l10n/lv/guide/creating-text-script.md",
         "/l10n/lv/guide/chat-bots.md", 
         "/l10n/lv/guide/creating-bots.md", 
         "/l10n/lv/guide/contibuting.md"

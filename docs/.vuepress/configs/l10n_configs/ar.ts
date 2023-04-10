@@ -59,6 +59,7 @@ export const defaultThemeConfig_ar: DefaultThemeLocaleData = {
         "/l10n/ar/guide/installation.md", 
         "/l10n/ar/guide/usage.md", 
         "/l10n/ar/guide/configuration.md", 
+        "/l10n/ar/guide/creating-text-script.md",
         "/l10n/ar/guide/chat-bots.md", 
         "/l10n/ar/guide/creating-bots.md", 
         "/l10n/ar/guide/contibuting.md"

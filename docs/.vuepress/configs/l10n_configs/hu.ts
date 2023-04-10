@@ -59,6 +59,7 @@ export const defaultThemeConfig_hu: DefaultThemeLocaleData = {
         "/l10n/hu/guide/installation.md", 
         "/l10n/hu/guide/usage.md", 
         "/l10n/hu/guide/configuration.md", 
+        "/l10n/hu/guide/creating-text-script.md",
         "/l10n/hu/guide/chat-bots.md", 
         "/l10n/hu/guide/creating-bots.md", 
         "/l10n/hu/guide/contibuting.md"
