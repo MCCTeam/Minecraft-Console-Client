@@ -20,32 +20,20 @@ If you're not the kind of person that likes textual tutorials, our community has
 
 ## Download a compiled binary
 
-In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
-
-</div>
-
-#### How to install .NET on your platform
-
--   [Install .NET on Windows](https://docs.microsoft.com/en-us/dotnet/core/install/windows)
--   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
--   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
-
-#### Download
-
 You can download a compiled binary file of the latest build from our Releases section on Git Hub: [Download](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
 
 ## Building from the source code
+
+We recommend you to download our precompiled binary file from [GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/releases). 
+
+However, if you want to build the program from source code, please follow the guide.
 
 ### Windows
 
 Requirements:
 
 -   [Git](https://www.git-scm.com/)
--   [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
+-   [.NET 7.0 or new-er](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
 
 #### Cloning using Git
 
@@ -98,7 +86,7 @@ If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in
 3. Run the following command to build the project:
 
 ```bash
-dotnet publish MinecraftClient -f net6.0 -r win-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
+dotnet publish MinecraftClient -f net7.0 -r win-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
 ```
 
 If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net6.0/win-x64/publish` folder.
@@ -140,7 +128,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
     - On Linux:
 
         ```bash
-        dotnet publish MinecraftClient -f net6.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
+        dotnet publish MinecraftClient -f net7.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -152,7 +140,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
     - On macOS:
 
         ```bash
-        dotnet publish MinecraftClient -f net6.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
+        dotnet publish MinecraftClient -f net7.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -163,8 +151,8 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 
 If the build has succeeded, the compiled binary `MinecraftClient` will be in:
 
--   Linux: `MinecraftClient/bin/Release/net6.0/linux-x64/publish/`
--   macOS: `MinecraftClient/bin/Release/net6.0/osx-x64/publish/`
+-   Linux: `MinecraftClient/bin/Release/net7.0/linux-x64/publish/`
+-   macOS: `MinecraftClient/bin/Release/net7.0/osx-x64/publish/`
 
 ## Using Docker
 

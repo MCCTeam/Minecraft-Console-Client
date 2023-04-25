@@ -59,6 +59,7 @@ export const defaultThemeConfig_zh_Hant: DefaultThemeLocaleData = {
         "/l10n/zh-Hant/guide/installation.md", 
         "/l10n/zh-Hant/guide/usage.md", 
         "/l10n/zh-Hant/guide/configuration.md", 
+        "/l10n/zh-Hant/guide/creating-text-script.md",
         "/l10n/zh-Hant/guide/chat-bots.md", 
         "/l10n/zh-Hant/guide/creating-bots.md", 
         "/l10n/zh-Hant/guide/contibuting.md"

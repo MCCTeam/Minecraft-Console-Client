@@ -470,7 +470,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Usage:**
 
-    Basic usage: `/execif <condition (C# expression)> ---> <command>`
+    Basic usage: `/execif <condition (C# expression)> <command>`
 
 -   **Examples:**
 
@@ -478,30 +478,38 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     ```
     /set test=Something
-    /execif test == "Something" ---> send Success!
+    /execif 'test == "Something"' "send Success!"
     ```
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **You can use single quote (`'`) to wrap your expression if the expression contains double quote (`"`)**
+
+    **Adding back-slash (`\`) before the double quote will also work (`/execif "test == \"Something\"" "send Success!"`)**
+
+    </div>
 
     ```
     /set test2=1
-    /execif test2 == "1" ---> send Success 2!
+    /execif 'test2 == "1"' "send Success 2!"
     ```
 
     Basic C# expression:
 
     ```
-    /execif 1 + 2 + 3 == 6 ---> send Success!
+    /execif "1 + 2 + 3 == 6" "send Success!"
     ```
 
     Using MCC class:
 
     ```
-    /execif MCC.GetHealth() == 20.0 ---> send Success!
+    /execif "MCC.GetHealth() == 20.0" "send Success!"
     ```
 
     Using in combination with [`execmulti`](#execmulti):
 
     ```
-    /execif 1 == 1 ---> execmulti send 1 -> send 2 -> send 3
+    /execif "1 == 1" "execmulti send 1 -> send 2 -> send 3"
     ```
 
 ### `execmulti`

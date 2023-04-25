@@ -59,6 +59,7 @@ export const defaultThemeConfig_ko: DefaultThemeLocaleData = {
         "/l10n/ko/guide/installation.md", 
         "/l10n/ko/guide/usage.md", 
         "/l10n/ko/guide/configuration.md", 
+        "/l10n/ko/guide/creating-text-script.md",
         "/l10n/ko/guide/chat-bots.md", 
         "/l10n/ko/guide/creating-bots.md", 
         "/l10n/ko/guide/contibuting.md"

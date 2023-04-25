@@ -59,6 +59,7 @@ export const defaultThemeConfig_zh_Hans: DefaultThemeLocaleData = {
         "/l10n/zh-Hans/guide/installation.md", 
         "/l10n/zh-Hans/guide/usage.md", 
         "/l10n/zh-Hans/guide/configuration.md", 
+        "/l10n/zh-Hans/guide/creating-text-script.md",
         "/l10n/zh-Hans/guide/chat-bots.md", 
         "/l10n/zh-Hans/guide/creating-bots.md", 
         "/l10n/zh-Hans/guide/contibuting.md"

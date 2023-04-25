@@ -59,6 +59,7 @@ export const defaultThemeConfig_en: DefaultThemeLocaleData = {
         "/guide/installation.md", 
         "/guide/usage.md", 
         "/guide/configuration.md", 
+        "/guide/creating-text-script.md",
         "/guide/chat-bots.md", 
         "/guide/creating-bots.md", 
         "/guide/contibuting.md"

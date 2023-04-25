@@ -58,6 +58,7 @@ export const defaultThemeConfig_$LanguageCodeEscaped$: DefaultThemeLocaleData = 
         "$PathToPage$/guide/installation.md", 
         "$PathToPage$/guide/usage.md", 
         "$PathToPage$/guide/configuration.md", 
+        "$PathToPage$/guide/creating-text-script.md",
         "$PathToPage$/guide/chat-bots.md", 
         "$PathToPage$/guide/creating-bots.md", 
         "$PathToPage$/guide/contibuting.md"
