@@ -59,6 +59,7 @@ export const defaultThemeConfig_sr_Cyrl: DefaultThemeLocaleData = {
         "/l10n/sr-Cyrl/guide/installation.md", 
         "/l10n/sr-Cyrl/guide/usage.md", 
         "/l10n/sr-Cyrl/guide/configuration.md", 
+        "/l10n/sr-Cyrl/guide/creating-text-script.md",
         "/l10n/sr-Cyrl/guide/chat-bots.md", 
         "/l10n/sr-Cyrl/guide/creating-bots.md", 
         "/l10n/sr-Cyrl/guide/contibuting.md"
