@@ -501,10 +501,8 @@ namespace MinecraftClient.Protocol.Handlers
                 entityY = ReadNextDouble(cache); // Y
                 entityZ = ReadNextDouble(cache); // Z
             }
-
-
-            int metadata = -1;
-            bool hasData = false;
+            
+            int data = -1;
             byte entityPitch, entityYaw;
 
             if (living)
@@ -522,15 +520,14 @@ namespace MinecraftClient.Protocol.Handlers
                     entityYaw = ReadNextByte(cache); // Head Yaw
 
                 // Data
-                if (protocolversion >= Protocol18Handler.MC_1_19_Version)
-                    ReadNextVarInt(cache);
-                else hasData = ReadNextInt(cache) == 1;
+                data = protocolversion >= Protocol18Handler.MC_1_19_Version 
+                    ? ReadNextVarInt(cache) : ReadNextInt(cache);
             }
 
             // In 1.8 those 3 fields for Velocity are optional
             if (protocolversion < Protocol18Handler.MC_1_9_Version)
             {
-                if (hasData)
+                if (data != 0)
                 {
                     ReadNextShort(cache);
                     ReadNextShort(cache);
@@ -544,7 +541,7 @@ namespace MinecraftClient.Protocol.Handlers
                 ReadNextShort(cache);
             }
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, metadata);
+            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, data);
         }
 
         /// <summary>
