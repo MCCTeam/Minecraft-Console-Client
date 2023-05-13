@@ -35,6 +35,12 @@ Requirements:
 -   [Git](https://www.git-scm.com/)
 -   [.NET 7.0 or new-er](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
 
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **If you want to modify the code, and you are new to C# or in programming in general, you might want to watch some C# tutorials, we recommend the ones listed in [Creating Bots](creating-bots.md#requirements) section.**
+
+</div>
+
 #### Cloning using Git
 
 Install [Git](https://www.git-scm.com/)
@@ -77,7 +83,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 6. Right click on `MinecraftClient` solution in the `Solution Explorer`
 7. Click `Build`
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net6.0/win-x64/publish` folder.
+If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net7.0/win-x64/publish` folder.
 
 #### Building using .NET manually without Visual Studio
 
@@ -89,7 +95,7 @@ If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in
 dotnet publish MinecraftClient -f net7.0 -r win-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
 ```
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net6.0/win-x64/publish` folder.
+If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net7.0/win-x64/publish` folder.
 
 ### Linux, macOS
 
