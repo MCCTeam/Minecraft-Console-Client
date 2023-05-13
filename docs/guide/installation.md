@@ -113,7 +113,7 @@ Requirements:
 
     -   [Install Git on macOS](https://git-scm.com/download/mac)
 
--   .NET SDK 6.0 or new-er
+-   .NET SDK 7.0 or new-er
 
     -   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
     -   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
@@ -350,7 +350,7 @@ Once the installation is complete, you can start Ubuntu with:
 
 #### Installing .NET on ARM
 
-Since there are issues installing .NET 6.0 via the APT package manager at the time of writing, we will have to install it manually.
+Since there are issues installing .NET 7.0 via the APT package manager at the time of writing, we will have to install it manually.
 
 First we need to update the APT package manager repositories and install dependencies.
 
@@ -374,27 +374,27 @@ Navigate to your `/root` home directory with the following command:
 cd /root
 ```
 
-First you need to download .NET 6.0, you can do it with the following command:
+First you need to download .NET 7.0, you can do it with the following command:
 
 ```bash
-wget https://download.visualstudio.microsoft.com/download/pr/901f7928-5479-4d32-a9e5-ba66162ca0e4/d00b935ec4dc79a27f5bde00712ed3d7/dotnet-sdk-6.0.400-linux-arm64.tar.gz
+wget https://download.visualstudio.microsoft.com/download/pr/6cd2eaa7-4c06-4168-b90b-ee2d6bb40b10/4a8387eb07e17d262bfb9965f6d34462/dotnet-sdk-7.0.203-linux-arm64.tar.gz
 ```
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**This tutorial assumes that you have 64 bit version of ARM processor, if you happen to have a 32-bit version replace the link in the command above with [this one](https://download.visualstudio.microsoft.com/download/pr/cf567026-a29a-41aa-bc3a-e4e1ad0df480/0925d411e8e09e31ba7a39a3eb0e29af/aspnetcore-runtime-6.0.8-linux-arm.tar.gz)**
+**This tutorial assumes that you have 64 bit version of ARM processor, if you happen to have a 32-bit version replace the link in the command above with [this one](https://download.visualstudio.microsoft.com/download/pr/55972ef4-146e-47e6-b014-0163cbaca6a3/fa9713f73f44088898843016d68c5929/dotnet-sdk-7.0.203-linux-arm.tar.gz)**
 
 </div>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**This tutorial assumes that you're following along and using Ubuntu 22.04, if you're using a different distro, like Alpine, go to [here](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) and copy an appropriate link for your distro.**
+**This tutorial assumes that you're following along and using Ubuntu 22.04, if you're using a different distro, like Alpine, go to [here](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) and copy an appropriate link for your distro.**
 
 </div>
 
 Once the file has been downloaded, you need to run the following commands in order:
 
-1. `DOTNET_FILE=dotnet-sdk-6.0.400-linux-arm64.tar.gz`
+1. `DOTNET_FILE=dotnet-sdk-7.0.203-linux-arm64.tar.gz`
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
@@ -1003,9 +1003,9 @@ If did everything correctly you should see a Linux prompt and a welcome message 
 
 You can do `whoami` to see your username.
 
-Now you can install .NET Core 6 and MCC.
+Now you can install .NET Core 7 and MCC.
 
-### Installing .NET Core 6
+### Installing .NET Core 7
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -1015,7 +1015,7 @@ Now you can install .NET Core 6 and MCC.
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**With newer versions of .NET Core 6 on Ubuntu 22.04 you might get the following error: `A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders`, if you get it, use [this solution](https://github.com/dotnet/sdk/issues/27082#issuecomment-1211143446)**
+**With newer versions of .NET Core 7 on Ubuntu 22.04 you might get the following error: `A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders`, if you get it, use [this solution](https://github.com/dotnet/sdk/issues/27082#issuecomment-1211143446)**
 
 </div>
 
@@ -1057,10 +1057,10 @@ Remove the file, we do not need it anymore:
 rm packages-microsoft-prod.deb
 ```
 
-Finally, install .NET Core 6:
+Finally, install .NET Core 7:
 
 ```bash
-sudo apt-get update -y && sudo apt-get install -y dotnet-sdk-6.0
+sudo apt-get update -y && sudo apt-get install -y dotnet-sdk-7.0
 ```
 
 Run the following command to check if everything was installed correctly:
@@ -1091,7 +1091,7 @@ If it was successful, you can now install the MCC.
 
 ### Installing MCC on a VPS
 
-Now that you have .NET Core 6.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
+Now that you have .NET Core 7.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
