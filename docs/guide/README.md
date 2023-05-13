@@ -58,6 +58,7 @@ _NOTE: Some of mentioned features are disabled by default and you will have to t
 -   Helpful community
 -   Open-Source
 -   Fast performance
+-   Easy Scripting/Automation
 -   Cross-Platform
 -   Docker Support
 -   10 years of continuous development
@@ -110,15 +111,28 @@ If you're reporting a bug, please be descriptive as much as possible, try to exp
 
 ### Inventory, Terrain and Entity Handling
 
-Inventory handling is currently not supported in versions: `1.4.6 - 1.9`
+Inventory handling is currently not supported in versions: `1.4.6 - 1.9` (*The inventory handling code is in the place, but we're missing Item Palettes, on which we're working.*)
 
 Terrain handling is currently not supported in versions: `1.4.6 - 1.6`
 
-Entity handling is currently not supported in versions: `1.4.6 - 1.9` (but `1.8` and `1.9` are being worked on, almost at the working state, only `EntityMetadata` packet remains to be fixed)
+Entity handling is currently not supported in versions: `1.4.6 - 1.7`
 
 There features might not always be implemented in the latest version of the game, since they're often subjected to major changes by Mojang, and we need some time to figure out what has changed and to implement the required changes.
 
 If there was a major game update, and the MCC hasn't been updated to support these features, if you're a programmer, feel free to contribute to the project.
+
+### Path-Finding and Physics
+
+Currently the path-finding and physics have some limitations, those are:
+- Path finding under slabs is not supported (currently being worked on, partialy complete but not avaliable in the main branch)
+- Swimming is not supported yet
+- Jumping is not supported yet
+- Knockback is not supported yet
+
+What is supported and works:
+- Terrain navigation (path-finding with A* algorithm and walking)
+- Climbing up and down the ladders and all types of vines
+- Gravity
 
 ## Credits
 

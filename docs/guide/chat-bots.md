@@ -1264,6 +1264,12 @@ redirectFrom:
 
     </div>
 
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **If you want to use variables from this chat bot in scripts, currently that does not work. You will have to use a C# script in that case. We are working on getting this functionality back.**
+
+    </div>
+
     -   **Description:**
 
         This setting specifies the path to the file which contains the list of rules for detecting of keywords and responding on them.
@@ -1294,7 +1300,7 @@ redirectFrom:
 
     -   **Type:** `boolean`
 
-    -   **Default:** `true`
+    -   **Default:** `false`
 
 ## Chat Log
 
@@ -1391,7 +1397,7 @@ redirectFrom:
     Enable `Message Content Intent`, `Server Members Intent` and `Presence Intent`.
 
     ![Image](/images/guide/Discord_Reset_Token.png)
-    ![Image](/images/guide/Discord_Privileged_Intents.png)
+    ![Image](https://i.pics.rs/AAhyx.png)
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
