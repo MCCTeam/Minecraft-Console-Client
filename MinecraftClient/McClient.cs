@@ -9,6 +9,7 @@ using Brigadier.NET.Exceptions;
 using MinecraftClient.ChatBots;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
+using MinecraftClient.Commands;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
@@ -97,6 +98,11 @@ namespace MinecraftClient
         private int playerLevel;
         private int playerTotalExperience;
         private byte CurrentSlot = 0;
+        
+        // Sneaking
+        public bool IsSneaking { get; set; } = false;
+        private bool isUnderSlab = false;
+        private DateTime nextSneakingUpdate = DateTime.Now;
 
         // Entity handling
         private readonly Dictionary<int, Entity> entities = new();
@@ -144,7 +150,9 @@ namespace MinecraftClient
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
         public ILogger Log;
-
+        
+        private static IMinecraftComHandler? instance;
+        public static IMinecraftComHandler? Instance => instance;
         /// <summary>
         /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
         /// </summary>
@@ -157,6 +165,8 @@ namespace MinecraftClient
         public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo)
         {
             CmdResult.currentHandler = this;
+            instance = this;
+            
             terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
             inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
             entityHandlingEnabled = Config.Main.Advanced.EntityHandling;
@@ -326,6 +336,25 @@ namespace MinecraftClient
                     else
                         throw; //ThreadAbortException should not be caught
                 }
+            }
+
+            if (nextSneakingUpdate < DateTime.Now)
+            {
+                if (world.GetBlock(new Location(location.X, location.Y + 1, location.Z)).IsTopSlab(protocolversion) && !IsSneaking)
+                {
+                    isUnderSlab = true;
+                    SendEntityAction(EntityActionType.StartSneaking);
+                }
+                else
+                {
+                    if (isUnderSlab && !IsSneaking)
+                    {
+                        isUnderSlab = false;
+                        SendEntityAction(EntityActionType.StopSneaking);
+                    }
+                }
+
+                nextSneakingUpdate = DateTime.Now.AddMilliseconds(300);
             }
 
             lock (chatQueue)
