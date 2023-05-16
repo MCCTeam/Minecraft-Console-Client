@@ -6,9 +6,6 @@ public static class BlockExtension
 {
     public static bool IsTopSlab(this Block block, int protocolVersion)
     {
-        //if (block.BlockId != 0)
-        // ConsoleIO.WriteLine("Checking is block: " + block + " is a top slab, protocol: " + protocolVersion);
-
         if (protocolVersion >= Protocol18Handler.MC_1_19_4_Version)
         {
             switch (block.BlockId)
