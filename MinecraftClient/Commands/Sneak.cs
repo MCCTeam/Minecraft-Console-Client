@@ -6,10 +6,9 @@ namespace MinecraftClient.Commands
 {
     public class Sneak : Command
     {
-        private bool sneaking = false;
-        public override string CmdName { get { return "sneak"; } }
-        public override string CmdUsage { get { return "sneak"; } }
-        public override string CmdDesc { get { return Translations.cmd_sneak_desc; } }
+        public override string CmdName => "sneak";
+        public override string CmdUsage => "sneak";
+        public override string CmdDesc => Translations.cmd_sneak_desc;
 
         public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
@@ -39,27 +38,22 @@ namespace MinecraftClient.Commands
 
         private int DoSneak(CmdResult r)
         {
-            McClient handler = CmdResult.currentHandler!;
-            if (sneaking)
+            var handler = CmdResult.currentHandler!;
+
+            if (handler.IsSneaking)
             {
-                var result = handler.SendEntityAction(Protocol.EntityActionType.StopSneaking);
-                if (result)
-                    sneaking = false;
-                if (result)
-                    return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_sneak_off);
-                else
+                if (!handler.SendEntityAction(Protocol.EntityActionType.StopSneaking))
                     return r.SetAndReturn(CmdResult.Status.Fail);
+
+                handler.IsSneaking = false;
+                return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_sneak_off);
             }
-            else
-            {
-                var result = handler.SendEntityAction(Protocol.EntityActionType.StartSneaking);
-                if (result)
-                    sneaking = true;
-                if (result)
-                    return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_sneak_on);
-                else
-                    return r.SetAndReturn(CmdResult.Status.Fail);
-            }
+
+            if (!handler.SendEntityAction(Protocol.EntityActionType.StartSneaking))
+                return r.SetAndReturn(CmdResult.Status.Fail);
+
+            handler.IsSneaking = true;
+            return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_sneak_on);
         }
     }
 }

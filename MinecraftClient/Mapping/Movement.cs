@@ -30,15 +30,17 @@ namespace MinecraftClient.Mapping
                     belowFoots = location;
                     belowFoots.Y = Math.Truncate(location.Y);
                 }
+
                 if (!IsOnGround(world, location) && !IsSwimming(world, location))
                 {
                     while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1 + World.GetDimension().minY)
                         belowFoots = Move(belowFoots, Direction.Down);
                     location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
                 }
-                else if (!(world.GetBlock(onFoots).Type.IsSolid()))
+                else if (!world.GetBlock(onFoots).Type.IsSolid())
                     location = Move2Steps(location, onFoots, ref motionY, true).Dequeue();
             }
+
             return location;
         }
 
@@ -46,10 +48,11 @@ namespace MinecraftClient.Mapping
         /// Return a list of possible moves for the player
         /// </summary>
         /// <param name="world">World the player is currently located in</param>
-        /// <param name="location">Location the player is currently at</param>
+        /// <param name="originLocation">Location the player is currently at</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
         /// <returns>A list of new locations the player can move to</returns>
-        public static IEnumerable<Location> GetAvailableMoves(World world, Location originLocation, bool allowUnsafe = false)
+        public static IEnumerable<Location> GetAvailableMoves(World world, Location originLocation,
+            bool allowUnsafe = false)
         {
             Location location = originLocation.ToCenter();
             List<Location> availableMoves = new();
@@ -65,10 +68,12 @@ namespace MinecraftClient.Mapping
             else
             {
                 foreach (Direction dir in new[] { Direction.East, Direction.West, Direction.North, Direction.South })
-                    if (CanMove(world, location, dir) && IsOnGround(world, Move(location, dir)) && (allowUnsafe || IsSafe(world, Move(location, dir))))
+                    if (CanMove(world, location, dir) && IsOnGround(world, Move(location, dir)) &&
+                        (allowUnsafe || IsSafe(world, Move(location, dir))))
                         availableMoves.Add(Move(location, dir));
                 availableMoves.Add(Move(location, Direction.Down));
             }
+
             return availableMoves;
         }
 
@@ -85,7 +90,8 @@ namespace MinecraftClient.Mapping
         /// <param name="falling">Specify if performing falling steps</param>
         /// <param name="stepsByBlock">Amount of steps by block</param>
         /// <returns>A list of locations corresponding to the requested steps</returns>
-        public static Queue<Location> Move2Steps(Location start, Location goal, ref double motionY, bool falling = false, int stepsByBlock = 8)
+        public static Queue<Location> Move2Steps(Location start, Location goal, ref double motionY,
+            bool falling = false, int stepsByBlock = 8)
         {
             if (stepsByBlock <= 0)
                 stepsByBlock = 1;
@@ -93,17 +99,17 @@ namespace MinecraftClient.Mapping
             if (falling)
             {
                 //Use MC-Like falling algorithm
-                double Y = start.Y;
+                double y = start.Y;
                 Queue<Location> fallSteps = new();
                 fallSteps.Enqueue(start);
-                double motionPrev = motionY;
                 motionY -= 0.08D;
                 motionY *= 0.9800000190734863D;
-                Y += motionY;
-                if (Y < goal.Y)
+                y += motionY;
+
+                if (y < goal.Y)
                     return new Queue<Location>(new[] { goal });
-                else
-                    return new Queue<Location>(new[] { new Location(start.X, Y, start.Z) });
+
+                return new Queue<Location>(new[] { new Location(start.X, y, start.Z) });
             }
             else
             {
@@ -132,6 +138,7 @@ namespace MinecraftClient.Mapping
         /// Based on the A* pathfinding algorithm described on Wikipedia
         /// </remarks>
         /// <see href="https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode"/>
+        /// <param name="world">World</param>
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
@@ -140,16 +147,19 @@ namespace MinecraftClient.Mapping
         /// <param name="timeout">How long to wait before stopping computation</param>
         /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
+        public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe,
+            int maxOffset, int minOffset, TimeSpan timeout)
         {
             CancellationTokenSource cts = new();
-            Task<Queue<Location>?> pathfindingTask = Task.Factory.StartNew(() => Movement.CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
+            Task<Queue<Location>?> pathfindingTask = Task.Factory.StartNew(() =>
+                CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
             pathfindingTask.Wait(timeout);
             if (!pathfindingTask.IsCompleted)
             {
                 cts.Cancel();
                 pathfindingTask.Wait();
             }
+
             return pathfindingTask.Result;
         }
 
@@ -160,6 +170,7 @@ namespace MinecraftClient.Mapping
         /// Based on the A* pathfinding algorithm described on Wikipedia
         /// </remarks>
         /// <see href="https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode"/>
+        /// <param name="world">World</param>
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
@@ -167,7 +178,8 @@ namespace MinecraftClient.Mapping
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
         /// <param name="ct">Token for stopping computation after a certain time</param>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, CancellationToken ct)
+        public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe,
+            int maxOffset, int minOffset, CancellationToken ct)
         {
             // This is a bad configuration
             if (minOffset > maxOffset)
@@ -181,12 +193,10 @@ namespace MinecraftClient.Mapping
             minOffset *= minOffset;
             maxOffset *= maxOffset;
 
-            ///---///
             // Prepare variables and datastructures for A*
-            ///---///
 
             // Dictionary that contains the relation between all coordinates and resolves the final path
-            Dictionary<Location, Location> CameFrom = new();
+            Dictionary<Location, Location> cameFrom = new();
             // Create a Binary Heap for all open positions => Allows fast access to Nodes with lowest scores
             BinaryHeap openSet = new();
             // Dictionary to keep track of the G-Score of every location
@@ -197,9 +207,7 @@ namespace MinecraftClient.Mapping
             gScoreDict[startLower] = 0;
             BinaryHeap.Node? current = null;
 
-            ///---///
             // Start of A*
-            ///---///
 
             // Execute while we have nodes to process and we are not cancelled
             while (openSet.Count() > 0 && !ct.IsCancellationRequested)
@@ -209,10 +217,9 @@ namespace MinecraftClient.Mapping
                 current = openSet.GetRootLocation();
 
                 // Return if goal found and no maxOffset was given OR current node is between minOffset and maxOffset
-                if ((current.Location == goalLower && maxOffset <= 0) || (maxOffset > 0 && current.H_score >= minOffset && current.H_score <= maxOffset))
-                {
-                    return ReconstructPath(CameFrom, current.Location, start, goal);
-                }
+                if ((current.Location == goalLower && maxOffset <= 0) ||
+                    (maxOffset > 0 && current.HScore >= minOffset && current.HScore <= maxOffset))
+                    return ReconstructPath(cameFrom, current.Location, start, goal);
 
                 // Discover neighbored blocks
                 foreach (Location neighbor in GetAvailableMoves(world, current.Location, allowUnsafe))
@@ -221,14 +228,15 @@ namespace MinecraftClient.Mapping
                     if (ct.IsCancellationRequested)
                         break;
 
-                    // tentative_gScore is the distance from start to the neighbor through current
-                    int tentativeGScore = current.G_score + (int)current.Location.DistanceSquared(neighbor);
+                    // tentative_GScore is the distance from start to the neighbor through current
+                    int tentativeGScore = current.GScore + (int)current.Location.DistanceSquared(neighbor);
 
-                    // If the neighbor is not in the gScoreDict OR its current tentativeGScore is lower than the previously saved one: 
-                    if (!gScoreDict.ContainsKey(neighbor) || (gScoreDict.ContainsKey(neighbor) && tentativeGScore < gScoreDict[neighbor]))
+                    // If the neighbor is not in the GScoreDict OR its current tentativeGScore is lower than the previously saved one: 
+                    if (!gScoreDict.ContainsKey(neighbor) ||
+                        (gScoreDict.ContainsKey(neighbor) && tentativeGScore < gScoreDict[neighbor]))
                     {
                         // Save the new relation between the neighbored block and the current one
-                        CameFrom[neighbor] = current.Location;
+                        cameFrom[neighbor] = current.Location;
                         gScoreDict[neighbor] = tentativeGScore;
 
                         // If this location is not already included in the Binary Heap: save it
@@ -238,47 +246,51 @@ namespace MinecraftClient.Mapping
                 }
             }
 
-            //// Goal could not be reached. Set the path to the closest location if close enough
-            if (current != null && openSet.MinH_ScoreNode != null && (maxOffset == int.MaxValue || openSet.MinH_ScoreNode.H_score <= maxOffset))
-                return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location, start, goal);
-            else
-                return null;
+            // Goal could not be reached. Set the path to the closest location if close enough
+            if (current != null && openSet.MinHScoreNode != null &&
+                (maxOffset == int.MaxValue || openSet.MinHScoreNode.HScore <= maxOffset))
+                return ReconstructPath(cameFrom, openSet.MinHScoreNode.Location, start, goal);
+
+            return null;
         }
 
         /// <summary>
         /// Helper function for CalculatePath(). Backtrack from goal to start to reconstruct a step-by-step path.
         /// </summary>
-        /// <param name="Came_From">The collection of Locations that leads back to the start</param>
+        /// <param name="cameFrom">The collection of Locations that leads back to the start</param>
         /// <param name="current">Endpoint of our later walk</param>
+        /// <param name="start">Start location</param>
+        /// <param name="end">End location</param>
         /// <returns>the path that leads to current from the start position</returns>
-        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current, Location start, Location end)
+        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> cameFrom, Location current,
+            Location start, Location end)
         {
             int midPathCnt = 0;
-            List<Location> total_path = new();
+            List<Location> totalPath = new();
 
             // Move from the center of the block to the final position
             if (current != end && current == end.ToFloor())
-                total_path.Add(end);
+                totalPath.Add(end);
 
             // Generate intermediate paths
-            total_path.Add(current.ToCenter());
-            while (Came_From.ContainsKey(current))
+            totalPath.Add(current.ToCenter());
+            while (cameFrom.ContainsKey(current))
             {
                 ++midPathCnt;
-                current = Came_From[current];
-                total_path.Add(current.ToCenter());
+                current = cameFrom[current];
+                totalPath.Add(current.ToCenter());
             }
 
             if (midPathCnt <= 2 && start.DistanceSquared(end) < 2.0)
-                return new Queue<Location>(new Location[] { end });
+                return new Queue<Location>(new[] { end });
             else
             {
                 // Move to the center of the block first
                 if (current != start && current == start.ToFloor())
-                    total_path.Add(start.ToCenter());
+                    totalPath.Add(start.ToCenter());
 
-                total_path.Reverse();
-                return new Queue<Location>(total_path);
+                totalPath.Reverse();
+                return new Queue<Location>(totalPath);
             }
         }
 
@@ -297,73 +309,80 @@ namespace MinecraftClient.Mapping
             public class Node
             {
                 // Distance to start
-                public int G_score;
+                public int GScore;
+
                 // Distance to Goal
-                public int H_score;
-                public int F_score { get { return H_score + G_score; } }
+                public int HScore;
+
+                public int FScore
+                {
+                    get { return HScore + GScore; }
+                }
 
                 public Location Location;
 
-                public Node(int g_score, int h_score, Location loc)
+                public Node(int gScore, int hScore, Location loc)
                 {
-                    G_score = g_score;
-                    H_score = h_score;
+                    this.GScore = gScore;
+                    this.HScore = hScore;
                     Location = loc;
                 }
             }
 
             // List which contains all nodes in form of a Binary Heap
             private readonly List<Node> heapList;
+
             // Hashset for quick checks of locations included in the heap
             private readonly HashSet<Location> locationList;
-            public Node? MinH_ScoreNode;
+            public Node? MinHScoreNode;
 
             public BinaryHeap()
             {
                 heapList = new List<Node>();
                 locationList = new HashSet<Location>();
-                MinH_ScoreNode = null;
+                MinHScoreNode = null;
             }
 
             /// <summary>
             /// Insert a new location in the heap
             /// </summary>
-            /// <param name="newG_Score">G-Score of the location</param>
-            /// <param name="newH_Score">H-Score of the location</param>
+            /// <param name="newGScore">G-Score of the location</param>
+            /// <param name="newHScore">H-Score of the location</param>
             /// <param name="loc">The location</param>
-            public void Insert(int newG_Score, int newH_Score, Location loc)
+            public void Insert(int newGScore, int newHScore, Location loc)
             {
                 // Begin at the end of the list
                 int i = heapList.Count;
 
                 // Temporarily save the node created with the parameters to allow comparisons
-                Node newNode = new(newG_Score, newH_Score, loc);
+                Node newNode = new(newGScore, newHScore, loc);
 
                 // Add new note to the end of the list
                 heapList.Add(newNode);
                 locationList.Add(loc);
 
                 // Save node with the smallest H-Score => Distance to goal
-                if (MinH_ScoreNode == null || newNode.H_score < MinH_ScoreNode.H_score)
-                    MinH_ScoreNode = newNode;
+                if (MinHScoreNode == null || newNode.HScore < MinHScoreNode.HScore)
+                    MinHScoreNode = newNode;
+
+                if (i == 0)
+                    return;
 
                 // There is no need of sorting for one node.
-                if (i > 0)
+                // Go up the heap from child to parent and move parent down...
+                // while we are not looking at the root node AND the new node has better attributes than the parent node ((i - 1) / 2)
+                while (i > 0 && FirstNodeBetter(newNode /* Current Child */,
+                           heapList[(i - 1) / 2] /* Corresponding Parent */))
                 {
-                    /// Go up the heap from child to parent and move parent down...
-                    // while we are not looking at the root node AND the new node has better attributes than the parent node ((i - 1) / 2)
-                    while (i > 0 && FirstNodeBetter(newNode /* Current Child */, heapList[(i - 1) / 2] /* Coresponding Parent */))
-                    {
-                        // Move parent down and replace current child -> New free space is created
-                        heapList[i] = heapList[(i - 1) / 2];
-                        // Select the next parent to check
-                        i = (i - 1) / 2;
-                    }
-
-                    /// Nodes were moved down at position I there is now a free space at the correct position for our new node:
-                    // Insert new node in position
-                    heapList[i] = newNode;
+                    // Move parent down and replace current child -> New free space is created
+                    heapList[i] = heapList[(i - 1) / 2];
+                    // Select the next parent to check
+                    i = (i - 1) / 2;
                 }
+
+                // Nodes were moved down at position I there is now a free space at the correct position for our new node:
+                // Insert new node in position
+                heapList[i] = newNode;
             }
 
             /// <summary>
@@ -375,16 +394,14 @@ namespace MinecraftClient.Mapping
             {
                 // The heap is empty. There is nothing to return.
                 if (heapList.Count == 0)
-                {
                     throw new InvalidOperationException("The heap is empty.");
-                }
 
                 // Save the root node
-                Node rootNode = heapList[0];
+                var rootNode = heapList[0];
                 locationList.Remove(rootNode.Location);
 
                 // Temporarirly store the last item's value.
-                Node lastNode = heapList[^1];
+                var lastNode = heapList[^1];
 
                 // Remove the last value.
                 heapList.RemoveAt(heapList.Count - 1);
@@ -392,17 +409,18 @@ namespace MinecraftClient.Mapping
                 if (heapList.Count > 0)
                 {
                     // Start at the first index.
-                    int currentParentPos = 0;
+                    var currentParentPos = 0;
 
-                    /// Go through the heap from root to bottom...
+                    // Go through the heap from root to bottom...
                     // Continue until the halfway point of the heap.
                     while (currentParentPos < heapList.Count / 2)
                     {
                         // Select the left child of the current parent
-                        int currentChildPos = (2 * currentParentPos) + 1;
+                        var currentChildPos = (2 * currentParentPos) + 1;
 
                         // If the currently selected child is not the last entry of the list AND right child has better attributes
-                        if ((currentChildPos < heapList.Count - 1) && FirstNodeBetter(heapList[currentChildPos + 1], heapList[currentChildPos]))
+                        if ((currentChildPos < heapList.Count - 1) && FirstNodeBetter(heapList[currentChildPos + 1],
+                                heapList[currentChildPos]))
                         {
                             // Select the right child
                             currentChildPos++;
@@ -411,15 +429,14 @@ namespace MinecraftClient.Mapping
                         // If the last item is smaller than both siblings at the
                         // current height, break.
                         if (FirstNodeBetter(lastNode, heapList[currentChildPos]))
-                        {
                             break;
-                        }
 
                         // Move the item at index j up one level.
                         heapList[currentParentPos] = heapList[currentChildPos];
                         // Move index i to the appropriate branch.
                         currentParentPos = currentChildPos;
                     }
+
                     // Insert the last node into the currently free position
                     heapList[currentParentPos] = lastNode;
                 }
@@ -432,13 +449,13 @@ namespace MinecraftClient.Mapping
             /// </summary>
             /// <param name="firstNode">First node to compare</param>
             /// <param name="secondNode">Second node to compare</param>
-            /// <returns>True if the first node has a more promissing position to the goal than the second</returns>
+            /// <returns>True if the first node has a more promising position to the goal than the second</returns>
             private static bool FirstNodeBetter(Node firstNode, Node secondNode)
             {
-                // Is the F_score smaller?
-                return (firstNode.F_score < secondNode.F_score) ||
-                    // If F_score is equal, evaluate the h-score
-                    (firstNode.F_score == secondNode.F_score && firstNode.H_score < secondNode.H_score);
+                // Is the FScore smaller?
+                return (firstNode.FScore < secondNode.FScore) ||
+                       // If FScore is equal, evaluate the h-score
+                       (firstNode.FScore == secondNode.FScore && firstNode.HScore < secondNode.HScore);
             }
 
             /// <summary>
@@ -478,111 +495,54 @@ namespace MinecraftClient.Mapping
                 return true; // avoid moving downward in a not loaded chunk
 
             Location down = Move(location, Direction.Down);
-
             Material currentMaterial = world.GetBlock(down).Type;
 
-            bool result = currentMaterial.IsSolid()
-                || currentMaterial == Material.TwistingVines || currentMaterial == Material.TwistingVinesPlant
-                || currentMaterial == Material.WeepingVines || currentMaterial == Material.WeepingVinesPlant
-                || currentMaterial == Material.Vine;
+            var result = currentMaterial.IsSolid()
+                         || currentMaterial == Material.TwistingVines || currentMaterial == Material.TwistingVinesPlant
+                         || currentMaterial == Material.WeepingVines || currentMaterial == Material.WeepingVinesPlant
+                         || currentMaterial == Material.Vine;
 
-            bool northCheck = 1 + Math.Floor(down.Z) - down.Z > 0.7;
-            bool eastCheck = down.X - Math.Floor(down.X) > 0.7;
-            bool southCheck = down.Z - Math.Floor(down.Z) > 0.7;
-            bool westCheck = 1 + Math.Floor(down.X) - down.X > 0.7;
+            var northCheck = 1 + Math.Floor(down.Z) - down.Z > 0.7;
+            var eastCheck = down.X - Math.Floor(down.X) > 0.7;
+            var southCheck = down.Z - Math.Floor(down.Z) > 0.7;
+            var westCheck = 1 + Math.Floor(down.X) - down.X > 0.7;
 
             if (!result && northCheck)
-            {
-                Location locationDownNorth = Move(down, Direction.North);
-                result |= world.GetBlock(locationDownNorth).Type.IsSolid()
-                    || world.GetBlock(locationDownNorth).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownNorth).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownNorth).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownNorth).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownNorth).Type == Material.Vine;
-            }
+                result |= IsSolidOrVine(world, Move(down, Direction.North));
 
             if (!result && northCheck && eastCheck)
-            {
-                Location locationDownNorthEast = Move(down, Direction.NorthEast);
-                result |= world.GetBlock(locationDownNorthEast).Type.IsSolid()
-                    || world.GetBlock(locationDownNorthEast).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownNorthEast).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownNorthEast).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownNorthEast).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownNorthEast).Type == Material.Vine;
-            }
+                result |= IsSolidOrVine(world, Move(down, Direction.NorthEast));
 
             if (!result && eastCheck)
-            {
-                Location locationDownEast = Move(down, Direction.East);
-                result |= world.GetBlock(locationDownEast).Type.IsSolid()
-                    || world.GetBlock(locationDownEast).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownEast).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownEast).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownEast).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownEast).Type == Material.Vine;
-            }
+                result |= IsSolidOrVine(world, Move(down, Direction.East));
 
             if (!result && eastCheck && southCheck)
-            {
-                Location locationDownSouthEast = Move(down, Direction.SouthEast);
-                result |= world.GetBlock(locationDownSouthEast).Type.IsSolid()
-                    || world.GetBlock(locationDownSouthEast).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownSouthEast).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownSouthEast).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownSouthEast).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownSouthEast).Type == Material.Vine;
-            }
+                result |= IsSolidOrVine(world, Move(down, Direction.SouthEast));
 
             if (!result && southCheck)
-            {
-                Location locationDownSouth = Move(down, Direction.South);
-                result |= world.GetBlock(locationDownSouth).Type.IsSolid()
-                    || world.GetBlock(locationDownSouth).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownSouth).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownSouth).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownSouth).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownSouth).Type == Material.Vine;
-            }
+                result |= IsSolidOrVine(world, Move(down, Direction.South));
 
             if (!result && southCheck && westCheck)
-            {
-                Location locationDownSouthWest = Move(down, Direction.SouthWest);
-                result |= world.GetBlock(locationDownSouthWest).Type.IsSolid()
-                    || world.GetBlock(locationDownSouthWest).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownSouthWest).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownSouthWest).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownSouthWest).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownSouthWest).Type == Material.Vine;
-            }
-
+                result |= IsSolidOrVine(world, Move(down, Direction.SouthWest));
 
             if (!result && westCheck)
-            {
-                Location locationDownWest = Move(down, Direction.West);
-                result |= world.GetBlock(locationDownWest).Type.IsSolid()
-                    || world.GetBlock(locationDownWest).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownWest).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownWest).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownWest).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownWest).Type == Material.Vine;
-            }
-
+                result |= IsSolidOrVine(world, Move(down, Direction.West));
 
             if (!result && westCheck && northCheck)
-            {
-                Location locationDownNorthWest = Move(down, Direction.NorthWest);
-                result |= world.GetBlock(locationDownNorthWest).Type.IsSolid()
-                    || world.GetBlock(locationDownNorthWest).Type == Material.TwistingVines
-                    || world.GetBlock(locationDownNorthWest).Type == Material.TwistingVinesPlant
-                    || world.GetBlock(locationDownNorthWest).Type == Material.WeepingVines
-                    || world.GetBlock(locationDownNorthWest).Type == Material.WeepingVinesPlant
-                    || world.GetBlock(locationDownNorthWest).Type == Material.Vine;
-
-            }
+                result |= IsSolidOrVine(world, Move(down, Direction.NorthWest));
 
             return result && (location.Y <= Math.Truncate(location.Y) + 0.0001);
+        }
+
+        private static bool IsSolidOrVine(World world, Location location)
+        {
+            var block = world.GetBlock(location);
+            return block.Type.IsSolid()
+                   || block.Type == Material.TwistingVines
+                   || block.Type == Material.TwistingVinesPlant
+                   || block.Type == Material.WeepingVines
+                   || block.Type == Material.WeepingVinesPlant
+                   || block.Type == Material.Vine;
         }
 
         /// <summary>
@@ -591,7 +551,7 @@ namespace MinecraftClient.Mapping
         /// <param name="world">World for performing check</param>
         /// <param name="location">Location to check</param>
         /// <returns>True if the specified location implies swimming</returns>
-        public static bool IsSwimming(World world, Location location)
+        private static bool IsSwimming(World world, Location location)
         {
             return world.GetBlock(location).Type.IsLiquid();
         }
@@ -602,7 +562,7 @@ namespace MinecraftClient.Mapping
         /// <param name="world">World for performing check</param>
         /// <param name="location">Location to check</param>
         /// <returns>True if the specified location can be climbed on</returns>
-        public static bool IsClimbing(World world, Location location)
+        private static bool IsClimbing(World world, Location location)
         {
             return world.GetBlock(location).Type.CanBeClimbedOn();
         }
@@ -613,18 +573,21 @@ namespace MinecraftClient.Mapping
         /// <param name="world">World for performing check</param>
         /// <param name="location">Location to check</param>
         /// <returns>True if the destination location won't directly harm the player</returns>
-        public static bool IsSafe(World world, Location location)
+        private static bool IsSafe(World world, Location location)
         {
             return
-                   //No block that can harm the player
-                   !world.GetBlock(location).Type.CanHarmPlayers()
+                //No block that can harm the player
+                !world.GetBlock(location).Type.CanHarmPlayers()
                 && !world.GetBlock(Move(location, Direction.Up)).Type.CanHarmPlayers()
                 && !world.GetBlock(Move(location, Direction.Down)).Type.CanHarmPlayers()
 
                 //No fall from a too high place
-                && (world.GetBlock(Move(location, Direction.Down)).Type.IsSolid() || IsClimbing(world, Move(location, Direction.Down))
-                     || world.GetBlock(Move(location, Direction.Down, 2)).Type.IsSolid() || IsClimbing(world, Move(location, Direction.Down, 2))
-                     || world.GetBlock(Move(location, Direction.Down, 3)).Type.IsSolid() || IsClimbing(world, Move(location, Direction.Down, 3)))
+                && (world.GetBlock(Move(location, Direction.Down)).Type.IsSolid() ||
+                    IsClimbing(world, Move(location, Direction.Down))
+                    || world.GetBlock(Move(location, Direction.Down, 2)).Type.IsSolid() ||
+                    IsClimbing(world, Move(location, Direction.Down, 2))
+                    || world.GetBlock(Move(location, Direction.Down, 3)).Type.IsSolid() ||
+                    IsClimbing(world, Move(location, Direction.Down, 3)))
 
                 //Not an underwater location
                 && !(world.GetBlock(Move(location, Direction.Up)).Type.IsLiquid());
@@ -647,11 +610,12 @@ namespace MinecraftClient.Mapping
                 case Direction.Down:
                     return IsClimbing(world, Move(location, Direction.Down)) || !IsOnGround(world, location);
                 case Direction.Up:
-                    bool nextTwoBlocks = !world.GetBlock(Move(Move(location, Direction.Up), Direction.Up)).Type.IsSolid();
+                    bool nextTwoBlocks =
+                        !world.GetBlock(Move(Move(location, Direction.Up), Direction.Up)).Type.IsSolid();
 
                     // Check if the current block can be climbed on
                     if (IsClimbing(world, location))
-                        // Check if next block after the next one can be climbed uppon
+                        // Check if next block after the next one can be climbed upon
                         return IsClimbing(world, Move(location, Direction.Up)) || nextTwoBlocks;
 
                     return (IsOnGround(world, location) || IsSwimming(world, location)) && nextTwoBlocks;
@@ -665,13 +629,21 @@ namespace MinecraftClient.Mapping
 
                 // Move diagonal
                 case Direction.NorthEast:
-                    return PlayerFitsHere(world, Move(location, Direction.North)) && PlayerFitsHere(world, Move(location, Direction.East)) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.North)) &&
+                           PlayerFitsHere(world, Move(location, Direction.East)) &&
+                           PlayerFitsHere(world, Move(location, direction));
                 case Direction.SouthEast:
-                    return PlayerFitsHere(world, Move(location, Direction.South)) && PlayerFitsHere(world, Move(location, Direction.East)) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.South)) &&
+                           PlayerFitsHere(world, Move(location, Direction.East)) &&
+                           PlayerFitsHere(world, Move(location, direction));
                 case Direction.SouthWest:
-                    return PlayerFitsHere(world, Move(location, Direction.South)) && PlayerFitsHere(world, Move(location, Direction.West)) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.South)) &&
+                           PlayerFitsHere(world, Move(location, Direction.West)) &&
+                           PlayerFitsHere(world, Move(location, direction));
                 case Direction.NorthWest:
-                    return PlayerFitsHere(world, Move(location, Direction.North)) && PlayerFitsHere(world, Move(location, Direction.West)) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.North)) &&
+                           PlayerFitsHere(world, Move(location, Direction.West)) &&
+                           PlayerFitsHere(world, Move(location, direction));
 
                 default:
                     throw new ArgumentException("Unknown direction", nameof(direction));
@@ -686,8 +658,16 @@ namespace MinecraftClient.Mapping
         /// <returns>True if a player is able to stand in this location</returns>
         public static bool PlayerFitsHere(World world, Location location)
         {
-            return (IsClimbing(world, location) && IsClimbing(world, Move(location, Direction.Up)))
-                 || !world.GetBlock(location).Type.IsSolid() && !world.GetBlock(Move(location, Direction.Up)).Type.IsSolid();
+            var canClimb = IsClimbing(world, location) && IsClimbing(world, Move(location, Direction.Up));
+            var isNotSolid = !world.GetBlock(location).Type.IsSolid() &&
+                             !world.GetBlock(Move(location, Direction.Up)).Type.IsSolid();
+
+            // Handle slabs
+            if (!isNotSolid && world.GetBlock(Move(location, Direction.Up))
+                    .IsTopSlab(McClient.Instance!.GetProtocolVersion()))
+                isNotSolid = true;
+
+            return canClimb || isNotSolid;
         }
 
         /// <summary>
@@ -707,39 +687,28 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="direction">Direction to move to</param>
         /// <returns>A location delta for moving in that direction</returns>
-        public static Location Move(Direction direction)
+        private static Location Move(Direction direction)
         {
-            switch (direction)
+            return direction switch
             {
                 // Move vertical
-                case Direction.Down:
-                    return new Location(0, -1, 0);
-                case Direction.Up:
-                    return new Location(0, 1, 0);
+                Direction.Down => new Location(0, -1, 0),
+                Direction.Up => new Location(0, 1, 0),
 
                 // Move horizontal straight
-                case Direction.East:
-                    return new Location(1, 0, 0);
-                case Direction.West:
-                    return new Location(-1, 0, 0);
-                case Direction.South:
-                    return new Location(0, 0, 1);
-                case Direction.North:
-                    return new Location(0, 0, -1);
+                Direction.East => new Location(1, 0, 0),
+                Direction.West => new Location(-1, 0, 0),
+                Direction.South => new Location(0, 0, 1),
+                Direction.North => new Location(0, 0, -1),
 
                 // Move horizontal diagonal
-                case Direction.NorthEast:
-                    return Move(Direction.North) + Move(Direction.East);
-                case Direction.SouthEast:
-                    return Move(Direction.South) + Move(Direction.East);
-                case Direction.SouthWest:
-                    return Move(Direction.South) + Move(Direction.West);
-                case Direction.NorthWest:
-                    return Move(Direction.North) + Move(Direction.West);
+                Direction.NorthEast => Move(Direction.North) + Move(Direction.East),
+                Direction.SouthEast => Move(Direction.South) + Move(Direction.East),
+                Direction.SouthWest => Move(Direction.South) + Move(Direction.West),
+                Direction.NorthWest => Move(Direction.North) + Move(Direction.West),
 
-                default:
-                    throw new ArgumentException("Unknown direction", nameof(direction));
-            }
+                _ => throw new ArgumentException("Unknown direction", nameof(direction))
+            };
         }
 
         /// <summary>
@@ -751,7 +720,7 @@ namespace MinecraftClient.Mapping
         /// <returns>Is loading complete</returns>
         public static bool CheckChunkLoading(World world, Location start, Location dest)
         {
-            ChunkColumn? chunkColumn = world.GetChunkColumn(dest);
+            var chunkColumn = world.GetChunkColumn(dest);
             if (chunkColumn == null || chunkColumn.FullyLoaded == false)
                 return false;
 
