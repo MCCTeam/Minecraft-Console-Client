@@ -296,6 +296,7 @@ namespace MinecraftClient
             if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
             if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
+            if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }
@@ -3405,7 +3406,9 @@ namespace MinecraftClient
             {
                 Entity entity = entities[entityID];
                 entity.Metadata = metadata;
-                if (entity.Type.ContainsItem() && metadata.TryGetValue(7, out object? itemObj) && itemObj != null && itemObj.GetType() == typeof(Item))
+                int itemEntityMetadataFieldIndex = protocolversion < Protocol18Handler.MC_1_17_Version ? 7 : 8;
+                
+                if (entity.Type.ContainsItem() && metadata.TryGetValue(itemEntityMetadataFieldIndex, out object? itemObj) && itemObj != null && itemObj.GetType() == typeof(Item))
                 {
                     Item item = (Item)itemObj;
                     if (item == null)
