@@ -376,32 +376,6 @@ public static class BlockExtension
                     return true;
             }
         }
-        else if (protocolVersion >= Protocol18Handler.MC_1_13_Version)
-        {
-            switch (block.BlockId)
-            {
-                case 7258: // OakSlab
-                case 7264: // SpruceSlab
-                case 7270: // BirchSlab
-                case 7276: // JungleSlab
-                case 7282: // AcaciaSlab
-                case 7288: // DarkOakSlab
-                case 7294: // StoneSlab
-                case 7300: // SandstoneSlab
-                case 7306: // PetrifiedOakSlab
-                case 7312: // CobblestoneSlab
-                case 7318: // BrickSlab
-                case 7324: // StoneBrickSlab
-                case 7330: // NetherBrickSlabw
-                case 7336: // QuartzSlab
-                case 7342: // RedSandstoneSlab
-                case 7348: // PurpurSlab
-                case 6802: // PrismarineSlab
-                case 6808: // PrismarineBrickSlab
-                case 6814: // DarkPrismarineSlab
-                    return true;
-            }
-        }
 
         return false;
     }
