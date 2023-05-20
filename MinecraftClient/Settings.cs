@@ -1397,6 +1397,13 @@ namespace MinecraftClient
                     get { return ChatBots.TelegramBridge.Config; }
                     set { ChatBots.TelegramBridge.Config = value; ChatBots.TelegramBridge.Config.OnSettingUpdate(); }
                 }
+                
+                [TomlPrecedingComment("$ChatBot.ItemsCollector$")]
+                public ChatBots.ItemsCollector.Configs ItemsCollector
+                {
+                    get { return ChatBots.ItemsCollector.Config; }
+                    set { ChatBots.ItemsCollector.Config = value; ChatBots.ItemsCollector.Config.OnSettingUpdate(); }
+                }
             }
         }
 
