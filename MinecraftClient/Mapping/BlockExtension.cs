@@ -66,64 +66,63 @@ public static class BlockExtension
                     return true;
             }
         }
-        else if (protocolVersion == Protocol18Handler.MC_1_13_Version)
+        else if (protocolVersion == Protocol18Handler.MC_1_19_3_Version)
         {
             switch (block.BlockId)
             {
-                case 19257: // CutCopperSlab
-                case 19251: // ExposedCutCopperSlab
-                case 19245: // WeatheredCutCopperSlab
-                case 19239: // OxidizedCutCopperSlab
-                case 19609: // WaxedCutCopperSlab
-                case 19603: // WaxedExposedCutCopperSlab
-                case 19597: // WaxedWeatheredCutCopperSlab
-                case 19591: // WaxedOxidizedCutCopperSlab
-                case 9042: // OakSlab
-                case 9048: // SpruceSlab
-                case 9054: // BirchSlab
-                case 9060: // JungleSlab
-                case 9066: // AcaciaSlab
-                case 9072: // DarkOakSlab
-                case 9078: // MangroveSlab
-                case 16257: // CrimsonSlab
-                case 16263: // WarpedSlab
-                case 9084: // StoneSlab
-                case 9090: // SmoothStoneSlab
-                case 9096: // SandstoneSlab
-                case 9102: // CutSandstoneSlab
-                case 9108: // PetrifiedOakSlab
-                case 9114: // CobblestoneSlab
-                case 9120: // BrickSlab
-                case 9126: // StoneBrickSlab
-                case 9132: // MudBrickSlab
-                case 9138: // NetherBrickSlab
-                case 9144: // QuartzSlab
-                case 9150: // RedSandstoneSlab
-                case 9156: // CutRedSandstoneSlab
-                case 9162: // PurpurSlab
-                case 8586: // PrismarineSlab
-                case 8592: // PrismarineBrickSlab
-                case 8598: // DarkPrismarineSlab
-                case 11671: // PolishedGraniteSlab
-                case 11677: // SmoothRedSandstoneSlab
-                case 11683: // MossyStoneBrickSlab
-                case 11689: // PolishedDioriteSlab
-                case 11695: // MossyCobblestoneSlab
-                case 11701: // EndStoneBrickSlab
-                case 11707: // SmoothSandstoneSlab
-                case 11713: // SmoothQuartzSlab
-                case 11719: // GraniteSlab
-                case 11725: // AndesiteSlab
-                case 11731: // RedNetherBrickSlab
-                case 11737: // PolishedAndesiteSlab
-                case 11743: // DioriteSlab
-                case 19863: // CobbledDeepslateSlab
-                case 20274: // PolishedDeepslateSlab
-                case 21096: // DeepslateBrickSlab
-                case 20685: // DeepslateTileSlab
-                case 17454: // BlackstoneSlab
-                case 17955: // PolishedBlackstoneSlab
-                case 17464: // PolishedBlackstoneBrickSlab
+                case 10686: // OakSlab
+                case 10692: // SpruceSlab
+                case 10698: // BirchSlab
+                case 10704: // JungleSlab
+                case 10710: // AcaciaSlab
+                case 10716: // DarkOakSlab
+                case 10722: // MangroveSlab
+                case 18041: // CrimsonSlab
+                case 18047: // WarpedSlab
+                case 10740: // StoneSlab
+                case 10770: // CobblestoneSlab
+                case 13479: // MossyCobblestoneSlab
+                case 10746: // SmoothStoneSlab
+                case 10782: // StoneBrickSlab
+                case 13467: // MossyStoneBrickSlab
+                case 13503: // GraniteSlab
+                case 13455: // PolishedGraniteSlab
+                case 13527: // DioriteSlab
+                case 13473: // PolishedDioriteSlab
+                case 13509: // AndesiteSlab
+                case 13521: // PolishedAndesiteSlab
+                case 21647: // CobbledDeepslateSlab
+                case 22058: // PolishedDeepslateSlab
+                case 22880: // DeepslateBrickSlab
+                case 22469: // DeepslateTileSlab
+                case 10776: // BrickSlab
+                case 10788: // MudBrickSlab
+                case 10752: // SandstoneSlab
+                case 13491: // SmoothSandstoneSlab
+                case 10758: // CutSandstoneSlab
+                case 10806: // RedSandstoneSlab
+                case 13461: // SmoothRedSandstoneSlab
+                case 10812: // CutRedSandstoneSlab
+                case 10230: // PrismarineSlab
+                case 10236: // PrismarineBrickSlab
+                case 10242: // DarkPrismarineSlab
+                case 10794: // NetherBrickSlab
+                case 13515: // RedNetherBrickSlab
+                case 19238: // BlackstoneSlab
+                case 19739: // PolishedBlackstoneSlab
+                case 19248: // PolishedBlackstoneBrickSlab
+                case 13485: // EndStoneBrickSlab
+                case 10818: // PurpurSlab
+                case 10800: // QuartzSlab
+                case 13497: // SmoothQuartzSlab
+                case 21041: // CutCopperSlab
+                case 21035: // ExposedCutCopperSlab
+                case 21029: // WeatheredCutCopperSlab
+                case 21023: // OxidizedCutCopperSlab
+                case 21393: // WaxedCutCopperSlab
+                case 21387: // WaxedExposedCutCopperSlab
+                case 21381: // WaxedWeatheredCutCopperSlab
+                case 21375: // WaxedOxidizedCutCopperSlab
                     return true;
             }
         }
@@ -393,7 +392,7 @@ public static class BlockExtension
                 case 7312: // CobblestoneSlab
                 case 7318: // BrickSlab
                 case 7324: // StoneBrickSlab
-                case 7330: // NetherBrickSlab
+                case 7330: // NetherBrickSlabw
                 case 7336: // QuartzSlab
                 case 7342: // RedSandstoneSlab
                 case 7348: // PurpurSlab
