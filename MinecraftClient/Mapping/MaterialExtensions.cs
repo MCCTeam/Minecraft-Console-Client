@@ -728,6 +728,7 @@
                     return false;
             }
         }
+
         /// <summary>
         /// Check if contact with the provided material can harm players
         /// </summary>
@@ -812,6 +813,75 @@
                 case Material.RedBed:
                 case Material.WhiteBed:
                 case Material.YellowBed:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Check if the provided material is a slab
+        /// </summary>
+        /// <param name="m">Material to test</param>
+        /// <returns>True if the material is a slab</returns>
+        public static bool IsSlab(this Material m)
+        {
+            switch (m)
+            {
+                case Material.AcaciaSlab:
+                case Material.AndesiteSlab:
+                case Material.BirchSlab:
+                case Material.BlackstoneSlab:
+                case Material.BrickSlab:
+                case Material.CobbledDeepslateSlab:
+                case Material.CobblestoneSlab:
+                case Material.CrimsonSlab:
+                case Material.CutCopperSlab:
+                case Material.CutRedSandstoneSlab:
+                case Material.CutSandstoneSlab:
+                case Material.DarkOakSlab:
+                case Material.DarkPrismarineSlab:
+                case Material.DeepslateBrickSlab:
+                case Material.DeepslateTileSlab:
+                case Material.DioriteSlab:
+                case Material.EndStoneBrickSlab:
+                case Material.ExposedCutCopperSlab:
+                case Material.GraniteSlab:
+                case Material.JungleSlab:
+                case Material.MangroveSlab:
+                case Material.MossyCobblestoneSlab:
+                case Material.MossyStoneBrickSlab:
+                case Material.MudBrickSlab:
+                case Material.NetherBrickSlab:
+                case Material.OakSlab:
+                case Material.OxidizedCutCopperSlab:
+                case Material.PetrifiedOakSlab:
+                case Material.PolishedAndesiteSlab:
+                case Material.PolishedBlackstoneBrickSlab:
+                case Material.PolishedBlackstoneSlab:
+                case Material.PolishedDeepslateSlab:
+                case Material.PolishedDioriteSlab:
+                case Material.PolishedGraniteSlab:
+                case Material.PrismarineBrickSlab:
+                case Material.PrismarineSlab:
+                case Material.PurpurSlab:
+                case Material.QuartzSlab:
+                case Material.RedNetherBrickSlab:
+                case Material.RedSandstoneSlab:
+                case Material.SandstoneSlab:
+                case Material.SmoothQuartzSlab:
+                case Material.SmoothRedSandstoneSlab:
+                case Material.SmoothSandstoneSlab:
+                case Material.SmoothStoneSlab:
+                case Material.SpruceSlab:
+                case Material.StoneBrickSlab:
+                case Material.StoneSlab:
+                case Material.WarpedSlab:
+                case Material.WaxedCutCopperSlab:
+                case Material.WaxedExposedCutCopperSlab:
+                case Material.WaxedOxidizedCutCopperSlab:
+                case Material.WaxedWeatheredCutCopperSlab:
+                case Material.WeatheredCutCopperSlab:
                     return true;
                 default:
                     return false;
