@@ -29,27 +29,32 @@ redirectFrom:
 
 ## List of built-in Chat Bots
 
--   [Alerts](#alerts)
--   [Anti AFK](#anti-afk)
--   [Auto Attack](#auto-attack)
--   [Auto Craft](#auto-craft)
--   [Auto Dig](#auto-dig)
--   [Auto Drop](#auto-drop)
--   [Auto Eat](#auto-eat)
--   [Auto Fishing](#auto-fishing)
--   [Auto Relog](#auto-relog)
--   [Auto Respond](#auto-respond)
--   [Chat Log](#chat-log)
--   [Discord Bridge](#discord-bridge)
--   [Farmer](#farmer)
--   [Follow Player](#follow-player)
--   [Hangman](#hangman)
--   [Mailer](#mailer)
--   [Map](#map)
--   [PlayerList Logger](#playerlist-logger)
--   [Remote Control](#remote-control)
--   [Replay Mod](#replay-mod)
--   [Script Scheduler](#script-scheduler)
+- [Chat Bots](#chat-bots)
+  - [About](#about)
+  - [List of built-in Chat Bots](#list-of-built-in-chat-bots)
+  - [Alerts](#alerts)
+  - [Anti AFK](#anti-afk)
+  - [Auto Attack](#auto-attack)
+  - [Auto Craft](#auto-craft)
+  - [Auto Dig](#auto-dig)
+  - [Auto Drop](#auto-drop)
+  - [Auto Eat](#auto-eat)
+  - [Auto Fishing](#auto-fishing)
+  - [Auto Relog](#auto-relog)
+  - [Auto Respond](#auto-respond)
+  - [Chat Log](#chat-log)
+  - [Discord Bridge](#discord-bridge)
+  - [Farmer](#farmer)
+  - [Follow player](#follow-player)
+  - [Hangman](#hangman)
+  - [Mailer](#mailer)
+  - [Map](#map)
+  - [PlayerList Logger](#playerlist-logger)
+  - [Remote Control](#remote-control)
+  - [Replay Capture](#replay-capture)
+  - [Script Scheduler](#script-scheduler)
+  - [Telegram Bridge](#telegram-bridge)
+  - [Items Collector](#items-collector)
 
 ## Alerts
 
@@ -2339,3 +2344,241 @@ redirectFrom:
         Trigger_On_Interval = { Enable = false, MinTime = 1.0, MaxTime = 10.0 }
         Action = "send /login pass"
     ```
+
+## Telegram Bridge
+
+-   **Description:**
+
+    This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.**
+
+    </div>
+
+-   **Setup:**
+
+    1. First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
+    2. Click on `Start` button and read the bot reply, then type `/newbot`, the Botfather will guide you through the bot creation.
+    3. Once you create the bot, copy the **API key** that you have gotten, and put it into the `Token` field of `ChatBot.TelegramBridge` section (this section).
+
+        <div class="custom-container danger"><p class="custom-container-title">Danger</p>
+
+        **Do not share this token with anyone else as it will give them the control over your bot. Save it securely.**
+
+        </div>
+
+    4. Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
+    5. Click on `Start` button and type and send the following command `.chatid` to obtain the chat id. 
+    6. Copy the chat id number (eg. `2627844670`) and paste it in the `ChannelId` field and add it to the `Authorized_Chat_Ids` field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
+    Now you can use the bot using it's DM.
+
+    <div class="custom-container danger"><p class="custom-container-title">Danger</p>
+
+    **If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!**
+
+    </div>
+
+    <div class="custom-container danger"><p class="custom-container-title">Danger</p>
+
+    **An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!**
+
+    </div>
+
+-   **Settings:**
+
+    **Section:** **`ChatBot.TelegramBridge`**
+
+    #### `Enabled`
+
+    -   **Description:**
+
+        This setting specifies if the Telegram Bridge Chat Bot is enabled.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Token`
+
+    -   **Description:**
+
+        Your Telegram Bot token.
+
+    -   **Type:** `string`
+
+    -   **Default:** empty
+
+    #### `ChannelId`
+
+    -   **Description:**
+
+        An ID of a channel where you want to interact with the MCC using the bot.
+
+    -   **Type:** `string`
+
+    -   **Default:** empty
+
+    #### `Authorized_Chat_Ids`
+
+    -   **Description:**
+
+        A list of Chat IDs that are allowed to send messages and execute commands. 
+        To get an id of your chat DM with the bot use `.chatid` bot command in Telegram.
+
+    -   **Type:** `array of strings`
+
+    -   **Default:** empty
+
+    #### `Message_Send_Timeout`
+
+    -   **Description:**
+
+        How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).
+
+    -   **Type:** `integer`
+
+    -   **Default:** 3
+
+    **Message Formats**
+
+    Words wrapped with `{` and `}` are going to be replaced during the code execution, do not change them!
+    For example, `{message}` is going to be replace with an actual message, `{username}` will be replaced with an username, `{timestamp}` with the current time.
+    For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html
+
+    #### `PrivateMessageFormat`
+
+    -   **Description:**
+
+        A format that is used to display a private chat message on the minecraft server, in a Telegram channel.
+
+    -   **Type:** `string`
+
+    -   **Default:** `*(Private Message)* {username}: {message}`
+
+    #### `PublicMessageFormat`
+
+    -   **Description:**
+
+        A format that is used to display a public chat message on the minecraft server, in a Telegram channel.
+
+    -   **Type:** `string`
+
+    -   **Default:** `{username}: {message}`
+
+    #### `TeleportRequestMessageFormat`
+
+    -   **Description:**
+
+        A format that is used to display a teleport request on the minecraft server, in a Telegram channel.
+
+    -   **Type:** `string`
+
+    -   **Default:** `A new Teleport Request from **{username}**!`
+
+## Items Collector
+
+-   **Description:**
+
+    Collect items on the ground using this Chat Bot.
+
+-   **Settings:**
+
+    **Section:** **`ChatBot.ItemsCollector`**
+
+    #### `Enabled`
+
+    -   **Description:**
+
+        This setting specifies if the Items Collector Chat Bot is enabled.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Collect_All_Item_Types`
+
+    -   **Description:**
+
+        Specifies if the bot will collect all items, regardless of their type. 
+        If you want to use the whitelisted item types, disable this by setting it to `false`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Items_Whitelist`
+
+    -   **Description:**
+
+        In this list you can specify which items the bot will collect. 
+        To enable this, set the `Collect_All_Item_Types` to false. 
+
+        <div class="custom-container warning"><p class="custom-container-title">Note</p>
+
+        **This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items**
+
+        </div>
+
+        <div class="custom-container tip"><p class="custom-container-title">Note</p>
+
+        **You can see the list of item types [here](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)**
+
+        </div>
+
+    -   **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
+
+    -   **Type:** `array of strings with item names`
+
+    -   **Default:** `[ "Diamond", "NetheriteIngot" ]`
+
+    #### `Delay_Between_Tasks`
+
+    -   **Description:**
+
+        Delay in milliseconds between bot scanning items (Recommended: 300-500)
+
+    -   **Type:** `integer`
+
+    -   **Default:** `300`
+
+    #### `Collection_Radius`
+
+    -   **Description:**
+
+        The radius of blocks in which bot will look for items to collect.
+
+    -   **Type:** `double`
+
+    -   **Default:** `30.0`
+
+    #### `Always_Return_To_Start`
+
+    -   **Description:**
+
+        Specifies if the bot will return to it's starting position after there are no items to collect.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `Prioritize_Clusters`
+
+    -   **Description:**
+
+        Specifies if the bot will go after clustered items instead for the closest ones.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`

@@ -108,7 +108,6 @@ MinecraftClient.exe --help
 ```bash
 MinecraftClient.exe --help
 MinecraftClient.exe <username> <password> <server>
-MinecraftClient.exe <username> <password> <server> "/mycommand"
 MinecraftClient.exe --setting=value [--other settings]
 MinecraftClient.exe --section.setting=value [--other settings]
 MinecraftClient.exe <settings-file.ini> [--other settings]
