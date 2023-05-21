@@ -807,4 +807,25 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="Signature.SignMessageInCommand" xml:space="preserve">
     <value>Whether to sign the messages contained in the commands sent by MCC. For example, the message in "/msg" and "/me"</value>
   </data>
+  <data name="ChatBot.ItemsCollector.Collect_All_Item_Types" xml:space="preserve">
+    <value>If set to true, the bot will collect all items, regardless of their type. If you want to use the whitelisted item types, disable this by setting it to false</value>
+  </data>
+  <data name="ChatBot.ItemsCollector.Items_Whitelist" xml:space="preserve">
+    <value>In this list you can specify which items the bot will collect. To enable this, set the Collect_All_Item_Types to false. (NOTE: This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items)\nYou can see the list of item types here: https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs</value>
+  </data>
+  <data name="ChatBot.ItemsCollector.Delay_Between_Tasks" xml:space="preserve">
+    <value>Delay in milliseconds between bot scanning items (Recommended: 300-500)</value>
+  </data>
+  <data name="ChatBot.ItemsCollector.Collection_Radius" xml:space="preserve">
+    <value>The radius in which bot will look for items to collect (Default: 30)</value>
+  </data>
+  <data name="ChatBot.ItemsCollector.Always_Return_To_Start" xml:space="preserve">
+    <value>If set to true, the bot will return to it's starting position after there are no items to collect</value>
+  </data>
+  <data name="ChatBot.ItemsCollector.Prioritize_Clusters" xml:space="preserve">
+    <value>If set to true, the bot will go after clustered items instead for the closest ones</value>
+  </data>
+  <data name="ChatBot.ItemsCollector" xml:space="preserve">
+    <value>A Chat Bot that collects items on the ground</value>
+  </data>
 </root>
