@@ -98,7 +98,7 @@ public class ItemsCollector : ChatBot
         return r.SetAndReturn(cmd switch
         {
 #pragma warning disable format // @formatter:off
-                _           =>   Translations.cmd_follow_desc + ": " + Translations.cmd_follow_usage
+                _           =>   Translations.cmd_items_collector_desc + ": " + Translations.cmd_items_collector_usage
                                    + '\n' + McClient.dispatcher.GetAllUsageString(CommandName, false),
 #pragma warning restore format // @formatter:on
         });
@@ -107,19 +107,19 @@ public class ItemsCollector : ChatBot
     private int OnCommandStart(CmdResult r)
     {
         if (running)
-            return r.SetAndReturn(CmdResult.Status.Fail, "Already collecting items!");
+            return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_items_collector_already_collecting);
 
         StartTheMainProcess();
-        return r.SetAndReturn(CmdResult.Status.Done, "Started collecting items!");
+        return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_items_collector_started);
     }
 
     private int OnCommandStop(CmdResult r)
     {
         if (!running)
-            return r.SetAndReturn(CmdResult.Status.Fail, "Already not collecting items!");
+            return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_items_collector_already_not_collecting);
 
         StopTheMainProcess();
-        return r.SetAndReturn(CmdResult.Status.Done, "Stopping collecting items...");
+        return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_items_collector_stopping);
     }
 
     private void StartTheMainProcess()
@@ -173,7 +173,7 @@ public class ItemsCollector : ChatBot
             }
             else
             {
-                if (Config.Always_Return_To_Start)
+                if (startingLocation.Distance(currentLocation) > 2f && Config.Always_Return_To_Start)
                     WaitForMoveToLocation(startingLocation);
             }
 
@@ -183,7 +183,7 @@ public class ItemsCollector : ChatBot
             Thread.Sleep(Config.Delay_Between_Tasks);
         }
 
-        LogToConsole("Stopped collecting items!");
+        LogToConsole(Translations.cmd_items_collector_stopped);
     }
 
     public override void AfterGameJoined()
