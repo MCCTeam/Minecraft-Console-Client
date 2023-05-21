@@ -2037,4 +2037,25 @@ Logging in...</value>
   <data name="bot.TelegramBridge.quit_disabled" xml:space="preserve">
     <value>This command has been disabled due to Telegram caching causing issues, please stop your client manually.</value>
   </data>
+  <data name="cmd.items.collector.desc" xml:space="preserve">
+    <value>Collect items on the ground</value>
+  </data>
+  <data name="cmd.items.collector.usage" xml:space="preserve">
+    <value>itemscollector &lt;start/stop&gt;</value>
+  </data>
+  <data name="cmd.items.collector.already.collecting" xml:space="preserve">
+    <value>Already collecting items!</value>
+  </data>
+  <data name="cmd.items.collector.started" xml:space="preserve">
+    <value>Started collecting items!</value>
+  </data>
+  <data name="cmd.items.collector.already.not.collecting" xml:space="preserve">
+    <value>Already not collecting items!</value>
+  </data>
+  <data name="cmd.items.collector.stopping" xml:space="preserve">
+    <value>Stopping item collection...</value>
+  </data>
+  <data name="cmd.items.collector.stopped" xml:space="preserve">
+    <value>Stopped collecting items.</value>
+  </data>
 </root>

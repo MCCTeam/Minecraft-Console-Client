@@ -3812,5 +3812,47 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.TelegramBridge.quit_disabled", resourceCulture);
             }
         }
+        
+        internal static string cmd_items_collector_desc {
+            get {
+                return ResourceManager.GetString("cmd.items.collector.desc", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_items_collector_usage {
+            get {
+                return ResourceManager.GetString("cmd.items.collector.usage", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_items_collector_already_collecting {
+            get {
+                return ResourceManager.GetString("cmd.items.collector.already.collecting", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_items_collector_started {
+            get {
+                return ResourceManager.GetString("cmd.items.collector.started", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_items_collector_already_not_collecting {
+            get {
+                return ResourceManager.GetString("cmd.items.collector.already.not.collecting", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_items_collector_stopping {
+            get {
+                return ResourceManager.GetString("cmd.items.collector.stopping", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_items_collector_stopped {
+            get {
+                return ResourceManager.GetString("cmd.items.collector.stopped", resourceCulture);
+            }
+        }
     }
 }
