@@ -54,7 +54,6 @@ redirectFrom:
   - [Replay Capture](#replay-capture)
   - [Script Scheduler](#script-scheduler)
   - [Telegram Bridge](#telegram-bridge)
-  - [Items Collector](#items-collector)
 
 ## Alerts
 
@@ -2447,7 +2446,7 @@ redirectFrom:
 
     Words wrapped with `{` and `}` are going to be replaced during the code execution, do not change them!
     For example, `{message}` is going to be replace with an actual message, `{username}` will be replaced with an username, `{timestamp}` with the current time.
-    For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html
+    For Telegram message formatting, check the [following](https://mccteam.github.io/r/tg-fmt.html).
 
     #### `PrivateMessageFormat`
 
@@ -2479,106 +2478,3 @@ redirectFrom:
 
     -   **Default:** `A new Teleport Request from **{username}**!`
 
-## Items Collector
-
--   **Description:**
-
-    Collect items on the ground using this Chat Bot.
-
--   **Settings:**
-
-    **Section:** **`ChatBot.ItemsCollector`**
-
-    #### `Enabled`
-
-    -   **Description:**
-
-        This setting specifies if the Items Collector Chat Bot is enabled.
-
-    -   **Available values:** `true` and `false`.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `false`
-
-    #### `Collect_All_Item_Types`
-
-    -   **Description:**
-
-        Specifies if the bot will collect all items, regardless of their type. 
-        If you want to use the whitelisted item types, disable this by setting it to `false`.
-
-    -   **Available values:** `true` and `false`.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `false`
-
-    #### `Items_Whitelist`
-
-    -   **Description:**
-
-        In this list you can specify which items the bot will collect. 
-        To enable this, set the `Collect_All_Item_Types` to false. 
-
-        <div class="custom-container warning"><p class="custom-container-title">Note</p>
-
-        **This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items**
-
-        </div>
-
-        <div class="custom-container tip"><p class="custom-container-title">Note</p>
-
-        **You can see the list of item types [here](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)**
-
-        </div>
-
-    -   **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
-
-    -   **Type:** `array of strings with item names`
-
-    -   **Default:** `[ "Diamond", "NetheriteIngot" ]`
-
-    #### `Delay_Between_Tasks`
-
-    -   **Description:**
-
-        Delay in milliseconds between bot scanning items (Recommended: 300-500)
-
-    -   **Type:** `integer`
-
-    -   **Default:** `300`
-
-    #### `Collection_Radius`
-
-    -   **Description:**
-
-        The radius of blocks in which bot will look for items to collect.
-
-    -   **Type:** `double`
-
-    -   **Default:** `30.0`
-
-    #### `Always_Return_To_Start`
-
-    -   **Description:**
-
-        Specifies if the bot will return to it's starting position after there are no items to collect.
-
-    -   **Available values:** `true` and `false`.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `true`
-
-    #### `Prioritize_Clusters`
-
-    -   **Description:**
-
-        Specifies if the bot will go after clustered items instead for the closest ones.
-
-    -   **Available values:** `true` and `false`.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `true`
