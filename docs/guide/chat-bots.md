@@ -29,31 +29,29 @@ redirectFrom:
 
 ## List of built-in Chat Bots
 
-- [Chat Bots](#chat-bots)
-  - [About](#about)
-  - [List of built-in Chat Bots](#list-of-built-in-chat-bots)
-  - [Alerts](#alerts)
-  - [Anti AFK](#anti-afk)
-  - [Auto Attack](#auto-attack)
-  - [Auto Craft](#auto-craft)
-  - [Auto Dig](#auto-dig)
-  - [Auto Drop](#auto-drop)
-  - [Auto Eat](#auto-eat)
-  - [Auto Fishing](#auto-fishing)
-  - [Auto Relog](#auto-relog)
-  - [Auto Respond](#auto-respond)
-  - [Chat Log](#chat-log)
-  - [Discord Bridge](#discord-bridge)
-  - [Farmer](#farmer)
-  - [Follow player](#follow-player)
-  - [Hangman](#hangman)
-  - [Mailer](#mailer)
-  - [Map](#map)
-  - [PlayerList Logger](#playerlist-logger)
-  - [Remote Control](#remote-control)
-  - [Replay Capture](#replay-capture)
-  - [Script Scheduler](#script-scheduler)
-  - [Telegram Bridge](#telegram-bridge)
+-   [Alerts](#alerts)
+-   [Anti AFK](#anti-afk)
+-   [Auto Attack](#auto-attack)
+-   [Auto Craft](#auto-craft)
+-   [Auto Dig](#auto-dig)
+-   [Auto Drop](#auto-drop)
+-   [Auto Eat](#auto-eat)
+-   [Auto Fishing](#auto-fishing)
+-   [Auto Relog](#auto-relog)
+-   [Auto Respond](#auto-respond)
+-   [Chat Log](#chat-log)
+-   [Discord Bridge](#discord-bridge)
+-   [Farmer](#farmer)
+-   [Follow Player](#follow-player)
+-   [Hangman](#hangman)
+-   [Mailer](#mailer)
+-   [Map](#map)
+-   [PlayerList Logger](#playerlist-logger)
+-   [Remote Control](#remote-control)
+-   [Replay Mod](#replay-mod)
+-   [Script Scheduler](#script-scheduler)
+-   [Telegram Bridge](#telegram-bridge)
+-   [Items Collector](#items-collector)
 
 ## Alerts
 
@@ -2478,3 +2476,107 @@ redirectFrom:
 
     -   **Default:** `A new Teleport Request from **{username}**!`
 
+
+## Items Collector
+
+-   **Description:**
+
+    Collect items on the ground using this Chat Bot.
+
+-   **Settings:**
+
+    **Section:** **`ChatBot.ItemsCollector`**
+
+    #### `Enabled`
+
+    -   **Description:**
+  
+        This setting specifies if the Items Collector chat bot is enabled.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Collect_All_Item_Types`
+
+    -   **Description:**
+
+        Specifies if the bot will collect all items, regardless of their type. 
+        If you want to use the whitelisted item types, disable this by setting it to `false`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Items_Whitelist`
+
+    -   **Description:**
+
+        In this list you can specify which items the bot will collect. 
+        To enable this, set the `Collect_All_Item_Types` to false. 
+
+        <div class="custom-container warning"><p class="custom-container-title">Note</p>
+
+        **This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items**
+
+        </div>
+
+        <div class="custom-container tip"><p class="custom-container-title">Note</p>
+
+        **You can see the list of item types [here](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)**
+
+        </div>
+
+    -   **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
+
+    -   **Type:** `array of strings with item names`
+
+    -   **Default:** `[ "Diamond", "NetheriteIngot" ]`
+
+    #### `Delay_Between_Tasks`
+
+    -   **Description:**
+
+        Delay in milliseconds between bot scanning items (Recommended: 300-500)
+
+    -   **Type:** `integer`
+
+    -   **Default:** `300`
+
+    #### `Collection_Radius`
+
+    -   **Description:**
+
+        The radius of blocks in which bot will look for items to collect.
+
+    -   **Type:** `double`
+
+    -   **Default:** `30.0`
+
+    #### `Always_Return_To_Start`
+
+    -   **Description:**
+
+        Specifies if the bot will return to it's starting position after there are no items to collect.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `Prioritize_Clusters`
+
+    -   **Description:**
+
+        Specifies if the bot will go after clustered items instead for the closest ones.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
