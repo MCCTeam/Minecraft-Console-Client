@@ -2518,11 +2518,11 @@ redirectFrom:
         In this list you can specify which items the bot will collect. 
         To enable this, set the `Collect_All_Item_Types` to false. 
 
-        <div class="custom-container warning"><p class="custom-container-title">Note</p>
+    <div class="custom-container warning"><p class="custom-container-title">Note</p>
 
-        **This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items**
+    **This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items**
 
-        </div>
+    </div>
 
     -   **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
 
