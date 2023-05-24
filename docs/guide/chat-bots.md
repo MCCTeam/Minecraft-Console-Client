@@ -2359,17 +2359,16 @@ redirectFrom:
     1. First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
     2. Click on `Start` button and read the bot reply, then type `/newbot`, the Botfather will guide you through the bot creation.
     3. Once you create the bot, copy the **API key** that you have gotten, and put it into the `Token` field of `ChatBot.TelegramBridge` section (this section).
-
-        <div class="custom-container danger"><p class="custom-container-title">Danger</p>
-
-        **Do not share this token with anyone else as it will give them the control over your bot. Save it securely.**
-
-        </div>
-
     4. Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
     5. Click on `Start` button and type and send the following command `.chatid` to obtain the chat id. 
     6. Copy the chat id number (eg. `2627844670`) and paste it in the `ChannelId` field and add it to the `Authorized_Chat_Ids` field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
     Now you can use the bot using it's DM.
+
+    <div class="custom-container danger"><p class="custom-container-title">Danger</p>
+
+    **Do not share your API key with anyone else as it will give them the control over your bot. Save it securely.**
+
+    </div>
 
     <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
