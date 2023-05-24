@@ -2524,12 +2524,6 @@ redirectFrom:
 
         </div>
 
-        <div class="custom-container tip"><p class="custom-container-title">Note</p>
-
-        **You can see the list of item types [here](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)**
-
-        </div>
-
     -   **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
 
     -   **Type:** `array of strings with item names`
