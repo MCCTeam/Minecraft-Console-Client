@@ -1238,5 +1238,35 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("ChatBot.ItemsCollector", resourceCulture);
             }
         }
+        
+        internal static string ChatBot_WebSocketBot {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot", resourceCulture);
+            }
+        }
+        
+        internal static string ChatBot_WebSocketBot_Ip {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot.Ip", resourceCulture);
+            }
+        }
+        
+        internal static string ChatBot_WebSocketBot_Port {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot.Port", resourceCulture);
+            }
+        }
+        
+        internal static string ChatBot_WebSocketBot_Password {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot.Password", resourceCulture);
+            }
+        }
+        
+        internal static string ChatBot_WebSocketBot_DebugMode {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot.DebugMode", resourceCulture);
+            }
+        }
     }
 }

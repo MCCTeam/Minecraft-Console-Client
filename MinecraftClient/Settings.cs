@@ -1404,6 +1404,13 @@ namespace MinecraftClient
                     get { return ChatBots.ItemsCollector.Config; }
                     set { ChatBots.ItemsCollector.Config = value; ChatBots.ItemsCollector.Config.OnSettingUpdate(); }
                 }
+                
+                [TomlPrecedingComment("$ChatBot.WebSocketBot$")]
+                public ChatBots.WebSocketBot.Configs WebSocketBot
+                {
+                    get { return ChatBots.WebSocketBot.Config!; }
+                    set { ChatBots.WebSocketBot.Config = value; }
+                }
             }
         }
 
