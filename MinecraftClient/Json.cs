@@ -25,12 +25,24 @@ namespace MinecraftClient
         /// </summary>
         public class JSONData
         {
-            public enum DataType { Object, Array, String };
+            public enum DataType
+            {
+                Object,
+                Array,
+                String
+            };
+
             private readonly DataType type;
-            public DataType Type { get { return type; } }
+
+            public DataType Type
+            {
+                get { return type; }
+            }
+
             public Dictionary<string, JSONData> Properties;
             public List<JSONData> DataArray;
             public string StringValue;
+
             public JSONData(DataType datatype)
             {
                 type = datatype;
@@ -63,12 +75,21 @@ namespace MinecraftClient
                             if (toparse[cursorpos] == '"')
                             {
                                 JSONData propertyname = String2Data(toparse, ref cursorpos);
-                                if (toparse[cursorpos] == ':') { cursorpos++; } else { /* parse error ? */ }
+                                if (toparse[cursorpos] == ':')
+                                {
+                                    cursorpos++;
+                                }
+                                else
+                                {
+                                    /* parse error ? */
+                                }
+
                                 JSONData propertyData = String2Data(toparse, ref cursorpos);
                                 data.Properties[propertyname.StringValue] = propertyData;
                             }
                             else cursorpos++;
                         }
+
                         cursorpos++;
                         break;
 
@@ -79,10 +100,15 @@ namespace MinecraftClient
                         SkipSpaces(toparse, ref cursorpos);
                         while (toparse[cursorpos] != ']')
                         {
-                            if (toparse[cursorpos] == ',') { cursorpos++; }
+                            if (toparse[cursorpos] == ',')
+                            {
+                                cursorpos++;
+                            }
+
                             JSONData arrayItem = String2Data(toparse, ref cursorpos);
                             data.DataArray.Add(arrayItem);
                         }
+
                         cursorpos++;
                         break;
 
@@ -103,9 +129,11 @@ namespace MinecraftClient
                                         && IsHex(toparse[cursorpos + 5]))
                                     {
                                         //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
-                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4),
+                                        data.StringValue += char.ConvertFromUtf32(int.Parse(
+                                            toparse.Substring(cursorpos + 2, 4),
                                             System.Globalization.NumberStyles.HexNumber));
-                                        cursorpos += 6; continue;
+                                        cursorpos += 6;
+                                        continue;
                                     }
                                     else if (toparse[cursorpos + 1] == 'n')
                                     {
@@ -127,12 +155,20 @@ namespace MinecraftClient
                                     }
                                     else cursorpos++; //Normal character escapement \"
                                 }
-                                catch (IndexOutOfRangeException) { cursorpos++; } // \u01<end of string>
-                                catch (ArgumentOutOfRangeException) { cursorpos++; } // Unicode index 0123 was invalid
+                                catch (IndexOutOfRangeException)
+                                {
+                                    cursorpos++;
+                                } // \u01<end of string>
+                                catch (ArgumentOutOfRangeException)
+                                {
+                                    cursorpos++;
+                                } // Unicode index 0123 was invalid
                             }
+
                             data.StringValue += toparse[cursorpos];
                             cursorpos++;
                         }
+
                         cursorpos++;
                         break;
 
@@ -151,11 +187,13 @@ namespace MinecraftClient
                     case '-':
                         data = new JSONData(JSONData.DataType.String);
                         StringBuilder sb = new();
-                        while ((toparse[cursorpos] >= '0' && toparse[cursorpos] <= '9') || toparse[cursorpos] == '.' || toparse[cursorpos] == '-')
+                        while ((toparse[cursorpos] >= '0' && toparse[cursorpos] <= '9') || toparse[cursorpos] == '.' ||
+                               toparse[cursorpos] == '-')
                         {
                             sb.Append(toparse[cursorpos]);
                             cursorpos++;
                         }
+
                         data.StringValue = sb.ToString();
                         break;
 
@@ -163,28 +201,71 @@ namespace MinecraftClient
                     case 't':
                         data = new JSONData(JSONData.DataType.String);
                         cursorpos++;
-                        if (toparse[cursorpos] == 'r') { cursorpos++; }
-                        if (toparse[cursorpos] == 'u') { cursorpos++; }
-                        if (toparse[cursorpos] == 'e') { cursorpos++; data.StringValue = "true"; }
+                        if (toparse[cursorpos] == 'r')
+                        {
+                            cursorpos++;
+                        }
+
+                        if (toparse[cursorpos] == 'u')
+                        {
+                            cursorpos++;
+                        }
+
+                        if (toparse[cursorpos] == 'e')
+                        {
+                            cursorpos++;
+                            data.StringValue = "true";
+                        }
+
                         break;
 
                     //Boolean : false
                     case 'f':
                         data = new JSONData(JSONData.DataType.String);
                         cursorpos++;
-                        if (toparse[cursorpos] == 'a') { cursorpos++; }
-                        if (toparse[cursorpos] == 'l') { cursorpos++; }
-                        if (toparse[cursorpos] == 's') { cursorpos++; }
-                        if (toparse[cursorpos] == 'e') { cursorpos++; data.StringValue = "false"; }
+                        if (toparse[cursorpos] == 'a')
+                        {
+                            cursorpos++;
+                        }
+
+                        if (toparse[cursorpos] == 'l')
+                        {
+                            cursorpos++;
+                        }
+
+                        if (toparse[cursorpos] == 's')
+                        {
+                            cursorpos++;
+                        }
+
+                        if (toparse[cursorpos] == 'e')
+                        {
+                            cursorpos++;
+                            data.StringValue = "false";
+                        }
+
                         break;
 
                     //Null field
                     case 'n':
                         data = new JSONData(JSONData.DataType.String);
                         cursorpos++;
-                        if (toparse[cursorpos] == 'u') { cursorpos++; }
-                        if (toparse[cursorpos] == 'l') { cursorpos++; }
-                        if (toparse[cursorpos] == 'l') { cursorpos++; data.StringValue = "null"; }
+                        if (toparse[cursorpos] == 'u')
+                        {
+                            cursorpos++;
+                        }
+
+                        if (toparse[cursorpos] == 'l')
+                        {
+                            cursorpos++;
+                        }
+
+                        if (toparse[cursorpos] == 'l')
+                        {
+                            cursorpos++;
+                            data.StringValue = "null";
+                        }
+
                         break;
 
                     //Unknown data
@@ -192,6 +273,7 @@ namespace MinecraftClient
                         cursorpos++;
                         return String2Data(toparse, ref cursorpos);
                 }
+
                 SkipSpaces(toparse, ref cursorpos);
                 return data;
             }
@@ -206,7 +288,10 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="c">Char to test</param>
         /// <returns>True if hexadecimal</returns>
-        private static bool IsHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
+        private static bool IsHex(char c)
+        {
+            return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
+        }
 
         /// <summary>
         /// Advance the cursor to skip white spaces and line breaks
@@ -216,10 +301,77 @@ namespace MinecraftClient
         private static void SkipSpaces(string toparse, ref int cursorpos)
         {
             while (cursorpos < toparse.Length
-                    && (char.IsWhiteSpace(toparse[cursorpos])
-                    || toparse[cursorpos] == '\r'
-                    || toparse[cursorpos] == '\n'))
+                   && (char.IsWhiteSpace(toparse[cursorpos])
+                       || toparse[cursorpos] == '\r'
+                       || toparse[cursorpos] == '\n'))
                 cursorpos++;
+        }
+
+        // Original: https://github.com/mono/mono/blob/master/mcs/class/System.Json/System.Json/JsonValue.cs
+        private static bool NeedEscape(string src, int i)
+        {
+            var c = src[i];
+            return c < 32 || c == '"' || c == '\\'
+                   // Broken lead surrogate
+                   || (c is >= '\uD800' and <= '\uDBFF' &&
+                       (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF'))
+                   // Broken tail surrogate
+                   || (c is >= '\uDC00' and <= '\uDFFF' &&
+                       (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF'))
+                   // To produce valid JavaScript
+                   || c == '\u2028' || c == '\u2029'
+                   // Escape "</" for <script> tags
+                   || (c == '/' && i > 0 && src[i - 1] == '<');
+        }
+
+        public static string EscapeString(string src)
+        {
+            var sb = new StringBuilder();
+            var start = 0;
+
+            for (var i = 0; i < src.Length; i++)
+            {
+                if (!NeedEscape(src, i)) continue;
+                sb.Append(src, start, i - start);
+
+                switch (src[i])
+                {
+                    case '\b':
+                        sb.Append("\\b");
+                        break;
+                    case '\f':
+                        sb.Append("\\f");
+                        break;
+                    case '\n':
+                        sb.Append("\\n");
+                        break;
+                    case '\r':
+                        sb.Append("\\r");
+                        break;
+                    case '\t':
+                        sb.Append("\\t");
+                        break;
+                    case '\"':
+                        sb.Append("\\\"");
+                        break;
+                    case '\\':
+                        sb.Append("\\\\");
+                        break;
+                    case '/':
+                        sb.Append("\\/");
+                        break;
+
+                    default:
+                        sb.Append("\\u");
+                        sb.Append(((int)src[i]).ToString("x04"));
+                        break;
+                }
+
+                start = i + 1;
+            }
+
+            sb.Append(src, start, src.Length - start);
+            return sb.ToString();
         }
     }
 }
