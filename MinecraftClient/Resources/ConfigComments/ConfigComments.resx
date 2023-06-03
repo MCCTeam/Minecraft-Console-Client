@@ -828,4 +828,19 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="ChatBot.ItemsCollector" xml:space="preserve">
     <value>A Chat Bot that collects items on the ground</value>
   </data>
+  <data name="ChatBot.WebSocketBot" xml:space="preserve">
+    <value>Remotely control the client using Web Sockets.\n# This is useful if you want to implement an application that can remotely and asynchronously execute procedures in MCC.\n# Example implementation written in JavaScript: https://github.com/milutinke/MCC.js.git\n# The protocol specification will be available in the documentation soon.</value>
+  </data>
+  <data name="ChatBot.WebSocketBot.Ip" xml:space="preserve">
+    <value>The IP address that Websocket server will be bound to.</value>
+  </data>
+  <data name="ChatBot.WebSocketBot.Port" xml:space="preserve">
+    <value>The Port that Websocket server will be bounded to.</value>
+  </data>
+  <data name="ChatBot.WebSocketBot.Password" xml:space="preserve">
+    <value>A password that will be used to authenticate on thw Websocket server (It is recommended to change the default password and to set a strong one).</value>
+  </data>
+  <data name="ChatBot.WebSocketBot.DebugMode" xml:space="preserve">
+    <value>This setting is for developers who are developing a library that uses this chat bot to remotely execute procedures/commands/functions.</value>
+  </data>
 </root>

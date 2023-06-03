@@ -2058,4 +2058,37 @@ Logging in...</value>
   <data name="cmd.items.collector.stopped" xml:space="preserve">
     <value>Stopped collecting items.</value>
   </data>
+  <data name="bot.WebSocketBot.failed_to_start.ip" xml:space="preserve">
+    <value>§cFailed to start a server! The provided IP address is not a valid one!</value>
+  </data>
+  <data name="bot.WebSocketBot.failed_to_start.port" xml:space="preserve">
+    <value>§cFailed to start a server! The provided port number {0} is out of the range, it must be 65535 or bellow it!</value>
+  </data>
+  <data name="ChatBot.WebSocketBot.DebugMode" xml:space="preserve">
+    <value />
+  </data>
+  <data name="bot.WebSocketBot.starting" xml:space="preserve">
+    <value>Starting the Websocket server...</value>
+  </data>
+  <data name="bot.WebSocketBot.started" xml:space="preserve">
+    <value>§bServer started on ip §a{0}§b port: §a{1}</value>
+  </data>
+  <data name="bot.WebSocketBot.failed_to_start.custom" xml:space="preserve">
+    <value>§cFailed to start a server:\n\n{0}\n\n</value>
+  </data>
+  <data name="bot.WebSocketBot.new_session" xml:space="preserve">
+    <value>§bNew session connected: §a{0}</value>
+  </data>
+  <data name="bot.WebSocketBot.session_disconnected" xml:space="preserve">
+    <value>§bSession with an id §a{0}§b has disconnected!</value>
+  </data>
+  <data name="bot.WebSocketBot.session_id_changed" xml:space="preserve">
+    <value>§bSession with an id §a{0}§b has been renamed to: §a{1}§b!</value>
+  </data>
+  <data name="bot.WebSocketBot.session_id_failed_to_change" xml:space="preserve">
+    <value>§cSession with an id §a{0}§b failed to chage the ID to: §c{1}§b!</value>
+  </data>
+  <data name="bot.WebSocketBot.session_authenticated" xml:space="preserve">
+    <value>§bSession with an id §a{0}§b has been succesfully authenticated!</value>
+  </data>
 </root>
