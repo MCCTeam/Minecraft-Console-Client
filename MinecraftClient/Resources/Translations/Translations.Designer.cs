@@ -3854,5 +3854,41 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.items.collector.stopped", resourceCulture);
             }
         }
+        
+        internal static string cmd_nameitem_item_name_empty {
+            get {
+                return ResourceManager.GetString("cmd.nameitem.item.name.empty", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_nameitem_no_anvil_inventory_open {
+            get {
+                return ResourceManager.GetString("cmd.nameitem.no.anvil.inventory.open", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_nameitem_first_slot_empty {
+            get {
+                return ResourceManager.GetString("cmd.nameitem.first.slot.empty", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_nameitem_failed {
+            get {
+                return ResourceManager.GetString("cmd.nameitem.failed", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_nameitem_successful {
+            get {
+                return ResourceManager.GetString("cmd.nameitem.successful", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_nameitem_desc {
+            get {
+                return ResourceManager.GetString("cmd.nameitem.desc", resourceCulture);
+            }
+        }
     }
 }

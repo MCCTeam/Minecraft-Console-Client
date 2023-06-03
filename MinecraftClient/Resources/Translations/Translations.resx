@@ -2058,4 +2058,22 @@ Logging in...</value>
   <data name="cmd.items.collector.stopped" xml:space="preserve">
     <value>Stopped collecting items.</value>
   </data>
+  <data name="cmd.nameitem.item.name.empty" xml:space="preserve">
+    <value>The item name cannot be empty!</value>
+  </data>
+  <data name="cmd.nameitem.no.anvil.inventory.open" xml:space="preserve">
+    <value>You need to have an Anvil inventory opened and active in order to use this command!</value>
+  </data>
+  <data name="cmd.nameitem.first.slot.empty" xml:space="preserve">
+    <value>You need to place an item in the first slot (slot id: 0) of the Anvil inventory!</value>
+  </data>
+  <data name="cmd.nameitem.failed" xml:space="preserve">
+    <value>Failed to send the packet for naming an item, try agian!</value>
+  </data>
+  <data name="cmd.nameitem.successful" xml:space="preserve">
+    <value>Succesfully sent the item name to the server, you can now clikc on the slot number 2 in the Anvil inventory to rename the item.</value>
+  </data>
+  <data name="cmd.nameitem.desc" xml:space="preserve">
+    <value>Set an item name when an Anvil inventory is active and the item is in the first slot.</value>
+  </data>
 </root>

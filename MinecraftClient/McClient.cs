@@ -2390,6 +2390,21 @@ namespace MinecraftClient
                 return false;
             }
         }
+        
+        /// <summary>
+        /// Send the server a command to type in the item name in the Anvil inventory when it's open.
+        /// </summary>
+        /// <param name="itemName">The new item name</param>
+        public bool SendRenameItem(string itemName)
+        {
+            if (inventories.Count == 0)
+                return false;
+
+            if (inventories.Values.ToList().Last().Type != ContainerType.Anvil)
+                return false;
+            
+            return handler.SendRenameItem(itemName);
+        }
         #endregion
 
         #region Event handlers: An event occurs on the Server

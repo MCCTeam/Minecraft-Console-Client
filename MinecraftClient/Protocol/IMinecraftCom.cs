@@ -260,6 +260,12 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <returns></returns>
         bool SendPlayerSession(PlayerKeyPair? playerKeyPair);
+        
+        /// <summary>
+        /// Send the server a command to type in the item name in the Anvil inventory when it's open.
+        /// </summary>
+        /// <param name="itemName">The new item name</param>
+        bool SendRenameItem(string itemName);
 
         /// <summary>
         /// Get net read thread (main thread) ID
