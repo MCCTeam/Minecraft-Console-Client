@@ -477,5 +477,13 @@ namespace MinecraftClient.Protocol
         /// <returns>True if packet was successfully sent</returns>
 
         bool ClickContainerButton(int windowId, int buttonId);
+        
+        /// <summary>
+        /// Send a rename item packet when the anvil inventory is open and there is an item in the first slot
+        /// </summary>
+        /// <param name="itemName">New name (max 50 characters)</param>
+        /// <returns>True if packet was successfully sent</returns>
+
+        bool SendRenameItem(string itemName);
     }
 }
