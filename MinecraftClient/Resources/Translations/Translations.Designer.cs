@@ -3861,6 +3861,72 @@ namespace MinecraftClient {
             }
         }
         
+        internal static string bot_WebSocketBot_failed_to_start_ip {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.failed_to_start.ip", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_failed_to_start_port {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.failed_to_start.port", resourceCulture);
+            }
+        }
+        
+        internal static string ChatBot_WebSocketBot_DebugMode {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot.DebugMode", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_starting {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.starting", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_started {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.started", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_failed_to_start_custom {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.failed_to_start.custom", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_new_session {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.new_session", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_session_disconnected {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.session_disconnected", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_session_id_changed {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.session_id_changed", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_session_id_failed_to_change {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.session_id_failed_to_change", resourceCulture);
+            }
+        }
+        
+        internal static string bot_WebSocketBot_session_authenticated {
+            get {
+                return ResourceManager.GetString("bot.WebSocketBot.session_authenticated", resourceCulture);
+            }
+        }
+        
         internal static string cmd_nameitem_no_anvil_inventory_open {
             get {
                 return ResourceManager.GetString("cmd.nameitem.no.anvil.inventory.open", resourceCulture);
