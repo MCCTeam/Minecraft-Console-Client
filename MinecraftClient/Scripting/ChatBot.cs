@@ -1050,7 +1050,7 @@ namespace MinecraftClient.Scripting
         /// <summary>
         /// Send Entity Action
         /// </summary>
-        private bool SendEntityAction(Protocol.EntityActionType entityAction)
+        protected bool SendEntityAction(Protocol.EntityActionType entityAction)
         {
             return Handler.SendEntityAction(entityAction);
         }
