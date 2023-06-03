@@ -4150,6 +4150,29 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        public bool SendRenameItem(string itemName)
+        {
+            try
+            {
+                List<byte> packet = new();
+                packet.AddRange(dataTypes.GetString(itemName.Length > 50 ? itemName[..50] : itemName));
+                SendPacket(PacketTypesOut.NameItem, packet);
+                return true;
+            }
+            catch (SocketException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+        }
+
         private byte[] GenerateSalt()
         {
             byte[] salt = new byte[8];
