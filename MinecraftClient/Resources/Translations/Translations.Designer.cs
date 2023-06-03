@@ -3855,12 +3855,6 @@ namespace MinecraftClient {
             }
         }
         
-        internal static string cmd_nameitem_item_name_empty {
-            get {
-                return ResourceManager.GetString("cmd.nameitem.item.name.empty", resourceCulture);
-            }
-        }
-        
         internal static string bot_WebSocketBot_failed_to_start_ip {
             get {
                 return ResourceManager.GetString("bot.WebSocketBot.failed_to_start.ip", resourceCulture);
@@ -3924,6 +3918,12 @@ namespace MinecraftClient {
         internal static string bot_WebSocketBot_session_authenticated {
             get {
                 return ResourceManager.GetString("bot.WebSocketBot.session_authenticated", resourceCulture);
+            }
+        }
+        
+        internal static string cmd_nameitem_item_name_empty {
+            get {
+                return ResourceManager.GetString("cmd.nameitem.item.name.empty", resourceCulture);
             }
         }
         
