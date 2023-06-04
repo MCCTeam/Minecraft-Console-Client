@@ -52,6 +52,7 @@ redirectFrom:
 -   [Script Scheduler](#script-scheduler)
 -   [Telegram Bridge](#telegram-bridge)
 -   [Items Collector](#items-collector)
+-   [WebSocket](#websocket-chat-bot)
 
 ## Alerts
 
@@ -2583,7 +2584,7 @@ redirectFrom:
 
     You can make your own library to do this, or use the reference implementation one which has been writen in TypeScript/JavaScript: [MCC.js](https://github.com/milutinke/MCC.js)
 
-    If you want to write your own library, you can follow this guide on the protocol specification and avaliable events and commands: [WebSocket Chat Bot Guide](WebSocketChatBot.md)
+    If you want to write your own library, you can follow this guide on the protocol specification and avaliable events and commands: [WebSocket Chat Bot Guide](websocket/README.md)
 
 -   **Settings:**
 
