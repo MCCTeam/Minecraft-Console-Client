@@ -873,18 +873,6 @@
 
     **Type:** `VillagerInfo`
    
-  **Example:**
-
-  ```json
-  {
-    "event": "OnTradeList",
-    "data": {
-     "windowId": 2,
-      "trades": <trades json encoded object>,
-      "villagerInfo": <villagerInfo json encoded object>
-    }
-  }
-  ```
 
 ### - `OnTitle`
 
@@ -924,24 +912,6 @@
   - `json_`
 
     **Type:** `string`
-   
-  **Example:**
-
-  ```json
-  {
-    "event": "OnTitle",
-    "data": {
-      "action": <action json encoded object>,
-      "titleText": "<titleText json encoded object>",
-      "subtitleText": "<subtitleText json encoded object>",
-      "actionBarText": "<actionBarText json encoded object>",
-      "fadeIn": <fadeIn json encoded object>,
-      "stay": <stay json encoded object>,
-      "fadeout": <fadeout json encoded object>,
-      "json_": "<json_ json encoded object>"
-    }
-  }
-  ```
 
 ### - `OnEntityEquipment`
 
