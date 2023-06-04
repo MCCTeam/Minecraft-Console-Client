@@ -890,6 +890,51 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /move center
     ```
 
+### `nameitem`
+
+-   **Description:**
+
+    This command allows you to name an item when you have an Anvil inventory open and an item in the first slot (slot number 0),
+
+    After you place an item in the first slot of the anvil, use this command, and then do a click on the slot 2 to get an item from the anvil, then do a click on an empty slot in your inventory.
+
+-   **Usage:**
+
+    ```
+    /nameitem <name of the item>
+    ```
+
+-   **Example:**
+
+    ```
+    /nameitem My super duper sword 2000
+    ```
+
+-   **Full Example with anvil:**
+
+    ```
+    # Open an anvil
+    /useblock 12 74 321
+
+    # Click on an axe in slot 12
+    /inventory container click 12
+
+    # Put an axe to the slot 0 in anvil
+    /inventory container click 0
+
+    # Set the new name
+    /nameitem My fancy axe
+
+    # Click on the axe in slot 2 in the anvil
+    /inventory container click 2
+
+    # Put the axe back in your inventory in slot 12
+    /inventory container click 12
+
+    # Close the anvil
+    /inventory container close
+    ```
+
 ### `look`
 
 -   **Description:**
