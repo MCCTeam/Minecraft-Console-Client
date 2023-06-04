@@ -115,7 +115,7 @@ In order to execute a remote procedure, you need to send a json encoded string i
 {
   "command": "<command name here>",
   "requestId": "<randomly generated string for identification>",
-  "parameters": [ <parameter 1>, <parameter 2>, ... ]
+  "parameters": [ 1, "some string", true, "etc.." ]
 }
 ```
 
