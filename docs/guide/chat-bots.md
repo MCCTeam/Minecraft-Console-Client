@@ -2573,3 +2573,72 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
+
+## WebSocket Chat Bot
+
+-   **Description:**
+
+    This chat bot allows you to remotely execute commands on the MCC and make Chat Bots in other programming languages over Web Socket.
+
+    You can make your own library to do this, or use the reference implementation one which has been writen in TypeScript/JavaScript: [MCC.js](https://github.com/milutinke/MCC.js)
+
+    If you want to write your own library, you can follow this guide on the protocol specification and avaliable events and commands: [WebSocket Chat Bot Guide](WebSocketChatBot.md)
+
+-   **Settings:**
+
+    **Section:** **`ChatBot.WebSocketBot`**
+
+    #### `Enabled`
+
+    -   **Description:**
+  
+        This setting specifies if the Web Socket chat bot is enabled.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `Ip`
+
+    -   **Description:**
+
+        The IP address that Websocket server will be bound to.
+
+    -   **Type:** `string`
+
+    -   **Default:** `127.0.0.1` (localhost)
+
+    #### `Port`
+
+    -   **Description:**
+
+        The Port that Websocket server will be bound to.
+
+    -   **Type:** `number`
+
+    -   **Default:** `8043`
+
+    #### `Password`
+
+    -   **Description:**
+
+        A password that will be used to authenticate on thw Websocket server 
+        
+        **It is recommended to change the default password and to set a strong one**
+
+    -   **Type:** `string`
+
+    -   **Default:** `wspass12345`
+
+    #### `DebugMode`
+
+    -   **Description:**
+
+        This setting is for developers who are developing a library that uses this chat bot to remotely execute procedures/commands/functions.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
