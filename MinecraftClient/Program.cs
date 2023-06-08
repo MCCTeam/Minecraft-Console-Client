@@ -46,7 +46,7 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.19.4";
+        public const string MCHighestVersion = "1.20";
         public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
@@ -860,7 +860,7 @@ namespace MinecraftClient
         public static Type[] GetTypesInNamespace(string nameSpace, Assembly? assembly = null)
         {
             if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
-            return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
+            return assembly.GetTypes().Where(t => string.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
         }
 
         /// <summary>
@@ -870,7 +870,7 @@ namespace MinecraftClient
         {
             if (typeof(Program)
                 .Assembly
-                .GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
+                .GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)
                 .FirstOrDefault() is AssemblyConfigurationAttribute attribute)
                 BuildInfo = attribute.Configuration;
         }
