@@ -66,6 +66,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_19_2_Version = 760;
         internal const int MC_1_19_3_Version = 761;
         internal const int MC_1_19_4_Version = 762;
+        internal const int MC_1_20_Version = 763;
 
         private int compression_treshold = 0;
         private int autocomplete_transaction_id = 0;
@@ -113,97 +114,79 @@ namespace MinecraftClient.Protocol.Handlers
             randomGen = RandomNumberGenerator.Create();
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_4_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_20_Version)
             {
                 log.Error("§c" + Translations.extra_terrainandmovement_disabled);
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() &&
-                (protocolVersion < MC_1_9_Version || protocolVersion > MC_1_19_4_Version))
+                protocolVersion is < MC_1_9_Version or > MC_1_20_Version)
             {
                 log.Error("§c" + Translations.extra_inventory_disabled);
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() &&
-                (protocolVersion < MC_1_8_Version || protocolVersion > MC_1_19_4_Version))
+                protocolVersion is < MC_1_8_Version or > MC_1_20_Version)
             {
                 log.Error("§c" + Translations.extra_entity_disabled);
                 handler.SetEntityHandlingEnabled(false);
             }
 
-            // Block palette
-            if (protocolVersion > MC_1_19_4_Version && handler.GetTerrainEnabled())
-                throw new NotImplementedException(Translations.exception_palette_block);
+            Block.Palette = protocolVersion switch
+            {
+                // Block palette
+                > MC_1_20_Version when handler.GetTerrainEnabled() => 
+                    throw new NotImplementedException(Translations.exception_palette_block),
+                MC_1_20_Version => new Palette120(),
+                MC_1_19_4_Version => new Palette1194(),
+                MC_1_19_3_Version => new Palette1193(),
+                >= MC_1_19_Version => new Palette119(),
+                >= MC_1_17_Version => new Palette117(),
+                >= MC_1_16_Version => new Palette116(),
+                >= MC_1_15_Version => new Palette115(),
+                >= MC_1_14_Version => new Palette114(),
+                >= MC_1_13_Version => new Palette113(),
+                _ => new Palette112()
+            };
 
-            if (protocolVersion >= MC_1_19_4_Version)
-                Block.Palette = new Palette1194();
-            else if (protocolVersion >= MC_1_19_3_Version)
-                Block.Palette = new Palette1193();
-            else if (protocolVersion >= MC_1_19_Version)
-                Block.Palette = new Palette119();
-            else if (protocolVersion >= MC_1_17_Version)
-                Block.Palette = new Palette117();
-            else if (protocolVersion >= MC_1_16_Version)
-                Block.Palette = new Palette116();
-            else if (protocolVersion >= MC_1_15_Version)
-                Block.Palette = new Palette115();
-            else if (protocolVersion >= MC_1_14_Version)
-                Block.Palette = new Palette114();
-            else if (protocolVersion >= MC_1_13_Version)
-                Block.Palette = new Palette113();
-            else
-                Block.Palette = new Palette112();
-
-            // Entity palette
-            if (protocolVersion > MC_1_19_4_Version && handler.GetEntityHandlingEnabled())
-                throw new NotImplementedException(Translations.exception_palette_entity);
-
-            if (protocolVersion >= MC_1_19_4_Version)
-                entityPalette = new EntityPalette1194();
-            else if (protocolVersion >= MC_1_19_3_Version)
-                entityPalette = new EntityPalette1193();
-            else if (protocolVersion >= MC_1_19_Version)
-                entityPalette = new EntityPalette119();
-            else if (protocolVersion >= MC_1_17_Version)
-                entityPalette = new EntityPalette117();
-            else if (protocolVersion >= MC_1_16_2_Version)
-                entityPalette = new EntityPalette1162();
-            else if (protocolVersion >= MC_1_16_Version)
-                entityPalette = new EntityPalette1161();
-            else if (protocolVersion >= MC_1_15_Version)
-                entityPalette = new EntityPalette115();
-            else if (protocolVersion >= MC_1_14_Version)
-                entityPalette = new EntityPalette114();
-            else if (protocolVersion >= MC_1_13_Version)
-                entityPalette = new EntityPalette113();
-            else if (protocolVersion >= MC_1_12_Version)
-                entityPalette = new EntityPalette112();
-            else entityPalette = new EntityPalette18();
+            entityPalette = protocolVersion switch
+            {
+                // Entity palette
+                > MC_1_20_Version when handler.GetEntityHandlingEnabled() => 
+                    throw new NotImplementedException(Translations.exception_palette_entity),
+                MC_1_20_Version => new EntityPalette120(),
+                MC_1_19_4_Version => new EntityPalette1194(),
+                MC_1_19_3_Version => new EntityPalette1193(),
+                >= MC_1_19_Version => new EntityPalette119(),
+                >= MC_1_17_Version => new EntityPalette117(),
+                >= MC_1_16_2_Version => new EntityPalette1162(),
+                >= MC_1_16_Version => new EntityPalette1161(),
+                >= MC_1_15_Version => new EntityPalette115(),
+                >= MC_1_14_Version => new EntityPalette114(),
+                >= MC_1_13_Version => new EntityPalette113(),
+                >= MC_1_12_Version => new EntityPalette112(),
+                _ => new EntityPalette18()
+            };
 
             entityMetadataPalette = EntityMetadataPalette.GetPalette(protocolVersion);
 
-            // Item palette
-            if (protocolVersion > MC_1_19_4_Version && handler.GetInventoryEnabled())
-                throw new NotImplementedException(Translations.exception_palette_item);
-
-            if (protocolVersion >= MC_1_19_4_Version)
-                itemPalette = new ItemPalette1194();
-            else if (protocolVersion >= MC_1_19_3_Version)
-                itemPalette = new ItemPalette1193();
-            else if (protocolVersion >= MC_1_19_Version)
-                itemPalette = new ItemPalette119();
-            else if (protocolVersion >= MC_1_18_1_Version)
-                itemPalette = new ItemPalette118();
-            else if (protocolVersion >= MC_1_17_Version)
-                itemPalette = new ItemPalette117();
-            else if (protocolVersion >= MC_1_16_2_Version)
-                itemPalette = new ItemPalette1162();
-            else if (protocolVersion >= MC_1_16_1_Version)
-                itemPalette = new ItemPalette1161();
-            else
-                itemPalette = new ItemPalette115();
+            itemPalette = protocolVersion switch
+            {
+                // Item palette
+                > MC_1_20_Version when handler.GetInventoryEnabled() => 
+                    throw new NotImplementedException(Translations.exception_palette_item),
+                MC_1_20_Version => new ItemPalette120(),
+                MC_1_19_4_Version => new ItemPalette1194(),
+                MC_1_19_3_Version => new ItemPalette1193(),
+                >= MC_1_19_Version => new ItemPalette119(),
+                >= MC_1_18_1_Version => new ItemPalette118(),
+                >= MC_1_17_Version => new ItemPalette117(),
+                >= MC_1_16_2_Version => new ItemPalette1162(),
+                >= MC_1_16_1_Version => new ItemPalette1161(),
+                _ => new ItemPalette115()
+            };
 
             // MessageType 
             // You can find it in https://wiki.vg/Protocol#Player_Chat_Message or /net/minecraft/network/message/MessageType.java
@@ -522,7 +505,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     dataTypes.ReadNextLocation(packetData); // Death location
                                 }
                             }
-
+                            
+                            if (protocolVersion >= MC_1_20_Version)
+                                dataTypes.ReadNextVarInt(packetData); // Portal Cooldown - 1.20 and above
+                                
                             break;
                         case PacketTypesIn.SpawnPainting: // Just skip, no need for this
                             return true;
@@ -880,7 +866,7 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.SkipNextVarInt(packetData);
 
                             handler.OnPlayerKilled(
-                                dataTypes.ReadNextInt(packetData),
+                                protocolVersion >= MC_1_20_Version ? -1 : dataTypes.ReadNextInt(packetData),
                                 ChatParser.ParseText(dataTypes.ReadNextString(packetData))
                             );
 
@@ -1009,6 +995,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                             }
 
+                            if (protocolVersion >= MC_1_20_Version)
+                                dataTypes.ReadNextVarInt(packetData); // Portal Cooldown
+
                             handler.OnRespawn();
                             break;
                         case PacketTypesIn.PlayerPositionAndLook:
@@ -1103,6 +1092,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
 
                                     // Block Entity data: ignored
+                                    // Trust edges: ignored (Removed in 1.20)
                                     // Light data: ignored
                                 }
                                 else
@@ -1359,7 +1349,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     int sectionX = (int)(chunkSection >> 42);
                                     int sectionY = (int)((chunkSection << 44) >> 44);
                                     int sectionZ = (int)((chunkSection << 22) >> 42);
-                                    dataTypes.ReadNextBool(packetData); // Useless boolean (Related to light update)
+                                    
+                                    if(protocolVersion < MC_1_20_Version)
+                                        dataTypes.ReadNextBool(packetData); // Useless boolean (Related to light update)
+                                    
                                     int blocksSize = dataTypes.ReadNextVarInt(packetData);
                                     for (int i = 0; i < blocksSize; i++)
                                     {
@@ -2188,22 +2181,23 @@ namespace MinecraftClient.Protocol.Handlers
                                     dataTypes.ReadNextMetadata(packetData, itemPalette, entityMetadataPalette);
 
                                 // Also make a palette for field? Will be a lot of work
-                                int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
-                                if (protocolVersion > MC_1_19_4_Version)
-                                    throw new NotImplementedException(Translations.exception_palette_healthfield);
-                                else if (protocolVersion >= MC_1_17_Version) // 1.17 and above
-                                    healthField = 9;
-                                else if (protocolVersion >= MC_1_14_Version) // 1.14 and above
-                                    healthField = 8;
-                                else if (protocolVersion >= MC_1_10_Version) // 1.10 and above
-                                    healthField = 7;
-                                else if (protocolVersion >= MC_1_8_Version) // 1.8 and above
-                                    healthField = 6;
-                                else
-                                    throw new NotImplementedException(Translations.exception_palette_healthfield);
+                                int healthField = protocolVersion switch
+                                {
+                                    > MC_1_20_Version => throw new NotImplementedException(Translations
+                                        .exception_palette_healthfield),
+                                    // 1.17 and above
+                                    >= MC_1_17_Version => 9,
+                                    // 1.14 and above
+                                    >= MC_1_14_Version => 8,
+                                    // 1.10 and above
+                                    >= MC_1_10_Version => 7,
+                                    // 1.8 and above
+                                    >= MC_1_8_Version => 6,
+                                    _ => throw new NotImplementedException(Translations.exception_palette_healthfield)
+                                };
 
-                                if (metadata.TryGetValue(healthField, out object? healthObj) && healthObj != null &&
-                                    healthObj.GetType() == typeof(float))
+                                if (metadata.TryGetValue(healthField, out var healthObj) && healthObj != null &&
+                                    healthObj is float)
                                     handler.OnEntityHealth(EntityID, (float)healthObj);
 
                                 handler.OnEntityMetadata(EntityID, metadata);
@@ -2343,6 +2337,17 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             break;
+                        
+                        case PacketTypesIn.OpenSignEditor:
+                            var signLocation = dataTypes.ReadNextLocation(packetData);
+                            var isFrontText = true;
+                            
+                            if (protocolVersion >= MC_1_20_Version)
+                                isFrontText = dataTypes.ReadNextBool(packetData);
+                            
+                            // TODO: Use
+                            break;
+                        
                         default:
                             return false; //Ignored packet
                     }
@@ -3950,7 +3955,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public bool SendUpdateSign(Location sign, string line1, string line2, string line3, string line4)
+        public bool SendUpdateSign(Location sign, string line1, string line2, string line3, string line4, bool isFrontText = true)
         {
             try
             {
@@ -3965,6 +3970,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                 List<byte> packet = new();
                 packet.AddRange(dataTypes.GetLocation(sign));
+                if(protocolVersion >= MC_1_20_Version)
+                    packet.AddRange(dataTypes.GetBool((isFrontText)));
                 packet.AddRange(dataTypes.GetString(line1));
                 packet.AddRange(dataTypes.GetString(line2));
                 packet.AddRange(dataTypes.GetString(line3));
