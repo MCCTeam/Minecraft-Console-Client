@@ -46,40 +46,26 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns></returns>
         public PacketTypePalette GetTypeHandler(int protocol)
         {
-            PacketTypePalette p;
-            if (protocol > Protocol18Handler.MC_1_19_4_Version)
-                throw new NotImplementedException(Translations.exception_palette_packet);
-
-            if (protocol <= Protocol18Handler.MC_1_8_Version)
-                p = new PacketPalette17();
-            else if (protocol <= Protocol18Handler.MC_1_11_2_Version)
-                p = new PacketPalette110();
-            else if (protocol <= Protocol18Handler.MC_1_12_Version)
-                p = new PacketPalette112();
-            else if (protocol <= Protocol18Handler.MC_1_12_2_Version)
-                p = new PacketPalette1122();
-            else if (protocol < Protocol18Handler.MC_1_14_Version)
-                p = new PacketPalette113();
-            else if (protocol < Protocol18Handler.MC_1_15_Version)
-                p = new PacketPalette114();
-            else if (protocol <= Protocol18Handler.MC_1_15_2_Version)
-                p = new PacketPalette115();
-            else if (protocol <= Protocol18Handler.MC_1_16_1_Version)
-                p = new PacketPalette116();
-            else if (protocol <= Protocol18Handler.MC_1_16_5_Version)
-                p = new PacketPalette1162();
-            else if (protocol <= Protocol18Handler.MC_1_17_1_Version)
-                p = new PacketPalette117();
-            else if (protocol <= Protocol18Handler.MC_1_18_2_Version)
-                p = new PacketPalette118();
-            else if (protocol <= Protocol18Handler.MC_1_19_Version)
-                p = new PacketPalette119();
-            else if (protocol <= Protocol18Handler.MC_1_19_2_Version)
-                p = new PacketPalette1192();
-            else if (protocol <= Protocol18Handler.MC_1_19_3_Version)
-                p = new PacketPalette1193();
-            else
-                p = new PacketPalette1194();
+            PacketTypePalette p = protocol switch
+            {
+                > Protocol18Handler.MC_1_20_Version => throw new NotImplementedException(Translations
+                    .exception_palette_packet),
+                <= Protocol18Handler.MC_1_8_Version => new PacketPalette17(),
+                <= Protocol18Handler.MC_1_11_2_Version => new PacketPalette110(),
+                <= Protocol18Handler.MC_1_12_Version => new PacketPalette112(),
+                <= Protocol18Handler.MC_1_12_2_Version => new PacketPalette1122(),
+                < Protocol18Handler.MC_1_14_Version => new PacketPalette113(),
+                < Protocol18Handler.MC_1_15_Version => new PacketPalette114(),
+                <= Protocol18Handler.MC_1_15_2_Version => new PacketPalette115(),
+                <= Protocol18Handler.MC_1_16_1_Version => new PacketPalette116(),
+                <= Protocol18Handler.MC_1_16_5_Version => new PacketPalette1162(),
+                <= Protocol18Handler.MC_1_17_1_Version => new PacketPalette117(),
+                <= Protocol18Handler.MC_1_18_2_Version => new PacketPalette118(),
+                <= Protocol18Handler.MC_1_19_Version => new PacketPalette119(),
+                <= Protocol18Handler.MC_1_19_2_Version => new PacketPalette1192(),
+                <= Protocol18Handler.MC_1_19_3_Version => new PacketPalette1193(),
+                _ => new PacketPalette1194()
+            };
 
             p.SetForgeEnabled(forgeEnabled);
             return p;
