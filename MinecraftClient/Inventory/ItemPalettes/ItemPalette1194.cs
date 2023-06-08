@@ -874,10 +874,10 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[837] = ItemType.Porkchop;
             mappings[1048] = ItemType.Potato;
             mappings[953] = ItemType.Potion;
-            mappings[1224] = ItemType.PotteryShardArcher;
-            mappings[1226] = ItemType.PotteryShardArmsUp;
-            mappings[1225] = ItemType.PotteryShardPrize;
-            mappings[1227] = ItemType.PotteryShardSkull;
+            mappings[1224] = ItemType.ArcherPotterySherd;
+            mappings[1226] = ItemType.ArmsUpPotterySherd;
+            mappings[1225] = ItemType.PrizePotterySherd;
+            mappings[1227] = ItemType.SkullPotterySherd;
             mappings[867] = ItemType.PowderSnowBucket;
             mappings[719] = ItemType.PoweredRail;
             mappings[479] = ItemType.Prismarine;

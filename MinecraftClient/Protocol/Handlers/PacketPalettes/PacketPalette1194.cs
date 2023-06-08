@@ -111,11 +111,11 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x66, PacketTypesIn.NBTQueryResponse },           // (Wiki name: Tab Query)
             { 0x67, PacketTypesIn.CollectItem },                // (Wiki name: Take Item Entity)
             { 0x68, PacketTypesIn.EntityTeleport },             // (Wiki name: Teleport Entity)
-            { 0x69, PacketTypesIn.Advancements },               // (Wiki name: Update Advancements)
+            { 0x69, PacketTypesIn.Advancements },               // (Wiki name: Update Advancements) (Unused)
             { 0x6A, PacketTypesIn.EntityProperties },           // (Wiki name: Update Attributes)
             { 0x6B, PacketTypesIn.FeatureFlags },               // Added in 1.19.3 (Not yet clear what is the purpose of this packet)
             { 0x6C, PacketTypesIn.EntityEffect },               // Changed in 1.19 (Added "Has Factor Data" and "Factor Codec" fields) (Wiki name: Entity Effect) 
-            { 0x6D, PacketTypesIn.DeclareRecipes },             // (Wiki name: Update Recipes)
+            { 0x6D, PacketTypesIn.DeclareRecipes },             // (Wiki name: Update Recipes) (Unused)
             { 0x6E, PacketTypesIn.Tags },                       // (Wiki name: Update Tags)
         };
 

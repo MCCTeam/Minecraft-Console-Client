@@ -16,17 +16,14 @@ public abstract class EntityMetadataPalette
 
     public static EntityMetadataPalette GetPalette(int protocolVersion)
     {
-        if (protocolVersion <= Protocol18Handler.MC_1_8_Version)
-            return new EntityMetadataPalette18();   // 1.8
-        else if (protocolVersion <= Protocol18Handler.MC_1_12_2_Version)
-            return new EntityMetadataPalette1122(); // 1.9 - 1.12.2
-        else if (protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
-            return new EntityMetadataPalette1191(); // 1.13 - 1.19.2
-        else if (protocolVersion <= Protocol18Handler.MC_1_19_3_Version)
-            return new EntityMetadataPalette1193(); // 1.19.3
-        else if (protocolVersion <= Protocol18Handler.MC_1_19_4_Version)
-            return new EntityMetadataPalette1194(); // 1.19.4
-        else 
-            throw new NotImplementedException();
+        return protocolVersion switch
+        {
+            <= Protocol18Handler.MC_1_8_Version => new EntityMetadataPalette18(),       // 1.8
+            <= Protocol18Handler.MC_1_12_2_Version => new EntityMetadataPalette1122(),  // 1.9 - 1.12.2
+            <= Protocol18Handler.MC_1_19_2_Version => new EntityMetadataPalette1191(),  // 1.13 - 1.19.2
+            <= Protocol18Handler.MC_1_19_3_Version => new EntityMetadataPalette1193(),  // 1.19.3
+            <= Protocol18Handler.MC_1_20_Version => new EntityMetadataPalette1194(),    // 1.19.4 - 1.20 +
+            _ => throw new NotImplementedException()
+        };
     }
 }

@@ -134,7 +134,7 @@ namespace MinecraftClient.Protocol
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
 
-            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762 };
+            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763 };
 
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
@@ -317,6 +317,8 @@ namespace MinecraftClient.Protocol
                         return 761;
                     case "1.19.4":
                         return 762;
+                    case "1.20":
+                        return 763;
                     default:
                         return 0;
                 }
@@ -325,7 +327,7 @@ namespace MinecraftClient.Protocol
             {
                 try
                 {
-                    return Int32.Parse(MCVersion, NumberStyles.Any, CultureInfo.CurrentCulture);
+                    return int.Parse(MCVersion, NumberStyles.Any, CultureInfo.CurrentCulture);
                 }
                 catch
                 {
@@ -342,61 +344,62 @@ namespace MinecraftClient.Protocol
         /// <returns>The 1.X.X version number, or 0.0 if could not determine protocol version</returns>
         public static string ProtocolVersion2MCVer(int protocol)
         {
-            switch (protocol)
+            return protocol switch
             {
-                case 22: return "1.0";
-                case 23: return "1.1";
-                case 28: return "1.2.3";
-                case 29: return "1.2.5";
-                case 39: return "1.3.2";
+                22 => "1.0",
+                23 => "1.1",
+                28 => "1.2.3",
+                29 => "1.2.5",
+                39 => "1.3.2",
                 // case 47: return "1.4.2";
-                case 48: return "1.4.3";
-                case 49: return "1.4.5";
-                case 51: return "1.4.6";
-                case 60: return "1.5.1";
-                case 62: return "1.5.2";
-                case 72: return "1.6";
-                case 73: return "1.6.1";
-                case 3: return "1.7.1";
-                case 4: return "1.7.2";
-                case 5: return "1.7.6";
-                case 47: return "1.8";
-                case 107: return "1.9";
-                case 108: return "1.9.1";
-                case 109: return "1.9.2";
-                case 110: return "1.9.3";
-                case 210: return "1.10";
-                case 315: return "1.11";
-                case 316: return "1.11.1";
-                case 335: return "1.12";
-                case 338: return "1.12.1";
-                case 340: return "1.12.2";
-                case 393: return "1.13";
-                case 401: return "1.13.1";
-                case 404: return "1.13.2";
-                case 477: return "1.14";
-                case 480: return "1.14.1";
-                case 485: return "1.14.2";
-                case 490: return "1.14.3";
-                case 498: return "1.14.4";
-                case 573: return "1.15";
-                case 575: return "1.15.1";
-                case 578: return "1.15.2";
-                case 735: return "1.16";
-                case 736: return "1.16.1";
-                case 751: return "1.16.2";
-                case 753: return "1.16.3";
-                case 754: return "1.16.5";
-                case 755: return "1.17";
-                case 756: return "1.17.1";
-                case 757: return "1.18.1";
-                case 758: return "1.18.2";
-                case 759: return "1.19";
-                case 760: return "1.19.2";
-                case 761: return "1.19.3";
-                case 762: return "1.19.4";
-                default: return "0.0";
-            }
+                48 => "1.4.3",
+                49 => "1.4.5",
+                51 => "1.4.6",
+                60 => "1.5.1",
+                62 => "1.5.2",
+                72 => "1.6",
+                73 => "1.6.1",
+                3 => "1.7.1",
+                4 => "1.7.2",
+                5 => "1.7.6",
+                47 => "1.8",
+                107 => "1.9",
+                108 => "1.9.1",
+                109 => "1.9.2",
+                110 => "1.9.3",
+                210 => "1.10",
+                315 => "1.11",
+                316 => "1.11.1",
+                335 => "1.12",
+                338 => "1.12.1",
+                340 => "1.12.2",
+                393 => "1.13",
+                401 => "1.13.1",
+                404 => "1.13.2",
+                477 => "1.14",
+                480 => "1.14.1",
+                485 => "1.14.2",
+                490 => "1.14.3",
+                498 => "1.14.4",
+                573 => "1.15",
+                575 => "1.15.1",
+                578 => "1.15.2",
+                735 => "1.16",
+                736 => "1.16.1",
+                751 => "1.16.2",
+                753 => "1.16.3",
+                754 => "1.16.5",
+                755 => "1.17",
+                756 => "1.17.1",
+                757 => "1.18.1",
+                758 => "1.18.2",
+                759 => "1.19",
+                760 => "1.19.2",
+                761 => "1.19.3",
+                762 => "1.19.4",
+                763 => "1.20",
+                _ => "0.0"
+            };
         }
 
         /// <summary>
