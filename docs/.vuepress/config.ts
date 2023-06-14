@@ -90,5 +90,7 @@ export default defineUserConfig({
             },
         },
     }),
+
+    'vuepress-plugin-mermaidjs'
   ],
 })
