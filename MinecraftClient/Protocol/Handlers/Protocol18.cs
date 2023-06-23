@@ -24,6 +24,7 @@ using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
+using Newtonsoft.Json;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -2347,6 +2348,17 @@ namespace MinecraftClient.Protocol.Handlers
                             
                             // TODO: Use
                             break;
+                        
+                        // Temporarily disabled until I find a fix
+                        /*case PacketTypesIn.BlockEntityData:
+                            var location_ = dataTypes.ReadNextLocation(packetData);
+                            var type_ = dataTypes.ReadNextInt(packetData);
+                            var nbt = dataTypes.ReadNextNbt(packetData);
+                            var nbtJson = JsonConvert.SerializeObject(nbt["messages"]);
+                            
+                            //log.Info($"BLOCK ENTITY DATA -> {location_.ToString()} [{type_}] -> NBT: {nbtJson}");
+                        
+                            break;*/
                         
                         default:
                             return false; //Ignored packet

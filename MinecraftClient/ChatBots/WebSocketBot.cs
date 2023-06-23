@@ -283,7 +283,7 @@ public class WebSocketBot : ChatBot
         public int Port = 8043;
 
         [TomlInlineComment("$ChatBot.WebSocketBot.Password$")]
-        public string? Password = "wspass12345";
+        public string? Password = Guid.NewGuid().ToString().Replace("-", "").Trim().ToLower();
 
         [TomlInlineComment("$ChatBot.WebSocketBot.DebugMode$")]
         public bool DebugMode = false;

@@ -2109,4 +2109,10 @@ Logging in...</value>
   <data name="cmd.nameitem.desc" xml:space="preserve">
     <value>Set an item name when an Anvil inventory is active and the item is in the first slot.</value>
   </data>
+  <data name="bot.antiafk.may.not.move" xml:space="preserve">
+    <value>Bot movement lock is held by bot {0}, so the Anti AFK bot might not move!</value>
+  </data>
+  <data name="bot.common.movement.lock.held" xml:space="preserve">
+    <value>You can not start/run/use the '{0}' bot because it requires movement, the movement is currently utilized by the '{1}' bot, stop it if you want to use this one.</value>
+  </data>
 </root>
