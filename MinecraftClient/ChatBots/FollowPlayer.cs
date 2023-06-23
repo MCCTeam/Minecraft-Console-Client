@@ -19,8 +19,7 @@ namespace MinecraftClient.ChatBots
         [TomlDoNotInlineObject]
         public class Configs
         {
-            [NonSerialized]
-            private const string BotName = "FollowPlayer";
+            [NonSerialized] private const string BotName = "FollowPlayer";
 
             public bool Enabled = false;
 
@@ -73,7 +72,8 @@ namespace MinecraftClient.ChatBots
                     .Then(l => l.Argument("PlayerName", MccArguments.PlayerName())
                         .Executes(r => OnCommandStart(r.Source, Arguments.GetString(r, "PlayerName"), takeRisk: false))
                         .Then(l => l.Literal("-f")
-                            .Executes(r => OnCommandStart(r.Source, Arguments.GetString(r, "PlayerName"), takeRisk: true)))))
+                            .Executes(r =>
+                                OnCommandStart(r.Source, Arguments.GetString(r, "PlayerName"), takeRisk: true)))))
                 .Then(l => l.Literal("stop")
                     .Executes(r => OnCommandStop(r.Source)))
                 .Then(l => l.Literal("_help")
@@ -84,6 +84,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnUnload()
         {
+            BotMovementLock.Instance?.UnLock("Follow Player");
             McClient.dispatcher.Unregister(CommandName);
             McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }
@@ -104,7 +105,7 @@ namespace MinecraftClient.ChatBots
             if (!IsValidName(name))
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_follow_invalid_name);
 
-            Entity? player = GetEntities().Values.ToList().Find(entity =>
+            var player = GetEntities().Values.ToList().Find(entity =>
                 entity.Type == EntityType.Player
                 && !string.IsNullOrEmpty(entity.Name)
                 && entity.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
@@ -116,22 +117,37 @@ namespace MinecraftClient.ChatBots
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_follow_cant_reach_player);
 
             if (_playerToFollow != null && _playerToFollow.Equals(name, StringComparison.OrdinalIgnoreCase))
-                return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_follow_already_following, _playerToFollow));
+                return r.SetAndReturn(CmdResult.Status.Fail,
+                    string.Format(Translations.cmd_follow_already_following, _playerToFollow));
 
-            string result;
-            if (_playerToFollow != null)
-                result = string.Format(Translations.cmd_follow_switched, player.Name!);
-            else
-                result = string.Format(Translations.cmd_follow_started, player.Name!);
+            var movementLock = BotMovementLock.Instance;
+            if (movementLock is { IsLocked: true })
+                return r.SetAndReturn(CmdResult.Status.Fail,
+                    string.Format(Translations.bot_common_movement_lock_held, "Follow Player", movementLock.LockedBy));
+
+            var result =
+                string.Format(
+                    _playerToFollow != null ? Translations.cmd_follow_switched : Translations.cmd_follow_started,
+                    player.Name!);
             _playerToFollow = name.ToLower();
 
-            if (takeRisk)
+            switch (movementLock)
             {
-                _unsafeEnabled = true;
-                return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_follow_note + '\n' + Translations.cmd_follow_unsafe_enabled);
+                case { IsLocked: false }:
+                    if (!movementLock.Lock("Follow Player"))
+                    {
+                        LogToConsole($"§§6§1§0Follow Player bot failed to obtain the movement lock for some reason!");
+                        LogToConsole($"§§6§1§0Disable other bots who have movement mechanics, and try again!");
+                        return r.SetAndReturn(CmdResult.Status.Fail);
+                    }
+
+                    break;
             }
-            else
-                return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_follow_note);
+
+            if (!takeRisk) return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_follow_note);
+            _unsafeEnabled = true;
+            return r.SetAndReturn(CmdResult.Status.Done,
+                Translations.cmd_follow_note + '\n' + Translations.cmd_follow_unsafe_enabled);
         }
 
         private int OnCommandStop(CmdResult r)
@@ -139,6 +155,8 @@ namespace MinecraftClient.ChatBots
             if (_playerToFollow == null)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_follow_already_stopped);
 
+            var movementLock = BotMovementLock.Instance;
+            movementLock?.UnLock("Follow Player");
             _playerToFollow = null;
 
             return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_follow_stopping);
@@ -168,8 +186,8 @@ namespace MinecraftClient.ChatBots
             if (!CanMoveThere(entity.Location))
                 return;
 
-            // Stop at specified distance from plater (prevents pushing player around)
-            double distance = entity.Location.Distance(GetCurrentLocation());
+            // Stop at specified distance from player (prevents pushing player around)
+            var distance = entity.Location.Distance(GetCurrentLocation());
 
             if (distance < Config.Stop_At_Distance)
                 return;
@@ -182,7 +200,8 @@ namespace MinecraftClient.ChatBots
             if (entity.Type != EntityType.Player)
                 return;
 
-            if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) && _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
+            if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) &&
+                _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
             {
                 LogToConsole(string.Format(Translations.cmd_follow_player_came_to_the_range, _playerToFollow));
                 LogToConsole(Translations.cmd_follow_resuming);
@@ -194,7 +213,8 @@ namespace MinecraftClient.ChatBots
             if (entity.Type != EntityType.Player)
                 return;
 
-            if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) && _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
+            if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) &&
+                _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
             {
                 LogToConsole(string.Format(Translations.cmd_follow_player_left_the_range, _playerToFollow));
                 LogToConsole(Translations.cmd_follow_pausing);
@@ -203,7 +223,8 @@ namespace MinecraftClient.ChatBots
 
         public override void OnPlayerLeave(Guid uuid, string? name)
         {
-            if (_playerToFollow != null && !string.IsNullOrEmpty(name) && _playerToFollow.Equals(name, StringComparison.OrdinalIgnoreCase))
+            if (_playerToFollow != null && !string.IsNullOrEmpty(name) &&
+                _playerToFollow.Equals(name, StringComparison.OrdinalIgnoreCase))
             {
                 LogToConsole(string.Format(Translations.cmd_follow_player_left, _playerToFollow));
                 LogToConsole(Translations.cmd_follow_stopping);
@@ -213,12 +234,8 @@ namespace MinecraftClient.ChatBots
 
         private bool CanMoveThere(Location location)
         {
-            ChunkColumn? chunkColumn = GetWorld().GetChunkColumn(location);
-
-            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
-                return false;
-
-            return true;
+            var chunkColumn = GetWorld().GetChunkColumn(location);
+            return chunkColumn != null && chunkColumn.FullyLoaded != false;
         }
     }
 }

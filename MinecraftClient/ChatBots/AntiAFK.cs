@@ -8,7 +8,6 @@ namespace MinecraftClient.ChatBots
     /// <summary>
     /// This bot sends a command every 60 seconds in order to stay non-afk.
     /// </summary>
-
     public class AntiAFK : ChatBot
     {
         public static Configs Config = new();
@@ -16,8 +15,7 @@ namespace MinecraftClient.ChatBots
         [TomlDoNotInlineObject]
         public class Configs
         {
-            [NonSerialized]
-            private const string BotName = "AntiAFK";
+            [NonSerialized] private const string BotName = "AntiAFK";
 
             public bool Enabled = false;
 
@@ -99,6 +97,13 @@ namespace MinecraftClient.ChatBots
                 {
                     LogToConsole(Translations.bot_antiafk_not_using_terrain_handling);
                 }
+                else
+                {
+                    var movementLock = BotMovementLock.Instance;
+                    if (movementLock is { IsLocked: true })
+                        LogToConsole(
+                            $"§§6§1§0{string.Format(Translations.bot_antiafk_may_not_move, movementLock.LockedBy)}");
+                }
             }
         }
 
@@ -106,25 +111,22 @@ namespace MinecraftClient.ChatBots
         {
             count++;
 
-            if (count >= nextrun)
-            {
-                DoAntiAfkStuff();
-                count = 0;
-                nextrun = random.Next(Settings.DoubleToTick(Config.Delay.min), Settings.DoubleToTick(Config.Delay.max));
-            }
-
+            if (count < nextrun) return;
+            DoAntiAfkStuff();
+            count = 0;
+            nextrun = random.Next(Settings.DoubleToTick(Config.Delay.min), Settings.DoubleToTick(Config.Delay.max));
         }
 
         private void DoAntiAfkStuff()
         {
-            if (Config.Use_Terrain_Handling && GetTerrainEnabled())
+            var isMovementLocked = BotMovementLock.Instance;
+            if (Config.Use_Terrain_Handling && GetTerrainEnabled() && isMovementLocked is {IsLocked: false})
             {
-                Location currentLocation = GetCurrentLocation();
-                Location goal;
+                var currentLocation = GetCurrentLocation();
 
-                bool moved = false;
-                bool useAlternativeMethod = false;
-                int triesCounter = 0;
+                var moved = false;
+                var useAlternativeMethod = false;
+                var triesCounter = 0;
 
                 while (!moved)
                 {
@@ -134,10 +136,11 @@ namespace MinecraftClient.ChatBots
                         break;
                     }
 
-                    goal = GetRandomLocationWithinRangeXZ(currentLocation, Config.Walk_Range);
+                    var goal = GetRandomLocationWithinRangeXZ(currentLocation, Config.Walk_Range);
 
                     // Prevent getting the same location
-                    while ((currentLocation.X == goal.X) && (currentLocation.Y == goal.Y) && (currentLocation.Z == goal.Z))
+                    while ((currentLocation.X == goal.X) && (currentLocation.Y == goal.Y) &&
+                           (currentLocation.Z == goal.Z))
                     {
                         LogToConsole("Same location!, generating new one");
                         goal = GetRandomLocationWithinRangeXZ(currentLocation, Config.Walk_Range);
@@ -148,10 +151,8 @@ namespace MinecraftClient.ChatBots
                         useAlternativeMethod = true;
                         break;
                     }
-                    else
-                    {
-                        moved = MoveToLocation(goal, allowUnsafe: false, allowDirectTeleport: false);
-                    }
+
+                    moved = MoveToLocation(goal, allowUnsafe: false, allowDirectTeleport: false);
                 }
 
                 if (!useAlternativeMethod && Config.Use_Sneak)
@@ -169,12 +170,14 @@ namespace MinecraftClient.ChatBots
                 Sneak(previousSneakState);
                 previousSneakState = !previousSneakState;
             }
+
             count = 0;
         }
 
         private Location GetRandomLocationWithinRangeXZ(Location currentLocation, int range)
         {
-            return new Location(currentLocation.X + random.Next(range * -1, range), currentLocation.Y, currentLocation.Z + random.Next(range * -1, range));
+            return new Location(currentLocation.X + random.Next(range * -1, range), currentLocation.Y,
+                currentLocation.Z + random.Next(range * -1, range));
         }
     }
 }
