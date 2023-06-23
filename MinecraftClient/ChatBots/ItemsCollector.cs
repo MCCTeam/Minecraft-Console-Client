@@ -89,6 +89,7 @@ public class ItemsCollector : ChatBot
 
     public override void OnUnload()
     {
+        StopTheMainProcess();
         McClient.dispatcher.Unregister(CommandName);
         McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
     }
@@ -108,6 +109,18 @@ public class ItemsCollector : ChatBot
     {
         if (running)
             return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_items_collector_already_collecting);
+
+        var movementLock = BotMovementLock.Instance;
+        if (movementLock is { IsLocked: true })
+            return r.SetAndReturn(CmdResult.Status.Fail,
+                string.Format(Translations.bot_common_movement_lock_held, "Items Collector", movementLock.LockedBy));
+
+        if (!movementLock!.Lock("Items Collector"))
+        {
+            LogToConsole($"§§6§1§0Items Collector bot failed to obtain the movement lock for some reason!");
+            LogToConsole($"§§6§1§0Disable other bots who have movement mechanics, and try again!");
+            return r.SetAndReturn(CmdResult.Status.Fail);
+        }
 
         StartTheMainProcess();
         return r.SetAndReturn(CmdResult.Status.Done, Translations.cmd_items_collector_started);
@@ -132,6 +145,7 @@ public class ItemsCollector : ChatBot
     private void StopTheMainProcess()
     {
         running = false;
+        BotMovementLock.Instance?.UnLock("Items Collector");
     }
 
     private void MainProcess()
@@ -163,13 +177,8 @@ public class ItemsCollector : ChatBot
 
             if (items.Any())
             {
-                foreach (var entity in items)
-                {
-                    if (!running)
-                        break;
-
+                foreach (var entity in items.TakeWhile(entity => running))
                     WaitForMoveToLocation(entity.Location);
-                }
             }
             else
             {
