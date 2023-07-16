@@ -218,6 +218,12 @@ namespace MinecraftClient.ChatBots
                                                 {
                                                     var min = Convert.ToInt32(parts[0]);
                                                     var max = Convert.ToInt32(parts[1]);
+
+                                                    if (min > max)
+                                                    {
+                                                        (min, max) = (max, min);
+                                                        LogToConsole(Translations.cmd_wait_random_min_bigger);
+                                                    }
                                                     
                                                     ticks = new Random().Next(min, max);
                                                 } else ticks = Convert.ToInt32(instruction_line[5..]);
