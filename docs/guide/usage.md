@@ -695,10 +695,10 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 -   **Examples:**
 
     ```
-    /setrnd <variable> -7to10
+    /setrnd <variable> -7 to 10
     ```
 
-    (Set a `%variable%` to a number from -7 to 9)
+    (Set a `%variable%` to a number from -7 to 10)
 
 ### `sneak`
 
@@ -836,14 +836,36 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Usage:**
 
+    Fixed time:
+
     ```
     /wait <time>
     ```
+
+    Random time:
+
+    ```
+    /wait <minimum time> to <maximum time>
+    ```
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **You can use `-` instead of `to`**
+
+    </div>
 
 -   **Examples:**
 
     ```
     /wait 20
+    ```
+
+    ```
+    /wait 20 to 100
+    ```
+
+    ```
+    /wait 20-35
     ```
 
 ### `move`
