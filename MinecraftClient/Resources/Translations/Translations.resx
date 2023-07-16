@@ -2115,4 +2115,7 @@ Logging in...</value>
   <data name="bot.common.movement.lock.held" xml:space="preserve">
     <value>You can not start/run/use the '{0}' bot because it requires movement, the movement is currently utilized by the '{1}' bot, stop it if you want to use this one.</value>
   </data>
+  <data name="cmd.wait.random.min.bigger" xml:space="preserve">
+    <value>Minimum number that you have provided is bigger than the maximum, swapping them around!</value>
+  </data>
 </root>
