@@ -3968,5 +3968,11 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.common.movement.lock.held", resourceCulture);
             }
         }
+        
+        internal static string cmd_wait_random_min_bigger {
+            get {
+                return ResourceManager.GetString("cmd.wait.random.min.bigger", resourceCulture);
+            }
+        }
     }
 }
