@@ -596,6 +596,16 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 **A movement speed higher than 2 may be considered cheating by some plugins.**
 
+#### `IgnoreInvalidPlayerName`
+
+-   **Description:**
+
+    Minecraft player name can only consist of English letters, numbers, and underscore symbols. Other name will be considered as invalid and ignored by default.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
 </div>
 
 ### Account List section

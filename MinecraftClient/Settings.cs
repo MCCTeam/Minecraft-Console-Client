@@ -617,6 +617,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.Advanced.MinTerminalHeight$")]
                     public int MinTerminalHeight = 10;
 
+                    [TomlInlineComment("$Main.Advanced.ignore_invalid_playername$")]
+                    public bool IgnoreInvalidPlayerName = true;
+
                     /// <summary>
                     /// Load login/password using an account alias
                     /// </summary>
