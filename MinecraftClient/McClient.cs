@@ -2967,7 +2967,7 @@ namespace MinecraftClient
         public void OnPlayerJoin(PlayerInfo player)
         {
             //Ignore placeholders eg 0000tab# from TabListPlus
-            if (!ChatBot.IsValidName(player.Name))
+            if (Config.Main.Advanced.IgnoreInvalidPlayerName && !ChatBot.IsValidName(player.Name))
                 return;
 
             if (player.Name == username)
