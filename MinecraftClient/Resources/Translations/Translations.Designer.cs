@@ -2426,7 +2426,15 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.inventory.shiftclick", resourceCulture);
             }
         }
-        
+
+        internal static string cmd_inventory_shiftrightclick //shiftrightclick translations link
+        {
+            get
+            {
+                return ResourceManager.GetString("cmd.inventory.shiftrightclick", resourceCulture);
+            }
+        }
+
         internal static string cmd_inventory_shiftclick_fail {
             get {
                 return ResourceManager.GetString("cmd.inventory.shiftclick_fail", resourceCulture);
