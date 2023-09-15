@@ -26,6 +26,11 @@
         ShiftClick,
 
         /// <summary>
+        /// Shift+Right click with mouse on a slot: send a whole item stack to the hotbar or other inventory. Differece from ShiftClick is how it reported to server
+        /// </summary>
+        ShiftRightClick,
+
+        /// <summary>
         /// Drop a single item on ground
         /// </summary>
         DropItem,
