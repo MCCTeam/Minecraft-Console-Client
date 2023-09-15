@@ -16,6 +16,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
             WindowActionType.RightClick,
             WindowActionType.MiddleClick,
             WindowActionType.ShiftClick,
+            WindowActionType.ShiftRightClick,//added shiftrightclick to supported actions
         };
 
         public override WindowActionType Parse(IStringReader reader)
@@ -33,6 +34,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
                 "middleclick" => WindowActionType.MiddleClick,
                 "shift" => WindowActionType.ShiftClick,
                 "shiftclick" => WindowActionType.ShiftClick,
+                "shiftrightclick" => WindowActionType.ShiftRightClick,//added here too
                 _ => throw CommandSyntaxException.BuiltInExceptions.LiteralIncorrect().CreateWithContext(reader, inputStr)
             };
         }
