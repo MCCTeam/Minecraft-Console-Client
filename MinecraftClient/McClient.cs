@@ -2126,6 +2126,24 @@ namespace MinecraftClient
                             }
                         }
                         break;
+                    case WindowActionType.DropItem:
+                        if (inventory.Items.ContainsKey(slotId))
+                        {
+                            inventory.Items[slotId].Count--;
+                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
+                        }
+
+                        if (inventory.Items[slotId].Count <= 0)
+                        {
+                            inventory.Items.Remove(slotId);
+                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
+                        }
+
+                        break;
+                    case WindowActionType.DropItemStack:
+                        inventory.Items.Remove(slotId);
+                        changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
+                        break;
                 }
             }
 
