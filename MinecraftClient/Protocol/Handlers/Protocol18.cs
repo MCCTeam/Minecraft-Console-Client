@@ -3723,7 +3723,7 @@ namespace MinecraftClient.Protocol.Handlers
                         mode = 1;
                         item = new Item(ItemType.Null, 0, null);
                         break;
-                    case WindowActionType.ShiftRightClick: //added shiftrightclick server report here only difference is it uses button 1 instead 0
+                    case WindowActionType.ShiftRightClick: // Right-shift click uses button 1
                         button = 1;
                         mode = 1;
                         item = new Item(ItemType.Null, 0, null);
