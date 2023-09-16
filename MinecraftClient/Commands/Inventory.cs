@@ -115,7 +115,7 @@ namespace MinecraftClient.Commands
 #pragma warning disable format // @formatter:off
                 "list"           => Translations.cmd_inventory_help_list           + usageStr + "/inventory <player|container|<id>> list",
                 "close"          => Translations.cmd_inventory_help_close          + usageStr + "/inventory <player|container|<id>> close",
-                "click"          => Translations.cmd_inventory_help_click          + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle|shift]\nDefault is left click",
+                "click"          => Translations.cmd_inventory_help_click          + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle|shift|shiftright]\nDefault is left click",
                 "drop"           => Translations.cmd_inventory_help_drop           + usageStr + "/inventory <player|container|<id>> drop <slot> [all]\nAll means drop full stack",
                 "creativegive"   => Translations.cmd_inventory_help_creativegive   + usageStr + "/inventory creativegive <slot> <itemtype> <amount>",
                 "creativedelete" => Translations.cmd_inventory_help_creativedelete + usageStr + "/inventory creativedelete <slot>",
@@ -351,6 +351,7 @@ namespace MinecraftClient.Commands
                 WindowActionType.RightClick => Translations.cmd_inventory_right,
                 WindowActionType.MiddleClick => Translations.cmd_inventory_middle,
                 WindowActionType.ShiftClick => Translations.cmd_inventory_shiftclick,
+                WindowActionType.ShiftRightClick => Translations.cmd_inventory_shiftrightclick,
                 _ => "unknown",
             };
 
