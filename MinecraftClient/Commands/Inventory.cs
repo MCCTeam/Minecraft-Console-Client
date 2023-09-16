@@ -351,7 +351,7 @@ namespace MinecraftClient.Commands
                 WindowActionType.RightClick => Translations.cmd_inventory_right,
                 WindowActionType.MiddleClick => Translations.cmd_inventory_middle,
                 WindowActionType.ShiftClick => Translations.cmd_inventory_shiftclick,
-                WindowActionType.ShiftRightClick => Translations.cmd_inventory_shiftrightclick,//added shiftrightclick message link here it's empty right now
+                WindowActionType.ShiftRightClick => Translations.cmd_inventory_shiftrightclick,
                 _ => "unknown",
             };
 
