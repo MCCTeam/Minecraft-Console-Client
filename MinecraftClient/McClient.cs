@@ -1582,6 +1582,7 @@ namespace MinecraftClient
                             changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
                         break;
                     case WindowActionType.ShiftClick:
+                    case WindowActionType.ShiftRightClick:
                         if (slotId == 0) break;
                         if (item != null)
                         {
