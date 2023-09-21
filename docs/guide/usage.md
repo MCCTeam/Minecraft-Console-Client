@@ -1028,7 +1028,6 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Actions:
 
     -   `click`
-    -   `shiftclick`
     -   `drop`
 
     Show/Preview items in an inventory:
@@ -1040,7 +1039,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Click/Shift-Click on an item in an inventory:
 
     ```
-    /inventory <player|container|<id>> <click|shiftclick> <slot id> [left|right|middle]
+    /inventory <player|container|<id>> <click> <slot id> [left|right|middle|Shift|ShiftRight]
     ```
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
