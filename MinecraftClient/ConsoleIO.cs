@@ -114,7 +114,7 @@ namespace MinecraftClient
 
         /// <summary>
         /// Write a Minecraft-Like formatted string to the standard output, using §c color codes
-        /// See minecraft.gamepedia.com/Classic_server_protocol#Color_Codes for more info
+        /// <see href="https://minecraft.wiki/w/Classic_server_protocol#Color_codes"/> for more info
         /// </summary>
         /// <param name="str">String to write</param>
         /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>

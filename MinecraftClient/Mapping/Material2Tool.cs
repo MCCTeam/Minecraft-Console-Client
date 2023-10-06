@@ -5,7 +5,7 @@ namespace MinecraftClient.Mapping
 {
     public static class Material2Tool
     {
-        // Made with the following ressources: https://minecraft.fandom.com/wiki/Breaking
+        // Made with the following ressources: https://minecraft.wiki/w/Breaking
         // Sorted in alphabetical order.
         // Minable by Any Pickaxe.
         private static readonly List<Material> pickaxeTier0 = new()
