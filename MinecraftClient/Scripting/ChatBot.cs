@@ -271,7 +271,7 @@ namespace MinecraftClient.Scripting
 
         /// <summary>
         /// Called when an update of the map is sent by the server, take a look at https://wiki.vg/Protocol#Map_Data for more info on the fields
-        /// Map format and colors: https://minecraft.fandom.com/wiki/Map_item_format
+        /// Map format and colors: https://minecraft.wiki/w/Map_item_format
         /// </summary>
         /// <param name="mapid">Map ID of the map being modified</param>
         /// <param name="scale">A scale of the Map, from 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel)</param>

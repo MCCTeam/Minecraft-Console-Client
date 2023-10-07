@@ -2575,15 +2575,15 @@ namespace MinecraftClient
             switch (newSpeed)
             {
                 case MovementType.Sneak:
-                    // https://minecraft.fandom.com/wiki/Sneaking#Effects - Sneaking  1.31m/s
+                    // https://minecraft.wiki/w/Sneaking#Effects - Sneaking  1.31m/s
                     Config.Main.Advanced.MovementSpeed = 2;
                     break;
                 case MovementType.Walk:
-                    // https://minecraft.fandom.com/wiki/Walking#Usage - Walking 4.317 m/s
+                    // https://minecraft.wiki/w/Walking#Usage - Walking 4.317 m/s
                     Config.Main.Advanced.MovementSpeed = 4;
                     break;
                 case MovementType.Sprint:
-                    // https://minecraft.fandom.com/wiki/Sprinting#Usage - Sprinting 5.612 m/s
+                    // https://minecraft.wiki/w/Sprinting#Usage - Sprinting 5.612 m/s
                     Config.Main.Advanced.MovementSpeed = 5;
                     break;
             }
@@ -3340,7 +3340,7 @@ namespace MinecraftClient
 
         /// <summary>
         /// Called when an update of the map is sent by the server, take a look at https://wiki.vg/Protocol#Map_Data for more info on the fields
-        /// Map format and colors: https://minecraft.fandom.com/wiki/Map_item_format
+        /// Map format and colors: https://minecraft.wiki/w/Map_item_format
         /// </summary>
         /// <param name="mapid">Map ID of the map being modified</param>
         /// <param name="scale">A scale of the Map, from 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel)</param>
