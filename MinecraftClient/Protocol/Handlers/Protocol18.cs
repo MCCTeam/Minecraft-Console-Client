@@ -2124,7 +2124,21 @@ namespace MinecraftClient.Protocol.Handlers
                                 DeltaY = DeltaY / (128 * 32);
                                 DeltaZ = DeltaZ / (128 * 32);
 
-                                handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                                handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, _yaw, _pitch, OnGround);
+                            }
+
+                            break;
+                        case PacketTypesIn.EntityRotation:
+                            if (handler.GetEntityHandlingEnabled())
+                            {
+                                int EntityID = dataTypes.ReadNextVarInt(packetData);
+
+
+                                byte _yaw = dataTypes.ReadNextByte(packetData);
+                                byte _pitch = dataTypes.ReadNextByte(packetData);
+                                bool OnGround = dataTypes.ReadNextBool(packetData);
+
+                                handler.OnEntityRotation(EntityID, _yaw, _pitch, OnGround);
                             }
 
                             break;

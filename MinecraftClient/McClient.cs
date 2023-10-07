@@ -3154,6 +3154,22 @@ namespace MinecraftClient
         /// <param name="Dy"></param>
         /// <param name="Dz"></param>
         /// <param name="onGround"></param>
+        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, byte _yaw, byte _pitch, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                Location L = entities[EntityID].Location;
+                L.X += Dx;
+                L.Y += Dy;
+                L.Z += Dz;
+                entities[EntityID].Location = L;
+                entities[EntityID].Yaw = _yaw * (1F / 256) * 360;
+                entities[EntityID].Pitch = _pitch * (1F / 256) * 360;
+                DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
+            }
+
+        }
+
         public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, bool onGround)
         {
             if (entities.ContainsKey(EntityID))
@@ -3166,6 +3182,16 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
             }
 
+        }
+
+        public void OnEntityRotation(int EntityID, byte _yaw, byte _pitch, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                entities[EntityID].Yaw = _yaw * (1F / 256) * 360;
+                entities[EntityID].Pitch = _pitch * (1F / 256) * 360;
+                DispatchBotEvent(bot => bot.OnEntityRotate(entities[EntityID]));
+            }
         }
 
         /// <summary>

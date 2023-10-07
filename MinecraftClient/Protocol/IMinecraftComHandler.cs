@@ -257,7 +257,9 @@ namespace MinecraftClient.Protocol
         /// <param name="Dy">Y offset</param>
         /// <param name="Dz">Z offset</param>
         /// <param name="onGround">TRUE if on ground</param>
+        void OnEntityPosition(int entityID, Double dx, Double dy, Double dz, byte yaw, byte pitch, bool onGround);
         void OnEntityPosition(int entityID, Double dx, Double dy, Double dz, bool onGround);
+        void OnEntityRotation(int entityID, byte yaw, byte pitch, bool onGround);
 
         /// <summary>
         /// Called when an entity moved to fixed coordinates

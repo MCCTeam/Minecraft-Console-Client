@@ -195,6 +195,8 @@ namespace MinecraftClient.Scripting
         /// <param name="entity">Entity with updated location</param>
         public virtual void OnEntityMove(Entity entity) { }
 
+        public virtual void OnEntityRotate(Entity entity) { }
+
         /// <summary>
         /// Called after an internal MCC command has been performed
         /// </summary>
