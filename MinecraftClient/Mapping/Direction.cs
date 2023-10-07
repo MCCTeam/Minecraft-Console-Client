@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a unit movement in the world
     /// </summary>
-    /// <see href="http://minecraft.gamepedia.com/Coordinates"/>
+    /// <see href="https://minecraft.wiki/w/Coordinates"/>
     public enum Direction
     {
         South = 0,
