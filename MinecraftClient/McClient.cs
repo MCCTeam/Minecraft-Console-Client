@@ -3153,6 +3153,8 @@ namespace MinecraftClient
         /// <param name="Dx"></param>
         /// <param name="Dy"></param>
         /// <param name="Dz"></param>
+        /// <param name="_yaw"></param>
+        /// <param name="_pitch"></param>
         /// <param name="onGround"></param>
         public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, float _yaw, float _pitch, bool onGround)
         {
