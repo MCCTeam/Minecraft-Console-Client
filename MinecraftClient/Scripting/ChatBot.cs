@@ -195,6 +195,10 @@ namespace MinecraftClient.Scripting
         /// <param name="entity">Entity with updated location</param>
         public virtual void OnEntityMove(Entity entity) { }
 
+        /// <summary>
+        /// Called when an entity rotates
+        /// </summary>
+        /// <param name="entity">Entity with updated rotation</param>
         public virtual void OnEntityRotate(Entity entity) { }
 
         /// <summary>
