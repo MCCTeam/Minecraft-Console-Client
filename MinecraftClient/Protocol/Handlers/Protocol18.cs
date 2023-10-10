@@ -2117,8 +2117,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
 
-                                byte _yaw = dataTypes.ReadNextByte(packetData);
-                                byte _pitch = dataTypes.ReadNextByte(packetData);
+                                byte _yaw = dataTypes.ReadNextByte(packetData) * (1F / 256) * 360;
+                                byte _pitch = dataTypes.ReadNextByte(packetData) * (1F / 256) * 360;
                                 bool OnGround = dataTypes.ReadNextBool(packetData);
                                 DeltaX = DeltaX / (128 * 32);
                                 DeltaY = DeltaY / (128 * 32);
@@ -2134,8 +2134,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
 
 
-                                byte _yaw = dataTypes.ReadNextByte(packetData);
-                                byte _pitch = dataTypes.ReadNextByte(packetData);
+                                float _yaw = dataTypes.ReadNextByte(packetData) * (1F / 256) * 360;
+                                float _pitch = dataTypes.ReadNextByte(packetData)* (1F / 256) * 360;
                                 bool OnGround = dataTypes.ReadNextBool(packetData);
 
                                 handler.OnEntityRotation(EntityID, _yaw, _pitch, OnGround);
