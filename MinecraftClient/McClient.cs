@@ -3147,14 +3147,14 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called when an entity's position changed within 8 block of its previous position.
+        /// Called when an entity's position changed within 8 block of its previous position with rotation.
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="Dx"></param>
         /// <param name="Dy"></param>
         /// <param name="Dz"></param>
         /// <param name="onGround"></param>
-        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, byte _yaw, byte _pitch, bool onGround)
+        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, float _yaw, float _pitch, bool onGround)
         {
             if (entities.ContainsKey(EntityID))
             {
@@ -3163,12 +3163,21 @@ namespace MinecraftClient
                 L.Y += Dy;
                 L.Z += Dz;
                 entities[EntityID].Location = L;
-                entities[EntityID].Yaw = _yaw * (1F / 256) * 360;
-                entities[EntityID].Pitch = _pitch * (1F / 256) * 360;
+                entities[EntityID].Yaw = _yaw;
+                entities[EntityID].Pitch = _pitch;
                 DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
             }
 
         }
+
+        /// <summary>
+        /// Called when an entity's position changed within 8 block of its previous position.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="Dx"></param>
+        /// <param name="Dy"></param>
+        /// <param name="Dz"></param>
+        /// <param name="onGround"></param>
 
         public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, bool onGround)
         {
@@ -3183,13 +3192,20 @@ namespace MinecraftClient
             }
 
         }
+        /// <summary>
+        /// Called when an entity's rotation changed.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="_yaw"></param>
+        /// <param name="_pitch"></param>
+        /// <param name="onGround"></param>
 
-        public void OnEntityRotation(int EntityID, byte _yaw, byte _pitch, bool onGround)
+        public void OnEntityRotation(int EntityID, float _yaw, float _pitch, bool onGround)
         {
             if (entities.ContainsKey(EntityID))
             {
-                entities[EntityID].Yaw = _yaw * (1F / 256) * 360;
-                entities[EntityID].Pitch = _pitch * (1F / 256) * 360;
+                entities[EntityID].Yaw = _yaw;
+                entities[EntityID].Pitch = _pitch;
                 DispatchBotEvent(bot => bot.OnEntityRotate(entities[EntityID]));
             }
         }
