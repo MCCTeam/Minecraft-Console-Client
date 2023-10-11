@@ -2117,8 +2117,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
 
-                                byte _yaw = dataTypes.ReadNextByte(packetData) * (1F / 256) * 360;
-                                byte _pitch = dataTypes.ReadNextByte(packetData) * (1F / 256) * 360;
+                                float _yaw = dataTypes.ReadNextByte(packetData) * (1F / 256) * 360;
+                                float _pitch = dataTypes.ReadNextByte(packetData) * (1F / 256) * 360;
                                 bool OnGround = dataTypes.ReadNextBool(packetData);
                                 DeltaX = DeltaX / (128 * 32);
                                 DeltaY = DeltaY / (128 * 32);
