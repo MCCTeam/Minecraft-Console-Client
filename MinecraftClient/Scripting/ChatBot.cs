@@ -196,6 +196,12 @@ namespace MinecraftClient.Scripting
         public virtual void OnEntityMove(Entity entity) { }
 
         /// <summary>
+        /// Called when an entity rotates
+        /// </summary>
+        /// <param name="entity">Entity with updated rotation</param>
+        public virtual void OnEntityRotate(Entity entity) { }
+
+        /// <summary>
         /// Called after an internal MCC command has been performed
         /// </summary>
         /// <param name="commandName">MCC Command Name</param>

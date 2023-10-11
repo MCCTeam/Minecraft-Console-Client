@@ -260,6 +260,27 @@ namespace MinecraftClient.Protocol
         void OnEntityPosition(int entityID, Double dx, Double dy, Double dz, bool onGround);
 
         /// <summary>
+        /// Called when an entity moved and rotated
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="Dx">X offset</param>
+        /// <param name="Dy">Y offset</param>
+        /// <param name="Dz">Z offset</param>
+        /// <param name="yaw">Yaw</param>
+        /// <param name="pitch">Pitch</param>
+        /// <param name="onGround">TRUE if on ground</param>
+        void OnEntityPosition(int entityID, Double dx, Double dy, Double dz, float yaw, float pitch, bool onGround);
+
+        /// <summary>
+        /// Called when an entity rotated
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="yaw">Yaw</param>
+        /// <param name="pitch">Pitch</param>
+        /// <param name="onGround">TRUE if on ground</param>
+        void OnEntityRotation(int entityID, float yaw, float pitch, bool onGround);
+
+        /// <summary>
         /// Called when an entity moved to fixed coordinates
         /// </summary>
         /// <param name="EntityID">Entity ID</param>
