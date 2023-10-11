@@ -3147,6 +3147,31 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when an entity's position changed within 8 block of its previous position with rotation.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="Dx"></param>
+        /// <param name="Dy"></param>
+        /// <param name="Dz"></param>
+        /// <param name="yaw"></param>
+        /// <param name="pitch"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, float yaw, float pitch, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                Location L = entities[EntityID].Location;
+                L.X += Dx;
+                L.Y += Dy;
+                L.Z += Dz;
+                entities[EntityID].Location = L;
+                entities[EntityID].Yaw = yaw;
+                entities[EntityID].Pitch = pitch;
+                DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
+            }
+        }
+
+        /// <summary>
         /// Called when an entity's position changed within 8 block of its previous position.
         /// </summary>
         /// <param name="EntityID"></param>
@@ -3165,7 +3190,23 @@ namespace MinecraftClient
                 entities[EntityID].Location = L;
                 DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
             }
+        }
 
+        /// <summary>
+        /// Called when an entity's rotation changed.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="yaw"></param>
+        /// <param name="pitch"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityRotation(int EntityID, float yaw, float pitch, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                entities[EntityID].Yaw = yaw;
+                entities[EntityID].Pitch = pitch;
+                DispatchBotEvent(bot => bot.OnEntityRotate(entities[EntityID]));
+            }
         }
 
         /// <summary>
