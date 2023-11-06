@@ -119,9 +119,9 @@ namespace MinecraftClient.Protocol
         {
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" + name);
+                Task<string> fetchTask = httpClient.GetStringAsync("https://skin.mualliance.ltd/api/union/profile/mapped/byname/" + name);
                 fetchTask.Wait();
-                string result = Json.ParseJson(fetchTask.Result).Properties["id"].StringValue;
+                string result = Json.ParseJson(fetchTask.Result).Properties["uuid"].StringValue;
                 fetchTask.Dispose();
                 return result;
             }
@@ -138,7 +138,7 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
+                Task<string> fetchTask = httpClient.GetStringAsync("https://skin.mualliance.ltd/api/union/profile/mapped/byuuid/" + uuid);
                 fetchTask.Wait();
                 var nameChanges = Json.ParseJson(fetchTask.Result).DataArray;
                 fetchTask.Dispose();
@@ -162,7 +162,7 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
+                Task<string> fetchTask = httpClient.GetStringAsync("https://skin.mualliance.ltd/api/union/profile/mapped/byuuid/" + uuid);
                 fetchTask.Wait();
                 jsonDataList = Json.ParseJson(fetchTask.Result).DataArray;
                 fetchTask.Dispose();
@@ -244,7 +244,7 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
+                Task<string> fetchTask = httpClient.GetStringAsync("https://auth.fdc.jingyijun.xyz/api/yggdrasil/sessionserver/session/minecraft/profile/" + uuid);
                 fetchTask.Wait();
                 // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
                 base64SkinInfo = Json.ParseJson(fetchTask.Result).Properties["properties"].DataArray[0].Properties["value"].StringValue;
