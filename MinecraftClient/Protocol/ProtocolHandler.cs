@@ -464,7 +464,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
+                int code = DoHTTPSPost("auth.fdc.jingyijun.xyz", "/api/yggdrasil/authserver/authenticate", json_request, ref result);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
