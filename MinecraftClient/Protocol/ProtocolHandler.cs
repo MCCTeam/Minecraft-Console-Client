@@ -474,10 +474,10 @@ namespace MinecraftClient.Protocol
                     else
                     {
                         Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        if (loginResponse.Properties.ContainsKey("accessToken"))
+                            //&& loginResponse.Properties.ContainsKey("selectedProfile")
+                            //&& loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
+                            //&& loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
                         {
                             session.ID = loginResponse.Properties["accessToken"].StringValue;
                             session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
@@ -675,7 +675,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/refresh", json_request, ref result);
+                int code = DoHTTPSPost("auth.fdc.jingyijun.xyz", "/api/yggdrasil/authserver/refresh", json_request, ref result);
                 if (code == 200)
                 {
                     if (result == null)
