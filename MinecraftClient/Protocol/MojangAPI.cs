@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 /// !!! ATTENTION !!!
 /// By using these functions you agree to the ToS of the Mojang API.
@@ -244,7 +246,7 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://auth.fdc.jingyijun.xyz/api/yggdrasil/sessionserver/session/minecraft/profile/" + uuid);
+                Task<string> fetchTask = httpClient.GetStringAsync("https://" + Config.Main.General.AuthServer.Host + ":" + Config.Main.General.AuthServer.Port + "/api/yggdrasil/sessionserver/session/minecraft/profile/" + uuid);
                 fetchTask.Wait();
                 // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
                 base64SkinInfo = Json.ParseJson(fetchTask.Result).Properties["properties"].DataArray[0].Properties["value"].StringValue;
