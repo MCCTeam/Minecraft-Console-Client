@@ -694,7 +694,7 @@ namespace MinecraftClient
                 public struct AuthlibServer
                 {
                     public string Host = string.Empty;
-                    public int Port = 25565;
+                    public int Port = 443;
 
                     public AuthlibServer(string Host)
                     {
