@@ -416,7 +416,7 @@ namespace MinecraftClient
             else
             {
                 // Validate cached session or login new session.
-                if (Config.Main.Advanced.SessionCache != CacheType.none && SessionCache.Contains(loginLower))
+                if (Config.Main.Advanced.SessionCache != CacheType.none && SessionCache.Contains(loginLower) && Config.Main.General.AccountType != LoginType.Yggdrasil)
                 {
                     session = SessionCache.Get(loginLower);
                     result = ProtocolHandler.GetTokenValidation(session);
@@ -455,7 +455,7 @@ namespace MinecraftClient
                     SessionCache.Store(loginLower, session);
 
                 if (result == ProtocolHandler.LoginResult.Success)
-                    session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck());
+                    session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck(Config.Main.General.AccountType));
             }
 
             if (result == ProtocolHandler.LoginResult.Success)
