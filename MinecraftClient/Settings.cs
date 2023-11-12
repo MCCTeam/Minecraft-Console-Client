@@ -494,8 +494,11 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Main.General.method$")]
                     public LoginMethod Method = LoginMethod.mcc;
+                    [TomlInlineComment("$Main.General.AuthlibServer$")]
+                    public AuthlibServer AuthServer = new(string.Empty);
+                  
 
-                    public enum LoginType { mojang, microsoft };
+                    public enum LoginType { mojang, microsoft,Yggdrasil };
 
                     public enum LoginMethod { mcc, browser };
                 }
@@ -683,6 +686,29 @@ namespace MinecraftClient
                     }
 
                     public ServerInfoConfig(string Host, ushort Port)
+                    {
+                        this.Host = Host.Split(new[] { ":", "：" }, StringSplitOptions.None)[0];
+                        this.Port = Port;
+                    }
+                }
+                public struct AuthlibServer
+                {
+                    public string Host = string.Empty;
+                    public int Port = 443;
+
+                    public AuthlibServer(string Host)
+                    {
+                        string[] sip = Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                        this.Host = sip[0];
+
+                        if (sip.Length > 1)
+                        {
+                            try { this.Port = Convert.ToUInt16(sip[1]); }
+                            catch (FormatException) { }
+                        }
+                    }
+
+                    public AuthlibServer(string Host, ushort Port)
                     {
                         this.Host = Host.Split(new[] { ":", "：" }, StringSplitOptions.None)[0];
                         this.Port = Port;
