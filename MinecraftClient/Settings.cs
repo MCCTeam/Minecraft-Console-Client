@@ -498,7 +498,7 @@ namespace MinecraftClient
                     public AuthlibServer AuthServer = new(string.Empty);
                   
 
-                    public enum LoginType { mojang, microsoft,Yggdrasil };
+                    public enum LoginType { mojang, microsoft,yggdrasil };
 
                     public enum LoginMethod { mcc, browser };
                 }

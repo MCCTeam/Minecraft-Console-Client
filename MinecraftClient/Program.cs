@@ -416,7 +416,7 @@ namespace MinecraftClient
             else
             {
                 // Validate cached session or login new session.
-                if (Config.Main.Advanced.SessionCache != CacheType.none && SessionCache.Contains(loginLower) && Config.Main.General.AccountType != LoginType.Yggdrasil)
+                if (Config.Main.Advanced.SessionCache != CacheType.none && SessionCache.Contains(loginLower) && Config.Main.General.AccountType != LoginType.yggdrasil)
                 {
                     session = SessionCache.Get(loginLower);
                     result = ProtocolHandler.GetTokenValidation(session);
@@ -447,7 +447,7 @@ namespace MinecraftClient
 
                 if (result != ProtocolHandler.LoginResult.Success)
                 {
-                    ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : "Microsoft"));
+                    ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : (Config.Main.General.AccountType == LoginType.microsoft ? "Microsoft" : Config.Main.General.AuthServer.Host)));
                     result = ProtocolHandler.GetLogin(InternalConfig.Account.Login, InternalConfig.Account.Password, Config.Main.General.AccountType, out session);
                 }
 
@@ -649,6 +649,7 @@ namespace MinecraftClient
                     ProtocolHandler.LoginResult.OtherError          =>  Translations.error_login_network,
                     ProtocolHandler.LoginResult.SSLError            =>  Translations.error_login_ssl,
                     ProtocolHandler.LoginResult.UserCancel          =>  Translations.error_login_cancel,
+                    ProtocolHandler.LoginResult.WrongSelection      =>  Translations.error_login_blocked,
                     _                                               =>  Translations.error_login_unknown,
 #pragma warning restore format // @formatter:on
                 };

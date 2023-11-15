@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Globalization;
 using System.Linq;
 using System.Net.Security;
@@ -11,6 +12,7 @@ using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using static MinecraftClient.Protocol.Microsoft;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
@@ -423,7 +425,7 @@ namespace MinecraftClient.Protocol
             return Protocol18Forge.ServerForceForge(protocol);
         }
 
-        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError, UserCancel };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError, UserCancel, WrongSelection };
         public enum AccountType { Mojang, Microsoft };
 
         /// <summary>
@@ -446,7 +448,7 @@ namespace MinecraftClient.Protocol
             {
                 return MojangLogin(user, pass, out session);
             }
-            else if (type == LoginType.Yggdrasil)
+            else if (type == LoginType.yggdrasil)
             {
                 return YggdrasiLogin(user, pass, out session);
             }
@@ -556,15 +558,47 @@ namespace MinecraftClient.Protocol
                     else
                     {
                         Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        if (loginResponse.Properties.ContainsKey("accessToken"))
                         {
                             session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
-                            return LoginResult.Success;
+                            if (loginResponse.Properties.ContainsKey("selectedProfile")
+                                && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
+                                && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                            {
+                                session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
+                                session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                                return LoginResult.Success;
+                            }
+                            else
+                            {
+                                string availablePlayers = "";
+                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"].DataArray)
+                                {
+                                    availablePlayers += " " + profile.Properties["name"].StringValue;
+                                } 
+                                ConsoleIO.WriteLine(Translations.mcc_avaliable_players + availablePlayers);
+
+                                ConsoleIO.WriteLine(Translations.mcc_select_player);
+                                string selectedPlayer = ConsoleIO.ReadLine();
+                                ConsoleIO.WriteLine(Translations.mcc_selected_player + selectedPlayer);
+                                Json.JSONData selectedProfile = null;
+                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"].DataArray)
+                                {
+                                    selectedProfile = profile.Properties["name"].StringValue == selectedPlayer ? profile : selectedProfile;
+                                }
+
+                                if (selectedProfile != null) 
+                                {
+                                    session.PlayerID = selectedProfile.Properties["id"].StringValue;
+                                    session.PlayerName = selectedProfile.Properties["name"].StringValue;
+                                    SessionToken currentsession = session;
+                                    return GetNewYggdrasilToken(currentsession, out session);
+                                }
+                                else 
+                                {
+                                    return LoginResult.WrongSelection;
+                                }
+                            }
                         }
                         else return LoginResult.InvalidResponse;
                     }
@@ -757,6 +791,52 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
                 int code = DoHTTPSPost("authserver.mojang.com",443, "/refresh", json_request, ref result);
+                if (code == 200)
+                {
+                    if (result == null)
+                    {
+                        return LoginResult.NullError;
+                    }
+                    else
+                    {
+                        Json.JSONData loginResponse = Json.ParseJson(result);
+                        if (loginResponse.Properties.ContainsKey("accessToken")
+                            && loginResponse.Properties.ContainsKey("selectedProfile")
+                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
+                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        {
+                            session.ID = loginResponse.Properties["accessToken"].StringValue;
+                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
+                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                            return LoginResult.Success;
+                        }
+                        else return LoginResult.InvalidResponse;
+                    }
+                }
+                else if (code == 403 && result.Contains("InvalidToken"))
+                {
+                    return LoginResult.InvalidToken;
+                }
+                else
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.error_auth, code));
+                    return LoginResult.OtherError;
+                }
+            }
+            catch
+            {
+                return LoginResult.OtherError;
+            }
+        }
+
+        public static LoginResult GetNewYggdrasilToken(SessionToken currentsession, out SessionToken session)
+        {
+            session = new SessionToken();
+            try
+            {
+                string result = "";
+                string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
+                int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port, "/api/yggdrasil/authserver/refresh", json_request, ref result);
                 if (code == 200)
                 {
                     if (result == null)
