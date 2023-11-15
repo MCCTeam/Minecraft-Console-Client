@@ -21,6 +21,8 @@
         ChatMessage,                //
         ChatPreview,                // Added in 1.19
         ChatSuggestions,            // Added in 1.19.1 (1.19.2)
+        ChunkBatchFinished,         // Added in 1.20.2
+        ChunkBatchStarted,          // Added in 1.12.2
         ChunksBiomes,               // Added in 1.19.4
         ChunkData,                  //
         ClearTiles,                 //
@@ -73,6 +75,7 @@
         OpenWindow,                 //
         Particle,                   //
         Ping,                       //
+        PingResponse,               // Added in 1.20.2
         PlayerAbilities,            //
         PlayerInfo,                 //
         PlayerListHeaderAndFooter,  //
@@ -105,6 +108,7 @@
         SpawnPlayer,                //
         SpawnPosition,              //
         SpawnWeatherEntity,         //
+        StartConfiguration,         // Added in 1.20.2
         Statistics,                 //
         StopSound,                  //
         SystemChat,                 // Added in 1.19
