@@ -724,7 +724,7 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
     <value>Microsoft Account sign-in method: "mcc" OR "browser". If the login always fails, please try to use the "browser" once.</value>
   </data>
   <data name="Main.General.server_info" xml:space="preserve">
-    <value>Account type: "mojang" OR "microsoft". Also affects interactive login in console.</value>
+    <value>Account type: "mojang" OR "microsoft" OR "yggdrasil". Also affects interactive login in console.</value>
   </data>
   <data name="MCSettings" xml:space="preserve">
     <value>Settings below are sent to the server and only affect server-side things like your skin.</value>
@@ -845,5 +845,8 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   </data>
   <data name="Main.Advanced.ignore_invalid_playername" xml:space="preserve">
     <value>Ignore invalid player name</value>
+  </data>
+  <data name="Main.General.AuthlibServer" xml:space="preserve">
+    <value>Yggdrasil authlib server domain name and port.</value>
   </data>
 </root>

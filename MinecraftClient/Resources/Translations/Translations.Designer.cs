@@ -5374,6 +5374,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avaliable players:.
+        /// </summary>
+        internal static string mcc_avaliable_players {
+            get {
+                return ResourceManager.GetString("mcc.avaliable_players", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The old MinecraftClient.ini has been backed up as {0}.
         /// </summary>
         internal static string mcc_backup_old_config {
@@ -5743,6 +5752,24 @@ namespace MinecraftClient {
         internal static string mcc_run_with_default_settings {
             get {
                 return ResourceManager.GetString("mcc.run_with_default_settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a player from available players:.
+        /// </summary>
+        internal static string mcc_select_player {
+            get {
+                return ResourceManager.GetString("mcc.select_player", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected player:.
+        /// </summary>
+        internal static string mcc_selected_player {
+            get {
+                return ResourceManager.GetString("mcc.selected_player", resourceCulture);
             }
         }
         

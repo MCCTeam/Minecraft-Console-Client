@@ -2614,7 +2614,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
 
-                    if ((type == LoginType.mojang && ProtocolHandler.SessionCheck(uuid, sessionID, serverHash) )|| (type == LoginType.Yggdrasil && ProtocolHandler.YggdrasilSessionCheck(uuid, sessionID, serverHash)))
+                    if ((type == LoginType.mojang && ProtocolHandler.SessionCheck(uuid, sessionID, serverHash) )|| (type == LoginType.yggdrasil && ProtocolHandler.YggdrasilSessionCheck(uuid, sessionID, serverHash)))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
