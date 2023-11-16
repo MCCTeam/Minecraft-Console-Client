@@ -5374,11 +5374,11 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avaliable players:.
+        ///   Looks up a localized string similar to Avaliable profiles:.
         /// </summary>
-        internal static string mcc_avaliable_players {
+        internal static string mcc_avaliable_profiles {
             get {
-                return ResourceManager.GetString("mcc.avaliable_players", resourceCulture);
+                return ResourceManager.GetString("mcc.avaliable_profiles", resourceCulture);
             }
         }
         
@@ -5756,20 +5756,20 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select a player from available players:.
+        ///   Looks up a localized string similar to Select a profile from available profiles:.
         /// </summary>
-        internal static string mcc_select_player {
+        internal static string mcc_select_profile {
             get {
-                return ResourceManager.GetString("mcc.select_player", resourceCulture);
+                return ResourceManager.GetString("mcc.select_profile", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Selected player:.
+        ///   Looks up a localized string similar to Selected profile:.
         /// </summary>
-        internal static string mcc_selected_player {
+        internal static string mcc_selected_profile {
             get {
-                return ResourceManager.GetString("mcc.selected_player", resourceCulture);
+                return ResourceManager.GetString("mcc.selected_profile", resourceCulture);
             }
         }
         
