@@ -571,20 +571,20 @@ namespace MinecraftClient.Protocol
                             }
                             else
                             {
-                                string availablePlayers = "";
+                                string availableProfiles = "";
                                 foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"].DataArray)
                                 {
-                                    availablePlayers += " " + profile.Properties["name"].StringValue;
+                                    availableProfiles += " " + profile.Properties["name"].StringValue;
                                 } 
-                                ConsoleIO.WriteLine(Translations.mcc_avaliable_players + availablePlayers);
+                                ConsoleIO.WriteLine(Translations.mcc_avaliable_profiles + availableProfiles);
 
-                                ConsoleIO.WriteLine(Translations.mcc_select_player);
-                                string selectedPlayer = ConsoleIO.ReadLine();
-                                ConsoleIO.WriteLine(Translations.mcc_selected_player + selectedPlayer);
+                                ConsoleIO.WriteLine(Translations.mcc_select_profile);
+                                string selectedProfileName = ConsoleIO.ReadLine();
+                                ConsoleIO.WriteLine(Translations.mcc_selected_profile + " " + selectedProfileName);
                                 Json.JSONData? selectedProfile = null;
                                 foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"].DataArray)
                                 {
-                                    selectedProfile = profile.Properties["name"].StringValue == selectedPlayer ? profile : selectedProfile;
+                                    selectedProfile = profile.Properties["name"].StringValue == selectedProfileName ? profile : selectedProfile;
                                 }
 
                                 if (selectedProfile != null) 

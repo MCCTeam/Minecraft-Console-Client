@@ -2121,13 +2121,13 @@ Logging in...</value>
   <data name="cmd.inventory.shiftrightclick" xml:space="preserve">
     <value>Shift right-clicking slot {0} in window #{1}</value>
   </data>
-  <data name="mcc.avaliable_players" xml:space="preserve">
-    <value>Avaliable players:</value>
+  <data name="mcc.avaliable_profiles" xml:space="preserve">
+    <value>Avaliable profiles:</value>
   </data>
-  <data name="mcc.selected_player" xml:space="preserve">
-    <value>Selected player:</value>
+  <data name="mcc.selected_profile" xml:space="preserve">
+    <value>Selected profile:</value>
   </data>
-  <data name="mcc.select_player" xml:space="preserve">
-    <value>Select a player from available players:</value>
+  <data name="mcc.select_profile" xml:space="preserve">
+    <value>Select a profile from available profiles:</value>
   </data>
 </root>
