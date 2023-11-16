@@ -581,7 +581,7 @@ namespace MinecraftClient.Protocol
                                 ConsoleIO.WriteLine(Translations.mcc_select_player);
                                 string selectedPlayer = ConsoleIO.ReadLine();
                                 ConsoleIO.WriteLine(Translations.mcc_selected_player + selectedPlayer);
-                                Json.JSONData selectedProfile = null;
+                                Json.JSONData? selectedProfile = null;
                                 foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"].DataArray)
                                 {
                                     selectedProfile = profile.Properties["name"].StringValue == selectedPlayer ? profile : selectedProfile;
