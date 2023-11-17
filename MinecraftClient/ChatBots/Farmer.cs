@@ -786,7 +786,7 @@ namespace MinecraftClient.ChatBots
         {
             var playerInventory = GetPlayerInventory();
 
-            if (playerInventory.Items.TryGetValue(GetCurrentSlot() - 36, out Item value) && value.Type == itemType)
+            if (playerInventory.Items.TryGetValue(GetCurrentSlot() - 36, out var value) && value.Type == itemType)
                 return true; // Already selected
 
             // Search the full inventory

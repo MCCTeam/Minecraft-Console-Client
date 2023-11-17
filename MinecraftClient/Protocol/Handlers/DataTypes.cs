@@ -425,10 +425,10 @@ namespace MinecraftClient.Protocol.Handlers
                 if (itemPresent)
                 {
                     int itemID = ReadNextVarInt(cache);
-                    
+
                     if (itemID == -1)
                         return null;
-                    
+
                     ItemType type = itemPalette.FromId(itemID);
                     byte itemCount = ReadNextByte(cache);
                     Dictionary<string, object> nbt = ReadNextNbt(cache);
@@ -440,15 +440,15 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 // MC 1.13 and lower
                 short itemID = ReadNextShort(cache);
-                
+
                 if (itemID == -1)
                     return null;
-                
+
                 byte itemCount = ReadNextByte(cache);
-                
-                if(protocolversion < Protocol18Handler.MC_1_13_Version)
+
+                if (protocolversion < Protocol18Handler.MC_1_13_Version)
                     ReadNextShort(cache);
-                
+
                 Dictionary<string, object> nbt = ReadNextNbt(cache);
                 return new Item(itemPalette.FromId(itemID), itemCount, nbt);
             }
@@ -501,7 +501,7 @@ namespace MinecraftClient.Protocol.Handlers
                 entityY = ReadNextDouble(cache); // Y
                 entityZ = ReadNextDouble(cache); // Z
             }
-            
+
             int data = -1;
             byte entityPitch, entityYaw;
 
@@ -520,8 +520,9 @@ namespace MinecraftClient.Protocol.Handlers
                     entityYaw = ReadNextByte(cache); // Head Yaw
 
                 // Data
-                data = protocolversion >= Protocol18Handler.MC_1_19_Version 
-                    ? ReadNextVarInt(cache) : ReadNextInt(cache);
+                data = protocolversion >= Protocol18Handler.MC_1_19_Version
+                    ? ReadNextVarInt(cache)
+                    : ReadNextInt(cache);
             }
 
             // In 1.8 those 3 fields for Velocity are optional
@@ -541,7 +542,8 @@ namespace MinecraftClient.Protocol.Handlers
                 ReadNextShort(cache);
             }
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, data);
+            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
+                data);
         }
 
         /// <summary>
@@ -563,11 +565,14 @@ namespace MinecraftClient.Protocol.Handlers
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
                 ReadNextByte(cache); // Tag type (TAG_Compound)
 
-                // NBT root name
-                string rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
+                if (protocolversion < Protocol18Handler.MC_1_20_2_Version)
+                {
+                    // NBT root name
+                    var rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
 
-                if (!String.IsNullOrEmpty(rootName))
-                    nbtData[""] = rootName;
+                    if (!string.IsNullOrEmpty(rootName))
+                        nbtData[""] = rootName;
+                }
             }
 
             while (true)
@@ -646,12 +651,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         /// <exception cref="System.IO.InvalidDataException"></exception>
-        public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette, EntityMetadataPalette metadataPalette)
+        public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette,
+            EntityMetadataPalette metadataPalette)
         {
             Dictionary<int, object?> data = new();
             byte key = ReadNextByte(cache);
             byte terminteValue = protocolversion <= Protocol18Handler.MC_1_8_Version
-                ? (byte)0x7f  // 1.8 (https://wiki.vg/index.php?title=Entity_metadata&oldid=6220#Entity_Metadata_Format)
+                ? (byte)0x7f // 1.8 (https://wiki.vg/index.php?title=Entity_metadata&oldid=6220#Entity_Metadata_Format)
                 : (byte)0xff; // 1.9+
 
             while (key != terminteValue)
@@ -659,8 +665,8 @@ namespace MinecraftClient.Protocol.Handlers
                 int typeId = protocolversion <= Protocol18Handler.MC_1_8_Version
                     ? key >> 5 // 1.8
                     : ReadNextVarInt(cache); // 1.9+
-                
-                
+
+
                 EntityMetaDataType type;
                 try
                 {
@@ -668,9 +674,10 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 catch (KeyNotFoundException)
                 {
-                    throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId + ". Is this up to date for new MC Version?");
+                    throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId +
+                                                             ". Is this up to date for new MC Version?");
                 }
-                
+
                 if (protocolversion <= Protocol18Handler.MC_1_8_Version)
                     key = (byte)(key & 0x1f);
 
@@ -737,6 +744,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             value = ReadNextLocation(cache);
                         }
+
                         break;
                     case EntityMetaDataType.Direction: // Direction (VarInt)
                         value = ReadNextVarInt(cache);
@@ -746,6 +754,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             value = ReadNextUUID(cache);
                         }
+
                         break;
                     case EntityMetaDataType.BlockId: // BlockID (VarInt)
                         value = ReadNextVarInt(cache);
@@ -773,6 +782,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             value = ReadNextVarInt(cache);
                         }
+
                         break;
                     case EntityMetaDataType.Pose: // Pose
                         value = ReadNextVarInt(cache);
@@ -795,6 +805,7 @@ namespace MinecraftClient.Protocol.Handlers
                             // Dimension and blockPos, currently not in use
                             value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
                         }
+
                         break;
                     case EntityMetaDataType.PaintingVariant: // Painting Variant
                         value = ReadNextVarInt(cache);
@@ -824,6 +835,7 @@ namespace MinecraftClient.Protocol.Handlers
                 data[key] = value;
                 key = ReadNextByte(cache);
             }
+
             return data;
         }
 
@@ -856,7 +868,8 @@ namespace MinecraftClient.Protocol.Handlers
                 case 3:
                     if (protocolversion < Protocol18Handler.MC_1_17_Version
                         || protocolversion > Protocol18Handler.MC_1_17_1_Version)
-                        ReadNextVarInt(cache); // Block State (minecraft:block before 1.18, minecraft:block_marker after 1.18)
+                        ReadNextVarInt(
+                            cache); // Block State (minecraft:block before 1.18, minecraft:block_marker after 1.18)
                     break;
                 case 4:
                     if (protocolversion == Protocol18Handler.MC_1_17_Version
@@ -870,38 +883,44 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 14:
                     // 1.15 - 1.16.5 and 1.18 - 1.19.4
-                    if ((protocolversion >= Protocol18Handler.MC_1_15_Version && protocolversion < Protocol18Handler.MC_1_17_Version)
+                    if ((protocolversion >= Protocol18Handler.MC_1_15_Version &&
+                         protocolversion < Protocol18Handler.MC_1_17_Version)
                         || protocolversion > Protocol18Handler.MC_1_17_1_Version)
                         ReadDustParticle(cache);
                     break;
                 case 15:
-                    if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
+                    if (protocolversion == Protocol18Handler.MC_1_17_Version ||
+                        protocolversion == Protocol18Handler.MC_1_17_1_Version)
                         ReadDustParticle(cache);
                     else
                     {
                         if (protocolversion > Protocol18Handler.MC_1_17_1_Version)
                             ReadDustParticleColorTransition(cache);
                     }
+
                     break;
                 case 16:
-                    if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
+                    if (protocolversion == Protocol18Handler.MC_1_17_Version ||
+                        protocolversion == Protocol18Handler.MC_1_17_1_Version)
                         ReadDustParticleColorTransition(cache);
                     break;
                 case 23:
                     // 1.15 - 1.16.5
-                    if (protocolversion >= Protocol18Handler.MC_1_15_Version && protocolversion < Protocol18Handler.MC_1_17_Version)
+                    if (protocolversion >= Protocol18Handler.MC_1_15_Version &&
+                        protocolversion < Protocol18Handler.MC_1_17_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 24:
                     // 1.18 - 1.19.2 onwards
-                    if (protocolversion > Protocol18Handler.MC_1_17_1_Version && protocolversion < Protocol18Handler.MC_1_19_3_Version)
+                    if (protocolversion > Protocol18Handler.MC_1_17_1_Version &&
+                        protocolversion < Protocol18Handler.MC_1_19_3_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 25:
                     // 1.17 - 1.17.1 and 1.19.3 onwards
                     if (protocolversion == Protocol18Handler.MC_1_17_Version
-                       || protocolversion == Protocol18Handler.MC_1_17_1_Version
-                       || protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                        || protocolversion == Protocol18Handler.MC_1_17_1_Version
+                        || protocolversion >= Protocol18Handler.MC_1_19_3_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 27:
@@ -915,27 +934,31 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 32:
                     // 1.15 - 1.16.5
-                    if (protocolversion >= Protocol18Handler.MC_1_15_Version && protocolversion < Protocol18Handler.MC_1_17_Version)
+                    if (protocolversion >= Protocol18Handler.MC_1_15_Version &&
+                        protocolversion < Protocol18Handler.MC_1_17_Version)
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                     break;
                 case 36:
                     // 1.17 - 1.17.1
-                    if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
+                    if (protocolversion == Protocol18Handler.MC_1_17_Version ||
+                        protocolversion == Protocol18Handler.MC_1_17_1_Version)
                     {
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                     }
-                    else if (protocolversion > Protocol18Handler.MC_1_17_1_Version && protocolversion < Protocol18Handler.MC_1_19_3_Version)
+                    else if (protocolversion > Protocol18Handler.MC_1_17_1_Version &&
+                             protocolversion < Protocol18Handler.MC_1_19_3_Version)
                     {
                         // minecraft:vibration
                         ReadNextLocation(cache); // Origin (Starting Position)
                         ReadNextLocation(cache); // Desitination (Ending Position)
                         ReadNextVarInt(cache); // Ticks
                     }
+
                     break;
                 case 37:
                     // minecraft:vibration
                     if (protocolversion == Protocol18Handler.MC_1_17_Version
-                       || protocolversion == Protocol18Handler.MC_1_17_1_Version)
+                        || protocolversion == Protocol18Handler.MC_1_17_1_Version)
                     {
                         ReadNextDouble(cache); // Origin X
                         ReadNextDouble(cache); // Origin Y
@@ -945,6 +968,7 @@ namespace MinecraftClient.Protocol.Handlers
                         ReadNextDouble(cache); // Destination Z
                         ReadNextInt(cache); // Ticks
                     }
+
                     break;
                 case 39:
                     if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
@@ -966,6 +990,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                         ReadNextVarInt(cache);
                     }
+
                     break;
             }
         }
@@ -1186,7 +1211,8 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                throw new System.IO.InvalidDataException("GetNbt: Cannot encode data type " + obj.GetType().Name + " into NBT!");
+                throw new System.IO.InvalidDataException("GetNbt: Cannot encode data type " + obj.GetType().Name +
+                                                         " into NBT!");
             }
         }
 
@@ -1349,13 +1375,13 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolversion >= Protocol18Handler.MC_1_14_Version)
             {
                 locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) |
-                    ((((ulong)location.Z) & 0x3FFFFFF) << 12) |
-                    (((ulong)location.Y) & 0xFFF));
+                                                      ((((ulong)location.Z) & 0x3FFFFFF) << 12) |
+                                                      (((ulong)location.Y) & 0xFFF));
             }
             else
                 locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) |
-                    ((((ulong)location.Y) & 0xFFF) << 26) |
-                    (((ulong)location.Z) & 0x3FFFFFF));
+                                                      ((((ulong)location.Y) & 0xFFF) << 26) |
+                                                      (((ulong)location.Z) & 0x3FFFFFF));
 
             Array.Reverse(locationBytes); //Endianness
             return locationBytes;
