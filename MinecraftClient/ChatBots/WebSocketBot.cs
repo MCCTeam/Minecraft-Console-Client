@@ -291,7 +291,17 @@ public class WebSocketBot : ChatBot
 
     public WebSocketBot()
     {
-        var match = Regex.Match(Config.Ip!, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
+        // Lookup the given address
+        try
+        {
+            _ip = Dns.GetHostAddresses(Config.Ip!).First().ToString();
+        }
+        catch (Exception e)
+        {
+            // Set Ip to a non-acceptable value to fail the Ip check
+            _ip = "not found";
+        }
+        var match = Regex.Match(_ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
 
         if (!match.Success)
         {
@@ -305,7 +315,6 @@ public class WebSocketBot : ChatBot
             return;
         }
 
-        _ip = Config.Ip;
         _port = Config.Port;
         _password = Config.Password;
         _authenticatedSessions = new();
