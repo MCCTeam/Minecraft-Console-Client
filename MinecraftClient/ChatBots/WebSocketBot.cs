@@ -287,13 +287,21 @@ public class WebSocketBot : ChatBot
 
         [TomlInlineComment("$ChatBot.WebSocketBot.DebugMode$")]
         public bool DebugMode = false;
+
+        [TomlInlineComment("$ChatBot.WebSocketBot.AllowIpAlias$")]
+        public bool AllowIpAlias = false;
     }
 
     public WebSocketBot()
     {
+        _password = Config.Password;
+        _authenticatedSessions = new();
+        _waitingEvents = new();
+
         var match = Regex.Match(Config.Ip!, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
 
-        if (!match.Success)
+        // If AllowIpAlias is set to true in the config, then always ignore this check
+        if (!match.Success & !Config.AllowIpAlias!)
         {
             LogToConsole(Translations.bot_WebSocketBot_failed_to_start_ip);
             return;
@@ -307,9 +315,6 @@ public class WebSocketBot : ChatBot
 
         _ip = Config.Ip;
         _port = Config.Port;
-        _password = Config.Password;
-        _authenticatedSessions = new();
-        _waitingEvents = new();
     }
 
     public override void Initialize()
