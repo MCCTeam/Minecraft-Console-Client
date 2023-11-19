@@ -420,6 +420,9 @@ public class WebSocketBot : ChatBot
                         _authenticatedSessions.Add(newId);
                     }
 
+                    // Update the responder to the new session id
+                    responder = new WsCommandResponder(this, newId, cmd.Command, cmd.RequestId);
+
                     responder.SendSuccessResponse(
                         responder.Quote("The session ID was successfully changed to: '" + newId + "'"), true);
                     LogToConsole(string.Format(Translations.bot_WebSocketBot_session_id_changed, sessionId, newId));
