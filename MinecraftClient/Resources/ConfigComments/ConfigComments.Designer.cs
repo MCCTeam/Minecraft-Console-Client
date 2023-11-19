@@ -799,7 +799,8 @@ namespace MinecraftClient {
         ///NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
         ///It&apos;s similar to making animals follow you when you&apos;re holding food in your hand.
         ///This is due to a slow pathfinding algorithm, we&apos;re working on getting a better one
-        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,        /// [rest of string was truncated]&quot;;.
+        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatBot_FollowPlayer {
             get {
@@ -1125,6 +1126,15 @@ namespace MinecraftClient {
         internal static string ChatBot_WebSocketBot {
             get {
                 return ResourceManager.GetString("ChatBot.WebSocketBot", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Allow IP aliases, such as "localhost" or if using containers then the container name can be used...
+        /// </summary>
+        internal static string ChatBot_WebSocketBot_AllowIpAlias {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot.AllowIpAlias", resourceCulture);
             }
         }
         
