@@ -2450,6 +2450,15 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("chatbot.reconnect", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string ChatBot_WebSocketBot_AllowIpAlias {
+            get {
+                return ResourceManager.GetString("ChatBot.WebSocketBot.AllowIpAlias", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to .
