@@ -843,6 +843,9 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="ChatBot.WebSocketBot.DebugMode" xml:space="preserve">
     <value>This setting is for developers who are developing a library that uses this chat bot to remotely execute procedures/commands/functions.</value>
   </data>
+  <data name="ChatBot.WebSocketBot.AllowIpAlias" xml:space="preserve">
+    <value>Allow IP aliases, such as "localhost" or if using containers then the container name can be used...</value>
+  </data>
   <data name="Main.Advanced.ignore_invalid_playername" xml:space="preserve">
     <value>Ignore invalid player name</value>
   </data>
