@@ -5383,6 +5383,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avaliable profiles:.
+        /// </summary>
+        internal static string mcc_avaliable_profiles {
+            get {
+                return ResourceManager.GetString("mcc.avaliable_profiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The old MinecraftClient.ini has been backed up as {0}.
         /// </summary>
         internal static string mcc_backup_old_config {
@@ -5752,6 +5761,24 @@ namespace MinecraftClient {
         internal static string mcc_run_with_default_settings {
             get {
                 return ResourceManager.GetString("mcc.run_with_default_settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a profile from available profiles:.
+        /// </summary>
+        internal static string mcc_select_profile {
+            get {
+                return ResourceManager.GetString("mcc.select_profile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected profile:.
+        /// </summary>
+        internal static string mcc_selected_profile {
+            get {
+                return ResourceManager.GetString("mcc.selected_profile", resourceCulture);
             }
         }
         

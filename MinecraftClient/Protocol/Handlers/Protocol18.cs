@@ -26,6 +26,7 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
 using Newtonsoft.Json;
 using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -2568,7 +2569,7 @@ namespace MinecraftClient.Protocol.Handlers
                     string serverID = dataTypes.ReadNextString(packetData);
                     byte[] serverPublicKey = dataTypes.ReadNextByteArray(packetData);
                     byte[] token = dataTypes.ReadNextByteArray(packetData);
-                    return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(), token, serverID,
+                    return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(), Config.Main.General.AccountType, token, serverID,
                         serverPublicKey, playerKeyPair, session);
                 }
                 else if (packetID == 0x02) //Login successful
@@ -2593,7 +2594,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Start network encryption. Automatically called by Login() if the server requests encryption.
         /// </summary>
         /// <returns>True if encryption was successful</returns>
-        private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash,
+        private bool StartEncryption(string uuid, string sessionID, LoginType type, byte[] token, string serverIDhash,
             byte[] serverPublicKey, PlayerKeyPair? playerKeyPair, SessionToken session)
         {
             RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
@@ -2619,7 +2620,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
 
-                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash))
+                    if ((type == LoginType.mojang && ProtocolHandler.SessionCheck(uuid, sessionID, serverHash) )|| (type == LoginType.yggdrasil && ProtocolHandler.YggdrasilSessionCheck(uuid, sessionID, serverHash)))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
