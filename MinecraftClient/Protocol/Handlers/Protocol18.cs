@@ -959,9 +959,10 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketTypesIn.ChunkBatchFinished:
                     dataTypes.ReadNextVarInt(packetData); // Number of chunks received
+                    var time = (DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastCHunkBatchStartedAt);
                     SendChunkBatchReceived(
                         // ReSharper disable once PossibleLossOfFraction
-                        25 / (DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastCHunkBatchStartedAt)
+                        25 / time == 0 ? 5 : time
                     );
                     break;
                 case PacketTypesIn.ChunkBatchStarted:
