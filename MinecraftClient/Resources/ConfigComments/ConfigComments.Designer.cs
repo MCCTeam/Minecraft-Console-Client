@@ -1128,9 +1128,9 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("ChatBot.WebSocketBot", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Allow IP aliases, such as "localhost" or if using containers then the container name can be used...
+        ///   Looks up a localized string similar to Allow IP aliases, such as &quot;localhost&quot; or if using containers then the container name can be used....
         /// </summary>
         internal static string ChatBot_WebSocketBot_AllowIpAlias {
             get {
@@ -1733,6 +1733,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Yggdrasil authlib server domain name and port..
+        /// </summary>
+        internal static string Main_General_AuthlibServer {
+            get {
+                return ResourceManager.GetString("Main.General.AuthlibServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The address of the game server, &quot;Host&quot; can be filled in with domain name or IP address. (The &quot;Port&quot; field can be deleted, it will be resolved automatically).
         /// </summary>
         internal static string Main_General_login {
@@ -1751,7 +1760,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Account type: &quot;mojang&quot; OR &quot;microsoft&quot;. Also affects interactive login in console..
+        ///   Looks up a localized string similar to Account type: &quot;mojang&quot; OR &quot;microsoft&quot; OR &quot;yggdrasil&quot;. Also affects interactive login in console..
         /// </summary>
         internal static string Main_General_server_info {
             get {

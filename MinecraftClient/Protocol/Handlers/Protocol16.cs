@@ -15,6 +15,7 @@ using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
 using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -504,7 +505,7 @@ namespace MinecraftClient.Protocol.Handlers
                 else if (Settings.Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_handshake, serverID));
 
-                return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey, session);
+                return StartEncryption(uuid, username, sessionID, Config.Main.General.AccountType, token, serverID, PublicServerkey, session);
             }
             else
             {
@@ -513,7 +514,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        private bool StartEncryption(string uuid, string username, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
+        private bool StartEncryption(string uuid, string username, string sessionID, LoginType type, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
         {
             RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
@@ -537,7 +538,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (needCheckSession)
                 {
-                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash))
+                    if ((type == LoginType.mojang && ProtocolHandler.SessionCheck(uuid, sessionID, serverHash)) || (type == LoginType.yggdrasil && ProtocolHandler.YggdrasilSessionCheck(uuid, sessionID, serverHash)))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
