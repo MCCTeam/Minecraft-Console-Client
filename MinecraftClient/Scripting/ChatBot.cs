@@ -348,6 +348,13 @@ namespace MinecraftClient.Scripting
         public virtual void OnUpdateScore(string entityname, int action, string objectivename, int value) { }
 
         /// <summary>
+        /// Called when the client received the Tab Header and Footer
+        /// </summary>
+        /// <param name="header">Header</param>
+        /// <param name="footer">Footer</param>
+        public virtual void OnTabListHeaderAndFooter(string header, string footer) { }
+        
+        /// <summary>
         /// Called when an inventory/container was updated by server
         /// </summary>
         /// <param name="inventoryId"></param>
