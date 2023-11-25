@@ -2375,6 +2375,12 @@ namespace MinecraftClient.Protocol.Handlers
                         
                             break;*/
                         
+                        case PacketTypesIn.PlayerListHeaderAndFooter:
+                            var header = dataTypes.ReadNextString(packetData);
+                            var footer = dataTypes.ReadNextString(packetData);
+                            handler.OnTabListHeaderAndFooter(header, footer);
+                            break;
+                        
                         default:
                             return false; //Ignored packet
                     }
