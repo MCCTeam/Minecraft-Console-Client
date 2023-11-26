@@ -118,7 +118,7 @@ namespace MinecraftClient.Protocol.Handlers
             randomGen = RandomNumberGenerator.Create();
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
             chunkBatchStartTime = GetNanos();
-                
+
             if (handler.GetTerrainEnabled() && protocolVersion > MC_1_20_2_Version)
             {
                 log.Error($"§c{Translations.extra_terrainandmovement_disabled}");
@@ -962,15 +962,17 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketTypesIn.ChunkBatchFinished:
                     var batchSize = dataTypes.ReadNextVarInt(packetData); // Number of chunks received
-                    
-                    if (batchSize > 0) {
+
+                    if (batchSize > 0)
+                    {
                         var d = GetNanos() - chunkBatchStartTime;
                         var d2 = d / (double)batchSize;
                         var d3 = Math.Clamp(d2, aggregatedNanosPerChunk / 3.0, aggregatedNanosPerChunk * 3.0);
-                        aggregatedNanosPerChunk = (aggregatedNanosPerChunk * oldSamplesWeight + d3) / (oldSamplesWeight + 1);
+                        aggregatedNanosPerChunk =
+                            (aggregatedNanosPerChunk * oldSamplesWeight + d3) / (oldSamplesWeight + 1);
                         oldSamplesWeight = Math.Min(49, oldSamplesWeight + 1);
                     }
-                    
+
                     SendChunkBatchReceived((float)(7000000.0 / aggregatedNanosPerChunk));
                     break;
                 case PacketTypesIn.ChunkBatchStarted:
@@ -4459,7 +4461,7 @@ namespace MinecraftClient.Protocol.Handlers
             randomGen.GetNonZeroBytes(salt);
             return salt;
         }
-        
+
         public static long GetNanos()
         {
             var nano = 10000L * Stopwatch.GetTimestamp();
