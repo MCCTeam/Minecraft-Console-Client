@@ -78,7 +78,9 @@ namespace MinecraftClient.Protocol.Handlers
         private bool isOnlineMode = false;
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
         private float LastYaw, LastPitch;
-        private long lastCHunkBatchStartedAt;
+        private long chunkBatchStartTime;
+        private double aggregatedNanosPerChunk = 2000000.0;
+        private int oldSamplesWeight = 1;
 
         private bool receiveDeclareCommands = false, receivePlayerInfo = false;
         private object MessageSigningLock = new();
@@ -115,7 +117,8 @@ namespace MinecraftClient.Protocol.Handlers
             log = handler.GetLogger();
             randomGen = RandomNumberGenerator.Create();
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
-
+            chunkBatchStartTime = GetNanos();
+                
             if (handler.GetTerrainEnabled() && protocolVersion > MC_1_20_2_Version)
             {
                 log.Error($"§c{Translations.extra_terrainandmovement_disabled}");
@@ -958,15 +961,20 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case PacketTypesIn.ChunkBatchFinished:
-                    dataTypes.ReadNextVarInt(packetData); // Number of chunks received
-                    var time = (DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastCHunkBatchStartedAt);
-                    SendChunkBatchReceived(
-                        // ReSharper disable once PossibleLossOfFraction
-                        25 / time == 0 ? 5 : time
-                    );
+                    var batchSize = dataTypes.ReadNextVarInt(packetData); // Number of chunks received
+                    
+                    if (batchSize > 0) {
+                        var d = GetNanos() - chunkBatchStartTime;
+                        var d2 = d / (double)batchSize;
+                        var d3 = Math.Clamp(d2, aggregatedNanosPerChunk / 3.0, aggregatedNanosPerChunk * 3.0);
+                        aggregatedNanosPerChunk = (aggregatedNanosPerChunk * oldSamplesWeight + d3) / (oldSamplesWeight + 1);
+                        oldSamplesWeight = Math.Min(49, oldSamplesWeight + 1);
+                    }
+                    
+                    SendChunkBatchReceived((float)(7000000.0 / aggregatedNanosPerChunk));
                     break;
                 case PacketTypesIn.ChunkBatchStarted:
-                    lastCHunkBatchStartedAt = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    chunkBatchStartTime = GetNanos();
                     break;
                 case PacketTypesIn.StartConfiguration:
                     SendAcknowledgeConfiguration();
@@ -4450,6 +4458,14 @@ namespace MinecraftClient.Protocol.Handlers
             var salt = new byte[8];
             randomGen.GetNonZeroBytes(salt);
             return salt;
+        }
+        
+        public static long GetNanos()
+        {
+            var nano = 10000L * Stopwatch.GetTimestamp();
+            nano /= TimeSpan.TicksPerMillisecond;
+            nano *= 100L;
+            return nano;
         }
     }
 
