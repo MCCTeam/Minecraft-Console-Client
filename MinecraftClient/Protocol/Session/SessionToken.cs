@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MinecraftClient.Scripting;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol.Session
 {
@@ -32,13 +33,13 @@ namespace MinecraftClient.Protocol.Session
             ServerPublicKey = null;
         }
 
-        public bool SessionPreCheck()
+        public bool SessionPreCheck(LoginType type)
         {
             if (ID == string.Empty || PlayerID == String.Empty || ServerPublicKey == null)
                 return false;
             Crypto.CryptoHandler.ClientAESPrivateKey ??= Crypto.CryptoHandler.GenerateAESPrivateKey();
             string serverHash = Crypto.CryptoHandler.GetServerHash(ServerIDhash, ServerPublicKey, Crypto.CryptoHandler.ClientAESPrivateKey);
-            if (ProtocolHandler.SessionCheck(PlayerID, ID, serverHash))
+            if (ProtocolHandler.SessionCheck(PlayerID, ID, serverHash, type))
                 return true;
             return false;
         }
