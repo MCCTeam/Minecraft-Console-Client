@@ -39,7 +39,8 @@ namespace MinecraftClient.Protocol.Session
                 return false;
             Crypto.CryptoHandler.ClientAESPrivateKey ??= Crypto.CryptoHandler.GenerateAESPrivateKey();
             string serverHash = Crypto.CryptoHandler.GetServerHash(ServerIDhash, ServerPublicKey, Crypto.CryptoHandler.ClientAESPrivateKey);
-            if (type == LoginType.mojang && ProtocolHandler.SessionCheck(PlayerID, ID, serverHash))
+            bool notYggdrasil = type == LoginType.mojang || type == LoginType.microsoft;
+            if (notYggdrasil && ProtocolHandler.SessionCheck(PlayerID, ID, serverHash))
                 return true;
             if (type == LoginType.yggdrasil && ProtocolHandler.YggdrasilSessionCheck(PlayerID, ID, serverHash))
                 return true;
