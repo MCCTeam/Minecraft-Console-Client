@@ -448,6 +448,13 @@ namespace MinecraftClient.Protocol
         void OnUpdateScore(string entityname, int action, string objectivename, int value);
 
         /// <summary>
+        /// Called when the client received the Tab Header and Footer
+        /// </summary>
+        /// <param name="header">Header</param>
+        /// <param name="footer">Footer</param>
+        void OnTabListHeaderAndFooter(string header, string footer);
+        
+        /// <summary>
         /// Called when tradeList is received from server
         /// </summary>
         /// <param name="windowID">Window ID</param>
