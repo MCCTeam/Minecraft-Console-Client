@@ -538,8 +538,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (needCheckSession)
                 {
-                    bool notYggdrasil = type == LoginType.mojang || type == LoginType.microsoft;
-                    if ((notYggdrasil && ProtocolHandler.SessionCheck(uuid, sessionID, serverHash)) || (type == LoginType.yggdrasil && ProtocolHandler.YggdrasilSessionCheck(uuid, sessionID, serverHash)))
+                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash, type))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
