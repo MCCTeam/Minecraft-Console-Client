@@ -25,6 +25,7 @@ using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
 using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -337,7 +338,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     var toDecompress = packetData.ToArray();
                     var uncompressed = ZlibUtils.Decompress(toDecompress, sizeUncompressed);
-                    packetData = new(uncompressed);
+                    packetData = new Queue<byte>(uncompressed);
                 }
             }
 
@@ -912,8 +913,7 @@ namespace MinecraftClient.Protocol.Handlers
                             .StringValue;
                         string? senderTeamName = null;
                         if (targetName != null &&
-                            (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING ||
-                             messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
+                            messageTypeEnum is ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING or ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING)
                             senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0]
                                 .Properties["text"].StringValue;
 
@@ -1311,7 +1311,7 @@ namespace MinecraftClient.Protocol.Handlers
                         else
                         {
                             var chunksContinuous = dataTypes.ReadNextBool(packetData);
-                            if (protocolVersion >= MC_1_16_Version && protocolVersion <= MC_1_16_1_Version)
+                            if (protocolVersion is >= MC_1_16_Version and <= MC_1_16_1_Version)
                                 dataTypes.ReadNextBool(packetData); // Ignore old data - 1.16 to 1.16.1 only
                             var chunkMask = protocolVersion >= MC_1_9_Version
                                 ? (ushort)dataTypes.ReadNextVarInt(packetData)
@@ -2758,7 +2758,8 @@ namespace MinecraftClient.Protocol.Handlers
                         var serverId = dataTypes.ReadNextString(packetData);
                         var serverPublicKey = dataTypes.ReadNextByteArray(packetData);
                         var token = dataTypes.ReadNextByteArray(packetData);
-                        return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(), token, serverId,
+                        return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(),
+                            Config.Main.General.AccountType, token, serverId,
                             serverPublicKey, playerKeyPair, session);
                     }
 
@@ -2793,7 +2794,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Start network encryption. Automatically called by Login() if the server requests encryption.
         /// </summary>
         /// <returns>True if encryption was successful</returns>
-        private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash,
+        private bool StartEncryption(string uuid, string sessionID, LoginType type, byte[] token, string serverIDhash,
             byte[] serverPublicKey, PlayerKeyPair? playerKeyPair, SessionToken session)
         {
             var RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
@@ -2818,8 +2819,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (needCheckSession)
                 {
                     var serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
-
-                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash))
+                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash, type))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
@@ -4142,9 +4142,11 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                List<byte> packet = new();
-                packet.Add((byte)windowId);
-                packet.Add((byte)buttonId);
+                var packet = new List<byte>
+                {
+                    (byte)windowId,
+                    (byte)buttonId
+                };
                 SendPacket(PacketTypesOut.ClickWindowButton, packet);
                 return true;
             }
@@ -4271,32 +4273,27 @@ namespace MinecraftClient.Protocol.Handlers
         public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode,
             CommandBlockFlags flags)
         {
-            if (protocolVersion <= MC_1_13_Version)
+            if (protocolVersion > MC_1_13_Version) return false;
+
+            try
             {
-                try
-                {
-                    List<byte> packet = new();
-                    packet.AddRange(dataTypes.GetLocation(location));
-                    packet.AddRange(dataTypes.GetString(command));
-                    packet.AddRange(DataTypes.GetVarInt((int)mode));
-                    packet.Add((byte)flags);
-                    SendPacket(PacketTypesOut.UpdateSign, packet);
-                    return true;
-                }
-                catch (SocketException)
-                {
-                    return false;
-                }
-                catch (System.IO.IOException)
-                {
-                    return false;
-                }
-                catch (ObjectDisposedException)
-                {
-                    return false;
-                }
+                List<byte> packet = new();
+                packet.AddRange(dataTypes.GetLocation(location));
+                packet.AddRange(dataTypes.GetString(command));
+                packet.AddRange(DataTypes.GetVarInt((int)mode));
+                packet.Add((byte)flags);
+                SendPacket(PacketTypesOut.UpdateSign, packet);
+                return true;
             }
-            else
+            catch (SocketException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (ObjectDisposedException)
             {
                 return false;
             }
@@ -4306,8 +4303,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                List<byte> packet = new();
-                packet.Add(windowID);
+                var packet = new List<byte>() { windowID };
                 packet.AddRange(dataTypes.GetShort(actionID));
                 packet.Add(accepted ? (byte)1 : (byte)0);
                 SendPacket(PacketTypesOut.WindowConfirmation, packet);
@@ -4330,60 +4326,50 @@ namespace MinecraftClient.Protocol.Handlers
         public bool SelectTrade(int selectedSlot)
         {
             // MC 1.13 or greater
-            if (protocolVersion >= MC_1_13_Version)
+            if (protocolVersion < MC_1_13_Version) return false;
+
+            try
             {
-                try
-                {
-                    List<byte> packet = new();
-                    packet.AddRange(DataTypes.GetVarInt(selectedSlot));
-                    SendPacket(PacketTypesOut.SelectTrade, packet);
-                    return true;
-                }
-                catch (SocketException)
-                {
-                    return false;
-                }
-                catch (System.IO.IOException)
-                {
-                    return false;
-                }
-                catch (ObjectDisposedException)
-                {
-                    return false;
-                }
+                List<byte> packet = new();
+                packet.AddRange(DataTypes.GetVarInt(selectedSlot));
+                SendPacket(PacketTypesOut.SelectTrade, packet);
+                return true;
             }
-            else
+            catch (SocketException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (ObjectDisposedException)
             {
                 return false;
             }
         }
 
-        public bool SendSpectate(Guid UUID)
+        public bool SendSpectate(Guid uuid)
         {
             // MC 1.8 or greater
-            if (protocolVersion >= MC_1_8_Version)
+            if (protocolVersion < MC_1_8_Version) return false;
+
+            try
             {
-                try
-                {
-                    List<byte> packet = new();
-                    packet.AddRange(DataTypes.GetUUID(UUID));
-                    SendPacket(PacketTypesOut.Spectate, packet);
-                    return true;
-                }
-                catch (SocketException)
-                {
-                    return false;
-                }
-                catch (System.IO.IOException)
-                {
-                    return false;
-                }
-                catch (ObjectDisposedException)
-                {
-                    return false;
-                }
+                List<byte> packet = new();
+                packet.AddRange(DataTypes.GetUUID(uuid));
+                SendPacket(PacketTypesOut.Spectate, packet);
+                return true;
             }
-            else
+            catch (SocketException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (ObjectDisposedException)
             {
                 return false;
             }
@@ -4462,7 +4448,7 @@ namespace MinecraftClient.Protocol.Handlers
             return salt;
         }
 
-        public static long GetNanos()
+        private static long GetNanos()
         {
             var nano = 10000L * Stopwatch.GetTimestamp();
             nano /= TimeSpan.TicksPerMillisecond;

@@ -3438,6 +3438,16 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityname, action, objectivename, value));
         }
+        
+        /// <summary>
+        /// Called when the client received the Tab Header and Footer
+        /// </summary>
+        /// <param name="header">Header</param>
+        /// <param name="footer">Footer</param>
+        public void OnTabListHeaderAndFooter(string header, string footer)
+        {
+            DispatchBotEvent(bot => bot.OnTabListHeaderAndFooter(header, footer));
+        }
 
         /// <summary>
         /// Called when the health of an entity changed
