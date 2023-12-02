@@ -881,26 +881,19 @@ namespace MinecraftClient.Protocol
         /// <param name="user">Username</param>
         /// <param name="accesstoken">Session ID</param>
         /// <param name="serverhash">Server ID</param>
+        /// <param name="type">LoginType</param>
         /// <returns>TRUE if session was successfully checked</returns>
-        public static bool SessionCheck(string uuid, string accesstoken, string serverhash)
+        public static bool SessionCheck(string uuid, string accesstoken, string serverhash, LoginType type)
         {
             try
             {
                 string result = "";
                 string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
-                int code = DoHTTPSPost("sessionserver.mojang.com",443, "/session/minecraft/join", json_request, ref result);
-                return (code >= 200 && code < 300);
-            }
-            catch { return false; }
-        }
+                string host = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.Host : "sessionserver.mojang.com";
+                int port = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.Port : 443;
+                string endpoint = type == LoginType.yggdrasil ? "/api/yggdrasil/sessionserver/session/minecraft/join" : "/session/minecraft/join";
 
-        public static bool YggdrasilSessionCheck(string uuid, string accesstoken, string serverhash)
-        {
-            try
-            {
-                string result = "";
-                string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
-                int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port, "/api/yggdrasil/sessionserver/session/minecraft/join", json_request, ref result);
+                int code = DoHTTPSPost(host, port, endpoint, json_request, ref result);
                 return (code >= 200 && code < 300);
             }
             catch { return false; }
