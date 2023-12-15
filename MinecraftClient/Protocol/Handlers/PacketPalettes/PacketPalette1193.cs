@@ -55,7 +55,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x2E, PacketTypesIn.Ping },                       // (Wiki name: Ping (play))
             { 0x2F, PacketTypesIn.CraftRecipeResponse },        // (Wiki name: Place Ghost Recipe)
             { 0x30, PacketTypesIn.PlayerAbilities },            //
-            { 0x31, PacketTypesIn.ChatMessage },                // Changed in 1.19 (Completely changed) (Wiki name: Player Chat Message) - TODO
+            { 0x31, PacketTypesIn.ChatMessage },                // Changed in 1.19 (Completely changed) (Wiki name: Player Chat Message)
             { 0x32, PacketTypesIn.EndCombatEvent },             // (Wiki name: Player Combat End)
             { 0x33, PacketTypesIn.EnterCombatEvent },           // (Wiki name: Player Combat Enter)
             { 0x34, PacketTypesIn.DeathCombatEvent },           // (Wiki name: Player Combat Kill)
