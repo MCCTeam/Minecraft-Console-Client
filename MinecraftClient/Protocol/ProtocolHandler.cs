@@ -1100,7 +1100,8 @@ namespace MinecraftClient.Protocol
                         statusCode = int.Parse(raw_result.Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
                         if (statusCode != 204) 
                         {
-                            postResult = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..].Split("\r\n")[1];
+                            var splited = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..].Split("\r\n");
+                            postResult = splited[1] + splited[3];
                         }
                         else 
                         {
