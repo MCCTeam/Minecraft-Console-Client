@@ -45,6 +45,7 @@
 	</PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
     <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+    <PackageReference Include="WebsocketSharp.Standard2" Version="2022.4.16.1520" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="config\ChatBots\AutoLeaveOnLowHp.cs" />

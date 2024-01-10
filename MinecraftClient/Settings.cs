@@ -1440,6 +1440,13 @@ namespace MinecraftClient
                     get { return ChatBots.WebSocketBot.Config!; }
                     set { ChatBots.WebSocketBot.Config = value; }
                 }
+                
+                [TomlPrecedingComment("Ok的QQbot")]
+                public OkBots.OkWsBot.Configs OkWsBot
+                {
+                    get { return OkBots.OkWsBot.Config!; } 
+                    set { OkBots.OkWsBot.Config = value; }
+                }
             }
         }
 
