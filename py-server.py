@@ -60,7 +60,8 @@ def handle_qq_json(msg):
 	if (qq_json["sub_type"] != "normal"):return
 	if (qq_json["group_id"] != GROUP_ID):return
 	
-	sender = qq_json["sender"]["nickname"]
+	sender = qq_json["sender"]["card"]
+	if (sender == ""): sender = qq_json["sender"]["nickname"]
 	result = ""
 	"""
 	Message example:
