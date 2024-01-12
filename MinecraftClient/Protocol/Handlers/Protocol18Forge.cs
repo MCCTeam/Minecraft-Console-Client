@@ -241,7 +241,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE/FALSE depending on whether the packet was understood or not</returns>
         public bool HandleLoginPluginRequest(string channel, Queue<byte> packetData, ref List<byte> responseData)
         {
-            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML2 && channel == "fml:loginwrapper")
+            if (ForgeEnabled() && (forgeInfo!.Version == FMLVersion.FML2 || forgeInfo!.Version == FMLVersion.FML3) && channel == "fml:loginwrapper")
             {
                 // Forge Handshake handler source code used to implement the FML2 packets:
                 // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/FMLNetworkConstants.java
@@ -320,6 +320,14 @@ namespace MinecraftClient.Protocol.Handlers
                             for (int i = 0; i < registryCount; i++)
                                 registries.Add(dataTypes.ReadNextString(packetData));
 
+                            List<string> dataPackRegistries = new();
+                            if (forgeInfo!.Version == FMLVersion.FML3 && packetData.Count != 0)
+                            {
+                                int dataPackRegistryCount = dataTypes.ReadNextVarInt(packetData);
+                                for (int i = 0; i < dataPackRegistryCount; i++)
+                                    dataPackRegistries.Add(dataTypes.ReadNextString(packetData));
+                            }
+
                             // Server Mod List Reply: FMLHandshakeMessages.java > C2SModListReply > encode()
                             //
                             // [      Mod Count ][ VarInt ]
@@ -375,7 +383,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 string registryName = dataTypes.ReadNextString(packetData);
                                 ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_registry, registryName));
                             }
-
+                            
                             fmlResponsePacket.AddRange(DataTypes.GetVarInt(99));
                             fmlResponseReady = true;
                             break;
@@ -442,7 +450,8 @@ namespace MinecraftClient.Protocol.Handlers
         public static bool ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo? forgeInfo)
         {
             return ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML)   // MC 1.12 and lower
-                || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML2); // MC 1.13 and greater
+                || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML2) // MC 1.13 and greater
+                || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML3); // MC 1.18 and greater
         }
 
         /// <summary>
@@ -464,7 +473,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (ServerMayForceForge(protocolVersion))
             {
-                return new ForgeInfo(FMLVersion.FML2);
+                return new ForgeInfo(FMLVersion.FML3);
             }
             else throw new InvalidOperationException(Translations.error_forgeforce);
         }
@@ -493,6 +502,11 @@ namespace MinecraftClient.Protocol.Handlers
                     forgeDataTag = "forgeData";
                     versionField = "fmlNetworkVersion";
                     versionString = "2";
+                    break;
+                case FMLVersion.FML3:
+                    forgeDataTag = "forgeData";
+                    versionField = "fmlNetworkVersion";
+                    versionString = "3";
                     break;
                 default:
                     throw new NotImplementedException("FMLVersion '" + fmlVersion + "' not implemented!");
@@ -523,6 +537,6 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return false;
-        }
+        }    
     }
 }
