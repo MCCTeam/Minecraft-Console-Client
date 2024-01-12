@@ -24,12 +24,12 @@ public class OkWsBot : ChatBot
 	public class Configs {
         public bool Enabled = true;
 		
-        [TomlInlineComment("群号")]
-		public string id = "12345678";
         [TomlInlineComment("Python Websocket接口")]
 		public string pythonSendWsApi = "ws://127.0.0.1:12345";
         [TomlInlineComment("在群内显示的服务器名称")]
 		public string serverName = "1.20";
+        [TomlInlineComment("在群内昵称")]
+		public string groupCard = "QQbot";
 	}
 
     public override void Initialize()
@@ -102,8 +102,9 @@ public class OkWsBot : ChatBot
 
 	public string GetPlayerListMsg() {
 		string result = "["+Config.serverName+"]";
-		string[] playerStrs = GetOnlinePlayers();
-		if (playerStrs.Length == 0) {
+		List<string> playerStrs = new List<string>(GetOnlinePlayers());
+		playerStrs.Remove(Config.groupCard);
+		if (playerStrs.Count == 0) {
 			return result += " [鬼服]\n没有玩家在线";
 		}
 		result += " 在线玩家：";
