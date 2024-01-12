@@ -5,6 +5,7 @@ using System.Text;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Protocol.Message.LastSeenMessageList;
+using Newtonsoft.Json.Linq;
 
 namespace MinecraftClient.Protocol.ProfileKey
 {
@@ -14,27 +15,34 @@ namespace MinecraftClient.Protocol.ProfileKey
 
         private static readonly string certificates = "https://api.minecraftservices.com/player/certificates";
 
-        public static PlayerKeyPair? GetNewProfileKeys(string accessToken)
+        public static PlayerKeyPair? GetNewProfileKeys(string accessToken, bool isYggdrasil)
         {
             ProxiedWebRequest.Response? response = null;
             try
             {
-                var request = new ProxiedWebRequest(certificates)
-                {
-                    Accept = "application/json"
-                };
-                request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
+                if (!isYggdrasil) {
+                    var request = new ProxiedWebRequest(certificates)
+                    {
+                        Accept = "application/json"
+                    };
+                    request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
 
-                response = request.Post("application/json", "");
+                    response = request.Post("application/json", "");
 
-                if (Settings.Config.Logging.DebugMessages)
-                {
-                    ConsoleIO.WriteLine(response.Body.ToString());
+                    if (Settings.Config.Logging.DebugMessages)
+                    {
+                        ConsoleIO.WriteLine(response.Body.ToString());
+                    }
                 }
 
-                string jsonString = response.Body;
+                // see https://github.com/yushijinhun/authlib-injector/blob/da910956eaa30d2f6c2c457222d188aeb53b0d1f/src/main/java/moe/yushi/authlibinjector/httpd/ProfileKeyFilter.java#L49
+                // POST to "https://api.minecraftservices.com/player/certificates" with authlib-injector will get a dummy response
+                string jsonString = isYggdrasil ? MakeDummyResponse() : response!.Body;
                 Json.JSONData json = Json.ParseJson(jsonString);
+                Console.WriteLine("Got public key:" + json.Properties["keyPair"].Properties["publicKey"].StringValue);
+                Console.WriteLine("Got private key:" + json.Properties["keyPair"].Properties["privateKey"].StringValue);
 
+                // Error here
                 PublicKey publicKey = new(pemKey: json.Properties["keyPair"].Properties["publicKey"].StringValue,
                     sig: json.Properties["publicKeySignature"].StringValue,
                     sigV2: json.Properties["publicKeySignatureV2"].StringValue);
@@ -229,6 +237,31 @@ namespace MinecraftClient.Protocol.ProfileKey
             }
             sb.Append(src, start, src.Length - start);
             return sb.ToString();
+        }
+
+        public static string MakeDummyResponse()
+        {
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048);
+            var mimePublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
+            var mimePrivateKey = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
+            string publicKeyPEM = $"-----BEGIN RSA PUBLIC KEY-----\n{mimePublicKey}\n-----END RSA PUBLIC KEY-----\n";
+            string privateKeyPEM = $"-----BEGIN RSA PRIVATE KEY-----\n{mimePrivateKey}\n-----END RSA PRIVATE KEY-----\n";
+            DateTime now = DateTime.UtcNow;
+            DateTime expiresAt = now.AddHours(48);
+            DateTime refreshedAfter = now.AddHours(36);
+            JObject response = new JObject();
+            JObject keyPairObj = new JObject
+            {
+                { "privateKey", privateKeyPEM },
+                { "publicKey", publicKeyPEM }
+            };
+            response.Add("keyPair", keyPairObj);
+            response.Add("publicKeySignature", "AA==");
+            response.Add("publicKeySignatureV2", "AA==");
+            string format = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
+            response.Add("expiresAt", expiresAt.ToString(format));
+            response.Add("refreshedAfter", refreshedAfter.ToString(format));
+            return response.ToString();
         }
     }
 }
