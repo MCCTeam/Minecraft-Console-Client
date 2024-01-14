@@ -7,6 +7,7 @@
     enum FMLVersion
     {
         FML,
-        FML2
+        FML2,
+        FML3
     }
 }
