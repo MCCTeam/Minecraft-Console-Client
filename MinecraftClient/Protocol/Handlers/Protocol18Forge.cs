@@ -233,7 +233,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Handle Forge plugin messages during login phase (Forge Protocol version 2: FML2)
+        /// Handle Forge plugin messages during login phase (Forge Protocol version 2: FML2 or Forge Protocol version 3: FML3)
         /// </summary>
         /// <param name="channel">Plugin message channel</param>
         /// <param name="packetData">Plugin message data</param>
@@ -241,15 +241,19 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE/FALSE depending on whether the packet was understood or not</returns>
         public bool HandleLoginPluginRequest(string channel, Queue<byte> packetData, ref List<byte> responseData)
         {
-            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML2 && channel == "fml:loginwrapper")
+            if (ForgeEnabled() && (forgeInfo!.Version == FMLVersion.FML2 || forgeInfo!.Version == FMLVersion.FML3) && channel == "fml:loginwrapper")
             {
                 // Forge Handshake handler source code used to implement the FML2 packets:
-                // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/FMLNetworkConstants.java
-                // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/FMLHandshakeHandler.java
-                // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/NetworkInitialization.java
-                // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/FMLLoginWrapper.java
-                // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/FMLHandshakeMessages.java
+                // https://github.com/MinecraftForge/MinecraftForge/blob/1.13.x/src/main/java/net/minecraftforge/fml/network/FMLNetworkConstants.java
+                // https://github.com/MinecraftForge/MinecraftForge/blob/1.13.x/src/main/java/net/minecraftforge/fml/network/FMLHandshakeHandler.java
+                // https://github.com/MinecraftForge/MinecraftForge/blob/1.13.x/src/main/java/net/minecraftforge/fml/network/NetworkInitialization.java
+                // https://github.com/MinecraftForge/MinecraftForge/blob/1.13.x/src/main/java/net/minecraftforge/fml/network/FMLLoginWrapper.java
+                // https://github.com/MinecraftForge/MinecraftForge/blob/1.13.x/src/main/java/net/minecraftforge/fml/network/FMLHandshakeMessages.java
                 //
+                // FML3 packets:
+                // https://github.com/MinecraftForge/MinecraftForge/blob/1.18.x/src/main/java/net/minecraftforge/network/NetworkInitialization.java
+                // https://github.com/MinecraftForge/MinecraftForge/blob/1.18.x/src/main/java/net/minecraftforge/fml/network/FMLHandshakeMessages.java
+                // 
                 // During Login, Forge will send a set of LoginPluginRequest packets and we need to respond accordingly.
                 // Each login plugin message contains in its payload field an inner packet created by FMLLoginWrapper.java:
                 //
@@ -274,6 +278,8 @@ namespace MinecraftClient.Protocol.Handlers
                 // 2 = Client to Server - Mod List
                 // 3 = Server to Client - Registry
                 // 4 = Server to Client - Config
+                // 5 = Server to Client - Mod Data List (FML3)
+                // 6 = Server to Client - MismatchedMod List (FML3)
                 //
                 // The content of each message is mapped into a class inside FMLHandshakeMessages.java
                 // FMLHandshakeHandler will then process the packet, e.g. handleServerModListOnClient() for Server Mod List.
@@ -319,6 +325,15 @@ namespace MinecraftClient.Protocol.Handlers
                             int registryCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < registryCount; i++)
                                 registries.Add(dataTypes.ReadNextString(packetData));
+
+                            // FML3 specific, 
+                            List<string> dataPackRegistries = new();
+                            if (forgeInfo!.Version == FMLVersion.FML3 && packetData.Count != 0)
+                            {
+                                int dataPackRegistryCount = dataTypes.ReadNextVarInt(packetData);
+                                for (int i = 0; i < dataPackRegistryCount; i++)
+                                    dataPackRegistries.Add(dataTypes.ReadNextString(packetData));
+                            }
 
                             // Server Mod List Reply: FMLHandshakeMessages.java > C2SModListReply > encode()
                             //
@@ -375,7 +390,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 string registryName = dataTypes.ReadNextString(packetData);
                                 ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_registry, registryName));
                             }
-
+                            
                             fmlResponsePacket.AddRange(DataTypes.GetVarInt(99));
                             fmlResponseReady = true;
                             break;
@@ -397,6 +412,53 @@ namespace MinecraftClient.Protocol.Handlers
 
                             fmlResponsePacket.AddRange(DataTypes.GetVarInt(99));
                             fmlResponseReady = true;
+                            break;
+
+                        case 5:
+                            // FML 3
+                            // Server Config: FMLHandshakeMessages.java > S2CModData > decode()
+                            //
+                            // We're ignoring this packet in MCC
+                            
+                            /*
+                            // Uncomment this code block if needed
+                            var size = dataTypes.ReadNextVarInt(packetData);
+                            Dictionary<string, string> modsData = new();
+                            for (int i = 0; i < size; i++)
+                            {
+                                var modId = dataTypes.ReadNextString(packetData);
+                                var displayName = dataTypes.ReadNextString(packetData);
+                                var version = dataTypes.ReadNextString(packetData);
+                                modsData.Add(modId, displayName + ":" + version);
+                            }
+                            */
+                            if (Settings.Config.Logging.DebugMessages)
+                            {
+                                ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mod Data List");
+                            }
+                            break;
+
+                        case 6:
+                            // FML 3
+                            // Server Config: FMLHandshakeMessages.java > S2CChannelMismatchData > decode()
+                            //
+                            // We're ignoring this packet in MCC
+
+                            /*
+                            // Uncomment this code block if needed
+                            Dictionary<string, string> mismatchedMods = new();
+                            var size0 = dataTypes.ReadNextVarInt(packetData);
+                            for (int i = 0; i < size0; i++)
+                            {
+                                var modId = dataTypes.ReadNextString(packetData);
+                                var version = dataTypes.ReadNextString(packetData);
+                                mismatchedMods.Add(modId, version);
+                            }
+                            */
+                            if (Settings.Config.Logging.DebugMessages)
+                            {
+                                ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mismatched Mods List");
+                            }
                             break;
 
                         default:
@@ -442,7 +504,8 @@ namespace MinecraftClient.Protocol.Handlers
         public static bool ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo? forgeInfo)
         {
             return ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML)   // MC 1.12 and lower
-                || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML2); // MC 1.13 and greater
+                || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML2) // MC 1.13 to 1.17
+                || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML3); // MC 1.18 and greater
         }
 
         /// <summary>
@@ -463,14 +526,22 @@ namespace MinecraftClient.Protocol.Handlers
         public static ForgeInfo ServerForceForge(int protocolVersion)
         {
             if (ServerMayForceForge(protocolVersion))
-            {
-                return new ForgeInfo(FMLVersion.FML2);
+            {    
+                // 1.17 is still FML2
+                // https://github.com/MinecraftForge/MinecraftForge/blob/50b5414033de82f46be23201db50484f36c37d4f/src/main/java/net/minecraftforge/fmllegacy/network/FMLNetworkConstants.java#L37C29-L37C42
+                // 1.18 change the constant FMLNETVERSION to 3
+                // https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/NetworkConstants.java#L28
+                if (protocolVersion > ProtocolHandler.MCVer2ProtocolVersion("1.18"))
+                {
+                    return new ForgeInfo(FMLVersion.FML3);
+                }
+                return new ForgeInfo(FMLVersion.FML2); 
             }
             else throw new InvalidOperationException(Translations.error_forgeforce);
         }
 
         /// <summary>
-        /// Server Info: Check for For Forge on a Minecraft server Ping result (Handles FML and FML2
+        /// Server Info: Check for For Forge on a Minecraft server Ping result (Handles FML and FML2 and FML3
         /// </summary>
         /// <param name="jsonData">JSON data returned by the server</param>
         /// <param name="forgeInfo">ForgeInfo to populate</param>
@@ -493,6 +564,11 @@ namespace MinecraftClient.Protocol.Handlers
                     forgeDataTag = "forgeData";
                     versionField = "fmlNetworkVersion";
                     versionString = "2";
+                    break;
+                case FMLVersion.FML3:
+                    forgeDataTag = "forgeData";
+                    versionField = "fmlNetworkVersion";
+                    versionString = "3";
                     break;
                 default:
                     throw new NotImplementedException("FMLVersion '" + fmlVersion + "' not implemented!");
@@ -523,6 +599,6 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return false;
-        }
+        }    
     }
 }

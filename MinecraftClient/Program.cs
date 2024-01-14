@@ -557,7 +557,7 @@ namespace MinecraftClient
                     }
                 }
 
-                if (Config.Main.General.AccountType == LoginType.microsoft
+                if ((Config.Main.General.AccountType == LoginType.microsoft || Config.Main.General.AccountType == LoginType.yggdrasil)
                     && (InternalConfig.Account.Password != "-" || Config.Main.General.Method == LoginMethod.browser)
                     && Config.Signature.LoginWithSecureProfile
                     && protocolversion >= 759 /* 1.19 and above */)
@@ -582,7 +582,7 @@ namespace MinecraftClient
                     if (playerKeyPair == null || playerKeyPair.NeedRefresh())
                     {
                         ConsoleIO.WriteLineFormatted(Translations.mcc_fetching_key, acceptnewlines: true);
-                        playerKeyPair = KeyUtils.GetNewProfileKeys(session.ID);
+                        playerKeyPair = KeyUtils.GetNewProfileKeys(session.ID, Config.Main.General.AccountType == LoginType.yggdrasil);
                         if (Config.Main.Advanced.ProfileKeyCache != CacheType.none && playerKeyPair != null)
                         {
                             KeysCache.Store(loginLower, playerKeyPair);
