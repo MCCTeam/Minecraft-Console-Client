@@ -7,7 +7,6 @@ using System.Threading;
 using Brigadier.NET;
 using Brigadier.NET.Exceptions;
 using MinecraftClient.ChatBots;
-using MinecraftClient.OkBots;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Commands;
@@ -299,7 +298,6 @@ namespace MinecraftClient
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
             if (Config.ChatBot.WebSocketBot.Enabled) { BotLoad(new WebSocketBot()); }
-            if (Config.ChatBot.OkWsBot.Enabled) { BotLoad(new OkWsBot()); }
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }
