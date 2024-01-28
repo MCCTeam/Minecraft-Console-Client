@@ -484,6 +484,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool HandlePlayPackets(int packetId, Queue<byte> packetData)
         {
+            try{
             switch (packetPalette.GetIncommingTypeById(packetId))
             {
                 case PacketTypesIn.KeepAlive: // Keep Alive (Play)
@@ -797,7 +798,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                         var chatInfo = Json.ParseJson(chatName).Properties;
                         var senderDisplayName =
-                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
+                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : (chatInfo.ContainsKey("text") ? chatInfo["text"] : ""))
                             .StringValue;
                         string? senderTeamName = null;
                         var messageTypeEnum =
@@ -909,7 +910,7 @@ namespace MinecraftClient.Protocol.Handlers
                         var chatInfo =
                             Json.ParseJson(targetName ?? chatName).Properties;
                         var senderDisplayName =
-                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
+                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : (chatInfo.ContainsKey("text") ? chatInfo["text"] : ""))
                             .StringValue;
                         string? senderTeamName = null;
                         if (targetName != null &&
@@ -2570,6 +2571,9 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             return true; //Packet processed
+            }catch(Exception exception){
+                exception.printStackTrace();
+            }
         }
 
         /// <summary>
