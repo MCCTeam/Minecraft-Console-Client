@@ -796,9 +796,10 @@ namespace MinecraftClient.Protocol.Handlers
                             : null;
 
                         var chatInfo = Json.ParseJson(chatName).Properties;
-                        var senderDisplayName =
-                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
-                            .StringValue;
+                        var senderDisplayName = chatInfo != null && chatInfo.Count > 0
+                            ? (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
+                            .StringValue
+                            : "";
                         string? senderTeamName = null;
                         var messageTypeEnum =
                             ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
@@ -908,9 +909,10 @@ namespace MinecraftClient.Protocol.Handlers
 
                         var chatInfo =
                             Json.ParseJson(targetName ?? chatName).Properties;
-                        var senderDisplayName =
-                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
-                            .StringValue;
+                        var senderDisplayName = chatInfo != null && chatInfo.Count > 0
+                            ? (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
+                            .StringValue
+                            : "";
                         string? senderTeamName = null;
                         if (targetName != null &&
                             messageTypeEnum is ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING or ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING)
