@@ -484,7 +484,6 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool HandlePlayPackets(int packetId, Queue<byte> packetData)
         {
-            try{
             switch (packetPalette.GetIncommingTypeById(packetId))
             {
                 case PacketTypesIn.KeepAlive: // Keep Alive (Play)
@@ -797,9 +796,10 @@ namespace MinecraftClient.Protocol.Handlers
                             : null;
 
                         var chatInfo = Json.ParseJson(chatName).Properties;
-                        var senderDisplayName =
-                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : (chatInfo.ContainsKey("text") ? chatInfo["text"] : ""))
-                            .StringValue;
+                        var senderDisplayName = chatInfo != null && chatInfo.Count > 0
+                            ? (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
+                            .StringValue
+                            : "";
                         string? senderTeamName = null;
                         var messageTypeEnum =
                             ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
@@ -909,12 +909,14 @@ namespace MinecraftClient.Protocol.Handlers
 
                         var chatInfo =
                             Json.ParseJson(targetName ?? chatName).Properties;
-                        var senderDisplayName =
-                            (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : (chatInfo.ContainsKey("text") ? chatInfo["text"] : ""))
-                            .StringValue;
+                        var senderDisplayName = chatInfo != null && chatInfo.Count > 0
+                            ? (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
+                            .StringValue
+                            : "";
                         string? senderTeamName = null;
                         if (targetName != null &&
-                            messageTypeEnum is ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING or ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING)
+                            messageTypeEnum is ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING
+                                or ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING)
                             senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0]
                                 .Properties["text"].StringValue;
 
@@ -2571,9 +2573,6 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             return true; //Packet processed
-            }catch(Exception exception){
-                exception.printStackTrace();
-            }
         }
 
         /// <summary>
