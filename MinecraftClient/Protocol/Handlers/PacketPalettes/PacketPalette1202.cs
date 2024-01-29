@@ -18,8 +18,8 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x09, PacketTypesIn.BlockChange },                // (Wiki name: Block Update)
             { 0x0A, PacketTypesIn.BossBar },                    //
             { 0x0B, PacketTypesIn.ServerDifficulty },           // (Wiki name: Change Difficulty)
-            { 0x0C, PacketTypesIn.ChunkBatchFinished },         // Added in 1.20.2  - TODO
-            { 0x0D, PacketTypesIn.ChunkBatchStarted },          // Added in 1.20.2  - TODO
+            { 0x0C, PacketTypesIn.ChunkBatchFinished },         // Added in 1.20.2  
+            { 0x0D, PacketTypesIn.ChunkBatchStarted },          // Added in 1.20.2  
             { 0x0E, PacketTypesIn.ChunksBiomes },               // Added in 1.19.4
             { 0x0F, PacketTypesIn.ClearTiles },                 //
             { 0x10, PacketTypesIn.TabComplete },                // (Wiki name: Command Suggestions Response)
@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x26, PacketTypesIn.Effect },                     // (Wiki name: World Event)
             { 0x27, PacketTypesIn.Particle },                   // Changed in 1.19 ("Particle Data" field is now "Max Speed", it's the same Float data type) (Wiki name: Level Particle)  (No need to be implemented)
             { 0x28, PacketTypesIn.UpdateLight },                // (Wiki name: Light Update)
-            { 0x29, PacketTypesIn.JoinGame },                   // Changed in 1.20.2 (Wiki name: Login (play)) - TODO
+            { 0x29, PacketTypesIn.JoinGame },                   // Changed in 1.20.2 (Wiki name: Login (play)) 
             { 0x2A, PacketTypesIn.MapData },                    // (Wiki name: Map Item Data)
             { 0x2B, PacketTypesIn.TradeList },                  // (Wiki name: Merchant Offers)
             { 0x2C, PacketTypesIn.EntityPosition },             // (Wiki name: Move Entity Position)
@@ -58,7 +58,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x31, PacketTypesIn.OpenWindow },                 // (Wiki name: Open Screen)
             { 0x32, PacketTypesIn.OpenSignEditor },             //
             { 0x33, PacketTypesIn.Ping },                       // (Wiki name: Ping (play))
-            { 0x34, PacketTypesIn.PingResponse },               // Added in 1.20.2 - TODO
+            { 0x34, PacketTypesIn.PingResponse },               // Added in 1.20.2 
             { 0x35, PacketTypesIn.CraftRecipeResponse },        // (Wiki name: Place Ghost Recipe)
             { 0x36, PacketTypesIn.PlayerAbilities },            //
             { 0x37, PacketTypesIn.ChatMessage },                // Changed in 1.19 (Completely changed) (Wiki name: Player Chat Message)
@@ -73,7 +73,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x40, PacketTypesIn.DestroyEntities },            // (Wiki name: Remove Entites)
             { 0x41, PacketTypesIn.RemoveEntityEffect },         //
             { 0x42, PacketTypesIn.ResourcePackSend },           // (Wiki name: Resource Pack)
-            { 0x43, PacketTypesIn.Respawn },                    // Changed in 1.20.2 - TODO
+            { 0x43, PacketTypesIn.Respawn },                    // Changed in 1.20.2 
             { 0x44, PacketTypesIn.EntityHeadLook },             // (Wiki name: Set Head Rotation)
             { 0x45, PacketTypesIn.MultiBlockChange },           // (Wiki name: Update Section Blocks)
             { 0x46, PacketTypesIn.SelectAdvancementTab },       //
@@ -89,12 +89,12 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x50, PacketTypesIn.UpdateViewPosition },         // (Wiki name: Set Center Chunk)
             { 0x51, PacketTypesIn.UpdateViewDistance },         // (Wiki name: Set Render Distance)
             { 0x52, PacketTypesIn.SpawnPosition },              // (Wiki name: Set Default Spawn Position)
-            { 0x53, PacketTypesIn.DisplayScoreboard },          // (Wiki name: Set Display Objective) - TODO
+            { 0x53, PacketTypesIn.DisplayScoreboard },          // (Wiki name: Set Display Objective) 
             { 0x54, PacketTypesIn.EntityMetadata },             // (Wiki name: Set Entity Metadata)
             { 0x55, PacketTypesIn.AttachEntity },               // (Wiki name: Link Entities)
             { 0x56, PacketTypesIn.EntityVelocity },             // (Wiki name: Set Entity Velocity)
             { 0x57, PacketTypesIn.EntityEquipment },            // (Wiki name: Set Equipment)
-            { 0x58, PacketTypesIn.SetExperience },              // Changed in 1.20.2 - TODO
+            { 0x58, PacketTypesIn.SetExperience },              // Changed in 1.20.2 
             { 0x59, PacketTypesIn.UpdateHealth },               // (Wiki name: Set Health)
             { 0x5A, PacketTypesIn.ScoreboardObjective },        // (Wiki name: Update Objectives)
             { 0x5B, PacketTypesIn.SetPassengers },              //
@@ -107,7 +107,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x62, PacketTypesIn.SetTitleTime },               // (Wiki name: Set Title Animation Times)
             { 0x63, PacketTypesIn.EntitySoundEffect },          // (Wiki name: Sound Entity)
             { 0x64, PacketTypesIn.SoundEffect },                // Changed in 1.19 (Added "Seed" field) (Wiki name: Sound Effect)  (No need to be implemented)
-            { 0x65, PacketTypesIn.StartConfiguration },           // Added in 1.20.2 - TODO
+            { 0x65, PacketTypesIn.StartConfiguration },           // Added in 1.20.2 
             { 0x66, PacketTypesIn.StopSound },                  //
             { 0x67, PacketTypesIn.SystemChat },                 // Added in 1.19 (Wiki name: System Chat Message)
             { 0x68, PacketTypesIn.PlayerListHeaderAndFooter },  // (Wiki name: Set Tab List Header And Footer)
@@ -130,11 +130,11 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x04, PacketTypesOut.ChatCommand },                 // Added in 1.19
             { 0x05, PacketTypesOut.ChatMessage },                 // Changed in 1.19 (Completely changed) (Wiki name: Chat)
             { 0x06, PacketTypesOut.PlayerSession },               // Added in 1.19.3
-            { 0x07, PacketTypesOut.ChunkBatchReceived },          // Added in 1.20.2 - TODO
+            { 0x07, PacketTypesOut.ChunkBatchReceived },          // Added in 1.20.2 
             { 0x08, PacketTypesOut.ClientStatus },                // (Wiki name: Client Command)
             { 0x09, PacketTypesOut.ClientSettings },              // (Wiki name: Client Information)
             { 0x0A, PacketTypesOut.TabComplete },                 // (Wiki name: Command Suggestions Request)
-            { 0x0B, PacketTypesOut.AcknowledgeConfiguration },    // Added in 1.20.2 - TODO
+            { 0x0B, PacketTypesOut.AcknowledgeConfiguration },    // Added in 1.20.2 
             { 0x0C, PacketTypesOut.ClickWindowButton },           // (Wiki name: Click Container Button)
             { 0x0D, PacketTypesOut.ClickWindow },                 // (Wiki name: Click Container)
             { 0x0E, PacketTypesOut.CloseWindow },                 // (Wiki name: Close Container (serverbound))
@@ -152,7 +152,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x1A, PacketTypesOut.VehicleMove },                 // (Wiki name: Move Vehicle (serverbound))
             { 0x1B, PacketTypesOut.SteerBoat },                   // (Wiki name: Paddle Boat)
             { 0x1C, PacketTypesOut.PickItem },                    //
-            { 0x1D, PacketTypesOut.PingRequest },                 // Added in 1.20.2 - TODO
+            { 0x1D, PacketTypesOut.PingRequest },                 // Added in 1.20.2 
             { 0x1E, PacketTypesOut.CraftRecipeRequest },          // (Wiki name: Place recipe)
             { 0x1F, PacketTypesOut.PlayerAbilities },             //
             { 0x20, PacketTypesOut.PlayerDigging },               // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Player Action) 
@@ -178,15 +178,33 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x34, PacketTypesOut.PlayerBlockPlacement },        // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item On) 
             { 0x35, PacketTypesOut.UseItem },                     // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item) 
         };
-
-        protected override Dictionary<int, PacketTypesIn> GetListIn()
+        
+        private readonly Dictionary<int, ConfigurationPacketTypesIn> configurationTypesIn = new()
         {
-            return typeIn;
-        }
+            { 0x00, ConfigurationPacketTypesIn.PluginMessage },
+            { 0x01, ConfigurationPacketTypesIn.Disconnect },
+            { 0x02, ConfigurationPacketTypesIn.FinishConfiguration },
+            { 0x03, ConfigurationPacketTypesIn.KeepAlive },
+            { 0x04, ConfigurationPacketTypesIn.Ping },
+            { 0x05, ConfigurationPacketTypesIn.RegistryData },
+            { 0x06, ConfigurationPacketTypesIn.ResourcePack },
+            { 0x07, ConfigurationPacketTypesIn.FeatureFlags },
+            { 0x08, ConfigurationPacketTypesIn.UpdateTags },
+        };
 
-        protected override Dictionary<int, PacketTypesOut> GetListOut()
+        private readonly Dictionary<int, ConfigurationPacketTypesOut> configurationTypesOut = new()
         {
-            return typeOut;
-        }
+            { 0x00, ConfigurationPacketTypesOut.ClientInformation },
+            { 0x01, ConfigurationPacketTypesOut.PluginMessage },
+            { 0x02, ConfigurationPacketTypesOut.FinishConfiguration },
+            { 0x03, ConfigurationPacketTypesOut.KeepAlive },
+            { 0x04, ConfigurationPacketTypesOut.Pong },
+            { 0x05, ConfigurationPacketTypesOut.ResourcePackResponse }
+        };
+        
+        protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;
+        protected override Dictionary<int, PacketTypesOut> GetListOut() => typeOut;
+        protected override Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn() => configurationTypesIn!;
+        protected override Dictionary<int, ConfigurationPacketTypesOut> GetConfigurationListOut() => configurationTypesOut!;
     }
 }

@@ -389,32 +389,27 @@ namespace MinecraftClient.Protocol.Handlers
 
                     // https://wiki.vg/Protocol#Configuration
                     case CurrentState.Configuration:
-                        switch (packetId)
+                        switch (packetPalette.GetIncomingConfigurationTypeById(packetId))
                         {
-                            // Disconnect
-                            case 0x01:
+                            case ConfigurationPacketTypesIn.Disconnect:
                                 handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick,
                                     ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
                                 return false;
-
-                            // Finish Configuration
-                            case 0x02:
+                            
+                            case ConfigurationPacketTypesIn.FinishConfiguration:
                                 currentState = CurrentState.Play;
-                                SendPacket(0x02, new List<byte>());
+                                SendPacket(ConfigurationPacketTypesOut.FinishConfiguration, new List<byte>());
+                                break;
+                            
+                            case ConfigurationPacketTypesIn.KeepAlive:
+                                SendPacket(ConfigurationPacketTypesOut.KeepAlive, packetData);
+                                break;
+                            
+                            case ConfigurationPacketTypesIn.Ping:
+                                SendPacket(ConfigurationPacketTypesOut.Pong, packetData);
                                 break;
 
-                            // Keep Alive
-                            case 0x03:
-                                SendPacket(0x03, packetData);
-                                break;
-
-                            // Ping
-                            case 0x04:
-                                SendPacket(0x04, packetData);
-                                break;
-
-                            // Registry Codec
-                            case 0x05:
+                            case ConfigurationPacketTypesIn.RegistryData:
                                 var registryCodec = dataTypes.ReadNextNbt(packetData);
                                 ChatParser.ReadChatType(registryCodec);
 
@@ -422,9 +417,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     World.StoreDimensionList(registryCodec);
 
                                 break;
-
-                            // Resource Pack
-                            case 0x06:
+                            
+                            case ConfigurationPacketTypesIn.ResourcePack:
                                 var url = dataTypes.ReadNextString(packetData);
                                 var hash = dataTypes.ReadNextString(packetData);
                                 dataTypes.ReadNextBool(packetData); // Forced
@@ -441,9 +435,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 //Send back "accepted" and "successfully loaded" responses for plugins or server config making use of resource pack mandatory
                                 var responseHeader = Array.Empty<byte>();
-                                SendPacket(0x05,
+                                SendPacket(ConfigurationPacketTypesOut.ResourcePackResponse,
                                     dataTypes.ConcatBytes(responseHeader, DataTypes.GetVarInt(3))); // Accepted pack
-                                SendPacket(0x05,
+                                SendPacket(ConfigurationPacketTypesOut.ResourcePackResponse,
                                     dataTypes.ConcatBytes(responseHeader,
                                         DataTypes.GetVarInt(0))); // Successfully loaded
                                 break;
@@ -471,7 +465,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 throw new System.IO.InvalidDataException(
                     string.Format(Translations.exception_packet_process,
-                        packetPalette.GetIncommingTypeById(packetId),
+                        packetPalette.GetIncomingTypeById(packetId),
                         packetId,
                         protocolVersion,
                         currentState == CurrentState.Login,
@@ -484,7 +478,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool HandlePlayPackets(int packetId, Queue<byte> packetData)
         {
-            switch (packetPalette.GetIncommingTypeById(packetId))
+            switch (packetPalette.GetIncomingTypeById(packetId))
             {
                 case PacketTypesIn.KeepAlive: // Keep Alive (Play)
                     SendPacket(PacketTypesOut.KeepAlive, packetData);
@@ -2635,6 +2629,16 @@ namespace MinecraftClient.Protocol.Handlers
         private void SendPacket(PacketTypesOut packet, IEnumerable<byte> packetData)
         {
             SendPacket(packetPalette.GetOutgoingIdByType(packet), packetData);
+        }
+        
+        /// <summary>
+        /// Send a configuration packet to the server. Packet ID, compression, and encryption will be handled automatically.
+        /// </summary>
+        /// <param name="packet">packet type</param>
+        /// <param name="packetData">packet Data</param>
+        private void SendPacket(ConfigurationPacketTypesOut packet, IEnumerable<byte> packetData)
+        {
+            SendPacket(packetPalette.GetOutgoingIdByTypeConfiguration(packet), packetData);
         }
 
         /// <summary>
