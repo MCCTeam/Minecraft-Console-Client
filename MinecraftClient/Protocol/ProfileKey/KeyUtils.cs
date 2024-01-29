@@ -39,9 +39,6 @@ namespace MinecraftClient.Protocol.ProfileKey
                 // POST to "https://api.minecraftservices.com/player/certificates" with authlib-injector will get a dummy response
                 string jsonString = isYggdrasil ? MakeDummyResponse() : response!.Body;
                 Json.JSONData json = Json.ParseJson(jsonString);
-                Console.WriteLine("Got public key:" + json.Properties["keyPair"].Properties["publicKey"].StringValue);
-                Console.WriteLine("Got private key:" + json.Properties["keyPair"].Properties["privateKey"].StringValue);
-
                 // Error here
                 PublicKey publicKey = new(pemKey: json.Properties["keyPair"].Properties["publicKey"].StringValue,
                     sig: json.Properties["publicKeySignature"].StringValue,
