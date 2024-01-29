@@ -112,14 +112,10 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x19, PacketTypesOut.ResourcePackStatus },
         };
 
-        protected override Dictionary<int, PacketTypesIn> GetListIn()
-        {
-            return typeIn;
-        }
-
-        protected override Dictionary<int, PacketTypesOut> GetListOut()
-        {
-            return typeOut;
-        }
+        protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;
+        protected override Dictionary<int, PacketTypesOut> GetListOut() => typeOut;
+        
+        protected override Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn() => null!;
+        protected override Dictionary<int, ConfigurationPacketTypesOut> GetConfigurationListOut() => null!;
     }
 }
