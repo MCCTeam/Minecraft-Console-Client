@@ -118,7 +118,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x00, PacketTypesOut.TeleportConfirm },             // (Wiki name: Confirm Teleportation)
             { 0x01, PacketTypesOut.QueryBlockNBT },               // (Wiki name: Query Block Entity Tag)
             { 0x02, PacketTypesOut.SetDifficulty },               // (Wiki name: Change Difficutly)
-            { 0x03, PacketTypesOut.MessageAcknowledgment },       // TODO
+            { 0x03, PacketTypesOut.MessageAcknowledgment },       // 
             { 0x04, PacketTypesOut.ChatCommand },                 // Added in 1.19
             { 0x05, PacketTypesOut.ChatMessage },                 // Changed in 1.19 (Completely changed) (Wiki name: Chat)
             { 0x06, PacketTypesOut.ClientStatus },                // (Wiki name: Client Command)
@@ -147,7 +147,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x1D, PacketTypesOut.EntityAction },                // (Wiki name: Player Command)
             { 0x1E, PacketTypesOut.SteerVehicle },                // (Wiki name: Player Input)
             { 0x1F, PacketTypesOut.Pong },                        // (Wiki name: Pong (play))
-            { 0x20, PacketTypesOut.PlayerSession },               // Added in 1.19.3 TODO
+            { 0x20, PacketTypesOut.PlayerSession },               // Added in 1.19.3 
             { 0x21, PacketTypesOut.SetDisplayedRecipe },          // (Wiki name: Recipe Book Change Settings)
             { 0x22, PacketTypesOut.SetRecipeBookState },          // (Wiki name: Recipe Book Seen Recipe)
             { 0x23, PacketTypesOut.NameItem },                    // (Wiki name: Rename Item)
@@ -168,14 +168,9 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x32, PacketTypesOut.UseItem },                     // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item) 
         };
 
-        protected override Dictionary<int, PacketTypesIn> GetListIn()
-        {
-            return typeIn;
-        }
-
-        protected override Dictionary<int, PacketTypesOut> GetListOut()
-        {
-            return typeOut;
-        }
+        protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;
+        protected override Dictionary<int, PacketTypesOut> GetListOut() => typeOut;
+        protected override Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn() => null!;
+        protected override Dictionary<int, ConfigurationPacketTypesOut> GetConfigurationListOut() => null!;
     }
 }

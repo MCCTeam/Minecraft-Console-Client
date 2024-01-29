@@ -294,7 +294,7 @@ namespace MinecraftClient.Protocol
         private void HandleInBoundPacket(int packetID, IEnumerable<byte> packetData, bool isLogin)
         {
             Queue<byte> p = new(packetData);
-            PacketTypesIn pType = packetType.GetIncommingTypeById(packetID);
+            PacketTypesIn pType = packetType.GetIncomingTypeById(packetID);
             // Login success. Get player UUID
             if (isLogin && packetID == 0x02)
             {
