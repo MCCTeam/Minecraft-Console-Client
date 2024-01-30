@@ -9,6 +9,7 @@ public enum ConfigurationPacketTypesIn
     Ping,
     RegistryData,
     ResourcePack,
+    RemoveResourcePack,
     FeatureFlags,
     UpdateTags,
     
