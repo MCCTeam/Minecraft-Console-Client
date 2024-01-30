@@ -293,6 +293,10 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
                 catch (System.IO.IOException)
                 {
                     break;
