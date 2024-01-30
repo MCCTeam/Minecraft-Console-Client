@@ -92,6 +92,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                             42 => new ParserResourceOrTag(dataTypes, packetData),
                             43 => new ParserResource(dataTypes, packetData),
                             44 => new ParserResource(dataTypes, packetData),
+                            51 => new ParserForgeEnum(dataTypes, packetData),
                             _ => new ParserEmpty(dataTypes, packetData),
                         };
                 }
@@ -642,6 +643,29 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             public override string GetName()
             {
                 return "minecraft:time";
+            }
+        }
+
+        internal class ParserForgeEnum : Parser
+        {
+            public ParserForgeEnum(DataTypes dataTypes, Queue<byte> packetData)
+            {
+                dataTypes.ReadNextString(packetData);
+            }
+
+            public override bool Check(string text)
+            {
+                return true;
+            }
+
+            public override int GetArgCnt()
+            {
+                return 1;
+            }
+
+            public override string GetName()
+            {
+                return "forge:enum";
             }
         }
     }
