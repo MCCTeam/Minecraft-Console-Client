@@ -1674,7 +1674,7 @@ namespace MinecraftClient.Protocol.Handlers
                     else
                     {
                         hasMotd = true;
-                        motd = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                        motd = (string)dataTypes.ReadNextNbt(packetData)[""];
                     }
 
                     var iconBase64 = "-";
@@ -2635,6 +2635,11 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;*/
 
+                case PacketTypesIn.SetTickingState:
+                    dataTypes.ReadNextFloat(packetData);
+                    dataTypes.ReadNextBool(packetData);
+                    break;
+                
                 default:
                     return false; //Ignored packet
             }

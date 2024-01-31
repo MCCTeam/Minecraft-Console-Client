@@ -560,18 +560,43 @@ namespace MinecraftClient.Protocol.Handlers
                     cache.Dequeue();
                     return nbtData;
                 }
-
-                if (cache.Peek() != 10) // TAG_Compound
-                    throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
-                ReadNextByte(cache); // Tag type (TAG_Compound)
-
+                
+                var nextId = cache.Peek();
                 if (protocolversion < Protocol18Handler.MC_1_20_2_Version)
                 {
+                    if (nextId is 10) // TAG_Compound
+                        throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
+                    
+                    // Read TAG_Compound
+                    ReadNextByte(cache);
+                    
                     // NBT root name
                     var rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
 
                     if (!string.IsNullOrEmpty(rootName))
                         nbtData[""] = rootName;
+                }
+                // In 1.20.2 The root TAG_Compound doesn't have a name
+                // In 1.20.3+ The root can be TAG_Compound or TAG_String
+                else
+                {
+                    if (nextId is not (10 or 8)) // TAG_Compound or TAG_String
+                        throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound or TAG_String");
+                    
+                    // Read TAG_String
+                    if(nextId is 8)
+                    {
+                        var byteArrayLength = ReadNextUShort(cache);
+                        var result = Encoding.UTF8.GetString(ReadData(byteArrayLength, cache));
+                        
+                        return new Dictionary<string, object>()
+                        {
+                            { "", result }
+                        };
+                    }
+                    
+                    // Read TAG_Compound
+                    ReadNextByte(cache);
                 }
             }
 
