@@ -6,6 +6,7 @@ using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -561,7 +562,7 @@ namespace MinecraftClient.Protocol.Handlers
                     return nbtData;
                 }
                 
-                var nextId = cache.Peek();
+                var nextId = cache.Dequeue();
                 if (protocolversion < Protocol18Handler.MC_1_20_2_Version)
                 {
                     if (nextId is 10) // TAG_Compound
@@ -596,7 +597,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     
                     // Read TAG_Compound
-                    ReadNextByte(cache);
+                    //ReadNextByte(cache);
                 }
             }
 
@@ -1057,6 +1058,23 @@ namespace MinecraftClient.Protocol.Handlers
             int demand = ReadNextInt(cache);
             return new VillagerTrade(inputItem1, outputItem, inputItem2, tradeDisabled, numberOfTradeUses,
                 maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);
+        }
+
+        public string ReadNextChat(Queue<byte> cache)
+        {
+            if (protocolversion >= Protocol18Handler.MC_1_20_4_Version)
+            {
+                // Read as NBT
+                var r = ReadNextNbt(cache);
+                var msg = ChatParser.ParseText(r);
+                return msg;
+            }
+            else
+            {
+                // Read as String
+                var json = ReadNextString(cache);
+                return ChatParser.ParseText(json);
+            }
         }
 
         /// <summary>

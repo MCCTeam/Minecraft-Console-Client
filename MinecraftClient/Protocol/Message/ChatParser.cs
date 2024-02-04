@@ -66,6 +66,11 @@ namespace MinecraftClient.Protocol.Message
             return JSONData2String(Json.ParseJson(json), "", links);
         }
 
+        public static string ParseText(Dictionary<string, object> nbt)
+        {
+            return NbtToString(nbt);
+        }
+
         /// <summary>
         /// The main function to convert text from MC 1.9+ JSON to MC 1.5.2 formatted text
         /// </summary>
@@ -417,6 +422,65 @@ namespace MinecraftClient.Protocol.Message
             }
 
             return "";
+        }
+
+        private static string NbtToString(Dictionary<string, object> nbt)
+        {
+            if (nbt.Count == 1 && nbt.TryGetValue("", out object rootMessage))
+            {
+                // Nameless root tag
+                return (string)rootMessage;
+            }
+
+            string message = string.Empty;
+            StringBuilder extraBuilder = new StringBuilder();
+            foreach (var kvp in nbt)
+            {
+                string key = kvp.Key;
+                object value = kvp.Value;
+
+                switch (key)
+                {
+                    case "text":
+                        {
+                            message = (string)value;
+                        }
+                        break;
+                    case "extra":
+                        {
+                            object[] extras = (object[])value;
+                            for (int i = 0; i < extras.Length; i++)
+                            {
+                                var extraDict = (Dictionary<string, object>)extras[i];
+                                if (extraDict.TryGetValue("text", out object extraText))
+                                {
+                                    extraBuilder.Append(extraText);
+                                }
+                            }
+                        }
+                        break;
+                    case "with":
+                        {
+                            if (nbt.TryGetValue("translate", out object translate))
+                            {
+                                var translateKey = (string)translate;
+                                List<string> translateString = new();
+                                var withs = (object[])value;
+                                for (int i = 0; i < withs.Length; i++)
+                                {
+                                    var withDict = (Dictionary<string, object>)withs[i];
+                                    if (withDict.TryGetValue("text", out object withText))
+                                    {
+                                        translateString.Add((string)withText);
+                                    }
+                                }
+                                message = TranslateString(translateKey, translateString);
+                            }
+                        }
+                        break;
+                }
+            }
+            return message + extraBuilder.ToString();
         }
     }
 }
