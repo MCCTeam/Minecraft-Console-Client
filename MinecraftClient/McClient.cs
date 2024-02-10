@@ -194,13 +194,20 @@ namespace MinecraftClient
             // SENTRY: Send our client version and server version to Sentry
             SentrySdk.ConfigureScope(scope =>
             {
-                scope.SetTag("Server Version", protocolversion.ToString());
-                if (Program.BuildInfo != null)
-                    scope.SetTag("MCC Build", Program.BuildInfo);
+                scope.SetTag("Protocol Version", protocolversion.ToString());
+                scope.SetTag("MCC Build", Program.BuildInfo == null ? "Debug" : Program.BuildInfo);
+                    
                 if (forgeInfo != null)
                     scope.SetTag("Forge Version", forgeInfo?.Version.ToString());
+
+                scope.Contexts["Server Information"] = new
+                {
+                    ProtocolVersion = protocolversion,
+                    ForgeInfo = forgeInfo?.Version
+                };
                 
-                scope.Contexts["Client Information"] = new {
+                scope.Contexts["Client Information"] = new 
+                {
                     TerrainAndMovementsEnabled = terrainAndMovementsEnabled,
                     InventoryHandlingEnabled = inventoryHandlingEnabled,
                     EntityHandlingEnabled = entityHandlingEnabled
@@ -315,6 +322,7 @@ namespace MinecraftClient
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
             if (Config.ChatBot.WebSocketBot.Enabled) { BotLoad(new WebSocketBot()); }
+            SentrySdk.CaptureMessage("Bots loaded");
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }

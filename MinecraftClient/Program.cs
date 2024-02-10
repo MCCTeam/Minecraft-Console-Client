@@ -65,6 +65,7 @@ namespace MinecraftClient
                 options.AutoSessionTracking = true;
                 options.IsGlobalModeEnabled = true;
                 options.EnableTracing = true;
+                options.SendDefaultPii = false;
             });
             
             Task.Run(() =>
