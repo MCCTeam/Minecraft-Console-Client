@@ -21,6 +21,7 @@ using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
+using Sentry;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient
@@ -190,6 +191,22 @@ namespace MinecraftClient
             Log.WarnEnabled = Config.Logging.WarningMessages;
             Log.ErrorEnabled = Config.Logging.ErrorMessages;
 
+            // SENTRY: Send our client version and server version to Sentry
+            SentrySdk.ConfigureScope(scope =>
+            {
+                scope.SetTag("Server Version", protocolversion.ToString());
+                if (Program.BuildInfo != null)
+                    scope.SetTag("MCC Build", Program.BuildInfo);
+                if (forgeInfo != null)
+                    scope.SetTag("Forge Version", forgeInfo?.Version.ToString());
+                
+                scope.Contexts["Client Information"] = new {
+                    TerrainAndMovementsEnabled = terrainAndMovementsEnabled,
+                    InventoryHandlingEnabled = inventoryHandlingEnabled,
+                    EntityHandlingEnabled = entityHandlingEnabled
+                };
+            });
+            
             /* Load commands from Commands namespace */
             LoadCommands();
 

@@ -16,6 +16,7 @@ using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Scripting;
 using MinecraftClient.WinAPI;
+using Sentry;
 using Tomlet;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
@@ -58,6 +59,14 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
+            // SENTRY: Initialize Sentry SDK
+            SentrySdk.Init(options => {
+                options.Dsn = "https://a64e21ac3d5a52e1d98893a251bba89d@o405596.ingest.sentry.io/4506723841015808";
+                options.AutoSessionTracking = true;
+                options.IsGlobalModeEnabled = true;
+                options.EnableTracing = true;
+            });
+            
             Task.Run(() =>
             {
                 // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
