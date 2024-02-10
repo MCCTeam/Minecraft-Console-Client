@@ -51,6 +51,7 @@ namespace MinecraftClient
         public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
+        private static IDisposable _sentrySdk;
         private static bool useMcVersionOnce = false;
         private static string settingsIniPath = "MinecraftClient.ini";
 
@@ -60,7 +61,7 @@ namespace MinecraftClient
         static void Main(string[] args)
         {
             // SENTRY: Initialize Sentry SDK
-            SentrySdk.Init(options => {
+            _sentrySdk = SentrySdk.Init(options => {
                 options.Dsn = "https://a64e21ac3d5a52e1d98893a251bba89d@o405596.ingest.sentry.io/4506723841015808";
                 options.AutoSessionTracking = true;
                 options.IsGlobalModeEnabled = true;
@@ -149,6 +150,7 @@ namespace MinecraftClient
                     if (newlyGenerated)
                         ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_settings_generated);
                     ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
+                    ConsoleIO.WriteLine(Translations.mcc_sentry_logging);
                 }
                 else if (!loadSucceed)
                 {
@@ -192,6 +194,9 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(string.Format(Translations.mcc_help_us_translate, Settings.TranslationProjectUrl));
                     WriteBackSettings(true); // format
                 }
+                
+                if (!Config.Main.Advanced.EnableSentry)
+                    _sentrySdk.Dispose();
             }
 
             //Other command-line arguments

@@ -195,6 +195,7 @@ namespace MinecraftClient
             SentrySdk.ConfigureScope(scope =>
             {
                 scope.SetTag("Protocol Version", protocolversion.ToString());
+                scope.SetTag("Minecraft Version", InternalConfig.MinecraftVersion);
                 scope.SetTag("MCC Build", Program.BuildInfo == null ? "Debug" : Program.BuildInfo);
                     
                 if (forgeInfo != null)
@@ -203,6 +204,7 @@ namespace MinecraftClient
                 scope.Contexts["Server Information"] = new
                 {
                     ProtocolVersion = protocolversion,
+                    MinecraftVersion = InternalConfig.MinecraftVersion,
                     ForgeInfo = forgeInfo?.Version
                 };
                 

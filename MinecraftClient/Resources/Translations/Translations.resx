@@ -2130,4 +2130,7 @@ Logging in...</value>
   <data name="mcc.select_profile" xml:space="preserve">
     <value>Select a profile from available profiles:</value>
   </data>
+  <data name="mcc.sentry_logging" xml:space="preserve">
+    <value>MCC uses Sentry to log errors. You can opt-out by setting the EnableSentry option in the configuration file to false.</value>
+  </data>
 </root>
