@@ -426,13 +426,14 @@ namespace MinecraftClient.Protocol.Message
 
         private static string NbtToString(Dictionary<string, object> nbt)
         {
-            if (nbt.Count == 1 && nbt.TryGetValue("", out object rootMessage))
+            if (nbt.Count == 1 && nbt.TryGetValue("", out object? rootMessage))
             {
                 // Nameless root tag
                 return (string)rootMessage;
             }
 
             string message = string.Empty;
+            string colorCode = string.Empty;
             StringBuilder extraBuilder = new StringBuilder();
             foreach (var kvp in nbt)
             {
@@ -452,35 +453,40 @@ namespace MinecraftClient.Protocol.Message
                             for (int i = 0; i < extras.Length; i++)
                             {
                                 var extraDict = (Dictionary<string, object>)extras[i];
-                                if (extraDict.TryGetValue("text", out object extraText))
-                                {
-                                    extraBuilder.Append(extraText);
-                                }
+                                extraBuilder.Append(NbtToString(extraDict) + "§r");
                             }
                         }
                         break;
-                    case "with":
+                    case "translate":
                         {
                             if (nbt.TryGetValue("translate", out object translate))
                             {
                                 var translateKey = (string)translate;
                                 List<string> translateString = new();
-                                var withs = (object[])value;
-                                for (int i = 0; i < withs.Length; i++)
+                                if (nbt.TryGetValue("with", out object withComponent))
                                 {
-                                    var withDict = (Dictionary<string, object>)withs[i];
-                                    if (withDict.TryGetValue("text", out object withText))
+                                    var withs = (object[])withComponent;
+                                    for (int i = 0; i < withs.Length; i++)
                                     {
-                                        translateString.Add((string)withText);
+                                        var withDict = (Dictionary<string, object>)withs[i];
+                                        translateString.Add(NbtToString(withDict));
                                     }
                                 }
                                 message = TranslateString(translateKey, translateString);
                             }
                         }
                         break;
+                    case "color":
+                        {
+                            if (nbt.TryGetValue("color", out object color))
+                            {
+                                colorCode = Color2tag((string)color);
+                            }
+                        }
+                        break;
                 }
             }
-            return message + extraBuilder.ToString();
+            return colorCode + message + extraBuilder.ToString();
         }
     }
 }
