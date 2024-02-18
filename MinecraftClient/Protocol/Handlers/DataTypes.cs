@@ -565,11 +565,8 @@ namespace MinecraftClient.Protocol.Handlers
                 var nextId = cache.Dequeue();
                 if (protocolversion < Protocol18Handler.MC_1_20_2_Version)
                 {
-                    if (nextId is 10) // TAG_Compound
+                    if (nextId is not 10) // TAG_Compound
                         throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
-                    
-                    // Read TAG_Compound
-                    ReadNextByte(cache);
                     
                     // NBT root name
                     var rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
@@ -595,9 +592,6 @@ namespace MinecraftClient.Protocol.Handlers
                             { "", result }
                         };
                     }
-                    
-                    // Read TAG_Compound
-                    //ReadNextByte(cache);
                 }
             }
 
