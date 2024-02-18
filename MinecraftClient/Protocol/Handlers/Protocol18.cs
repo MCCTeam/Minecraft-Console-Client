@@ -980,6 +980,7 @@ namespace MinecraftClient.Protocol.Handlers
                     chunkBatchStartTime = GetNanos();
                     break;
                 case PacketTypesIn.StartConfiguration:
+                    currentState = CurrentState.Configuration;
                     SendAcknowledgeConfiguration();
                     break;
                 case PacketTypesIn.HideMessage:
