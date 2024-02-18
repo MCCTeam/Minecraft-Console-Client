@@ -452,7 +452,10 @@ namespace MinecraftClient.Protocol.Message
                             object[] extras = (object[])value;
                             for (int i = 0; i < extras.Length; i++)
                             {
-                                var extraDict = (Dictionary<string, object>)extras[i];
+                                var extraDict = extras[i] is string
+                                    ? new Dictionary<string, object>() { { "text", (string)extras[i] } }
+                                    : (Dictionary<string, object>)extras[i];
+                                
                                 extraBuilder.Append(NbtToString(extraDict) + "§r");
                             }
                         }
