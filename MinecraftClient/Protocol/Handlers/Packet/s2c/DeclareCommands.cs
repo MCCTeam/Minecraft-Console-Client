@@ -29,7 +29,19 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 Parser? parser = null;
                 if ((flags & 0x03) == 2)
                 {
-                    if (protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
+                    if (protocolVersion switch
+                        {
+                            Protocol18Handler.MC_1_19_Version => parserId == 50,
+                            Protocol18Handler.MC_1_19_2_Version => parserId == 50,
+                            Protocol18Handler.MC_1_19_3_Version => parserId == 50,
+                            Protocol18Handler.MC_1_19_4_Version => parserId == 50,
+                            Protocol18Handler.MC_1_20_Version => parserId == 51,
+                            Protocol18Handler.MC_1_20_2_Version => parserId == 51,
+                            _ => false
+                        }) 
+                        parser = new ParserForgeEnum(dataTypes, packetData);
+
+                    else if (protocolVersion <= Protocol18Handler.MC_1_19_2_Version)
                         parser = parserId switch
                         {
                             1 => new ParserFloat(dataTypes, packetData),
@@ -642,6 +654,29 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             public override string GetName()
             {
                 return "minecraft:time";
+            }
+        }
+
+        internal class ParserForgeEnum : Parser
+        {
+            public ParserForgeEnum(DataTypes dataTypes, Queue<byte> packetData)
+            {
+                dataTypes.ReadNextString(packetData);
+            }
+
+            public override bool Check(string text)
+            {
+                return true;
+            }
+
+            public override int GetArgCnt()
+            {
+                return 1;
+            }
+
+            public override string GetName()
+            {
+                return "forge:enum";
             }
         }
     }
