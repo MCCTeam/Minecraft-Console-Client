@@ -506,14 +506,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="protocolVersion">Minecraft protocol version</param>
         /// <returns>ForgeInfo item stating that Forge is enabled</returns>
+        /// <para>
+        /// 1.18 change the fml version to 3
+        /// https://github.com/MinecraftForge/MinecraftForge/commit/997d8e0aa28b831edcd712e59a96181d3b2117d4
+        /// </para>
         public static ForgeInfo ServerForceForge(int protocolVersion)
         {
             if (ServerMayForceForge(protocolVersion))
-            {    
-                // 1.17 is still FML2
-                // https://github.com/MinecraftForge/MinecraftForge/blob/50b5414033de82f46be23201db50484f36c37d4f/src/main/java/net/minecraftforge/fmllegacy/network/FMLNetworkConstants.java#L37C29-L37C42
-                // 1.18 change the constant FMLNETVERSION to 3
-                // https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/NetworkConstants.java#L28
+            {
                 if (protocolVersion > ProtocolHandler.MCVer2ProtocolVersion("1.18"))
                 {
                     return new ForgeInfo(FMLVersion.FML3);
