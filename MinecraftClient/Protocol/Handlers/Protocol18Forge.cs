@@ -417,21 +417,13 @@ namespace MinecraftClient.Protocol.Handlers
                         case 5:
                             // FML 3
                             // Server Config: FMLHandshakeMessages.java > S2CModData > decode()
+                            // [     Size      ][ VarInt ]
+                            // [ Mod Data List ][  Array ] [    Mod Id    ][ String ]
+                            //                             [ Display Name ][ String ]
+                            //                             [    Version   ][ String ]
                             //
                             // We're ignoring this packet in MCC
                             
-                            /*
-                            // Uncomment this code block if needed
-                            var size = dataTypes.ReadNextVarInt(packetData);
-                            Dictionary<string, string> modsData = new();
-                            for (int i = 0; i < size; i++)
-                            {
-                                var modId = dataTypes.ReadNextString(packetData);
-                                var displayName = dataTypes.ReadNextString(packetData);
-                                var version = dataTypes.ReadNextString(packetData);
-                                modsData.Add(modId, displayName + ":" + version);
-                            }
-                            */
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mod Data List");
@@ -441,20 +433,11 @@ namespace MinecraftClient.Protocol.Handlers
                         case 6:
                             // FML 3
                             // Server Config: FMLHandshakeMessages.java > S2CChannelMismatchData > decode()
-                            //
+                            // [         Size        ][ VarInt ]
+                            // [ Mismatched Mod List ][ Array  ] [ Mod Id  ][ String ]
+                            //                                   [ Version ][ String ]
                             // We're ignoring this packet in MCC
 
-                            /*
-                            // Uncomment this code block if needed
-                            Dictionary<string, string> mismatchedMods = new();
-                            var size0 = dataTypes.ReadNextVarInt(packetData);
-                            for (int i = 0; i < size0; i++)
-                            {
-                                var modId = dataTypes.ReadNextString(packetData);
-                                var version = dataTypes.ReadNextString(packetData);
-                                mismatchedMods.Add(modId, version);
-                            }
-                            */
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mismatched Mods List");
