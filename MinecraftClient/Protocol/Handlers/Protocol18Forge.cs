@@ -514,7 +514,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (ServerMayForceForge(protocolVersion))
             {
-                if (protocolVersion > ProtocolHandler.MCVer2ProtocolVersion("1.18"))
+                if (protocolVersion >= ProtocolHandler.MCVer2ProtocolVersion("1.18"))
                 {
                     return new ForgeInfo(FMLVersion.FML3);
                 }
