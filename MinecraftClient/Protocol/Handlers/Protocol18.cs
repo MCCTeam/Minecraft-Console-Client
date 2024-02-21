@@ -452,7 +452,6 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (Exception innerException)
             {
-                //throw;
                 if (innerException is ThreadAbortException || innerException is SocketException ||
                     innerException.InnerException is SocketException)
                     throw; //Thread abort or Connection lost rather than invalid data
