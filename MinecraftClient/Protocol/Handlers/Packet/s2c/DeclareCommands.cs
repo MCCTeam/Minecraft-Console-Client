@@ -101,9 +101,6 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                                    protocolVersion <= Protocol18Handler.MC_1_20_2_Version) ? // 1.20 - 1.20.2
                               new ParserForgeEnum(dataTypes, packetData) :
                               new ParserEmpty(dataTypes, packetData),
-                            52 => protocolVersion > Protocol18Handler.MC_1_20_2_Version ? // 1.20.2 +
-                              new ParserForgeEnum(dataTypes, packetData) :
-                              new ParserEmpty(dataTypes, packetData),
                             _ => new ParserEmpty(dataTypes, packetData),
                         };
                 }
