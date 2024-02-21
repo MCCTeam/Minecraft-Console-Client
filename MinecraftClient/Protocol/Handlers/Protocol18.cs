@@ -365,8 +365,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetId, Queue<byte> packetData)
         {
-            //try
-            //{
+            try
+            {
                 switch (currentState)
                 {
                     // https://wiki.vg/Protocol#Login
@@ -403,16 +403,16 @@ namespace MinecraftClient.Protocol.Handlers
                                 handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick,
                                     dataTypes.ReadNextChat(packetData));
                                 return false;
-                            
+
                             case ConfigurationPacketTypesIn.FinishConfiguration:
                                 currentState = CurrentState.Play;
                                 SendPacket(ConfigurationPacketTypesOut.FinishConfiguration, new List<byte>());
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.KeepAlive:
                                 SendPacket(ConfigurationPacketTypesOut.KeepAlive, packetData);
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.Ping:
                                 SendPacket(ConfigurationPacketTypesOut.Pong, packetData);
                                 break;
@@ -425,12 +425,12 @@ namespace MinecraftClient.Protocol.Handlers
                                     World.StoreDimensionList(registryCodec);
 
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.RemoveResourcePack:
                                 if (dataTypes.ReadNextBool(packetData)) // Has UUID
                                     dataTypes.ReadNextUUID(packetData); // UUID
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.ResourcePack:
                                 HandleResourcePackPacket(packetData);
                                 break;
@@ -449,23 +449,23 @@ namespace MinecraftClient.Protocol.Handlers
                     default:
                         return true;
                 }
-            //}
-            //catch (Exception innerException)
-            //{
-            //    //throw;
-            //    if (innerException is ThreadAbortException || innerException is SocketException ||
-            //        innerException.InnerException is SocketException)
-            //        throw; //Thread abort or Connection lost rather than invalid data
+            }
+            catch (Exception innerException)
+            {
+                //throw;
+                if (innerException is ThreadAbortException || innerException is SocketException ||
+                    innerException.InnerException is SocketException)
+                    throw; //Thread abort or Connection lost rather than invalid data
 
-            //    throw new System.IO.InvalidDataException(
-            //        string.Format(Translations.exception_packet_process,
-            //            packetPalette.GetIncomingTypeById(packetId),
-            //            packetId,
-            //            protocolVersion,
-            //            currentState == CurrentState.Login,
-            //            innerException.GetType()),
-            //        innerException);
-            //}
+                throw new System.IO.InvalidDataException(
+                    string.Format(Translations.exception_packet_process,
+                        packetPalette.GetIncomingTypeById(packetId),
+                        packetId,
+                        protocolVersion,
+                        currentState == CurrentState.Login,
+                        innerException.GetType()),
+                    innerException);
+            }
 
             return true;
         }
@@ -473,10 +473,10 @@ namespace MinecraftClient.Protocol.Handlers
         public void HandleResourcePackPacket(Queue<byte> packetData)
         {
             var uuid = Guid.Empty;
-                                
+
             if (protocolVersion >= MC_1_20_4_Version)
                 uuid = dataTypes.ReadNextUUID(packetData);
-                                
+
             var url = dataTypes.ReadNextString(packetData);
             var hash = dataTypes.ReadNextString(packetData);
 
@@ -493,21 +493,23 @@ namespace MinecraftClient.Protocol.Handlers
                 return;
 
             //Send back "accepted" and "successfully loaded" responses for plugins or server config making use of resource pack mandatory
-            var responseHeader = protocolVersion < MC_1_10_Version // After 1.10, the MC does not include resource pack hash in responses
-                ? dataTypes.ConcatBytes(DataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash))
-                : Array.Empty<byte>();
-            
+            var responseHeader =
+                protocolVersion < MC_1_10_Version // After 1.10, the MC does not include resource pack hash in responses
+                    ? dataTypes.ConcatBytes(DataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash))
+                    : Array.Empty<byte>();
+
             var basePacketData = protocolVersion >= MC_1_20_4_Version && uuid != Guid.Empty
                 ? dataTypes.ConcatBytes(responseHeader, DataTypes.GetUUID(uuid))
                 : responseHeader;
 
             var acceptedResourcePackData = dataTypes.ConcatBytes(basePacketData, DataTypes.GetVarInt(3));
             var loadedResourcePackData = dataTypes.ConcatBytes(basePacketData, DataTypes.GetVarInt(0));
-            
+
             if (currentState == CurrentState.Configuration)
             {
                 SendPacket(ConfigurationPacketTypesOut.ResourcePackResponse, acceptedResourcePackData); // Accepted
-                SendPacket(ConfigurationPacketTypesOut.ResourcePackResponse, loadedResourcePackData); // Successfully loaded
+                SendPacket(ConfigurationPacketTypesOut.ResourcePackResponse,
+                    loadedResourcePackData); // Successfully loaded
             }
             else
             {
@@ -515,7 +517,7 @@ namespace MinecraftClient.Protocol.Handlers
                 SendPacket(PacketTypesOut.ResourcePackStatus, loadedResourcePackData); // Successfully loaded
             }
         }
-        
+
         private bool HandlePlayPackets(int packetId, Queue<byte> packetData)
         {
             switch (packetPalette.GetIncomingTypeById(packetId))
@@ -1677,7 +1679,7 @@ namespace MinecraftClient.Protocol.Handlers
                     var hasIcon = dataTypes.ReadNextBool(packetData);
                     if (hasIcon)
                     {
-                        if(protocolVersion < MC_1_20_2_Version)
+                        if (protocolVersion < MC_1_20_2_Version)
                             iconBase64 = dataTypes.ReadNextString(packetData);
                         else
                         {
@@ -2164,9 +2166,9 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketTypesIn.ResetScore:
                     dataTypes.ReadNextString(packetData); // Entity Name
-                    if(dataTypes.ReadNextBool(packetData)) // Has Objective Name
+                    if (dataTypes.ReadNextBool(packetData)) // Has Objective Name
                         dataTypes.ReadNextString(packetData); // Objective Name
-                    
+
                     break;
                 case PacketTypesIn.SpawnEntity:
                     if (handler.GetEntityHandlingEnabled())
@@ -2517,7 +2519,7 @@ namespace MinecraftClient.Protocol.Handlers
                         dataTypes.ReadNextVarInt(packetData); // Block Interaction
                         dataTypes.ReadParticleData(packetData, itemPalette); // Small Explosion Particles
                         dataTypes.ReadParticleData(packetData, itemPalette); // Large Explosion Particles
-                        
+
                         // Explosion Sound
                         dataTypes.ReadNextString(packetData); // Sound Name
                         var hasFixedRange = dataTypes.ReadNextBool(packetData);
@@ -2533,11 +2535,11 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.ScoreboardObjective:
                     var objectiveName = dataTypes.ReadNextString(packetData);
                     var mode = dataTypes.ReadNextByte(packetData);
-                    
+
                     var objectiveValue = string.Empty;
                     var objectiveType = -1;
                     var numberFormat = 0;
-                    
+
                     if (mode is 0 or 2)
                     {
                         objectiveValue = dataTypes.ReadNextChat(packetData);
@@ -2560,15 +2562,16 @@ namespace MinecraftClient.Protocol.Handlers
                     var objectiveValue2 = -1;
                     var objectiveDisplayName3 = string.Empty;
                     var numberFormat2 = 0;
-                    
+
                     if (protocolVersion >= MC_1_20_4_Version)
                     {
                         objectiveName3 = dataTypes.ReadNextString(packetData); // Objective Name
                         objectiveValue2 = dataTypes.ReadNextVarInt(packetData); // Value
 
                         if (dataTypes.ReadNextBool(packetData)) // Has Display Name
-                            objectiveDisplayName3 = ChatParser.ParseText(dataTypes.ReadNextString(packetData)); // Has Display Name
-                        
+                            objectiveDisplayName3 =
+                                ChatParser.ParseText(dataTypes.ReadNextString(packetData)); // Has Display Name
+
                         if (dataTypes.ReadNextBool(packetData)) // Has Number Format
                             numberFormat2 = dataTypes.ReadNextVarInt(packetData); // Number Format
                     }
@@ -2580,12 +2583,13 @@ namespace MinecraftClient.Protocol.Handlers
 
                         if (action3 != 1 || protocolVersion >= MC_1_8_Version)
                             objectiveName3 = dataTypes.ReadNextString(packetData);
-                        
+
                         if (action3 != 1)
                             objectiveValue2 = dataTypes.ReadNextVarInt(packetData);
                     }
 
-                    handler.OnUpdateScore(entityName, action3, objectiveName3, objectiveDisplayName3, objectiveValue2, numberFormat2);
+                    handler.OnUpdateScore(entityName, action3, objectiveName3, objectiveDisplayName3, objectiveValue2,
+                        numberFormat2);
                     break;
                 case PacketTypesIn.BlockChangedAck:
                     handler.OnBlockChangeAck(dataTypes.ReadNextVarInt(packetData));
@@ -2635,7 +2639,7 @@ namespace MinecraftClient.Protocol.Handlers
                     dataTypes.ReadNextFloat(packetData);
                     dataTypes.ReadNextBool(packetData);
                     break;
-                
+
                 default:
                     return false; //Ignored packet
             }
@@ -2704,7 +2708,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             SendPacket(packetPalette.GetOutgoingIdByType(packet), packetData);
         }
-        
+
         /// <summary>
         /// Send a configuration packet to the server. Packet ID, compression, and encryption will be handled automatically.
         /// </summary>
@@ -4493,7 +4497,7 @@ namespace MinecraftClient.Protocol.Handlers
                     return false;
                 }
             }
-            
+
             return false;
         }
 

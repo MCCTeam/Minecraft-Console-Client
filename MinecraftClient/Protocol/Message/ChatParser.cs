@@ -471,7 +471,10 @@ namespace MinecraftClient.Protocol.Message
                                     var withs = (object[])withComponent;
                                     for (int i = 0; i < withs.Length; i++)
                                     {
-                                        var withDict = (Dictionary<string, object>)withs[i];
+                                        var withDict = withs[i] is string
+                                            ? new Dictionary<string, object>() { { "text", (string)withs[i] } }
+                                            : (Dictionary<string, object>)withs[i];
+                                        
                                         translateString.Add(NbtToString(withDict));
                                     }
                                 }
