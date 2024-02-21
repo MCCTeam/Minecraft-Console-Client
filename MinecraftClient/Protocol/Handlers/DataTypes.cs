@@ -686,7 +686,6 @@ namespace MinecraftClient.Protocol.Handlers
                     ? key >> 5 // 1.8
                     : ReadNextVarInt(cache); // 1.9+
 
-
                 EntityMetaDataType type;
                 try
                 {
