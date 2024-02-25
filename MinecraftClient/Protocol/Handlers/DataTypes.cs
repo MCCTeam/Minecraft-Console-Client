@@ -735,11 +735,11 @@ namespace MinecraftClient.Protocol.Handlers
                         value = ReadNextString(cache);
                         break;
                     case EntityMetaDataType.Chat: // Chat
-                        value = ReadNextString(cache);
+                        value = ReadNextChat(cache);
                         break;
                     case EntityMetaDataType.OptionalChat: // Optional Chat
                         if (ReadNextBool(cache))
-                            value = ReadNextString(cache);
+                            value = ReadNextChat(cache);
                         break;
                     case EntityMetaDataType.Slot: // Slot
                         value = ReadNextItemSlot(cache, itemPalette);
