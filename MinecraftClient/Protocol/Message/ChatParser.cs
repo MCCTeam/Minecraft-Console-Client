@@ -462,8 +462,10 @@ namespace MinecraftClient.Protocol.Message
                                 }
                                 catch
                                 {
-                                    ConsoleIO.WriteLine("[DEBUG] Full object:" + JsonSerializer.Serialize(extras));
+                                    ConsoleIO.WriteLine("[DEBUG] Full NBT object:" + JsonSerializer.Serialize(nbt));
+                                    ConsoleIO.WriteLine("[DEBUG] Full extras object:" + JsonSerializer.Serialize(extras));
                                     ConsoleIO.WriteLine("[DEBUG] Value in question:" + JsonSerializer.Serialize(extras[i]));
+                                    ConsoleIO.WriteLine("[DEBUG] Full string builder so far:" + extraBuilder.ToString());
                                     throw;
                                 }
                             }
@@ -490,9 +492,10 @@ namespace MinecraftClient.Protocol.Message
                                         }
                                         catch
                                         {
-                                            ConsoleIO.WriteLine("[DEBUG] Full object:" + JsonSerializer.Serialize(withs));
+                                            ConsoleIO.WriteLine("[DEBUG] Full NBT object:" + JsonSerializer.Serialize(nbt));
+                                            ConsoleIO.WriteLine("[DEBUG] Full withs object:" + JsonSerializer.Serialize(withs));
                                             ConsoleIO.WriteLine("[DEBUG] Value in question:" + JsonSerializer.Serialize(withs[i]));
-                                            
+                                            ConsoleIO.WriteLine("[DEBUG] Full string builder so far:" + extraBuilder.ToString());
                                             throw;
                                         }
                                     }
