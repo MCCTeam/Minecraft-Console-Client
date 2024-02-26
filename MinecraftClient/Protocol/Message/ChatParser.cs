@@ -452,11 +452,20 @@ namespace MinecraftClient.Protocol.Message
                             object[] extras = (object[])value;
                             for (int i = 0; i < extras.Length; i++)
                             {
-                                var extraDict = extras[i] is string
-                                    ? new Dictionary<string, object>() { { "text", (string)extras[i] } }
-                                    : (Dictionary<string, object>)extras[i];
-                                
-                                extraBuilder.Append(NbtToString(extraDict) + "§r");
+                                try
+                                {
+                                    var extraDict = extras[i] is string
+                                        ? new Dictionary<string, object>() { { "text", (string)extras[i] } }
+                                        : (Dictionary<string, object>)extras[i];
+
+                                    extraBuilder.Append(NbtToString(extraDict) + "§r");
+                                }
+                                catch
+                                {
+                                    ConsoleIO.WriteLine("[DEBUG] Full object:" + JsonSerializer.Serialize(extras));
+                                    ConsoleIO.WriteLine("[DEBUG] Value in question:" + JsonSerializer.Serialize(extras[i]));
+                                    throw;
+                                }
                             }
                         }
                         break;
@@ -471,11 +480,21 @@ namespace MinecraftClient.Protocol.Message
                                     var withs = (object[])withComponent;
                                     for (int i = 0; i < withs.Length; i++)
                                     {
-                                        var withDict = withs[i] is string
-                                            ? new Dictionary<string, object>() { { "text", (string)withs[i] } }
-                                            : (Dictionary<string, object>)withs[i];
+                                        try
+                                        {
+                                            var withDict = withs[i] is string
+                                                ? new Dictionary<string, object>() { { "text", (string)withs[i] } }
+                                                : (Dictionary<string, object>)withs[i];
                                         
-                                        translateString.Add(NbtToString(withDict));
+                                            translateString.Add(NbtToString(withDict));
+                                        }
+                                        catch
+                                        {
+                                            ConsoleIO.WriteLine("[DEBUG] Full object:" + JsonSerializer.Serialize(withs));
+                                            ConsoleIO.WriteLine("[DEBUG] Value in question:" + JsonSerializer.Serialize(withs[i]));
+                                            
+                                            throw;
+                                        }
                                     }
                                 }
                                 message = TranslateString(translateKey, translateString);
