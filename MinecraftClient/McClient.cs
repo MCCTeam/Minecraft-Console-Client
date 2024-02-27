@@ -195,7 +195,7 @@ namespace MinecraftClient
             SentrySdk.ConfigureScope(scope =>
             {
                 scope.SetTag("Protocol Version", protocolversion.ToString());
-                scope.SetTag("Minecraft Version", InternalConfig.MinecraftVersion);
+                scope.SetTag("Minecraft Version", ProtocolHandler.ProtocolVersion2MCVer(protocolversion));
                 scope.SetTag("MCC Build", Program.BuildInfo == null ? "Debug" : Program.BuildInfo);
                     
                 if (forgeInfo != null)
@@ -204,17 +204,19 @@ namespace MinecraftClient
                 scope.Contexts["Server Information"] = new
                 {
                     ProtocolVersion = protocolversion,
-                    MinecraftVersion = InternalConfig.MinecraftVersion,
+                    MinecraftVersion = ProtocolHandler.ProtocolVersion2MCVer(protocolversion),
                     ForgeInfo = forgeInfo?.Version
                 };
                 
-                scope.Contexts["Client Information"] = new 
+                scope.Contexts["Client Configuration"] = new 
                 {
                     TerrainAndMovementsEnabled = terrainAndMovementsEnabled,
                     InventoryHandlingEnabled = inventoryHandlingEnabled,
                     EntityHandlingEnabled = entityHandlingEnabled
                 };
             });
+            
+            SentrySdk.StartSession();
             
             /* Load commands from Commands namespace */
             LoadCommands();
@@ -593,6 +595,8 @@ namespace MinecraftClient
                 }
             }
 
+            SentrySdk.EndSession();
+            
             if (!will_restart)
             {
                 ConsoleInteractive.ConsoleReader.StopReadThread();

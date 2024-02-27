@@ -60,7 +60,7 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            // SENTRY: Initialize Sentry SDK
+            // [SENTRY] Initialize Sentry SDK
             _sentrySdk = SentrySdk.Init(options => {
                 options.Dsn = "https://a64e21ac3d5a52e1d98893a251bba89d@o405596.ingest.sentry.io/4506723841015808";
                 options.AutoSessionTracking = true;
@@ -642,6 +642,9 @@ namespace MinecraftClient
                     }
                     catch (Exception e)
                     {
+                        // [SENTRY]
+                        SentrySdk.CaptureException(e);
+                        
                         ConsoleIO.WriteLine(e.Message);
                         ConsoleIO.WriteLine(e.StackTrace ?? "");
                         HandleFailure(); // Other error
