@@ -195,7 +195,17 @@ jobs:
         filePath: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
         assetName: ${{ env.PROJECT }}-${{ (contains(matrix.target, 'linux-x64') && 'linux.zip') || (contains(matrix.target, 'win-x86') && 'windows-x86.zip') || (contains(matrix.target, 'win-x64') && 'windows-x64.zip') || (contains(matrix.target, 'linux-arm64') && 'linux-arm64.zip') || (contains(matrix.target, 'osx-x64') && 'osx.zip') }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
-        
+
+    - name: Sentry Release
+      uses: getsentry/action-release@v1.7.0
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      with:
+        environment: production
+        dist: ${{ format('{0}-{1}', env.date, github.run_number) }}
+      
   determine-build:
     runs-on: ubuntu-latest
     strategy:
