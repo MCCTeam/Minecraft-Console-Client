@@ -177,6 +177,7 @@ jobs:
       run: |
         echo '' >> ${{ env.assembly-info }}
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env.date_dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
+        sed -i -e 's/SentryDSN = "";/SentryDSN = "${{ secrets.SENTRY_DSN }}";/g' ${{ env.project-path }}/Program.cs
 
     - name: Build Target
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r ${{ matrix.target }} ${{ env.compile-flags }}

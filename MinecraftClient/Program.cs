@@ -55,20 +55,27 @@ namespace MinecraftClient
         private static bool useMcVersionOnce = false;
         private static string settingsIniPath = "MinecraftClient.ini";
 
+        // [SENTRY]
+        // Setting this string to an empty string will disable Sentry
+        private const string SentryDSN = "";
+
         /// <summary>
         /// The main entry point of Minecraft Console Client
         /// </summary>
         static void Main(string[] args)
         {
-            // [SENTRY] Initialize Sentry SDK
-            _sentrySdk = SentrySdk.Init(options => {
-                options.Dsn = "https://a64e21ac3d5a52e1d98893a251bba89d@o405596.ingest.sentry.io/4506723841015808";
-                options.AutoSessionTracking = true;
-                options.IsGlobalModeEnabled = true;
-                options.EnableTracing = true;
-                options.SendDefaultPii = false;
-            });
-            
+            // [SENTRY] Initialize Sentry SDK only if the DSN is not empty
+            if (SentryDSN != string.Empty) {
+                _sentrySdk = SentrySdk.Init(options =>
+                {
+                    options.Dsn = SentryDSN;
+                    options.AutoSessionTracking = true;
+                    options.IsGlobalModeEnabled = true;
+                    options.EnableTracing = true;
+                    options.SendDefaultPii = false;
+                });
+            }
+
             Task.Run(() =>
             {
                 // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
@@ -150,7 +157,12 @@ namespace MinecraftClient
                     if (newlyGenerated)
                         ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_settings_generated);
                     ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
-                    ConsoleIO.WriteLine(Translations.mcc_sentry_logging);
+
+                    // Only show the Sentry message if the DSN is not empty
+                    // as Sentry will not be initialized if the DSN is empty
+                    if (SentryDSN != string.Empty) {
+                        ConsoleIO.WriteLine(Translations.mcc_sentry_logging);
+                    }
                 }
                 else if (!loadSucceed)
                 {
