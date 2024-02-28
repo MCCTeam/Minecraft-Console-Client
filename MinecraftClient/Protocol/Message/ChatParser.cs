@@ -450,13 +450,19 @@ namespace MinecraftClient.Protocol.Message
                     case "extra":
                         {
                             object[] extras = (object[])value;
-                            for (int i = 0; i < extras.Length; i++)
+                            for (var i = 0; i < extras.Length; i++)
                             {
                                 try
                                 {
-                                    var extraDict = extras[i] is string
-                                        ? new Dictionary<string, object>() { { "text", (string)extras[i] } }
-                                        : (Dictionary<string, object>)extras[i];
+                                    var extraDict = extras[i] switch
+                                    {
+                                        int => new Dictionary<string, object> { { "text", $"{extras[i]}" } },
+                                        string => new Dictionary<string, object>
+                                        {
+                                            { "text", (string)extras[i] }
+                                        },
+                                        _ => (Dictionary<string, object>)extras[i]
+                                    };
 
                                     extraBuilder.Append(NbtToString(extraDict) + "§r");
                                 }
@@ -480,14 +486,20 @@ namespace MinecraftClient.Protocol.Message
                                 if (nbt.TryGetValue("with", out object withComponent))
                                 {
                                     var withs = (object[])withComponent;
-                                    for (int i = 0; i < withs.Length; i++)
+                                    for (var i = 0; i < withs.Length; i++)
                                     {
                                         try
                                         {
-                                            var withDict = withs[i] is string
-                                                ? new Dictionary<string, object>() { { "text", (string)withs[i] } }
-                                                : (Dictionary<string, object>)withs[i];
-                                        
+                                            var withDict = withs[i] switch
+                                            {
+                                                int => new Dictionary<string, object> { { "text", $"{withs[i]}" } },
+                                                string => new Dictionary<string, object>
+                                                {
+                                                    { "text", (string)withs[i] }
+                                                },
+                                                _ => (Dictionary<string, object>)withs[i]
+                                            };
+
                                             translateString.Add(NbtToString(withDict));
                                         }
                                         catch
