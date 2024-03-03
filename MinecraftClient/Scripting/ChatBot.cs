@@ -1074,9 +1074,9 @@ namespace MinecraftClient.Scripting
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        protected bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
+        protected bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true, Direction blockFace = Direction.Down)
         {
-            return Handler.DigBlock(location, swingArms, lookAtBlock);
+            return Handler.DigBlock(location, swingArms, lookAtBlock, blockFace: blockFace);
         }
 
         /// <summary>

@@ -2266,7 +2266,7 @@ namespace MinecraftClient
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
+        public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true, double duration = 0, Direction blockFace = Direction.Down)
         {
             if (!GetTerrainEnabled())
                 return false;
@@ -2275,7 +2275,6 @@ namespace MinecraftClient
                 return InvokeOnMainThread(() => DigBlock(location, swingArms, lookAtBlock, duration));
 
             // TODO select best face from current player location
-            Direction blockFace = Direction.Down;
 
             lock (DigLock)
             {
