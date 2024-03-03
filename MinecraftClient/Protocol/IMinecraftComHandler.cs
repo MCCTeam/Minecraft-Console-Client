@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
-using MinecraftClient.Mapping;
-using MinecraftClient.Protocol.Message;
-using MinecraftClient.Protocol.ProfileKey;
-using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol
 {
@@ -23,16 +22,12 @@ namespace MinecraftClient.Protocol
         int GetServerPort();
         string GetServerHost();
         string GetUsername();
-        Guid GetUserUuid();
-        string GetUserUuidStr();
+        string GetUserUUID();
         string GetSessionID();
         string[] GetOnlinePlayers();
         Dictionary<string, string> GetOnlinePlayersWithUUID();
-        PlayerInfo? GetPlayerInfo(Guid uuid);
-        PlayerKeyPair? GetPlayerKeyPair();
         Location GetCurrentLocation();
         World GetWorld();
-        bool GetIsSupportPreviewsChat();
         bool GetTerrainEnabled();
         bool SetTerrainEnabled(bool enabled);
         bool GetInventoryEnabled();
@@ -42,7 +37,7 @@ namespace MinecraftClient.Protocol
         bool GetNetworkPacketCaptureEnabled();
         void SetNetworkPacketCaptureEnabled(bool enabled);
         int GetProtocolVersion();
-        Container? GetInventory(int inventoryID);
+        Container GetInventory(int inventoryID);
         ILogger GetLogger();
 
         /// <summary>
@@ -80,13 +75,14 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-        void OnGameJoined(bool isOnlineMode);
+        void OnGameJoined();
 
         /// <summary>
-        /// Received chat/system message from the server
+        /// This method is called when the protocol handler receives a chat message
         /// </summary>
-        /// <param name="message">Message received</param>
-        public void OnTextReceived(ChatMessage message);
+        /// <param name="text">Text received from the server</param>
+        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
+        void OnTextReceived(string text, bool isJson);
 
         /// <summary>
         /// Will be called every animations of the hit and place block
@@ -94,12 +90,6 @@ namespace MinecraftClient.Protocol
         /// <param name="entityID">Player ID</param>
         /// <param name="animation">0 = LMB, 1 = RMB (RMB Corrent not work)</param>
         void OnEntityAnimation(int entityID, byte animation);
-
-        /// <summary>
-        /// Will be called when a Synchronization sequence is recevied, this sequence need to be sent when breaking or placing blocks
-        /// </summary>
-        /// <param name="sequenceId">Sequence ID</param>
-        void OnBlockChangeAck(int sequenceId);
 
         /// <summary>
         /// Will be called every player break block in gamemode 0
@@ -113,27 +103,11 @@ namespace MinecraftClient.Protocol
         /// This method is called when the protocol handler receives a title
         /// </summary>
         void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json);
-
+        
         /// <summary>
         /// Called when receiving a connection keep-alive from the server
         /// </summary>
         void OnServerKeepAlive();
-
-        /// <summary>
-        /// This method is called when the protocol handler receives server data
-        /// </summary>
-        /// <param name="hasMotd">Indicates if the server has a motd message</param>
-        /// <param name="motd">Server MOTD message</param>
-        /// <param name="hasIcon">Indicates if the server has a an icon</param>
-        /// <param name="iconBase64">Server icon in Base 64 format</param>
-        /// <param name="previewsChat">Indicates if the server previews chat</param>
-        void OnServerDataRecived(bool hasMotd, string motd, bool hasIcon, string iconBase64, bool previewsChat);
-
-        /// <summary>
-        /// This method is called when the protocol handler receives "Set Display Chat Preview" packet
-        /// </summary>
-        /// <param name="previewsChat">Indicates if the server previews chat</param>
-        public void OnChatPreviewSettingUpdate(bool previewsChat);
 
         /// <summary>
         /// Called when an inventory is opened
@@ -151,23 +125,17 @@ namespace MinecraftClient.Protocol
         void OnRespawn();
 
         /// <summary>
-        /// Triggered when a new player joins the game
+        /// This method is called when a new player joins the game
         /// </summary>
-        /// <param name="player">player info</param>
-        public void OnPlayerJoin(PlayerInfo player);
+        /// <param name="uuid">UUID of the player</param>
+        /// <param name="name">Name of the player</param>
+        void OnPlayerJoin(Guid uuid, string name);
 
         /// <summary>
         /// This method is called when a player has left the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
         void OnPlayerLeave(Guid uuid);
-
-        /// <summary>
-        /// This method is called when a player has been killed by another entity
-        /// </summary>
-        /// <param name="killerEntityId">Killer's entity if</param>
-        /// <param name="chatMessage">message sent in chat when player is killed</param>
-        void OnPlayerKilled(int killerEntityId, string chatMessage);
 
         /// <summary>
         /// Called when the server sets the new location for the player
@@ -224,15 +192,15 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="entity">Spawned entity</param>
         void OnSpawnEntity(Entity entity);
-
+        
         /// <summary>
         /// Called when an entity has spawned
         /// </summary>
         /// <param name="entityid">Entity id</param>
         /// <param name="slot">Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)/param>
         /// <param name="item">Item/param>
-        void OnEntityEquipment(int entityid, int slot, Item? item);
-
+        void OnEntityEquipment(int entityid, int slot, Item item);
+        
         /// <summary>
         /// Called when a player spawns or enters the client's render distance
         /// </summary>
@@ -258,27 +226,6 @@ namespace MinecraftClient.Protocol
         /// <param name="Dz">Z offset</param>
         /// <param name="onGround">TRUE if on ground</param>
         void OnEntityPosition(int entityID, Double dx, Double dy, Double dz, bool onGround);
-
-        /// <summary>
-        /// Called when an entity moved and rotated
-        /// </summary>
-        /// <param name="EntityID">Entity ID</param>
-        /// <param name="Dx">X offset</param>
-        /// <param name="Dy">Y offset</param>
-        /// <param name="Dz">Z offset</param>
-        /// <param name="yaw">Yaw</param>
-        /// <param name="pitch">Pitch</param>
-        /// <param name="onGround">TRUE if on ground</param>
-        void OnEntityPosition(int entityID, Double dx, Double dy, Double dz, float yaw, float pitch, bool onGround);
-
-        /// <summary>
-        /// Called when an entity rotated
-        /// </summary>
-        /// <param name="EntityID">Entity ID</param>
-        /// <param name="yaw">Yaw</param>
-        /// <param name="pitch">Pitch</param>
-        /// <param name="onGround">TRUE if on ground</param>
-        void OnEntityRotation(int entityID, float yaw, float pitch, bool onGround);
 
         /// <summary>
         /// Called when an entity moved to fixed coordinates
@@ -312,21 +259,11 @@ namespace MinecraftClient.Protocol
         void OnTimeUpdate(long worldAge, long timeOfDay);
 
         /// <summary>
-        /// When received window properties from server.
-        /// 
-        /// </summary>
-        /// <param name="inventoryID">Inventory ID</param>
-        /// <param name="propertyId">Property ID</param>
-        /// <param name="propertyValue">Property Value</param>
-        public void OnWindowProperties(byte inventoryID, short propertyId, short propertyValue);
-
-        /// <summary>
         /// Called when inventory items have been received
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list</param>
-        /// <param name="stateId">State ID</param>
-        void OnWindowItems(byte inventoryID, Dictionary<int, Item> itemList, int stateId);
+        void OnWindowItems(byte inventoryID, Dictionary<int, Item> itemList);
 
         /// <summary>
         /// Called when a single slot has been updated inside an inventory
@@ -334,8 +271,7 @@ namespace MinecraftClient.Protocol
         /// <param name="inventoryID">Window ID</param>
         /// <param name="slotID">Slot ID</param>
         /// <param name="item">Item (may be null for empty slot)</param>
-        /// <param name="stateId">State ID</param>
-        void OnSetSlot(byte inventoryID, short slotID, Item? item, int stateId);
+        void OnSetSlot(byte inventoryID, short slotID, Item item);
 
         /// <summary>
         /// Called when player health or hunger changed.
@@ -350,13 +286,13 @@ namespace MinecraftClient.Protocol
         /// <param name="entityID">Entity ID</param>
         /// <param name="health">The health of the entity</param>
         void OnEntityHealth(int entityID, float health);
-
+        
         /// <summary>
         /// Called when entity metadata or metadata changed.
         /// </summary>
         /// <param name="EntityID">Entity ID</param>
         /// <param name="metadata">Entity metadata</param>
-        void OnEntityMetadata(int EntityID, Dictionary<int, object?> metadata);
+        void OnEntityMetadata(int EntityID, Dictionary<int, object> metadata);
 
         /// <summary>
         /// Called when and explosion occurs on the server
@@ -372,14 +308,14 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Affected player's UUID</param>
         /// <param name="gamemode">New game mode</param>
         void OnGamemodeUpdate(Guid uuid, int gamemode);
-
+        
         /// <summary>
         /// Called when a player's latency has changed
         /// </summary>
         /// <param name="uuid">Affected player's UUID</param>
         /// <param name="latency">latency</param>
         void OnLatencyUpdate(Guid uuid, int latency);
-
+        
         /// <summary>
         /// Called when Experience bar is updated
         /// </summary>
@@ -394,29 +330,23 @@ namespace MinecraftClient.Protocol
         /// <remarks>Used for setting player slot after joining game</remarks>
         /// <param name="slot"></param>
         void OnHeldItemChange(byte slot);
-
+        
         /// <summary>
-        /// Called when an update of the map is sent by the server, take a look at https://wiki.vg/Protocol#Map_Data for more info on the fields
-        /// Map format and colors: https://minecraft.wiki/w/Map_item_format
+        /// Called map data
         /// </summary>
-        /// <param name="mapid">Map ID of the map being modified</param>
-        /// <param name="scale">A scale of the Map, from 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel)</param>
-        /// <param name="trackingposition">Specifies whether player and item frame icons are shown </param>
-        /// <param name="locked">True if the map has been locked in a cartography table </param>
-        /// <param name="icons">A list of MapIcon objects of map icons, send only if trackingPosition is true</param>
-        /// <param name="columnsUpdated">Numbs of columns that were updated (map width) (NOTE: If it is 0, the next fields are not used/are set to default values of 0 and null respectively)</param>
-        /// <param name="rowsUpdated">Map height</param>
-        /// <param name="mapCoulmnX">x offset of the westernmost column</param>
-        /// <param name="mapRowZ">z offset of the northernmost row</param>
-        /// <param name="colors">a byte array of colors on the map</param>
-        void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapRowZ, byte[]? colors);
-
+        /// <param name="mapid"></param>
+        /// <param name="scale"></param>
+        /// <param name="trackingposition"></param>
+        /// <param name="locked"></param>
+        /// <param name="iconcount"></param>
+        void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount);
+        
         /// <summary>
         /// Called when the Player entity ID has been received from the server
         /// </summary>
         /// <param name="EntityID">Player entity ID</param>
         void OnReceivePlayerEntityID(int EntityID);
-
+        
         /// <summary>
         /// Called when the Entity use effects
         /// </summary>
@@ -425,10 +355,8 @@ namespace MinecraftClient.Protocol
         /// <param name="amplifier">effect amplifier</param>
         /// <param name="duration">effect duration</param>
         /// <param name="flags">effect flags</param>
-        /// <param name="hasFactorData">has factor data</param>
-        /// <param name="factorCodec">factorCodec</param>
-        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<String, object>? factorCodec);
-
+        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags);
+        
         /// <summary>
         /// Called when coreboardObjective
         /// </summary>
@@ -437,7 +365,7 @@ namespace MinecraftClient.Protocol
         /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
         /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
         void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type);
-
+        
         /// <summary>
         /// Called when DisplayScoreboard
         /// </summary>
@@ -445,15 +373,8 @@ namespace MinecraftClient.Protocol
         /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
         /// <param name="objectivename">The name of the objective the score belongs to</param>
         /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
-        void OnUpdateScore(string entityname, int action, string objectivename, int value);
+        void OnUpdateScore(string entityname, byte action, string objectivename, int value);
 
-        /// <summary>
-        /// Called when the client received the Tab Header and Footer
-        /// </summary>
-        /// <param name="header">Header</param>
-        /// <param name="footer">Footer</param>
-        void OnTabListHeaderAndFooter(string header, string footer);
-        
         /// <summary>
         /// Called when tradeList is received from server
         /// </summary>
@@ -464,54 +385,5 @@ namespace MinecraftClient.Protocol
         /// <param name="isRegularVillager">True if regular villagers and false if the wandering trader.</param>
         /// <param name="canRestock">If the villager can restock his trades at a workstation, True for regular villagers and false for the wandering trader.</param>
         void OnTradeList(int windowID, List<VillagerTrade> trades, VillagerInfo villagerInfo);
-
-        /// <summary>
-        /// This method is called when the protocol handler receives "Login Success" packet
-        /// </summary>
-        /// <param name="uuid">The player's UUID received from the server</param>
-        /// <param name="userName">The player's username received from the server</param>
-        /// <param name="playerProperty">Tuple<Name, Value, Signature(empty if there is no signature)></param>
-        public void OnLoginSuccess(Guid uuid, string userName, Tuple<string, string, string>[]? playerProperty);
-
-        /// <summary>
-        /// Used for a wide variety of game events, from weather to bed use to gamemode to demo messages.
-        /// </summary>
-        /// <param name="reason">Event type</param>
-        /// <param name="value">Depends on Reason</param>
-        public void OnGameEvent(byte reason, float value);
-
-        /// <summary>
-        /// Called when a block is changed.
-        /// </summary>
-        /// <param name="location">The location of the block.</param>
-        /// <param name="block">The block</param>
-        public void OnBlockChange(Location location, Block block);
-
-        /// <summary>
-        /// Called when "AutoComplete" completes.
-        /// </summary>
-        /// <param name="transactionId">The number of this result.</param>
-        /// <param name="result">All commands.</param>
-        public void OnAutoCompleteDone(int transactionId, string[] result);
-
-        public void SetCanSendMessage(bool canSendMessage);
-
-        /// <summary>
-        /// Send a click container button packet to the server.
-        /// Used for Enchanting table, Lectern, stone cutter and loom
-        /// </summary>
-        /// <param name="windowId">Id of the window being clicked</param>
-        /// <param name="buttonId">Id of the clicked button</param>
-        /// <returns>True if packet was successfully sent</returns>
-
-        bool ClickContainerButton(int windowId, int buttonId);
-        
-        /// <summary>
-        /// Send a rename item packet when the anvil inventory is open and there is an item in the first slot
-        /// </summary>
-        /// <param name="itemName">New name (max 50 characters)</param>
-        /// <returns>True if packet was successfully sent</returns>
-
-        bool SendRenameItem(string itemName);
     }
 }

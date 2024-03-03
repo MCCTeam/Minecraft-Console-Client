@@ -1,27 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
+using System.Net.Sockets;
 using System.Threading;
-using Brigadier.NET;
-using Brigadier.NET.Exceptions;
+using System.IO;
+using System.Net;
 using MinecraftClient.ChatBots;
-using MinecraftClient.CommandHandler;
-using MinecraftClient.CommandHandler.Patch;
-using MinecraftClient.Commands;
+using MinecraftClient.Protocol;
+using MinecraftClient.Proxy;
+using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
-using MinecraftClient.Mapping;
-using MinecraftClient.Protocol;
-using MinecraftClient.Protocol.Handlers;
-using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Protocol.Message;
-using MinecraftClient.Protocol.ProfileKey;
-using MinecraftClient.Protocol.Session;
-using MinecraftClient.Proxy;
-using MinecraftClient.Scripting;
-using static MinecraftClient.Settings;
 
 namespace MinecraftClient
 {
@@ -32,23 +23,24 @@ namespace MinecraftClient
     {
         public static int ReconnectionAttemptsLeft = 0;
 
-        public static CommandDispatcher<CmdResult> dispatcher = new();
-        private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
+        private static readonly List<string> cmd_names = new List<string>();
+        private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
+        private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
 
         private static bool commandsLoaded = false;
 
-        private readonly Queue<string> chatQueue = new();
+        private Queue<string> chatQueue = new Queue<string>();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private readonly Queue<Action> threadTasks = new();
-        private readonly object threadTasksLock = new();
+        private Queue<Action> threadTasks = new Queue<Action>();
+        private object threadTasksLock = new object();
 
-        private readonly List<ChatBot> bots = new();
-        private static readonly List<ChatBot> botsOnHold = new();
-        private static readonly Dictionary<int, Container> inventories = new();
+        private readonly List<ChatBot> bots = new List<ChatBot>();
+        private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
+        private static Dictionary<int, Container> inventories = new Dictionary<int, Container>();
 
-        private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new();
-        private readonly List<string> registeredServerPluginChannels = new();
+        private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
+        private readonly List<string> registeredServerPluginChannels = new List<String>();
 
         private bool terrainAndMovementsEnabled;
         private bool terrainAndMovementsRequested = false;
@@ -56,41 +48,30 @@ namespace MinecraftClient
         private bool inventoryHandlingRequested = false;
         private bool entityHandlingEnabled;
 
-        private readonly object locationLock = new();
+        private object locationLock = new object();
         private bool locationReceived = false;
-        private readonly World world = new();
-        private Queue<Location>? steps;
-        private Queue<Location>? path;
+        private World world = new World();
+        private Queue<Location> steps;
+        private Queue<Location> path;
         private Location location;
         private float? _yaw; // Used for calculation ONLY!!! Doesn't reflect the client yaw
         private float? _pitch; // Used for calculation ONLY!!! Doesn't reflect the client pitch
         private float playerYaw;
         private float playerPitch;
         private double motionY;
-        public enum MovementType { Sneak, Walk, Sprint }
-        private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
-        private bool CanSendMessage = false;
 
-        private readonly string host;
-        private readonly int port;
-        private readonly int protocolversion;
-        private readonly string username;
-        private Guid uuid;
-        private string uuidStr;
-        private readonly string sessionid;
-        private readonly PlayerKeyPair? playerKeyPair;
+        private string host;
+        private int port;
+        private int protocolversion;
+        private string username;
+        private string uuid;
+        private string sessionid;
         private DateTime lastKeepAlive;
-        private readonly object lastKeepAliveLock = new();
+        private object lastKeepAliveLock = new object();
         private int respawnTicks = 0;
         private int gamemode = 0;
-        private bool isSupportPreviewsChat;
-        private EnchantmentData? lastEnchantment = null;
 
         private int playerEntityID;
-
-        private object DigLock = new();
-        private Tuple<Location, Direction>? LastDigPosition;
-        private int RemainingDiggingTime = 0;
 
         // player health and hunger
         private float playerHealth;
@@ -98,14 +79,9 @@ namespace MinecraftClient
         private int playerLevel;
         private int playerTotalExperience;
         private byte CurrentSlot = 0;
-        
-        // Sneaking
-        public bool IsSneaking { get; set; } = false;
-        private bool isUnderSlab = false;
-        private DateTime nextSneakingUpdate = DateTime.Now;
 
         // Entity handling
-        private readonly Dictionary<int, Entity> entities = new();
+        private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
 
         // server TPS
         private long lastAge = 0;
@@ -113,8 +89,11 @@ namespace MinecraftClient
         private double serverTPS = 0;
         private double averageTPS = 20;
         private const int maxSamples = 5;
-        private readonly List<double> tpsSamples = new(maxSamples);
+        private List<double> tpsSamples = new List<double>(maxSamples);
         private double sampleSum = 0;
+
+        // players latency
+        private Dictionary<string, int> playersLatency = new Dictionary<string, int>();
 
         // ChatBot OnNetworkPacket event
         private bool networkPacketCaptureEnabled = false;
@@ -122,16 +101,13 @@ namespace MinecraftClient
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
         public string GetUsername() { return username; }
-        public Guid GetUserUuid() { return uuid; }
-        public string GetUserUuidStr() { return uuidStr; }
+        public string GetUserUUID() { return uuid; }
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
         public float GetYaw() { return playerYaw; }
-        public int GetSequenceId() { return sequenceId; }
         public float GetPitch() { return playerPitch; }
         public World GetWorld() { return world; }
-        public double GetServerTPS() { return averageTPS; }
-        public bool GetIsSupportPreviewsChat() { return isSupportPreviewsChat; }
+        public Double GetServerTPS() { return averageTPS; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
         public int GetLevel() { return playerLevel; }
@@ -140,182 +116,187 @@ namespace MinecraftClient
         public int GetGamemode() { return gamemode; }
         public bool GetNetworkPacketCaptureEnabled() { return networkPacketCaptureEnabled; }
         public int GetProtocolVersion() { return protocolversion; }
-        public ILogger GetLogger() { return Log; }
+        public ILogger GetLogger() { return this.Log; }
         public int GetPlayerEntityID() { return playerEntityID; }
         public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
 
-        readonly TcpClient client;
-        readonly IMinecraftCom handler;
-        CancellationTokenSource? cmdprompt = null;
-        Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
+        TcpClient client;
+        IMinecraftCom handler;
+        Thread cmdprompt;
+        Thread timeoutdetector;
 
         public ILogger Log;
-        
-        private static IMinecraftComHandler? instance;
-        public static IMinecraftComHandler? Instance => instance;
+
         /// <summary>
-        /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
+        /// Starts the main chat client
         /// </summary>
-        /// <param name="session">A valid session obtained with MinecraftCom.GetLogin()</param>
-        /// <param name="playerKeyPair">Key for message signing</param>
+        /// <param name="username">The chosen username of a premium Minecraft Account</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
+        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
-        public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo)
+        public McClient(string username, string uuid, string sessionID, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
-            CmdResult.currentHandler = this;
-            instance = this;
-            
-            terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
-            inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
-            entityHandlingEnabled = Config.Main.Advanced.EntityHandling;
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, false, "");
+        }
 
-            sessionid = session.ID;
-            if (!Guid.TryParse(session.PlayerID, out uuid))
-                uuid = Guid.Empty;
-            uuidStr = session.PlayerID;
-            username = session.PlayerName;
-            host = server_ip;
+        /// <summary>
+        /// Starts the main chat client in single command sending mode
+        /// </summary>
+        /// <param name="username">The chosen username of a premium Minecraft Account</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
+        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
+        /// <param name="command">The text or command to send.</param>
+        public McClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        {
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, true, command);
+        }
+
+        /// <summary>
+        /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
+        /// </summary>
+        /// <param name="user">The chosen username of a premium Minecraft Account</param>
+        /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
+        /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
+        /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
+        private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        {
+            terrainAndMovementsEnabled = Settings.TerrainAndMovements;
+            inventoryHandlingEnabled = Settings.InventoryHandling;
+            entityHandlingEnabled = Settings.EntityHandling;
+
+            bool retry = false;
+            this.sessionid = sessionID;
+            this.uuid = uuid;
+            this.username = user;
+            this.host = server_ip;
             this.port = port;
             this.protocolversion = protocolversion;
-            this.playerKeyPair = playerKeyPair;
 
-            Log = Settings.Config.Logging.LogToFile
-                ? new FileLogLogger(Config.AppVar.ExpandVars(Settings.Config.Logging.LogFile), Settings.Config.Logging.PrependTimestamp)
+            this.Log = Settings.LogToFile
+                ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp)
                 : new FilteredLogger();
-            Log.DebugEnabled = Config.Logging.DebugMessages;
-            Log.InfoEnabled = Config.Logging.InfoMessages;
-            Log.ChatEnabled = Config.Logging.ChatMessages;
-            Log.WarnEnabled = Config.Logging.WarningMessages;
-            Log.ErrorEnabled = Config.Logging.ErrorMessages;
+            Log.DebugEnabled = Settings.DebugMessages;
+            Log.InfoEnabled = Settings.InfoMessages;
+            Log.ChatEnabled = Settings.ChatMessages;
+            Log.WarnEnabled = Settings.WarningMessages;
+            Log.ErrorEnabled = Settings.ErrorMessages;
 
-            /* Load commands from Commands namespace */
-            LoadCommands();
+            if (!singlecommand)
+            {
+                /* Load commands from Commands namespace */
+                LoadCommands();
 
-            if (botsOnHold.Count == 0)
-                RegisterBots();
+                if (botsOnHold.Count == 0)
+                {
+                    if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
+                    if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
+                    if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
+                    if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                    if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
+                    if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
+                    if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
+                    if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
+                    if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
+                    if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds)); }
+                    if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
+                    if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
+                    if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
+                    if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
+                    if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
+                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
+
+                    //Add your ChatBot here by uncommenting and adapting
+                    //BotLoad(new ChatBots.YourBot());
+                }
+            }
 
             try
             {
-                client = ProxyHandler.NewTcpClient(host, port);
+                client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
-                client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000; // Default: 30 seconds
+                client.ReceiveTimeout = 30000; // 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
-                Log.Info(Translations.mcc_version_supported);
+                Log.Info(Translations.Get("mcc.version_supported"));
 
-                timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
-                timeoutdetector.Item1.Name = "MCC Connection timeout detector";
-                timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
+                if (!singlecommand)
+                {
+                    timeoutdetector = new Thread(new ThreadStart(TimeoutDetector));
+                    timeoutdetector.Name = "MCC Connection timeout detector";
+                    timeoutdetector.Start();
+                }
 
                 try
                 {
-                    if (handler.Login(this.playerKeyPair, session))
+                    if (handler.Login())
                     {
-                        foreach (ChatBot bot in botsOnHold)
-                            BotLoad(bot, false);
-                        botsOnHold.Clear();
+                        if (singlecommand)
+                        {
+                            handler.SendChatMessage(command);
+                            Log.Info(Translations.Get("mcc.single_cmd", command));
+                            Thread.Sleep(5000);
+                            handler.Disconnect();
+                            Thread.Sleep(1000);
+                        }
+                        else
+                        {
+                            foreach (ChatBot bot in botsOnHold)
+                                BotLoad(bot, false);
+                            botsOnHold.Clear();
 
-                        Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                            Log.Info(Translations.Get("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
 
-                        cmdprompt = new CancellationTokenSource();
-                        ConsoleInteractive.ConsoleReader.BeginReadThread();
-                        ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
-                        ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+                            cmdprompt = new Thread(new ThreadStart(CommandPrompt));
+                            cmdprompt.Name = "MCC Command prompt";
+                            cmdprompt.Start();
+                        }
                     }
                     else
                     {
-                        Log.Error(Translations.error_login_failed);
-                        goto Retry;
+                        Log.Error(Translations.Get("error.login_failed"));
+                        retry = true;
                     }
                 }
                 catch (Exception e)
                 {
                     Log.Error(e.GetType().Name + ": " + e.Message);
-                    Log.Error(Translations.error_join);
-                    goto Retry;
+                    Log.Error(Translations.Get("error.join"));
+                    retry = true;
                 }
             }
             catch (SocketException e)
             {
                 Log.Error(e.Message);
-                Log.Error(Translations.error_connect);
-                goto Retry;
+                Log.Error(Translations.Get("error.connect"));
+                retry = true;
             }
 
-            return;
-
-        Retry:
-            if (timeoutdetector != null)
+            if (retry)
             {
-                timeoutdetector.Item2.Cancel();
-                timeoutdetector = null;
-            }
-            if (ReconnectionAttemptsLeft > 0)
-            {
-                Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
-                Thread.Sleep(5000);
-                ReconnectionAttemptsLeft--;
-                Program.Restart();
-            }
-            else if (InternalConfig.InteractiveMode)
-            {
-                ConsoleInteractive.ConsoleReader.StopReadThread();
-                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-                Program.HandleFailure();
-            }
-
-            throw new Exception("Initialization failed.");
-        }
-
-        /// <summary>
-        /// Register bots
-        /// </summary>
-        private void RegisterBots(bool reload = false)
-        {
-            if (Config.ChatBot.Alerts.Enabled) { BotLoad(new Alerts()); }
-            if (Config.ChatBot.AntiAFK.Enabled) { BotLoad(new AntiAFK()); }
-            if (Config.ChatBot.AutoAttack.Enabled) { BotLoad(new AutoAttack()); }
-            if (Config.ChatBot.AutoCraft.Enabled) { BotLoad(new AutoCraft()); }
-            if (Config.ChatBot.AutoDig.Enabled) { BotLoad(new AutoDig()); }
-            if (Config.ChatBot.AutoDrop.Enabled) { BotLoad(new AutoDrop()); }
-            if (Config.ChatBot.AutoEat.Enabled) { BotLoad(new AutoEat()); }
-            if (Config.ChatBot.AutoFishing.Enabled) { BotLoad(new AutoFishing()); }
-            if (Config.ChatBot.AutoRelog.Enabled) { BotLoad(new AutoRelog()); }
-            if (Config.ChatBot.AutoRespond.Enabled) { BotLoad(new AutoRespond()); }
-            if (Config.ChatBot.ChatLog.Enabled) { BotLoad(new ChatLog()); }
-            if (Config.ChatBot.DiscordBridge.Enabled) { BotLoad(new DiscordBridge()); }
-            if (Config.ChatBot.Farmer.Enabled) { BotLoad(new Farmer()); }
-            if (Config.ChatBot.FollowPlayer.Enabled) { BotLoad(new FollowPlayer()); }
-            if (Config.ChatBot.HangmanGame.Enabled) { BotLoad(new HangmanGame()); }
-            if (Config.ChatBot.Mailer.Enabled) { BotLoad(new Mailer()); }
-            if (Config.ChatBot.Map.Enabled) { BotLoad(new Map()); }
-            if (Config.ChatBot.PlayerListLogger.Enabled) { BotLoad(new PlayerListLogger()); }
-            if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
-            if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
-            if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
-            if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
-            if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
-            if (Config.ChatBot.WebSocketBot.Enabled) { BotLoad(new WebSocketBot()); }
-            //Add your ChatBot here by uncommenting and adapting
-            //BotLoad(new ChatBots.YourBot());
-        }
-
-        /// <summary>
-        /// Retrieve messages from the queue and send.
-        /// Note: requires external locking.
-        /// </summary>
-        private void TrySendMessageToServer()
-        {
-            if (!CanSendMessage)
-                return;
-
-            while (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
-            {
-                string text = chatQueue.Dequeue();
-                handler.SendChatMessage(text, playerKeyPair);
-                nextMessageSendTime = DateTime.Now + TimeSpan.FromSeconds(Config.Main.Advanced.MessageCooldown);
+                if (timeoutdetector != null)
+                {
+                    timeoutdetector.Abort();
+                    timeoutdetector = null;
+                }
+                if (ReconnectionAttemptsLeft > 0)
+                {
+                    Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
+                    Thread.Sleep(5000);
+                    ReconnectionAttemptsLeft--;
+                    Program.Restart();
+                }
+                else if (!singlecommand && Settings.interactiveMode)
+                {
+                    Program.HandleFailure();
+                }
             }
         }
 
@@ -333,42 +314,29 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (e is not ThreadAbortException)
-                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    else
-                        throw; //ThreadAbortException should not be caught
-                }
-            }
-
-            if (nextSneakingUpdate < DateTime.Now)
-            {
-                if (world.GetBlock(new Location(location.X, location.Y + 1, location.Z)).IsTopSlab(protocolversion) && !IsSneaking)
-                {
-                    isUnderSlab = true;
-                    SendEntityAction(EntityActionType.StartSneaking);
-                }
-                else
-                {
-                    if (isUnderSlab && !IsSneaking)
+                    if (!(e is ThreadAbortException))
                     {
-                        isUnderSlab = false;
-                        SendEntityAction(EntityActionType.StopSneaking);
+                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
+                    else throw; //ThreadAbortException should not be caught
                 }
-
-                nextSneakingUpdate = DateTime.Now.AddMilliseconds(300);
             }
 
             lock (chatQueue)
             {
-                TrySendMessageToServer();
+                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+                {
+                    string text = chatQueue.Dequeue();
+                    handler.SendChatMessage(text);
+                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
+                }
             }
 
             if (terrainAndMovementsEnabled && locationReceived)
             {
                 lock (locationLock)
                 {
-                    for (int i = 0; i < Config.Main.Advanced.MovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                     {
                         if (_yaw == null || _pitch == null)
                         {
@@ -380,9 +348,7 @@ namespace MinecraftClient
                             {
                                 Location next = path.Dequeue();
                                 steps = Movement.Move2Steps(location, next, ref motionY);
-
-                                if (Config.Main.Advanced.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
-                                    UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
                             }
                             else
                             {
@@ -400,7 +366,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (Config.Main.Advanced.AutoRespawn && respawnTicks > 0)
+            if (Settings.AutoRespawn && respawnTicks > 0)
             {
                 respawnTicks--;
                 if (respawnTicks == 0)
@@ -415,22 +381,6 @@ namespace MinecraftClient
                     taskToRun();
                 }
             }
-
-            lock (DigLock)
-            {
-                if (RemainingDiggingTime > 0)
-                {
-                    if (--RemainingDiggingTime == 0 && LastDigPosition != null)
-                    {
-                        handler.SendPlayerDigging(2, LastDigPosition.Item1, LastDigPosition.Item2, sequenceId++);
-                        Log.Info(string.Format(Translations.cmd_dig_end, LastDigPosition.Item1));
-                    }
-                    else
-                    {
-                        DoAnimation((int)Hand.MainHand);
-                    }
-                }
-            }
         }
 
         #region Connection Lost and Disconnect from Server
@@ -438,29 +388,22 @@ namespace MinecraftClient
         /// <summary>
         /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive is too old.
         /// </summary>
-        private void TimeoutDetector(object? o)
+        private void TimeoutDetector()
         {
             UpdateKeepAlive();
             do
             {
                 Thread.Sleep(TimeSpan.FromSeconds(15));
-
-                if (((CancellationToken)o!).IsCancellationRequested)
-                    return;
-
                 lock (lastKeepAliveLock)
                 {
-                    if (lastKeepAlive.AddSeconds(Config.Main.Advanced.TcpTimeout) < DateTime.Now)
+                    if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
                     {
-                        if (((CancellationToken)o!).IsCancellationRequested)
-                            return;
-
-                        OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_timeout);
+                        OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
                         return;
                     }
                 }
             }
-            while (!((CancellationToken)o!).IsCancellationRequested);
+            while (true);
         }
 
         /// <summary>
@@ -491,14 +434,11 @@ namespace MinecraftClient
             }
 
             if (cmdprompt != null)
-            {
-                cmdprompt.Cancel();
-                cmdprompt = null;
-            }
+                cmdprompt.Abort();
 
             if (timeoutdetector != null)
             {
-                timeoutdetector.Item2.Cancel();
+                timeoutdetector.Abort();
                 timeoutdetector = null;
             }
 
@@ -511,16 +451,12 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
-            ConsoleIO.CancelAutocomplete();
-
-            handler.Dispose();
-
             world.Clear();
 
             if (timeoutdetector != null)
             {
-                if (timeoutdetector != null && Thread.CurrentThread != timeoutdetector.Item1)
-                    timeoutdetector.Item2.Cancel();
+                if (Thread.CurrentThread != timeoutdetector)
+                    timeoutdetector.Abort();
                 timeoutdetector = null;
             }
 
@@ -529,26 +465,26 @@ namespace MinecraftClient
             switch (reason)
             {
                 case ChatBot.DisconnectReason.ConnectionLost:
-                    message = Translations.mcc_disconnect_lost;
+                    message = Translations.Get("mcc.disconnect.lost");
                     Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.InGameKick:
-                    Log.Info(Translations.mcc_disconnect_server);
+                    Log.Info(Translations.Get("mcc.disconnect.server"));
                     Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.LoginRejected:
-                    Log.Info(Translations.mcc_disconnect_login);
+                    Log.Info(Translations.Get("mcc.disconnect.login"));
                     Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.UserLogout:
-                    throw new InvalidOperationException(Translations.exception_user_logout);
+                    throw new InvalidOperationException(Translations.Get("exception.user_logout"));
             }
 
             //Process AutoRelog last to make sure other bots can perform their cleanup tasks first (issue #1517)
-            List<ChatBot> onDisconnectBotList = bots.Where(bot => bot is not AutoRelog).ToList();
+            List<ChatBot> onDisconnectBotList = bots.Where(bot => !(bot is AutoRelog)).ToList();
             onDisconnectBotList.AddRange(bots.Where(bot => bot is AutoRelog));
 
             foreach (ChatBot bot in onDisconnectBotList)
@@ -559,7 +495,7 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (e is not ThreadAbortException)
+                    if (!(e is ThreadAbortException))
                     {
                         Log.Warn("OnDisconnect: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
@@ -568,33 +504,29 @@ namespace MinecraftClient
             }
 
             if (!will_restart)
-            {
-                ConsoleInteractive.ConsoleReader.StopReadThread();
-                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
                 Program.HandleFailure();
-            }
         }
 
         #endregion
 
         #region Command prompt and internal MCC commands
 
-        private void ConsoleReaderOnMessageReceived(object? sender, string e)
+        /// <summary>
+        /// Allows the user to send chat messages, commands, and leave the server.
+        /// </summary>
+        private void CommandPrompt()
         {
-
-            if (client.Client == null)
-                return;
-
-            if (client.Client.Connected)
+            try
             {
-                new Thread(() =>
+                Thread.Sleep(500);
+                while (client.Client.Connected)
                 {
-                    InvokeOnMainThread(() => HandleCommandPromptText(e));
-                }).Start();
+                    string text = ConsoleIO.ReadLine();
+                    InvokeOnMainThread(() => HandleCommandPromptText(text));
+                }
             }
-            else
-                return;
+            catch (IOException) { }
+            catch (NullReferenceException) { }
         }
 
         /// <summary>
@@ -606,56 +538,78 @@ namespace MinecraftClient
             if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
             {
                 //Process a request from the GUI
-                string[] command = text[1..].Split((char)0x00);
+                string[] command = text.Substring(1).Split((char)0x00);
                 switch (command[0].ToLower())
                 {
                     case "autocomplete":
-                        int id = handler.AutoComplete(command[1]);
-                        while (!ConsoleIO.AutoCompleteDone) { Thread.Sleep(100); }
-                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + ConsoleIO.AutoCompleteResult); }
-                        else ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
+                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
                         break;
                 }
             }
             else
             {
                 text = text.Trim();
-
-                if (text.Length > 1
-                    && Config.Main.Advanced.InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
-                    && text[0] == '/')
+                if (text.Length > 0)
                 {
-                    SendText(text);
-                }
-                else if (text.Length > 2
-                    && Config.Main.Advanced.InternalCmdChar != MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
-                    && text[0] == Config.Main.Advanced.InternalCmdChar.ToChar()
-                    && text[1] == '/')
-                {
-                    SendText(text[1..]);
-                }
-                else if (text.Length > 0)
-                {
-                    if (Config.Main.Advanced.InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
-                        || text[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
+                    if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
                     {
-                        CmdResult result = new();
-                        string command = Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' ? text : text[1..];
-                        if (!PerformInternalCommand(Config.AppVar.ExpandVars(command), ref result, Settings.Config.AppVar.GetVariables()) && Config.Main.Advanced.InternalCmdChar.ToChar() == '/')
+                        string response_msg = "";
+                        string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
+                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                         {
                             SendText(text);
                         }
-                        else if (result.status != CmdResult.Status.NotRun && (result.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(result.result)))
+                        else if (response_msg.Length > 0)
                         {
-                            Log.Info(result);
+                            Log.Info(response_msg);
                         }
                     }
-                    else
-                    {
-                        SendText(text);
-                    }
+                    else SendText(text);
                 }
             }
+        }
+
+        /// <summary>
+        /// Register a custom console command
+        /// </summary>
+        /// <param name="cmdName">Name of the command</param>
+        /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="callback">Method for handling the command</param>
+        /// <returns>True if successfully registered</returns>
+        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, ChatBot.CommandRunner callback)
+        {
+            if (cmds.ContainsKey(cmdName.ToLower()))
+            {
+                return false;
+            }
+            else
+            {
+                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
+                cmds.Add(cmdName.ToLower(), cmd);
+                cmd_names.Add(cmdName.ToLower());
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Unregister a console command
+        /// </summary>
+        /// <remarks>
+        /// There is no check for the command is registered by above method or is embedded command.
+        /// Which mean this can unload any command
+        /// </remarks>
+        /// <param name="cmdName">The name of command to be unregistered</param>
+        /// <returns></returns>
+        public bool UnregisterCommand(string cmdName)
+        {
+            if (cmds.ContainsKey(cmdName.ToLower()))
+            {
+                cmds.Remove(cmdName.ToLower());
+                cmd_names.Remove(cmdName.ToLower());
+                return true;
+            }
+            else return false;
         }
 
         /// <summary>
@@ -665,55 +619,54 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref CmdResult result, Dictionary<string, object>? localVars = null)
+        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
             /* Process the provided command */
-            ParseResults<CmdResult> parse;
-            try
-            {
-                parse = dispatcher.Parse(command, result);
-            }
-            catch (Exception e)
-            {
-                Log.Debug("Parse fail: " + e.GetFullMessage());
-                return false;
-            }
 
-            try
+            string command_name = command.Split(' ')[0].ToLower();
+            if (command_name == "help")
             {
-                dispatcher.Execute(parse);
-
+                if (Command.hasArg(command))
+                {
+                    string help_cmdname = Command.getArgs(command)[0].ToLower();
+                    if (help_cmdname == "help")
+                    {
+                        response_msg = Translations.Get("icmd.help");
+                    }
+                    else if (cmds.ContainsKey(help_cmdname))
+                    {
+                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
+                    }
+                    else response_msg = Translations.Get("icmd.unknown", command_name);
+                }
+                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Settings.internalCmdChar);
+            }
+            else if (cmds.ContainsKey(command_name))
+            {
+                response_msg = cmds[command_name].Run(this, command, localVars);
                 foreach (ChatBot bot in bots.ToArray())
                 {
                     try
                     {
-                        bot.OnInternalCommand(command, string.Join(" ", Command.GetArgs(command)), result);
+                        bot.OnInternalCommand(command_name, string.Join(" ", Command.getArgs(command)), response_msg);
                     }
                     catch (Exception e)
                     {
-                        if (e is not ThreadAbortException)
+                        if (!(e is ThreadAbortException))
                         {
-                            Log.Warn(string.Format(Translations.icmd_error, bot.ToString() ?? string.Empty, e.ToString()));
+                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
                         }
                         else throw; //ThreadAbortException should not be caught
                     }
                 }
-
-                return true;
             }
-            catch (CommandSyntaxException e)
+            else
             {
-                if (parse.Context.Nodes.Count == 0)
-                {
-                    return false;
-                }
-                else
-                {
-                    Log.Info("§e" + e.Message ?? e.StackTrace ?? "Incorrect argument.");
-                    Log.Info(dispatcher.GetAllUsageString(parse.Context.Nodes[0].Node.Name, false));
-                    return true;
-                }
+                response_msg = Translations.Get("icmd.unknown", command_name);
+                return false;
             }
+
+            return true;
         }
 
         public void LoadCommands()
@@ -729,8 +682,11 @@ namespace MinecraftClient
                     {
                         try
                         {
-                            Command cmd = (Command)Activator.CreateInstance(type)!;
-                            cmd.RegisterCommand(dispatcher);
+                            Command cmd = (Command)Activator.CreateInstance(type);
+                            cmds[cmd.CmdName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CmdName.ToLower());
+                            foreach (string alias in cmd.getCMDAliases())
+                                cmds[alias.ToLower()] = cmd;
                         }
                         catch (Exception e)
                         {
@@ -740,37 +696,6 @@ namespace MinecraftClient
                 }
                 commandsLoaded = true;
             }
-        }
-
-        /// <summary>
-        /// Reload settings and bots
-        /// </summary>
-        /// <param name="hard">Marks if bots need to be hard reloaded</param>
-        public void ReloadSettings()
-        {
-            Program.ReloadSettings(true);
-            ReloadBots();
-        }
-
-        /// <summary>
-        /// Reload loaded bots (Only builtin bots)
-        /// </summary>
-        public void ReloadBots()
-        {
-            UnloadAllBots();
-            RegisterBots(true);
-
-            if (client.Client.Connected)
-                bots.ForEach(bot => bot.AfterGameJoined());
-        }
-
-        /// <summary>
-        /// Unload All Bots
-        /// </summary>
-        public void UnloadAllBots()
-        {
-            foreach (ChatBot bot in GetLoadedChatBots())
-                BotUnLoad(bot);
         }
 
         #endregion
@@ -794,7 +719,7 @@ namespace MinecraftClient
             }
             else
             {
-                TaskWithResult<T> taskWithResult = new(task);
+                TaskWithResult<T> taskWithResult = new TaskWithResult<T>(task);
                 lock (threadTasksLock)
                 {
                     threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
@@ -816,17 +741,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Clear all tasks
-        /// </summary>
-        public void ClearTasks()
-        {
-            lock (threadTasksLock)
-            {
-                threadTasks.Clear();
-            }
-        }
-
-        /// <summary>
         /// Check if running on a different thread and InvokeOnMainThread is required
         /// </summary>
         /// <returns>True if calling thread is not the main thread</returns>
@@ -834,10 +748,10 @@ namespace MinecraftClient
         {
             get
             {
-                int callingThreadId = Environment.CurrentManagedThreadId;
+                int callingThreadId = Thread.CurrentThread.ManagedThreadId;
                 if (handler != null)
                 {
-                    return handler.GetNetMainThreadId() != callingThreadId;
+                    return handler.GetNetReadThreadId() != callingThreadId;
                 }
                 else
                 {
@@ -866,8 +780,9 @@ namespace MinecraftClient
             bots.Add(b);
             if (init)
                 DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
-            if (handler != null)
+            if (this.handler != null)
                 DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
+            Settings.SingleCommand = "";
         }
 
         /// <summary>
@@ -881,9 +796,7 @@ namespace MinecraftClient
                 return;
             }
 
-            b.OnUnload();
-
-            bots.RemoveAll(item => ReferenceEquals(item, b));
+            bots.RemoveAll(item => object.ReferenceEquals(item, b));
 
             // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
             var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
@@ -1066,15 +979,6 @@ namespace MinecraftClient
         /// <summary>
         /// Get all Entities
         /// </summary>
-        /// <returns>Ladt Enchantments</returns>
-        public EnchantmentData? GetLastEnchantments()
-        {
-            return lastEnchantment;
-        }
-
-        /// <summary>
-        /// Get all Entities
-        /// </summary>
         /// <returns>All Entities</returns>
         public Dictionary<int, Entity> GetEntities()
         {
@@ -1087,9 +991,6 @@ namespace MinecraftClient
         /// <returns>All players latency</returns>
         public Dictionary<string, int> GetPlayersLatency()
         {
-            Dictionary<string, int> playersLatency = new();
-            foreach (var player in onlinePlayers)
-                playersLatency.Add(player.Value.Name, player.Value.Ping);
             return playersLatency;
         }
 
@@ -1098,15 +999,14 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="inventoryID">Window ID of the requested inventory</param>
         /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
-        public Container? GetInventory(int inventoryID)
+        public Container GetInventory(int inventoryID)
         {
             if (InvokeRequired)
                 return InvokeOnMainThread(() => GetInventory(inventoryID));
 
-            if (inventories.TryGetValue(inventoryID, out Container? inv))
-                return inv;
-            else
-                return null;
+            if (inventories.ContainsKey(inventoryID))
+                return inventories[inventoryID];
+            return null;
         }
 
         /// <summary>
@@ -1115,7 +1015,7 @@ namespace MinecraftClient
         /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
         public Container GetPlayerInventory()
         {
-            return GetInventory(0)!;
+            return GetInventory(0);
         }
 
         /// <summary>
@@ -1126,11 +1026,7 @@ namespace MinecraftClient
         {
             lock (onlinePlayers)
             {
-                string[] playerNames = new string[onlinePlayers.Count];
-                int idx = 0;
-                foreach (var player in onlinePlayers)
-                    playerNames[idx++] = player.Value.Name;
-                return playerNames;
+                return onlinePlayers.Values.Distinct().ToArray();
             }
         }
 
@@ -1140,33 +1036,15 @@ namespace MinecraftClient
         /// <returns>Dictionay of online players, key is UUID, value is Player name</returns>
         public Dictionary<string, string> GetOnlinePlayersWithUUID()
         {
-            Dictionary<string, string> uuid2Player = new();
+            Dictionary<string, string> uuid2Player = new Dictionary<string, string>();
             lock (onlinePlayers)
             {
                 foreach (Guid key in onlinePlayers.Keys)
                 {
-                    uuid2Player.Add(key.ToString(), onlinePlayers[key].Name);
+                    uuid2Player.Add(key.ToString(), onlinePlayers[key]);
                 }
             }
             return uuid2Player;
-        }
-
-        /// <summary>
-        /// Get player info from uuid
-        /// </summary>
-        /// <param name="uuid">Player's UUID</param>
-        /// <returns>Player info</returns>
-        public PlayerInfo? GetPlayerInfo(Guid uuid)
-        {
-            if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? player))
-                return player;
-            else
-                return null;
-        }
-
-        public PlayerKeyPair? GetPlayerKeyPair()
-        {
-            return playerKeyPair;
         }
 
         #endregion
@@ -1176,29 +1054,27 @@ namespace MinecraftClient
         /// <summary>
         /// Move to the specified location
         /// </summary>
-        /// <param name="goal">Location to reach</param>
+        /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
-        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
-        /// <param name="timeout">How long to wait until the path is evaluated (default: 5 seconds)</param>
-        /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location goal, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
         {
             lock (locationLock)
             {
                 if (allowDirectTeleport)
                 {
                     // 1-step path to the desired location without checking anything
-                    UpdateLocation(goal, goal); // Update yaw and pitch to look at next step
-                    handler.SendLocationUpdate(goal, Movement.IsOnGround(world, goal), _yaw, _pitch);
+                    UpdateLocation(location, location); // Update yaw and pitch to look at next step
+                    handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
                     return true;
                 }
                 else
                 {
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
-                    path = Movement.CalculatePath(world, location, goal, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
+                    if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
+                        path = new Queue<Location>(new[] { location });
+                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
                     return path != null;
                 }
             }
@@ -1210,19 +1086,17 @@ namespace MinecraftClient
         /// <param name="text">Text to send to the server</param>
         public void SendText(string text)
         {
-            if (String.IsNullOrEmpty(text))
-                return;
-
-            int maxLength = handler.GetMaxChatMessageLength();
-
             lock (chatQueue)
             {
+                if (String.IsNullOrEmpty(text))
+                    return;
+                int maxLength = handler.GetMaxChatMessageLength();
                 if (text.Length > maxLength) //Message is too long?
                 {
                     if (text[0] == '/')
                     {
                         //Send the first 100/256 chars of the command
-                        text = text[..maxLength];
+                        text = text.Substring(0, maxLength);
                         chatQueue.Enqueue(text);
                     }
                     else
@@ -1230,16 +1104,13 @@ namespace MinecraftClient
                         //Split the message into several messages
                         while (text.Length > maxLength)
                         {
-                            chatQueue.Enqueue(text[..maxLength]);
-                            text = text[maxLength..];
+                            chatQueue.Enqueue(text.Substring(0, maxLength));
+                            text = text.Substring(maxLength, text.Length - maxLength);
                         }
                         chatQueue.Enqueue(text);
                     }
                 }
-                else
-                    chatQueue.Enqueue(text);
-
-                TrySendMessageToServer();
+                else chatQueue.Enqueue(text);
             }
         }
 
@@ -1274,10 +1145,8 @@ namespace MinecraftClient
             }
             else
             {
-                List<ChatBot> bots = new()
-                {
-                    bot
-                };
+                List<ChatBot> bots = new List<ChatBot>();
+                bots.Add(bot);
                 registeredBotPluginChannels[channel] = bots;
                 SendPluginChannelMessage("REGISTER", Encoding.UTF8.GetBytes(channel), true);
             }
@@ -1350,73 +1219,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
-            return InvokeOnMainThread(() => handler.SendUseItem(0, sequenceId++));
-        }
-
-        /// <summary>
-        /// Use the item currently in the player's left hand
-        /// </summary>
-        /// <returns>TRUE if the item was successfully used</returns>
-        public bool UseItemOnLeftHand()
-        {
-            return InvokeOnMainThread(() => handler.SendUseItem(1, sequenceId++));
-        }
-
-        /// <summary>
-        /// Try to merge a slot
-        /// </summary>
-        /// <param name="inventory">The container where the item is located</param>
-        /// <param name="item">Items to be processed</param>
-        /// <param name="slotId">The ID of the slot of the item to be processed</param>
-        /// <param name="curItem">The slot that was put down</param>
-        /// <param name="curId">The ID of the slot being put down</param>
-        /// <param name="changedSlots">Record changes</param>
-        /// <returns>Whether to fully merge</returns>
-        private static bool TryMergeSlot(Container inventory, Item item, int slotId, Item curItem, int curId, List<Tuple<short, Item?>> changedSlots)
-        {
-            int spaceLeft = curItem.Type.StackCount() - curItem.Count;
-            if (curItem.Type == item!.Type && spaceLeft > 0)
-            {
-                // Put item on that stack
-                if (item.Count <= spaceLeft)
-                {
-                    // Can fit into the stack
-                    item.Count = 0;
-                    curItem.Count += item.Count;
-
-                    changedSlots.Add(new Tuple<short, Item?>((short)curId, curItem));
-                    changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
-
-                    inventory.Items.Remove(slotId);
-                    return true;
-                }
-                else
-                {
-                    item.Count -= spaceLeft;
-                    curItem.Count += spaceLeft;
-
-                    changedSlots.Add(new Tuple<short, Item?>((short)curId, curItem));
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Store items in a new slot
-        /// </summary>
-        /// <param name="inventory">The container where the item is located</param>
-        /// <param name="item">Items to be processed</param>
-        /// <param name="slotId">The ID of the slot of the item to be processed</param>
-        /// <param name="newSlotId">ID of the new slot</param>
-        /// <param name="changedSlots">Record changes</param>
-        private static void StoreInNewSlot(Container inventory, Item item, int slotId, int newSlotId, List<Tuple<short, Item?>> changedSlots)
-        {
-            Item newItem = new(item.Type, item.Count, item.NBT);
-            inventory.Items[newSlotId] = newItem;
-            inventory.Items.Remove(slotId);
-
-            changedSlots.Add(new Tuple<short, Item?>((short)newSlotId, newItem));
-            changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
+            return InvokeOnMainThread(() => handler.SendUseItem(0));
         }
 
         /// <summary>
@@ -1428,15 +1231,16 @@ namespace MinecraftClient
             if (InvokeRequired)
                 return InvokeOnMainThread(() => DoWindowAction(windowId, slotId, action));
 
-            Item? item = null;
+            Item item = null;
             if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
                 item = inventories[windowId].Items[slotId];
 
-            List<Tuple<short, Item?>> changedSlots = new(); // List<Slot ID, Changed Items>
+            // Inventory update must be after sending packet
+            bool result = handler.SendWindowAction(windowId, slotId, action, item);
 
             // Update our inventory base on action type
-            Container inventory = GetInventory(windowId)!;
-            Container playerInventory = GetInventory(0)!;
+            var inventory = GetInventory(windowId);
+            var playerInventory = GetInventory(0);
             if (inventory != null)
             {
                 switch (action)
@@ -1472,7 +1276,9 @@ namespace MinecraftClient
                                 else
                                 {
                                     // Swap two items
-                                    (inventory.Items[slotId], playerInventory.Items[-1]) = (playerInventory.Items[-1], inventory.Items[slotId]);
+                                    var itemTmp = playerInventory.Items[-1];
+                                    playerInventory.Items[-1] = inventory.Items[slotId];
+                                    inventory.Items[slotId] = itemTmp;
                                 }
                             }
                             else
@@ -1481,11 +1287,6 @@ namespace MinecraftClient
                                 inventory.Items[slotId] = playerInventory.Items[-1];
                                 playerInventory.Items.Remove(-1);
                             }
-
-                            if (inventory.Items.ContainsKey(slotId))
-                                changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
-                            else
-                                changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
                         }
                         else
                         {
@@ -1498,8 +1299,6 @@ namespace MinecraftClient
                                 // Put target slot item to cursor
                                 playerInventory.Items[-1] = inventory.Items[slotId];
                                 inventory.Items.Remove(slotId);
-
-                                changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
                             }
                         }
                         break;
@@ -1527,14 +1326,16 @@ namespace MinecraftClient
                                 else
                                 {
                                     // Swap two items
-                                    (inventory.Items[slotId], playerInventory.Items[-1]) = (playerInventory.Items[-1], inventory.Items[slotId]);
+                                    var itemTmp = playerInventory.Items[-1];
+                                    playerInventory.Items[-1] = inventory.Items[slotId];
+                                    inventory.Items[slotId] = itemTmp;
                                 }
                             }
                             else
                             {
                                 // Drop 1 item count from cursor
-                                Item itemTmp = playerInventory.Items[-1];
-                                Item itemClone = new(itemTmp.Type, 1, itemTmp.NBT);
+                                var itemTmp = playerInventory.Items[-1];
+                                var itemClone = new Item(itemTmp.Type, 1, itemTmp.NBT);
                                 inventory.Items[slotId] = itemClone;
                                 playerInventory.Items[-1].Count--;
                             }
@@ -1576,578 +1377,141 @@ namespace MinecraftClient
                                 }
                             }
                         }
-                        if (inventory.Items.ContainsKey(slotId))
-                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
-                        else
-                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
                         break;
                     case WindowActionType.ShiftClick:
-                    case WindowActionType.ShiftRightClick:
                         if (slotId == 0) break;
-                        if (item != null)
+                        if (inventory.Items.ContainsKey(slotId))
                         {
                             /* Target slot have item */
 
-                            bool lower2upper = false, upper2backpack = false, backpack2hotbar = false; // mutual exclusion
-                            bool hotbarFirst = true; // Used when upper2backpack = true
                             int upperStartSlot = 9;
                             int upperEndSlot = 35;
-                            int lowerStartSlot = 36;
 
                             switch (inventory.Type)
                             {
                                 case ContainerType.PlayerInventory:
-                                    if (slotId >= 0 && slotId <= 8 || slotId == 45)
-                                    {
-                                        if (slotId != 0)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 9;
-                                    }
-                                    else if (item != null && false /* Check if wearable */)
-                                    {
-                                        lower2upper = true;
-                                        // upperStartSlot = ?;
-                                        // upperEndSlot = ?;
-                                        // Todo: Distinguish the type of equipment
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 9 && slotId <= 35)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 36;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 9;
-                                            upperEndSlot = 35;
-                                        }
-                                    }
-                                    break;
-                                case ContainerType.Generic_9x1:
-                                    if (slotId >= 0 && slotId <= 8)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 9;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 8;
-                                    }
-                                    break;
-                                case ContainerType.Generic_9x2:
-                                    if (slotId >= 0 && slotId <= 17)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 18;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 17;
-                                    }
-                                    break;
-                                case ContainerType.Generic_9x3:
-                                case ContainerType.ShulkerBox:
-                                    if (slotId >= 0 && slotId <= 26)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 27;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 26;
-                                    }
-                                    break;
-                                case ContainerType.Generic_9x4:
-                                    if (slotId >= 0 && slotId <= 35)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 36;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 35;
-                                    }
-                                    break;
-                                case ContainerType.Generic_9x5:
-                                    if (slotId >= 0 && slotId <= 44)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 45;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 44;
-                                    }
-                                    break;
-                                case ContainerType.Generic_9x6:
-                                    if (slotId >= 0 && slotId <= 53)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 54;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 53;
-                                    }
-                                    break;
-                                case ContainerType.Generic_3x3:
-                                    if (slotId >= 0 && slotId <= 8)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 9;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 8;
-                                    }
-                                    break;
-                                case ContainerType.Anvil:
-                                    if (slotId >= 0 && slotId <= 2)
-                                    {
-                                        if (slotId >= 0 && slotId <= 1)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 3;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 1;
-                                    }
-                                    break;
-                                case ContainerType.Beacon:
-                                    if (slotId == 0)
-                                    {
-                                        hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 1;
-                                    }
-                                    else if (item != null && item.Count == 1 && (item.Type == ItemType.NetheriteIngot ||
-                                        item.Type == ItemType.Emerald || item.Type == ItemType.Diamond || item.Type == ItemType.GoldIngot ||
-                                        item.Type == ItemType.IronIngot) && !inventory.Items.ContainsKey(0))
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 0;
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 1 && slotId <= 27)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 28;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 1;
-                                            upperEndSlot = 27;
-                                        }
-                                    }
-                                    break;
-                                case ContainerType.BlastFurnace:
-                                case ContainerType.Furnace:
-                                case ContainerType.Smoker:
-                                    if (slotId >= 0 && slotId <= 2)
-                                    {
-                                        if (slotId >= 0 && slotId <= 1)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 3;
-                                    }
-                                    else if (item != null && false /* Check if it can be burned */)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 0;
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 3 && slotId <= 29)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 30;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 3;
-                                            upperEndSlot = 29;
-                                        }
-                                    }
-                                    break;
-                                case ContainerType.BrewingStand:
-                                    if (slotId >= 0 && slotId <= 3)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 5;
-                                    }
-                                    else if (item != null && item.Type == ItemType.BlazePowder)
-                                    {
-                                        lower2upper = true;
-                                        if (!inventory.Items.ContainsKey(4) || inventory.Items[4].Count < 64)
-                                            upperStartSlot = upperEndSlot = 4;
-                                        else
-                                            upperStartSlot = upperEndSlot = 3;
-                                    }
-                                    else if (item != null && false /* Check if it can be used for alchemy */)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = upperEndSlot = 3;
-                                    }
-                                    else if (item != null && (item.Type == ItemType.Potion || item.Type == ItemType.GlassBottle))
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 2;
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 5 && slotId <= 31)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 32;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 5;
-                                            upperEndSlot = 31;
-                                        }
-                                    }
+                                    upperStartSlot = 9;
+                                    upperEndSlot = 35;
                                     break;
                                 case ContainerType.Crafting:
-                                    if (slotId >= 0 && slotId <= 9)
-                                    {
-                                        if (slotId >= 1 && slotId <= 9)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 10;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 1;
-                                        upperEndSlot = 9;
-                                    }
+                                    upperStartSlot = 1;
+                                    upperEndSlot = 9;
                                     break;
-                                case ContainerType.Enchantment:
-                                    if (slotId >= 0 && slotId <= 1)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 5;
-                                    }
-                                    else if (item != null && item.Type == ItemType.LapisLazuli)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = upperEndSlot = 1;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 0;
-                                    }
-                                    break;
-                                case ContainerType.Grindstone:
-                                    if (slotId >= 0 && slotId <= 2)
-                                    {
-                                        if (slotId >= 0 && slotId <= 1)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 3;
-                                    }
-                                    else if (item != null && false /* Check */)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 1;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 1;
-                                    }
-                                    break;
-                                case ContainerType.Hopper:
-                                    if (slotId >= 0 && slotId <= 4)
-                                    {
-                                        upper2backpack = true;
-                                        lowerStartSlot = 5;
-                                    }
-                                    else
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 4;
-                                    }
-                                    break;
-                                case ContainerType.Lectern:
-                                    return false;
-                                // break;
-                                case ContainerType.Loom:
-                                    if (slotId >= 0 && slotId <= 3)
-                                    {
-                                        if (slotId >= 0 && slotId <= 5)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 4;
-                                    }
-                                    else if (item != null && false /* Check for availability for staining */)
-                                    {
-                                        lower2upper = true;
-                                        // upperStartSlot = ?;
-                                        // upperEndSlot = ?;
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 4 && slotId <= 30)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 31;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 4;
-                                            upperEndSlot = 30;
-                                        }
-                                    }
-                                    break;
-                                case ContainerType.Merchant:
-                                    if (slotId >= 0 && slotId <= 2)
-                                    {
-                                        if (slotId >= 0 && slotId <= 1)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 3;
-                                    }
-                                    else if (item != null && false /* Check if it is available for trading */)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 1;
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 3 && slotId <= 29)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 30;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 3;
-                                            upperEndSlot = 29;
-                                        }
-                                    }
-                                    break;
-                                case ContainerType.Cartography:
-                                    if (slotId >= 0 && slotId <= 2)
-                                    {
-                                        if (slotId >= 0 && slotId <= 1)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 3;
-                                    }
-                                    else if (item != null && item.Type == ItemType.FilledMap)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = upperEndSlot = 0;
-                                    }
-                                    else if (item != null && item.Type == ItemType.Map)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = upperEndSlot = 1;
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 3 && slotId <= 29)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 30;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 3;
-                                            upperEndSlot = 29;
-                                        }
-                                    }
-                                    break;
-                                case ContainerType.Stonecutter:
-                                    if (slotId >= 0 && slotId <= 1)
-                                    {
-                                        if (slotId == 0)
-                                            hotbarFirst = false;
-                                        upper2backpack = true;
-                                        lowerStartSlot = 2;
-                                    }
-                                    else if (item != null && false /* Check if it is available for stone cutteing */)
-                                    {
-                                        lower2upper = true;
-                                        upperStartSlot = 0;
-                                        upperEndSlot = 0;
-                                    }
-                                    else
-                                    {
-                                        if (slotId >= 2 && slotId <= 28)
-                                        {
-                                            backpack2hotbar = true;
-                                            lowerStartSlot = 29;
-                                        }
-                                        else
-                                        {
-                                            lower2upper = true;
-                                            upperStartSlot = 2;
-                                            upperEndSlot = 28;
-                                        }
-                                    }
-                                    break;
-                                // TODO: Define more container type here
-                                default:
-                                    return false;
+                                    // TODO: Define more container type here
                             }
 
                             // Cursor have item or not doesn't matter
                             // If hotbar already have same item, will put on it first until every stack are full
                             // If no more same item , will put on the first empty slot (smaller slot id)
                             // If inventory full, item will not move
-                            int itemCount = inventory.Items[slotId].Count;
-                            if (lower2upper)
+                            if (slotId <= upperEndSlot)
                             {
-                                int firstEmptySlot = -1;
-                                for (int i = upperStartSlot; i <= upperEndSlot; ++i)
+                                // Clicked slot is on upper side inventory, put it to hotbar
+                                // Now try to find same item and put on them
+                                var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
+                                foreach (KeyValuePair<int, Item> _item in itemsClone)
                                 {
-                                    if (inventory.Items.TryGetValue(i, out Item? curItem))
-                                    {
-                                        if (TryMergeSlot(inventory, item!, slotId, curItem, i, changedSlots))
-                                            break;
-                                    }
-                                    else if (firstEmptySlot == -1)
-                                        firstEmptySlot = i;
-                                }
-                                if (item!.Count > 0)
-                                {
-                                    if (firstEmptySlot != -1)
-                                        StoreInNewSlot(inventory, item, slotId, firstEmptySlot, changedSlots);
-                                    else if (item.Count != itemCount)
-                                        changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
-                                }
-                            }
-                            else if (upper2backpack)
-                            {
-                                int hotbarEnd = lowerStartSlot + 4 * 9 - 1;
-                                if (hotbarFirst)
-                                {
-                                    int lastEmptySlot = -1;
-                                    for (int i = hotbarEnd; i >= lowerStartSlot; --i)
-                                    {
-                                        if (inventory.Items.TryGetValue(i, out Item? curItem))
-                                        {
-                                            if (TryMergeSlot(inventory, item!, slotId, curItem, i, changedSlots))
-                                                break;
-                                        }
-                                        else if (lastEmptySlot == -1)
-                                            lastEmptySlot = i;
-                                    }
-                                    if (item!.Count > 0)
-                                    {
-                                        if (lastEmptySlot != -1)
-                                            StoreInNewSlot(inventory, item, slotId, lastEmptySlot, changedSlots);
-                                        else if (item.Count != itemCount)
-                                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
-                                    }
-                                }
-                                else
-                                {
-                                    int firstEmptySlot = -1;
-                                    for (int i = lowerStartSlot; i <= hotbarEnd; ++i)
-                                    {
-                                        if (inventory.Items.TryGetValue(i, out Item? curItem))
-                                        {
-                                            if (TryMergeSlot(inventory, item!, slotId, curItem, i, changedSlots))
-                                                break;
-                                        }
-                                        else if (firstEmptySlot == -1)
-                                            firstEmptySlot = i;
-                                    }
-                                    if (item!.Count > 0)
-                                    {
-                                        if (firstEmptySlot != -1)
-                                            StoreInNewSlot(inventory, item, slotId, firstEmptySlot, changedSlots);
-                                        else if (item.Count != itemCount)
-                                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
-                                    }
-                                }
-                            }
-                            else if (backpack2hotbar)
-                            {
-                                int hotbarEnd = lowerStartSlot + 1 * 9 - 1;
+                                    if (_item.Key <= upperEndSlot) continue;
 
-                                int firstEmptySlot = -1;
-                                for (int i = lowerStartSlot; i <= hotbarEnd; ++i)
-                                {
-                                    if (inventory.Items.TryGetValue(i, out Item? curItem))
+                                    int maxCount = _item.Value.Type.StackCount();
+                                    if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
                                     {
-                                        if (TryMergeSlot(inventory, item!, slotId, curItem, i, changedSlots))
-                                            break;
+                                        // Put item on that stack
+                                        int spaceLeft = maxCount - _item.Value.Count;
+                                        if (inventory.Items[slotId].Count <= spaceLeft)
+                                        {
+                                            // Can fit into the stack
+                                            inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
+                                            inventory.Items.Remove(slotId);
+                                        }
+                                        else
+                                        {
+                                            inventory.Items[slotId].Count -= spaceLeft;
+                                            inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+                                        }
                                     }
-                                    else if (firstEmptySlot == -1)
-                                        firstEmptySlot = i;
                                 }
-                                if (item!.Count > 0)
+                                if (inventory.Items[slotId].Count > 0)
                                 {
-                                    if (firstEmptySlot != -1)
-                                        StoreInNewSlot(inventory, item, slotId, firstEmptySlot, changedSlots);
-                                    else if (item.Count != itemCount)
-                                        changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
+                                    int[] emptySlots = inventory.GetEmpytSlots();
+                                    int emptySlot = -2;
+                                    foreach (int slot in emptySlots)
+                                    {
+                                        if (slot <= upperEndSlot) continue;
+                                        emptySlot = slot;
+                                        break;
+                                    }
+                                    if (emptySlot != -2)
+                                    {
+                                        var itemTmp = inventory.Items[slotId];
+                                        inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                        inventory.Items.Remove(slotId);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Clicked slot is on hotbar, put it to upper inventory
+                                // Now try to find same item and put on them
+                                var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
+                                foreach (KeyValuePair<int, Item> _item in itemsClone)
+                                {
+                                    if (_item.Key < upperStartSlot) continue;
+                                    if (_item.Key >= upperEndSlot) break;
+
+                                    int maxCount = _item.Value.Type.StackCount();
+                                    if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
+                                    {
+                                        // Put item on that stack
+                                        int spaceLeft = maxCount - _item.Value.Count;
+                                        if (inventory.Items[slotId].Count <= spaceLeft)
+                                        {
+                                            // Can fit into the stack
+                                            inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
+                                            inventory.Items.Remove(slotId);
+                                        }
+                                        else
+                                        {
+                                            inventory.Items[slotId].Count -= spaceLeft;
+                                            inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+                                        }
+                                    }
+                                }
+                                if (inventory.Items[slotId].Count > 0)
+                                {
+                                    int[] emptySlots = inventory.GetEmpytSlots();
+                                    int emptySlot = -2;
+                                    foreach (int slot in emptySlots)
+                                    {
+                                        if (slot < upperStartSlot) continue;
+                                        if (slot >= upperEndSlot) break;
+                                        emptySlot = slot;
+                                        break;
+                                    }
+                                    if (emptySlot != -2)
+                                    {
+                                        var itemTmp = inventory.Items[slotId];
+                                        inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                        inventory.Items.Remove(slotId);
+                                    }
                                 }
                             }
                         }
                         break;
                     case WindowActionType.DropItem:
                         if (inventory.Items.ContainsKey(slotId))
-                        {
                             inventory.Items[slotId].Count--;
-                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
-                        }
 
                         if (inventory.Items[slotId].Count <= 0)
-                        {
                             inventory.Items.Remove(slotId);
-                            changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
-                        }
-
                         break;
                     case WindowActionType.DropItemStack:
                         inventory.Items.Remove(slotId);
-                        changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
                         break;
                 }
             }
 
-            return handler.SendWindowAction(windowId, slotId, action, item, changedSlots, inventories[windowId].StateID);
+            return result;
         }
 
         /// <summary>
@@ -2159,7 +1523,7 @@ namespace MinecraftClient
         /// <param name="count">Item count</param>
         /// <param name="nbt">Item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt = null)
+        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> nbt = null)
         {
             return InvokeOnMainThread(() => handler.SendCreativeInventoryAction(slot, itemType, count, nbt));
         }
@@ -2189,9 +1553,7 @@ namespace MinecraftClient
             {
                 if (windowId != 0)
                     inventories.Remove(windowId);
-                bool result = handler.SendCloseWindow(windowId);
-                DispatchBotEvent(bot => bot.OnInventoryClose(windowId));
-                return result;
+                return handler.SendCloseWindow(windowId);
             }
             return false;
         }
@@ -2217,36 +1579,26 @@ namespace MinecraftClient
         /// Interact with an entity
         /// </summary>
         /// <param name="EntityID"></param>
-        /// <param name="type">Type of interaction (interact, attack...)</param>
+        /// <param name="type">0: interact, 1: attack, 2: interact at</param>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE if interaction succeeded</returns>
-        public bool InteractEntity(int entityID, InteractType type, Hand hand = Hand.MainHand)
+        public bool InteractEntity(int entityID, int type, Hand hand = Hand.MainHand)
         {
             if (InvokeRequired)
                 return InvokeOnMainThread(() => InteractEntity(entityID, type, hand));
 
             if (entities.ContainsKey(entityID))
             {
-                switch (type)
+                if (type == 0)
                 {
-                    case InteractType.Interact:
-                        return handler.SendInteractEntity(entityID, (int)type, (int)hand);
-                    
-                    case InteractType.InteractAt:
-                        return handler.SendInteractEntity(
-                            EntityID: entityID, 
-                            type: (int)type, 
-                            X: (float)entities[entityID].Location.X, 
-                            Y: (float)entities[entityID].Location.Y, 
-                            Z: (float)entities[entityID].Location.Z, 
-                            hand: (int)hand);
-                    
-                    default:
-                        return handler.SendInteractEntity(entityID, (int)type);
+                    return handler.SendInteractEntity(entityID, type, (int)hand);
+                }
+                else
+                {
+                    return handler.SendInteractEntity(entityID, type);
                 }
             }
-            
-            return false;
+            else return false;
         }
 
         /// <summary>
@@ -2257,7 +1609,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++));
+            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace));
         }
 
         /// <summary>
@@ -2266,43 +1618,26 @@ namespace MinecraftClient
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true, double duration = 0, Direction blockFace = Direction.Down)
+        public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
         {
             if (!GetTerrainEnabled())
                 return false;
 
             if (InvokeRequired)
-                return InvokeOnMainThread(() => DigBlock(location, swingArms, lookAtBlock, duration));
+                return InvokeOnMainThread(() => DigBlock(location, swingArms, lookAtBlock));
 
             // TODO select best face from current player location
+            Direction blockFace = Direction.Down;
 
-            lock (DigLock)
-            {
-                if (RemainingDiggingTime > 0 && LastDigPosition != null)
-                {
-                    handler.SendPlayerDigging(1, LastDigPosition.Item1, LastDigPosition.Item2, sequenceId++);
-                    Log.Info(string.Format(Translations.cmd_dig_cancel, LastDigPosition.Item1));
-                }
+            // Look at block before attempting to break it
+            if (lookAtBlock)
+                UpdateLocation(GetCurrentLocation(), location);
 
-                // Look at block before attempting to break it
-                if (lookAtBlock)
-                    UpdateLocation(GetCurrentLocation(), location);
-
-                // Send dig start and dig end, will need to wait for server response to know dig result
-                // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
-                bool result = handler.SendPlayerDigging(0, location, blockFace, sequenceId++)
-                    && (!swingArms || DoAnimation((int)Hand.MainHand));
-
-                if (duration <= 0)
-                    result &= handler.SendPlayerDigging(2, location, blockFace, sequenceId++);
-                else
-                {
-                    LastDigPosition = new(location, blockFace);
-                    RemainingDiggingTime = Settings.DoubleToTick(duration);
-                }
-
-                return result;
-            }
+            // Send dig start and dig end, will need to wait for server response to know dig result
+            // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
+            return handler.SendPlayerDigging(0, location, blockFace)
+                && (!swingArms || DoAnimation((int)Hand.MainHand))
+                && handler.SendPlayerDigging(2, location, blockFace);
         }
 
         /// <summary>
@@ -2356,56 +1691,6 @@ namespace MinecraftClient
         {
             return InvokeOnMainThread(() => handler.UpdateCommandBlock(location, command, mode, flags));
         }
-
-        /// <summary>
-        /// Teleport to player in spectator mode
-        /// </summary>
-        /// <param name="entity">Player to teleport to</param>
-        /// Teleporting to other entityies is NOT implemented yet
-        public bool Spectate(Entity entity)
-        {
-            if (entity.Type == EntityType.Player)
-            {
-                return SpectateByUUID(entity.UUID);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Teleport to player/entity in spectator mode
-        /// </summary>
-        /// <param name="UUID">UUID of player/entity to teleport to</param>
-        public bool SpectateByUUID(Guid UUID)
-        {
-            if (GetGamemode() == 3)
-            {
-                if (InvokeRequired)
-                    return InvokeOnMainThread(() => SpectateByUUID(UUID));
-                return handler.SendSpectate(UUID);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        
-        /// <summary>
-        /// Send the server a command to type in the item name in the Anvil inventory when it's open.
-        /// </summary>
-        /// <param name="itemName">The new item name</param>
-        public bool SendRenameItem(string itemName)
-        {
-            if (inventories.Count == 0)
-                return false;
-
-            if (inventories.Values.ToList().Last().Type != ContainerType.Anvil)
-                return false;
-            
-            return handler.SendRenameItem(itemName);
-        }
         #endregion
 
         #region Event handlers: An event occurs on the Server
@@ -2419,7 +1704,7 @@ namespace MinecraftClient
         /// </example>
         /// <param name="action">Action to execute on each bot</param>
         /// <param name="botList">Only fire the event for the specified bot list (default: all bots)</param>
-        private void DispatchBotEvent(Action<ChatBot> action, IEnumerable<ChatBot>? botList = null)
+        private void DispatchBotEvent(Action<ChatBot> action, IEnumerable<ChatBot> botList = null)
         {
             ChatBot[] selectedBots;
 
@@ -2440,11 +1725,11 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (e is not ThreadAbortException)
+                    if (!(e is ThreadAbortException))
                     {
                         //Retrieve parent method name to determine which event caused the exception
-                        System.Diagnostics.StackFrame frame = new(1);
-                        System.Reflection.MethodBase method = frame.GetMethod()!;
+                        System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                        System.Reflection.MethodBase method = frame.GetMethod();
                         string parentMethodName = method.Name;
 
                         //Display a meaningful error message to help debugging the ChatBot
@@ -2473,43 +1758,32 @@ namespace MinecraftClient
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-        public void OnGameJoined(bool isOnlineMode)
+        public void OnGameJoined()
         {
-            if (protocolversion < Protocol18Handler.MC_1_19_3_Version || playerKeyPair == null || !isOnlineMode)
-                SetCanSendMessage(true);
-            else
-                SetCanSendMessage(false);
+            if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
+                handler.SendBrandInfo(Settings.BrandInfo.Trim());
 
-            string? bandString = Config.Main.Advanced.BrandInfo.ToBrandString();
-            if (!String.IsNullOrWhiteSpace(bandString))
-                handler.SendBrandInfo(bandString.Trim());
-
-            if (Config.MCSettings.Enabled)
+            if (Settings.MCSettings_Enabled)
                 handler.SendClientSettings(
-                    Config.MCSettings.Locale,
-                    Config.MCSettings.RenderDistance,
-                    (byte)Config.MCSettings.Difficulty,
-                    (byte)Config.MCSettings.ChatMode,
-                    Config.MCSettings.ChatColors,
-                    Config.MCSettings.Skin.GetByte(),
-                    (byte)Config.MCSettings.MainHand);
+                    Settings.MCSettings_Locale,
+                    Settings.MCSettings_RenderDistance,
+                    Settings.MCSettings_Difficulty,
+                    Settings.MCSettings_ChatMode,
+                    Settings.MCSettings_ChatColors,
+                    Settings.MCSettings_Skin_All,
+                    Settings.MCSettings_MainHand);
 
-            if (protocolversion >= Protocol18Handler.MC_1_19_3_Version
-                && playerKeyPair != null && isOnlineMode)
-                handler.SendPlayerSession(playerKeyPair);
 
             if (inventoryHandlingRequested)
             {
                 inventoryHandlingRequested = false;
                 inventoryHandlingEnabled = true;
-                Log.Info(Translations.extra_inventory_enabled);
+                Log.Info(Translations.Get("extra.inventory_enabled"));
             }
 
             ClearInventories();
 
             DispatchBotEvent(bot => bot.AfterGameJoined());
-
-            ConsoleIO.InitCommandList(dispatcher);
         }
 
         /// <summary>
@@ -2517,13 +1791,11 @@ namespace MinecraftClient
         /// </summary>
         public void OnRespawn()
         {
-            ClearTasks();
-
             if (terrainAndMovementsRequested)
             {
                 terrainAndMovementsEnabled = true;
                 terrainAndMovementsRequested = false;
-                Log.Info(Translations.extra_terrainandmovement_enabled);
+                Log.Info(Translations.Get("extra.terrainandmovement_enabled"));
             }
 
             if (terrainAndMovementsEnabled)
@@ -2534,58 +1806,6 @@ namespace MinecraftClient
             entities.Clear();
             ClearInventories();
             DispatchBotEvent(bot => bot.OnRespawn());
-        }
-
-        /// <summary>
-        /// Check if the client is currently processing a Movement.
-        /// </summary>
-        /// <returns>true if a movement is currently handled</returns>
-        public bool ClientIsMoving()
-        {
-            return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));
-        }
-
-        /// <summary>
-        /// Get the current goal
-        /// </summary>
-        /// <returns>Current goal of movement. Location.Zero if not set.</returns>
-        public Location GetCurrentMovementGoal()
-        {
-            return (ClientIsMoving() || path == null) ? Location.Zero : path.Last();
-        }
-
-        /// <summary>
-        /// Cancels the current movement
-        /// </summary>
-        /// <returns>True if there was an active path</returns>
-        public bool CancelMovement()
-        {
-            bool success = ClientIsMoving();
-            path = null;
-            return success;
-        }
-
-        /// <summary>
-        /// Change the amount of sent movement packets per time
-        /// </summary>
-        /// <param name="newSpeed">Set a new walking type</param>
-        public void SetMovementSpeed(MovementType newSpeed)
-        {
-            switch (newSpeed)
-            {
-                case MovementType.Sneak:
-                    // https://minecraft.wiki/w/Sneaking#Effects - Sneaking  1.31m/s
-                    Config.Main.Advanced.MovementSpeed = 2;
-                    break;
-                case MovementType.Walk:
-                    // https://minecraft.wiki/w/Walking#Usage - Walking 4.317 m/s
-                    Config.Main.Advanced.MovementSpeed = 4;
-                    break;
-                case MovementType.Sprint:
-                    // https://minecraft.wiki/w/Sprinting#Usage - Sprinting 5.612 m/s
-                    Config.Main.Advanced.MovementSpeed = 5;
-                    break;
-            }
         }
 
         /// <summary>
@@ -2616,8 +1836,8 @@ namespace MinecraftClient
         /// <param name="pitch">Pitch to look at</param>
         public void UpdateLocation(Location location, float yaw, float pitch)
         {
-            _yaw = yaw;
-            _pitch = pitch;
+            this._yaw = yaw;
+            this._pitch = pitch;
             UpdateLocation(location, false);
         }
 
@@ -2673,75 +1893,38 @@ namespace MinecraftClient
                 case Direction.South:
                     break;
                 default:
-                    throw new ArgumentException(Translations.exception_unknown_direction, nameof(direction));
+                    throw new ArgumentException(Translations.Get("exception.unknown_direction"), "direction");
             }
 
             UpdateLocation(location, yaw, pitch);
         }
 
         /// <summary>
-        /// Received chat/system message from the server
+        /// Received some text from the server
         /// </summary>
-        /// <param name="message">Message received</param>
-        public void OnTextReceived(ChatMessage message)
+        /// <param name="text">Text received</param>
+        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
+        public void OnTextReceived(string text, bool isJson)
         {
             UpdateKeepAlive();
 
-            List<string> links = new();
-            string messageText;
+            List<string> links = new List<string>();
+            string json = null;
 
-            // Used for 1.19+ to mark: system message, legal / illegal signature
-            string color = string.Empty;
-
-            if (message.isSignedChat)
+            if (isJson)
             {
-                if (!Config.Signature.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
-                    return;
-                messageText = ChatParser.ParseSignedChat(message, links);
-                
-                if (message.isSystemChat)
-                {
-                    if (Config.Signature.MarkSystemMessage)
-                        color = "§7▌§r";     // Background Gray
-                }
-                else
-                {
-                    if ((bool)message.isSignatureLegal!)
-                    {
-                        if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
-                        {
-                            if (Config.Signature.MarkModifiedMsg)
-                                color = "§6▌§r"; // Background Yellow
-                        }
-                        else
-                        {
-                            if (Config.Signature.MarkLegallySignedMsg)
-                                color = "§2▌§r"; // Background Green
-                        }
-                    }
-                    else
-                    {
-                        if (Config.Signature.MarkIllegallySignedMsg)
-                            color = "§4▌§r"; // Background Red
-                    }
-                }
-            }
-            else
-            {
-                if (message.isJson)
-                    messageText = ChatParser.ParseText(message.content, links);
-                else
-                    messageText = message.content;
+                json = text;
+                text = ChatParser.ParseText(json, links);
             }
 
-            Log.Chat(color + messageText);
+            Log.Chat(text);
 
-            if (Config.Main.Advanced.ShowChatLinks)
+            if (Settings.DisplayChatLinks)
                 foreach (string link in links)
-                    Log.Chat(string.Format(Translations.mcc_link, link));
+                    Log.Chat(Translations.Get("mcc.link", link), false);
 
-            DispatchBotEvent(bot => bot.GetText(messageText));
-            DispatchBotEvent(bot => bot.GetText(messageText, message.content));
+            DispatchBotEvent(bot => bot.GetText(text));
+            DispatchBotEvent(bot => bot.GetText(text, json));
         }
 
         /// <summary>
@@ -2763,8 +1946,8 @@ namespace MinecraftClient
 
             if (inventoryID != 0)
             {
-                Log.Info(string.Format(Translations.extra_inventory_open, inventoryID, inventory.Title));
-                Log.Info(Translations.extra_inventory_interact);
+                Log.Info(Translations.Get("extra.inventory_open", inventoryID, inventory.Title));
+                Log.Info(Translations.Get("extra.inventory_interact"));
                 DispatchBotEvent(bot => bot.OnInventoryOpen(inventoryID));
             }
         }
@@ -2785,113 +1968,8 @@ namespace MinecraftClient
 
             if (inventoryID != 0)
             {
-                Log.Info(string.Format(Translations.extra_inventory_close, inventoryID));
+                Log.Info(Translations.Get("extra.inventory_close", inventoryID));
                 DispatchBotEvent(bot => bot.OnInventoryClose(inventoryID));
-            }
-        }
-
-        /// <summary>
-        /// When received window properties from server.
-        /// Used for Frunaces, Enchanting Table, Beacon, Brewing stand, Stone cutter, Loom and Lectern
-        /// More info about: https://wiki.vg/Protocol#Set_Container_Property
-        /// </summary>
-        /// <param name="inventoryID">Inventory ID</param>
-        /// <param name="propertyId">Property ID</param>
-        /// <param name="propertyValue">Property Value</param>
-        public void OnWindowProperties(byte inventoryID, short propertyId, short propertyValue)
-        {
-            if (!inventories.ContainsKey(inventoryID))
-                return;
-
-            Container inventory = inventories[inventoryID];
-
-            if (inventory.Properties.ContainsKey(propertyId))
-                inventory.Properties.Remove(propertyId);
-
-            inventory.Properties.Add(propertyId, propertyValue);
-
-            DispatchBotEvent(bot => bot.OnInventoryProperties(inventoryID, propertyId, propertyValue));
-
-            if (inventory.Type == ContainerType.Enchantment)
-            {
-                // We got the last property for enchantment
-                if (propertyId == 9 && propertyValue != -1)
-                {
-                    short topEnchantmentLevelRequirement = inventory.Properties[0];
-                    short middleEnchantmentLevelRequirement = inventory.Properties[1];
-                    short bottomEnchantmentLevelRequirement = inventory.Properties[2];
-
-                    Enchantment topEnchantment = EnchantmentMapping.GetEnchantmentById(
-                        GetProtocolVersion(),
-                        inventory.Properties[4]);
-
-                    Enchantment middleEnchantment = EnchantmentMapping.GetEnchantmentById(
-                        GetProtocolVersion(),
-                        inventory.Properties[5]);
-
-                    Enchantment bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
-                        GetProtocolVersion(),
-                        inventory.Properties[6]);
-
-                    short topEnchantmentLevel = inventory.Properties[7];
-                    short middleEnchantmentLevel = inventory.Properties[8];
-                    short bottomEnchantmentLevel = inventory.Properties[9];
-
-                    StringBuilder sb = new();
-
-                    sb.AppendLine(Translations.Enchantment_enchantments_available + ":");
-
-                    sb.AppendLine(Translations.Enchantment_tops_slot + ":\t"
-                        + EnchantmentMapping.GetEnchantmentName(topEnchantment) + " "
-                        + EnchantmentMapping.ConvertLevelToRomanNumbers(topEnchantmentLevel) + " ("
-                        + topEnchantmentLevelRequirement + " " + Translations.Enchantment_levels + ")");
-
-                    sb.AppendLine(Translations.Enchantment_middle_slot + ":\t"
-                        + EnchantmentMapping.GetEnchantmentName(middleEnchantment) + " "
-                        + EnchantmentMapping.ConvertLevelToRomanNumbers(middleEnchantmentLevel) + " ("
-                        + middleEnchantmentLevelRequirement + " " + Translations.Enchantment_levels + ")");
-
-                    sb.AppendLine(Translations.Enchantment_bottom_slot + ":\t"
-                        + EnchantmentMapping.GetEnchantmentName(bottomEnchantment) + " "
-                        + EnchantmentMapping.ConvertLevelToRomanNumbers(bottomEnchantmentLevel) + " ("
-                        + bottomEnchantmentLevelRequirement + " " + Translations.Enchantment_levels + ")");
-
-                    Log.Info(sb.ToString());
-
-                    lastEnchantment = new();
-                    lastEnchantment.TopEnchantment = topEnchantment;
-                    lastEnchantment.MiddleEnchantment = middleEnchantment;
-                    lastEnchantment.BottomEnchantment = bottomEnchantment;
-
-                    lastEnchantment.Seed = inventory.Properties[3];
-
-                    lastEnchantment.TopEnchantmentLevel = topEnchantmentLevel;
-                    lastEnchantment.MiddleEnchantmentLevel = middleEnchantmentLevel;
-                    lastEnchantment.BottomEnchantmentLevel = bottomEnchantmentLevel;
-
-                    lastEnchantment.TopEnchantmentLevelRequirement = topEnchantmentLevelRequirement;
-                    lastEnchantment.MiddleEnchantmentLevelRequirement = middleEnchantmentLevelRequirement;
-                    lastEnchantment.BottomEnchantmentLevelRequirement = bottomEnchantmentLevelRequirement;
-
-
-                    DispatchBotEvent(bot => bot.OnEnchantments(
-                        // Enchantments
-                        topEnchantment,
-                        middleEnchantment,
-                        bottomEnchantment,
-
-                        // Enchantment levels
-                        topEnchantmentLevel,
-                        middleEnchantmentLevel,
-                        bottomEnchantmentLevel,
-
-                        // Required levels for enchanting
-                        topEnchantmentLevelRequirement,
-                        middleEnchantmentLevelRequirement,
-                        bottomEnchantmentLevelRequirement));
-
-                    DispatchBotEvent(bot => bot.OnEnchantments(lastEnchantment));
-                }
             }
         }
 
@@ -2900,12 +1978,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
-        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList, int stateId)
+        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
         {
             if (inventories.ContainsKey(inventoryID))
             {
                 inventories[inventoryID].Items = itemList;
-                inventories[inventoryID].StateID = stateId;
                 DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
             }
         }
@@ -2916,11 +1993,8 @@ namespace MinecraftClient
         /// <param name="inventoryID">Window ID</param>
         /// <param name="slotID">Slot ID</param>
         /// <param name="item">Item (may be null for empty slot)</param>
-        public void OnSetSlot(byte inventoryID, short slotID, Item? item, int stateId)
+        public void OnSetSlot(byte inventoryID, short slotID, Item item)
         {
-            if (inventories.ContainsKey(inventoryID))
-                inventories[inventoryID].StateID = stateId;
-
             // Handle inventoryID -2 - Add item to player inventory without animation
             if (inventoryID == 254)
                 inventoryID = 0;
@@ -2963,26 +2037,20 @@ namespace MinecraftClient
         /// <summary>
         /// Triggered when a new player joins the game
         /// </summary>
-        /// <param name="player">player info</param>
-        public void OnPlayerJoin(PlayerInfo player)
+        /// <param name="uuid">UUID of the player</param>
+        /// <param name="name">Name of the player</param>
+        public void OnPlayerJoin(Guid uuid, string name)
         {
             //Ignore placeholders eg 0000tab# from TabListPlus
-            if (Config.Main.Advanced.IgnoreInvalidPlayerName && !ChatBot.IsValidName(player.Name))
+            if (!ChatBot.IsValidName(name))
                 return;
-
-            if (player.Name == username)
-            {
-                // 1.19+ offline server is possible to return different uuid
-                uuid = player.Uuid;
-                uuidStr = player.Uuid.ToString().Replace("-", string.Empty);
-            }
 
             lock (onlinePlayers)
             {
-                onlinePlayers[player.Uuid] = player;
+                onlinePlayers[uuid] = name;
             }
 
-            DispatchBotEvent(bot => bot.OnPlayerJoin(player.Uuid, player.Name));
+            DispatchBotEvent(bot => bot.OnPlayerJoin(uuid, name));
         }
 
         /// <summary>
@@ -2991,31 +2059,18 @@ namespace MinecraftClient
         /// <param name="uuid">UUID of the player</param>
         public void OnPlayerLeave(Guid uuid)
         {
-            string? username = null;
+            string username = null;
 
             lock (onlinePlayers)
             {
                 if (onlinePlayers.ContainsKey(uuid))
                 {
-                    username = onlinePlayers[uuid].Name;
+                    username = onlinePlayers[uuid];
                     onlinePlayers.Remove(uuid);
                 }
             }
 
             DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, username));
-        }
-
-        // <summary>
-        /// This method is called when a player has been killed by another entity
-        /// </summary>
-        /// <param name="playerEntity">Victim's entity</param>
-        /// <param name="killerEntity">Killer's entity</param>
-        public void OnPlayerKilled(int killerEntityId, string chatMessage)
-        {
-            if (!entities.ContainsKey(killerEntityId))
-                return;
-
-            DispatchBotEvent(bot => bot.OnKilled(entities[killerEntityId], chatMessage));
         }
 
         /// <summary>
@@ -3067,7 +2122,7 @@ namespace MinecraftClient
         /// <summary>
         /// Called when an entity effects
         /// </summary>
-        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<string, object>? factorCodec)
+        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags)
         {
             if (entities.ContainsKey(entityid))
                 DispatchBotEvent(bot => bot.OnEntityEffect(entities[entityid], effect, amplifier, duration, flags));
@@ -3076,16 +2131,12 @@ namespace MinecraftClient
         /// <summary>
         /// Called when a player spawns or enters the client's render distance
         /// </summary>
-        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte yaw, byte pitch)
+        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte Yaw, byte Pitch)
         {
-            Entity playerEntity;
-            if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? player))
-            {
-                playerEntity = new(entityID, EntityType.Player, location, uuid, player.Name, yaw, pitch);
-                player.entity = playerEntity;
-            }
-            else
-                playerEntity = new(entityID, EntityType.Player, location, uuid, null, yaw, pitch);
+            string playerName = null;
+            if (onlinePlayers.ContainsKey(uuid))
+                playerName = onlinePlayers[uuid];
+            Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
             OnSpawnEntity(playerEntity);
         }
 
@@ -3093,9 +2144,9 @@ namespace MinecraftClient
         /// Called on Entity Equipment
         /// </summary>
         /// <param name="entityid"> Entity ID</param>
-        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2-5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
-        public void OnEntityEquipment(int entityid, int slot, Item? item)
+        public void OnEntityEquipment(int entityid, int slot, Item item)
         {
             if (entities.ContainsKey(entityid))
             {
@@ -3123,8 +2174,8 @@ namespace MinecraftClient
             // Further regular gamemode change events
             if (onlinePlayers.ContainsKey(uuid))
             {
-                string playerName = onlinePlayers[uuid].Name;
-                if (playerName == username)
+                string playerName = onlinePlayers[uuid];
+                if (playerName == this.username)
                     this.gamemode = gamemode;
                 DispatchBotEvent(bot => bot.OnGamemodeUpdate(playerName, uuid, gamemode));
             }
@@ -3137,36 +2188,11 @@ namespace MinecraftClient
         {
             foreach (int a in Entities)
             {
-                if (entities.TryGetValue(a, out Entity? entity))
+                if (entities.ContainsKey(a))
                 {
-                    DispatchBotEvent(bot => bot.OnEntityDespawn(entity));
+                    DispatchBotEvent(bot => bot.OnEntityDespawn(entities[a]));
                     entities.Remove(a);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Called when an entity's position changed within 8 block of its previous position with rotation.
-        /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="Dx"></param>
-        /// <param name="Dy"></param>
-        /// <param name="Dz"></param>
-        /// <param name="yaw"></param>
-        /// <param name="pitch"></param>
-        /// <param name="onGround"></param>
-        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, float yaw, float pitch, bool onGround)
-        {
-            if (entities.ContainsKey(EntityID))
-            {
-                Location L = entities[EntityID].Location;
-                L.X += Dx;
-                L.Y += Dy;
-                L.Z += Dz;
-                entities[EntityID].Location = L;
-                entities[EntityID].Yaw = yaw;
-                entities[EntityID].Pitch = pitch;
-                DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
             }
         }
 
@@ -3189,23 +2215,7 @@ namespace MinecraftClient
                 entities[EntityID].Location = L;
                 DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
             }
-        }
 
-        /// <summary>
-        /// Called when an entity's rotation changed.
-        /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="yaw"></param>
-        /// <param name="pitch"></param>
-        /// <param name="onGround"></param>
-        public void OnEntityRotation(int EntityID, float yaw, float pitch, bool onGround)
-        {
-            if (entities.ContainsKey(EntityID))
-            {
-                entities[EntityID].Yaw = yaw;
-                entities[EntityID].Pitch = pitch;
-                DispatchBotEvent(bot => bot.OnEntityRotate(entities[EntityID]));
-            }
         }
 
         /// <summary>
@@ -3220,7 +2230,7 @@ namespace MinecraftClient
         {
             if (entities.ContainsKey(EntityID))
             {
-                Location location = new(X, Y, Z);
+                Location location = new Location(X, Y, Z);
                 entities[EntityID].Location = location;
                 DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
             }
@@ -3304,14 +2314,14 @@ namespace MinecraftClient
 
             if (health <= 0)
             {
-                if (Config.Main.Advanced.AutoRespawn)
+                if (Settings.AutoRespawn)
                 {
-                    Log.Info(Translations.mcc_player_dead_respawn);
+                    Log.Info(Translations.Get("mcc.player_dead_respawn"));
                     respawnTicks = 10;
                 }
                 else
                 {
-                    Log.Info(string.Format(Translations.mcc_player_dead, Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                    Log.Info(Translations.Get("mcc.player_dead"));
                 }
                 DispatchBotEvent(bot => bot.OnDeath());
             }
@@ -3350,11 +2360,11 @@ namespace MinecraftClient
         /// <param name="latency">Latency</param>
         public void OnLatencyUpdate(Guid uuid, int latency)
         {
+            string playerName = null;
             if (onlinePlayers.ContainsKey(uuid))
             {
-                PlayerInfo player = onlinePlayers[uuid];
-                player.Ping = latency;
-                string playerName = player.Name;
+                playerName = onlinePlayers[uuid];
+                playersLatency[playerName] = latency;
                 foreach (KeyValuePair<int, Entity> ent in entities)
                 {
                     if (ent.Value.UUID == uuid && ent.Value.Name == playerName)
@@ -3379,22 +2389,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called when an update of the map is sent by the server, take a look at https://wiki.vg/Protocol#Map_Data for more info on the fields
-        /// Map format and colors: https://minecraft.wiki/w/Map_item_format
+        /// Called map data
         /// </summary>
-        /// <param name="mapid">Map ID of the map being modified</param>
-        /// <param name="scale">A scale of the Map, from 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel)</param>
-        /// <param name="trackingposition">Specifies whether player and item frame icons are shown </param>
-        /// <param name="locked">True if the map has been locked in a cartography table </param>
-        /// <param name="icons">A list of MapIcon objects of map icons, send only if trackingPosition is true</param>
-        /// <param name="columnsUpdated">Numbs of columns that were updated (map width) (NOTE: If it is 0, the next fields are not used/are set to default values of 0 and null respectively)</param>
-        /// <param name="rowsUpdated">Map height</param>
-        /// <param name="mapCoulmnX">x offset of the westernmost column</param>
-        /// <param name="mapRowZ">z offset of the northernmost row</param>
-        /// <param name="colors">a byte array of colors on the map</param>
-        public void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapCoulmnZ, byte[]? colors)
+        /// <param name="mapid"></param>
+        /// <param name="scale"></param>
+        /// <param name="trackingposition"></param>
+        /// <param name="locked"></param>
+        /// <param name="iconcount"></param>
+        public void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount)
         {
-            DispatchBotEvent(bot => bot.OnMapData(mapid, scale, trackingPosition, locked, icons, columnsUpdated, rowsUpdated, mapCoulmnX, mapCoulmnZ, colors));
+            DispatchBotEvent(bot => bot.OnMapData(mapid, scale, trackingposition, locked, iconcount));
         }
 
         /// <summary>
@@ -3433,19 +2437,9 @@ namespace MinecraftClient
         /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
         /// <param name="objectivename">The name of the objective the score belongs to</param>
         /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
-        public void OnUpdateScore(string entityname, int action, string objectivename, int value)
+        public void OnUpdateScore(string entityname, byte action, string objectivename, int value)
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityname, action, objectivename, value));
-        }
-        
-        /// <summary>
-        /// Called when the client received the Tab Header and Footer
-        /// </summary>
-        /// <param name="header">Header</param>
-        /// <param name="footer">Footer</param>
-        public void OnTabListHeaderAndFooter(string header, string footer)
-        {
-            DispatchBotEvent(bot => bot.OnTabListHeaderAndFooter(header, footer));
         }
 
         /// <summary>
@@ -3467,34 +2461,31 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="entityID">Entity ID</param>
         /// <param name="metadata">The metadata of the entity</param>
-        public void OnEntityMetadata(int entityID, Dictionary<int, object?> metadata)
+        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
         {
             if (entities.ContainsKey(entityID))
             {
                 Entity entity = entities[entityID];
                 entity.Metadata = metadata;
-                int itemEntityMetadataFieldIndex = protocolversion < Protocol18Handler.MC_1_17_Version ? 7 : 8;
-                
-                if (entity.Type.ContainsItem() && metadata.TryGetValue(itemEntityMetadataFieldIndex, out object? itemObj) && itemObj != null && itemObj.GetType() == typeof(Item))
+                if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
                 {
-                    Item item = (Item)itemObj;
+                    Item item = (Item)metadata[7];
                     if (item == null)
                         entity.Item = new Item(ItemType.Air, 0, null);
                     else entity.Item = item;
                 }
-                if (metadata.TryGetValue(6, out object? poseObj) && poseObj != null && poseObj.GetType() == typeof(Int32))
+                if (metadata.ContainsKey(6) && metadata[6] != null && metadata[6].GetType() == typeof(Int32))
                 {
-                    entity.Pose = (EntityPose)poseObj;
+                    entity.Pose = (EntityPose)metadata[6];
                 }
-                if (metadata.TryGetValue(2, out object? nameObj) && nameObj != null && nameObj.GetType() == typeof(string))
+                if (metadata.ContainsKey(2) && metadata[2] != null && metadata[2].GetType() == typeof(string))
                 {
-                    string name = nameObj.ToString() ?? string.Empty;
-                    entity.CustomNameJson = name;
-                    entity.CustomName = ChatParser.ParseText(name);
+                    entity.CustomNameJson = metadata[2].ToString();
+                    entity.CustomName = ChatParser.ParseText(metadata[2].ToString());
                 }
-                if (metadata.TryGetValue(3, out object? nameVisableObj) && nameVisableObj != null && nameVisableObj.GetType() == typeof(bool))
+                if (metadata.ContainsKey(3) && metadata[3] != null && metadata[3].GetType() == typeof(bool))
                 {
-                    entity.IsCustomNameVisible = bool.Parse(nameVisableObj.ToString() ?? string.Empty);
+                    entity.IsCustomNameVisible = bool.Parse(metadata[3].ToString());
                 }
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }
@@ -3539,111 +2530,6 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.OnEntityAnimation(entity, animation));
             }
         }
-
-        /// <summary>
-        /// Will be called when a Synchronization sequence is recevied, this sequence need to be sent when breaking or placing blocks
-        /// </summary>
-        /// <param name="sequenceId">Sequence ID</param>
-        public void OnBlockChangeAck(int sequenceId)
-        {
-            this.sequenceId = sequenceId;
-        }
-
-        /// <summary>
-        /// This method is called when the protocol handler receives server data
-        /// </summary>
-        /// <param name="hasMotd">Indicates if the server has a motd message</param>
-        /// <param name="motd">Server MOTD message</param>
-        /// <param name="hasIcon">Indicates if the server has a an icon</param>
-        /// <param name="iconBase64">Server icon in Base 64 format</param>
-        /// <param name="previewsChat">Indicates if the server previews chat</param>
-        public void OnServerDataRecived(bool hasMotd, string motd, bool hasIcon, string iconBase64, bool previewsChat)
-        {
-            isSupportPreviewsChat = previewsChat;
-        }
-
-        /// <summary>
-        /// This method is called when the protocol handler receives "Set Display Chat Preview" packet
-        /// </summary>
-        /// <param name="previewsChat">Indicates if the server previews chat</param>
-        public void OnChatPreviewSettingUpdate(bool previewsChat)
-        {
-            isSupportPreviewsChat = previewsChat;
-        }
-
-        /// <summary>
-        /// This method is called when the protocol handler receives "Login Success" packet
-        /// </summary>
-        /// <param name="uuid">The player's UUID received from the server</param>
-        /// <param name="userName">The player's username received from the server</param>
-        /// <param name="playerProperty">Tuple<Name, Value, Signature(empty if there is no signature)></param>
-        public void OnLoginSuccess(Guid uuid, string userName, Tuple<string, string, string>[]? playerProperty)
-        {
-            //string UUID = uuid.ToString().Replace("-", String.Empty);
-            //Log.Info("now UUID = " + this.uuid);
-            //Log.Info("new UUID = " + UUID);
-            ////handler.SetUserUUID(UUID);
-
-        }
-
-        /// <summary>
-        /// Used for a wide variety of game events, from weather to bed use to gamemode to demo messages.
-        /// </summary>
-        /// <param name="reason">Event type</param>
-        /// <param name="value">Depends on Reason</param>
-        public void OnGameEvent(byte reason, float value)
-        {
-            switch (reason)
-            {
-                case 7:
-                    DispatchBotEvent(bot => bot.OnRainLevelChange(value));
-                    break;
-                case 8:
-                    DispatchBotEvent(bot => bot.OnThunderLevelChange(value));
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Called when a block is changed.
-        /// </summary>
-        /// <param name="location">The location of the block.</param>
-        /// <param name="block">The block</param>
-        public void OnBlockChange(Location location, Block block)
-        {
-            world.SetBlock(location, block);
-            DispatchBotEvent(bot => bot.OnBlockChange(location, block));
-        }
-
-        /// <summary>
-        /// Called when "AutoComplete" completes.
-        /// </summary>
-        /// <param name="transactionId">The number of this result.</param>
-        /// <param name="result">All commands.</param>
-        public void OnAutoCompleteDone(int transactionId, string[] result)
-        {
-            ConsoleIO.OnAutoCompleteDone(transactionId, result);
-        }
-
-        public void SetCanSendMessage(bool canSendMessage)
-        {
-            CanSendMessage = canSendMessage;
-            Log.Debug("CanSendMessage = " + canSendMessage);
-        }
-
-        /// <summary>
-        /// Send a click container button packet to the server.
-        /// Used for Enchanting table, Lectern, stone cutter and loom
-        /// </summary>
-        /// <param name="windowId">Id of the window being clicked</param>
-        /// <param name="buttonId">Id of the clicked button</param>
-        /// <returns>True if packet was successfully sent</returns>
-
-        public bool ClickContainerButton(int windowId, int buttonId)
-        {
-            return handler.ClickContainerButton(windowId, buttonId);
-        }
-
         #endregion
     }
 }
