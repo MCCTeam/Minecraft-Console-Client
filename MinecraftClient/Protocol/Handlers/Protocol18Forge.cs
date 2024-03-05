@@ -417,21 +417,13 @@ namespace MinecraftClient.Protocol.Handlers
                         case 5:
                             // FML 3
                             // Server Config: FMLHandshakeMessages.java > S2CModData > decode()
+                            // [     Size      ][ VarInt ]
+                            // [ Mod Data List ][  Array ] [    Mod Id    ][ String ]
+                            //                             [ Display Name ][ String ]
+                            //                             [    Version   ][ String ]
                             //
                             // We're ignoring this packet in MCC
                             
-                            /*
-                            // Uncomment this code block if needed
-                            var size = dataTypes.ReadNextVarInt(packetData);
-                            Dictionary<string, string> modsData = new();
-                            for (int i = 0; i < size; i++)
-                            {
-                                var modId = dataTypes.ReadNextString(packetData);
-                                var displayName = dataTypes.ReadNextString(packetData);
-                                var version = dataTypes.ReadNextString(packetData);
-                                modsData.Add(modId, displayName + ":" + version);
-                            }
-                            */
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mod Data List");
@@ -441,20 +433,11 @@ namespace MinecraftClient.Protocol.Handlers
                         case 6:
                             // FML 3
                             // Server Config: FMLHandshakeMessages.java > S2CChannelMismatchData > decode()
-                            //
+                            // [         Size        ][ VarInt ]
+                            // [ Mismatched Mod List ][ Array  ] [ Mod Id  ][ String ]
+                            //                                   [ Version ][ String ]
                             // We're ignoring this packet in MCC
 
-                            /*
-                            // Uncomment this code block if needed
-                            Dictionary<string, string> mismatchedMods = new();
-                            var size0 = dataTypes.ReadNextVarInt(packetData);
-                            for (int i = 0; i < size0; i++)
-                            {
-                                var modId = dataTypes.ReadNextString(packetData);
-                                var version = dataTypes.ReadNextString(packetData);
-                                mismatchedMods.Add(modId, version);
-                            }
-                            */
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mismatched Mods List");
@@ -523,15 +506,15 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="protocolVersion">Minecraft protocol version</param>
         /// <returns>ForgeInfo item stating that Forge is enabled</returns>
+        /// <para>
+        /// 1.18 change the fml version to 3
+        /// https://github.com/MinecraftForge/MinecraftForge/commit/997d8e0aa28b831edcd712e59a96181d3b2117d4
+        /// </para>
         public static ForgeInfo ServerForceForge(int protocolVersion)
         {
             if (ServerMayForceForge(protocolVersion))
-            {    
-                // 1.17 is still FML2
-                // https://github.com/MinecraftForge/MinecraftForge/blob/50b5414033de82f46be23201db50484f36c37d4f/src/main/java/net/minecraftforge/fmllegacy/network/FMLNetworkConstants.java#L37C29-L37C42
-                // 1.18 change the constant FMLNETVERSION to 3
-                // https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/NetworkConstants.java#L28
-                if (protocolVersion > ProtocolHandler.MCVer2ProtocolVersion("1.18"))
+            {
+                if (protocolVersion >= ProtocolHandler.MCVer2ProtocolVersion("1.18"))
                 {
                     return new ForgeInfo(FMLVersion.FML3);
                 }

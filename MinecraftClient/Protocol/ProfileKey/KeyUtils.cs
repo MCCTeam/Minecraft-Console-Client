@@ -5,7 +5,6 @@ using System.Text;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Protocol.Message.LastSeenMessageList;
-using Newtonsoft.Json.Linq;
 
 namespace MinecraftClient.Protocol.ProfileKey
 {
@@ -20,7 +19,8 @@ namespace MinecraftClient.Protocol.ProfileKey
             ProxiedWebRequest.Response? response = null;
             try
             {
-                if (!isYggdrasil) {
+                if (!isYggdrasil)
+                {
                     var request = new ProxiedWebRequest(certificates)
                     {
                         Accept = "application/json"
@@ -37,8 +37,7 @@ namespace MinecraftClient.Protocol.ProfileKey
 
                 // see https://github.com/yushijinhun/authlib-injector/blob/da910956eaa30d2f6c2c457222d188aeb53b0d1f/src/main/java/moe/yushi/authlibinjector/httpd/ProfileKeyFilter.java#L49
                 // POST to "https://api.minecraftservices.com/player/certificates" with authlib-injector will get a dummy response
-                string jsonString = isYggdrasil ? MakeDummyResponse() : response!.Body;
-                Json.JSONData json = Json.ParseJson(jsonString);
+                Json.JSONData json = isYggdrasil ? MakeDummyResponse() : Json.ParseJson(response!.Body);
                 // Error here
                 PublicKey publicKey = new(pemKey: json.Properties["keyPair"].Properties["publicKey"].StringValue,
                     sig: json.Properties["publicKeySignature"].StringValue,
@@ -236,7 +235,7 @@ namespace MinecraftClient.Protocol.ProfileKey
             return sb.ToString();
         }
 
-        public static string MakeDummyResponse()
+        public static Json.JSONData MakeDummyResponse()
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048);
             var mimePublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
@@ -246,19 +245,19 @@ namespace MinecraftClient.Protocol.ProfileKey
             DateTime now = DateTime.UtcNow;
             DateTime expiresAt = now.AddHours(48);
             DateTime refreshedAfter = now.AddHours(36);
-            JObject response = new JObject();
-            JObject keyPairObj = new JObject
-            {
-                { "privateKey", privateKeyPEM },
-                { "publicKey", publicKeyPEM }
-            };
-            response.Add("keyPair", keyPairObj);
-            response.Add("publicKeySignature", "AA==");
-            response.Add("publicKeySignatureV2", "AA==");
+            Json.JSONData response = new(Json.JSONData.DataType.Object);
+            Json.JSONData keyPairObj = new(Json.JSONData.DataType.Object);
+            keyPairObj.Properties["privateKey"] = new(Json.JSONData.DataType.String){ StringValue = privateKeyPEM };
+            keyPairObj.Properties["publicKey"] = new(Json.JSONData.DataType.String){ StringValue = publicKeyPEM };
+
+            response.Properties["keyPair"] = keyPairObj;
+            response.Properties["publicKeySignature"] = new(Json.JSONData.DataType.String){ StringValue = "AA==" };
+            response.Properties["publicKeySignatureV2"] = new(Json.JSONData.DataType.String){ StringValue = "AA==" };
             string format = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
-            response.Add("expiresAt", expiresAt.ToString(format));
-            response.Add("refreshedAfter", refreshedAfter.ToString(format));
-            return response.ToString();
+            response.Properties["expiresAt"] = new(Json.JSONData.DataType.String){ StringValue = expiresAt.ToString(format) };
+            response.Properties["refreshedAfter"] = new(Json.JSONData.DataType.String){ StringValue = refreshedAfter.ToString(format) };
+
+            return response;
         }
     }
 }
