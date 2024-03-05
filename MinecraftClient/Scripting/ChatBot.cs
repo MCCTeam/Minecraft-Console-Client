@@ -1072,11 +1072,12 @@ namespace MinecraftClient.Scripting
         /// Attempt to dig a block at the specified location
         /// </summary>
         /// <param name="location">Location of block to dig</param>
+        /// <param name="direction">Example: if your player is under a block that is being destroyed, use Down</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        protected bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
+        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true)
         {
-            return Handler.DigBlock(location, swingArms, lookAtBlock);
+            return Handler.DigBlock(location, direction, swingArms, lookAtBlock);
         }
 
         /// <summary>

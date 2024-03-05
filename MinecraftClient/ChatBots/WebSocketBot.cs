@@ -651,9 +651,10 @@ public class WebSocketBot : ChatBot
 
                         var result = cmd.Parameters.Length switch
                         {
-                            3 => DigBlock(location),
-                            4 => DigBlock(location, (bool)cmd.Parameters[3]),
-                            5 => DigBlock(location, (bool)cmd.Parameters[3], (bool)cmd.Parameters[4]),
+                            // TODO Get Direction from the arguments
+                            3 => DigBlock(location, Direction.Down),
+                            4 => DigBlock(location, Direction.Down, (bool)cmd.Parameters[3]),
+                            5 => DigBlock(location, Direction.Down, (bool)cmd.Parameters[3], (bool)cmd.Parameters[4]),
                             _ => false
                         };
 
