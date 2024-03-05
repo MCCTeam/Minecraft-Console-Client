@@ -1632,6 +1632,15 @@ namespace MinecraftClient.Scripting
         }
 
         /// <summary>
+        /// Gets the horizontal direction of the takeoff.
+        /// </summary>
+        /// <returns>Return direction of view</returns>
+        protected Direction GetHorizontalFacing()
+        {
+            return Handler.GetHorizontalFacing();
+        }
+
+        /// <summary>
         /// Invoke a task on the main thread, wait for completion and retrieve return value.
         /// </summary>
         /// <param name="task">Task to run with any type or return value</param>

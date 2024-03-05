@@ -1,4 +1,6 @@
-﻿namespace MinecraftClient.Mapping
+﻿using System;
+
+namespace MinecraftClient.Mapping
 {
     public static class DirectionExtensions
     {
@@ -34,6 +36,28 @@
                     return Direction.Up;
 
             }
+        }
+        
+
+        public static Direction[] HORIZONTAL =
+        {
+            Direction.South,
+            Direction.West,
+            Direction.North,
+            Direction.East
+        };
+
+        public static Direction FromRotation(double rotation)
+        {
+            double floor = Math.Floor((rotation / 90.0) + 0.5);
+            int value = (int)floor & 3;
+
+            return FromHorizontal(value);
+        }
+
+        public static Direction FromHorizontal(int value)
+        {
+            return HORIZONTAL[Math.Abs(value % HORIZONTAL.Length)];
         }
     }
 }
