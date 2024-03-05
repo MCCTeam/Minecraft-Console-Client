@@ -12,7 +12,6 @@ using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
-using static MinecraftClient.Protocol.Microsoft;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
@@ -43,32 +42,39 @@ namespace MinecraftClient.Protocol
             if (!String.IsNullOrEmpty(domain) && domain.Any(c => char.IsLetter(c)))
             {
                 AutoTimeout.Perform(() =>
-                {
-                    try
                     {
-                        ConsoleIO.WriteLine(string.Format(Translations.mcc_resolve, domainVal));
-                        var lookupClient = new LookupClient();
-                        var response = lookupClient.Query(new DnsQuestion($"_minecraft._tcp.{domainVal}", QueryType.SRV));
-                        if (response.HasError != true && response.Answers.SrvRecords().Any())
+                        try
                         {
-                            //Order SRV records by priority and weight, then randomly
-                            var result = response.Answers.SrvRecords()
-                                .OrderBy(record => record.Priority)
-                                .ThenByDescending(record => record.Weight)
-                                .ThenBy(record => Guid.NewGuid())
-                                .First();
-                            string target = result.Target.Value.Trim('.');
-                            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_found, target, result.Port, domainVal));
-                            domainVal = target;
-                            portVal = result.Port;
-                            foundService = true;
+                            ConsoleIO.WriteLine(string.Format(Translations.mcc_resolve, domainVal));
+                            var lookupClient = new LookupClient();
+                            var response =
+                                lookupClient.Query(new DnsQuestion($"_minecraft._tcp.{domainVal}", QueryType.SRV));
+                            if (response.HasError != true && response.Answers.SrvRecords().Any())
+                            {
+                                //Order SRV records by priority and weight, then randomly
+                                var result = response.Answers.SrvRecords()
+                                    .OrderBy(record => record.Priority)
+                                    .ThenByDescending(record => record.Weight)
+                                    .ThenBy(record => Guid.NewGuid())
+                                    .First();
+                                string target = result.Target.Value.Trim('.');
+                                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_found, target,
+                                    result.Port, domainVal));
+                                domainVal = target;
+                                portVal = result.Port;
+                                foundService = true;
+                            }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_not_found, domainVal, e.GetType().FullName, e.Message));
-                    }
-                }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30));
+                        catch (Exception e)
+                        {
+                            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_not_found, domainVal,
+                                e.GetType().FullName, e.Message));
+                        }
+                    },
+                    TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords ==
+                                         MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
+                        ? 10
+                        : 30));
             }
 
             domain = domainVal;
@@ -83,28 +89,34 @@ namespace MinecraftClient.Protocol
         /// <param name="serverPort">Server Port to ping</param>
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
-        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo? forgeInfo)
+        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion,
+            ref ForgeInfo? forgeInfo)
         {
             bool success = false;
             int protocolversionTmp = 0;
             ForgeInfo? forgeInfoTmp = null;
             if (AutoTimeout.Perform(() =>
-            {
-                try
-                {
-                    if (Protocol18Handler.DoPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp)
-                        || Protocol16Handler.DoPing(serverIP, serverPort, ref protocolversionTmp))
                     {
-                        success = true;
-                    }
-                    else
-                        ConsoleIO.WriteLineFormatted("§8" + Translations.error_unexpect_response, acceptnewlines: true);
-                }
-                catch (Exception e)
-                {
-                    ConsoleIO.WriteLineFormatted(String.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
-                }
-            }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30)))
+                        try
+                        {
+                            if (Protocol18Handler.DoPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp)
+                                || Protocol16Handler.DoPing(serverIP, serverPort, ref protocolversionTmp))
+                            {
+                                success = true;
+                            }
+                            else
+                                ConsoleIO.WriteLineFormatted("§8" + Translations.error_unexpect_response,
+                                    acceptnewlines: true);
+                        }
+                        catch (Exception e)
+                        {
+                            ConsoleIO.WriteLineFormatted(string.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
+                        }
+                    },
+                    TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords ==
+                                         MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
+                        ? 10
+                        : 30)))
             {
                 if (protocolversion != 0 && protocolversion != protocolversionTmp)
                     ConsoleIO.WriteLineFormatted("§8" + Translations.error_version_different, acceptnewlines: true);
@@ -125,23 +137,29 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Get a protocol handler for the specified Minecraft version
         /// </summary>
-        /// <param name="Client">Tcp Client connected to the server</param>
-        /// <param name="ProtocolVersion">Protocol version to handle</param>
-        /// <param name="Handler">Handler with the appropriate callbacks</param>
+        /// <param name="client">Tcp Client connected to the server</param>
+        /// <param name="protocolVersion">Protocol version to handle</param>
+        /// <param name="forgeInfo">Forge info</param>
+        /// <param name="handler">Handler with the appropriate callbacks</param>
         /// <returns></returns>
-        public static IMinecraftCom GetProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo? forgeInfo, IMinecraftComHandler Handler)
+        public static IMinecraftCom GetProtocolHandler(TcpClient client, int protocolVersion, ForgeInfo? forgeInfo,
+            IMinecraftComHandler handler)
         {
-            int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
+            int[] suppoertedVersionsProtocol16 = { 51, 60, 61, 72, 73, 74, 78 };
 
-            if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
-                return new Protocol16Handler(Client, ProtocolVersion, Handler);
+            if (Array.IndexOf(suppoertedVersionsProtocol16, protocolVersion) > -1)
+                return new Protocol16Handler(client, protocolVersion, handler);
 
-            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764};
+            int[] suppoertedVersionsProtocol18 =
+            {
+                4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573,
+                575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765
+            };
 
-            if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
-                return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
+            if (Array.IndexOf(suppoertedVersionsProtocol18, protocolVersion) > -1)
+                return new Protocol18Handler(client, protocolVersion, handler, forgeInfo);
 
-            throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, ProtocolVersion));
+            throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, protocolVersion));
         }
 
         /// <summary>
@@ -149,11 +167,11 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="MCVersion">The Minecraft version number</param>
         /// <returns>The protocol version number or 0 if could not determine protocol version: error, unknown, not supported</returns>
-        public static int MCVer2ProtocolVersion(string MCVersion)
+        public static int MCVer2ProtocolVersion(string mcVersion)
         {
-            if (MCVersion.Contains('.'))
+            if (mcVersion.Contains('.'))
             {
-                switch (MCVersion.Split(' ')[0].Trim())
+                switch (mcVersion.Split(' ')[0].Trim())
                 {
                     case "1.0":
                     case "1.0.0":
@@ -324,20 +342,21 @@ namespace MinecraftClient.Protocol
                         return 763;
                     case "1.20.2":
                         return 764;
+                    case "1.20.3":
+                    case "1.20.4":
+                        return 765;
                     default:
                         return 0;
                 }
             }
-            else
+
+            try
             {
-                try
-                {
-                    return int.Parse(MCVersion, NumberStyles.Any, CultureInfo.CurrentCulture);
-                }
-                catch
-                {
-                    return 0;
-                }
+                return int.Parse(mcVersion, NumberStyles.Any, CultureInfo.CurrentCulture);
+            }
+            catch
+            {
+                return 0;
             }
         }
 
@@ -404,6 +423,7 @@ namespace MinecraftClient.Protocol
                 762 => "1.19.4",
                 763 => "1.20",
                 764 => "1.20.2",
+                765 => "1.20.4",
                 _ => "0.0"
             };
         }
@@ -411,7 +431,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Check if we can force-enable Forge support for a Minecraft version without using server Ping
         /// </summary>
-        /// <param name="protocolVersion">Minecraft protocol version</param>
+        /// <param name="protocol">Minecraft protocol version</param>
         /// <returns>TRUE if we can force-enable Forge support without using server Ping</returns>
         public static bool ProtocolMayForceForge(int protocol)
         {
@@ -421,15 +441,35 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Server Info: Consider Forge to be enabled regardless of server Ping
         /// </summary>
-        /// <param name="protocolVersion">Minecraft protocol version</param>
+        /// <param name="protocol">Minecraft protocol version</param>
         /// <returns>ForgeInfo item stating that Forge is enabled</returns>
         public static ForgeInfo ProtocolForceForge(int protocol)
         {
             return Protocol18Forge.ServerForceForge(protocol);
         }
 
-        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError, UserCancel, WrongSelection };
-        public enum AccountType { Mojang, Microsoft };
+        public enum LoginResult
+        {
+            OtherError,
+            ServiceUnavailable,
+            SSLError,
+            Success,
+            WrongPassword,
+            AccountMigrated,
+            NotPremium,
+            LoginRequired,
+            InvalidToken,
+            InvalidResponse,
+            NullError,
+            UserCancel,
+            WrongSelection
+        };
+
+        public enum AccountType
+        {
+            Mojang,
+            Microsoft
+        };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -455,7 +495,9 @@ namespace MinecraftClient.Protocol
             {
                 return YggdrasiLogin(user, pass, out session);
             }
-            else throw new InvalidOperationException("Account type must be Mojang or Microsoft or valid authlib 3rd Servers!");
+            else
+                throw new InvalidOperationException(
+                    "Account type must be Mojang or Microsoft or valid authlib 3rd Servers!");
         }
 
         /// <summary>
@@ -472,8 +514,10 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com",443, "/authenticate", json_request, ref result);
+                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" +
+                                      JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) +
+                                      "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
+                int code = DoHTTPSPost("authserver.mojang.com", 443, "/authenticate", json_request, ref result);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
@@ -490,7 +534,8 @@ namespace MinecraftClient.Protocol
                         {
                             session.ID = loginResponse.Properties["accessToken"].StringValue;
                             session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
+                                .StringValue;
                             return LoginResult.Success;
                         }
                         else return LoginResult.InvalidResponse;
@@ -520,6 +565,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
+
                 return LoginResult.SSLError;
             }
             catch (System.IO.IOException e)
@@ -528,6 +574,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
+
                 if (e.Message.Contains("authentication"))
                 {
                     return LoginResult.SSLError;
@@ -540,18 +587,23 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
+
                 return LoginResult.OtherError;
             }
         }
-    private static LoginResult YggdrasiLogin(string user, string pass, out SessionToken session)
+
+        private static LoginResult YggdrasiLogin(string user, string pass, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
 
             try
             {
                 string result = "";
-                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost(Config.Main.General.AuthServer.Host,Config.Main.General.AuthServer.Port, "/api/yggdrasil/authserver/authenticate", json_request, ref result);
+                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" +
+                                      JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) +
+                                      "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
+                int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port,
+                    "/api/yggdrasil/authserver/authenticate", json_request, ref result);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
@@ -568,36 +620,43 @@ namespace MinecraftClient.Protocol
                                 && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
                                 && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
                             {
-                                session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                                session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                                session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"]
+                                    .StringValue;
+                                session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
+                                    .StringValue;
                                 return LoginResult.Success;
                             }
                             else
                             {
                                 string availableProfiles = "";
-                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"].DataArray)
+                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"]
+                                             .DataArray)
                                 {
                                     availableProfiles += " " + profile.Properties["name"].StringValue;
-                                } 
+                                }
+
                                 ConsoleIO.WriteLine(Translations.mcc_avaliable_profiles + availableProfiles);
 
                                 ConsoleIO.WriteLine(Translations.mcc_select_profile);
                                 string selectedProfileName = ConsoleIO.ReadLine();
                                 ConsoleIO.WriteLine(Translations.mcc_selected_profile + " " + selectedProfileName);
                                 Json.JSONData? selectedProfile = null;
-                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"].DataArray)
+                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"]
+                                             .DataArray)
                                 {
-                                    selectedProfile = profile.Properties["name"].StringValue == selectedProfileName ? profile : selectedProfile;
+                                    selectedProfile = profile.Properties["name"].StringValue == selectedProfileName
+                                        ? profile
+                                        : selectedProfile;
                                 }
 
-                                if (selectedProfile != null) 
+                                if (selectedProfile != null)
                                 {
                                     session.PlayerID = selectedProfile.Properties["id"].StringValue;
                                     session.PlayerName = selectedProfile.Properties["name"].StringValue;
                                     SessionToken currentsession = session;
                                     return GetNewYggdrasilToken(currentsession, out session);
                                 }
-                                else 
+                                else
                                 {
                                     return LoginResult.WrongSelection;
                                 }
@@ -630,6 +689,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
+
                 return LoginResult.SSLError;
             }
             catch (System.IO.IOException e)
@@ -638,6 +698,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
+
                 if (e.Message.Contains("authentication"))
                 {
                     return LoginResult.SSLError;
@@ -650,9 +711,11 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
+
                 return LoginResult.OtherError;
             }
         }
+
         /// <summary>
         /// Sign-in to Microsoft Account without using browser. Only works if 2FA is disabled.
         /// Might not work well in some rare cases.
@@ -678,6 +741,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
+
                 return LoginResult.WrongPassword; // Might not always be wrong password
             }
         }
@@ -748,6 +812,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
+
                 return LoginResult.WrongPassword; // Might not always be wrong password
             }
         }
@@ -761,13 +826,15 @@ namespace MinecraftClient.Protocol
         {
             var payload = JwtPayloadDecode.GetPayload(session.ID);
             var json = Json.ParseJson(payload);
-            var expTimestamp = long.Parse(json.Properties["exp"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
+            var expTimestamp = long.Parse(json.Properties["exp"].StringValue, NumberStyles.Any,
+                CultureInfo.CurrentCulture);
             var now = DateTime.Now;
             var tokenExp = UnixTimeStampToDateTime(expTimestamp);
             if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine("Access token expiration time is " + tokenExp.ToString());
             }
+
             if (now < tokenExp)
             {
                 // Still valid
@@ -792,8 +859,11 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-                string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
-                int code = DoHTTPSPost("authserver.mojang.com",443, "/refresh", json_request, ref result);
+                string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) +
+                                      "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) +
+                                      "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) +
+                                      "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
+                int code = DoHTTPSPost("authserver.mojang.com", 443, "/refresh", json_request, ref result);
                 if (code == 200)
                 {
                     if (result == null)
@@ -810,7 +880,8 @@ namespace MinecraftClient.Protocol
                         {
                             session.ID = loginResponse.Properties["accessToken"].StringValue;
                             session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
+                                .StringValue;
                             return LoginResult.Success;
                         }
                         else return LoginResult.InvalidResponse;
@@ -838,8 +909,12 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-                string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
-                int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port, "/api/yggdrasil/authserver/refresh", json_request, ref result);
+                string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) +
+                                      "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) +
+                                      "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) +
+                                      "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
+                int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port,
+                    "/api/yggdrasil/authserver/refresh", json_request, ref result);
                 if (code == 200)
                 {
                     if (result == null)
@@ -856,7 +931,8 @@ namespace MinecraftClient.Protocol
                         {
                             session.ID = loginResponse.Properties["accessToken"].StringValue;
                             session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
+                                .StringValue;
                             return LoginResult.Success;
                         }
                         else return LoginResult.InvalidResponse;
@@ -891,15 +967,23 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-                string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
-                string host = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.Host : "sessionserver.mojang.com";
+                string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid +
+                                      "\",\"serverId\":\"" + serverhash + "\"}";
+                string host = type == LoginType.yggdrasil
+                    ? Config.Main.General.AuthServer.Host
+                    : "sessionserver.mojang.com";
                 int port = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.Port : 443;
-                string endpoint = type == LoginType.yggdrasil ? "/api/yggdrasil/sessionserver/session/minecraft/join" : "/session/minecraft/join";
+                string endpoint = type == LoginType.yggdrasil
+                    ? "/api/yggdrasil/sessionserver/session/minecraft/join"
+                    : "/session/minecraft/join";
 
                 int code = DoHTTPSPost(host, port, endpoint, json_request, ref result);
                 return (code >= 200 && code < 300);
             }
-            catch { return false; }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -915,8 +999,9 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-                DoHTTPSGet("pc.realms.minecraft.net", 443,"/worlds", cookies, ref result);
+                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username,
+                    Program.MCHighestVersion);
+                DoHTTPSGet("pc.realms.minecraft.net", 443, "/worlds", cookies, ref result);
                 Json.JSONData realmsWorlds = Json.ParseJson(result);
                 if (realmsWorlds.Properties.ContainsKey("servers")
                     && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
@@ -942,6 +1027,7 @@ namespace MinecraftClient.Protocol
                             }
                         }
                     }
+
                     if (availableWorlds.Count > 0)
                     {
                         ConsoleIO.WriteLine(Translations.mcc_realms_available);
@@ -950,7 +1036,6 @@ namespace MinecraftClient.Protocol
                         ConsoleIO.WriteLine(Translations.mcc_realms_join);
                     }
                 }
-
             }
             catch (Exception e)
             {
@@ -960,6 +1045,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
                 }
             }
+
             return realmsWorldsResult;
         }
 
@@ -971,13 +1057,16 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Player UUID</param>
         /// <param name="accesstoken">Access token</param>
         /// <returns>Server address (host:port) or empty string if failure</returns>
-        public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid, string accesstoken)
+        public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid,
+            string accesstoken)
         {
             try
             {
                 string result = "";
-                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-                int statusCode = DoHTTPSGet("pc.realms.minecraft.net",443, "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
+                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username,
+                    Program.MCHighestVersion);
+                int statusCode = DoHTTPSGet("pc.realms.minecraft.net", 443, "/worlds/v1/" + worldId + "/join/pc",
+                    cookies, ref result);
                 if (statusCode == 200)
                 {
                     Json.JSONData serverAddress = Json.ParseJson(result);
@@ -1002,6 +1091,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
                 }
+
                 return "";
             }
         }
@@ -1014,7 +1104,7 @@ namespace MinecraftClient.Protocol
         /// <param name="cookies">Cookies for making the request</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSGet(string host,int port, string endpoint, string cookies, ref string result)
+        private static int DoHTTPSGet(string host, int port, string endpoint, string cookies, ref string result)
         {
             List<String> http_request = new()
             {
@@ -1029,7 +1119,7 @@ namespace MinecraftClient.Protocol
                 "",
                 ""
             };
-            return DoHTTPSRequest(http_request, host,port, ref result);
+            return DoHTTPSRequest(http_request, host, port, ref result);
         }
 
         /// <summary>
@@ -1053,7 +1143,7 @@ namespace MinecraftClient.Protocol
                 "",
                 request
             };
-            return DoHTTPSRequest(http_request, host,port, ref result);
+            return DoHTTPSRequest(http_request, host, port, ref result);
         }
 
         /// <summary>
@@ -1064,7 +1154,7 @@ namespace MinecraftClient.Protocol
         /// <param name="host">Host to connect to</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-       private static int DoHTTPSRequest(List<string> headers, string host,int port, ref string result)
+        private static int DoHTTPSRequest(List<string> headers, string host, int port, ref string result)
         {
             string? postResult = null;
             int statusCode = 520;
@@ -1078,7 +1168,8 @@ namespace MinecraftClient.Protocol
 
                     TcpClient client = ProxyHandler.NewTcpClient(host, port, true);
                     SslStream stream = new(client.GetStream());
-                    stream.AuthenticateAsClient(host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1780
+                    stream.AuthenticateAsClient(host, null, SslProtocols.Tls12,
+                        true); // Enable TLS 1.2. Hotfix for #1780
 
                     if (Settings.Config.Logging.DebugMessages)
                         foreach (string line in headers)
@@ -1098,12 +1189,12 @@ namespace MinecraftClient.Protocol
                     if (raw_result.StartsWith("HTTP/1.1"))
                     {
                         statusCode = int.Parse(raw_result.Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
-                        if (statusCode != 204) 
+                        if (statusCode != 204)
                         {
                             var splited = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..].Split("\r\n");
                             postResult = splited[1] + splited[3];
                         }
-                        else 
+                        else
                         {
                             postResult = "No Content";
                         }

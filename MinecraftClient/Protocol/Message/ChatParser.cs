@@ -34,11 +34,12 @@ namespace MinecraftClient.Protocol.Message
         public static void ReadChatType(Dictionary<string, object> registryCodec)
         {
             Dictionary<int, MessageType> chatTypeDictionary = ChatId2Type ?? new();
-            var chatTypeListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:chat_type"])["value"]);
+            var chatTypeListNbt =
+                (object[])(((Dictionary<string, object>)registryCodec["minecraft:chat_type"])["value"]);
             foreach (var (chatName, chatId) in from Dictionary<string, object> chatTypeNbt in chatTypeListNbt
-                                               let chatName = (string)chatTypeNbt["name"]
-                                               let chatId = (int)chatTypeNbt["id"]
-                                               select (chatName, chatId))
+                     let chatName = (string)chatTypeNbt["name"]
+                     let chatId = (int)chatTypeNbt["id"]
+                     select (chatName, chatId))
             {
                 chatTypeDictionary[chatId] = chatName switch
                 {
@@ -52,6 +53,7 @@ namespace MinecraftClient.Protocol.Message
                     _ => MessageType.CHAT,
                 };
             }
+
             ChatId2Type = chatTypeDictionary;
         }
 
@@ -64,6 +66,11 @@ namespace MinecraftClient.Protocol.Message
         public static string ParseText(string json, List<string>? links = null)
         {
             return JSONData2String(Json.ParseJson(json), "", links);
+        }
+
+        public static string ParseText(Dictionary<string, object> nbt)
+        {
+            return NbtToString(nbt);
         }
 
         /// <summary>
@@ -142,6 +149,7 @@ namespace MinecraftClient.Protocol.Message
                 default:
                     goto case MessageType.CHAT;
             }
+
             return text;
         }
 
@@ -193,7 +201,14 @@ namespace MinecraftClient.Protocol.Message
         /// Initialize translation rules.
         /// Necessary for properly printing some chat messages.
         /// </summary>
-        public static void InitTranslations() { if (!RulesInitialized) { InitRules(); RulesInitialized = true; } }
+        public static void InitTranslations()
+        {
+            if (!RulesInitialized)
+            {
+                InitRules();
+                RulesInitialized = true;
+            }
+        }
 
         /// <summary>
         /// Internal rule initialization method. Looks for local rule file or download it from Mojang asset servers.
@@ -202,7 +217,9 @@ namespace MinecraftClient.Protocol.Message
         {
             if (Config.Main.Advanced.Language == "en_us")
             {
-                TranslationRules = JsonSerializer.Deserialize<Dictionary<string, string>>((byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
+                TranslationRules =
+                    JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        (byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
                 return;
             }
 
@@ -217,13 +234,19 @@ namespace MinecraftClient.Protocol.Message
             {
                 try
                 {
-                    TranslationRules = JsonSerializer.Deserialize<Dictionary<string, string>>(File.OpenRead(languageFilePath))!;
+                    TranslationRules =
+                        JsonSerializer.Deserialize<Dictionary<string, string>>(File.OpenRead(languageFilePath))!;
                 }
-                catch (IOException) { }
-                catch (JsonException) { }
+                catch (IOException)
+                {
+                }
+                catch (JsonException)
+                {
+                }
             }
 
-            if (TranslationRules.TryGetValue("Version", out string? version) && version == Settings.TranslationsFile_Version)
+            if (TranslationRules.TryGetValue("Version", out string? version) &&
+                version == Settings.TranslationsFile_Version)
             {
                 if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.chat_loaded, acceptnewlines: true);
@@ -231,32 +254,39 @@ namespace MinecraftClient.Protocol.Message
             }
 
             // Try downloading language file from Mojang's servers?
-            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_download, Config.Main.Advanced.Language));
+            ConsoleIO.WriteLineFormatted(
+                "§8" + string.Format(Translations.chat_download, Config.Main.Advanced.Language));
             HttpClient httpClient = new();
             try
             {
                 Task<string> fetch_index = httpClient.GetStringAsync(TranslationsFile_Website_Index);
                 fetch_index.Wait();
-                Match match = Regex.Match(fetch_index.Result, $"minecraft/lang/{Config.Main.Advanced.Language}.json" + @""":\s\{""hash"":\s""([\d\w]{40})""");
+                Match match = Regex.Match(fetch_index.Result,
+                    $"minecraft/lang/{Config.Main.Advanced.Language}.json" + @""":\s\{""hash"":\s""([\d\w]{40})""");
                 fetch_index.Dispose();
                 if (match.Success && match.Groups.Count == 2)
                 {
                     string hash = match.Groups[1].Value;
                     string translation_file_location = TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
                     if (Config.Logging.DebugMessages)
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.chat_request, translation_file_location));
+                        ConsoleIO.WriteLineFormatted(
+                            string.Format(Translations.chat_request, translation_file_location));
 
-                    Task<Dictionary<string, string>?> fetckFileTask = httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
+                    Task<Dictionary<string, string>?> fetckFileTask =
+                        httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
                     fetckFileTask.Wait();
                     if (fetckFileTask.Result != null && fetckFileTask.Result.Count > 0)
                     {
                         TranslationRules = fetckFileTask.Result;
                         TranslationRules["Version"] = TranslationsFile_Version;
-                        File.WriteAllText(languageFilePath, JsonSerializer.Serialize(TranslationRules, typeof(Dictionary<string, string>)), Encoding.UTF8);
+                        File.WriteAllText(languageFilePath,
+                            JsonSerializer.Serialize(TranslationRules, typeof(Dictionary<string, string>)),
+                            Encoding.UTF8);
 
                         ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, languageFilePath));
                         return;
                     }
+
                     fetckFileTask.Dispose();
                 }
                 else
@@ -270,7 +300,8 @@ namespace MinecraftClient.Protocol.Message
             }
             catch (IOException)
             {
-                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_save_fail, languageFilePath), acceptnewlines: true);
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_save_fail, languageFilePath),
+                    acceptnewlines: true);
             }
             catch (Exception e)
             {
@@ -284,7 +315,9 @@ namespace MinecraftClient.Protocol.Message
                 httpClient.Dispose();
             }
 
-            TranslationRules = JsonSerializer.Deserialize<Dictionary<string, string>>((byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
+            TranslationRules =
+                JsonSerializer.Deserialize<Dictionary<string, string>>(
+                    (byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
             ConsoleIO.WriteLine(Translations.chat_use_default);
         }
 
@@ -305,7 +338,12 @@ namespace MinecraftClient.Protocol.Message
         /// <returns>Returns the formatted text according to the given data</returns>
         private static string TranslateString(string rulename, List<string> using_data)
         {
-            if (!RulesInitialized) { InitRules(); RulesInitialized = true; }
+            if (!RulesInitialized)
+            {
+                InitRules();
+                RulesInitialized = true;
+            }
+
             if (TranslationRules.ContainsKey(rulename))
             {
                 int using_idx = 0;
@@ -329,8 +367,8 @@ namespace MinecraftClient.Protocol.Message
 
                         //Using specified string or int with %1$s, %2$s...
                         else if (char.IsDigit(rule[i + 1])
-                            && i + 3 < rule.Length && rule[i + 2] == '$'
-                            && (rule[i + 3] == 's' || rule[i + 3] == 'd'))
+                                 && i + 3 < rule.Length && rule[i + 2] == '$'
+                                 && (rule[i + 3] == 's' || rule[i + 3] == 'd'))
                         {
                             int specified_idx = rule[i + 1] - '1';
                             if (using_data.Count > specified_idx)
@@ -342,8 +380,10 @@ namespace MinecraftClient.Protocol.Message
                             }
                         }
                     }
+
                     result.Append(rule[i]);
                 }
+
                 return result.ToString();
             }
             else return "[" + rulename + "] " + string.Join(" ", using_data);
@@ -366,6 +406,7 @@ namespace MinecraftClient.Protocol.Message
                     {
                         colorcode = Color2tag(JSONData2String(data.Properties["color"], "", links));
                     }
+
                     if (data.Properties.ContainsKey("clickEvent") && links != null)
                     {
                         Json.JSONData clickEvent = data.Properties["clickEvent"];
@@ -377,12 +418,14 @@ namespace MinecraftClient.Protocol.Message
                             links.Add(clickEvent.Properties["value"].StringValue);
                         }
                     }
+
                     if (data.Properties.ContainsKey("extra"))
                     {
                         Json.JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
                         foreach (Json.JSONData item in extras)
                             extra_result = extra_result + JSONData2String(item, colorcode, links) + "§r";
                     }
+
                     if (data.Properties.ContainsKey("text"))
                     {
                         return colorcode + JSONData2String(data.Properties["text"], colorcode, links) + extra_result;
@@ -400,7 +443,10 @@ namespace MinecraftClient.Protocol.Message
                                 using_data.Add(JSONData2String(array[i], colorcode, links));
                             }
                         }
-                        return colorcode + TranslateString(JSONData2String(data.Properties["translate"], "", links), using_data) + extra_result;
+
+                        return colorcode +
+                               TranslateString(JSONData2String(data.Properties["translate"], "", links), using_data) +
+                               extra_result;
                     }
                     else return extra_result;
 
@@ -410,6 +456,7 @@ namespace MinecraftClient.Protocol.Message
                     {
                         result += JSONData2String(item, colorcode, links);
                     }
+
                     return result;
 
                 case Json.JSONData.DataType.String:
@@ -417,6 +464,91 @@ namespace MinecraftClient.Protocol.Message
             }
 
             return "";
+        }
+
+        private static string NbtToString(Dictionary<string, object> nbt)
+        {
+            if (nbt.Count == 1 && nbt.TryGetValue("", out object? rootMessage))
+            {
+                // Nameless root tag
+                return (string)rootMessage;
+            }
+
+            string message = string.Empty;
+            string colorCode = string.Empty;
+            StringBuilder extraBuilder = new StringBuilder();
+            foreach (var kvp in nbt)
+            {
+                string key = kvp.Key;
+                object value = kvp.Value;
+
+                switch (key)
+                {
+                    case "text":
+                    {
+                        message = (string)value;
+                    }
+                        break;
+                    case "extra":
+                    {
+                        object[] extras = (object[])value;
+                        for (var i = 0; i < extras.Length; i++)
+                        {
+                            var extraDict = extras[i] switch
+                            {
+                                int => new Dictionary<string, object> { { "text", $"{extras[i]}" } },
+                                string => new Dictionary<string, object>
+                                {
+                                    { "text", (string)extras[i] }
+                                },
+                                _ => (Dictionary<string, object>)extras[i]
+                            };
+
+                            extraBuilder.Append(NbtToString(extraDict) + "§r");
+                        }
+                    }
+                        break;
+                    case "translate":
+                    {
+                        if (nbt.TryGetValue("translate", out object translate))
+                        {
+                            var translateKey = (string)translate;
+                            List<string> translateString = new();
+                            if (nbt.TryGetValue("with", out object withComponent))
+                            {
+                                var withs = (object[])withComponent;
+                                for (var i = 0; i < withs.Length; i++)
+                                {
+                                    var withDict = withs[i] switch
+                                    {
+                                        int => new Dictionary<string, object> { { "text", $"{withs[i]}" } },
+                                        string => new Dictionary<string, object>
+                                        {
+                                            { "text", (string)withs[i] }
+                                        },
+                                        _ => (Dictionary<string, object>)withs[i]
+                                    };
+
+                                    translateString.Add(NbtToString(withDict));
+                                }
+                            }
+
+                            message = TranslateString(translateKey, translateString);
+                        }
+                    }
+                        break;
+                    case "color":
+                    {
+                        if (nbt.TryGetValue("color", out object color))
+                        {
+                            colorCode = Color2tag((string)color);
+                        }
+                    }
+                        break;
+                }
+            }
+
+            return colorCode + message + extraBuilder.ToString();
         }
     }
 }

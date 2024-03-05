@@ -8,6 +8,7 @@
         AcknowledgeConfiguration,    // Added in 1.20.2
         AdvancementTab,              //
         Animation,                   //
+        ChangeContainerSlotState,    // Added in 1.20.3
         ChatCommand,                 // Added in 1.19
         ChatMessage,                 //
         ChatPreview,                 // Added in 1.19
