@@ -651,7 +651,7 @@ public class WebSocketBot : ChatBot
 
                         var result = cmd.Parameters.Length switch
                         {
-                            // TODO Get Direction from the arguments
+                            // TODO Get blockFace direction from arguments
                             3 => DigBlock(location, Direction.Down),
                             4 => DigBlock(location, Direction.Down, (bool)cmd.Parameters[3]),
                             5 => DigBlock(location, Direction.Down, (bool)cmd.Parameters[3], (bool)cmd.Parameters[4]),

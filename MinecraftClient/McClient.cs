@@ -2268,13 +2268,13 @@ namespace MinecraftClient
         /// <param name="lookAtBlock">Also look at the block before digging</param>
         public bool DigBlock(Location location, Direction blockFace, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
         {
+            // TODO select best face from current player location
+
             if (!GetTerrainEnabled())
                 return false;
 
             if (InvokeRequired)
                 return InvokeOnMainThread(() => DigBlock(location, blockFace, swingArms, lookAtBlock, duration));
-
-            // TODO select best face from current player location
 
             lock (DigLock)
             {

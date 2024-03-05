@@ -22,6 +22,7 @@ namespace MinecraftClient.Commands
             );
 
             dispatcher.Register(l => l.Literal(CmdName)
+                // TODO Get blockFace direction from arguments
                 .Executes(r => DigLookAt(r.Source))
                 .Then(l => l.Argument("Duration", Arguments.Double())
                     .Executes(r => DigLookAt(r.Source, Arguments.GetDouble(r, "Duration"))))
