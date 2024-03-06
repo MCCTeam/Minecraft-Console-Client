@@ -406,7 +406,7 @@ namespace MinecraftClient
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
             string loginLower = ToLowerIfNeed(InternalConfig.Account.Login);
-            if (InternalConfig.Account.Password == "-")
+            if (InternalConfig.Account.Password == "-" || InternalConfig.Account.Password == string.Empty)
             {
                 ConsoleIO.WriteLineFormatted("§8" + Translations.mcc_offline, acceptnewlines: true);
                 result = ProtocolHandler.LoginResult.Success;
