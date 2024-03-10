@@ -96,7 +96,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                             44 => new ParserResource(dataTypes, packetData),
                             50 => protocolVersion == Protocol18Handler.MC_1_19_4_Version ?
                               new ParserForgeEnum(dataTypes, packetData) :
-                              new ParserEmpty(dataTypes, packetData),
+                              new ParserEmpty(dataTypes, packetData),   
                             51 => (protocolVersion >= Protocol18Handler.MC_1_20_Version &&
                                    protocolVersion <= Protocol18Handler.MC_1_20_2_Version) ? // 1.20 - 1.20.2
                               new ParserForgeEnum(dataTypes, packetData) :
@@ -124,6 +124,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                             43 => new ParserResourceOrTag(dataTypes, packetData),
                             44 => new ParserResource(dataTypes, packetData),
                             45 => new ParserResource(dataTypes, packetData),
+                            52 => new ParserForgeEnum(dataTypes, packetData),
                             _ => new ParserEmpty(dataTypes, packetData),
                         };
                 }
