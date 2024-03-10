@@ -1221,16 +1221,16 @@ public class WebSocketBot : ChatBot
     }
 
     public override void OnScoreboardObjective(string objectiveName, byte mode, string objectiveValue, int type,
-        string json_)
+        string json_, int numberFormat)
     {
         SendEvent("OnScoreboardObjective",
-            new { objectiveName, mode, objectiveValue, type, rawJson = json_ });
+            new { objectiveName, mode, objectiveValue, type, rawJson = json_, numberFormat });
     }
 
-    public override void OnUpdateScore(string entityName, int action, string objectiveName, int value)
+    public override void OnUpdateScore(string entityName, int action, string objectiveName, string objectiveDisplayName, int value, int numberFormat)
     {
         SendEvent("OnUpdateScore",
-            new { entityName, action, objectiveName, type = value });
+            new { entityName, action, objectiveName, objectiveDisplayName, type = value, numberFormat });
     }
 
     public override void OnInventoryUpdate(int inventoryId)

@@ -1,7 +1,7 @@
 ﻿namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
-    /// Incomming packet types
+    /// Incoming packet types
     /// </summary>
     public enum PacketTypesIn
     {
@@ -84,6 +84,8 @@
         PluginMessage,              //
         ProfilelessChatMessage,     // Added in 1.19.3
         RemoveEntityEffect,         //
+        RemoveResourcePack,         // Added in 1.20.3
+        ResetScore,                 // Added in 1.20.3
         ResourcePackSend,           //
         Respawn,                    //
         ScoreboardObjective,        //
@@ -96,6 +98,8 @@
         SetExperience,              //
         SetPassengers,              //
         SetSlot,                    //
+        SetTickingState,            // Added in 1.20.3
+        StepTick,                   // Added in 1.20.3
         SetTitleSubTitle,           //
         SetTitleText,               //
         SetTitleTime,               //

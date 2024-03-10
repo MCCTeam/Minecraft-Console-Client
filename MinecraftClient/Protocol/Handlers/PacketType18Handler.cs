@@ -48,7 +48,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             PacketTypePalette p = protocol switch
             {
-                > Protocol18Handler.MC_1_20_2_Version => throw new NotImplementedException(Translations
+                > Protocol18Handler.MC_1_20_4_Version => throw new NotImplementedException(Translations
                     .exception_palette_packet),
                 <= Protocol18Handler.MC_1_8_Version => new PacketPalette17(),
                 <= Protocol18Handler.MC_1_11_2_Version => new PacketPalette110(),
@@ -64,8 +64,9 @@ namespace MinecraftClient.Protocol.Handlers
                 <= Protocol18Handler.MC_1_19_Version => new PacketPalette119(),
                 <= Protocol18Handler.MC_1_19_2_Version => new PacketPalette1192(),
                 <= Protocol18Handler.MC_1_19_3_Version => new PacketPalette1193(),
-                < Protocol18Handler.MC_1_20_2_Version => new PacketPalette1194(),
-                _ => new PacketPalette1202()
+                <= Protocol18Handler.MC_1_19_4_Version => new PacketPalette1194(),
+                <= Protocol18Handler.MC_1_20_2_Version => new PacketPalette1202(),
+                _ => new PacketPalette1204()
             };
 
             p.SetForgeEnabled(forgeEnabled);
