@@ -143,32 +143,18 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                 case FMLVersion.FML3:
                     // Example ModInfo for Minecraft 1.18 and greater (FML3)
                     
-                    //  {
-                    //      "enforcesSecureChat": true,
-                    //      "forgeData": {
-                    //          "channels": [],
-                    //          "mods": [],
-                    //          "truncated": false, // legacy versions see truncated lists, modern versions ignore this truncated flag (binary data has its own)
-                    //          "fmlNetworkVersion": 3,
-                    //          "d": "ȳ\u0000\u0000ࠨ㐤獋㙖⹌ᦘ̺⸱恤䒸⡑⛧沮婙㨹牥ఈㄵচ₀沮婙㨹牥ఈㄵচ倠⹡岙㜲獥䋊㷍᭳ႇׇ஌᜘㘴娘▅筳ص䰭宛㘲、\u0000ᠸጋ囗湌夜㘲杩棐䐱ᅱ挃☥ోᤗ㌮ఀ׈䬣 坖ɍ䮌ᤘ\r\n旉䠳ዣ◆䲌㜃瑥廮ⷉࠋ–䁠奚Ҵ㔱摜䂸ᅱ獳ౠᡚ㜷汥戊䂸űဓĠ嵛㖱数嫤Ǎ塰䛶ⶎᮚ㞳晲擞ᖝ″ዣ䘆ఋʂ潦令ඕ爈䖔⺁ᥚ⾹潳棤㦥ᬻ挐؅䅀㠹楬ۨ㣄উ瀀渀嬛㘼扩搢䃀熁挂♥\r\n墋㒺摬牜ࣜ䁠嘗湌孛㜴浩惂䠙熙排٥孁㒰ͮ屢Ӏ䠐⚐䷮ᣛ㊴瑳戚䢸熁匒إ஍᜚ܴ䫜巑፻ᚷؠ䀀ㆃ牵䋨㦥ࠫ㋣䗆䂌㨈慲䫬ᖱᮓᘧ汬尚ㆰ٫屲㣄ᆉ恳ಭ川㤷፫擨妅挫♖乮塘 㖱慰\r\n囆䓩\t"
-                    //      },
-                    //      "description": {
-                    //          "text": "A Minecraft Server"
-                    //      },
-                    //      "players": {
-                    //          "max": 100,
-                    //          "online": 0
-                    //      },
-                    //      "version": {
-                    //          "name": "1.20.1",
-                    //          "protocol": 763
-                    //      }
-                    //  }
+                    // "forgeData": {
+                    //     "channels": [],
+                    //     "mods": [],
+                    //     "truncated": false, // legacy versions see truncated lists, modern versions ignore this truncated flag (binary data has its own)
+                    //     "fmlNetworkVersion": 3,
+                    //     "d": "ȳ\u0000\u0000ࠨ㐤獋㙖⹌ᦘ̺⸱恤䒸⡑⛧沮婙㨹牥ఈㄵচ₀沮婙㨹牥ఈㄵচ倠⹡岙㜲獥䋊㷍᭳ႇׇ஌᜘㘴娘▅筳ص䰭宛㘲、\u0000ᠸጋ囗湌夜㘲杩棐䐱ᅱ挃☥ోᤗ㌮ఀ׈䬣 坖ɍ䮌ᤘ\r\n旉䠳ዣ◆䲌㜃瑥廮ⷉࠋ–䁠奚Ҵ㔱摜䂸ᅱ獳ౠᡚ㜷汥戊䂸űဓĠ嵛㖱数嫤Ǎ塰䛶ⶎᮚ㞳晲擞ᖝ″ዣ䘆ఋʂ潦令ඕ爈䖔⺁ᥚ⾹潳棤㦥ᬻ挐؅䅀㠹楬ۨ㣄উ瀀渀嬛㘼扩搢䃀熁挂♥\r\n墋㒺摬牜ࣜ䁠嘗湌孛㜴浩惂䠙熙排٥孁㒰ͮ屢Ӏ䠐⚐䷮ᣛ㊴瑳戚䢸熁匒إ஍᜚ܴ䫜巑፻ᚷؠ䀀ㆃ牵䋨㦥ࠫ㋣䗆䂌㨈慲䫬ᖱᮓᘧ汬尚ㆰ٫屲㣄ᆉ恳ಭ川㤷፫擨妅挫♖乮塘 㖱慰\r\n囆䓩\t"
+                    // }
 
-                    // All buffer data are encoded and write to forgeData["d"]
+                    // 1.18 and greater, the mod list and channel list is compressed to forgeData["d"] for efficiency,
+                    // - Here is how forge encode and decode them:
                     // https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/ServerStatusPing.java#L264
-                    
-                    // 1.18 and greater, the buffer is encoded for efficiency
+                    // - Here is the discussion:
                     // see https://github.com/MinecraftForge/MinecraftForge/pull/8169
 
                     string encodedData = data.Properties["d"].StringValue;
@@ -176,14 +162,21 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     DataTypes dataTypes = new DataTypes(Protocol18Handler.MC_1_18_1_Version);
 
                     //
-                    // [truncated][boolean] placeholder for whether we are truncating
-                    // [Mod Size][unsigned short] short so that we can replace it later in case of truncation
+                    // [ Truncated ][       Bool     ] // Unused
+                    // [  Mod Size ][ Unsigned short ]
                     // 
-                    bool truncated = dataTypes.ReadNextBool(dataPackage);
+                    dataTypes.ReadNextBool(dataPackage); // truncated: boolean
                     var modsSize = dataTypes.ReadNextUShort(dataPackage);
 
-                    Dictionary<string, string> channels = new();
                     Dictionary<string, string> mods = new();
+                    // Mod Array Definition: 
+                    // [ Channel Size And Version Flag ][      VarInt     ]  // If the value at bit Mask 0x01 is 1, The Mod Version will be ignore.
+                    //                                                       // The one-right-shifted int is the Channel List size.
+                    // [             Mod Id            ][      String     ]
+                    // [          Mod Version          ][ Optional String ]  // Depends on the Flag above
+                    // [         Channel List          ][      Array      ] [    Channel Name    ][ String ]
+                    //                                                      [   Channel Version  ][ String ]
+                    //                                                      [ Required On Client ][  Bool  ]
 
                     for (var i = 0; i < modsSize; i++) {
                         var channelSizeAndVersionFlag = dataTypes.ReadNextVarInt(dataPackage);
@@ -194,27 +187,24 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                         
                         var modId = dataTypes.ReadNextString(dataPackage);
                         
-                        string IGNORESERVERONLY = "";// it was "OHNOES\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31\uD83D\uDE31";
+                        string IGNORESERVERONLY = "IGNORED";
                         var modVersion = isIgnoreServerOnly ? IGNORESERVERONLY : dataTypes.ReadNextString(dataPackage);
                     
                         for (var i1 = 0; i1 < channelSize; i1++) {
-                            var channelName = dataTypes.ReadNextString(dataPackage);
-                            var channelVersion = dataTypes.ReadNextString(dataPackage);
-                            var requiredOnClient = dataTypes.ReadNextBool(dataPackage);
-                            channels.Add(modId + ":" + channelName, channelVersion + ":" + requiredOnClient);
+                            dataTypes.ReadNextString(dataPackage); // channelName
+                            dataTypes.ReadNextString(dataPackage); // channelVersion
+                            dataTypes.ReadNextBool(dataPackage); // requiredOnClient
                         }
  
                         mods.Add(modId, modVersion);
                         Mods.Add(new ForgeMod(modId, modVersion));
                     }
 
-                    var nonModChannelCount = dataTypes.ReadNextVarInt(dataPackage);
-                    for (var i = 0; i < nonModChannelCount; i++) {
-                        var channelName = dataTypes.ReadNextString(dataPackage);
-                        var channelVersion = dataTypes.ReadNextString(dataPackage);
-                        var requiredOnClient = dataTypes.ReadNextBool(dataPackage);
-                        channels.Add(channelName, channelVersion + ":" + requiredOnClient);
-                    }
+                    // Ignore the left data, which is NonMod Channel List
+                    // [ nonMod Channel Count ][ VarInt ]
+                    // [ nonMod Channel List  ][ Array ] [    Channel Name    ][ String ]
+                    //                                   [   Channel Version  ][  Bool  ]
+                    //                                   [ Required On Client ][  Bool  ]
 
                     break;
                 default:
@@ -222,10 +212,17 @@ namespace MinecraftClient.Protocol.Handlers.Forge
             }
         }
 
-        // https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/ServerStatusPing.java#L361
-        // Decode binary data ForgeData["d"] to Queue<byte>
+        /// <summary>
+        /// Decompress binary data ForgeData["d"] (FML 3)
+        /// </summary>
+        /// <param name="encodedData">The encoded data.</param>
+        /// <returns>Decoded forge data Queue<byte>.</returns>
+        /// <para>
+        /// 1.18 and greater, the mod list and channel list is compressed for efficiency
+        /// The code below is converted from forge source code, see:
+        /// https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/ServerStatusPing.java#L361
+        /// </para>
         private static Queue<byte> decodeOptimized(string encodedData) {
-            // Console.WriteLine("Got encoded data:" + encodedData + ", decoding...");
             int size0 = encodedData[0];
             int size1 = encodedData[1];
             int size = size0 | (size1 << 15);

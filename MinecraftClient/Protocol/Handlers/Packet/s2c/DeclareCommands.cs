@@ -73,7 +73,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                             50 => new ParserForgeEnum(dataTypes, packetData),
                             _ => new ParserEmpty(dataTypes, packetData),
                         };
-                    else // 1.19.4+
+                    else if (protocolVersion <= Protocol18Handler.MC_1_20_2_Version)// 1.19.4 - 1.20.2
                         parser = parserId switch
                         {
                             1 => new ParserFloat(dataTypes, packetData),
@@ -103,11 +103,34 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                               new ParserEmpty(dataTypes, packetData),
                             _ => new ParserEmpty(dataTypes, packetData),
                         };
+                    else // 1.20.3+
+                        parser = parserId switch
+                        {
+                            1 => new ParserFloat(dataTypes, packetData),
+                            2 => new ParserDouble(dataTypes, packetData),
+                            3 => new ParserInteger(dataTypes, packetData),
+                            4 => new ParserLong(dataTypes, packetData),
+                            5 => new ParserString(dataTypes, packetData),
+                            6 => new ParserEntity(dataTypes, packetData),
+                            8 => new ParserBlockPos(dataTypes, packetData),
+                            9 => new ParserColumnPos(dataTypes, packetData),
+                            10 => new ParserVec3(dataTypes, packetData),
+                            11 => new ParserVec2(dataTypes, packetData),
+                            18 => new ParserMessage(dataTypes, packetData),
+                            27 => new ParserRotation(dataTypes, packetData),
+                            30 => new ParserScoreHolder(dataTypes, packetData),
+                            41 => new ParserTime(dataTypes, packetData),
+                            42 => new ParserResourceOrTag(dataTypes, packetData),
+                            43 => new ParserResourceOrTag(dataTypes, packetData),
+                            44 => new ParserResource(dataTypes, packetData),
+                            45 => new ParserResource(dataTypes, packetData),
+                            _ => new ParserEmpty(dataTypes, packetData),
+                        };
                 }
 
                 string? suggestionsType = ((flags & 0x10) == 0x10) ? dataTypes.ReadNextString(packetData) : null;
 
-                Nodes[i] = new(flags, childs, redirectNode, name, parser, suggestionsType);
+                Nodes[i] = new(flags, childs, redirectNode, name, parser, suggestionsType, parserId);
             }
             RootIdx = dataTypes.ReadNextVarInt(packetData);
 
@@ -183,6 +206,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             public string? Name;
             public Parser? Paser;
             public string? SuggestionsType;
+            public int ParserId; // Added for easy debug
 
 
             public CommandNode(byte Flags,
@@ -190,7 +214,8 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                         int RedirectNode = -1,
                         string? Name = null,
                         Parser? Paser = null,
-                        string? SuggestionsType = null)
+                        string? SuggestionsType = null,
+                        int parserId = -1)
             {
                 this.Flags = Flags;
                 this.Clildren = Clildren;
@@ -198,6 +223,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 this.Name = Name;
                 this.Paser = Paser;
                 this.SuggestionsType = SuggestionsType;
+                ParserId = parserId;
             }
         }
 

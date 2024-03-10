@@ -332,20 +332,23 @@ namespace MinecraftClient.Scripting
         /// <summary>
         /// Called when a scoreboard objective updated
         /// </summary>
-        /// <param name="objectivename">objective name</param>
+        /// <param name="objectiveName">objective name</param>
         /// <param name="mode">0 to create the scoreboard. 1 to remove the scoreboard. 2 to update the display text.</param>
-        /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
+        /// <param name="objectiveValue">Only if mode is 0 or 2. The text to be displayed for the score</param>
         /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
-        public virtual void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json) { }
+        /// <param name="numberFormat">Number format: 0 - blank, 1 - styled, 2 - fixed</param>
+        public virtual void OnScoreboardObjective(string objectiveName, byte mode, string objectiveValue, int type, string json, int numberFormat) { }
 
         /// <summary>
         /// Called when a scoreboard updated
         /// </summary>
-        /// <param name="entityname">The entity whose score this is. For players, this is their username; for other entities, it is their UUID.</param>
+        /// <param name="entityName">The entity whose score this is. For players, this is their username; for other entities, it is their UUID.</param>
         /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
-        /// <param name="objectivename">The name of the objective the score belongs to</param>
+        /// <param name="objectiveName">The name of the objective the score belongs to</param>
+        /// <param name="objectiveDisplayName">The name of the objective the score belongs to, but with chat formatting</param>
         /// <param name="value">The score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
-        public virtual void OnUpdateScore(string entityname, int action, string objectivename, int value) { }
+        /// <param name="numberFormat">Number format: 0 - blank, 1 - styled, 2 - fixed</param>
+        public virtual void OnUpdateScore(string entityName, int action, string objectiveName, string objectiveDisplayName, int value, int numberFormat) { }
 
         /// <summary>
         /// Called when the client received the Tab Header and Footer
