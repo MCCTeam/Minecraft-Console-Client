@@ -153,6 +153,7 @@ namespace MinecraftClient
         
         private static IMinecraftComHandler? instance;
         public static IMinecraftComHandler? Instance => instance;
+
         /// <summary>
         /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
         /// </summary>
@@ -245,28 +246,48 @@ namespace MinecraftClient
 
             return;
 
-        Retry:
+            Retry:
             if (timeoutdetector != null)
             {
                 timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
             }
-            if (ReconnectionAttemptsLeft > 0)
-            {
-                Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
-                Thread.Sleep(5000);
-                ReconnectionAttemptsLeft--;
-                Program.Restart();
-            }
-            else if (InternalConfig.InteractiveMode)
-            {
-                ConsoleInteractive.ConsoleReader.StopReadThread();
-                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-                Program.HandleFailure();
-            }
 
-            throw new Exception("Initialization failed.");
+            if (!Config.ChatBot.AutoRelog.Enabled)
+            {
+                if (ReconnectionAttemptsLeft > 0)
+                {
+                    Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
+                    Thread.Sleep(5000);
+                    ReconnectionAttemptsLeft--;
+                    Program.Restart();
+                }
+                else if (InternalConfig.InteractiveMode)
+                {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    Program.HandleFailure();
+                }
+
+                throw new Exception("Initialization failed.");
+            } 
+            else
+            {
+                // The AutoRelog ChatBot will handle reconnection at this point.
+                // This is important, or else we'll have multiple instances of the client running at the same time.
+
+                if (ReconnectionAttemptsLeft == 0)
+                {
+                    if (InternalConfig.InteractiveMode)
+                    {
+                        ConsoleInteractive.ConsoleReader.StopReadThread();
+                        ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                        ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                        Program.HandleFailure();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -572,7 +593,7 @@ namespace MinecraftClient
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
                 ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-                Program.HandleFailure();
+                Program.HandleFailure(message, false, reason);
             }
         }
 

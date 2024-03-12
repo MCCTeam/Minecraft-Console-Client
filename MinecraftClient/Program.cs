@@ -398,7 +398,12 @@ namespace MinecraftClient
         /// </summary>
         private static void InitializeClient()
         {
-            InternalConfig.MinecraftVersion = Config.Main.Advanced.MinecraftVersion;
+            // Ensure that we use the provided Minecraft version if we can't connect automatically.
+            //
+            // useMcVersionOnce is set to true on HandleFailure()
+            // whenever we are unable to connect to the server and the user provides a version number.
+            if (!useMcVersionOnce)
+                InternalConfig.MinecraftVersion = Config.Main.Advanced.MinecraftVersion;
 
             SessionToken session = new();
             PlayerKeyPair? playerKeyPair = null;
@@ -406,7 +411,7 @@ namespace MinecraftClient
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
             string loginLower = ToLowerIfNeed(InternalConfig.Account.Login);
-            if (InternalConfig.Account.Password == "-")
+            if (InternalConfig.Account.Password == "-" || InternalConfig.Account.Password == string.Empty)
             {
                 ConsoleIO.WriteLineFormatted("§8" + Translations.mcc_offline, acceptnewlines: true);
                 result = ProtocolHandler.LoginResult.Success;
@@ -749,7 +754,7 @@ namespace MinecraftClient
                     if (InternalConfig.MinecraftVersion != "")
                     {
                         useMcVersionOnce = true;
-                        Restart();
+                        Restart(0, true);
                         return;
                     }
                 }

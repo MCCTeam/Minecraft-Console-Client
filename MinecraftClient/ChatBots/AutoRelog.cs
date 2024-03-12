@@ -137,9 +137,10 @@ namespace MinecraftClient.ChatBots
         {
             double delay = random.NextDouble() * (Config.Delay.max - Config.Delay.min) + Config.Delay.min;
             LogDebugToConsole(string.Format(string.IsNullOrEmpty(msg) ? Translations.bot_autoRelog_reconnect_always : Translations.bot_autoRelog_reconnect, msg));
-            LogToConsole(string.Format(Translations.bot_autoRelog_wait, delay));
-            System.Threading.Thread.Sleep((int)Math.Floor(delay * 1000));
-            ReconnectToTheServer();
+            
+            // TODO: Change this translation string to add the retries left text
+            LogToConsole(string.Format(Translations.bot_autoRelog_wait, delay) + $" ({Config.Retries - Configs._BotRecoAttempts} retries left)");
+            ReconnectToTheServer(Config.Retries - Configs._BotRecoAttempts, (int)Math.Floor(delay), true);
         }
 
         public static bool OnDisconnectStatic(DisconnectReason reason, string message)
