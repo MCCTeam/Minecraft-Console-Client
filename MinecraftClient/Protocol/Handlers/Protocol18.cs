@@ -196,6 +196,7 @@ namespace MinecraftClient.Protocol.Handlers
                 >= MC_1_16_2_Version => new ItemPalette1162(),
                 >= MC_1_16_1_Version => new ItemPalette1161(),
                 >= MC_1_15_Version => new ItemPalette115(),
+                >= MC_1_9_Version => new ItemPalette19(),
                 _ => new ItemPalette18()
             };
 
@@ -532,7 +533,6 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
 
                 case PacketTypesIn.JoinGame:
-                {
                     // Temporary fix
                     log.Debug("Receive JoinGame");
 
@@ -543,7 +543,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     lastReceivedMessage = null;
                     lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
-                }
+
                     handler.OnGameJoined(isOnlineMode);
 
                     var playerEntityId = dataTypes.ReadNextInt(packetData);
@@ -711,7 +711,6 @@ namespace MinecraftClient.Protocol.Handlers
 
                         dataTypes.ReadNextVarInt(packetData); // Portal Cooldown
                     }
-
                     break;
                 case PacketTypesIn.SpawnPainting: // Just skip, no need for this
                     return true;
