@@ -370,8 +370,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetId, Queue<byte> packetData)
         {
-            //try
-            //{
+            try
+            {
                 switch (currentState)
                 {
                     // https://wiki.vg/Protocol#Login
@@ -454,7 +454,7 @@ namespace MinecraftClient.Protocol.Handlers
                     default:
                         return true;
                 }
-            /*}
+            }
             catch (Exception innerException)
             {
                 if (innerException is ThreadAbortException || innerException is SocketException ||
@@ -469,7 +469,7 @@ namespace MinecraftClient.Protocol.Handlers
                         currentState == CurrentState.Login,
                         innerException.GetType()),
                     innerException);
-            }*/
+            }
 
             return true;
         }
