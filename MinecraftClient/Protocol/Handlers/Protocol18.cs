@@ -128,7 +128,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             if (handler.GetInventoryEnabled() &&
-                protocolVersion is < MC_1_9_Version or > MC_1_20_4_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_20_4_Version)
             {
                 log.Error($"§c{Translations.extra_inventory_disabled}");
                 handler.SetInventoryEnabled(false);
@@ -195,7 +195,8 @@ namespace MinecraftClient.Protocol.Handlers
                 >= MC_1_17_Version => new ItemPalette117(),
                 >= MC_1_16_2_Version => new ItemPalette1162(),
                 >= MC_1_16_1_Version => new ItemPalette1161(),
-                _ => new ItemPalette115()
+                >= MC_1_15_Version => new ItemPalette115(),
+                _ => new ItemPalette18()
             };
 
             ChatParser.ChatId2Type = this.protocolVersion switch

@@ -23,6 +23,11 @@ namespace MinecraftClient.Inventory
         public int Count;
 
         /// <summary>
+        /// Item Count
+        /// </summary>
+        public int Data;
+
+        /// <summary>
         /// Item Metadata
         /// </summary>
         public Dictionary<string, object>? NBT;
@@ -38,6 +43,11 @@ namespace MinecraftClient.Inventory
             Type = itemType;
             Count = count;
             NBT = nbt;
+        }
+        
+        public Item(ItemType itemType, int count, int data, Dictionary<string, object>? nbt) : this(itemType, count, nbt)
+        {
+            Data = data;
         }
 
         /// <summary>

@@ -420,38 +420,36 @@ namespace MinecraftClient.Protocol.Handlers
         public Item? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
             // MC 1.13.2 and greater
-            if (protocolversion > Protocol18Handler.MC_1_13_Version)
+            if (protocolversion >= Protocol18Handler.MC_1_13_Version)
             {
-                bool itemPresent = ReadNextBool(cache);
-                if (itemPresent)
-                {
-                    int itemID = ReadNextVarInt(cache);
+                var itemPresent = ReadNextBool(cache);
 
-                    if (itemID == -1)
-                        return null;
+                if (!itemPresent)
+                    return null;
 
-                    ItemType type = itemPalette.FromId(itemID);
-                    byte itemCount = ReadNextByte(cache);
-                    Dictionary<string, object> nbt = ReadNextNbt(cache);
-                    return new Item(type, itemCount, nbt);
-                }
-                else return null;
+                var itemId = ReadNextVarInt(cache);
+
+                if (itemId == -1)
+                    return null;
+
+                var type = itemPalette.FromId(itemId);
+                var itemCount = ReadNextByte(cache);
+                var nbt = ReadNextNbt(cache);
+                return new Item(type, itemCount, nbt);
             }
             else
             {
-                // MC 1.13 and lower
-                short itemID = ReadNextShort(cache);
+                var itemId = ReadNextShort(cache);
 
-                if (itemID == -1)
+                if (itemId == -1)
                     return null;
 
-                byte itemCount = ReadNextByte(cache);
+                var itemCount = ReadNextByte(cache);
+                var data = ReadNextShort(cache);
+                var nbt = ReadNextNbt(cache);
 
-                if (protocolversion < Protocol18Handler.MC_1_13_Version)
-                    ReadNextShort(cache);
-
-                Dictionary<string, object> nbt = ReadNextNbt(cache);
-                return new Item(itemPalette.FromId(itemID), itemCount, nbt);
+                // For 1.8 - 1.12.2 we combine Item Id and Item Data/Damage to a single value using: (id << 16) | data
+                return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
             }
         }
 
@@ -561,13 +559,14 @@ namespace MinecraftClient.Protocol.Handlers
                     cache.Dequeue();
                     return nbtData;
                 }
-                
+
                 var nextId = cache.Dequeue();
                 if (protocolversion < Protocol18Handler.MC_1_20_2_Version)
                 {
                     if (nextId is not 10) // TAG_Compound
-                        throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
-                    
+                        throw new System.IO.InvalidDataException(
+                            "Failed to decode NBT: Does not start with TAG_Compound");
+
                     // NBT root name
                     var rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
 
@@ -579,14 +578,15 @@ namespace MinecraftClient.Protocol.Handlers
                 else
                 {
                     if (nextId is not (10 or 8)) // TAG_Compound or TAG_String
-                        throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound or TAG_String");
-                    
+                        throw new System.IO.InvalidDataException(
+                            "Failed to decode NBT: Does not start with TAG_Compound or TAG_String");
+
                     // Read TAG_String
-                    if(nextId is 8)
+                    if (nextId is 8)
                     {
                         var byteArrayLength = ReadNextUShort(cache);
                         var result = Encoding.UTF8.GetString(ReadData(byteArrayLength, cache));
-                        
+
                         return new Dictionary<string, object>()
                         {
                             { "", result }
@@ -900,7 +900,8 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 14:
                     // 1.15 - 1.16.5 and 1.18 - 1.19.4
-                    if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version or > Protocol18Handler.MC_1_17_1_Version)
+                    if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version
+                        or > Protocol18Handler.MC_1_17_1_Version)
                         ReadDustParticle(cache);
                     break;
                 case 15:
@@ -926,12 +927,14 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 24:
                     // 1.18 - 1.19.2 onwards
-                    if (protocolversion is > Protocol18Handler.MC_1_17_1_Version and < Protocol18Handler.MC_1_19_3_Version)
+                    if (protocolversion is > Protocol18Handler.MC_1_17_1_Version
+                        and < Protocol18Handler.MC_1_19_3_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 25:
                     // 1.17 - 1.17.1 and 1.19.3 onwards
-                    if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version or >= Protocol18Handler.MC_1_19_3_Version)
+                    if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version
+                        or >= Protocol18Handler.MC_1_19_3_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 27:
@@ -1442,8 +1445,11 @@ namespace MinecraftClient.Protocol.Handlers
                     slotData.AddRange(GetShort(-1));
                 else
                 {
-                    slotData.AddRange(GetShort((short)itemPalette.ToId(item.Type)));
+                    // For 1.8 - 1.12.2 we combine Item Id and Item Data to a single value using: (id << 16) | data
+                    // Thus to get an ID we do a right shift by 16 bits
+                    slotData.AddRange(GetShort((short)(itemPalette.ToId(item.Type) >> 16)));
                     slotData.Add((byte)item.Count);
+                    slotData.Add((byte)item.Data);
                     slotData.AddRange(GetNbt(item.NBT));
                 }
             }
