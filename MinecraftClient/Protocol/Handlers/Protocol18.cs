@@ -3918,41 +3918,54 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool SendPlayerBlockPlacement(int hand, Location location, Direction face, int sequenceId)
         {
-            if (protocolVersion < MC_1_14_Version)
-            {
-                var playerInventory = handler.GetInventory(0);
-
-                if (playerInventory == null)
-                    return false;
-
-                var packet = new List<byte>();
-
-                packet.AddRange(dataTypes.GetLocation(location));
-                packet.Add(dataTypes.GetBlockFace(face));
-
-                var item = playerInventory.Items[((McClient)handler).GetCurrentSlot()];
-                packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
-
-                packet.Add(0); // cursorX
-                packet.Add(0); // cursorY
-                packet.Add(0); // cursorZ
-
-                SendPacket(PacketTypesOut.PlayerBlockPlacement, packet);
-                return true;
-            }
-
             try
             {
                 var packet = new List<byte>();
-                packet.AddRange(DataTypes.GetVarInt(hand));
-                packet.AddRange(dataTypes.GetLocation(location));
-                packet.AddRange(DataTypes.GetVarInt(dataTypes.GetBlockFace(face)));
+
+                switch (protocolVersion)
+                {
+                    case < MC_1_9_Version:
+                        packet.AddRange(dataTypes.GetLocation(location));
+                        packet.Add(dataTypes.GetBlockFace(face));
+
+                        var playerInventory = handler.GetInventory(0);
+
+                        if (playerInventory?.Items is null)
+                            return false;
+
+                        var slotWindowIds = new int[]{ 36, 37, 38, 39, 40, 41, 42, 43, 44 }; 
+                        var currentSlot = ((McClient)handler).GetCurrentSlot();
+                        
+                        playerInventory.Items.TryGetValue(slotWindowIds[currentSlot], out var item);
+                        packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
+                        
+                        packet.Add(0); // cursorX
+                        packet.Add(0); // cursorY
+                        packet.Add(0); // cursorZ
+
+                        return true;
+                    case < MC_1_14_Version:
+                        packet.AddRange(dataTypes.GetLocation(location));
+                        packet.AddRange(DataTypes.GetVarInt(dataTypes.GetBlockFace(face)));
+                        packet.AddRange(DataTypes.GetVarInt(hand));
+                        break;
+                    default:
+                        packet.AddRange(DataTypes.GetVarInt(hand));
+                        packet.AddRange(dataTypes.GetLocation(location));
+                        packet.AddRange(DataTypes.GetVarInt(dataTypes.GetBlockFace(face)));
+                        break;
+                }
+                
                 packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorX
                 packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorY
                 packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorZ
-                packet.Add(0); // insideBlock = false;
+                
+                if(protocolVersion >= MC_1_14_Version)
+                    packet.Add(0); // insideBlock = false
+                
                 if (protocolVersion >= MC_1_19_Version)
                     packet.AddRange(DataTypes.GetVarInt(sequenceId));
+                
                 SendPacket(PacketTypesOut.PlayerBlockPlacement, packet);
                 return true;
             }
