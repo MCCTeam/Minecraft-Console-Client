@@ -197,6 +197,7 @@ namespace MinecraftClient.Protocol.Handlers
                 >= MC_1_16_1_Version => new ItemPalette1161(),
                 >= MC_1_15_Version => new ItemPalette115(),
                 >= MC_1_12_Version => new ItemPalette112(),
+                >= MC_1_11_Version => new ItemPalette111(),
                 >= MC_1_10_Version => new ItemPalette110(),
                 >= MC_1_9_Version => new ItemPalette19(),
                 _ => new ItemPalette18()
