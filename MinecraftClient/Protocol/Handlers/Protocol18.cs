@@ -196,6 +196,7 @@ namespace MinecraftClient.Protocol.Handlers
                 >= MC_1_16_2_Version => new ItemPalette1162(),
                 >= MC_1_16_1_Version => new ItemPalette1161(),
                 >= MC_1_15_Version => new ItemPalette115(),
+                >= MC_1_12_Version => new ItemPalette112(),
                 >= MC_1_9_Version => new ItemPalette19(),
                 _ => new ItemPalette18()
             };
@@ -367,8 +368,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetId, Queue<byte> packetData)
         {
-            try
-            {
+            //try
+            //{
                 switch (currentState)
                 {
                     // https://wiki.vg/Protocol#Login
@@ -451,7 +452,7 @@ namespace MinecraftClient.Protocol.Handlers
                     default:
                         return true;
                 }
-            }
+            /*}
             catch (Exception innerException)
             {
                 if (innerException is ThreadAbortException || innerException is SocketException ||
@@ -466,7 +467,7 @@ namespace MinecraftClient.Protocol.Handlers
                         currentState == CurrentState.Login,
                         innerException.GetType()),
                     innerException);
-            }
+            }*/
 
             return true;
         }
