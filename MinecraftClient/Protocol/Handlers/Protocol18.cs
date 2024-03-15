@@ -471,7 +471,7 @@ namespace MinecraftClient.Protocol.Handlers
                     innerException.InnerException is SocketException)
                     throw; //Thread abort or Connection lost rather than invalid data
 
-                var a = new System.IO.InvalidDataException(
+                var exception = new System.IO.InvalidDataException(
                     string.Format(Translations.exception_packet_process,
                         packetPalette.GetIncomingTypeById(packetId),
                         packetId,
@@ -491,9 +491,9 @@ namespace MinecraftClient.Protocol.Handlers
                     { "Inner Exception", innerException.GetType().ToString() }
                 }, "packet", BreadcrumbLevel.Error));
 
-                SentrySdk.CaptureException(a);
+                SentrySdk.CaptureException(exception);
 
-                throw a;
+                throw exception;
             }
 
             return true;
