@@ -759,6 +759,11 @@ namespace MinecraftClient
                     }
                 }
 
+                if (disconnectReason.HasValue) {
+                    if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage!))
+                        return; //AutoRelog is triggering a restart of the client, don't turn on the offline prompt
+                }
+                
                 if (offlinePrompt == null)
                 {
                     ConsoleInteractive.ConsoleReader.StopReadThread();
