@@ -430,17 +430,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     World.StoreDimensionList(registryCodec);
 
                                 break;
-
-                            case ConfigurationPacketTypesIn.ResourcePack:
-                                var url = dataTypes.ReadNextString(packetData);
-                                var hash = dataTypes.ReadNextString(packetData);
-                                dataTypes.ReadNextBool(packetData); // Forced
-                                var hasPromptMessage =
-                                    dataTypes.ReadNextBool(packetData);
-
-                                if (hasPromptMessage)
-                                    dataTypes.SkipNextString(packetData);
-
+                            
                             case ConfigurationPacketTypesIn.RemoveResourcePack:
                                 if (dataTypes.ReadNextBool(packetData)) // Has UUID
                                     dataTypes.ReadNextUUID(packetData); // UUID
