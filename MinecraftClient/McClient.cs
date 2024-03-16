@@ -593,7 +593,7 @@ namespace MinecraftClient
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
                 ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-                Program.HandleFailure(message, false, reason);
+                Program.HandleFailure(null, false, reason);
             }
         }
 

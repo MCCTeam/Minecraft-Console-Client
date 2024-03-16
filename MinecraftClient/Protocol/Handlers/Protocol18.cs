@@ -2044,8 +2044,8 @@ namespace MinecraftClient.Protocol.Handlers
                     handler.OnPluginChannelMessage(channel, packetData.ToArray());
                     return pForge.HandlePluginMessage(channel, packetData, ref currentDimension);
                 case PacketTypesIn.Disconnect:
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick,
-                        ChatParser.ParseText(dataTypes.ReadNextChat(packetData)));
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, 
+                        dataTypes.ReadNextChat(packetData));
                     return false;
                 case PacketTypesIn.SetCompression:
                     if (protocolVersion is >= MC_1_8_Version and < MC_1_9_Version)
