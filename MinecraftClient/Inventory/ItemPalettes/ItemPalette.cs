@@ -11,7 +11,12 @@ namespace MinecraftClient.Inventory.ItemPalettes
         {
             // Index reverse mappings for use in ToId()
             foreach (KeyValuePair<int, ItemType> entry in GetDict())
+            {
+                if (DictReverse.ContainsKey(entry.Value))
+                    continue;
+                
                 DictReverse.Add(entry.Value, entry.Key);
+            }
 
             // Hardcoded placeholder types for internal and network use
             DictReverse[ItemType.Unknown] = (int)ItemType.Unknown;
