@@ -74,3 +74,10 @@ The main terms of the CDDL-1.0 license are basically the following:
 
 More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html
 Full license at http://opensource.org/licenses/CDDL-1.0
+
+## Uses technologies from
+<div align="center">
+<a href="https://sentry.io/welcome/">
+  <img src="https://github.com/breadbyte/Minecraft-Console-Client/assets/14045257/411e9a2f-cd9b-4bb5-b7e9-cd7529c76b88" alt="Sentry"  />
+</a>
+</div>
