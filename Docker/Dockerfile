@@ -5,6 +5,10 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0
 # Then replace the <version> with a version of your choice (Example: MCC_VERSION=20220817-29)
 #ENV MCC_VERSION=<version>
 
+# IF you want to use a specific platform then specific the ENV MCC_PLATFORM
+# For example to use arm set the environment variable: MCC_PLATFORM=linux-arm64
+# `docker run -e MCC_PLATFORM=linux-arm64 -it localhost/minecraft-console-client`
+
 # Copy over the script and give it execution permissions
 COPY start-latest.sh /opt/start-latest.sh
 RUN chmod +x /opt/start-latest.sh

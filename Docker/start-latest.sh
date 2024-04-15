@@ -2,6 +2,8 @@
 
 cd /opt/data || exit 1
 
+echo "platform is ${MCC_PLATFORM}"
+
 if [ -e "./MinecraftClient" -a -n "$MCC_SKIP_REDOWNLOAD" ]; then
   echo "Skip re-download MinecraftClient"
 else
@@ -15,7 +17,7 @@ else
   echo "Donwloading MinecraftClient for ${RELEASE_TAG}"
 
   # Download the specified build or the latest one
-  curl -L https://github.com/MCCTeam/Minecraft-Console-Client/releases/download/${RELEASE_TAG}/MinecraftClient-linux.zip --output MinecraftClient-linux.zip
+  curl -L https://github.com/MCCTeam/Minecraft-Console-Client/releases/download/${RELEASE_TAG}/MinecraftClient-${MCC_PLATFORM:=linux}.zip --output MinecraftClient-linux.zip
 
   # Unzip it
   unzip MinecraftClient-linux.zip
