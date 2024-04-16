@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using static MinecraftClient.Settings;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol
 {

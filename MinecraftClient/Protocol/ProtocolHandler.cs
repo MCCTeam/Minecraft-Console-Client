@@ -13,7 +13,7 @@ using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using static MinecraftClient.Settings;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol
 {
@@ -72,7 +72,7 @@ namespace MinecraftClient.Protocol
                         }
                     },
                     TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords ==
-                                         MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
+                                         MainConfigHelper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
                         ? 10
                         : 30));
             }
@@ -114,7 +114,7 @@ namespace MinecraftClient.Protocol
                         }
                     },
                     TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords ==
-                                         MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
+                                         MainConfigHelper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
                         ? 10
                         : 30)))
             {

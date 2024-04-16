@@ -375,7 +375,7 @@ namespace MinecraftClient.Scripting
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
         public bool SetServer(string server, bool andReconnect = false)
         {
-            bool result = Config.Main.SetServerIP(new MainConfigHealper.MainConfig.ServerInfoConfig(server), true);
+            bool result = Config.Main.SetServerIP(new MainConfigHelper.MainConfig.ServerInfoConfig(server), true);
             if (result && andReconnect)
                 ReconnectToTheServer(keepAccountAndServerSettings: true);
             return result;

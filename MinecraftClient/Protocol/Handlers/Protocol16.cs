@@ -15,7 +15,7 @@ using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
 using static MinecraftClient.Settings;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol.Handlers
 {

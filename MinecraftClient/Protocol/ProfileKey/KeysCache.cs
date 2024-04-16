@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Timers;
 using static MinecraftClient.Settings;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.AdvancedConfig;
 
 namespace MinecraftClient.Protocol.ProfileKey
 {

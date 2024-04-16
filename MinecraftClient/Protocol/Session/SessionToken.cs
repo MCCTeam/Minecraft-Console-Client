@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MinecraftClient.Scripting;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol.Session
 {

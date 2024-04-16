@@ -45,7 +45,7 @@ namespace MinecraftClient.Commands
             if (!string.IsNullOrWhiteSpace(account) && !Settings.Config.Main.Advanced.SetAccount(account))
                 return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_connect_unknown, account));
 
-            if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHealper.MainConfig.ServerInfoConfig(server), true))
+            if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHelper.MainConfig.ServerInfoConfig(server), true))
             {
                 Program.Restart(keepAccountAndServerSettings: true);
                 return r.SetAndReturn(Status.Done);
@@ -62,7 +62,7 @@ namespace MinecraftClient.Commands
             if (args.Length > 1 && !Settings.Config.Main.Advanced.SetAccount(args[1]))
                 return string.Format(Translations.cmd_connect_unknown, args[1]);
 
-            if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHealper.MainConfig.ServerInfoConfig(args[0]), true))
+            if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHelper.MainConfig.ServerInfoConfig(args[0]), true))
             {
                 Program.Restart(keepAccountAndServerSettings: true);
                 return string.Empty;

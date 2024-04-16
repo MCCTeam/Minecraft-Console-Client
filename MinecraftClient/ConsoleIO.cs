@@ -203,9 +203,9 @@ namespace MinecraftClient
             }
 
             var InternalCmdChar = Config.Main.Advanced.InternalCmdChar;
-            if (InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none || fullCommand[0] == InternalCmdChar.ToChar())
+            if (InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none || fullCommand[0] == InternalCmdChar.ToChar())
             {
-                int offset = InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none ? 0 : 1;
+                int offset = InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none ? 0 : 1;
                 if (buffer.CursorPosition - offset < 0)
                 {
                     ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();

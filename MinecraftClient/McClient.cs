@@ -643,13 +643,13 @@ namespace MinecraftClient
                 text = text.Trim();
 
                 if (text.Length > 1
-                    && Config.Main.Advanced.InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                    && Config.Main.Advanced.InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
                     && text[0] == '/')
                 {
                     SendText(text);
                 }
                 else if (text.Length > 2
-                    && Config.Main.Advanced.InternalCmdChar != MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                    && Config.Main.Advanced.InternalCmdChar != MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
                     && text[0] == Config.Main.Advanced.InternalCmdChar.ToChar()
                     && text[1] == '/')
                 {
@@ -657,7 +657,7 @@ namespace MinecraftClient
                 }
                 else if (text.Length > 0)
                 {
-                    if (Config.Main.Advanced.InternalCmdChar == MainConfigHealper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                    if (Config.Main.Advanced.InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
                         || text[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
                     {
                         CmdResult result = new();
