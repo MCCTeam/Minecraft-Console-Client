@@ -19,9 +19,9 @@ using static MinecraftClient.Settings.ChatFormatConfigHelper;
 using static MinecraftClient.Settings.ConsoleConfigHealper;
 using static MinecraftClient.Settings.HeadCommentHealper;
 using static MinecraftClient.Settings.LoggingConfigHealper;
-using static MinecraftClient.Settings.MainConfigHealper;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
+using static MinecraftClient.Settings.MainConfigHelper;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.AdvancedConfig;
 using static MinecraftClient.Settings.MCSettingsConfigHealper;
 using static MinecraftClient.Settings.SignatureConfigHelper;
 
@@ -73,8 +73,8 @@ namespace MinecraftClient
 
             public MainConfig Main
             {
-                get { return MainConfigHealper.Config; }
-                set { MainConfigHealper.Config = value; MainConfigHealper.Config.OnSettingUpdate(); }
+                get { return MainConfigHelper.Config; }
+                set { MainConfigHelper.Config = value; MainConfigHelper.Config.OnSettingUpdate(); }
             }
 
             [TomlPrecedingComment("$Signature$")]
@@ -326,7 +326,7 @@ namespace MinecraftClient
             }
         }
 
-        public static class MainConfigHealper
+        public static class MainConfigHelper
         {
             public static MainConfig Config = new();
 

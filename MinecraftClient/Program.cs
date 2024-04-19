@@ -19,8 +19,8 @@ using MinecraftClient.WinAPI;
 using Tomlet;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.AdvancedConfig;
+using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient
 {
@@ -524,7 +524,7 @@ namespace MinecraftClient
                             return;
                         }
                     }
-                    Config.Main.SetServerIP(new MainConfigHealper.MainConfig.ServerInfoConfig(addressInput), true);
+                    Config.Main.SetServerIP(new MainConfigHelper.MainConfig.ServerInfoConfig(addressInput), true);
                 }
 
                 //Get server version
