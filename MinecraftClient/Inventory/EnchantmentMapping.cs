@@ -10,7 +10,7 @@ namespace MinecraftClient.Inventory
     {
         #pragma warning disable format // @formatter:off
         // 1.14 - 1.15.2
-        private static Dictionary<short, Enchantment> enchantmentMappings114 = new Dictionary<short, Enchantment>()
+        private static Dictionary<short, Enchantment> enchantmentMappings114 = new()
         {
             //id    type 
             { 0,    Enchantment.Protection },
@@ -50,7 +50,7 @@ namespace MinecraftClient.Inventory
         };
 
         // 1.16 - 1.18
-        private static Dictionary<short, Enchantment> enchantmentMappings116 = new Dictionary<short, Enchantment>()
+        private static Dictionary<short, Enchantment> enchantmentMappings116 = new()
         {
             //id    type 
             { 0,    Enchantment.Protection },
@@ -93,8 +93,8 @@ namespace MinecraftClient.Inventory
             { 37,   Enchantment.VanishingCurse }
         };
 
-        // 1.19+
-        private static Dictionary<short, Enchantment> enchantmentMappings = new Dictionary<short, Enchantment>()
+        // 1.19 - 1.20.4
+        private static Dictionary<short, Enchantment> enchantmentMappings119 = new()
         {
             //id    type 
             { 0,    Enchantment.Protection },
@@ -137,6 +137,54 @@ namespace MinecraftClient.Inventory
             { 37,   Enchantment.Mending },
             { 38,   Enchantment.VanishingCurse }
         };
+        
+        // 1.20.6+
+        private static Dictionary<short, Enchantment> enchantmentMappings = new()
+        {
+            //id    type 
+            { 0,    Enchantment.Protection },
+            { 1,    Enchantment.FireProtection },
+            { 2,    Enchantment.FeatherFalling },
+            { 3,    Enchantment.BlastProtection },
+            { 4,    Enchantment.ProjectileProtection },
+            { 5,    Enchantment.Respiration },
+            { 6,    Enchantment.AquaAffinity },
+            { 7,    Enchantment.Thorns },
+            { 8,    Enchantment.DepthStrieder },
+            { 9,    Enchantment.FrostWalker },
+            { 10,   Enchantment.BindingCurse },
+            { 11,   Enchantment.SoulSpeed },
+            { 12,   Enchantment.SwiftSneak },
+            { 13,   Enchantment.Sharpness },
+            { 14,   Enchantment.Smite },
+            { 15,   Enchantment.BaneOfArthropods },
+            { 16,   Enchantment.Knockback },
+            { 17,   Enchantment.FireAspect },
+            { 18,   Enchantment.Looting },
+            { 19,   Enchantment.Sweeping },
+            { 20,   Enchantment.Efficency },
+            { 21,   Enchantment.SilkTouch },
+            { 22,   Enchantment.Unbreaking },
+            { 23,   Enchantment.Fortune },
+            { 24,   Enchantment.Power },
+            { 25,   Enchantment.Punch },
+            { 26,   Enchantment.Flame },
+            { 27,   Enchantment.Infinity },
+            { 28,   Enchantment.LuckOfTheSea },
+            { 29,   Enchantment.Lure },
+            { 30,   Enchantment.Loyality },
+            { 31,   Enchantment.Impaling },
+            { 32,   Enchantment.Riptide },
+            { 33,   Enchantment.Channeling },
+            { 34,   Enchantment.Multishot },
+            { 35,   Enchantment.QuickCharge },
+            { 36,   Enchantment.Piercing },
+            { 37,   Enchantment.Density },
+            { 38,   Enchantment.Breach },
+            { 39,   Enchantment.WindBurst },
+            { 40,   Enchantment.Mending },
+            { 41,   Enchantment.VanishingCurse }
+        };
 #pragma warning restore format // @formatter:on
 
         public static Enchantment GetEnchantmentById(int protocolVersion, short id)
@@ -144,34 +192,32 @@ namespace MinecraftClient.Inventory
             if (protocolVersion < Protocol18Handler.MC_1_14_Version)
                 throw new Exception("Enchantments mappings are not implemented bellow 1.14");
 
-            Dictionary<short, Enchantment> map = enchantmentMappings;
+            var map = protocolVersion switch
+            {
+                >= Protocol18Handler.MC_1_14_Version and < Protocol18Handler.MC_1_16_Version => enchantmentMappings114,
+                >= Protocol18Handler.MC_1_16_Version and < Protocol18Handler.MC_1_19_Version => enchantmentMappings116,
+                >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => enchantmentMappings119,
+                _ => enchantmentMappings
+            };
 
-            if (protocolVersion >= Protocol18Handler.MC_1_14_Version && protocolVersion < Protocol18Handler.MC_1_16_Version)
-                map = enchantmentMappings114;
-            else if (protocolVersion >= Protocol18Handler.MC_1_16_Version && protocolVersion < Protocol18Handler.MC_1_19_Version)
-                map = enchantmentMappings116;
+            if (!map.TryGetValue(id, out var value))
+                throw new Exception($"Got an Unknown Enchantment ID {id}, please update the Mappings!");
 
-            if (!map.ContainsKey(id))
-                throw new Exception("Got an Unknown Enchantment ID '" + id + "', please update the Mappings!");
-
-            return map[id];
+            return value;
         }
 
         public static string GetEnchantmentName(Enchantment enchantment)
         {
-            string? trans = ChatParser.TranslateString("enchantment.minecraft." + enchantment.ToString().ToUnderscoreCase());
-            if (string.IsNullOrEmpty(trans))
-                return "Unknown Enchantment with ID: " + ((short)enchantment) + " (Probably not named in the code yet)";
-            else
-                return trans;
+            var translation = ChatParser.TranslateString("enchantment.minecraft." + enchantment.ToString().ToUnderscoreCase());
+            return string.IsNullOrEmpty(translation) ? $"Unknown Enchantment with ID: {(short)enchantment} (Probably not named in the code yet)" : translation;
         }
 
         public static string ConvertLevelToRomanNumbers(int num)
         {
-            string result = string.Empty;
-            Dictionary<string, int> romanNumbers = new Dictionary<string, int>
+            var result = string.Empty;
+            var romanNumbers = new Dictionary<string, int>
             {
-                {"M", 1000 },
+                {"M", 1000},
                 {"CM", 900},
                 {"D", 500},
                 {"CD", 400},

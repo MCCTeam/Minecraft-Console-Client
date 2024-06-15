@@ -118,6 +118,9 @@ namespace MinecraftClient
 
         // ChatBot OnNetworkPacket event
         private bool networkPacketCaptureEnabled = false;
+        
+        // Cookies
+        private Dictionary<string, byte[]> Cookies { get; set; } = new();
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -143,6 +146,8 @@ namespace MinecraftClient
         public ILogger GetLogger() { return Log; }
         public int GetPlayerEntityID() { return playerEntityID; }
         public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
+        public void GetCookie(string key, out byte[]? data) => Cookies.TryGetValue(key, out data);
+        public void SetCookie(string key, byte[] data) => Cookies[key] = data;
 
         readonly TcpClient client;
         readonly IMinecraftCom handler;

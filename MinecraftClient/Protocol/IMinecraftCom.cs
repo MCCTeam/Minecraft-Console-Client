@@ -273,5 +273,18 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <returns>Net read thread ID</returns>
         int GetNetMainThreadId();
+
+        /// <summary>
+        /// Send the server a requested cookie
+        /// </summary>
+        /// <param name="name">The cookie identifier/name</param>
+        /// <param name="data">The cookie data byte array</param>
+        bool SendCookieResponse(string name, byte[]? data);
+        
+        /// <summary>
+        /// Send the server known data packs
+        /// </summary>
+        /// <param name="knownDataPacks">The clist of tuples containing info about the kown data packs (namespace, id, version)</param>
+        bool SendKnownDataPacks(List<(string, string, string)> knownDataPacks);
     }
 }

@@ -236,6 +236,16 @@ namespace MinecraftClient.Protocol.Handlers
             return netRead != null ? netRead.Item1.ManagedThreadId : -1;
         }
 
+        public bool SendCookieResponse(string name, byte[]? data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SendKnownDataPacks(List<(string, string, string)> knownDataPacks)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Dispose()
         {
             try

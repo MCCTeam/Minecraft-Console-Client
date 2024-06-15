@@ -2,15 +2,20 @@ namespace MinecraftClient.Protocol.Handlers;
 
 public enum ConfigurationPacketTypesIn
 {
-    PluginMessage,
+    CookieRequest,
     Disconnect,
+    FeatureFlags,
     FinishConfiguration,
     KeepAlive,
+    KnownDataPacks,
     Ping,
+    PluginMessage,
     RegistryData,
-    ResourcePack,
     RemoveResourcePack,
-    FeatureFlags,
+    ResetChat,
+    ResourcePack,
+    StoreCookie,
+    Transfer,
     UpdateTags,
     
     Unknown
