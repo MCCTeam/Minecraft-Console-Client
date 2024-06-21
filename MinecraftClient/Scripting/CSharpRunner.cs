@@ -187,8 +187,7 @@ namespace MinecraftClient.Scripting
         public CSErrorType ExceptionType { get { return _type; } }
         public override string Message { get { return InnerException!.Message; } }
         public override string ToString() { return InnerException!.ToString(); }
-        public CSharpException(CSErrorType type, Exception inner)
-            : base(inner != null ? inner.Message : "", inner)
+        public CSharpException(CSErrorType type, Exception inner) : base(inner.Message, inner)
         {
             _type = type;
         }
