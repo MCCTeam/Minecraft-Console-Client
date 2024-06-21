@@ -116,10 +116,15 @@ namespace MinecraftClient.Scripting
 
                         foreach (var failure in result.Failures)
                         {
-                            ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, line:col{failure.Location.GetMappedLineSpan()}: [{failure.Id}] {failure.GetMessage()}");
+                            // Get the line that contains the error:
+
+                            var loc = failure.Location.GetMappedLineSpan();
+                            var line = code.Split('\n')[loc.StartLinePosition.Line];
+                            
+                            ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, on line ({line.Trim()}): [{failure.Id}] {failure.GetMessage()}");
                         }
 
-                        throw new CSharpException(CSErrorType.InvalidScript, new InvalidProgramException("Compilation failed due to error."));
+                        throw new CSharpException(CSErrorType.InvalidScript, new InvalidProgramException("Compilation failed due to error(s)."));
                     }
 
                     ConsoleIO.WriteLogLine("[Script] Compilation done with no errors.");
@@ -182,8 +187,7 @@ namespace MinecraftClient.Scripting
         public CSErrorType ExceptionType { get { return _type; } }
         public override string Message { get { return InnerException!.Message; } }
         public override string ToString() { return InnerException!.ToString(); }
-        public CSharpException(CSErrorType type, Exception inner)
-            : base(inner != null ? inner.Message : "", inner)
+        public CSharpException(CSErrorType type, Exception inner) : base(inner.Message, inner)
         {
             _type = type;
         }
