@@ -121,7 +121,7 @@ namespace MinecraftClient.Scripting
                             var loc = failure.Location.GetMappedLineSpan();
                             var line = code.Split('\n')[loc.StartLinePosition.Line];
                             
-                            ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, on line ({line}): [{failure.Id}] {failure.GetMessage()}");
+                            ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, on line ({line.Trim()}): [{failure.Id}] {failure.GetMessage()}");
                         }
 
                         throw new CSharpException(CSErrorType.InvalidScript, new InvalidProgramException("Compilation failed due to error(s)."));
