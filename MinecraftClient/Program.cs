@@ -16,6 +16,7 @@ using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Scripting;
 using MinecraftClient.WinAPI;
+using Sentry;
 using Tomlet;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
@@ -50,14 +51,31 @@ namespace MinecraftClient
         public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
+        private static IDisposable _sentrySdk;
         private static bool useMcVersionOnce = false;
         private static string settingsIniPath = "MinecraftClient.ini";
+
+        // [SENTRY]
+        // Setting this string to an empty string will disable Sentry
+        private const string SentryDSN = "";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
         /// </summary>
         static void Main(string[] args)
         {
+            // [SENTRY] Initialize Sentry SDK only if the DSN is not empty
+            if (SentryDSN != string.Empty) {
+                _sentrySdk = SentrySdk.Init(options =>
+                {
+                    options.Dsn = SentryDSN;
+                    options.AutoSessionTracking = true;
+                    options.IsGlobalModeEnabled = true;
+                    options.EnableTracing = true;
+                    options.SendDefaultPii = false;
+                });
+            }
+
             Task.Run(() =>
             {
                 // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
@@ -139,6 +157,12 @@ namespace MinecraftClient
                     if (newlyGenerated)
                         ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_settings_generated);
                     ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
+
+                    // Only show the Sentry message if the DSN is not empty
+                    // as Sentry will not be initialized if the DSN is empty
+                    if (SentryDSN != string.Empty) {
+                        ConsoleIO.WriteLine(Translations.mcc_sentry_logging);
+                    }
                 }
                 else if (!loadSucceed)
                 {
@@ -182,6 +206,9 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(string.Format(Translations.mcc_help_us_translate, Settings.TranslationProjectUrl));
                     WriteBackSettings(true); // format
                 }
+                
+                if (!Config.Main.Advanced.EnableSentry)
+                    _sentrySdk.Dispose();
             }
 
             //Other command-line arguments
@@ -632,6 +659,9 @@ namespace MinecraftClient
                     }
                     catch (Exception e)
                     {
+                        // [SENTRY]
+                        SentrySdk.CaptureException(e);
+                        
                         ConsoleIO.WriteLine(e.Message);
                         ConsoleIO.WriteLine(e.StackTrace ?? "");
                         HandleFailure(); // Other error
