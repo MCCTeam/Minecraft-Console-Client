@@ -148,9 +148,11 @@ namespace MinecraftClient
         public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
         public void GetCookie(string key, out byte[]? data) => Cookies.TryGetValue(key, out data);
         public void SetCookie(string key, byte[] data) => Cookies[key] = data;
+        public void DeleteCookie(string key) => Cookies.Remove(key, out var data);
 
-        readonly TcpClient client;
-        readonly IMinecraftCom handler;
+        TcpClient client;
+        IMinecraftCom handler;
+        SessionToken _sessionToken;
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
@@ -186,6 +188,7 @@ namespace MinecraftClient
             this.port = port;
             this.protocolversion = protocolversion;
             this.playerKeyPair = playerKeyPair;
+            _sessionToken = session;
 
             Log = Settings.Config.Logging.LogToFile
                 ? new FileLogLogger(Config.AppVar.ExpandVars(Settings.Config.Logging.LogFile), Settings.Config.Logging.PrependTimestamp)
@@ -292,6 +295,77 @@ namespace MinecraftClient
                         Program.HandleFailure();
                     }
                 }
+            }
+        }
+        
+        public void Transfer(string newHost, int newPort)
+        {
+            try
+            {
+                Log.Info($"Initiating a transfer to: {host}:{port}");
+                
+                // Unload bots
+                UnloadAllBots();
+                bots.Clear();
+                
+                // Close existing connection
+                client.Close();
+
+                // Establish new connection
+                client = ProxyHandler.NewTcpClient(newHost, newPort);
+                client.ReceiveBufferSize = 1024 * 1024;
+                client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000;
+
+                // Reinitialize the protocol handler
+                handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, null, this);
+                Log.Info($"Connected to {host}:{port}");
+
+                // Retry login process
+                if (handler.Login(playerKeyPair, _sessionToken))
+                {
+                    foreach (var bot in botsOnHold)
+                        BotLoad(bot, false);
+                    botsOnHold.Clear();
+
+                    Log.Info("Successfully transferred connection and logged in.");
+                    cmdprompt = new CancellationTokenSource();
+                    ConsoleInteractive.ConsoleReader.BeginReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+                }
+                else
+                {
+                    Log.Error("Failed to login to the new host.");
+                    throw new Exception("Login failed after transfer.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Transfer to {newHost}:{newPort} failed: {ex.Message}");
+
+                // Handle reconnection attempts
+                if (timeoutdetector != null)
+                {
+                    timeoutdetector.Item2.Cancel();
+                    timeoutdetector = null;
+                }
+
+                if (ReconnectionAttemptsLeft > 0)
+                {
+                    Log.Info($"Reconnecting... Attempts left: {ReconnectionAttemptsLeft}");
+                    Thread.Sleep(5000);
+                    ReconnectionAttemptsLeft--;
+                    Program.Restart();
+                }
+                else if (InternalConfig.InteractiveMode)
+                {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    Program.HandleFailure();
+                }
+
+                throw new Exception("Transfer failed and reconnection attempts exhausted.");
             }
         }
 

@@ -69,6 +69,149 @@ namespace MinecraftClient.Mapping
             }
         }
 
+        public static void LoadDefaultDimensions1206Plus()
+        {
+            // TODO: Move this to a JSON file.
+            
+            var defaultRegistryCodec = new Dictionary<string, object>
+            {
+                { "minecraft:dimension_type", new Dictionary<string, object>
+                    {
+                        { "value", new object[]
+                            {
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:overworld" },
+                                    { "id", 0 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)0 },
+                                            { "natural", 1 },
+                                            { "ambient_light", 0.0 },
+                                            { "monster_spawn_block_light_limit", 0 },
+                                            { "infiniburn", "#minecraft:infiniburn_overworld" },
+                                            { "respawn_anchor_works", 0 },
+                                            { "has_skylight", 1 },
+                                            { "bed_works", 1 },
+                                            { "effects", "minecraft:overworld" },
+                                            { "has_raids", 1 },
+                                            { "logical_height", 384 },
+                                            { "coordinate_scale", 1.0 },
+                                            { "monster_spawn_light_level", new Dictionary<string, object>
+                                                {
+                                                    { "min_inclusive", 0 },
+                                                    { "max_inclusive", 7 },
+                                                    { "type", "minecraft:uniform" }
+                                                }
+                                            },
+                                            { "min_y", -64 },
+                                            { "ultrawarm", 0 },
+                                            { "has_ceiling", 0 },
+                                            { "height", 384 }
+                                        }
+                                    }
+                                },
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:overworld_caves" },
+                                    { "id", 1 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)0 },
+                                            { "natural", 1 },
+                                            { "ambient_light", 0.0 },
+                                            { "monster_spawn_block_light_limit", 0 },
+                                            { "infiniburn", "#minecraft:infiniburn_overworld" },
+                                            { "respawn_anchor_works", 0 },
+                                            { "has_skylight", 1 },
+                                            { "bed_works", 1 },
+                                            { "effects", "minecraft:overworld" },
+                                            { "has_raids", 1 },
+                                            { "logical_height", 384 },
+                                            { "coordinate_scale", 1.0 },
+                                            { "monster_spawn_light_level", new Dictionary<string, object>
+                                                {
+                                                    { "min_inclusive", 0 },
+                                                    { "max_inclusive", 7 },
+                                                    { "type", "minecraft:uniform" }
+                                                }
+                                            },
+                                            { "min_y", -64 },
+                                            { "ultrawarm", 0 },
+                                            { "has_ceiling", 1 },
+                                            { "height", 384 }
+                                        }
+                                    }
+                                },
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:the_end" },
+                                    { "id", 2 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)0 },
+                                            { "natural", 0 },
+                                            { "ambient_light", 0.0 },
+                                            { "monster_spawn_block_light_limit", 0 },
+                                            { "infiniburn", "#minecraft:infiniburn_end" },
+                                            { "respawn_anchor_works", 0 },
+                                            { "has_skylight", 0 },
+                                            { "bed_works", 0 },
+                                            { "effects", "minecraft:the_end" },
+                                            { "fixed_time", 6000 },
+                                            { "has_raids", 1 },
+                                            { "logical_height", 256 },
+                                            { "coordinate_scale", 1.0 },
+                                            { "monster_spawn_light_level", new Dictionary<string, object>
+                                                {
+                                                    { "min_inclusive", 0 },
+                                                    { "max_inclusive", 7 },
+                                                    { "type", "minecraft:uniform" }
+                                                }
+                                            },
+                                            { "min_y", 0 },
+                                            { "ultrawarm", 0 },
+                                            { "has_ceiling", 0 },
+                                            { "height", 256 }
+                                        }
+                                    }
+                                },
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:the_nether" },
+                                    { "id", 3 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)1 },
+                                            { "natural", 0 },
+                                            { "ambient_light", 0.1 },
+                                            { "monster_spawn_block_light_limit", 15 },
+                                            { "infiniburn", "#minecraft:infiniburn_nether" },
+                                            { "respawn_anchor_works", 1 },
+                                            { "has_skylight", 0 },
+                                            { "bed_works", 0 },
+                                            { "effects", "minecraft:the_nether" },
+                                            { "fixed_time", 18000 },
+                                            { "has_raids", 0 },
+                                            { "logical_height", 128 },
+                                            { "coordinate_scale", 8.0 },
+                                            { "monster_spawn_light_level", 7 },
+                                            { "min_y", 0 },
+                                            { "ultrawarm", 1 },
+                                            { "has_ceiling", 1 },
+                                            { "height", 256 }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            StoreDimensionList(defaultRegistryCodec);
+        }
+
         /// <summary>
         /// Store one dimension - Directly used in 1.16.2 to 1.18.2
         /// </summary>
@@ -91,7 +234,6 @@ namespace MinecraftClient.Mapping
         {
             curDimension = dimensionList[name]; // Should not fail
         }
-
 
         /// <summary>
         /// Get current dimension
