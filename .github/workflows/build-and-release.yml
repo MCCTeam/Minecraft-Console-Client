@@ -61,6 +61,7 @@ jobs:
       run: |
         echo '' >> ${{ env.assembly-info }}
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env.date_dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
+        sed -i -e 's|SentryDSN = "";|SentryDSN = "${{ secrets.SENTRY_DSN }}";|g' ${{ env.project-path }}/Program.cs
 
     - name: Build Target
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r ${{ matrix.target }} ${{ env.compile-flags }}
@@ -177,6 +178,7 @@ jobs:
       run: |
         echo '' >> ${{ env.assembly-info }}
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env.date_dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
+        sed -i -e 's|SentryDSN = "";|SentryDSN = "${{ secrets.SENTRY_DSN }}";|g' ${{ env.project-path }}/Program.cs 
 
     - name: Build Target
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r ${{ matrix.target }} ${{ env.compile-flags }}
@@ -195,12 +197,22 @@ jobs:
         filePath: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
         assetName: ${{ env.PROJECT }}-${{ (contains(matrix.target, 'linux-x64') && 'linux.zip') || (contains(matrix.target, 'win-x86') && 'windows-x86.zip') || (contains(matrix.target, 'win-x64') && 'windows-x64.zip') || (contains(matrix.target, 'linux-arm64') && 'linux-arm64.zip') || (contains(matrix.target, 'osx-x64') && 'osx.zip') }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
-        
+
+    - name: Sentry Release
+      uses: getsentry/action-release@v1.7.0
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      with:
+        environment: production
+        dist: ${{ format('{0}-{1}', env.date, github.run_number) }}
+      
   determine-build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-    if: ${{ !contains(github.event.head_commit.message, 'skip')}}
+    if: ${{ !contains(github.event.head_commit.message, 'skip') || !contains(github.event.head_commit.message, 'skipci')}}
     steps:
       - name: dummy action
         run: "echo 'dummy action that checks if the build is to be skipped, if it is, this action does not run to break the entire build action'"        

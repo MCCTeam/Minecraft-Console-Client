@@ -21,6 +21,7 @@ using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
+using Sentry;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient
@@ -199,6 +200,33 @@ namespace MinecraftClient
             Log.WarnEnabled = Config.Logging.WarningMessages;
             Log.ErrorEnabled = Config.Logging.ErrorMessages;
 
+            // SENTRY: Send our client version and server version to Sentry
+            SentrySdk.ConfigureScope(scope =>
+            {
+                scope.SetTag("Protocol Version", protocolversion.ToString());
+                scope.SetTag("Minecraft Version", ProtocolHandler.ProtocolVersion2MCVer(protocolversion));
+                scope.SetTag("MCC Build", Program.BuildInfo == null ? "Debug" : Program.BuildInfo);
+                    
+                if (forgeInfo != null)
+                    scope.SetTag("Forge Version", forgeInfo?.Version.ToString());
+
+                scope.Contexts["Server Information"] = new
+                {
+                    ProtocolVersion = protocolversion,
+                    MinecraftVersion = ProtocolHandler.ProtocolVersion2MCVer(protocolversion),
+                    ForgeInfo = forgeInfo?.Version
+                };
+                
+                scope.Contexts["Client Configuration"] = new 
+                {
+                    TerrainAndMovementsEnabled = terrainAndMovementsEnabled,
+                    InventoryHandlingEnabled = inventoryHandlingEnabled,
+                    EntityHandlingEnabled = entityHandlingEnabled
+                };
+            });
+            
+            SentrySdk.StartSession();
+            
             /* Load commands from Commands namespace */
             LoadCommands();
 
@@ -667,6 +695,8 @@ namespace MinecraftClient
                 }
             }
 
+            SentrySdk.EndSession();
+            
             if (!will_restart)
             {
                 ConsoleInteractive.ConsoleReader.StopReadThread();

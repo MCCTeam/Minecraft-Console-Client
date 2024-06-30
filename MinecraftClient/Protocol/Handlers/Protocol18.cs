@@ -24,6 +24,7 @@ using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
+using Sentry;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
@@ -371,6 +372,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetId, Queue<byte> packetData)
         {
+            // This copy is necessary because by the time we get to the catch block,
+            // the packetData queue will have been processed and the data will be lost
+            var _copy = packetData.ToArray();
+
             try
             {
                 switch (currentState)
@@ -487,7 +492,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
                                 break;
-
+                            
                             case ConfigurationPacketTypesIn.RemoveResourcePack:
                                 if (dataTypes.ReadNextBool(packetData)) // Has UUID
                                     dataTypes.ReadNextUUID(packetData); // UUID
@@ -546,7 +551,7 @@ namespace MinecraftClient.Protocol.Handlers
                     innerException.InnerException is SocketException)
                     throw; //Thread abort or Connection lost rather than invalid data
 
-                throw new System.IO.InvalidDataException(
+                var exception = new System.IO.InvalidDataException(
                     string.Format(Translations.exception_packet_process,
                         packetPalette.GetIncomingTypeById(packetId),
                         packetId,
@@ -554,6 +559,21 @@ namespace MinecraftClient.Protocol.Handlers
                         currentState == CurrentState.Login,
                         innerException.GetType()),
                     innerException);
+                
+                SentrySdk.AddBreadcrumb(new Breadcrumb("S -> C Packet", "network", new Dictionary<string, string>()
+                {
+                    { "Packet ID", packetId.ToString() },
+                    { "Packet Type ", packetPalette.GetIncomingTypeById(packetId).ToString() },
+                    { "Protocol Version", protocolVersion.ToString() },
+                    { "Minecraft Version", ProtocolHandler.ProtocolVersion2MCVer(protocolVersion) },
+                    { "Current State", currentState.ToString() },
+                    { "Packet Data", string.Join(" ", _copy.Select(b => b.ToString("X2"))) },
+                    { "Inner Exception", innerException.GetType().ToString() }
+                }, "packet", BreadcrumbLevel.Error));
+
+                SentrySdk.CaptureException(exception);
+
+                throw exception;
             }
 
             return true;
