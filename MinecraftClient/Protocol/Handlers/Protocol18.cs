@@ -123,21 +123,21 @@ namespace MinecraftClient.Protocol.Handlers
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
             chunkBatchStartTime = GetNanos();
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_20_4_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_20_6_Version)
             {
                 log.Error($"§c{Translations.extra_terrainandmovement_disabled}");
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_20_4_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_20_6_Version)
             {
                 log.Error($"§c{Translations.extra_inventory_disabled}");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_20_4_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_20_6_Version)
             {
                 log.Error($"§c{Translations.extra_entity_disabled}");
                 handler.SetEntityHandlingEnabled(false);
@@ -146,8 +146,9 @@ namespace MinecraftClient.Protocol.Handlers
             Block.Palette = protocolVersion switch
             {
                 // Block palette
-                > MC_1_20_4_Version when handler.GetTerrainEnabled() =>
+                > MC_1_20_6_Version when handler.GetTerrainEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_block),
+                MC_1_20_6_Version => new Palette1206(),
                 >= MC_1_20_4_Version => new Palette1204(),
                 >= MC_1_20_Version => new Palette120(),
                 MC_1_19_4_Version => new Palette1194(),
@@ -164,8 +165,9 @@ namespace MinecraftClient.Protocol.Handlers
             entityPalette = protocolVersion switch
             {
                 // Entity palette
-                > MC_1_20_4_Version when handler.GetEntityHandlingEnabled() =>
+                > MC_1_20_6_Version when handler.GetEntityHandlingEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_entity),
+                MC_1_20_6_Version => new EntityPalette1206(),
                 >= MC_1_20_4_Version => new EntityPalette1204(),
                 >= MC_1_20_Version => new EntityPalette120(),
                 MC_1_19_4_Version => new EntityPalette1194(),
@@ -186,8 +188,9 @@ namespace MinecraftClient.Protocol.Handlers
             itemPalette = protocolVersion switch
             {
                 // Item palette
-                > MC_1_20_4_Version when handler.GetInventoryEnabled() =>
+                > MC_1_20_6_Version when handler.GetInventoryEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_item),
+                MC_1_20_6_Version => new ItemPalette1206(),
                 >= MC_1_20_4_Version => new ItemPalette1204(),
                 >= MC_1_20_Version => new ItemPalette120(),
                 MC_1_19_4_Version => new ItemPalette1194(),
@@ -2499,11 +2502,38 @@ namespace MinecraftClient.Protocol.Handlers
                         var numberOfProperties = protocolVersion >= MC_1_17_Version
                             ? dataTypes.ReadNextVarInt(packetData)
                             : dataTypes.ReadNextInt(packetData);
+                        
+                        var attributeDictionary = new Dictionary<int, string>
+                        {
+                            { 0, "generic.armor" },
+                            { 1, "generic.armor_toughness" },
+                            { 2, "generic.attack_damage" },
+                            { 3, "generic.attack_knockback" },
+                            { 4, "generic.attack_speed" },
+                            { 5, "generic.block_break_speed" },
+                            { 6, "generic.block_interaction_range" },
+                            { 7, "generic.entity_interaction_range" },
+                            { 8, "generic.fall_damage_multiplier" },
+                            { 9, "generic.flying_speed" },
+                            { 10, "generic.follow_range" },
+                            { 11, "generic.gravity" },
+                            { 12, "generic.jump_strength" },
+                            { 13, "generic.knockback_resistance" },
+                            { 14, "generic.luck" },
+                            { 15, "generic.max_absorption" },
+                            { 16, "generic.max_health" },
+                            { 17, "generic.movement_speed" },
+                            { 18, "generic.safe_fall_distance" },
+                            { 19, "generic.scale" },
+                            { 20, "zombie.spawn_reinforcements" },
+                            { 21, "generic.step_height" }
+                        };
 
                         Dictionary<string, double> keys = new();
                         for (var i = 0; i < numberOfProperties; i++)
                         {
-                            var propertyKey = dataTypes.ReadNextString(packetData);
+                            var propertyKey = protocolVersion < MC_1_20_6_Version ? dataTypes.ReadNextString(packetData) 
+                                : attributeDictionary[dataTypes.ReadNextVarInt(packetData)];
                             var propertyValue2 = dataTypes.ReadNextDouble(packetData);
 
                             List<double> op0 = new();
@@ -2549,7 +2579,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Also make a palette for field? Will be a lot of work
                         var healthField = protocolVersion switch
                         {
-                            > MC_1_20_4_Version => throw new NotImplementedException(Translations
+                            > MC_1_20_6_Version => throw new NotImplementedException(Translations
                                 .exception_palette_healthfield),
                             // 1.17 and above
                             >= MC_1_17_Version => 9,

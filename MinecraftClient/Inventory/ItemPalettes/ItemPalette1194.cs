@@ -495,7 +495,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[622] = ItemType.GraniteSlab;
             mappings[605] = ItemType.GraniteStairs;
             mappings[379] = ItemType.GraniteWall;
-            mappings[172] = ItemType.Grass;
+            mappings[172] = ItemType.ShortGrass;
             mappings[14] = ItemType.GrassBlock;
             mappings[47] = ItemType.Gravel;
             mappings[1090] = ItemType.GrayBanner;
@@ -985,7 +985,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[650] = ItemType.SculkSensor;
             mappings[350] = ItemType.SculkShrieker;
             mappings[348] = ItemType.SculkVein;
-            mappings[753] = ItemType.Scute;
+            mappings[753] = ItemType.TurtleScute;
             mappings[485] = ItemType.SeaLantern;
             mappings[178] = ItemType.SeaPickle;
             mappings[177] = ItemType.Seagrass;

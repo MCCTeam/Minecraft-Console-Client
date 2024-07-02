@@ -103,7 +103,8 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                               new ParserEmpty(dataTypes, packetData),
                             _ => new ParserEmpty(dataTypes, packetData),
                         };
-                    else // 1.20.3+
+                    else if (protocolVersion is > Protocol18Handler.MC_1_20_2_Version and < Protocol18Handler.MC_1_20_6_Version)
+                        // 1.20.3 - 1.20.4
                         parser = parserId switch
                         {
                             1 => new ParserFloat(dataTypes, packetData),
@@ -118,6 +119,24 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                             11 => new ParserVec2(dataTypes, packetData),
                             18 => new ParserMessage(dataTypes, packetData),
                             27 => new ParserRotation(dataTypes, packetData),
+                            30 => new ParserScoreHolder(dataTypes, packetData),
+                            41 => new ParserTime(dataTypes, packetData),
+                            42 => new ParserResourceOrTag(dataTypes, packetData),
+                            43 => new ParserResourceOrTag(dataTypes, packetData),
+                            44 => new ParserResource(dataTypes, packetData),
+                            45 => new ParserResource(dataTypes, packetData),
+                            52 => new ParserForgeEnum(dataTypes, packetData),
+                            _ => new ParserEmpty(dataTypes, packetData),
+                        };
+                    else // 1.20.6+
+                        parser = parserId switch
+                        {
+                            1 => new ParserFloat(dataTypes, packetData),
+                            2 => new ParserDouble(dataTypes, packetData),
+                            3 => new ParserInteger(dataTypes, packetData),
+                            4 => new ParserLong(dataTypes, packetData),
+                            5 => new ParserString(dataTypes, packetData),
+                            6 => new ParserEntity(dataTypes, packetData),
                             30 => new ParserScoreHolder(dataTypes, packetData),
                             41 => new ParserTime(dataTypes, packetData),
                             42 => new ParserResourceOrTag(dataTypes, packetData),

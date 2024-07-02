@@ -797,10 +797,12 @@ namespace MinecraftClient.Protocol.Handlers
                         };
                         break;
                     case EntityMetaDataType.OptionalVarInt: // Optional VarInt
-                        if (ReadNextBool(cache))
+
+                        if (protocolversion < Protocol18Handler.MC_1_20_6_Version)
                         {
-                            value = ReadNextVarInt(cache);
-                        }
+                            if (ReadNextBool(cache))
+                                value = ReadNextVarInt(cache);
+                        } else value = ReadNextVarInt(cache);
 
                         break;
                     case EntityMetaDataType.Pose: // Pose
@@ -879,15 +881,21 @@ namespace MinecraftClient.Protocol.Handlers
 
             switch (particleId)
             {
+                case 1: // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // BlockState (minecraft:block)
+                    break;
+                    
                 case 2:
-                    // 1.18 +
+                    // 1.18
                     if (protocolversion > Protocol18Handler.MC_1_17_1_Version)
-                        ReadNextVarInt(cache); // Block state (minecraft:block)
+                        ReadNextVarInt(cache); // Block state (minecraft:block before 1.20.6, minecraft:block_marker in 1.20.6+)
                     break;
                 case 3:
-                    if (protocolversion is < Protocol18Handler.MC_1_17_Version or > Protocol18Handler.MC_1_17_1_Version)
+                    if (protocolversion is (< Protocol18Handler.MC_1_17_Version or > Protocol18Handler.MC_1_17_1_Version) 
+                        and < Protocol18Handler.MC_1_20_6_Version)
                         ReadNextVarInt(
-                            cache); // Block State (minecraft:block before 1.18, minecraft:block_marker after 1.18)
+                            cache); // Block State (minecraft:block before 1.18, minecraft:block_marker after 1.18 up to 1.20.6)
                     break;
                 case 4:
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version)
@@ -898,11 +906,24 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion < Protocol18Handler.MC_1_15_Version)
                         ReadDustParticle(cache);
                     break;
+                case 13:
+                    // 1.20,6+ - minecraft:dust
+                    ReadDustParticle(cache);
+                    break;
                 case 14:
-                    // 1.15 - 1.16.5 and 1.18 - 1.19.4
-                    if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version
-                        or > Protocol18Handler.MC_1_17_1_Version)
-                        ReadDustParticle(cache);
+                    switch (protocolversion)
+                    {
+                        // 1.15 - 1.16.5 and 1.18 - 1.20.4
+                        case >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version
+                            or > Protocol18Handler.MC_1_17_1_Version and < Protocol18Handler.MC_1_20_6_Version:
+                            ReadDustParticle(cache);
+                            break;
+                        // 1.20.6+
+                        case >= Protocol18Handler.MC_1_20_6_Version:
+                            ReadDustParticleColorTransition(cache);
+                            break;
+                    }
+
                     break;
                 case 15:
                     switch (protocolversion)
@@ -910,7 +931,8 @@ namespace MinecraftClient.Protocol.Handlers
                         case Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version:
                             ReadDustParticle(cache);
                             break;
-                        case > Protocol18Handler.MC_1_17_1_Version:
+                        // 1.18 - 1.20.4
+                        case > Protocol18Handler.MC_1_17_1_Version and < Protocol18Handler.MC_1_20_6_Version:
                             ReadDustParticleColorTransition(cache);
                             break;
                     }
@@ -920,21 +942,26 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version)
                         ReadDustParticleColorTransition(cache);
                     break;
+                case 20:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextInt(cache); // minecraft:entity_effect
+                    break;
                 case 23:
                     // 1.15 - 1.16.5
                     if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 24:
-                    // 1.18 - 1.19.2 onwards
+                    // 1.18 - 1.19.3
                     if (protocolversion is > Protocol18Handler.MC_1_17_1_Version
                         and < Protocol18Handler.MC_1_19_3_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 25:
-                    // 1.17 - 1.17.1 and 1.19.3 onwards
+                    // 1.17 - 1.17.1 and 1.19.3 - 1.20.4
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version
-                        or >= Protocol18Handler.MC_1_19_3_Version)
+                        or (>= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version))
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 27:
@@ -942,14 +969,25 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion < Protocol18Handler.MC_1_15_Version)
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                     break;
+                case 28:
+                    // 1.20.6+
+                    if (protocolversion > Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // minecraft:falling_dust (BlockState)
+                    break;
                 case 30:
-                    if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                    // 1.19.3 - 1.20.4
+                    if (protocolversion is >= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version)
                         ReadNextFloat(cache); // Roll (minecraft:sculk_charge)
                     break;
                 case 32:
                     // 1.15 - 1.16.5
                     if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version)
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
+                    break;
+                case 35:
+                    // 1.20.6+
+                    if (protocolversion > Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextFloat(cache); // minecraft:sculk_charge (Roll)
                     break;
                 case 36:
                     switch (protocolversion)
@@ -958,6 +996,7 @@ namespace MinecraftClient.Protocol.Handlers
                         case Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version:
                             ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                             break;
+                        // 1.18 - 1.19.2
                         case > Protocol18Handler.MC_1_17_1_Version and < Protocol18Handler.MC_1_19_3_Version:
                             // minecraft:vibration
                             ReadNextLocation(cache); // Origin (Starting Position)
@@ -968,7 +1007,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case 37:
-                    // minecraft:vibration
+                    // minecraft:vibration - 1.17 - 1.17.1
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version)
                     {
                         ReadNextDouble(cache); // Origin X
@@ -982,11 +1021,13 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case 39:
-                    if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                    // 1.19.3 - 1.20.4
+                    if (protocolversion is >= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version)
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                     break;
                 case 40:
-                    if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                    // 1.19.3 - 1.20.4
+                    if (protocolversion is >= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version)
                     {
                         var positionSourceType = ReadNextString(cache);
                         switch (positionSourceType)
@@ -1003,6 +1044,21 @@ namespace MinecraftClient.Protocol.Handlers
                         ReadNextVarInt(cache);
                     }
 
+                    break;
+                case 44:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextItemSlot(cache, itemPalette); // minecraft:item (Item)
+                    break;
+                case 99:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // minecraft:shriek (Delay)
+                    break;
+                case 105:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // minecraft:dust_pillar (BlockState)
                     break;
             }
         }

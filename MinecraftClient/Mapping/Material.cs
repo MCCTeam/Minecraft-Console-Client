@@ -409,7 +409,6 @@
         GraniteSlab,
         GraniteStairs,
         GraniteWall,
-        Grass, // 1.20.3+ renamed to ShortGrass
         GrassBlock,
         Gravel,
         GrayBanner,
@@ -443,6 +442,7 @@
         Grindstone,
         HangingRoots,
         HayBlock,
+        HeavyCore,
         HeavyWeightedPressurePlate,
         HoneyBlock,
         HoneycombBlock,
@@ -965,6 +965,7 @@
         TurtleEgg,
         TwistingVines,
         TwistingVinesPlant,
+        Vault,
         VerdantFroglight,
         Vine,
         VoidAir,

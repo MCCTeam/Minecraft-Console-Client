@@ -158,7 +158,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[147] = ItemType.ChiseledSandstone;
             mappings[148] = ItemType.CutSandstone;
             mappings[149] = ItemType.Cobweb;
-            mappings[150] = ItemType.Grass;
+            mappings[150] = ItemType.ShortGrass;
             mappings[151] = ItemType.Fern;
             mappings[152] = ItemType.Azalea;
             mappings[153] = ItemType.FloweringAzalea;
@@ -687,7 +687,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[676] = ItemType.StructureBlock;
             mappings[677] = ItemType.Jigsaw;
             mappings[678] = ItemType.TurtleHelmet;
-            mappings[679] = ItemType.Scute;
+            mappings[679] = ItemType.TurtleScute;
             mappings[680] = ItemType.FlintAndSteel;
             mappings[681] = ItemType.Apple;
             mappings[682] = ItemType.Bow;

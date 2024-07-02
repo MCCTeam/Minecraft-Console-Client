@@ -164,7 +164,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
             for (int i = 1329; i <= 1340; i++)
                 materials[i] = Material.StickyPiston;
             materials[1341] = Material.Cobweb;
-            materials[1342] = Material.Grass;
+            materials[1342] = Material.ShortGrass;
             materials[1343] = Material.Fern;
             materials[1344] = Material.DeadBush;
             materials[1345] = Material.Seagrass;
