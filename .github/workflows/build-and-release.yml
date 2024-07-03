@@ -80,6 +80,7 @@ jobs:
         makeLatest: true
         omitBodyDuringUpdate: true
         omitNameDuringUpdate: true
+        replacesArtifacts: false
     
   fetch-translations:
     strategy:
@@ -205,6 +206,7 @@ jobs:
         makeLatest: true
         omitBodyDuringUpdate: true
         omitNameDuringUpdate: true
+        replacesArtifacts: false
 
     - name: Sentry Release
       uses: getsentry/action-release@v1.7.0
