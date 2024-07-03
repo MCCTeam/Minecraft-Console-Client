@@ -68,14 +68,13 @@ jobs:
       env:
         DOTNET_NOLOGO: true
 
-    - name: Target Publish Executable
-      uses: tix-factory/release-manager@v1
+    - name: Create Release
+      uses: ncipollo/release-action@v1.14.0
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        mode: uploadReleaseAsset
-        filePath: ${{ env.built-executable-path }}
-        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ${{ env.built-executable-path }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
+        name: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
     
   fetch-translations:
     strategy:
@@ -189,14 +188,13 @@ jobs:
       run: zip -qq -r mcc-${{ matrix.target }}.zip *
       working-directory: ${{ env.target-out-path }}
 
-    - name: Target Publish Executable
-      uses: tix-factory/release-manager@v1
+    - name: Create Release
+      uses: ncipollo/release-action@v1.14.0
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        mode: uploadReleaseAsset
-        filePath: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
-        assetName: ${{ env.PROJECT }}-${{ (contains(matrix.target, 'linux-x64') && 'linux.zip') || (contains(matrix.target, 'win-x86') && 'windows-x86.zip') || (contains(matrix.target, 'win-x64') && 'windows-x64.zip') || (contains(matrix.target, 'linux-arm64') && 'linux-arm64.zip') || (contains(matrix.target, 'osx-x64') && 'osx.zip') }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
+        name: ${{ env.PROJECT }}-${{ (contains(matrix.target, 'linux-x64') && 'linux.zip') || (contains(matrix.target, 'win-x86') && 'windows-x86.zip') || (contains(matrix.target, 'win-x64') && 'windows-x64.zip') || (contains(matrix.target, 'linux-arm64') && 'linux-arm64.zip') || (contains(matrix.target, 'osx-x64') && 'osx.zip') }}
 
     - name: Sentry Release
       uses: getsentry/action-release@v1.7.0
