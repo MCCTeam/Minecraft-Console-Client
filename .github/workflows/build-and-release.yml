@@ -71,7 +71,13 @@ jobs:
     - name: Rename Binary
       run: |
         mv ${{ env.built-executable-path }} ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
-        
+
+    - name: Wait
+      # We wait before creating a release because we might run into a race condition
+      # while creating a new tag (as opposed to using the existing tag, if any) since we're running builds in parallel.
+      run: |
+        sleep 5s
+    
     - name: Create Release
       uses: ncipollo/release-action@v1.14.0
       with:
@@ -80,6 +86,7 @@ jobs:
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
         name: '${{ env.build-version-info }}: ${{ github.event.head_commit.message }}'
         generateReleaseNotes: true
+        artifactErrorsFailBuild: true
         allowUpdates: true
         makeLatest: true
         omitBodyDuringUpdate: true
