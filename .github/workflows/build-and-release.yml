@@ -78,7 +78,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
-        name: ${{ env.build-version-info }}
+        name: '${{ env.build-version-info }}: ${{ github.event.head_commit.message }}'
         generateReleaseNotes: true
         allowUpdates: true
         makeLatest: true
