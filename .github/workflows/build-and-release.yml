@@ -74,7 +74,12 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.built-executable-path }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
-        name: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
+        name: ${{ env.build-version-info }}-${{ github.run_number }}
+        generateReleaseNotes: true
+        allowUpdates: true
+        makeLatest: true
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
     
   fetch-translations:
     strategy:
@@ -192,9 +197,14 @@ jobs:
       uses: ncipollo/release-action@v1.14.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
+        artifacts: ${{ env.built-executable-path }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
-        name: ${{ env.PROJECT }}-${{ (contains(matrix.target, 'linux-x64') && 'linux.zip') || (contains(matrix.target, 'win-x86') && 'windows-x86.zip') || (contains(matrix.target, 'win-x64') && 'windows-x64.zip') || (contains(matrix.target, 'linux-arm64') && 'linux-arm64.zip') || (contains(matrix.target, 'osx-x64') && 'osx.zip') }}
+        name: ${{ env.build-version-info }}-${{ github.run_number }}
+        generateReleaseNotes: true
+        allowUpdates: true
+        makeLatest: true
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
 
     - name: Sentry Release
       uses: getsentry/action-release@v1.7.0
