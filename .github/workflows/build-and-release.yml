@@ -68,14 +68,43 @@ jobs:
       env:
         DOTNET_NOLOGO: true
 
-    - name: Target Publish Executable
-      uses: tix-factory/release-manager@v1
+    - name: Rename Binary
+      run: |
+        mv ${{ env.built-executable-path }} ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
+
+    - name: Wait
+      # We wait before creating a release because we might run into a race condition
+      # while creating a new tag (as opposed to using the existing tag, if any) since we're running builds in parallel.
+      run: |
+        sleep 5s
+    
+    - name: Create Release
+      uses: ncipollo/release-action@v1.14.0
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        mode: uploadReleaseAsset
-        filePath: ${{ env.built-executable-path }}
-        assetName: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
+        name: '${{ env.build-version-info }}: ${{ github.event.head_commit.message }}'
+        generateReleaseNotes: true
+        artifactErrorsFailBuild: true
+        allowUpdates: true
+        makeLatest: true
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        replacesArtifacts: false
+
+    - name: Sentry Release
+      uses: getsentry/action-release@v1.7.0
+      # Sentry Releases will only be created in the MCCTeam repository, since it needs Sentry secrets.
+      if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
+      
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      with:
+        environment: production
+        dist: ${{ format('{0}-{1}', env.date, github.run_number) }}
     
   fetch-translations:
     strategy:
@@ -127,86 +156,6 @@ jobs:
       with:
         path:  ${{ github.workspace }}/*
         key: "translation-${{ github.sha }}"
-        
-  build-transition-version:
-    runs-on: ubuntu-latest
-    if: ${{ always() && needs.fetch-translations.result != 'failure' }}
-    needs: [determine-build, fetch-translations]
-    timeout-minutes: 15
-    strategy:
-      fail-fast: true
-      matrix:
-        target: [win-x86, win-x64, linux-x64, linux-arm64, osx-x64]
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      if: ${{ always() && needs.fetch-translations.result == 'skipped' }}
-      with:
-        fetch-depth: 0
-        submodules: 'true'
-        
-    - name: Get Current Date
-      run: |
-        echo date=$(date +'%Y%m%d') >> $GITHUB_ENV
-        echo date_dashed=$(date -u +'%Y-%m-%d') >> $GITHUB_ENV
-        
-    - name: Restore Translations (if available)
-      uses: actions/cache/restore@v3
-      with:
-        path: ${{ github.workspace }}/*
-        key: "translation-${{ github.sha }}"
-        restore-keys: "translation-"
-          
-    - name: Setup Environment Variables (early)
-      run: |
-        echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
-        echo file-ext=${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }} >> $GITHUB_ENV
-        
-    - name: Setup Environment Variables
-      run: |
-        echo target-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/${{ matrix.target }}/publish/ >> $GITHUB_ENV
-        echo assembly-info=${{ env.project-path }}/Properties/AssemblyInfo.cs >> $GITHUB_ENV
-        echo build-version-info=${{ env.date_dashed }}-${{ github.run_number }} >> $GITHUB_ENV
-        echo commit=$(echo ${{ github.sha }} | cut -c 1-7) >> $GITHUB_ENV
-        
-    - name: Setup Environment Variables (late)
-      run: |
-        echo built-executable-path=${{ env.target-out-path }}${{ env.PROJECT }}${{ env.file-ext }} >> $GITHUB_ENV
-
-    - name: Set Version Info
-      run: |
-        echo '' >> ${{ env.assembly-info }}
-        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env.date_dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
-        sed -i -e 's|SentryDSN = "";|SentryDSN = "${{ secrets.SENTRY_DSN }}";|g' ${{ env.project-path }}/Program.cs 
-
-    - name: Build Target
-      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r ${{ matrix.target }} ${{ env.compile-flags }}
-      env:
-        DOTNET_NOLOGO: true
-
-    - name: Zip Target
-      run: zip -qq -r mcc-${{ matrix.target }}.zip *
-      working-directory: ${{ env.target-out-path }}
-
-    - name: Target Publish Executable
-      uses: tix-factory/release-manager@v1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        mode: uploadReleaseAsset
-        filePath: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
-        assetName: ${{ env.PROJECT }}-${{ (contains(matrix.target, 'linux-x64') && 'linux.zip') || (contains(matrix.target, 'win-x86') && 'windows-x86.zip') || (contains(matrix.target, 'win-x64') && 'windows-x64.zip') || (contains(matrix.target, 'linux-arm64') && 'linux-arm64.zip') || (contains(matrix.target, 'osx-x64') && 'osx.zip') }}
-        tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
-
-    - name: Sentry Release
-      uses: getsentry/action-release@v1.7.0
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-      with:
-        environment: production
-        dist: ${{ format('{0}-{1}', env.date, github.run_number) }}
       
   determine-build:
     runs-on: ubuntu-latest
