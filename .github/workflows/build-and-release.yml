@@ -92,19 +92,6 @@ jobs:
         omitBodyDuringUpdate: true
         omitNameDuringUpdate: true
         replacesArtifacts: false
-
-    - name: Sentry Release
-      uses: getsentry/action-release@v1.7.0
-      # Sentry Releases will only be created in the MCCTeam repository, since it needs Sentry secrets.
-      if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
-      
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: "mccteam"
-        SENTRY_PROJECT: "minecraft-console-client"
-      with:
-        environment: production
-        dist: ${{ format('{0}-{1}', env.date, github.run_number) }}
     
   fetch-translations:
     strategy:
