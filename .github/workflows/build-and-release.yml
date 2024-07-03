@@ -100,8 +100,8 @@ jobs:
       
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        SENTRY_ORG: "mccteam"
+        SENTRY_PROJECT: "minecraft-console-client"
       with:
         environment: production
         dist: ${{ format('{0}-{1}', env.date, github.run_number) }}
