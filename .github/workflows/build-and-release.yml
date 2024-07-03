@@ -68,6 +68,10 @@ jobs:
       env:
         DOTNET_NOLOGO: true
 
+    - name: Rename Binary
+      run: |
+        mv ${{ env.built-executable-path }} ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }}
+        
     - name: Create Release
       uses: ncipollo/release-action@v1.14.0
       with:
@@ -81,6 +85,19 @@ jobs:
         omitBodyDuringUpdate: true
         omitNameDuringUpdate: true
         replacesArtifacts: false
+
+    - name: Sentry Release
+      uses: getsentry/action-release@v1.7.0
+      # Sentry Releases will only be created in the MCCTeam repository, since it needs Sentry secrets.
+      if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
+      
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      with:
+        environment: production
+        dist: ${{ format('{0}-{1}', env.date, github.run_number) }}
     
   fetch-translations:
     strategy:
@@ -198,7 +215,7 @@ jobs:
       uses: ncipollo/release-action@v1.14.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.built-executable-path }}
+        artifacts: ${{ env.target-out-path }}/mcc-${{ matrix.target }}.zip
         tag: ${{ format('{0}-{1}', env.date, github.run_number) }}
         name: ${{ env.build-version-info }}-${{ github.run_number }}
         generateReleaseNotes: true
@@ -210,6 +227,9 @@ jobs:
 
     - name: Sentry Release
       uses: getsentry/action-release@v1.7.0
+      # Sentry Releases will only be created in the MCCTeam repository, since it needs Sentry secrets.
+      if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
+      
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
