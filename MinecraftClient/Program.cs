@@ -74,6 +74,11 @@ namespace MinecraftClient
                     options.EnableTracing = true;
                     options.SendDefaultPii = false;
                 });
+                
+                AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+                {
+                    SentrySdk.CaptureException((Exception)eventArgs.ExceptionObject);
+                };
             }
 
             Task.Run(() =>
