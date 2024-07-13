@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,6 +24,7 @@ using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
 using MinecraftClient.Scripting;
+using Sentry;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
@@ -71,7 +72,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_20_2_Version = 764;
         internal const int MC_1_20_4_Version = 765;
 
-        private int compression_treshold = 0;
+        private int compression_treshold = -1;
         private int autocomplete_transaction_id = 0;
         private readonly Dictionary<int, short> window_actions = new();
         private CurrentState currentState = CurrentState.Login;
@@ -344,7 +345,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             //Handle packet decompression
             if (protocolVersion >= MC_1_8_Version
-                && compression_treshold > 0)
+                && compression_treshold >= 0)
             {
                 var sizeUncompressed = dataTypes.ReadNextVarInt(packetData);
                 if (sizeUncompressed != 0) // != 0 means compressed, let's decompress
@@ -370,6 +371,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetId, Queue<byte> packetData)
         {
+            // This copy is necessary because by the time we get to the catch block,
+            // the packetData queue will have been processed and the data will be lost
+            var _copy = packetData.ToArray();
+
             try
             {
                 switch (currentState)
@@ -430,7 +435,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     World.StoreDimensionList(registryCodec);
 
                                 break;
-
+                            
                             case ConfigurationPacketTypesIn.RemoveResourcePack:
                                 if (dataTypes.ReadNextBool(packetData)) // Has UUID
                                     dataTypes.ReadNextUUID(packetData); // UUID
@@ -461,7 +466,7 @@ namespace MinecraftClient.Protocol.Handlers
                     innerException.InnerException is SocketException)
                     throw; //Thread abort or Connection lost rather than invalid data
 
-                throw new System.IO.InvalidDataException(
+                var exception = new System.IO.InvalidDataException(
                     string.Format(Translations.exception_packet_process,
                         packetPalette.GetIncomingTypeById(packetId),
                         packetId,
@@ -469,6 +474,21 @@ namespace MinecraftClient.Protocol.Handlers
                         currentState == CurrentState.Login,
                         innerException.GetType()),
                     innerException);
+                
+                SentrySdk.AddBreadcrumb(new Breadcrumb("S -> C Packet", "network", new Dictionary<string, string>()
+                {
+                    { "Packet ID", packetId.ToString() },
+                    { "Packet Type ", packetPalette.GetIncomingTypeById(packetId).ToString() },
+                    { "Protocol Version", protocolVersion.ToString() },
+                    { "Minecraft Version", ProtocolHandler.ProtocolVersion2MCVer(protocolVersion) },
+                    { "Current State", currentState.ToString() },
+                    { "Packet Data", string.Join(" ", _copy.Select(b => b.ToString("X2"))) },
+                    { "Inner Exception", innerException.GetType().ToString() }
+                }, "packet", BreadcrumbLevel.Error));
+
+                SentrySdk.CaptureException(exception);
+
+                throw exception;
             }
 
             return true;
@@ -2176,6 +2196,14 @@ namespace MinecraftClient.Protocol.Handlers
                     if (handler.GetEntityHandlingEnabled())
                     {
                         var entity = dataTypes.ReadNextEntity(packetData, entityPalette, false);
+                        
+                        if (protocolVersion >= MC_1_20_2_Version)
+                        {
+                            if (entity.Type == EntityType.Player)
+                                handler.OnSpawnPlayer(entity.ID, entity.UUID, entity.Location, (byte)entity.Yaw, (byte)entity.Pitch);
+                            break;
+                        }
+                        
                         handler.OnSpawnEntity(entity);
                     }
 
@@ -2739,7 +2767,7 @@ namespace MinecraftClient.Protocol.Handlers
             //The inner packet
             var thePacket = dataTypes.ConcatBytes(DataTypes.GetVarInt(packetId), packetData.ToArray());
 
-            if (compression_treshold > 0) //Compression enabled?
+            if (compression_treshold >= 0) //Compression enabled?
             {
                 thePacket = thePacket.Length >= compression_treshold
                     ? dataTypes.ConcatBytes(DataTypes.GetVarInt(thePacket.Length), ZlibUtils.Compress(thePacket))

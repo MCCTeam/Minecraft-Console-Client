@@ -506,6 +506,9 @@ namespace MinecraftClient
                 [TomlDoNotInlineObject]
                 public class AdvancedConfig
                 {
+                    [TomlInlineComment("$Main.Advanced.enable_sentry$")]
+                    public bool EnableSentry = true;
+                    
                     [TomlInlineComment("$Main.Advanced.language$")]
                     public string Language = "en_us";
 

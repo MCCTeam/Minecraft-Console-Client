@@ -852,4 +852,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="Main.General.AuthlibServer" xml:space="preserve">
     <value>Yggdrasil authlib server domain name and port.</value>
   </data>
+  <data name="Main.Advanced.enable_sentry" xml:space="preserve">
+    <value>Set to false to opt-out of Sentry error logging.</value>
+  </data>
 </root>
