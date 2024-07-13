@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -72,7 +72,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_20_2_Version = 764;
         internal const int MC_1_20_4_Version = 765;
 
-        private int compression_treshold = 0;
+        private int compression_treshold = -1;
         private int autocomplete_transaction_id = 0;
         private readonly Dictionary<int, short> window_actions = new();
         private CurrentState currentState = CurrentState.Login;
@@ -345,7 +345,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             //Handle packet decompression
             if (protocolVersion >= MC_1_8_Version
-                && compression_treshold > 0)
+                && compression_treshold >= 0)
             {
                 var sizeUncompressed = dataTypes.ReadNextVarInt(packetData);
                 if (sizeUncompressed != 0) // != 0 means compressed, let's decompress
@@ -2759,7 +2759,7 @@ namespace MinecraftClient.Protocol.Handlers
             //The inner packet
             var thePacket = dataTypes.ConcatBytes(DataTypes.GetVarInt(packetId), packetData.ToArray());
 
-            if (compression_treshold > 0) //Compression enabled?
+            if (compression_treshold >= 0) //Compression enabled?
             {
                 thePacket = thePacket.Length >= compression_treshold
                     ? dataTypes.ConcatBytes(DataTypes.GetVarInt(thePacket.Length), ZlibUtils.Compress(thePacket))
