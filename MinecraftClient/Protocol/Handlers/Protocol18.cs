@@ -2196,6 +2196,14 @@ namespace MinecraftClient.Protocol.Handlers
                     if (handler.GetEntityHandlingEnabled())
                     {
                         var entity = dataTypes.ReadNextEntity(packetData, entityPalette, false);
+                        
+                        if (protocolVersion >= MC_1_20_2_Version)
+                        {
+                            if (entity.Type == EntityType.Player)
+                                handler.OnSpawnPlayer(entity.ID, entity.UUID, entity.Location, (byte)entity.Yaw, (byte)entity.Pitch);
+                            break;
+                        }
+                        
                         handler.OnSpawnEntity(entity);
                     }
 
