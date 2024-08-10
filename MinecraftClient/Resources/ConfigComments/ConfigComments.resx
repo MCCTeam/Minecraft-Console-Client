@@ -855,4 +855,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="Main.Advanced.enable_sentry" xml:space="preserve">
     <value>Set to false to opt-out of Sentry error logging.</value>
   </data>
+  <data name="Main.General.AuthlibUser" xml:space="preserve">
+    <value>Yggdrasil authlib multi-user selection.</value>
+  </data>
 </root>
