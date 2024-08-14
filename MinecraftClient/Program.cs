@@ -51,7 +51,7 @@ namespace MinecraftClient
         public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
-        private static IDisposable _sentrySdk;
+        private static IDisposable? _sentrySdk = null;
         private static bool useMcVersionOnce = false;
         private static string settingsIniPath = "MinecraftClient.ini";
 
@@ -213,7 +213,7 @@ namespace MinecraftClient
                 }
                 
                 if (!Config.Main.Advanced.EnableSentry)
-                    _sentrySdk.Dispose();
+                    _sentrySdk?.Dispose();
             }
 
             //Other command-line arguments
