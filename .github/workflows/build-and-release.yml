@@ -9,7 +9,7 @@ on:
 env:
   PROJECT: "MinecraftClient"
   target-version: "net7.0"
-  compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None"
+  compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded"
 
 jobs:
   build:
