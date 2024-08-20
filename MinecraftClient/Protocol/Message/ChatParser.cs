@@ -63,16 +63,19 @@ namespace MinecraftClient.Protocol.Message
         /// <param name="json">JSON serialized text</param>
         /// <param name="links">Optional container for links from JSON serialized text</param>
         /// <returns>Returns the translated text</returns>
-        public static string ParseText(string json, List<string>? links = null)
+       public static string ParseText(string json, List<string>? links = null)
         {
-            return JSONData2String(Json.ParseJson(json), "", links);
+          var isJson = false; 
+          try
+          {
+            isJson = JsonDocument.Parse(json) != null;
+          }
+          catch
+          {
+            isJson = false;
+          }
+        return !isJson ? json : JSONData2String(Json.ParseJson(json), "", links);
         }
-
-        public static string ParseText(Dictionary<string, object> nbt)
-        {
-            return NbtToString(nbt);
-        }
-
         /// <summary>
         /// The main function to convert text from MC 1.9+ JSON to MC 1.5.2 formatted text
         /// </summary>
