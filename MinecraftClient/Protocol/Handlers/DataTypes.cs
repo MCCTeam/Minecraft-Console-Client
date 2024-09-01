@@ -6,6 +6,8 @@ using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Protocol.Handlers.StructuredComponents;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -13,7 +15,7 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Handle data types encoding / decoding
     /// </summary>
-    class DataTypes
+    public class DataTypes
     {
         /// <summary>
         /// Protocol version for adjusting data types
@@ -419,37 +421,92 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The item that was read or NULL for an empty slot</returns>
         public Item? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
-            // MC 1.13.2 and greater
-            if (protocolversion >= Protocol18Handler.MC_1_13_Version)
+            var itemId = -1;
+            var itemCount = 0;
+            var nbt = null as Dictionary<string, object>;
+            var item = null as Item;
+            var strcturedComponentsToAdd = new List<StructuredComponent>();
+            
+            switch (protocolversion)
             {
-                var itemPresent = ReadNextBool(cache);
+                // MC 1.13.2 and greater
+                case >= Protocol18Handler.MC_1_20_6_Version:
+                    itemCount = ReadNextVarInt(cache);
 
-                if (!itemPresent)
-                    return null;
+                    if (itemCount <= 0) return null;
+                    
+                    itemId = ReadNextVarInt(cache);
+                    item = new Item(itemPalette.FromId(itemId), itemCount, null);
+                        
+                    var numberOfComponentsToAdd = ReadNextVarInt(cache);
+                    var numberofComponentsToRemove = ReadNextVarInt(cache);
 
-                var itemId = ReadNextVarInt(cache);
+                    for (var i = 0; i < numberOfComponentsToAdd; i++)
+                    {
+                        var componentTypeId = ReadNextVarInt(cache);
 
-                if (itemId == -1)
-                    return null;
+                        var strcuturedComponentHandler = new StructuredComponentsHandler(protocolversion, this);
+                        strcturedComponentsToAdd.Add(strcuturedComponentHandler.Parse(componentTypeId, cache));
+                    }
 
-                var type = itemPalette.FromId(itemId);
-                var itemCount = ReadNextByte(cache);
-                var nbt = ReadNextNbt(cache);
-                return new Item(type, itemCount, nbt);
+                    for (var i = 0; i < numberofComponentsToRemove; i++)
+                    {
+                        // TODO
+                    }
+                        
+                    // TODO: Wire up the strctured components in the Item class (extract info, update fields, etc..)
+                    // Look at: https://wiki.vg/index.php?title=Slot_Data&oldid=19350#Structured_components
+
+                    return item;
+                case >= Protocol18Handler.MC_1_13_Version:
+                {
+                    var itemPresent = ReadNextBool(cache);
+
+                    if (!itemPresent)
+                        return null;
+
+                    itemId = ReadNextVarInt(cache);
+
+                    if (itemId == -1)
+                        return null;
+
+                    var type = itemPalette.FromId(itemId); 
+                    itemCount = ReadNextByte(cache); 
+                    nbt = ReadNextNbt(cache);
+                    return new Item(type, itemCount, nbt);
+                }
+                default:
+                {
+                    itemId = ReadNextShort(cache);
+
+                    if (itemId == -1)
+                        return null;
+
+                    itemCount = ReadNextByte(cache);
+                    var data = ReadNextShort(cache); 
+                    nbt = ReadNextNbt(cache);
+
+                    // For 1.8 - 1.12.2 we combine Item Id and Item Data/Damage to a single value using: (id << 16) | data
+                    return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
+                }
             }
-            else
+        }
+
+        private void ReadNextDetail(Queue<byte> cache)
+        {
+            var potionEffectId = ReadNextVarInt(cache);
+                                        
+            // Details
+            var potionEffectAmplifier = ReadNextVarInt(cache);
+            var duration = ReadNextVarInt(cache); // -1 for infinite
+            var ambient = ReadNextBool(cache);
+            var showParticles = ReadNextBool(cache);
+            var showIcon = ReadNextBool(cache);
+            var hasHiddenEffect = ReadNextBool(cache);
+
+            if (hasHiddenEffect)
             {
-                var itemId = ReadNextShort(cache);
-
-                if (itemId == -1)
-                    return null;
-
-                var itemCount = ReadNextByte(cache);
-                var data = ReadNextShort(cache);
-                var nbt = ReadNextNbt(cache);
-
-                // For 1.8 - 1.12.2 we combine Item Id and Item Data/Damage to a single value using: (id << 16) | data
-                return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
+                ReadNextDetail(cache);
             }
         }
 
