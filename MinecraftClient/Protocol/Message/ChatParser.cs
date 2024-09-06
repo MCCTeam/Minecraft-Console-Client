@@ -34,8 +34,18 @@ namespace MinecraftClient.Protocol.Message
         public static void ReadChatType(Dictionary<string, object> registryCodec)
         {
             Dictionary<int, MessageType> chatTypeDictionary = ChatId2Type ?? new();
-            var chatTypeListNbt =
-                (object[])(((Dictionary<string, object>)registryCodec["minecraft:chat_type"])["value"]);
+            var cpy = new Dictionary<string, object>(registryCodec);
+            
+            if (!registryCodec.ContainsKey("minecraft:chat_type")) {
+                if (registryCodec.ContainsKey("chat_type")) {
+                    foreach (var key in registryCodec.Keys.ToArray()) {
+                        registryCodec["minecraft:" + key] = registryCodec[key];
+                        registryCodec.Remove(key);
+                    }
+                }
+            }
+            
+            var chatTypeListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:chat_type"])["value"]);
             foreach (var (chatName, chatId) in from Dictionary<string, object> chatTypeNbt in chatTypeListNbt
                      let chatName = (string)chatTypeNbt["name"]
                      let chatId = (int)chatTypeNbt["id"]
