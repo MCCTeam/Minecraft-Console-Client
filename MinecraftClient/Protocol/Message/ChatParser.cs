@@ -34,11 +34,18 @@ namespace MinecraftClient.Protocol.Message
         public static void ReadChatType(Dictionary<string, object> registryCodec)
         {
             Dictionary<int, MessageType> chatTypeDictionary = ChatId2Type ?? new();
-            var cpy = new Dictionary<string, object>(registryCodec);
             
+            // Check if the chat type registry is in the correct format
             if (!registryCodec.ContainsKey("minecraft:chat_type")) {
+                
+                // If not, then we force the registry to be in the correct format
                 if (registryCodec.ContainsKey("chat_type")) {
+                    
                     foreach (var key in registryCodec.Keys.ToArray()) {
+                        // Skip entries with a namespace already
+                        if (key.Contains(':', StringComparison.OrdinalIgnoreCase)) continue;
+
+                        // Assume all other entries are in the minecraft namespace
                         registryCodec["minecraft:" + key] = registryCodec[key];
                         registryCodec.Remove(key);
                     }
