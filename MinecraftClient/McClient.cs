@@ -2948,27 +2948,27 @@ namespace MinecraftClient
                 // We got the last property for enchantment
                 if (propertyId == 9 && propertyValue != -1)
                 {
-                    short topEnchantmentLevelRequirement = inventory.Properties[0];
-                    short middleEnchantmentLevelRequirement = inventory.Properties[1];
-                    short bottomEnchantmentLevelRequirement = inventory.Properties[2];
+                    var topEnchantmentLevelRequirement = inventory.Properties[0];
+                    var middleEnchantmentLevelRequirement = inventory.Properties[1];
+                    var bottomEnchantmentLevelRequirement = inventory.Properties[2];
 
-                    Enchantment topEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var topEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[4]);
 
-                    Enchantment middleEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var middleEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[5]);
 
-                    Enchantment bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[6]);
 
-                    short topEnchantmentLevel = inventory.Properties[7];
-                    short middleEnchantmentLevel = inventory.Properties[8];
-                    short bottomEnchantmentLevel = inventory.Properties[9];
+                    var topEnchantmentLevel = inventory.Properties[7];
+                    var middleEnchantmentLevel = inventory.Properties[8];
+                    var bottomEnchantmentLevel = inventory.Properties[9];
 
-                    StringBuilder sb = new();
+                    var sb = new StringBuilder();
 
                     sb.AppendLine(Translations.Enchantment_enchantments_available + ":");
 

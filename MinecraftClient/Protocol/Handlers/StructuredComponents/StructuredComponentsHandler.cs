@@ -18,7 +18,7 @@ public class StructuredComponentsHandler
         // Get the appropriate subcomponent registry type based on the protocol version and then instantiate it
         var subcomponentRegistryType = protocolVersion switch
         {
-            Protocol18Handler.MC_1_20_6_Version => typeof(TestSubComponentRegistry),
+            Protocol18Handler.MC_1_20_6_Version => typeof(SubComponentRegistry1206),
             _ => throw new NotSupportedException($"Protocol version {protocolVersion} is not supported for subcomponent registries!")
         };
 

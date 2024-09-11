@@ -1,7 +1,7 @@
 ﻿namespace MinecraftClient.Inventory
 {
     // Not implemented for 1.14
-    public enum Enchantment : short
+    public enum Enchantments : short
     {
         AquaAffinity = 0,
         BaneOfArthropods,

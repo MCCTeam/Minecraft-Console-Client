@@ -400,9 +400,9 @@ namespace MinecraftClient.Scripting
         /// <param name="middleEnchantmentLevelRequirement">Levels required by player for the enchantment in the middle slot</param>
         /// <param name="bottomEnchantmentLevelRequirement">Levels required by player for the enchantment in the bottom slot</param>
         public virtual void OnEnchantments(
-            Enchantment topEnchantment,
-            Enchantment middleEnchantment,
-            Enchantment bottomEnchantment,
+            Enchantments topEnchantment,
+            Enchantments middleEnchantment,
+            Enchantments bottomEnchantment,
             short topEnchantmentLevel,
             short middleEnchantmentLevel,
             short bottomEnchantmentLevel,

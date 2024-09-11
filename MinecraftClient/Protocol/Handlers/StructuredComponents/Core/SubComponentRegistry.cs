@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
@@ -20,10 +21,15 @@ public abstract class SubComponentRegistry(DataTypes dataTypes)
         if(!_subComponentParsers.TryGetValue(name, out var subComponentParserType)) 
             throw new Exception($"Sub component {name} not registered!");
 
-        var instance=  Activator.CreateInstance(subComponentParserType, dataTypes) as SubComponent ??
+        var instance=  Activator.CreateInstance(subComponentParserType, dataTypes, this) as SubComponent ??
             throw new InvalidOperationException($"Could not create instance of a sub component parser type: {subComponentParserType.Name}");
         
-        instance.Parse(data);
+        var parseMethod = instance.GetType().GetMethod("Parse", BindingFlags.Instance | BindingFlags.NonPublic);
+        
+        if (parseMethod == null)
+            throw new InvalidOperationException($"Sub component parser type {subComponentParserType.Name} does not have a Parse method.");
+        
+        parseMethod.Invoke(instance, new object[] { data });
         return instance;
     }
 }
