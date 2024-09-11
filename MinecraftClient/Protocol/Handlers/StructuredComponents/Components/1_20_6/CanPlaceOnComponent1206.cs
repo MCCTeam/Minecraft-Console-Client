@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents._1_20_6;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class CanPlaceOnComponent1206(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, subComponentRegistry)
+public class CanPlaceOnComponent1206(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+    : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfPredicates { get; set; }
     public List<BlockPredicateSubcomponent1206> BlockPredicates { get; set; } = new();

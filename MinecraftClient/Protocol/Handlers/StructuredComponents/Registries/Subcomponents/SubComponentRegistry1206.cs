@@ -12,5 +12,9 @@ public class SubComponentRegistry1206 : SubComponentRegistry
         RegisterSubComponent<BlockSetSubcomponent1206>(SubComponents.BlockSet);
         RegisterSubComponent<PropertySubComponent1206>(SubComponents.Property);
         RegisterSubComponent<AttributeSubComponent1206>(SubComponents.Attribute);
+        RegisterSubComponent<EffectSubComponent1206>(SubComponents.Effect);
+        RegisterSubComponent<PotionEffectSubComponent1206>(SubComponents.PotionEffect);
+        RegisterSubComponent<DetailsSubComponent1206>(SubComponents.Details);
+        RegisterSubComponent<RuleSubComponent1206>(SubComponents.Rule);
     }
 }

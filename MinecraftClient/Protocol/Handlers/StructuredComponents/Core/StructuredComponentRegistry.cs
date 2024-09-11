@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using MinecraftClient.Inventory.ItemPalettes;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
-public abstract class StructuredComponentRegistry(SubComponentRegistry subComponentRegistry, DataTypes dataTypes)
+public abstract class StructuredComponentRegistry(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
 {
     private Dictionary<string, Type> ComponentParsers { get; } = new();
     private Dictionary<int, string> IdToComponent { get; } = new();
@@ -32,7 +33,7 @@ public abstract class StructuredComponentRegistry(SubComponentRegistry subCompon
             if (ComponentParsers.TryGetValue(name, out var type))
             {
                 var component =
-                    Activator.CreateInstance(type, dataTypes, subComponentRegistry) as StructuredComponent 
+                    Activator.CreateInstance(type, dataTypes, itemPalette, subComponentRegistry) as StructuredComponent 
                     ?? throw new InvalidOperationException($"Could not instantiate a parser for a structured component type {name}");
                 
                 component.Parse(data);

@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents._1_20_6;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class AttributeModifiersComponent1206(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, subComponentRegistry)
+public class AttributeModifiersComponent1206(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+    : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfAttributes { get; set; }
     public List<AttributeSubComponent1206> Attributes { get; set; } = new();
@@ -27,8 +29,8 @@ public class AttributeModifiersComponent1206(DataTypes dataTypes, SubComponentRe
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(NumberOfAttributes));
         
-        if(NumberOfAttributes > 0 && Attributes.Count == 0)
-            throw new ArgumentNullException($"Can not serialize a AttributeModifiersComponent when the Attributes is empty but NumberOfAttributes is > 0!");
+        if(Attributes.Count != NumberOfAttributes)
+            throw new ArgumentNullException($"Can not serialize a AttributeModifiersComponent when the Attributes count != NumberOfAttributes!");
         
         foreach (var attribute in Attributes)
             data.AddRange(attribute.Serialize());

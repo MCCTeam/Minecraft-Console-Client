@@ -13,7 +13,8 @@ public class StructuredComponentsHandler
     
     public StructuredComponentsHandler(
         int protocolVersion,
-        DataTypes dataTypes)
+        DataTypes dataTypes,
+        ItemPalette itemPalette)
     {
         // Get the appropriate subcomponent registry type based on the protocol version and then instantiate it
         var subcomponentRegistryType = protocolVersion switch
@@ -32,7 +33,7 @@ public class StructuredComponentsHandler
             _ => throw new NotSupportedException($"Protocol version {protocolVersion} is not supported for structured component registries!")
         };
 
-        ComponentRegistry = Activator.CreateInstance(registryType, subcomponentRegistry, dataTypes) as StructuredComponentRegistry 
+        ComponentRegistry = Activator.CreateInstance(registryType, dataTypes, itemPalette, subcomponentRegistry) as StructuredComponentRegistry 
                             ?? throw new InvalidOperationException($"Failed to instantiate a component registry for type {nameof(registryType)}");
     }
 

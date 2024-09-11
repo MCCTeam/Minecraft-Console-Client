@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class LoreNameComponent1206(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, subComponentRegistry)
+public class LoreNameComponent1206(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+    : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfLines { get; set; }
     public List<string> Lines { get; set; } = [];

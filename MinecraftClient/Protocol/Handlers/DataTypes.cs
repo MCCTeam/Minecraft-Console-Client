@@ -445,18 +445,20 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         var componentTypeId = ReadNextVarInt(cache);
 
-                        var strcuturedComponentHandler = new StructuredComponentsHandler(protocolversion, this);
+                        var strcuturedComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
                         strcturedComponentsToAdd.Add(strcuturedComponentHandler.Parse(componentTypeId, cache));
                     }
 
                     for (var i = 0; i < numberofComponentsToRemove; i++)
                     {
-                        // TODO
+                        // TODO: Check what this does exactly
+                        ReadNextVarInt(cache); // The type of component to remove
                     }
                         
                     // TODO: Wire up the strctured components in the Item class (extract info, update fields, etc..)
+                    // Use strcturedComponentsToAdd
                     // Look at: https://wiki.vg/index.php?title=Slot_Data&oldid=19350#Structured_components
-
+                    
                     return item;
                 case >= Protocol18Handler.MC_1_13_Version:
                 {
@@ -1537,6 +1539,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Item slot representation</returns>
         public byte[] GetItemSlot(Item? item, ItemPalette itemPalette)
         {
+            // TODO: Wire up Structured components for 1.20.6
+            
             List<byte> slotData = new();
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {

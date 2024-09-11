@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using MinecraftClient.Inventory;
+using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class EnchantmentsComponent1206(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, subComponentRegistry)
+public class EnchantmentsComponent1206(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+    : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfEnchantments { get; set; }
     public List<Enchantment> Enchantments { get; set; } = new();
