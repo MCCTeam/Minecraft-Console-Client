@@ -40,7 +40,9 @@ public class StructuredComponentsRegistry1206 : StructuredComponentRegistry
         RegisterComponent<MapPostProcessingComponent1206>(28, "minecraft:map_post_processing");
         RegisterComponent<ChargedProjectilesComponent1206>(29, "minecraft:charged_projectiles");
         RegisterComponent<BundleContentsComponent1206>(30, "minecraft:bundle_contents");
-        RegisterComponent<PotionContentsComponentComponent1206>(31, "minecraft:potion_contents");
-        
+        RegisterComponent<PotionContentsComponent1206>(31, "minecraft:potion_contents");
+        RegisterComponent<SuspiciousStewEffectsComponent1206>(32, "minecraft:suspicious_stew_effects");
+        RegisterComponent<WritableBlookContentComponent1206>(33, "minecraft:writable_book_content");
+        RegisterComponent<WrittenBlookContentComponent1206>(34, "minecraft:written_book_content");
     }
 }
