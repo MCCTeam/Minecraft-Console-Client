@@ -1,6 +1,6 @@
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents;
 
-public class SubComponents
+public abstract class SubComponents
 {
     public const string BlockPredicate = "BlockPredicate";
     public const string BlockSet = "BlockSet";
@@ -10,4 +10,5 @@ public class SubComponents
     public const string PotionEffect = "PotionEffect";
     public const string Details = "Details";
     public const string Rule = "Rule";
+    public const string FireworkExplosion = "FireworkExplosion";
 }
