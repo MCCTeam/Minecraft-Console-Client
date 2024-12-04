@@ -10,6 +10,7 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_2
 public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
+    public bool HasPotionId { get; set; }
     public int PotiononId { get; set; }
     public bool HasCustomColor { get; set; }
     public int CustomColor { get; set; }
@@ -18,9 +19,10 @@ public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
     
     public override void Parse(Queue<byte> data)
     {
-        PotiononId = dataTypes.ReadNextVarInt(data);
+        HasPotionId = dataTypes.ReadNextBool(data);
+        PotiononId = HasPotionId ? dataTypes.ReadNextVarInt(data) : 0; // TODO: Find from the registry
         HasCustomColor = dataTypes.ReadNextBool(data);
-        CustomColor = dataTypes.ReadNextInt(data);
+        CustomColor = HasCustomColor ? dataTypes.ReadNextInt(data) : 0; // TODO: Find from the registry
         NumberOfCustomEffects = dataTypes.ReadNextVarInt(data);
         
         for(var i = 0; i < NumberOfCustomEffects; i++)
@@ -30,6 +32,7 @@ public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
+        data.AddRange(DataTypes.GetBool(HasPotionId));
         data.AddRange(DataTypes.GetVarInt(PotiononId));
         data.AddRange(DataTypes.GetBool(HasCustomColor));
         data.AddRange(DataTypes.GetInt(CustomColor));
