@@ -660,7 +660,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         case >= MC_1_16_2_Version and <= MC_1_18_2_Version:
                                             World.StoreOneDimension(dimensionName, dimensionType!);
-                                            World.SetDimension(dimensionName);
+                                            // World.SetDimension(dimensionName);
+					    World.SetDimension(dimensionName);
                                             break;
                                         default:
                                             World.SetDimension(dimensionTypeName!);

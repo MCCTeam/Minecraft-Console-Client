@@ -19,7 +19,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        private static Dimension curDimension = new();
+        private static Dimension curDimension= new();
 
         private static readonly Dictionary<string, Dimension> dimensionList = new();
 
@@ -87,10 +87,32 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="name">	The name of the dimension type</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
-        public static void SetDimension(string name)
-        {
-            curDimension = dimensionList[name]; // Should not fail
-        }
+	public static void SetDimension(string name)
+	{
+	    // Try to get the dimension using the name as is
+	    if (dimensionList.TryGetValue(name, out Dimension dimension))
+	    {
+		curDimension = dimension;
+		return; // Dimension found
+	    }
+
+	    // If not found, check if name lacks 'minecraft:' prefix and try again
+	    if (!name.StartsWith("minecraft:"))
+	    {
+		string prefixedName = "minecraft:" + name;
+		if (dimensionList.TryGetValue(prefixedName, out dimension))
+		{
+		    curDimension = dimension;
+		    return; // Dimension found with prefixed name
+		}
+	    }
+
+	    // If still not found, dimension does not exist
+	    throw new KeyNotFoundException($"Dimension '{name}' not found in dimensions dictionary.");
+	}
+
+
+
 
 
         /// <summary>
