@@ -11,4 +11,5 @@ public abstract class SubComponents
     public const string Details = "Details";
     public const string Rule = "Rule";
     public const string FireworkExplosion = "FireworkExplosion";
+    public const string SoundEvent = "SoundEvent";
 }

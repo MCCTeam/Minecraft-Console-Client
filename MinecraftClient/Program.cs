@@ -17,7 +17,6 @@ using MinecraftClient.Protocol.Session;
 using MinecraftClient.Scripting;
 using MinecraftClient.WinAPI;
 using Sentry;
-using Tomlet;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
 using static MinecraftClient.Settings.MainConfigHelper.MainConfig.AdvancedConfig;
@@ -47,11 +46,11 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.20.6";
+        public const string MCHighestVersion = "1.21";
         public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
-        private static IDisposable _sentrySdk;
+        private static IDisposable? _sentrySdk = null;
         private static bool useMcVersionOnce = false;
         private static string settingsIniPath = "MinecraftClient.ini";
 
@@ -74,6 +73,11 @@ namespace MinecraftClient
                     options.EnableTracing = true;
                     options.SendDefaultPii = false;
                 });
+                
+                AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+                {
+                    SentrySdk.CaptureException((Exception)eventArgs.ExceptionObject);
+                };
             }
 
             Task.Run(() =>
@@ -208,7 +212,7 @@ namespace MinecraftClient
                 }
                 
                 if (!Config.Main.Advanced.EnableSentry)
-                    _sentrySdk.Dispose();
+                    _sentrySdk?.Dispose();
             }
 
             //Other command-line arguments
@@ -355,7 +359,7 @@ namespace MinecraftClient
                                                                  ConsoleColorModeType.vt100_8bit)).Append(i);
                     }
                     sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
-                    ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb.ToString()));
+                    ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb));
                 }
                 { // Test 24 bit color
                     StringBuilder sb = new();
@@ -369,7 +373,7 @@ namespace MinecraftClient
                                                                  ConsoleColorModeType.vt100_24bit)).Append(i);
                     }
                     sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
-                    ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb.ToString()));
+                    ConsoleIO.WriteLine(string.Format(Translations.debug_color_test, sb));
                 }
             }
 
@@ -382,7 +386,7 @@ namespace MinecraftClient
             }
 
             // Setup exit cleaning code
-            ExitCleanUp.Add(() => { DoExit(0); });
+            ExitCleanUp.Add(() => { DoExit(); });
 
             //Asking the user to type in missing data such as Username and Password
             bool useBrowser = Config.Main.General.AccountType == LoginType.microsoft && Config.Main.General.Method == LoginMethod.browser;
@@ -526,10 +530,10 @@ namespace MinecraftClient
                                 worldId = availableWorlds[worldIndex];
                             if (availableWorlds.Contains(worldId))
                             {
-                                string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, InternalConfig.Username, session.PlayerID, session.ID);
-                                if (RealmsAddress != "")
+                                string realmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, InternalConfig.Username, session.PlayerID, session.ID);
+                                if (realmsAddress != "")
                                 {
-                                    addressInput = RealmsAddress;
+                                    addressInput = realmsAddress;
                                     isRealms = true;
                                     InternalConfig.MinecraftVersion = MCHighestVersion;
                                 }
@@ -547,7 +551,7 @@ namespace MinecraftClient
                         }
                         else
                         {
-                            HandleFailure(Translations.error_realms_disabled, false, null);
+                            HandleFailure(Translations.error_realms_disabled);
                             return;
                         }
                     }
@@ -560,7 +564,7 @@ namespace MinecraftClient
 
                 if (InternalConfig.MinecraftVersion != "" && Settings.ToLowerIfNeed(InternalConfig.MinecraftVersion) != "auto")
                 {
-                    protocolversion = Protocol.ProtocolHandler.MCVer2ProtocolVersion(InternalConfig.MinecraftVersion);
+                    protocolversion = ProtocolHandler.MCVer2ProtocolVersion(InternalConfig.MinecraftVersion);
 
                     if (protocolversion != 0)
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_version, InternalConfig.MinecraftVersion, protocolversion));
@@ -584,7 +588,7 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(Translations.mcc_retrieve);
                     if (!ProtocolHandler.GetServerInfo(InternalConfig.ServerIP, InternalConfig.ServerPort, ref protocolversion, ref forgeInfo))
                     {
-                        HandleFailure(Translations.error_ping, true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
+                        HandleFailure(Translations.error_ping, true, ChatBot.DisconnectReason.ConnectionLost);
                         return;
                     }
                 }
@@ -632,7 +636,7 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        HandleFailure(Translations.error_forgeforce, true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
+                        HandleFailure(Translations.error_forgeforce, true, ChatBot.DisconnectReason.ConnectionLost);
                         return;
                     }
                 }
@@ -672,8 +676,7 @@ namespace MinecraftClient
             else
             {
                 string failureMessage = Translations.error_login;
-                string failureReason = string.Empty;
-                failureReason = result switch
+                string failureReason = result switch
                 {
 #pragma warning disable format // @formatter:off
                     ProtocolHandler.LoginResult.AccountMigrated     =>  Translations.error_login_migrated,
@@ -714,6 +717,7 @@ namespace MinecraftClient
         /// Disconnect the current client from the server and restart it
         /// </summary>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
+        /// <param name="keepAccountAndServerSettings">Optional, keep account and server settings</param>
         public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
             ConsoleInteractive.ConsoleReader.StopReadThread();
@@ -734,7 +738,7 @@ namespace MinecraftClient
 
         public static void DoExit(int exitcode = 0)
         {
-            WriteBackSettings(true);
+            WriteBackSettings();
             ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
@@ -749,7 +753,7 @@ namespace MinecraftClient
         /// </summary>
         public static void Exit(int exitcode = 0)
         {
-            new Thread(new ThreadStart(() => { DoExit(exitcode); })).Start();
+            new Thread(() => { DoExit(exitcode); }).Start();
         }
 
         /// <summary>
@@ -759,7 +763,7 @@ namespace MinecraftClient
         /// <param name="errorMessage">Error message to display and optionally pass to AutoRelog bot</param>
         /// <param name="versionError">Specify if the error is related to an incompatible or unkown server version</param>
         /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
-        public static void HandleFailure(string? errorMessage = null, bool versionError = false, ChatBots.AutoRelog.DisconnectReason? disconnectReason = null)
+        public static void HandleFailure(string? errorMessage = null, bool versionError = false, ChatBot.DisconnectReason? disconnectReason = null)
         {
             if (!String.IsNullOrEmpty(errorMessage))
             {

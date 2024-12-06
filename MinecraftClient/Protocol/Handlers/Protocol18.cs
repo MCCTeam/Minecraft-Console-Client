@@ -72,8 +72,9 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_20_2_Version = 764;
         internal const int MC_1_20_4_Version = 765;
         internal const int MC_1_20_6_Version = 766;
+        internal const int MC_1_21_Version = 767;
 
-        private int compression_treshold = 0;
+        private int compression_treshold = -1;
         private int autocomplete_transaction_id = 0;
         private readonly Dictionary<int, short> window_actions = new();
         private CurrentState currentState = CurrentState.Login;
@@ -123,21 +124,21 @@ namespace MinecraftClient.Protocol.Handlers
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
             chunkBatchStartTime = GetNanos();
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_20_6_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_21_Version)
             {
                 log.Error($"§c{Translations.extra_terrainandmovement_disabled}");
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_20_6_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_21_Version)
             {
                 log.Error($"§c{Translations.extra_inventory_disabled}");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_20_6_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_21_Version)
             {
                 log.Error($"§c{Translations.extra_entity_disabled}");
                 handler.SetEntityHandlingEnabled(false);
@@ -146,9 +147,9 @@ namespace MinecraftClient.Protocol.Handlers
             Block.Palette = protocolVersion switch
             {
                 // Block palette
-                > MC_1_20_6_Version when handler.GetTerrainEnabled() =>
+                > MC_1_21_Version when handler.GetTerrainEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_block),
-                MC_1_20_6_Version => new Palette1206(),
+                >= MC_1_20_6_Version => new Palette1206(),
                 >= MC_1_20_4_Version => new Palette1204(),
                 >= MC_1_20_Version => new Palette120(),
                 MC_1_19_4_Version => new Palette1194(),
@@ -165,9 +166,9 @@ namespace MinecraftClient.Protocol.Handlers
             entityPalette = protocolVersion switch
             {
                 // Entity palette
-                > MC_1_20_6_Version when handler.GetEntityHandlingEnabled() =>
+                > MC_1_21_Version when handler.GetEntityHandlingEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_entity),
-                MC_1_20_6_Version => new EntityPalette1206(),
+                >= MC_1_20_6_Version => new EntityPalette1206(),
                 >= MC_1_20_4_Version => new EntityPalette1204(),
                 >= MC_1_20_Version => new EntityPalette120(),
                 MC_1_19_4_Version => new EntityPalette1194(),
@@ -188,9 +189,9 @@ namespace MinecraftClient.Protocol.Handlers
             itemPalette = protocolVersion switch
             {
                 // Item palette
-                > MC_1_20_6_Version when handler.GetInventoryEnabled() =>
+                > MC_1_21_Version when handler.GetInventoryEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_item),
-                MC_1_20_6_Version => new ItemPalette1206(),
+                >= MC_1_20_6_Version => new ItemPalette1206(),
                 >= MC_1_20_4_Version => new ItemPalette1204(),
                 >= MC_1_20_Version => new ItemPalette120(),
                 MC_1_19_4_Version => new ItemPalette1194(),
@@ -349,7 +350,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             //Handle packet decompression
             if (protocolVersion >= MC_1_8_Version
-                && compression_treshold > 0)
+                && compression_treshold >= 0)
             {
                 var sizeUncompressed = dataTypes.ReadNextVarInt(packetData);
                 if (sizeUncompressed != 0) // != 0 means compressed, let's decompress
@@ -457,7 +458,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                                 else
                                 {
-                                    // TODO: Implement proper parsing for 1.20.6 when there is a custom data pack on the server
+                                    // TODO: Implement proper parsing for 1.20.6 / 1.21 when there is a custom data pack on the server
                                     // THis is a temporary workaround to get the client to be useable asap
                                     
                                     var registryId = dataTypes.ReadNextString(packetData);
@@ -2309,6 +2310,15 @@ namespace MinecraftClient.Protocol.Handlers
                     if (handler.GetEntityHandlingEnabled())
                     {
                         var entity = dataTypes.ReadNextEntity(packetData, entityPalette, false);
+                        
+                        if (protocolVersion >= MC_1_20_2_Version)
+                        {
+                            if (entity.Type == EntityType.Player)
+                                handler.OnSpawnPlayer(entity.ID, entity.UUID, entity.Location, (byte)entity.Yaw, (byte)entity.Pitch);
+                            
+                            break;
+                        }
+                        
                         handler.OnSpawnEntity(entity);
                     }
 
@@ -2526,7 +2536,10 @@ namespace MinecraftClient.Protocol.Handlers
                             { 18, "generic.safe_fall_distance" },
                             { 19, "generic.scale" },
                             { 20, "zombie.spawn_reinforcements" },
-                            { 21, "generic.step_height" }
+                            { 21, "generic.step_height" },
+                            { 22, "generic.submerged_mining_speed" },
+                            { 23, "generic.sweeping_damage_ratio" },
+                            { 24, "generic.water_movement_efficiency" }
                         };
 
                         Dictionary<string, double> keys = new();
@@ -2543,7 +2556,7 @@ namespace MinecraftClient.Protocol.Handlers
                             var numberOfModifiers = dataTypes.ReadNextVarInt(packetData);
                             for (var j = 0; j < numberOfModifiers; j++)
                             {
-                                dataTypes.ReadNextUUID(packetData);
+                                var modifierId = protocolVersion < MC_1_21_Version ? dataTypes.ReadNextUUID(packetData).ToString() : dataTypes.ReadNextString(packetData);
                                 var amount = dataTypes.ReadNextDouble(packetData);
                                 var operation = dataTypes.ReadNextByte(packetData);
                                 switch (operation)
@@ -2579,7 +2592,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Also make a palette for field? Will be a lot of work
                         var healthField = protocolVersion switch
                         {
-                            > MC_1_20_6_Version => throw new NotImplementedException(Translations
+                            > MC_1_21_Version => throw new NotImplementedException(Translations
                                 .exception_palette_healthfield),
                             // 1.17 and above
                             >= MC_1_17_Version => 9,
@@ -2669,28 +2682,41 @@ namespace MinecraftClient.Protocol.Handlers
 
                     // Records
                     for (var i = 0; i < explosionBlockCount; i++)
-                        dataTypes.ReadData(3, packetData);
+                        dataTypes.ReadNextByteArray(packetData, 3);
 
                     // Maybe use in the future when the physics are implemented
                     dataTypes.ReadNextFloat(packetData); // Player Motion X
                     dataTypes.ReadNextFloat(packetData); // Player Motion Y
                     dataTypes.ReadNextFloat(packetData); // Player Motion Z
 
-                    if (protocolVersion >= MC_1_20_4_Version)
+                    // Cut off here, there is an issue, the code bllow crashes on sound name reading
+                    // I am unable to figure out what part of the code is reading more bytes than it should
+                    // TODO: Fix
+                    handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
+                    break;
+                    
+                    /*if (protocolVersion >= MC_1_20_4_Version)
                     {
-                        dataTypes.ReadNextVarInt(packetData); // Block Interaction
-                        dataTypes.ReadParticleData(packetData, itemPalette); // Small Explosion Particles
-                        dataTypes.ReadParticleData(packetData, itemPalette); // Large Explosion Particles
+                        var blockInteraction = dataTypes.ReadNextVarInt(packetData); // Block Interaction
+                        
+                        if(explosionStrength >= 2.0 || blockInteraction != 0)
+                            dataTypes.ReadParticleData(packetData, itemPalette); // Large Explosion Particles
+                        else
+                            dataTypes.ReadParticleData(packetData, itemPalette);  // Small Explosion Particles
 
                         // Explosion Sound
                         dataTypes.ReadNextString(packetData); // Sound Name
-                        var hasFixedRange = dataTypes.ReadNextBool(packetData);
-                        if (hasFixedRange)
-                            dataTypes.ReadNextFloat(packetData); // Range
+
+                        if (protocolVersion < MC_1_21_Version)
+                        {
+                            var hasFixedRange = dataTypes.ReadNextBool(packetData);
+                            if (hasFixedRange)
+                                dataTypes.ReadNextFloat(packetData); // Range
+                        }
                     }
 
                     handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
-                    break;
+                    break;*/
                 case PacketTypesIn.HeldItemChange:
                     handler.OnHeldItemChange(dataTypes.ReadNextByte(packetData)); // Slot
                     break;
@@ -2919,7 +2945,7 @@ namespace MinecraftClient.Protocol.Handlers
             //The inner packet
             var thePacket = dataTypes.ConcatBytes(DataTypes.GetVarInt(packetId), packetData.ToArray());
 
-            if (compression_treshold > 0) //Compression enabled?
+            if (compression_treshold >= 0) //Compression enabled?
             {
                 thePacket = thePacket.Length >= compression_treshold
                     ? dataTypes.ConcatBytes(DataTypes.GetVarInt(thePacket.Length), ZlibUtils.Compress(thePacket))
@@ -4060,6 +4086,13 @@ namespace MinecraftClient.Protocol.Handlers
                 packet.AddRange(DataTypes.GetVarInt(hand));
                 if (protocolVersion >= MC_1_19_Version)
                     packet.AddRange(DataTypes.GetVarInt(sequenceId));
+
+                if (protocolVersion >= MC_1_21_Version)
+                {
+                    packet.AddRange(dataTypes.GetFloat(LastYaw));
+                    packet.AddRange(dataTypes.GetFloat(LastPitch));
+                }
+                
                 SendPacket(PacketTypesOut.UseItem, packet);
                 return true;
             }

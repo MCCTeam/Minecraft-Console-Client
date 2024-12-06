@@ -20,6 +20,7 @@ public class StructuredComponentsHandler
         var subcomponentRegistryType = protocolVersion switch
         {
             Protocol18Handler.MC_1_20_6_Version => typeof(SubComponentRegistry1206),
+            Protocol18Handler.MC_1_21_Version => typeof(SubComponentRegistry121),
             _ => throw new NotSupportedException($"Protocol version {protocolVersion} is not supported for subcomponent registries!")
         };
 
@@ -30,6 +31,7 @@ public class StructuredComponentsHandler
         var registryType = protocolVersion switch
         {
             Protocol18Handler.MC_1_20_6_Version => typeof(StructuredComponentsRegistry1206),
+            Protocol18Handler.MC_1_21_Version => typeof(StructuredComponentsRegistry121),
             _ => throw new NotSupportedException($"Protocol version {protocolVersion} is not supported for structured component registries!")
         };
 

@@ -31,6 +31,7 @@
         CombatEvent,                //
         CookieRequest,              // Added in 1.20.6
         CraftRecipeResponse,        //
+        CustomReportDetails,        // Added in 1.21 (Not used)
         DamageEvent,                // Added in 1.19.4
         DeathCombatEvent,           //
         DebugSample,                // Added in 1.20.6
@@ -95,6 +96,7 @@
         SelectAdvancementTab,       //
         ServerData,                 // Added in 1.19
         ServerDifficulty,           //
+        ServerLinks,                // Added in 1.21 (Not used)
         SetCompression,             // For 1.8 or below
         SetCooldown,                //
         SetDisplayChatPreview,      // Added in 1.19

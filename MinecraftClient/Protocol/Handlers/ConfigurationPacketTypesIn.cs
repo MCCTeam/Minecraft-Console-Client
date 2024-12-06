@@ -3,6 +3,7 @@ namespace MinecraftClient.Protocol.Handlers;
 public enum ConfigurationPacketTypesIn
 {
     CookieRequest,
+    CustomReportDetails,
     Disconnect,
     FeatureFlags,
     FinishConfiguration,
@@ -14,6 +15,7 @@ public enum ConfigurationPacketTypesIn
     RemoveResourcePack,
     ResetChat,
     ResourcePack,
+    ServerLinks,
     StoreCookie,
     Transfer,
     UpdateTags,

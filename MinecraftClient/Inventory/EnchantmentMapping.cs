@@ -196,7 +196,7 @@ namespace MinecraftClient.Inventory
             {
                 >= Protocol18Handler.MC_1_14_Version and < Protocol18Handler.MC_1_16_Version => enchantmentMappings114,
                 >= Protocol18Handler.MC_1_16_Version and < Protocol18Handler.MC_1_19_Version => enchantmentMappings116,
-                >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => enchantmentMappings119,
+                >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_21_Version => enchantmentMappings119,
                 _ => enchantmentMappings
             };
 

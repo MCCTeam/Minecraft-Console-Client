@@ -1,12 +1,13 @@
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Registries;
 
-public class StructuredComponentsRegistry1206 : StructuredComponentRegistry
+public class StructuredComponentsRegistry121 : StructuredComponentRegistry
 {
-    public StructuredComponentsRegistry1206(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+    public StructuredComponentsRegistry121(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
         : base(dataTypes, itemPalette, subComponentRegistry)
     {
         RegisterComponent<CustomDataComponent>(0, "minecraft:custom_data");
@@ -51,19 +52,20 @@ public class StructuredComponentsRegistry1206 : StructuredComponentRegistry
         RegisterComponent<BlockEntityDataComponent>(39, "minecraft:block_entity_data");
         RegisterComponent<InstrumentComponent>(40, "minecraft:instrument");
         RegisterComponent<OmniousBottleAmplifierComponent>(41, "minecraft:ominous_bottle_amplifier");
-        RegisterComponent<RecipesComponent>(42, "minecraft:recipes");
-        RegisterComponent<LodestoneTrackerComponent>(43, "minecraft:lodestone_tracker");
-        RegisterComponent<FireworkExplosionComponent>(44, "minecraft:firework_explosion");
-        RegisterComponent<FireworksComponent>(45, "minecraft:fireworks");
-        RegisterComponent<ProfileComponent>(46, "minecraft:profile");
-        RegisterComponent<NoteBlockSoundComponent>(47, "minecraft:note_block_sound");
-        RegisterComponent<BannerPatternsComponent>(48, "minecraft:banner_patterns");
-        RegisterComponent<BaseColorComponent>(49, "minecraft:base_color");
-        RegisterComponent<PotDecorationsComponent>(50, "minecraft:pot_decorations");
-        RegisterComponent<ContainerComponent>(51, "minecraft:container");
-        RegisterComponent<BlockStateComponent>(52, "minecraft:block_state");
-        RegisterComponent<BeesComponent>(53, "minecraft:bees");
-        RegisterComponent<LockComponent>(54, "minecraft:lock");
-        RegisterComponent<ContainerLootComponent>(55, "minecraft:container_loot");
+        RegisterComponent<JukeBoxPlayableComponent>(42, "minecraft:jukebox_playable");
+        RegisterComponent<RecipesComponent>(43, "minecraft:recipes");
+        RegisterComponent<LodestoneTrackerComponent>(44, "minecraft:lodestone_tracker");
+        RegisterComponent<FireworkExplosionComponent>(45, "minecraft:firework_explosion");
+        RegisterComponent<FireworksComponent>(46, "minecraft:fireworks");
+        RegisterComponent<ProfileComponent>(47, "minecraft:profile");
+        RegisterComponent<NoteBlockSoundComponent>(48, "minecraft:note_block_sound");
+        RegisterComponent<BannerPatternsComponent>(49, "minecraft:banner_patterns");
+        RegisterComponent<BaseColorComponent>(50, "minecraft:base_color");
+        RegisterComponent<PotDecorationsComponent>(51, "minecraft:pot_decorations");
+        RegisterComponent<ContainerComponent>(52, "minecraft:container");
+        RegisterComponent<BlockStateComponent>(53, "minecraft:block_state");
+        RegisterComponent<BeesComponent>(54, "minecraft:bees");
+        RegisterComponent<LockComponent>(55, "minecraft:lock");
+        RegisterComponent<ContainerLootComponent>(56, "minecraft:container_loot");
     }
 }

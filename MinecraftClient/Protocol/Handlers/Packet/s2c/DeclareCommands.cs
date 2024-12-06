@@ -10,6 +10,12 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
         public static void Read(DataTypes dataTypes, Queue<byte> packetData, int protocolVersion)
         {
+            // TODO: Fix this
+            // It crashes in 1.20.6+ , could not figure out why
+            // it's hard to debug, so I'll just disable it for now
+            if(protocolVersion > Protocol18Handler.MC_1_20_4_Version)
+                return;
+            
             int count = dataTypes.ReadNextVarInt(packetData);
             Nodes = new CommandNode[count];
             for (int i = 0; i < count; ++i)

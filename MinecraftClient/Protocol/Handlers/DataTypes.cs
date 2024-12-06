@@ -974,7 +974,7 @@ namespace MinecraftClient.Protocol.Handlers
                         ReadDustParticle(cache);
                     break;
                 case 13:
-                    // 1.20,6+ - minecraft:dust
+                    // 1.20.6+ - minecraft:dust
                     ReadDustParticle(cache);
                     break;
                 case 14:
@@ -1038,7 +1038,7 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 28:
                     // 1.20.6+
-                    if (protocolversion > Protocol18Handler.MC_1_20_6_Version)
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
                         ReadNextVarInt(cache); // minecraft:falling_dust (BlockState)
                     break;
                 case 30:
@@ -1053,7 +1053,7 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 35:
                     // 1.20.6+
-                    if (protocolversion > Protocol18Handler.MC_1_20_6_Version)
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
                         ReadNextFloat(cache); // minecraft:sculk_charge (Roll)
                     break;
                 case 36:
@@ -1117,6 +1117,11 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
                         ReadNextItemSlot(cache, itemPalette); // minecraft:item (Item)
                     break;
+                case 45:
+                    // 1.21+
+                    if(protocolversion >= Protocol18Handler.MC_1_21_Version)
+                        ReadVibration(cache);
+                    break;
                 case 99:
                     // 1.20.6+
                     if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
@@ -1143,12 +1148,21 @@ namespace MinecraftClient.Protocol.Handlers
             ReadNextFloat(cache); // From red
             ReadNextFloat(cache); // From green
             ReadNextFloat(cache); // From blue
-            ReadNextFloat(cache); // Scale
             ReadNextFloat(cache); // To red
             ReadNextFloat(cache); // To green
-            ReadNextFloat(cache); // To Blue
+            ReadNextFloat(cache); // To blue
+            ReadNextFloat(cache); // Scale
         }
 
+        private void ReadVibration(Queue<byte> cache)
+        {
+            ReadNextVarInt(cache);   // Position Source Type
+            ReadNextLocation(cache); // Block Position
+            ReadNextVarInt(cache);   // Entity ID
+            ReadNextFloat(cache);    // Entity eye height
+            ReadNextVarInt(cache);   // Ticks
+        }
+        
         /// <summary>
         /// Read a single villager trade from a cache of bytes and remove it from the cache
         /// </summary>
