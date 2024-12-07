@@ -1749,6 +1749,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Yggdrasil authlib multi-user selection..
+        /// </summary>
+        internal static string Main_General_AuthlibUser {
+            get {
+                return ResourceManager.GetString("Main.General.AuthlibUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The address of the game server, &quot;Host&quot; can be filled in with domain name or IP address. (The &quot;Port&quot; field can be deleted, it will be resolved automatically).
         /// </summary>
         internal static string Main_General_login {
