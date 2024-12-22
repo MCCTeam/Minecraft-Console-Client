@@ -8,8 +8,8 @@ on:
   
 env:
   PROJECT: "MinecraftClient"
-  target-version: "net7.0"
-  compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None"
+  target-version: "net8.0"
+  compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded"
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        target: [win-x86, win-x64, win-arm, win-arm64, linux-x64, linux-arm, linux-arm64, osx-x64, osx-arm64]
+        target: [win-x86, win-x64, win-arm64, linux-x64, linux-arm, linux-arm64, osx-x64, osx-arm64]
 
     steps:
     - name: Checkout
