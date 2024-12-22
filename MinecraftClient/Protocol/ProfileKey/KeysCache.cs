@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Timers;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHelper.MainConfig.AdvancedConfig;
@@ -19,7 +18,6 @@ namespace MinecraftClient.Protocol.ProfileKey
         private static readonly Dictionary<string, PlayerKeyPair> keys = new();
         private static readonly Timer updatetimer = new(100);
         private static readonly List<KeyValuePair<string, PlayerKeyPair>> pendingadds = new();
-        private static readonly BinaryFormatter formatter = new();
 
         /// <summary>
         /// Retrieve whether KeysCache contains a keys for the given login.
