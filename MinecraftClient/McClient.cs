@@ -1088,6 +1088,15 @@ namespace MinecraftClient
         #region Getters: Retrieve data for use in other methods or ChatBots
 
         /// <summary>
+        /// Gets the horizontal direction of the takeoff.
+        /// </summary>
+        /// <returns>Return direction of view</returns>
+        public Direction GetHorizontalFacing()
+        {
+            return DirectionExtensions.FromRotation(GetYaw());
+        }
+
+        /// <summary>
         /// Get max length for chat messages
         /// </summary>
         /// <returns>Max length, in characters</returns>
@@ -2311,22 +2320,22 @@ namespace MinecraftClient
             return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++));
         }
 
+
         /// <summary>
         /// Attempt to dig a block at the specified location
         /// </summary>
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
+        public bool DigBlock(Location location, Direction blockFace, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
         {
+            // TODO select best face from current player location
+
             if (!GetTerrainEnabled())
                 return false;
 
             if (InvokeRequired)
-                return InvokeOnMainThread(() => DigBlock(location, swingArms, lookAtBlock, duration));
-
-            // TODO select best face from current player location
-            Direction blockFace = Direction.Down;
+                return InvokeOnMainThread(() => DigBlock(location, blockFace, swingArms, lookAtBlock, duration));
 
             lock (DigLock)
             {

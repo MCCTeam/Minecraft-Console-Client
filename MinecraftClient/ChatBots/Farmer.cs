@@ -831,7 +831,7 @@ namespace MinecraftClient.ChatBots
         // Yoinked from Daenges's Sugarcane Farmer
         private bool WaitForDigBlock(Location block, int digTimeout = 1000)
         {
-            if (!DigBlock(block.ToFloor())) return false;
+            if (!DigBlock(block.ToFloor(), Direction.Down)) return false;
             short i = 0; // Maximum wait time of 10 sec.
             while (GetWorld().GetBlock(block).Type != Material.Air && i <= digTimeout)
             {
