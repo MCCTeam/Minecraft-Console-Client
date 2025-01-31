@@ -406,14 +406,22 @@ namespace MinecraftClient.Protocol.Message
             else return "[" + rulename + "] " + string.Join(" ", using_data);
         }
 
+        private readonly static Dictionary<string, string> FormattingCodes = new() {
+            {"obfuscated", "k"},
+            {"bold", "l"},
+            {"strikethrough", "m"},
+            {"underline", "n"},
+            {"italic", "o"},
+        };
+
         /// <summary>
         /// Use a JSON Object to build the corresponding string
         /// </summary>
         /// <param name="data">JSON object to convert</param>
-        /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
+        /// <param name="formatting">Allow parent formatting codes to affect child elements (set to "" for function init)</param>
         /// <param name="links">Container for links from JSON serialized text</param>
         /// <returns>returns the Minecraft-formatted string</returns>
-        private static string JSONData2String(Json.JSONData data, string colorcode, List<string>? links)
+        private static string JSONData2String(Json.JSONData data, string formatting, List<string>? links)
         {
             string extra_result = "";
             switch (data.Type)
@@ -421,7 +429,15 @@ namespace MinecraftClient.Protocol.Message
                 case Json.JSONData.DataType.Object:
                     if (data.Properties.ContainsKey("color"))
                     {
-                        colorcode = Color2tag(JSONData2String(data.Properties["color"], "", links));
+                        formatting += Color2tag(JSONData2String(data.Properties["color"], "", links));
+                    }
+
+                    foreach (var pair in FormattingCodes)
+                    {
+                        if (data.Properties.ContainsKey(pair.Key) && data.Properties[pair.Key].StringValue == "true")
+                        {
+                            formatting += "§" + pair.Value;
+                        }
                     }
 
                     if (data.Properties.ContainsKey("clickEvent") && links != null)
@@ -440,12 +456,12 @@ namespace MinecraftClient.Protocol.Message
                     {
                         Json.JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
                         foreach (Json.JSONData item in extras)
-                            extra_result = extra_result + JSONData2String(item, colorcode, links) + "§r";
+                            extra_result = extra_result + JSONData2String(item, formatting, links) + "§r";
                     }
 
                     if (data.Properties.ContainsKey("text"))
                     {
-                        return colorcode + JSONData2String(data.Properties["text"], colorcode, links) + extra_result;
+                        return formatting + JSONData2String(data.Properties["text"], formatting, links) + extra_result;
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
@@ -457,11 +473,11 @@ namespace MinecraftClient.Protocol.Message
                             Json.JSONData[] array = data.Properties["with"].DataArray.ToArray();
                             for (int i = 0; i < array.Length; i++)
                             {
-                                using_data.Add(JSONData2String(array[i], colorcode, links));
+                                using_data.Add(JSONData2String(array[i], formatting, links));
                             }
                         }
 
-                        return colorcode +
+                        return formatting +
                                TranslateString(JSONData2String(data.Properties["translate"], "", links), using_data) +
                                extra_result;
                     }
@@ -471,13 +487,13 @@ namespace MinecraftClient.Protocol.Message
                     string result = "";
                     foreach (Json.JSONData item in data.DataArray)
                     {
-                        result += JSONData2String(item, colorcode, links);
+                        result += JSONData2String(item, formatting, links);
                     }
 
                     return result;
 
                 case Json.JSONData.DataType.String:
-                    return colorcode + data.StringValue;
+                    return formatting + data.StringValue;
             }
 
             return "";
