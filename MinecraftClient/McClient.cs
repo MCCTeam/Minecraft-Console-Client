@@ -225,51 +225,26 @@ namespace MinecraftClient
             if (botsOnHold.Count == 0)
                 RegisterBots();
 
-            try
+            client = ProxyHandler.NewTcpClient(host, port);
+            handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
+            Log.Info(Translations.mcc_version_supported);
+
+            timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
+            timeoutdetector.Item1.Name = "MCC Connection timeout detector";
+            timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
+
+            if (handler.Login(this.playerKeyPair, session))
             {
-                client = ProxyHandler.NewTcpClient(host, port);
-                client.ReceiveBufferSize = 1024 * 1024;
-                client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000; // Default: 30 seconds
-                handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
-                Log.Info(Translations.mcc_version_supported);
+                foreach (ChatBot bot in botsOnHold)
+                BotLoad(bot, false);
+                botsOnHold.Clear();
 
-                timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
-                timeoutdetector.Item1.Name = "MCC Connection timeout detector";
-                timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
+                Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
-                try
-                {
-                    if (handler.Login(this.playerKeyPair, session))
-                    {
-                        foreach (ChatBot bot in botsOnHold)
-                            BotLoad(bot, false);
-                        botsOnHold.Clear();
-
-                        Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-
-                        cmdprompt = new CancellationTokenSource();
-                        ConsoleInteractive.ConsoleReader.BeginReadThread();
-                        ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
-                        ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
-                    }
-                    else
-                    {
-                        Log.Error(Translations.error_login_failed);
-                        goto Retry;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e.GetType().Name + ": " + e.Message);
-                    Log.Error(Translations.error_join);
-                    goto Retry;
-                }
-            }
-            catch (SocketException e)
-            {
-                Log.Error(e.Message);
-                Log.Error(Translations.error_connect);
-                goto Retry;
+                cmdprompt = new CancellationTokenSource();
+                ConsoleInteractive.ConsoleReader.BeginReadThread();
+                ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+                ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
             }
 
             return;

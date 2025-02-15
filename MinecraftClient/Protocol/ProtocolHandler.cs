@@ -35,47 +35,9 @@ namespace MinecraftClient.Protocol
         /// <returns>TRUE if a Minecraft Service was found.</returns>
         public static bool MinecraftServiceLookup(ref string domain, ref ushort port)
         {
-            bool foundService = false;
+            bool foundService = true;
             string domainVal = domain;
             ushort portVal = port;
-
-            if (!String.IsNullOrEmpty(domain) && domain.Any(c => char.IsLetter(c)))
-            {
-                AutoTimeout.Perform(() =>
-                    {
-                        try
-                        {
-                            ConsoleIO.WriteLine(string.Format(Translations.mcc_resolve, domainVal));
-                            var lookupClient = new LookupClient();
-                            var response =
-                                lookupClient.Query(new DnsQuestion($"_minecraft._tcp.{domainVal}", QueryType.SRV));
-                            if (response.HasError != true && response.Answers.SrvRecords().Any())
-                            {
-                                //Order SRV records by priority and weight, then randomly
-                                var result = response.Answers.SrvRecords()
-                                    .OrderBy(record => record.Priority)
-                                    .ThenByDescending(record => record.Weight)
-                                    .ThenBy(record => Guid.NewGuid())
-                                    .First();
-                                string target = result.Target.Value.Trim('.');
-                                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_found, target,
-                                    result.Port, domainVal));
-                                domainVal = target;
-                                portVal = result.Port;
-                                foundService = true;
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_not_found, domainVal,
-                                e.GetType().FullName, e.Message));
-                        }
-                    },
-                    TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords ==
-                                         MainConfigHelper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
-                        ? 10
-                        : 30));
-            }
 
             domain = domainVal;
             port = portVal;
@@ -92,46 +54,11 @@ namespace MinecraftClient.Protocol
         public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion,
             ref ForgeInfo? forgeInfo)
         {
-            bool success = false;
+            bool success = true;
             int protocolversionTmp = 0;
             ForgeInfo? forgeInfoTmp = null;
-            if (AutoTimeout.Perform(() =>
-                    {
-                        try
-                        {
-                            if (Protocol18Handler.DoPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp)
-                                || Protocol16Handler.DoPing(serverIP, serverPort, ref protocolversionTmp))
-                            {
-                                success = true;
-                            }
-                            else
-                                ConsoleIO.WriteLineFormatted("§8" + Translations.error_unexpect_response,
-                                    acceptnewlines: true);
-                        }
-                        catch (Exception e)
-                        {
-                            ConsoleIO.WriteLineFormatted(string.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
-                        }
-                    },
-                    TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords ==
-                                         MainConfigHelper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast
-                        ? 10
-                        : 30)))
-            {
-                if (protocolversion != 0 && protocolversion != protocolversionTmp)
-                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_version_different, acceptnewlines: true);
-                if (protocolversion == 0 && protocolversionTmp <= 1)
-                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_no_version_report, acceptnewlines: true);
-                if (protocolversion == 0)
-                    protocolversion = protocolversionTmp;
-                forgeInfo = forgeInfoTmp;
-                return success;
-            }
-            else
-            {
-                ConsoleIO.WriteLineFormatted("§8" + Translations.error_connection_timeout, acceptnewlines: true);
-                return false;
-            }
+
+            return true;
         }
 
         /// <summary>
