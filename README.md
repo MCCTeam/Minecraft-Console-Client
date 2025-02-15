@@ -1,5 +1,7 @@
 <div align="center">
 
+# Sunuculara bağlanmadan önce Minecraft-Console-Client'in ping atma sisteminin kaldırılmış sürümüdür. AtlantikMC için yapılmıştır.
+
 <img src="https://i.pics.rs/LLDhE.png" alt="Logo"/>
 
 # Minecraft Console Client (MCC)
