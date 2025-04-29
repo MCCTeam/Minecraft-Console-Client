@@ -2121,7 +2121,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         var windowId = dataTypes.ReadNextByte(packetData);
                         var stateId = -1;
-                        var elements = 0;
+                        int elements;
 
                         if (protocolVersion >= MC_1_17_1_Version)
                         {
@@ -2132,7 +2132,7 @@ namespace MinecraftClient.Protocol.Handlers
                         else
                         {
                             // Elements as Short - 1.17.0 and below
-                            dataTypes.ReadNextShort(packetData);
+                            elements = dataTypes.ReadNextShort(packetData);
                         }
 
                         Dictionary<int, Item> inventorySlots = new();
