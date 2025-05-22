@@ -637,9 +637,24 @@ namespace MinecraftClient.Protocol
 
                                 ConsoleIO.WriteLine(Translations.mcc_avaliable_profiles + availableProfiles);
 
-                                ConsoleIO.WriteLine(Translations.mcc_select_profile);
-                                string selectedProfileName = ConsoleIO.ReadLine();
+                                string selectedProfileName;
+
+                                if (Config.Main.General.AuthUser == "")
+                                {
+                                    ConsoleIO.WriteLine(Translations.mcc_select_profile);
+                                    selectedProfileName = ConsoleIO.ReadLine();
+                                }
+                                else
+                                {
+                                    selectedProfileName = Config.Main.General.AuthUser;
+
+                                }
+
                                 ConsoleIO.WriteLine(Translations.mcc_selected_profile + " " + selectedProfileName);
+
+                                // ConsoleIO.WriteLine(Translations.mcc_select_profile);
+                                // string selectedProfileName = ConsoleIO.ReadLine();
+                                // ConsoleIO.WriteLine(Translations.mcc_selected_profile + " " + selectedProfileName);
                                 Json.JSONData? selectedProfile = null;
                                 foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"]
                                              .DataArray)
