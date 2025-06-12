@@ -178,7 +178,7 @@ namespace MinecraftClient.ChatBots
             return instance;
         }
 
-        private string GetDiscordText(string text) {
+        private static string GetDiscordText(string text) {
             text = Regex.Replace(text, "§l(.*?§r)", "**$1**");
             text = Regex.Replace(text, "§m(.*?§r)", "~~$1~~");
             text = Regex.Replace(text, "§n(.*?§r)", "__$1__");
@@ -192,7 +192,7 @@ namespace MinecraftClient.ChatBots
             if (!CanSendMessages())
                 return;
 
-            text = GetDiscordText(text).Trim();
+            text = GetVerbatim(text).Trim();
 
             // Stop the crash when an empty text is recived somehow
             if (string.IsNullOrEmpty(text))
