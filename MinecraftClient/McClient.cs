@@ -346,7 +346,6 @@ namespace MinecraftClient
             if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
-            if (Config.ChatBot.WebSocketBot.Enabled) { BotLoad(new WebSocketBot()); }
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }
