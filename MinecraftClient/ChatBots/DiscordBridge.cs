@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Brigadier.NET.Builder;
 using DSharpPlus;
@@ -175,6 +176,15 @@ namespace MinecraftClient.ChatBots
         public static DiscordBridge? GetInstance()
         {
             return instance;
+        }
+
+        private static string GetDiscordText(string text) {
+            text = Regex.Replace(text, "§l(.*?§r)", "**$1**");
+            text = Regex.Replace(text, "§m(.*?§r)", "~~$1~~");
+            text = Regex.Replace(text, "§n(.*?§r)", "__$1__");
+            text = Regex.Replace(text, "§o(.*?§r)", "*$1*");
+            text = Regex.Replace(text, "§.", "");
+            return text;
         }
 
         public override void GetText(string text)
