@@ -430,6 +430,9 @@ namespace MinecraftClient.Protocol.Message
                 case Json.JSONData.DataType.Object:
                     if (data.Properties.ContainsKey("color"))
                     {
+                        // Remove old colors
+                        formatting = Regex.Replace(formatting, "§[0-9a-f]", "");
+                        // Add the new color
                         formatting += Color2tag(JSONData2String(data.Properties["color"], "", links));
                     }
 
@@ -504,6 +507,8 @@ namespace MinecraftClient.Protocol.Message
                     break;
             }
 
+            // Formatting before a reset character is ignored
+            formatting = Regex.Replace(formatting, ".*§r(.*)", "$1");
             return formatting + message + extra_result;
         }
 
