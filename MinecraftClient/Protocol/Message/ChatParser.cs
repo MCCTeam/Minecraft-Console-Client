@@ -406,22 +406,49 @@ namespace MinecraftClient.Protocol.Message
             else return "[" + rulename + "] " + string.Join(" ", using_data);
         }
 
+        private readonly static Dictionary<string, string> FormattingCodes = new() {
+            {"obfuscated", "k"},
+            {"bold", "l"},
+            {"strikethrough", "m"},
+            {"underline", "n"},
+            {"italic", "o"},
+        };
+
         /// <summary>
         /// Use a JSON Object to build the corresponding string
         /// </summary>
         /// <param name="data">JSON object to convert</param>
-        /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
+        /// <param name="formatting">Allow parent formatting codes to affect child elements (set to "" for function init)</param>
         /// <param name="links">Container for links from JSON serialized text</param>
         /// <returns>returns the Minecraft-formatted string</returns>
-        private static string JSONData2String(Json.JSONData data, string colorcode, List<string>? links)
+        private static string JSONData2String(Json.JSONData data, string formatting, List<string>? links)
         {
+            string message = "";
             string extra_result = "";
             switch (data.Type)
             {
                 case Json.JSONData.DataType.Object:
                     if (data.Properties.ContainsKey("color"))
                     {
-                        colorcode = Color2tag(JSONData2String(data.Properties["color"], "", links));
+                        // Remove old colors
+                        formatting = Regex.Replace(formatting, "§[0-9a-f]", "");
+                        // Add the new color
+                        formatting += Color2tag(JSONData2String(data.Properties["color"], "", links));
+                    }
+
+                    foreach (var pair in FormattingCodes)
+                    {
+                        if (data.Properties.ContainsKey(pair.Key))
+                        {
+                            if (data.Properties[pair.Key].StringValue == "true")
+                            {
+                                formatting += "§" + pair.Value;
+                            }
+                            else if (data.Properties[pair.Key].StringValue == "false")
+                            {
+                                formatting = formatting.Replace("§" + pair.Value, "");
+                            }
+                        }
                     }
 
                     if (data.Properties.ContainsKey("clickEvent") && links != null)
@@ -440,12 +467,12 @@ namespace MinecraftClient.Protocol.Message
                     {
                         Json.JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
                         foreach (Json.JSONData item in extras)
-                            extra_result = extra_result + JSONData2String(item, colorcode, links) + "§r";
+                            extra_result += JSONData2String(item, "§r" + formatting, links);
                     }
 
                     if (data.Properties.ContainsKey("text"))
                     {
-                        return colorcode + JSONData2String(data.Properties["text"], colorcode, links) + extra_result;
+                        message = JSONData2String(data.Properties["text"], formatting, links);
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
@@ -457,43 +484,76 @@ namespace MinecraftClient.Protocol.Message
                             Json.JSONData[] array = data.Properties["with"].DataArray.ToArray();
                             for (int i = 0; i < array.Length; i++)
                             {
-                                using_data.Add(JSONData2String(array[i], colorcode, links));
+                                using_data.Add(JSONData2String(array[i], formatting, links));
                             }
                         }
 
-                        return colorcode +
-                               TranslateString(JSONData2String(data.Properties["translate"], "", links), using_data) +
-                               extra_result;
+                        message = TranslateString(JSONData2String(data.Properties["translate"], formatting, links), using_data);
                     }
-                    else return extra_result;
+                    break;
 
                 case Json.JSONData.DataType.Array:
                     string result = "";
                     foreach (Json.JSONData item in data.DataArray)
                     {
-                        result += JSONData2String(item, colorcode, links);
+                        result += JSONData2String(item, formatting, links);
                     }
 
-                    return result;
+                    message = result;
+                    break;
 
                 case Json.JSONData.DataType.String:
-                    return colorcode + data.StringValue;
+                    message = data.StringValue;
+                    break;
             }
 
-            return "";
+            // Formatting before a reset character is ignored
+            formatting = Regex.Replace(formatting, ".*(§r.*)", "$1");
+            return formatting + message + extra_result;
         }
 
-        private static string NbtToString(Dictionary<string, object> nbt)
+        private static string NbtToString(Dictionary<string, object> nbt, string formatting)
         {
             if (nbt.Count == 1 && nbt.TryGetValue("", out object? rootMessage))
             {
-                // Nameless root tag
-                return (string)rootMessage;
+                return formatting + (string)rootMessage;
             }
 
             string message = string.Empty;
-            string colorCode = string.Empty;
             StringBuilder extraBuilder = new StringBuilder();
+
+            // Build the formatting prefix first so extras can inherit it
+            foreach (var kvp in nbt)
+            {
+                string key = kvp.Key;
+                object value = kvp.Value;
+
+                switch (key)
+                {
+                    case "color":
+                    {
+                        if (nbt.TryGetValue("color", out object color))
+                        {
+                            formatting += Color2tag((string)color);
+                        }
+                    }
+                        break;
+                    case "italic":
+                    case "bold":
+                    case "underline":
+                    case "strikethrough":
+                    {
+                        if ((byte) value > 0)
+                        {
+                            formatting += "§" + FormattingCodes[key];
+                        } else {
+                            formatting = formatting.Replace("§" + FormattingCodes[key], "");
+                        }
+                    }
+                        break;
+                }
+            }
+
             foreach (var kvp in nbt)
             {
                 string key = kvp.Key;
@@ -521,7 +581,7 @@ namespace MinecraftClient.Protocol.Message
                                 _ => (Dictionary<string, object>)extras[i]
                             };
 
-                            extraBuilder.Append(NbtToString(extraDict) + "§r");
+                            extraBuilder.Append(NbtToString(extraDict, "§r" + formatting));
                         }
                     }
                         break;
@@ -554,18 +614,14 @@ namespace MinecraftClient.Protocol.Message
                         }
                     }
                         break;
-                    case "color":
-                    {
-                        if (nbt.TryGetValue("color", out object color))
-                        {
-                            colorCode = Color2tag((string)color);
-                        }
-                    }
-                        break;
                 }
             }
 
-            return colorCode + message + extraBuilder.ToString();
+            return formatting + message + extraBuilder.ToString();
+        }
+        private static string NbtToString(Dictionary<string, object> nbt)
+        {
+            return NbtToString(nbt, String.Empty);
         }
     }
 }
