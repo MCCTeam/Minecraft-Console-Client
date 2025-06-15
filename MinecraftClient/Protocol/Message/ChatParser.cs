@@ -508,7 +508,7 @@ namespace MinecraftClient.Protocol.Message
             }
 
             // Formatting before a reset character is ignored
-            formatting = Regex.Replace(formatting, ".*§r(.*)", "$1");
+            formatting = Regex.Replace(formatting, ".*(§r.*)", "$1");
             return formatting + message + extra_result;
         }
 
