@@ -16,29 +16,26 @@ namespace MinecraftClient.Protocol.ProfileKey
 
         public static PlayerKeyPair? GetNewProfileKeys(string accessToken, bool isYggdrasil)
         {
+            if (isYggdrasil)
+                return null;
+
             ProxiedWebRequest.Response? response = null;
             try
             {
-                if (!isYggdrasil)
+                var request = new ProxiedWebRequest(certificates)
                 {
-                    var request = new ProxiedWebRequest(certificates)
-                    {
-                        Accept = "application/json"
-                    };
-                    request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
+                    Accept = "application/json"
+                };
+                request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
 
-                    response = request.Post("application/json", "");
+                response = request.Post("application/json", "");
 
-                    if (Settings.Config.Logging.DebugMessages)
-                    {
-                        ConsoleIO.WriteLine(response.Body.ToString());
-                    }
+                if (Settings.Config.Logging.DebugMessages)
+                {
+                    ConsoleIO.WriteLine(response.Body.ToString());
                 }
 
-                // see https://github.com/yushijinhun/authlib-injector/blob/da910956eaa30d2f6c2c457222d188aeb53b0d1f/src/main/java/moe/yushi/authlibinjector/httpd/ProfileKeyFilter.java#L49
-                // POST to "https://api.minecraftservices.com/player/certificates" with authlib-injector will get a dummy response
-                Json.JSONData json = isYggdrasil ? MakeDummyResponse() : Json.ParseJson(response!.Body);
-                // Error here
+                Json.JSONData json = Json.ParseJson(response!.Body);
                 PublicKey publicKey = new(pemKey: json.Properties["keyPair"].Properties["publicKey"].StringValue,
                     sig: json.Properties["publicKeySignature"].StringValue,
                     sigV2: json.Properties["publicKeySignatureV2"].StringValue);
@@ -233,31 +230,6 @@ namespace MinecraftClient.Protocol.ProfileKey
             }
             sb.Append(src, start, src.Length - start);
             return sb.ToString();
-        }
-
-        public static Json.JSONData MakeDummyResponse()
-        {
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048);
-            var mimePublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
-            var mimePrivateKey = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
-            string publicKeyPEM = $"-----BEGIN RSA PUBLIC KEY-----\n{mimePublicKey}\n-----END RSA PUBLIC KEY-----\n";
-            string privateKeyPEM = $"-----BEGIN RSA PRIVATE KEY-----\n{mimePrivateKey}\n-----END RSA PRIVATE KEY-----\n";
-            DateTime now = DateTime.UtcNow;
-            DateTime expiresAt = now.AddHours(48);
-            DateTime refreshedAfter = now.AddHours(36);
-            Json.JSONData response = new(Json.JSONData.DataType.Object);
-            Json.JSONData keyPairObj = new(Json.JSONData.DataType.Object);
-            keyPairObj.Properties["privateKey"] = new(Json.JSONData.DataType.String){ StringValue = privateKeyPEM };
-            keyPairObj.Properties["publicKey"] = new(Json.JSONData.DataType.String){ StringValue = publicKeyPEM };
-
-            response.Properties["keyPair"] = keyPairObj;
-            response.Properties["publicKeySignature"] = new(Json.JSONData.DataType.String){ StringValue = "AA==" };
-            response.Properties["publicKeySignatureV2"] = new(Json.JSONData.DataType.String){ StringValue = "AA==" };
-            string format = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
-            response.Properties["expiresAt"] = new(Json.JSONData.DataType.String){ StringValue = expiresAt.ToString(format) };
-            response.Properties["refreshedAfter"] = new(Json.JSONData.DataType.String){ StringValue = refreshedAfter.ToString(format) };
-
-            return response;
         }
     }
 }
