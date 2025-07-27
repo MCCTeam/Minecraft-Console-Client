@@ -603,7 +603,8 @@ namespace MinecraftClient.Protocol
                                       JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) +
                                       "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
                 int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port,
-                    "/api/yggdrasil/authserver/authenticate", json_request, ref result);
+                    Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/authserver/authenticate",
+                    json_request, ref result);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
@@ -914,7 +915,8 @@ namespace MinecraftClient.Protocol
                                       "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) +
                                       "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
                 int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port,
-                    "/api/yggdrasil/authserver/refresh", json_request, ref result);
+                    Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/authserver/refresh",
+                    json_request, ref result);
                 if (code == 200)
                 {
                     if (result == null)
@@ -974,7 +976,7 @@ namespace MinecraftClient.Protocol
                     : "sessionserver.mojang.com";
                 int port = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.Port : 443;
                 string endpoint = type == LoginType.yggdrasil
-                    ? "/api/yggdrasil/sessionserver/session/minecraft/join"
+                    ? Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/sessionserver/session/minecraft/join"
                     : "/session/minecraft/join";
 
                 int code = DoHTTPSPost(host, port, endpoint, json_request, ref result);
