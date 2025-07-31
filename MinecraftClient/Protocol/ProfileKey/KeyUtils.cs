@@ -12,17 +12,73 @@ namespace MinecraftClient.Protocol.ProfileKey
     {
         private static readonly SHA256 sha256Hash = SHA256.Create();
 
-        private static readonly string certificates = "https://api.minecraftservices.com/player/certificates";
-
-        public static PlayerKeyPair? GetNewProfileKeys(string accessToken, bool isYggdrasil)
+        public static bool AuthServerSupportsProfileKeys(bool isYggdrasil)
         {
-            if (isYggdrasil)
-                return null;
+            // Check whether the authentication server supports player profile keys
+            if (!isYggdrasil)
+                return true;
 
             ProxiedWebRequest.Response? response = null;
             try
             {
-                var request = new ProxiedWebRequest(certificates)
+                var authServer = Settings.Config.Main.General.AuthServer;
+                var request = new ProxiedWebRequest(
+                    "https://" + authServer.Host + ":" + authServer.Port + authServer.AuthlibInjectorAPIPath)
+                {
+                    Accept = "application/json"
+                };
+
+                response = request.Get();
+                if (Settings.Config.Logging.DebugMessages)
+                {
+                    ConsoleIO.WriteLine(response.Body.ToString());
+                }
+
+                // The feature.enable_profile_key flag is documented at
+                // https://github.com/yushijinhun/authlib-injector/wiki/Yggdrasil-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8A%80%E6%9C%AF%E8%A7%84%E8%8C%83
+                Json.JSONData json = Json.ParseJson(response.Body);
+                bool enableProfileKey = json.Properties["meta"].Properties.ContainsKey("feature.enable_profile_key") &&
+                    json.Properties["meta"].Properties["feature.enable_profile_key"].StringValue == "true";
+                if (enableProfileKey)
+                {
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                int code = response == null ? 0 : response.StatusCode;
+                ConsoleIO.WriteLineFormatted("§cFetch authlib-injector metadata failed: HttpCode = " + code + ", Error = " + e.Message);
+                if (Settings.Config.Logging.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
+                }
+            }
+            return false;
+        }
+
+        public static PlayerKeyPair? GetNewProfileKeys(string accessToken, bool isYggdrasil)
+        {
+            if (!AuthServerSupportsProfileKeys(isYggdrasil))
+            {
+                if (Settings.Config.Logging.DebugMessages)
+                {
+                    ConsoleIO.WriteLine("AuthServer does not support profile keys, will not attempt to fetch them.");
+                }
+                return null;
+            }
+
+            string certificatesURL = "https://api.minecraftservices.com/player/certificates";
+            if (isYggdrasil)
+            {
+                var authServer = Settings.Config.Main.General.AuthServer;
+                certificatesURL = "https://" + authServer.Host + ":" + authServer.Port +
+                    authServer.AuthlibInjectorAPIPath + "/minecraftservices/player/certificates";
+            }
+
+            ProxiedWebRequest.Response? response = null;
+            try
+            {
+                var request = new ProxiedWebRequest(certificatesURL)
                 {
                     Accept = "application/json"
                 };
