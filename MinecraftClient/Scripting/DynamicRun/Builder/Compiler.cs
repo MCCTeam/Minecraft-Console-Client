@@ -94,7 +94,15 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 {
                     if (file.EndsWith("mcc-executable")) 
                     {
-                        useExisting = true;
+                        // Check if the file is the same as the current executable.
+                        if (File.ReadAllBytes(file).SequenceEqual(File.ReadAllBytes(executablePath))) 
+                        {
+                            useExisting = true;
+                            break;
+                        }
+                        
+                        // If not, refresh the cache.
+                        File.Delete(file);
                         break;
                     }
                 }

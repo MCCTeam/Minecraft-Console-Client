@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -749,7 +749,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         case >= MC_1_16_2_Version and <= MC_1_18_2_Version:
                                             World.StoreOneDimension(dimensionName, dimensionType!);
-                                            World.SetDimension(dimensionName);
+                                            // World.SetDimension(dimensionName);
+					    World.SetDimension(dimensionName);
                                             break;
                                         case < MC_1_20_6_Version:
                                             World.SetDimension(dimensionTypeName!);
@@ -2234,7 +2235,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         var windowId = dataTypes.ReadNextByte(packetData);
                         var stateId = -1;
-                        var elements = 0;
+                        int elements;
 
                         if (protocolVersion >= MC_1_17_1_Version)
                         {
@@ -2245,7 +2246,7 @@ namespace MinecraftClient.Protocol.Handlers
                         else
                         {
                             // Elements as Short - 1.17.0 and below
-                            dataTypes.ReadNextShort(packetData);
+                            elements = dataTypes.ReadNextShort(packetData);
                         }
 
                         Dictionary<int, Item> inventorySlots = new();
