@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
@@ -8,60 +7,62 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_2
 public class InstrumentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
-    public int InstrumentType { get; set; }
-    public int SoundEventType { get; set; }
-    public string? SoundName { get; set; } = null!;
+    // holder ID: 0 = inline instrument data, N>0 = registry reference (id = N-1)
+    public int InstrumentHolderId { get; set; }
+
+    // Inline instrument fields (only when InstrumentHolderId == 0):
+    // holder ID for SoundEvent: 0 = inline sound, N>0 = registry reference (id = N-1)
+    public int SoundEventHolderId { get; set; }
+    // Inline SoundEvent fields (only when SoundEventHolderId == 0):
+    public string? SoundLocation { get; set; }
     public bool HasFixedRange { get; set; }
     public float FixedRange { get; set; }
-    public float UseDuration { get; set; }
+
+    public int UseDuration { get; set; }
     public float Range { get; set; }
     
     public override void Parse(Queue<byte> data)
     {
-        InstrumentType = dataTypes.ReadNextVarInt(data);
+        InstrumentHolderId = dataTypes.ReadNextVarInt(data);
 
-        if (InstrumentType == 0)
+        if (InstrumentHolderId == 0)
         {
-            SoundEventType = dataTypes.ReadNextVarInt(data);
-            SoundName = dataTypes.ReadNextString(data);
+            SoundEventHolderId = dataTypes.ReadNextVarInt(data);
 
-            if (SoundEventType == 0)
+            if (SoundEventHolderId == 0)
             {
+                SoundLocation = dataTypes.ReadNextString(data);
                 HasFixedRange = dataTypes.ReadNextBool(data);
-                FixedRange = dataTypes.ReadNextFloat(data);
+                if (HasFixedRange)
+                    FixedRange = dataTypes.ReadNextFloat(data);
             }
 
-            UseDuration = dataTypes.ReadNextFloat(data);
+            UseDuration = dataTypes.ReadNextVarInt(data);
             Range = dataTypes.ReadNextFloat(data);
         }
-        
-        // TODO: Check, if we need to load in defaults from a registry
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(DataTypes.GetVarInt(InstrumentType));
+        data.AddRange(DataTypes.GetVarInt(InstrumentHolderId));
 
-        if (InstrumentType == 0)
+        if (InstrumentHolderId == 0)
         {
-            data.AddRange(DataTypes.GetVarInt(SoundEventType));
+            data.AddRange(DataTypes.GetVarInt(SoundEventHolderId));
 
-            if (string.IsNullOrEmpty(SoundName))
-                throw new NullReferenceException("Can't serialize InstrumentComponent because SoundName is empty!");
-            
-            data.AddRange(DataTypes.GetString(SoundName));
-            if (SoundEventType == 0)
+            if (SoundEventHolderId == 0)
             {
+                data.AddRange(DataTypes.GetString(SoundLocation ?? ""));
                 data.AddRange(DataTypes.GetBool(HasFixedRange));
-                data.AddRange(DataTypes.GetFloat(FixedRange));
+                if (HasFixedRange)
+                    data.AddRange(DataTypes.GetFloat(FixedRange));
             }
-            
-            data.AddRange(DataTypes.GetFloat(UseDuration));
+
+            data.AddRange(DataTypes.GetVarInt(UseDuration));
             data.AddRange(DataTypes.GetFloat(Range));
         }
-        
-        // TODO: Check, if we need to load in defaults from a registry if InstrumentType != 0 and send them
+
         return new Queue<byte>(data);
     }
 }
