@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -768,8 +768,10 @@ namespace MinecraftClient
             if (!String.IsNullOrEmpty(errorMessage))
             {
                 ConsoleIO.Reset();
-                while (Console.KeyAvailable)
-                    Console.ReadKey(true);
+                try {
+                    while (Console.KeyAvailable)
+                        Console.ReadKey(true);
+                } catch { }
                 ConsoleIO.WriteLine(errorMessage);
 
                 if (disconnectReason.HasValue)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -239,8 +239,8 @@ namespace MinecraftClient.Protocol
             // format: timestamp + packetLength + RawPacket
             List<byte> line = new();
             int nowTime = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
-            line.AddRange(BitConverter.GetBytes((Int32)nowTime).Reverse().ToArray());
-            line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).Reverse().ToArray());
+            line.AddRange(BitConverter.GetBytes((Int32)nowTime).AsEnumerable().Reverse().ToArray());
+            line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).AsEnumerable().Reverse().ToArray());
             line.AddRange(rawPacket.ToArray());
             // Write out to the file
             recordStream!.Write(line.ToArray());
