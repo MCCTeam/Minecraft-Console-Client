@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -450,15 +450,11 @@ namespace MinecraftClient.Protocol.Handlers
                     }
 
                     for (var i = 0; i < numberofComponentsToRemove; i++)
-                    {
-                        // TODO: Check what this does exactly
-                        ReadNextVarInt(cache); // The type of component to remove
-                    }
-                        
-                    // TODO: Wire up the strctured components in the Item class (extract info, update fields, etc..)
-                    // Use strcturedComponentsToAdd
-                    // Look at: https://wiki.vg/index.php?title=Slot_Data&oldid=19350#Structured_components
-                    
+                        ReadNextVarInt(cache);
+
+                    if (strcturedComponentsToAdd.Count > 0)
+                        item.Components = strcturedComponentsToAdd;
+
                     return item;
                 case >= Protocol18Handler.MC_1_13_Version:
                 {
@@ -1561,17 +1557,44 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Item slot representation</returns>
         public byte[] GetItemSlot(Item? item, ItemPalette itemPalette)
         {
-            // TODO: Wire up Structured components for 1.20.6
-            
             List<byte> slotData = new();
-            if (protocolversion > Protocol18Handler.MC_1_13_Version)
+
+            if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
             {
-                // MC 1.13 and greater
                 if (item == null || item.IsEmpty)
-                    slotData.AddRange(GetBool(false)); // No item
+                {
+                    slotData.AddRange(GetVarInt(0));
+                }
                 else
                 {
-                    slotData.AddRange(GetBool(true)); // Item is present
+                    slotData.AddRange(GetVarInt(item.Count));
+                    slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
+
+                    if (item.Components != null && item.Components.Count > 0)
+                    {
+                        slotData.AddRange(GetVarInt(item.Components.Count));
+                        slotData.AddRange(GetVarInt(0)); // components to remove
+                        foreach (var component in item.Components)
+                        {
+                            slotData.AddRange(GetVarInt(component.TypeId));
+                            var serialized = component.Serialize();
+                            slotData.AddRange(serialized);
+                        }
+                    }
+                    else
+                    {
+                        slotData.AddRange(GetVarInt(0)); // no components to add
+                        slotData.AddRange(GetVarInt(0)); // no components to remove
+                    }
+                }
+            }
+            else if (protocolversion > Protocol18Handler.MC_1_13_Version)
+            {
+                if (item == null || item.IsEmpty)
+                    slotData.AddRange(GetBool(false));
+                else
+                {
+                    slotData.AddRange(GetBool(true));
                     slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
@@ -1579,13 +1602,10 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                // MC 1.12.2 and lower
                 if (item == null || item.IsEmpty)
                     slotData.AddRange(GetShort(-1));
                 else
                 {
-                    // For 1.8 - 1.12.2 we combine Item Id and Item Data to a single value using: (id << 16) | data
-                    // Thus to get an ID we do a right shift by 16 bits
                     slotData.AddRange(GetShort((short)(itemPalette.ToId(item.Type) >> 16)));
                     slotData.Add((byte)item.Count);
                     slotData.Add((byte)item.Data);

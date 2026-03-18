@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -1549,7 +1549,7 @@ namespace MinecraftClient
         /// <param name="changedSlots">Record changes</param>
         private static void StoreInNewSlot(Container inventory, Item item, int slotId, int newSlotId, List<Tuple<short, Item?>> changedSlots)
         {
-            Item newItem = new(item.Type, item.Count, item.NBT);
+            Item newItem = item.CloneWithCount(item.Count);
             inventory.Items[newSlotId] = newItem;
             inventory.Items.Remove(slotId);
 
@@ -1672,7 +1672,7 @@ namespace MinecraftClient
                             {
                                 // Drop 1 item count from cursor
                                 Item itemTmp = playerInventory.Items[-1];
-                                Item itemClone = new(itemTmp.Type, 1, itemTmp.NBT);
+                                Item itemClone = itemTmp.CloneWithCount(1);
                                 inventory.Items[slotId] = itemClone;
                                 playerInventory.Items[-1].Count--;
                             }
@@ -1701,14 +1701,14 @@ namespace MinecraftClient
                                     {
                                         // Can be evenly divided
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = itemTmp.CloneWithCount(itemTmp.Count / 2);
                                         inventory.Items[slotId].Count = itemTmp.Count / 2;
                                     }
                                     else
                                     {
                                         // Cannot be evenly divided. item count on cursor is always larger than item on inventory
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = itemTmp.CloneWithCount((itemTmp.Count + 1) / 2);
                                         inventory.Items[slotId].Count = (itemTmp.Count - 1) / 2;
                                     }
                                 }
