@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -510,8 +510,7 @@ namespace MinecraftClient.Protocol.Message
         {
             if (nbt.Count == 1 && nbt.TryGetValue("", out object? rootMessage))
             {
-                // Nameless root tag
-                return (string)rootMessage;
+                return rootMessage?.ToString() ?? string.Empty;
             }
 
             string message = string.Empty;
@@ -526,7 +525,7 @@ namespace MinecraftClient.Protocol.Message
                 {
                     case "text":
                     {
-                        message = (string)value;
+                        message = value?.ToString() ?? string.Empty;
                     }
                         break;
                     case "extra":
