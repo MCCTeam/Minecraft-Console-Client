@@ -29,6 +29,11 @@ namespace MinecraftClient.Mapping
         private static Dictionary<int, string> dimensionIdMap = new();
 
         /// <summary>
+        /// VarInt ID → attribute name mapping, populated from RegistryData (minecraft:attribute) in 1.20.6+
+        /// </summary>
+        private static Dictionary<int, string> attributeIdMap = new();
+
+        /// <summary>
         /// Chunk data parsing progress
         /// </summary>
         public int chunkCnt = 0;
@@ -230,6 +235,19 @@ namespace MinecraftClient.Mapping
         public static bool HasAnyDimension()
         {
             return dimensionList.Count > 0;
+        }
+
+        public static void SetAttributeIdMap(Dictionary<int, string> idMap)
+        {
+            attributeIdMap = idMap;
+        }
+
+        /// <summary>
+        /// Get attribute name by its registry VarInt ID. Returns null if the ID is unknown.
+        /// </summary>
+        public static string? GetAttributeNameById(int id)
+        {
+            return attributeIdMap.TryGetValue(id, out var name) ? name : null;
         }
 
         /// <summary>

@@ -463,9 +463,11 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     var isChat = registryId == "minecraft:chat_type";
                                     var isDimension = registryId == "minecraft:dimension_type";
+                                    var isAttribute = registryId == "minecraft:attribute";
 
                                     var availableChats = isChat ? new Dictionary<int, string>() : null;
                                     var dimensionIdMap = isDimension ? new Dictionary<int, string>() : null;
+                                    var attributeIdMap = isAttribute ? new Dictionary<int, string>() : null;
                                     
                                     for (var i = 0; i < entryCount; i++)
                                     {
@@ -484,6 +486,14 @@ namespace MinecraftClient.Protocol.Handlers
                                             if (nbtData != null && handler.GetTerrainEnabled())
                                                 World.StoreOneDimension(entryId, nbtData);
                                         }
+                                        else if (isAttribute)
+                                        {
+                                            // Strip "minecraft:" prefix to match the format used in EntityProperties packets
+                                            var attrName = entryId.StartsWith("minecraft:")
+                                                ? entryId.Substring("minecraft:".Length)
+                                                : entryId;
+                                            attributeIdMap!.Add(i, attrName);
+                                        }
                                     }
                                     
                                     if (isChat)
@@ -494,6 +504,8 @@ namespace MinecraftClient.Protocol.Handlers
                                         if (!handler.GetTerrainEnabled() || !World.HasAnyDimension())
                                             World.LoadDefaultDimensions1206Plus();
                                     }
+                                    else if (isAttribute)
+                                        World.SetAttributeIdMap(attributeIdMap!);
                                 }
 
                                 break;
@@ -2502,39 +2514,19 @@ namespace MinecraftClient.Protocol.Handlers
                             ? dataTypes.ReadNextVarInt(packetData)
                             : dataTypes.ReadNextInt(packetData);
                         
-                        var attributeDictionary = new Dictionary<int, string>
-                        {
-                            { 0, "generic.armor" },
-                            { 1, "generic.armor_toughness" },
-                            { 2, "generic.attack_damage" },
-                            { 3, "generic.attack_knockback" },
-                            { 4, "generic.attack_speed" },
-                            { 5, "player.block_break_speed" },
-                            { 6, "player.block_interaction_range" },
-                            { 7, "player.entity_interaction_range" },
-                            { 8, "generic.fall_damage_multiplier" },
-                            { 9, "generic.flying_speed" },
-                            { 10, "generic.follow_range" },
-                            { 11, "generic.gravity" },
-                            { 12, "generic.jump_strength" },
-                            { 13, "generic.knockback_resistance" },
-                            { 14, "generic.luck" },
-                            { 15, "generic.max_absorption" },
-                            { 16, "generic.max_health" },
-                            { 17, "generic.movement_speed" },
-                            { 18, "generic.safe_fall_distance" },
-                            { 19, "generic.scale" },
-                            { 20, "zombie.spawn_reinforcements" },
-                            { 21, "generic.step_height" }
-                        };
-
                         Dictionary<string, double> keys = new();
                         for (var i = 0; i < numberOfProperties; i++)
                         {
-                            var propertyKey = protocolVersion < MC_1_20_6_Version
-                                ? dataTypes.ReadNextString(packetData)
-                                : (attributeDictionary.TryGetValue(dataTypes.ReadNextVarInt(packetData), out var attrName)
-                                    ? attrName : "unknown");
+                            string propertyKey;
+                            if (protocolVersion < MC_1_20_6_Version)
+                            {
+                                propertyKey = dataTypes.ReadNextString(packetData);
+                            }
+                            else
+                            {
+                                var attrId = dataTypes.ReadNextVarInt(packetData);
+                                propertyKey = World.GetAttributeNameById(attrId) ?? "unknown";
+                            }
                             var propertyValue2 = dataTypes.ReadNextDouble(packetData);
 
                             List<double> op0 = new();
