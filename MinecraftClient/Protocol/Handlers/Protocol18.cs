@@ -753,10 +753,9 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         case >= MC_1_16_2_Version and <= MC_1_18_2_Version:
                                             World.StoreOneDimension(dimensionName, dimensionType!);
-                                            // World.SetDimension(dimensionName);
-					    World.SetDimension(dimensionName);
+                                            World.SetDimension(dimensionName);
                                             break;
-                                        case < MC_1_20_6_Version:
+                                        default:
                                             World.SetDimension(dimensionTypeName!);
                                             break;
                                     }
@@ -808,17 +807,9 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         dataTypes.ReadNextBool(packetData); // Do limited crafting
 
-                        // Dimension Type (string bellow 1.20.6, VarInt for 1.20.6+)
                         var dimensionTypeName = protocolVersion < MC_1_20_6_Version
-                            ? dataTypes.ReadNextString(packetData) // < 1.20.6
-                            : (dataTypes.ReadNextVarInt(packetData) switch // 1.20.6+ // TODO: Use values from the registry
-                            {
-                                0 => "minecraft:overworld",
-                                1 => "minecraft:overworld_caves",
-                                2 => "minecraft:the_end",
-                                3 => "minecraft:the_nether",
-                                _ => null
-                            } ?? "minecraft:overworld");
+                            ? dataTypes.ReadNextString(packetData)
+                            : World.GetDimensionNameById(dataTypes.ReadNextVarInt(packetData));
 
                         dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
 
@@ -1282,14 +1273,7 @@ namespace MinecraftClient.Protocol.Handlers
                         switch (protocolVersion)
                         {
                             case >= MC_1_20_6_Version:
-                                dimensionTypeNameRespawn = dataTypes.ReadNextVarInt(packetData) switch // 1.20.6+ // TODO: Use values from the registry
-                                {
-                                    0 => "minecraft:overworld",
-                                    1 => "minecraft:overworld_caves",
-                                    2 => "minecraft:the_end",
-                                    3 => "minecraft:the_nether",
-                                    _ => null
-                                } ?? "minecraft:overworld";
+                                dimensionTypeNameRespawn = World.GetDimensionNameById(dataTypes.ReadNextVarInt(packetData));
                                 break;
                             case >= MC_1_19_Version:
                                 dimensionTypeNameRespawn =
@@ -1328,7 +1312,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         World.StoreOneDimension(dimensionName, dimensionTypeRespawn!);
                                         World.SetDimension(dimensionName);
                                         break;
-                                    case <= MC_1_20_6_Version:
+                                    default:
                                         World.SetDimension(dimensionTypeNameRespawn!);
                                         break;
                                 }
