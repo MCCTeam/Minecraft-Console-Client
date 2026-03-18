@@ -2521,9 +2521,9 @@ namespace MinecraftClient.Protocol.Handlers
                             { 2, "generic.attack_damage" },
                             { 3, "generic.attack_knockback" },
                             { 4, "generic.attack_speed" },
-                            { 5, "generic.block_break_speed" },
-                            { 6, "generic.block_interaction_range" },
-                            { 7, "generic.entity_interaction_range" },
+                            { 5, "player.block_break_speed" },
+                            { 6, "player.block_interaction_range" },
+                            { 7, "player.entity_interaction_range" },
                             { 8, "generic.fall_damage_multiplier" },
                             { 9, "generic.flying_speed" },
                             { 10, "generic.follow_range" },
@@ -2537,17 +2537,16 @@ namespace MinecraftClient.Protocol.Handlers
                             { 18, "generic.safe_fall_distance" },
                             { 19, "generic.scale" },
                             { 20, "zombie.spawn_reinforcements" },
-                            { 21, "generic.step_height" },
-                            { 22, "generic.submerged_mining_speed" },
-                            { 23, "generic.sweeping_damage_ratio" },
-                            { 24, "generic.water_movement_efficiency" }
+                            { 21, "generic.step_height" }
                         };
 
                         Dictionary<string, double> keys = new();
                         for (var i = 0; i < numberOfProperties; i++)
                         {
-                            var propertyKey = protocolVersion < MC_1_20_6_Version ? dataTypes.ReadNextString(packetData) 
-                                : attributeDictionary[dataTypes.ReadNextVarInt(packetData)];
+                            var propertyKey = protocolVersion < MC_1_20_6_Version
+                                ? dataTypes.ReadNextString(packetData)
+                                : (attributeDictionary.TryGetValue(dataTypes.ReadNextVarInt(packetData), out var attrName)
+                                    ? attrName : "unknown");
                             var propertyValue2 = dataTypes.ReadNextDouble(packetData);
 
                             List<double> op0 = new();
