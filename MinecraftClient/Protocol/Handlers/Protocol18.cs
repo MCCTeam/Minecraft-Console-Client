@@ -458,40 +458,41 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                                 else
                                 {
-                                    // TODO: Implement proper parsing for 1.20.6 / 1.21 when there is a custom data pack on the server
-                                    // THis is a temporary workaround to get the client to be useable asap
-                                    
                                     var registryId = dataTypes.ReadNextString(packetData);
                                     var entryCount = dataTypes.ReadNextVarInt(packetData);
 
-                                    // Ignore other registries to save on time, we need only these 2
-                                    if(registryId is not ("minecraft:dimension_type" or "minecraft:chat_type"))
-                                        break;
+                                    var isChat = registryId == "minecraft:chat_type";
+                                    var isDimension = registryId == "minecraft:dimension_type";
 
-                                    var avaliableChats = new Dictionary<int, string>();
-                                    var dimensionType = new Dictionary<int, string>();
+                                    var availableChats = isChat ? new Dictionary<int, string>() : null;
+                                    var dimensionIdMap = isDimension ? new Dictionary<int, string>() : null;
                                     
                                     for (var i = 0; i < entryCount; i++)
                                     {
                                         var entryId = dataTypes.ReadNextString(packetData);
                                         var hasData = dataTypes.ReadNextBool(packetData);
-                                        
-                                        if (hasData)
-                                        {
-                                            // TODO: Parse in case when the server data packs differ from the client
-                                            dataTypes.ReadNextNbt(packetData);
-                                        }
 
-                                        if (registryId == "minecraft:chat_type")
-                                            avaliableChats.Add(i, entryId);
-                                        else dimensionType.Add(i, entryId);
+                                        Dictionary<string, object>? nbtData = null;
+                                        if (hasData)
+                                            nbtData = dataTypes.ReadNextNbt(packetData);
+
+                                        if (isChat)
+                                            availableChats!.Add(i, entryId);
+                                        else if (isDimension)
+                                        {
+                                            dimensionIdMap!.Add(i, entryId);
+                                            if (nbtData != null && handler.GetTerrainEnabled())
+                                                World.StoreOneDimension(entryId, nbtData);
+                                        }
                                     }
                                     
-                                    if (registryId == "minecraft:chat_type")
-                                        ChatParser.ReadChatType(avaliableChats);
-                                    else
+                                    if (isChat)
+                                        ChatParser.ReadChatType(availableChats!);
+                                    else if (isDimension)
                                     {
-                                        World.LoadDefaultDimensions1206Plus();
+                                        World.SetDimensionIdMap(dimensionIdMap!);
+                                        if (!handler.GetTerrainEnabled() || !World.HasAnyDimension())
+                                            World.LoadDefaultDimensions1206Plus();
                                     }
                                 }
 
@@ -531,7 +532,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     knownDataPacks.Add((nameSpace, id, version));
                                 }
 
-                                SendKnownDataPacks(knownDataPacks);
+                                var vanillaPacks = knownDataPacks
+                                    .Where(p => p.Item1 == "minecraft")
+                                    .ToList();
+                                SendKnownDataPacks(vanillaPacks);
                                 break;
 
                             // Ignore other packets at this stage

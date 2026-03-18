@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +22,11 @@ namespace MinecraftClient.Mapping
         private static Dimension curDimension= new();
 
         private static readonly Dictionary<string, Dimension> dimensionList = new();
+
+        /// <summary>
+        /// VarInt ID → dimension name mapping, populated from RegistryData in 1.20.6+
+        /// </summary>
+        private static Dictionary<int, string> dimensionIdMap = new();
 
         /// <summary>
         /// Chunk data parsing progress
@@ -210,6 +215,21 @@ namespace MinecraftClient.Mapping
             };
 
             StoreDimensionList(defaultRegistryCodec);
+        }
+
+        public static void SetDimensionIdMap(Dictionary<int, string> idMap)
+        {
+            dimensionIdMap = idMap;
+        }
+
+        public static string GetDimensionNameById(int id)
+        {
+            return dimensionIdMap.TryGetValue(id, out var name) ? name : "minecraft:overworld";
+        }
+
+        public static bool HasAnyDimension()
+        {
+            return dimensionList.Count > 0;
         }
 
         /// <summary>
