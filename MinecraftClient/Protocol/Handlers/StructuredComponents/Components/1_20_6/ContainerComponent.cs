@@ -9,28 +9,21 @@ public class ContainerComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfItems { get; set; }
-    public List<Item> Items { get; set; } = [];
+    public List<Item?> Items { get; set; } = [];
     
     public override void Parse(Queue<byte> data)
     {
         NumberOfItems = dataTypes.ReadNextVarInt(data);
         for (var i = 0; i < NumberOfItems; i++)
-        {
-            var item = dataTypes.ReadNextItemSlot(data, ItemPalette);
-
-            if (item is null)
-                continue;
-            
-            Items.Add(item);
-        }
+            Items.Add(dataTypes.ReadNextItemSlot(data, ItemPalette));
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(DataTypes.GetVarInt(NumberOfItems));
-        for (var i = 0; i < NumberOfItems; i++)
-            data.AddRange(DataTypes.GetItemSlot(Items[i], itemPalette));
+        data.AddRange(DataTypes.GetVarInt(Items.Count));
+        foreach (var item in Items)
+            data.AddRange(DataTypes.GetItemSlot(item, itemPalette));
             
         return new Queue<byte>(data);
     }

@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
@@ -10,26 +8,26 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_2
 public class BundleContentsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
-    public int NumberOfItems { get; set; }
-    public List<Item?> Items { get; set; } = [];
+    public List<Item> Items { get; set; } = [];
 
     public override void Parse(Queue<byte> data)
     {
-        NumberOfItems = dataTypes.ReadNextVarInt(data);
+        var count = dataTypes.ReadNextVarInt(data);
 
-        for (var i = 0; i < NumberOfItems; i++)
-            Items.Add(dataTypes.ReadNextItemSlot(data, itemPalette));
+        for (var i = 0; i < count; i++)
+        {
+            var item = dataTypes.ReadNextItemSlot(data, itemPalette);
+            if (item != null)
+                Items.Add(item);
+        }
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(DataTypes.GetVarInt(NumberOfItems));
+        data.AddRange(DataTypes.GetVarInt(Items.Count));
 
-        if (NumberOfItems != Items.Count)
-            throw new ArgumentNullException($"Cannot serialize BundleContentsComponent1206 because NumberOfItems != Items.Count!");
-            
-        foreach (var item in Items.OfType<Item>())
+        foreach (var item in Items)
             data.AddRange(DataTypes.GetItemSlot(item, itemPalette));
 
         return new Queue<byte>(data);

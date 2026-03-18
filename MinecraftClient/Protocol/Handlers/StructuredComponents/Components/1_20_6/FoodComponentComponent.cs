@@ -11,21 +11,20 @@ public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int Nutrition { get; set; }
-    public bool Saturation { get; set; }
+    public float Saturation { get; set; }
     public bool CanAlwaysEat { get; set; }
     public float SecondsToEat { get; set; }
-    public int NumberOfEffects { get; set; }
     public List<EffectSubComponent> Effects { get; set; } = new();
     
     public override void Parse(Queue<byte> data)
     {
         Nutrition = dataTypes.ReadNextVarInt(data);
-        Saturation = dataTypes.ReadNextBool(data);
+        Saturation = dataTypes.ReadNextFloat(data);
         CanAlwaysEat = dataTypes.ReadNextBool(data);
         SecondsToEat = dataTypes.ReadNextFloat(data);
-        NumberOfEffects = dataTypes.ReadNextVarInt(data);
+        var numberOfEffects = dataTypes.ReadNextVarInt(data);
         
-        for(var i = 0; i < NumberOfEffects; i++)
+        for(var i = 0; i < numberOfEffects; i++)
             Effects.Add((EffectSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.Effect, data));
     }
 
@@ -33,19 +32,13 @@ public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette
     {
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(Nutrition));
-        data.AddRange(DataTypes.GetBool(Saturation));
+        data.AddRange(DataTypes.GetFloat(Saturation));
         data.AddRange(DataTypes.GetBool(CanAlwaysEat));
         data.AddRange(DataTypes.GetFloat(SecondsToEat));
-        data.AddRange(DataTypes.GetFloat(NumberOfEffects));
+        data.AddRange(DataTypes.GetVarInt(Effects.Count));
 
-        if (NumberOfEffects > 0)
-        {
-            if(Effects.Count != NumberOfEffects)
-                throw new ArgumentNullException($"Can not serialize FoodComponent1206 due to NumberOfEffcets being different from the count of elements in the Effects list!");
-            
-            foreach(var effect in Effects)
-                data.AddRange(effect.Serialize());
-        }
+        foreach(var effect in Effects)
+            data.AddRange(effect.Serialize());
         
         return new Queue<byte>(data);
     }
