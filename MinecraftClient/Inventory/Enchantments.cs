@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Inventory
+namespace MinecraftClient.Inventory
 {
     // Not implemented for 1.14
     public enum Enchantments : short
@@ -9,9 +9,9 @@
         BlastProtection,
         Breach,
         Channeling,
-        DepthStrieder,
+        DepthStrider,
         Density,
-        Efficency,
+        Efficiency,
         FeatherFalling,
         FireAspect,
         FireProtection,
@@ -23,7 +23,7 @@
         Knockback,
         Looting,
         LuckOfTheSea,
-        Loyality,
+        Loyalty,
         Lure,
         Mending,
         Multishot,

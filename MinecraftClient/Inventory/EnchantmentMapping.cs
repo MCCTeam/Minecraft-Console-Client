@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MinecraftClient.Protocol.Handlers;
@@ -21,7 +21,7 @@ namespace MinecraftClient.Inventory
             { 5,    Enchantments.Respiration },
             { 6,    Enchantments.AquaAffinity },
             { 7,    Enchantments.Thorns },
-            { 8,    Enchantments.DepthStrieder },
+            { 8,    Enchantments.DepthStrider },
             { 9,    Enchantments.FrostWalker },
             { 10,   Enchantments.BindingCurse },
             { 11,   Enchantments.Sharpness },
@@ -31,7 +31,7 @@ namespace MinecraftClient.Inventory
             { 15,   Enchantments.FireAspect },
             { 16,   Enchantments.Looting },
             { 17,   Enchantments.Sweeping },
-            { 18,   Enchantments.Efficency },
+            { 18,   Enchantments.Efficiency },
             { 19,   Enchantments.SilkTouch },
             { 20,   Enchantments.Unbreaking },
             { 21,   Enchantments.Fortune },
@@ -41,7 +41,7 @@ namespace MinecraftClient.Inventory
             { 25,   Enchantments.Infinity },
             { 26,   Enchantments.LuckOfTheSea },
             { 27,   Enchantments.Lure },
-            { 28,   Enchantments.Loyality },
+            { 28,   Enchantments.Loyalty },
             { 29,   Enchantments.Impaling },
             { 30,   Enchantments.Riptide },
             { 31,   Enchantments.Channeling },
@@ -61,7 +61,7 @@ namespace MinecraftClient.Inventory
             { 5,    Enchantments.Respiration },
             { 6,    Enchantments.AquaAffinity },
             { 7,    Enchantments.Thorns },
-            { 8,    Enchantments.DepthStrieder },
+            { 8,    Enchantments.DepthStrider },
             { 9,    Enchantments.FrostWalker },
             { 10,   Enchantments.BindingCurse },
             { 11,   Enchantments.SoulSpeed },
@@ -72,7 +72,7 @@ namespace MinecraftClient.Inventory
             { 16,   Enchantments.FireAspect },
             { 17,   Enchantments.Looting },
             { 18,   Enchantments.Sweeping },
-            { 19,   Enchantments.Efficency },
+            { 19,   Enchantments.Efficiency },
             { 20,   Enchantments.SilkTouch },
             { 21,   Enchantments.Unbreaking },
             { 22,   Enchantments.Fortune },
@@ -82,7 +82,7 @@ namespace MinecraftClient.Inventory
             { 26,   Enchantments.Infinity },
             { 27,   Enchantments.LuckOfTheSea },
             { 28,   Enchantments.Lure },
-            { 29,   Enchantments.Loyality },
+            { 29,   Enchantments.Loyalty },
             { 30,   Enchantments.Impaling },
             { 31,   Enchantments.Riptide },
             { 32,   Enchantments.Channeling },
@@ -105,7 +105,7 @@ namespace MinecraftClient.Inventory
             { 5,    Enchantments.Respiration },
             { 6,    Enchantments.AquaAffinity },
             { 7,    Enchantments.Thorns },
-            { 8,    Enchantments.DepthStrieder },
+            { 8,    Enchantments.DepthStrider },
             { 9,    Enchantments.FrostWalker },
             { 10,   Enchantments.BindingCurse },
             { 11,   Enchantments.SoulSpeed },
@@ -117,7 +117,7 @@ namespace MinecraftClient.Inventory
             { 17,   Enchantments.FireAspect },
             { 18,   Enchantments.Looting },
             { 19,   Enchantments.Sweeping },
-            { 20,   Enchantments.Efficency },
+            { 20,   Enchantments.Efficiency },
             { 21,   Enchantments.SilkTouch },
             { 22,   Enchantments.Unbreaking },
             { 23,   Enchantments.Fortune },
@@ -127,7 +127,7 @@ namespace MinecraftClient.Inventory
             { 27,   Enchantments.Infinity },
             { 28,   Enchantments.LuckOfTheSea },
             { 29,   Enchantments.Lure },
-            { 30,   Enchantments.Loyality },
+            { 30,   Enchantments.Loyalty },
             { 31,   Enchantments.Impaling },
             { 32,   Enchantments.Riptide },
             { 33,   Enchantments.Channeling },
@@ -150,7 +150,7 @@ namespace MinecraftClient.Inventory
             { 5,    Enchantments.Respiration },
             { 6,    Enchantments.AquaAffinity },
             { 7,    Enchantments.Thorns },
-            { 8,    Enchantments.DepthStrieder },
+            { 8,    Enchantments.DepthStrider },
             { 9,    Enchantments.FrostWalker },
             { 10,   Enchantments.BindingCurse },
             { 11,   Enchantments.SoulSpeed },
@@ -162,7 +162,7 @@ namespace MinecraftClient.Inventory
             { 17,   Enchantments.FireAspect },
             { 18,   Enchantments.Looting },
             { 19,   Enchantments.Sweeping },
-            { 20,   Enchantments.Efficency },
+            { 20,   Enchantments.Efficiency },
             { 21,   Enchantments.SilkTouch },
             { 22,   Enchantments.Unbreaking },
             { 23,   Enchantments.Fortune },
@@ -172,7 +172,7 @@ namespace MinecraftClient.Inventory
             { 27,   Enchantments.Infinity },
             { 28,   Enchantments.LuckOfTheSea },
             { 29,   Enchantments.Lure },
-            { 30,   Enchantments.Loyality },
+            { 30,   Enchantments.Loyalty },
             { 31,   Enchantments.Impaling },
             { 32,   Enchantments.Riptide },
             { 33,   Enchantments.Channeling },
@@ -206,9 +206,29 @@ namespace MinecraftClient.Inventory
             return value;
         }
 
+        private static Dictionary<Enchantments, short>? reverseEnchantmentMappings;
+
+        public static Enchantments GetEnchantmentByRegistryId1206(int id)
+        {
+            if (enchantmentMappings.TryGetValue((short)id, out var value))
+                return value;
+            return (Enchantments)(-1);
+        }
+
+        public static int GetRegistryId1206ByEnchantment(Enchantments enchantment)
+        {
+            if (reverseEnchantmentMappings == null)
+            {
+                reverseEnchantmentMappings = new Dictionary<Enchantments, short>();
+                foreach (var kvp in enchantmentMappings)
+                    reverseEnchantmentMappings[kvp.Value] = kvp.Key;
+            }
+            return reverseEnchantmentMappings.TryGetValue(enchantment, out var id) ? id : -1;
+        }
+
         public static string GetEnchantmentName(Enchantments enchantment)
         {
-            var translation = ChatParser.TranslateString("Enchantments.minecraft." + enchantment.ToString().ToUnderscoreCase());
+            var translation = ChatParser.TranslateString("enchantment.minecraft." + enchantment.ToString().ToUnderscoreCase());
             return string.IsNullOrEmpty(translation) ? $"Unknown Enchantment with ID: {(short)enchantment} (Probably not named in the code yet)" : translation;
         }
 
