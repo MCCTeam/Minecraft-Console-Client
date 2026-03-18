@@ -2556,7 +2556,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (op0.Count > 0) propertyValue2 += op0.Sum();
                             if (op1.Count > 0) propertyValue2 *= 1 + op1.Sum();
                             if (op2.Count > 0) propertyValue2 *= op2.Aggregate((a, _x) => a * _x);
-                            keys.Add(propertyKey, propertyValue2);
+                            keys[propertyKey] = propertyValue2;
                         }
 
                         handler.OnEntityProperties(entityId, keys);

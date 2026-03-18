@@ -244,10 +244,44 @@ namespace MinecraftClient.Mapping
 
         /// <summary>
         /// Get attribute name by its registry VarInt ID. Returns null if the ID is unknown.
+        /// When KnownDataPacks negotiation tells the server we already have vanilla data,
+        /// the server skips sending the attribute registry. In that case we fall back to
+        /// the built-in vanilla 1.20.6 attribute order (22 entries).
         /// </summary>
         public static string? GetAttributeNameById(int id)
         {
+            if (attributeIdMap.Count == 0)
+                LoadDefaultAttributes();
             return attributeIdMap.TryGetValue(id, out var name) ? name : null;
+        }
+
+        private static void LoadDefaultAttributes()
+        {
+            attributeIdMap = new Dictionary<int, string>
+            {
+                { 0, "generic.armor" },
+                { 1, "generic.armor_toughness" },
+                { 2, "generic.attack_damage" },
+                { 3, "generic.attack_knockback" },
+                { 4, "generic.attack_speed" },
+                { 5, "player.block_break_speed" },
+                { 6, "player.block_interaction_range" },
+                { 7, "player.entity_interaction_range" },
+                { 8, "generic.fall_damage_multiplier" },
+                { 9, "generic.flying_speed" },
+                { 10, "generic.follow_range" },
+                { 11, "generic.gravity" },
+                { 12, "generic.jump_strength" },
+                { 13, "generic.knockback_resistance" },
+                { 14, "generic.luck" },
+                { 15, "generic.max_absorption" },
+                { 16, "generic.max_health" },
+                { 17, "generic.movement_speed" },
+                { 18, "generic.safe_fall_distance" },
+                { 19, "generic.scale" },
+                { 20, "zombie.spawn_reinforcements" },
+                { 21, "generic.step_height" }
+            };
         }
 
         /// <summary>
