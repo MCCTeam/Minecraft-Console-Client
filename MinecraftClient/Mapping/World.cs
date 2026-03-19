@@ -257,6 +257,9 @@ namespace MinecraftClient.Mapping
 
         private static void LoadDefaultAttributes()
         {
+            // Fallback for when the server doesn't send attribute registry via RegistryData.
+            // Matches 1.21.1 Attributes.java registration order.
+            // For 1.20.6+ servers, SetAttributeIdMap() overrides this with the actual registry.
             attributeIdMap = new Dictionary<int, string>
             {
                 { 0, "generic.armor" },
@@ -266,21 +269,30 @@ namespace MinecraftClient.Mapping
                 { 4, "generic.attack_speed" },
                 { 5, "player.block_break_speed" },
                 { 6, "player.block_interaction_range" },
-                { 7, "player.entity_interaction_range" },
-                { 8, "generic.fall_damage_multiplier" },
-                { 9, "generic.flying_speed" },
-                { 10, "generic.follow_range" },
-                { 11, "generic.gravity" },
-                { 12, "generic.jump_strength" },
-                { 13, "generic.knockback_resistance" },
-                { 14, "generic.luck" },
-                { 15, "generic.max_absorption" },
-                { 16, "generic.max_health" },
-                { 17, "generic.movement_speed" },
-                { 18, "generic.safe_fall_distance" },
-                { 19, "generic.scale" },
-                { 20, "zombie.spawn_reinforcements" },
-                { 21, "generic.step_height" }
+                { 7, "generic.burning_time" },
+                { 8, "generic.explosion_knockback_resistance" },
+                { 9, "player.entity_interaction_range" },
+                { 10, "generic.fall_damage_multiplier" },
+                { 11, "generic.flying_speed" },
+                { 12, "generic.follow_range" },
+                { 13, "generic.gravity" },
+                { 14, "generic.jump_strength" },
+                { 15, "generic.knockback_resistance" },
+                { 16, "generic.luck" },
+                { 17, "generic.max_absorption" },
+                { 18, "generic.max_health" },
+                { 19, "player.mining_efficiency" },
+                { 20, "generic.movement_efficiency" },
+                { 21, "generic.movement_speed" },
+                { 22, "generic.oxygen_bonus" },
+                { 23, "generic.safe_fall_distance" },
+                { 24, "generic.scale" },
+                { 25, "player.sneaking_speed" },
+                { 26, "zombie.spawn_reinforcements" },
+                { 27, "generic.step_height" },
+                { 28, "player.submerged_mining_speed" },
+                { 29, "player.sweeping_damage_ratio" },
+                { 30, "generic.water_movement_efficiency" }
             };
         }
 

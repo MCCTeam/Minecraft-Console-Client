@@ -2687,39 +2687,30 @@ namespace MinecraftClient.Protocol.Handlers
                     for (var i = 0; i < explosionBlockCount; i++)
                         dataTypes.ReadNextByteArray(packetData, 3);
 
-                    // Maybe use in the future when the physics are implemented
                     dataTypes.ReadNextFloat(packetData); // Player Motion X
                     dataTypes.ReadNextFloat(packetData); // Player Motion Y
                     dataTypes.ReadNextFloat(packetData); // Player Motion Z
 
-                    // Cut off here, there is an issue, the code bllow crashes on sound name reading
-                    // I am unable to figure out what part of the code is reading more bytes than it should
-                    // TODO: Fix
-                    handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
-                    break;
-                    
-                    /*if (protocolVersion >= MC_1_20_4_Version)
+                    if (protocolVersion >= MC_1_20_4_Version)
                     {
-                        var blockInteraction = dataTypes.ReadNextVarInt(packetData); // Block Interaction
-                        
-                        if(explosionStrength >= 2.0 || blockInteraction != 0)
-                            dataTypes.ReadParticleData(packetData, itemPalette); // Large Explosion Particles
-                        else
-                            dataTypes.ReadParticleData(packetData, itemPalette);  // Small Explosion Particles
+                        dataTypes.ReadNextVarInt(packetData); // Block Interaction (enum ordinal)
+                        dataTypes.ReadParticleData(packetData, itemPalette); // Small Explosion Particles
+                        dataTypes.ReadParticleData(packetData, itemPalette); // Large Explosion Particles
 
-                        // Explosion Sound
-                        dataTypes.ReadNextString(packetData); // Sound Name
-
-                        if (protocolVersion < MC_1_21_Version)
+                        // Explosion Sound: Holder<SoundEvent> via ByteBufCodecs.holder()
+                        // VarInt id: 0 = inline (read DIRECT_STREAM_CODEC), >0 = registry ref (id-1)
+                        var soundHolderId = dataTypes.ReadNextVarInt(packetData);
+                        if (soundHolderId == 0)
                         {
+                            dataTypes.ReadNextString(packetData); // Sound ResourceLocation
                             var hasFixedRange = dataTypes.ReadNextBool(packetData);
                             if (hasFixedRange)
-                                dataTypes.ReadNextFloat(packetData); // Range
+                                dataTypes.ReadNextFloat(packetData); // Fixed range
                         }
                     }
 
                     handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
-                    break;*/
+                    break;
                 case PacketTypesIn.HeldItemChange:
                     handler.OnHeldItemChange(dataTypes.ReadNextByte(packetData)); // Slot
                     break;
