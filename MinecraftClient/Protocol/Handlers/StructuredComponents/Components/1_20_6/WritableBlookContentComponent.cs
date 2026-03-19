@@ -8,14 +8,13 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_2
 
 public class WritableBlookContentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
-    public int NumberOfPages { get; set; }
     public List<BookPage> Pages { get; set; } = [];
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfPages = dataTypes.ReadNextVarInt(data);
+        var count = dataTypes.ReadNextVarInt(data);
 
-        for (var i = 0; i < NumberOfPages; i++)
+        for (var i = 0; i < count; i++)
         {
             var rawContent = dataTypes.ReadNextString(data);
             var hasFilteredContent = dataTypes.ReadNextBool(data);
@@ -32,10 +31,7 @@ public class WritableBlookContentComponent(DataTypes dataTypes, ItemPalette item
     {
         var data = new List<byte>();
         
-        data.AddRange(DataTypes.GetVarInt(NumberOfPages));
-
-        if (NumberOfPages != Pages.Count)
-            throw new InvalidOperationException("Can not setialize WritableBlookContentComponent1206 because NumberOfPages != Pages.Count!");
+        data.AddRange(DataTypes.GetVarInt(Pages.Count));
 
         foreach (var page in Pages)
         {
@@ -45,7 +41,7 @@ public class WritableBlookContentComponent(DataTypes dataTypes, ItemPalette item
             if (page.HasFilteredContent)
             {
                 if(page.FilteredContent is null)
-                    throw new InvalidOperationException("Can not setialize WritableBlookContentComponent1206 because page.HasFilteredContent = true, but FilteredContent is null!");
+                    throw new InvalidOperationException("Can not serialize WritableBlookContentComponent because page.HasFilteredContent = true, but FilteredContent is null!");
                 
                 data.AddRange(DataTypes.GetString(page.FilteredContent));
             }

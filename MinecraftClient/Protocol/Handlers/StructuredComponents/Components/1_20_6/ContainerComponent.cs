@@ -8,13 +8,12 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_2
 public class ContainerComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
-    public int NumberOfItems { get; set; }
     public List<Item?> Items { get; set; } = [];
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfItems = dataTypes.ReadNextVarInt(data);
-        for (var i = 0; i < NumberOfItems; i++)
+        var count = dataTypes.ReadNextVarInt(data);
+        for (var i = 0; i < count; i++)
             Items.Add(dataTypes.ReadNextItemSlot(data, ItemPalette));
     }
 
