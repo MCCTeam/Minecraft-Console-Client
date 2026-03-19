@@ -10,6 +10,7 @@ public class LoreNameComponent1206(DataTypes dataTypes, ItemPalette itemPalette,
 {
     public int NumberOfLines { get; set; }
     public List<string> Lines { get; set; } = [];
+    public List<Dictionary<string, object>> LinesNbt { get; set; } = [];
     
     public override void Parse(Queue<byte> data)
     {
@@ -18,18 +19,20 @@ public class LoreNameComponent1206(DataTypes dataTypes, ItemPalette itemPalette,
         if (NumberOfLines <= 0) return;
         
         for (var i = 0; i < NumberOfLines; i++)
-            Lines.Add(ChatParser.ParseText(dataTypes.ReadNextString(data)));
+        {
+            var lineNbt = dataTypes.ReadNextNbt(data);
+            LinesNbt.Add(lineNbt);
+            Lines.Add(ChatParser.ParseText(lineNbt));
+        }
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(DataTypes.GetVarInt(Lines.Count));
+        data.AddRange(DataTypes.GetVarInt(LinesNbt.Count));
 
-        if (Lines.Count <= 0) return new Queue<byte>(data);
-        
-        foreach (var line in Lines)
-            data.AddRange(DataTypes.GetString(line));
+        foreach (var lineNbt in LinesNbt)
+            data.AddRange(DataTypes.GetNbt(lineNbt));
 
         return new Queue<byte>(data);
     }

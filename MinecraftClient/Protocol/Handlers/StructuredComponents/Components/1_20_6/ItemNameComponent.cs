@@ -9,16 +9,18 @@ public class ItemNameComponent(DataTypes dataTypes, ItemPalette itemPalette, Sub
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public string ItemName { get; set; } = string.Empty;
+    public Dictionary<string, object>? ItemNameNbt { get; set; }
     
     public override void Parse(Queue<byte> data)
     {
-        ItemName = ChatParser.ParseText(dataTypes.ReadNextString(data));
+        ItemNameNbt = dataTypes.ReadNextNbt(data);
+        ItemName = ChatParser.ParseText(ItemNameNbt);
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(DataTypes.GetString(ItemName));
+        data.AddRange(DataTypes.GetNbt(ItemNameNbt));
         return new Queue<byte>(data);
     }
 }

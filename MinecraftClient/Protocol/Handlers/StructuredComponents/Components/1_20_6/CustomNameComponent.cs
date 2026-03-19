@@ -9,16 +9,18 @@ public class CustomNameComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public string CustomName { get; set; } = string.Empty;
+    public Dictionary<string, object>? CustomNameNbt { get; set; }
     
     public override void Parse(Queue<byte> data)
     {
-        CustomName = ChatParser.ParseText(dataTypes.ReadNextString(data));
+        CustomNameNbt = dataTypes.ReadNextNbt(data);
+        CustomName = ChatParser.ParseText(CustomNameNbt);
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(DataTypes.GetString(CustomName));
+        data.AddRange(DataTypes.GetNbt(CustomNameNbt));
         return new Queue<byte>(data);
     }
 }
