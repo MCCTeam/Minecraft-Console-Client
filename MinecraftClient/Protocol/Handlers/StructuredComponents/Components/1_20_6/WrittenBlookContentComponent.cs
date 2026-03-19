@@ -20,7 +20,7 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
     
     public override void Parse(Queue<byte> data)
     {
-        RawTitle = ChatParser.ParseText(dataTypes.ReadNextString(data));
+        RawTitle = dataTypes.ReadNextString(data);
         HasFilteredTitle = dataTypes.ReadNextBool(data);
 
         if (HasFilteredTitle)
@@ -32,14 +32,19 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
 
         for (var i = 0; i < NumberOfPages; i++)
         {
-            var rawContent = ChatParser.ParseText(dataTypes.ReadNextString(data));
+            var rawContentNbt = dataTypes.ReadNextNbt(data);
+            var rawContent = ChatParser.ParseText(rawContentNbt);
             var hasFilteredContent = dataTypes.ReadNextBool(data);
-            var filteredContent = null as string;
+            Dictionary<string, object>? filteredContentNbt = null;
+            string? filteredContent = null;
             
-            if(hasFilteredContent)
-                filteredContent = dataTypes.ReadNextString(data);
+            if (hasFilteredContent)
+            {
+                filteredContentNbt = dataTypes.ReadNextNbt(data);
+                filteredContent = ChatParser.ParseText(filteredContentNbt);
+            }
             
-            Pages.Add(new BookPage(rawContent, hasFilteredContent, filteredContent));
+            Pages.Add(new BookPage(rawContent, hasFilteredContent, filteredContent, rawContentNbt, filteredContentNbt));
         }
 
         Resolved = dataTypes.ReadNextBool(data);
@@ -55,30 +60,22 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
         if (HasFilteredTitle)
         {
             if(FilteredTitle is null)
-                throw new InvalidOperationException("Can not setialize WrittenBlookContentComponent1206 because HasFilteredTitle is true but FilteredTitle is null!");
+                throw new InvalidOperationException("Can not serialize WrittenBookContentComponent because HasFilteredTitle is true but FilteredTitle is null!");
             
             data.AddRange(DataTypes.GetString(FilteredTitle));
         }
         
         data.AddRange(DataTypes.GetString(Author));
         data.AddRange(DataTypes.GetVarInt(Generation));
-        data.AddRange(DataTypes.GetVarInt(NumberOfPages));
-
-        if (NumberOfPages != Pages.Count)
-            throw new InvalidOperationException("Can not setialize WrittenBlookContentComponent1206 because NumberOfPages != Pages.Count!");
+        data.AddRange(DataTypes.GetVarInt(Pages.Count));
 
         foreach (var page in Pages)
         {
-            data.AddRange(DataTypes.GetString(page.RawContent));
+            data.AddRange(DataTypes.GetNbt(page.RawContentNbt));
             data.AddRange(DataTypes.GetBool(page.HasFilteredContent));
 
             if (page.HasFilteredContent)
-            {
-                if(page.FilteredContent is null)
-                    throw new InvalidOperationException("Can not setialize WrittenBlookContentComponent1206 because page.HasFilteredContent = true, but FilteredContent is null!");
-                
-                data.AddRange(DataTypes.GetString(page.FilteredContent));
-            }
+                data.AddRange(DataTypes.GetNbt(page.FilteredContentNbt));
         }
         data.AddRange(DataTypes.GetBool(Resolved));
         return new Queue<byte>(data);

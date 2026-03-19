@@ -51,26 +51,22 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
             data.AddRange(DataTypes.GetString(Name));
         }
         
+        data.AddRange(DataTypes.GetBool(HasUniqueId));
         if (HasUniqueId)
             data.AddRange(DataTypes.GetUUID(Uuid));
 
-        if (NumberOfProperties > 0)
+        data.AddRange(DataTypes.GetVarInt(ProfileProperties.Count));
+        foreach (var profileProperty in ProfileProperties)
         {
-            if(NumberOfProperties != ProfileProperties.Count)
-                throw new Exception("Can't serialize the ProfileComponent because the NumberOfProperties and ProfileProperties.Count differ!");
-
-            foreach (var profileProperty in ProfileProperties)
+            data.AddRange(DataTypes.GetString(profileProperty.Name));
+            data.AddRange(DataTypes.GetString(profileProperty.Value));
+            data.AddRange(DataTypes.GetBool(profileProperty.HasSignature));
+            if (profileProperty.HasSignature)
             {
-                data.AddRange(DataTypes.GetString(profileProperty.Name));
-                data.AddRange(DataTypes.GetString(profileProperty.Value));
-                data.AddRange(DataTypes.GetBool(profileProperty.HasSignature));
-                if (profileProperty.HasSignature)
-                {
-                    if(string.IsNullOrEmpty(profileProperty.Signature))
-                        throw new NullReferenceException("Can't serialize the ProfileComponent because HasSignature is true, but the Signature is null/empty!");
-                    
-                    data.AddRange(DataTypes.GetString(profileProperty.Signature));
-                }
+                if(string.IsNullOrEmpty(profileProperty.Signature))
+                    throw new NullReferenceException("Can't serialize the ProfileComponent because HasSignature is true, but the Signature is null/empty!");
+                
+                data.AddRange(DataTypes.GetString(profileProperty.Signature));
             }
         }
         

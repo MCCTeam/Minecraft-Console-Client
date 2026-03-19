@@ -1231,18 +1231,31 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (root)
             {
+                if (protocolversion >= Protocol18Handler.MC_1_20_4_Version
+                    && nbt.Count == 1
+                    && nbt.TryGetValue("", out var rootVal) && rootVal is string rootStr)
+                {
+                    bytes.Add(8); // TAG_String
+                    var strBytes = Encoding.UTF8.GetBytes(rootStr);
+                    bytes.AddRange(GetUShort((ushort)strBytes.Length));
+                    bytes.AddRange(strBytes);
+                    return bytes.ToArray();
+                }
+
                 bytes.Add(10); // TAG_Compound
 
-                // NBT root name
-                string? rootName = null;
+                if (protocolversion < Protocol18Handler.MC_1_20_2_Version)
+                {
+                    string? rootName = null;
 
-                if (nbt.ContainsKey(""))
-                    rootName = nbt[""] as string;
+                    if (nbt.ContainsKey(""))
+                        rootName = nbt[""] as string;
 
-                rootName ??= "";
+                    rootName ??= "";
 
-                bytes.AddRange(GetUShort((ushort)rootName.Length));
-                bytes.AddRange(Encoding.ASCII.GetBytes(rootName));
+                    bytes.AddRange(GetUShort((ushort)rootName.Length));
+                    bytes.AddRange(Encoding.ASCII.GetBytes(rootName));
+                }
             }
 
             foreach (var item in nbt)

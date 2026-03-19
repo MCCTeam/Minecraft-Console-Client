@@ -15,10 +15,12 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
     public float ItemModelIndex { get; set; }
     public int NumberOfOverrides { get; set; }
     public List<TrimAssetOverride>? Overrides { get; set; }
+    public Dictionary<string, object>? DescriptionNbt { get; set; }
     public string Description { get; set; } = null!;
     public int TrimPatternType { get; set; }
     public string TrimPatternTypeAssetName { get; set; } = null!;
     public int TemplateItem { get; set; }
+    public Dictionary<string, object>? TrimPatternTypeDescriptionNbt { get; set; }
     public string TrimPatternTypeDescription { get; set; } = null!;
     public bool Decal { get; set; }
     public bool ShowInTooltip { get; set; }
@@ -43,7 +45,8 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
                         dataTypes.ReadNextString(data)));
             }
 
-            Description = ChatParser.ParseText(dataTypes.ReadNextString(data));
+            DescriptionNbt = dataTypes.ReadNextNbt(data);
+            Description = ChatParser.ParseText(DescriptionNbt);
         }
 
         TrimPatternType = dataTypes.ReadNextVarInt(data);
@@ -52,7 +55,8 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
         {
             TrimPatternTypeAssetName = dataTypes.ReadNextString(data);
             TemplateItem = dataTypes.ReadNextVarInt(data);
-            TrimPatternTypeDescription = dataTypes.ReadNextString(data);
+            TrimPatternTypeDescriptionNbt = dataTypes.ReadNextNbt(data);
+            TrimPatternTypeDescription = ChatParser.ParseText(TrimPatternTypeDescriptionNbt);
             Decal = dataTypes.ReadNextBool(data);
         }
 
@@ -67,8 +71,8 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
 
         if (TrimMaterialType == 0)
         {
-            if (string.IsNullOrEmpty(AssetName) || string.IsNullOrEmpty(Description))
-                throw new NullReferenceException("Can't serialize the TrimComponent because the Asset Name or Description are null!");
+            if (string.IsNullOrEmpty(AssetName))
+                throw new NullReferenceException("Can't serialize the TrimComponent because the Asset Name is null!");
             
             data.AddRange(DataTypes.GetString(AssetName));
             data.AddRange(DataTypes.GetVarInt(Ingredient));
@@ -85,22 +89,22 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
                     data.AddRange(DataTypes.GetString(assetName));
                 }
             }
-            data.AddRange(DataTypes.GetString(Description));
-
-            data.AddRange(DataTypes.GetVarInt(TrimPatternType));
-            if (TrimPatternType == 0)
-            {
-                if (string.IsNullOrEmpty(TrimPatternTypeAssetName) || string.IsNullOrEmpty(TrimPatternTypeDescription))
-                    throw new NullReferenceException("Can't serialize the TrimComponent because the TrimPatternTypeAssetName or TrimPatternTypeDescription are null!");
-                
-                data.AddRange(DataTypes.GetString(TrimPatternTypeAssetName));
-                data.AddRange(DataTypes.GetVarInt(TemplateItem));
-                data.AddRange(DataTypes.GetString(TrimPatternTypeDescription));
-                data.AddRange(DataTypes.GetBool(Decal));
-            }
-            
-            data.AddRange(DataTypes.GetBool(ShowInTooltip));
+            data.AddRange(DataTypes.GetNbt(DescriptionNbt));
         }
+
+        data.AddRange(DataTypes.GetVarInt(TrimPatternType));
+        if (TrimPatternType == 0)
+        {
+            if (string.IsNullOrEmpty(TrimPatternTypeAssetName))
+                throw new NullReferenceException("Can't serialize the TrimComponent because the TrimPatternTypeAssetName is null!");
+            
+            data.AddRange(DataTypes.GetString(TrimPatternTypeAssetName));
+            data.AddRange(DataTypes.GetVarInt(TemplateItem));
+            data.AddRange(DataTypes.GetNbt(TrimPatternTypeDescriptionNbt));
+            data.AddRange(DataTypes.GetBool(Decal));
+        }
+        
+        data.AddRange(DataTypes.GetBool(ShowInTooltip));
         
         return new Queue<byte>(data);
     }
