@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Protocol.Handlers
+namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
     /// Outgoing packet types
@@ -8,6 +8,7 @@
         AcknowledgeConfiguration,    // Added in 1.20.2
         AdvancementTab,              //
         Animation,                   //
+        BundleItemSelected,          // Added in 1.21.2
         ChangeContainerSlotState,    // Added in 1.20.3
         ChatCommand,                 // Added in 1.19
         ChatMessage,                 //
@@ -17,6 +18,7 @@
         ClickWindowButton,           //
         ClientSettings,              //
         ClientStatus,                //
+        ClientTickEnd,               // Added in 1.21.2
         CloseWindow,                 //
         CraftRecipeRequest,          //
         CreativeInventoryAction,     //

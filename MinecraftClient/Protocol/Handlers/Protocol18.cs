@@ -1411,18 +1411,40 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketTypesIn.PlayerPositionAndLook:
                 {
-                    // These always need to be read, since we need the field after them for teleport confirm
-                    var location = new Location(
-                        dataTypes.ReadNextDouble(packetData), // X
-                        dataTypes.ReadNextDouble(packetData), // Y
-                        dataTypes.ReadNextDouble(packetData) // Z
-                    );
+                    int teleportId;
+                    Location location;
+                    float yaw, pitch;
+                    int locMask;
 
-                    var yaw = dataTypes.ReadNextFloat(packetData);
-                    var pitch = dataTypes.ReadNextFloat(packetData);
-                    var locMask = dataTypes.ReadNextByte(packetData);
+                    if (protocolVersion >= MC_1_21_2_Version)
+                    {
+                        teleportId = dataTypes.ReadNextVarInt(packetData);
+                        location = new Location(
+                            dataTypes.ReadNextDouble(packetData), // X
+                            dataTypes.ReadNextDouble(packetData), // Y
+                            dataTypes.ReadNextDouble(packetData)  // Z
+                        );
+                        dataTypes.ReadNextDouble(packetData); // Delta X
+                        dataTypes.ReadNextDouble(packetData); // Delta Y
+                        dataTypes.ReadNextDouble(packetData); // Delta Z
+                        yaw = dataTypes.ReadNextFloat(packetData);
+                        pitch = dataTypes.ReadNextFloat(packetData);
+                        locMask = dataTypes.ReadNextInt(packetData); // Int flags (was Byte before 1.21.2)
+                    }
+                    else
+                    {
+                        location = new Location(
+                            dataTypes.ReadNextDouble(packetData), // X
+                            dataTypes.ReadNextDouble(packetData), // Y
+                            dataTypes.ReadNextDouble(packetData)  // Z
+                        );
+                        yaw = dataTypes.ReadNextFloat(packetData);
+                        pitch = dataTypes.ReadNextFloat(packetData);
+                        locMask = dataTypes.ReadNextByte(packetData);
+                        teleportId = protocolVersion >= MC_1_9_Version
+                            ? dataTypes.ReadNextVarInt(packetData) : -1;
+                    }
 
-                    // entity handling require player pos for distance calculating
                     if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
                     {
                         if (protocolVersion >= MC_1_8_Version)
@@ -1434,24 +1456,11 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                     }
 
-                    if (protocolVersion >= MC_1_9_Version)
+                    if (teleportId >= 0)
                     {
-                        var teleportId = dataTypes.ReadNextVarInt(packetData);
-
-                        if (teleportId < 0)
-                        {
-                            yaw = LastYaw;
-                            pitch = LastPitch;
-                        }
-                        else
-                        {
-                            LastYaw = yaw;
-                            LastPitch = pitch;
-                        }
-
+                        LastYaw = yaw;
+                        LastPitch = pitch;
                         handler.UpdateLocation(location, yaw, pitch);
-
-                        // Teleport confirm packet
                         SendPacket(PacketTypesOut.TeleportConfirm, DataTypes.GetVarInt(teleportId));
 
                         if (Config.Main.Advanced.TemporaryFixBadpacket)
@@ -2723,6 +2732,7 @@ namespace MinecraftClient.Protocol.Handlers
                     handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
                     break;
                 case PacketTypesIn.HeldItemChange:
+                case PacketTypesIn.SetHeldSlot:
                     handler.OnHeldItemChange(dataTypes.ReadNextByte(packetData)); // Slot
                     break;
                 case PacketTypesIn.ScoreboardObjective:
@@ -3251,8 +3261,8 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                         }
 
-                        // Strict Error Handling (Ignored)
-                        if (protocolVersion >= MC_1_20_6_Version)
+                        // Strict Error Handling (removed in 1.21.2)
+                        if (protocolVersion >= MC_1_20_6_Version && protocolVersion < MC_1_21_2_Version)
                             dataTypes.ReadNextBool(packetData);
 
                         currentState = protocolVersion < MC_1_20_2_Version
@@ -3844,6 +3854,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (protocolVersion >= MC_1_18_1_Version)
                     fields.Add(1); // 1.18 and above - Allow server listings
+
+                if (protocolVersion >= MC_1_21_2_Version)
+                    fields.AddRange(DataTypes.GetVarInt(0)); // 1.21.2+ Particle status: 0=All, 1=Decreased, 2=Minimal
                 SendPacket(PacketTypesOut.ClientSettings, fields);
             }
             catch (SocketException)

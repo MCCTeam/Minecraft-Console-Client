@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Protocol.Handlers
+namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
     /// Incoming packet types
@@ -51,6 +51,7 @@
         EntityMovement,             //
         EntityPosition,             //
         EntityPositionAndRotation,  //
+        EntityPositionSync,         // Added in 1.21.2
         EntityProperties,           //
         EntityRotation,             //
         EntitySoundEffect,          //
@@ -58,6 +59,7 @@
         EntityTeleport,             //
         EntityVelocity,             //
         Explosion,                  //
+        MoveMinecartAlongTrack,     // Added in 1.21.2
         FacePlayer,                 //
         FeatureFlags,               // Added in 1.19.3
         HeldItemChange,             //
@@ -84,6 +86,7 @@
         PlayerListHeaderAndFooter,  //
         PlayerRemove,               // Added in 1.19.3 (Not used)
         PlayerPositionAndLook,      //
+        PlayerRotation,             // Added in 1.21.2
         PluginMessage,              //
         ProfilelessChatMessage,     // Added in 1.19.3
         ProjectilePower,            // Added in 1.20.6
@@ -92,6 +95,9 @@
         ResetScore,                 // Added in 1.20.3
         ResourcePackSend,           //
         Respawn,                    //
+        RecipeBookAdd,              // Added in 1.21.2 (replaces UnlockRecipes)
+        RecipeBookRemove,           // Added in 1.21.2
+        RecipeBookSettings,         // Added in 1.21.2
         ScoreboardObjective,        //
         SelectAdvancementTab,       //
         ServerData,                 // Added in 1.19
@@ -99,9 +105,12 @@
         ServerLinks,                // Added in 1.21 (Not used)
         SetCompression,             // For 1.8 or below
         SetCooldown,                //
+        SetCursorItem,              // Added in 1.21.2
         SetDisplayChatPreview,      // Added in 1.19
         SetExperience,              //
+        SetHeldSlot,                // Added in 1.21.2 (replaces HeldItemChange clientbound)
         SetPassengers,              //
+        SetPlayerInventory,         // Added in 1.21.2
         SetSlot,                    //
         SetTickingState,            // Added in 1.20.3
         StepTick,                   // Added in 1.20.3
