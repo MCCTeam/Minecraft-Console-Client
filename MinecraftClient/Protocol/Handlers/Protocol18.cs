@@ -191,6 +191,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Item palette
                 > MC_1_21_Version when handler.GetInventoryEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_item),
+                >= MC_1_21_Version => new ItemPalette121(),
                 >= MC_1_20_6_Version => new ItemPalette1206(),
                 >= MC_1_20_4_Version => new ItemPalette1204(),
                 >= MC_1_20_Version => new ItemPalette120(),
@@ -548,6 +549,28 @@ namespace MinecraftClient.Protocol.Handlers
                                     .Where(p => p.Item1 == "minecraft")
                                     .ToList();
                                 SendKnownDataPacks(vanillaPacks);
+                                break;
+
+                            case ConfigurationPacketTypesIn.CustomReportDetails:
+                                var cfgDetailsCount = dataTypes.ReadNextVarInt(packetData);
+                                for (var i = 0; i < cfgDetailsCount; i++)
+                                {
+                                    dataTypes.ReadNextString(packetData); // Title
+                                    dataTypes.ReadNextString(packetData); // Description
+                                }
+                                break;
+
+                            case ConfigurationPacketTypesIn.ServerLinks:
+                                var cfgLinksCount = dataTypes.ReadNextVarInt(packetData);
+                                for (var i = 0; i < cfgLinksCount; i++)
+                                {
+                                    var cfgIsBuiltIn = dataTypes.ReadNextBool(packetData);
+                                    if (cfgIsBuiltIn)
+                                        dataTypes.ReadNextVarInt(packetData); // Known type ID
+                                    else
+                                        dataTypes.ReadNextChat(packetData); // Component label
+                                    dataTypes.ReadNextString(packetData); // URL
+                                }
                                 break;
 
                             // Ignore other packets at this stage
@@ -2827,7 +2850,43 @@ namespace MinecraftClient.Protocol.Handlers
                                 
                     McClient.Instance?.Transfer(host, port);
                     break;
-                
+
+                case PacketTypesIn.ProjectilePower:
+                    dataTypes.ReadNextVarInt(packetData); // Entity ID
+                    if (protocolVersion >= MC_1_21_Version)
+                    {
+                        dataTypes.ReadNextDouble(packetData); // Acceleration Power
+                    }
+                    else
+                    {
+                        dataTypes.ReadNextDouble(packetData); // X Power
+                        dataTypes.ReadNextDouble(packetData); // Y Power
+                        dataTypes.ReadNextDouble(packetData); // Z Power
+                    }
+                    break;
+
+                case PacketTypesIn.CustomReportDetails:
+                    var detailsCount = dataTypes.ReadNextVarInt(packetData);
+                    for (var i = 0; i < detailsCount; i++)
+                    {
+                        dataTypes.ReadNextString(packetData); // Title
+                        dataTypes.ReadNextString(packetData); // Description
+                    }
+                    break;
+
+                case PacketTypesIn.ServerLinks:
+                    var linksCount = dataTypes.ReadNextVarInt(packetData);
+                    for (var i = 0; i < linksCount; i++)
+                    {
+                        var isBuiltIn = dataTypes.ReadNextBool(packetData);
+                        if (isBuiltIn)
+                            dataTypes.ReadNextVarInt(packetData); // Known type ID
+                        else
+                            dataTypes.ReadNextChat(packetData); // Component label
+                        dataTypes.ReadNextString(packetData); // URL
+                    }
+                    break;
+
                 default:
                     return false; //Ignored packet
             }

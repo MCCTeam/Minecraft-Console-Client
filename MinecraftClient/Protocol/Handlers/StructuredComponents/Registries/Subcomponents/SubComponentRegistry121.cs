@@ -10,6 +10,7 @@ public class SubComponentRegistry121 : SubComponentRegistry1206
 {
     public SubComponentRegistry121(DataTypes dataTypes) : base(dataTypes)
     {
+        ReplaceSubComponent<AttributeSubComponent121>(SubComponents.Attribute);
         RegisterSubComponent<SoundEventSubComponent>(SubComponents.SoundEvent);
     }
 }

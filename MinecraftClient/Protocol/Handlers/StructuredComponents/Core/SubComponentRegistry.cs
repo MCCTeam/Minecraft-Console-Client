@@ -16,6 +16,11 @@ public abstract class SubComponentRegistry(DataTypes dataTypes)
         _subComponentParsers.Add(name, typeof(T));
     }
 
+    protected void ReplaceSubComponent<T>(string name) where T : SubComponent
+    {
+        _subComponentParsers[name] = typeof(T);
+    }
+
     public SubComponent ParseSubComponent(string name, Queue<byte> data)
     {
         if(!_subComponentParsers.TryGetValue(name, out var subComponentParserType)) 
