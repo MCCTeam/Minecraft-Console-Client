@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Inventory
+namespace MinecraftClient.Inventory
 {
     /// <summary>
     /// Generated using the --generator flag on the client
@@ -774,11 +774,14 @@
         MusicDiscBlocks,
         MusicDiscCat,
         MusicDiscChirp,
+        MusicDiscCreator,
+        MusicDiscCreatorMusicBox,
         MusicDiscFar,
         MusicDiscMall,
         MusicDiscMellohi,
         MusicDiscOtherside,
         MusicDiscPigstep,
+        MusicDiscPrecipice,
         MusicDiscRelic,
         MusicDiscStal,
         MusicDiscStrad,
