@@ -7,17 +7,17 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_2
 public class EnchantmentGlintOverrideComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
-    public int HasGlint { get; set; }
+    public bool HasGlint { get; set; }
     
     public override void Parse(Queue<byte> data)
     {
-        HasGlint = dataTypes.ReadNextVarInt(data);
+        HasGlint = dataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(DataTypes.GetVarInt(HasGlint));
+        data.AddRange(DataTypes.GetBool(HasGlint));
         return new Queue<byte>(data);
     }
 }
