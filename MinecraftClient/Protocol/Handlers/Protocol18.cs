@@ -125,21 +125,21 @@ namespace MinecraftClient.Protocol.Handlers
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
             chunkBatchStartTime = GetNanos();
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_21_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_21_2_Version)
             {
                 log.Error($"§c{Translations.extra_terrainandmovement_disabled}");
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_21_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_21_2_Version)
             {
                 log.Error($"§c{Translations.extra_inventory_disabled}");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_21_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_21_2_Version)
             {
                 log.Error($"§c{Translations.extra_entity_disabled}");
                 handler.SetEntityHandlingEnabled(false);
@@ -2261,7 +2261,9 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.CloseWindow:
                     if (handler.GetInventoryEnabled())
                     {
-                        var windowId = dataTypes.ReadNextByte(packetData);
+                        var windowId = protocolVersion >= MC_1_21_2_Version
+                            ? dataTypes.ReadNextVarInt(packetData)
+                            : dataTypes.ReadNextByte(packetData);
                         lock (window_actions)
                         {
                             window_actions[windowId] = 0;
@@ -2274,7 +2276,9 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.WindowItems:
                     if (handler.GetInventoryEnabled())
                     {
-                        var windowId = dataTypes.ReadNextByte(packetData);
+                        var windowId = (byte)(protocolVersion >= MC_1_21_2_Version
+                            ? dataTypes.ReadNextVarInt(packetData)
+                            : dataTypes.ReadNextByte(packetData));
                         var stateId = -1;
                         int elements;
 
@@ -2306,7 +2310,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case PacketTypesIn.WindowProperty:
-                    var containerId = dataTypes.ReadNextByte(packetData);
+                    var containerId = (byte)(protocolVersion >= MC_1_21_2_Version
+                        ? dataTypes.ReadNextVarInt(packetData)
+                        : dataTypes.ReadNextByte(packetData));
                     var propertyId = dataTypes.ReadNextShort(packetData);
                     var propertyValue = dataTypes.ReadNextShort(packetData);
                     handler.OnWindowProperties(containerId, propertyId, propertyValue);
@@ -2314,7 +2320,9 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.SetSlot:
                     if (handler.GetInventoryEnabled())
                     {
-                        var windowId = dataTypes.ReadNextByte(packetData);
+                        var windowId = (byte)(protocolVersion >= MC_1_21_2_Version
+                            ? dataTypes.ReadNextVarInt(packetData)
+                            : dataTypes.ReadNextByte(packetData));
                         var stateId = -1;
                         if (protocolVersion >= MC_1_17_1_Version)
                             stateId = dataTypes.ReadNextVarInt(packetData); // State ID - 1.17.1 and above
@@ -2615,7 +2623,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Also make a palette for field? Will be a lot of work
                         var healthField = protocolVersion switch
                         {
-                            > MC_1_21_Version => throw new NotImplementedException(Translations
+                            > MC_1_21_2_Version => throw new NotImplementedException(Translations
                                 .exception_palette_healthfield),
                             // 1.17 and above
                             >= MC_1_17_Version => 9,
@@ -2647,6 +2655,8 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.TimeUpdate:
                     var worldAge = dataTypes.ReadNextLong(packetData);
                     var timeOfDay = dataTypes.ReadNextLong(packetData);
+                    if (protocolVersion >= MC_1_21_2_Version)
+                        dataTypes.ReadNextBool(packetData); // Tick day time
                     handler.OnTimeUpdate(worldAge, timeOfDay);
                     break;
                 case PacketTypesIn.EntityTeleport:
@@ -2655,23 +2665,41 @@ namespace MinecraftClient.Protocol.Handlers
                         var entityId = dataTypes.ReadNextVarInt(packetData);
                         double x, y, z;
 
-                        if (protocolVersion < MC_1_9_Version)
+                        if (protocolVersion >= MC_1_21_2_Version)
+                        {
+                            // 1.21.2+: PositionMoveRotation + relative flags
+                            x = dataTypes.ReadNextDouble(packetData);
+                            y = dataTypes.ReadNextDouble(packetData);
+                            z = dataTypes.ReadNextDouble(packetData);
+                            dataTypes.ReadNextDouble(packetData); // Delta movement X
+                            dataTypes.ReadNextDouble(packetData); // Delta movement Y
+                            dataTypes.ReadNextDouble(packetData); // Delta movement Z
+                            dataTypes.ReadNextFloat(packetData);  // Yaw
+                            dataTypes.ReadNextFloat(packetData);  // Pitch
+                            dataTypes.ReadNextInt(packetData);    // Relative flags bitmask
+                            var isOnGround = dataTypes.ReadNextBool(packetData);
+                            handler.OnEntityTeleport(entityId, x, y, z, isOnGround);
+                        }
+                        else if (protocolVersion < MC_1_9_Version)
                         {
                             x = dataTypes.ReadNextInt(packetData) / 32.0D;
                             y = dataTypes.ReadNextInt(packetData) / 32.0D;
                             z = dataTypes.ReadNextInt(packetData) / 32.0D;
+                            dataTypes.ReadNextByte(packetData); // Yaw
+                            dataTypes.ReadNextByte(packetData); // Pitch
+                            var isOnGround = dataTypes.ReadNextBool(packetData);
+                            handler.OnEntityTeleport(entityId, x, y, z, isOnGround);
                         }
                         else
                         {
                             x = dataTypes.ReadNextDouble(packetData);
                             y = dataTypes.ReadNextDouble(packetData);
                             z = dataTypes.ReadNextDouble(packetData);
+                            dataTypes.ReadNextByte(packetData); // Yaw
+                            dataTypes.ReadNextByte(packetData); // Pitch
+                            var isOnGround = dataTypes.ReadNextBool(packetData);
+                            handler.OnEntityTeleport(entityId, x, y, z, isOnGround);
                         }
-
-                        var entityYaw = dataTypes.ReadNextByte(packetData);
-                        var entityPitch = dataTypes.ReadNextByte(packetData);
-                        var isOnGround = dataTypes.ReadNextBool(packetData);
-                        handler.OnEntityTeleport(entityId, x, y, z, isOnGround);
                     }
 
                     break;
@@ -2897,6 +2925,69 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.ReadNextChat(packetData); // Component label
                         dataTypes.ReadNextString(packetData); // URL
                     }
+                    break;
+
+                // 1.21.2+ new packets
+                case PacketTypesIn.SetCursorItem:
+                    if (handler.GetInventoryEnabled())
+                    {
+                        dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                    }
+                    break;
+
+                case PacketTypesIn.SetPlayerInventory:
+                    if (handler.GetInventoryEnabled())
+                    {
+                        var slotId = dataTypes.ReadNextVarInt(packetData);
+                        var item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                        handler.OnSetSlot(0, (short)slotId, item, -1);
+                    }
+                    break;
+
+                case PacketTypesIn.EntityPositionSync:
+                    if (handler.GetEntityHandlingEnabled())
+                    {
+                        var entityId = dataTypes.ReadNextVarInt(packetData);
+                        var x = dataTypes.ReadNextDouble(packetData);
+                        var y = dataTypes.ReadNextDouble(packetData);
+                        var z = dataTypes.ReadNextDouble(packetData);
+                        dataTypes.ReadNextDouble(packetData); // Delta movement X
+                        dataTypes.ReadNextDouble(packetData); // Delta movement Y
+                        dataTypes.ReadNextDouble(packetData); // Delta movement Z
+                        var yaw = dataTypes.ReadNextFloat(packetData);
+                        var pitch = dataTypes.ReadNextFloat(packetData);
+                        var isOnGround = dataTypes.ReadNextBool(packetData);
+                        handler.OnEntityTeleport(entityId, x, y, z, isOnGround);
+                    }
+                    break;
+
+                case PacketTypesIn.PlayerRotation:
+                    dataTypes.ReadNextFloat(packetData); // Yaw
+                    dataTypes.ReadNextFloat(packetData); // Pitch
+                    break;
+
+                case PacketTypesIn.MoveMinecartAlongTrack:
+                    {
+                        dataTypes.ReadNextVarInt(packetData); // Entity ID
+                        var stepCount = dataTypes.ReadNextVarInt(packetData);
+                        for (var i = 0; i < stepCount; i++)
+                        {
+                            dataTypes.ReadNextDouble(packetData); // Pos X
+                            dataTypes.ReadNextDouble(packetData); // Pos Y
+                            dataTypes.ReadNextDouble(packetData); // Pos Z
+                            dataTypes.ReadNextDouble(packetData); // Movement X
+                            dataTypes.ReadNextDouble(packetData); // Movement Y
+                            dataTypes.ReadNextDouble(packetData); // Movement Z
+                            dataTypes.ReadNextByte(packetData);   // Yaw
+                            dataTypes.ReadNextByte(packetData);   // Pitch
+                            dataTypes.ReadNextFloat(packetData);  // Weight
+                        }
+                    }
+                    break;
+
+                case PacketTypesIn.RecipeBookAdd:
+                case PacketTypesIn.RecipeBookRemove:
+                case PacketTypesIn.RecipeBookSettings:
                     break;
 
                 default:
@@ -4383,10 +4474,11 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                 }
 
-                List<byte> packet = new()
-                {
-                    (byte)windowId // Window ID
-                };
+                List<byte> packet = new();
+                if (protocolVersion >= MC_1_21_2_Version)
+                    packet.AddRange(DataTypes.GetVarInt(windowId)); // Window ID (VarInt in 1.21.2+)
+                else
+                    packet.Add((byte)windowId); // Window ID (byte before 1.21.2)
 
                 switch (protocolVersion)
                 {
@@ -4589,7 +4681,10 @@ namespace MinecraftClient.Protocol.Handlers
                         window_actions[windowId] = 0;
                 }
 
-                SendPacket(PacketTypesOut.CloseWindow, new[] { (byte)windowId });
+                SendPacket(PacketTypesOut.CloseWindow,
+                    protocolVersion >= MC_1_21_2_Version
+                        ? DataTypes.GetVarInt(windowId)
+                        : new[] { (byte)windowId });
                 return true;
             }
             catch (SocketException)
