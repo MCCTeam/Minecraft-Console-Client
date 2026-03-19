@@ -842,8 +842,12 @@ namespace MinecraftClient.Protocol.Handlers
                             value = ReadNextNbt(cache);
                             break;
                         case EntityMetaDataType.Particle: // Particle
-                            // Skip data only, not used
                             ReadParticleData(cache, itemPalette);
+                            break;
+                        case EntityMetaDataType.Particles: // List of Particle (1.20.6+)
+                            int particleCount = ReadNextVarInt(cache);
+                            for (int i = 0; i < particleCount; i++)
+                                ReadParticleData(cache, itemPalette);
                             break;
                         case EntityMetaDataType.VillagerData: // Villager Data (3x VarInt)
                             value = new List<int>
@@ -869,7 +873,10 @@ namespace MinecraftClient.Protocol.Handlers
                         case EntityMetaDataType.CatVariant: // Cat Variant
                             value = ReadNextVarInt(cache);
                             break;
-                        case EntityMetaDataType.FrogVariant: // Frog Varint
+                        case EntityMetaDataType.WolfVariant: // Wolf Variant (1.20.6+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.FrogVariant: // Frog Variant
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.GlobalPosition: // GlobalPos
@@ -890,6 +897,9 @@ namespace MinecraftClient.Protocol.Handlers
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.SnifferState: // Sniffer state
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.ArmadilloState: // Armadillo state (1.20.6+)
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.Vector3: // Vector 3f
