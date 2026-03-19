@@ -18,11 +18,13 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
         IsExactMatch = dataTypes.ReadNextBool(data);
 
         if (IsExactMatch)
-            ExactValue = dataTypes.ReadNextString(data);
-        else // Ranged Match
         {
-            MinValue = dataTypes.ReadNextString(data);
-            MaxValue = dataTypes.ReadNextString(data);
+            ExactValue = dataTypes.ReadNextString(data);
+        }
+        else
+        {
+            MinValue = dataTypes.ReadNextBool(data) ? dataTypes.ReadNextString(data) : null;
+            MaxValue = dataTypes.ReadNextBool(data) ? dataTypes.ReadNextString(data) : null;
         }
     }
 
@@ -45,11 +47,13 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
         }
         else
         {
-            if (string.IsNullOrEmpty(MinValue?.Trim()) || string.IsNullOrEmpty(MaxValue?.Trim()))
-                throw new ArgumentNullException($"Can not serialize a Property sub-component if the MinValue or MaxValue is null or empty when the type is not Exact Match!");
+            data.AddRange(DataTypes.GetBool(MinValue != null));
+            if (MinValue != null)
+                data.AddRange(DataTypes.GetString(MinValue));
             
-            data.AddRange(DataTypes.GetString(MinValue));
-            data.AddRange(DataTypes.GetString(MaxValue));
+            data.AddRange(DataTypes.GetBool(MaxValue != null));
+            if (MaxValue != null)
+                data.AddRange(DataTypes.GetString(MaxValue));
         }
         
         return new Queue<byte>(data);

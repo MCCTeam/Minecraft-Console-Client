@@ -50,18 +50,20 @@ public class BlockPredicateSubcomponent(DataTypes dataTypes, SubComponentRegistr
             data.AddRange(BlockSet.Serialize());
         }
         
-        // Properites
+        // Properties
         data.AddRange(DataTypes.GetBool(HasProperities));
         if (HasProperities)
         {
             if(Properties == null || Properties.Count == 0)
                 throw new ArgumentNullException($"Can not serialize a BlockPredicate when the Properties is empty but HasProperties is true!");
 
+            data.AddRange(DataTypes.GetVarInt(Properties.Count));
             foreach (var property in Properties)
                 data.AddRange(property.Serialize());
         }
 
         // NBT
+        data.AddRange(DataTypes.GetBool(HasNbt));
         if (HasNbt)
         {
             if(Nbt == null)
