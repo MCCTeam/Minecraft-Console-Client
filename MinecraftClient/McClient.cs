@@ -2392,10 +2392,19 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to place block to</param>
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
+        /// <param name="lookAtBlock">Also look at the block before interacting</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
+        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand, bool lookAtBlock = false)
         {
-            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++));
+            return InvokeOnMainThread(() =>
+            {
+                if (lookAtBlock)
+                {
+                    UpdateLocation(GetCurrentLocation(), location.ToCenter());
+                    handler.SendLocationUpdate(GetCurrentLocation(), Movement.IsOnGround(world, GetCurrentLocation()), _yaw, _pitch);
+                }
+                return handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++);
+            });
         }
 
 

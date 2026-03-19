@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents;
-using MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents._1_20_6;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
@@ -11,7 +10,7 @@ public class AttributeModifiersComponent(DataTypes dataTypes, ItemPalette itemPa
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfAttributes { get; set; }
-    public List<AttributeSubComponent> Attributes { get; set; } = new();
+    public List<SubComponent> Attributes { get; set; } = new();
     public bool ShowInTooltip { get; set; }
     
     public override void Parse(Queue<byte> data)
@@ -19,7 +18,7 @@ public class AttributeModifiersComponent(DataTypes dataTypes, ItemPalette itemPa
         NumberOfAttributes = dataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfAttributes; i++)
-            Attributes.Add((AttributeSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
+            Attributes.Add(subComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
 
         ShowInTooltip = dataTypes.ReadNextBool(data);
     }

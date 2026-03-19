@@ -207,9 +207,74 @@ namespace MinecraftClient.Inventory
         }
 
         private static Dictionary<Enchantments, short>? reverseEnchantmentMappings;
+        private static Dictionary<int, Enchantments>? dynamicEnchantmentIdMap;
+
+        private static readonly Dictionary<string, Enchantments> nameToEnchantment = new()
+        {
+            { "protection", Enchantments.Protection },
+            { "fire_protection", Enchantments.FireProtection },
+            { "feather_falling", Enchantments.FeatherFalling },
+            { "blast_protection", Enchantments.BlastProtection },
+            { "projectile_protection", Enchantments.ProjectileProtection },
+            { "respiration", Enchantments.Respiration },
+            { "aqua_affinity", Enchantments.AquaAffinity },
+            { "thorns", Enchantments.Thorns },
+            { "depth_strider", Enchantments.DepthStrider },
+            { "frost_walker", Enchantments.FrostWalker },
+            { "binding_curse", Enchantments.BindingCurse },
+            { "soul_speed", Enchantments.SoulSpeed },
+            { "swift_sneak", Enchantments.SwiftSneak },
+            { "sharpness", Enchantments.Sharpness },
+            { "smite", Enchantments.Smite },
+            { "bane_of_arthropods", Enchantments.BaneOfArthropods },
+            { "knockback", Enchantments.Knockback },
+            { "fire_aspect", Enchantments.FireAspect },
+            { "looting", Enchantments.Looting },
+            { "sweeping_edge", Enchantments.Sweeping },
+            { "efficiency", Enchantments.Efficiency },
+            { "silk_touch", Enchantments.SilkTouch },
+            { "unbreaking", Enchantments.Unbreaking },
+            { "fortune", Enchantments.Fortune },
+            { "power", Enchantments.Power },
+            { "punch", Enchantments.Punch },
+            { "flame", Enchantments.Flame },
+            { "infinity", Enchantments.Infinity },
+            { "luck_of_the_sea", Enchantments.LuckOfTheSea },
+            { "lure", Enchantments.Lure },
+            { "loyalty", Enchantments.Loyalty },
+            { "impaling", Enchantments.Impaling },
+            { "riptide", Enchantments.Riptide },
+            { "channeling", Enchantments.Channeling },
+            { "multishot", Enchantments.Multishot },
+            { "quick_charge", Enchantments.QuickCharge },
+            { "piercing", Enchantments.Piercing },
+            { "density", Enchantments.Density },
+            { "breach", Enchantments.Breach },
+            { "wind_burst", Enchantments.WindBurst },
+            { "mending", Enchantments.Mending },
+            { "vanishing_curse", Enchantments.VanishingCurse },
+        };
+
+        /// <summary>
+        /// Set the dynamic enchantment ID map from server RegistryData.
+        /// Called during configuration phase when receiving minecraft:enchantment registry.
+        /// </summary>
+        public static void SetDynamicEnchantmentIdMap(Dictionary<int, string> idMap)
+        {
+            dynamicEnchantmentIdMap = new Dictionary<int, Enchantments>();
+            foreach (var kvp in idMap)
+            {
+                var name = kvp.Value.StartsWith("minecraft:") ? kvp.Value.Substring("minecraft:".Length) : kvp.Value;
+                if (nameToEnchantment.TryGetValue(name, out var enchantment))
+                    dynamicEnchantmentIdMap[kvp.Key] = enchantment;
+            }
+            reverseEnchantmentMappings = null;
+        }
 
         public static Enchantments GetEnchantmentByRegistryId1206(int id)
         {
+            if (dynamicEnchantmentIdMap != null && dynamicEnchantmentIdMap.TryGetValue(id, out var dynValue))
+                return dynValue;
             if (enchantmentMappings.TryGetValue((short)id, out var value))
                 return value;
             return (Enchantments)(-1);
@@ -220,8 +285,16 @@ namespace MinecraftClient.Inventory
             if (reverseEnchantmentMappings == null)
             {
                 reverseEnchantmentMappings = new Dictionary<Enchantments, short>();
-                foreach (var kvp in enchantmentMappings)
-                    reverseEnchantmentMappings[kvp.Value] = kvp.Key;
+                if (dynamicEnchantmentIdMap != null)
+                {
+                    foreach (var kvp in dynamicEnchantmentIdMap)
+                        reverseEnchantmentMappings[kvp.Value] = (short)kvp.Key;
+                }
+                else
+                {
+                    foreach (var kvp in enchantmentMappings)
+                        reverseEnchantmentMappings[kvp.Value] = kvp.Key;
+                }
             }
             return reverseEnchantmentMappings.TryGetValue(enchantment, out var id) ? id : -1;
         }

@@ -465,10 +465,12 @@ namespace MinecraftClient.Protocol.Handlers
                                     var isChat = registryId == "minecraft:chat_type";
                                     var isDimension = registryId == "minecraft:dimension_type";
                                     var isAttribute = registryId == "minecraft:attribute";
+                                    var isEnchantment = registryId == "minecraft:enchantment";
 
                                     var availableChats = isChat ? new Dictionary<int, string>() : null;
                                     var dimensionIdMap = isDimension ? new Dictionary<int, string>() : null;
                                     var attributeIdMap = isAttribute ? new Dictionary<int, string>() : null;
+                                    var enchantmentIdMap = isEnchantment ? new Dictionary<int, string>() : null;
                                     
                                     for (var i = 0; i < entryCount; i++)
                                     {
@@ -489,12 +491,13 @@ namespace MinecraftClient.Protocol.Handlers
                                         }
                                         else if (isAttribute)
                                         {
-                                            // Strip "minecraft:" prefix to match the format used in EntityProperties packets
                                             var attrName = entryId.StartsWith("minecraft:")
                                                 ? entryId.Substring("minecraft:".Length)
                                                 : entryId;
                                             attributeIdMap!.Add(i, attrName);
                                         }
+                                        else if (isEnchantment)
+                                            enchantmentIdMap!.Add(i, entryId);
                                     }
                                     
                                     if (isChat)
@@ -507,6 +510,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
                                     else if (isAttribute)
                                         World.SetAttributeIdMap(attributeIdMap!);
+                                    else if (isEnchantment)
+                                        EnchantmentMapping.SetDynamicEnchantmentIdMap(enchantmentIdMap!);
                                 }
 
                                 break;
@@ -2339,6 +2344,8 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             if (entity.Type == EntityType.Player)
                                 handler.OnSpawnPlayer(entity.ID, entity.UUID, entity.Location, (byte)entity.Yaw, (byte)entity.Pitch);
+                            else
+                                handler.OnSpawnEntity(entity);
                             
                             break;
                         }
