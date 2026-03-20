@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -344,8 +344,11 @@ namespace MinecraftClient.ChatBots
         private static void RenderInConsole(McMap map)
         {
             StringBuilder sb = new();
-            int consoleWidth = Math.Max(Console.BufferWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2;
-            int consoleHeight = Math.Max(Console.BufferHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 1;
+            int safeBufWidth, safeBufHeight;
+            try { safeBufWidth = Console.BufferWidth; } catch { safeBufWidth = 120; }
+            try { safeBufHeight = Console.BufferHeight; } catch { safeBufHeight = 50; }
+            int consoleWidth = Math.Max(safeBufWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2;
+            int consoleHeight = Math.Max(safeBufHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 1;
             int scaleX = (map.Width + consoleWidth - 1) / consoleWidth;
             int scaleY = (map.Height + consoleHeight - 1) / consoleHeight;
             int scale = Math.Max(scaleX, scaleY);

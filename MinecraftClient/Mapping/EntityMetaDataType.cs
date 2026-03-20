@@ -36,6 +36,10 @@ public enum EntityMetaDataType
     Nbt,
     Particle,
     /// <summary>
+    /// List of Particle (1.20.6+)
+    /// </summary>
+    Particles,
+    /// <summary>
     /// VarInt x3
     /// </summary>
     VillagerData,
@@ -48,6 +52,10 @@ public enum EntityMetaDataType
     /// VarInt
     /// </summary>
     CatVariant,
+    /// <summary>
+    /// VarInt (1.20.6+)
+    /// </summary>
+    WolfVariant,
     FrogVariant,
     /// <summary>
     /// String + Position
@@ -65,6 +73,10 @@ public enum EntityMetaDataType
     /// VarInt
     /// </summary>
     SnifferState,
+    /// <summary>
+    /// VarInt (1.20.6+)
+    /// </summary>
+    ArmadilloState,
     /// <summary>
     /// Float x3
     /// </summary>

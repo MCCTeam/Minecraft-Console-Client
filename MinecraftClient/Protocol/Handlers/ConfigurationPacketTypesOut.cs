@@ -8,6 +8,8 @@ public enum ConfigurationPacketTypesOut
     KeepAlive,
     Pong,
     ResourcePackResponse,
+    CookieResponse,
+    KnownDataPacks,
     
     Unknown
 }

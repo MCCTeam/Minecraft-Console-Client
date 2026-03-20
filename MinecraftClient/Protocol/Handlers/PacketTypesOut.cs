@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Protocol.Handlers
+namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
     /// Outgoing packet types
@@ -8,6 +8,7 @@
         AcknowledgeConfiguration,    // Added in 1.20.2
         AdvancementTab,              //
         Animation,                   //
+        BundleItemSelected,          // Added in 1.21.2
         ChangeContainerSlotState,    // Added in 1.20.3
         ChatCommand,                 // Added in 1.19
         ChatMessage,                 //
@@ -17,9 +18,12 @@
         ClickWindowButton,           //
         ClientSettings,              //
         ClientStatus,                //
+        ClientTickEnd,               // Added in 1.21.2
         CloseWindow,                 //
         CraftRecipeRequest,          //
         CreativeInventoryAction,     //
+        CookieResponse,              // Added in 1.20.6
+        DebugSampleSubscription,     // Added in 1.20.6
         EditBook,                    //
         EnchantItem,                 // For 1.13.2 or below
         EntityAction,                //
@@ -28,6 +32,7 @@
         HeldItemChange,              //
         InteractEntity,              //
         KeepAlive,                   //
+        KnownDataPacks,              // Added in 1.20.6
         LockDifficulty,              //
         MessageAcknowledgment,       // Added in 1.19.1 (1.19.2)
         NameItem,                    //
@@ -52,6 +57,7 @@
         SetDifficulty,               //
         SetDisplayedRecipe,          // Added in 1.16.2
         SetRecipeBookState,          // Added in 1.16.2
+        SignedChatCommand,           // Added in 1.20.6
         Spectate,                    //
         SteerBoat,                   //
         SteerVehicle,                //

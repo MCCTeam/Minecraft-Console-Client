@@ -43,7 +43,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
             { 28, Material.DetectorRail },
             { 29, Material.StickyPiston },                   // PistonStickyBase
             { 30, Material.Cobweb },                         // Web
-            { 31, Material.Grass },                          // LongGrass
+            { 31, Material.TallGrass },                          // LongGrass
             { 32, Material.DeadBush },
             { 33, Material.Piston },                         // PistonBase
             { 34, Material.PistonHead },                     // PistonExtension

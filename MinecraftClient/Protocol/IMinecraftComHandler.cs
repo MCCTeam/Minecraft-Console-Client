@@ -44,7 +44,12 @@ namespace MinecraftClient.Protocol
         int GetProtocolVersion();
         Container? GetInventory(int inventoryID);
         ILogger GetLogger();
+        void GetCookie(string key, out byte[]? data);
+        void SetCookie(string key, byte[] data);
+        void DeleteCookie(string key);
 
+        void Transfer(string newHost, int newPort);
+        
         /// <summary>
         /// Invoke a task on the main thread, wait for completion and retrieve return value.
         /// </summary>

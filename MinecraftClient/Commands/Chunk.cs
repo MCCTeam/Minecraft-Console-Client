@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
@@ -100,11 +100,15 @@ namespace MinecraftClient.Commands
                 sb.AppendLine(string.Format(Translations.cmd_chunk_chunk_pos, markChunkX, markChunkZ)); ;
             }
 
-            int consoleHeight = Math.Max(Math.Max(Console.BufferHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 2, 25);
+            int safeHeight;
+            int safeWidth;
+            try { safeHeight = Console.BufferHeight; } catch { safeHeight = 50; }
+            try { safeWidth = Console.BufferWidth; } catch { safeWidth = 120; }
+            int consoleHeight = Math.Max(Math.Max(safeHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 2, 25);
             if (consoleHeight % 2 == 0)
                 --consoleHeight;
 
-            int consoleWidth = Math.Max(Math.Max(Console.BufferWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2, 17);
+            int consoleWidth = Math.Max(Math.Max(safeWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2, 17);
             if (consoleWidth % 2 == 0)
                 --consoleWidth;
 

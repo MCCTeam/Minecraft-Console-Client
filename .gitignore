@@ -387,6 +387,9 @@ FodyWeavers.xsd
 !.vscode/extensions.json
 *.code-workspace
 
+# Cursor files
+!.cursor/
+
 # Local History for Visual Studio Code
 .history/
 
