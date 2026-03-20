@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Mapping
+namespace MinecraftClient.Mapping
 {
     /// <summary>
     /// Defines extension methods for the Material enumeration
@@ -122,6 +122,7 @@
                 case Material.ChiseledPolishedBlackstone:
                 case Material.ChiseledQuartzBlock:
                 case Material.ChiseledRedSandstone:
+                case Material.ChiseledResinBricks:
                 case Material.ChiseledSandstone:
                 case Material.ChiseledStoneBricks:
                 case Material.ChorusFlower:
@@ -500,6 +501,8 @@
                 case Material.PottedBlueOrchid:
                 case Material.PottedBrownMushroom:
                 case Material.PottedCactus:
+                case Material.PottedCherrySapling:
+                case Material.PottedClosedEyeblossom:
                 case Material.PottedCornflower:
                 case Material.PottedDandelion:
                 case Material.PottedDarkOakSapling:
@@ -509,6 +512,7 @@
                 case Material.PottedJungleSapling:
                 case Material.PottedLilyOfTheValley:
                 case Material.PottedOakSapling:
+                case Material.PottedOpenEyeblossom:
                 case Material.PottedOrangeTulip:
                 case Material.PottedOxeyeDaisy:
                 case Material.PottedPinkTulip:
@@ -576,6 +580,10 @@
                 case Material.RedWool:
                 case Material.ReinforcedDeepslate:
                 case Material.RepeatingCommandBlock:
+                case Material.ResinBlock:
+                case Material.ResinBrickStairs:
+                case Material.ResinBrickWall:
+                case Material.ResinBricks:
                 case Material.RespawnAnchor:
                 case Material.RootedDirt:
                 case Material.Sand:
@@ -868,6 +876,7 @@
                 case Material.QuartzSlab:
                 case Material.RedNetherBrickSlab:
                 case Material.RedSandstoneSlab:
+                case Material.ResinBrickSlab:
                 case Material.SandstoneSlab:
                 case Material.SmoothQuartzSlab:
                 case Material.SmoothRedSandstoneSlab:

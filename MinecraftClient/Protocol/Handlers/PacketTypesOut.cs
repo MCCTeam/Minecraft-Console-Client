@@ -37,10 +37,12 @@ namespace MinecraftClient.Protocol.Handlers
         MessageAcknowledgment,       // Added in 1.19.1 (1.19.2)
         NameItem,                    //
         PickItem,                    //
+        PickItemFromEntity,          // Added in 1.21.4 (split from PickItem)
         PingRequest,                 // Added in 1.20.2
         PlayerAbilities,             //
         PlayerBlockPlacement,        //
         PlayerDigging,               //
+        PlayerLoaded,                // Added in 1.21.4
         PlayerMovement,              //
         PlayerPosition,              //
         PlayerPositionAndRotation,   //
