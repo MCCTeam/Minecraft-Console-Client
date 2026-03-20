@@ -176,7 +176,7 @@ public class PacketPalette1214 : PacketTypePalette
             { 0x20, PacketTypesOut.VehicleMove },                 // Move Vehicle
             { 0x21, PacketTypesOut.SteerBoat },                   // Paddle Boat
             { 0x22, PacketTypesOut.PickItem },                    // Pick Item From Block (split in 1.21.4)
-            { 0x23, PacketTypesOut.PickItem },                    // Pick Item From Entity (split in 1.21.4)
+            { 0x23, PacketTypesOut.PickItemFromEntity },          // Pick Item From Entity (new in 1.21.4)
             { 0x24, PacketTypesOut.PingRequest },                 // Ping Request
             { 0x25, PacketTypesOut.CraftRecipeRequest },          // Place Recipe
             { 0x26, PacketTypesOut.PlayerAbilities },             // Player Abilities
