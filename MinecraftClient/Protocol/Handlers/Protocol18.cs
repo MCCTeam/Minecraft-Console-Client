@@ -1069,6 +1069,11 @@ namespace MinecraftClient.Protocol.Handlers
                         // 1.19.3+
                         // Header section
                         // net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket#write
+
+                        // 1.21.5+: globalIndex prepended before sender UUID
+                        if (protocolVersion >= MC_1_21_5_Version)
+                            dataTypes.ReadNextVarInt(packetData);
+
                         var senderUuid = dataTypes.ReadNextUUID(packetData);
                         var index = dataTypes.ReadNextVarInt(packetData);
                         // Signature is fixed size of 256 bytes
@@ -3732,6 +3737,10 @@ namespace MinecraftClient.Protocol.Handlers
                         case >= MC_1_19_3_Version:
                             fields.AddRange(DataTypes.GetVarInt(messageCount1193));
                             fields.AddRange(bitset1193);
+
+                            // Checksum: Byte (1.21.5+, 0 = skip verification)
+                            if (protocolVersion >= MC_1_21_5_Version)
+                                fields.Add(0);
                             break;
                     }
 
@@ -3835,6 +3844,10 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 // Acknowledged: BitSet
                                 fields.AddRange(bitset1193);
+
+                                // Checksum: Byte (1.21.5+, 0 = skip verification)
+                                if (protocolVersion >= MC_1_21_5_Version)
+                                    fields.Add(0);
                                 break;
                             case MC_1_19_2_Version:
                                 // Message Acknowledgment
