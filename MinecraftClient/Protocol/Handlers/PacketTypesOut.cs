@@ -41,6 +41,7 @@ namespace MinecraftClient.Protocol.Handlers
         PlayerAbilities,             //
         PlayerBlockPlacement,        //
         PlayerDigging,               //
+        PlayerLoaded,                // Added in 1.21.4
         PlayerMovement,              //
         PlayerPosition,              //
         PlayerPositionAndRotation,   //
