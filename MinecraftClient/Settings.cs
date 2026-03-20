@@ -496,9 +496,6 @@ namespace MinecraftClient
                     public LoginMethod Method = LoginMethod.mcc;
                     [TomlInlineComment("$Main.General.AuthlibServer$")]
                     public AuthlibServer AuthServer = new(string.Empty);
-
-                    [TomlInlineComment("$Main.General.AuthlibUser$")]
-                    public string AuthUser = "";
                   
 
                     public enum LoginType { mojang, microsoft,yggdrasil };
