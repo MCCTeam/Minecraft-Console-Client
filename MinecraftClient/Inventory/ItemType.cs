@@ -138,6 +138,7 @@ namespace MinecraftClient.Inventory
         BlueConcrete,
         BlueConcretePowder,
         BlueDye,
+        BlueEgg, // blue egg
         BlueGlazedTerracotta,
         BlueIce,
         BlueOrchid,
@@ -177,6 +178,7 @@ namespace MinecraftClient.Inventory
         BrownConcrete,
         BrownConcretePowder,
         BrownDye,
+        BrownEgg, // brown egg
         BrownGlazedTerracotta,
         BrownMushroom,
         BrownMushroomBlock,
@@ -194,7 +196,9 @@ namespace MinecraftClient.Inventory
         BuddingAmethyst,
         Bundle,
         BurnPotterySherd,
+        Bush, // bush
         Cactus,
+        CactusFlower, // cactus flower
         Cake,
         Calcite,
         CalibratedSculkSensor,
@@ -439,6 +443,8 @@ namespace MinecraftClient.Inventory
         DripstoneBlock,
         Dropper,
         DrownedSpawnEgg,
+        DryShortGrass, // dry short grass
+        DryTallGrass, // dry tall grass
         DuneArmorTrimSmithingTemplate,
         EchoShard,
         Egg,
@@ -487,6 +493,7 @@ namespace MinecraftClient.Inventory
         FireCoral,
         FireCoralBlock,
         FireCoralFan,
+        FireflyBush, // firefly bush
         FireworkRocket,
         FireworkStar,
         FishingRod,
@@ -658,6 +665,7 @@ namespace MinecraftClient.Inventory
         LargeFern,
         LavaBucket,
         Lead,
+        LeafLitter, // leaf litter
         Leather,
         LeatherBoots,
         LeatherChestplate,
@@ -1235,6 +1243,8 @@ namespace MinecraftClient.Inventory
         TallGrass,
         Target,
         Terracotta,
+        TestBlock, // test block
+        TestInstanceBlock, // test instance block
         TideArmorTrimSmithingTemplate,
         TintedGlass,
         TippedArrow,
@@ -1364,6 +1374,7 @@ namespace MinecraftClient.Inventory
         WhiteWool,
         WhiteBundle,
         WildArmorTrimSmithingTemplate,
+        Wildflowers, // wildflowers
         WindCharge,
         WitchSpawnEgg,
         WitherRose,

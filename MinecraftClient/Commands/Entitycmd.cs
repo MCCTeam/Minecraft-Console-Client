@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -210,7 +210,7 @@ namespace MinecraftClient.Commands
             Item item = entity.Item;
             string location = $"X:{Math.Round(entity.Location.X, 2)}, Y:{Math.Round(entity.Location.Y, 2)}, Z:{Math.Round(entity.Location.Z, 2)}";
 
-            if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
+            if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.SplashPotion || type == EntityType.LingeringPotion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
                 return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_item}: {item.GetTypeString()}, {Translations.cmd_entityCmd_location}: {location}";
             else if (type == EntityType.Player && !string.IsNullOrEmpty(nickname))
                 return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_nickname}: §8{nickname}§8, {Translations.cmd_entityCmd_latency}: {latency}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_pose}: {pose}, {Translations.cmd_entityCmd_location}: {location}";
@@ -251,7 +251,7 @@ namespace MinecraftClient.Commands
             {
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_latency}: {latency}");
             }
-            else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
+            else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.SplashPotion || type == Mapping.EntityType.LingeringPotion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
             {
                 string? displayName = item.DisplayName;
                 if (string.IsNullOrEmpty(displayName))
