@@ -14,7 +14,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.fetch-translations.result != 'failure' }}
+    if: ${{ always() && needs.fetch-translations.result != 'failure' && needs.determine-build.result != 'skipped' }}
     needs: [determine-build, fetch-translations]
     timeout-minutes: 15
     strategy:
@@ -148,7 +148,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-    if: ${{ !contains(github.event.head_commit.message, 'skip') || !contains(github.event.head_commit.message, 'skipci')}}
+    if: >-
+      ${{
+        !contains(github.event.head_commit.message, 'skipci') &&
+        !contains(github.event.head_commit.message, '[skipci]') &&
+        !contains(github.event.head_commit.message, 'skipci | ') &&
+        !contains(github.event.pull_request.title, 'skipci') &&
+        !contains(github.event.pull_request.title, '[skipci]') &&
+        !contains(github.event.pull_request.title, 'skipci | ')
+      }}
     steps:
       - name: dummy action
         run: "echo 'dummy action that checks if the build is to be skipped, if it is, this action does not run to break the entire build action'"        
