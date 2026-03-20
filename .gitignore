@@ -422,3 +422,9 @@ FodyWeavers.xsd
 
 # Floder to store the decompiled Minecraft official source code
 MinecraftOfficial/
+
+# Possible debug files
+/lang/*
+/mcc_input.txt
+/MinecraftClient.ini
+/MinecraftClient.backup.ini
