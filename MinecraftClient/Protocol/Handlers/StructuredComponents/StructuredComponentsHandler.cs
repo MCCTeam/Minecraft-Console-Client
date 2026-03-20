@@ -21,6 +21,7 @@ public class StructuredComponentsHandler
         {
             Protocol18Handler.MC_1_20_6_Version => typeof(SubComponentRegistry1206),
             Protocol18Handler.MC_1_21_Version => typeof(SubComponentRegistry121),
+            >= Protocol18Handler.MC_1_21_5_Version => typeof(SubComponentRegistry1212),
             >= Protocol18Handler.MC_1_21_2_Version => typeof(SubComponentRegistry1212),
             _ => throw new NotSupportedException($"Protocol version {protocolVersion} is not supported for subcomponent registries!")
         };
@@ -33,6 +34,7 @@ public class StructuredComponentsHandler
         {
             Protocol18Handler.MC_1_20_6_Version => typeof(StructuredComponentsRegistry1206),
             Protocol18Handler.MC_1_21_Version => typeof(StructuredComponentsRegistry121),
+            >= Protocol18Handler.MC_1_21_5_Version => typeof(StructuredComponentsRegistry1215),
             >= Protocol18Handler.MC_1_21_2_Version => typeof(StructuredComponentsRegistry1212),
             _ => throw new NotSupportedException($"Protocol version {protocolVersion} is not supported for structured component registries!")
         };

@@ -26,6 +26,10 @@ public enum EntityMetaDataType
     Direction,
     OptionalUuid,
     /// <summary>
+    /// Boolean + UUID (1.21.5+, replaces OptionalUuid)
+    /// </summary>
+    OptionalLivingEntityReference,
+    /// <summary>
     /// VarInt
     /// </summary>
     BlockId,
@@ -55,8 +59,24 @@ public enum EntityMetaDataType
     /// <summary>
     /// VarInt (1.20.6+)
     /// </summary>
+    CowVariant,
+    /// <summary>
+    /// VarInt (1.20.6+)
+    /// </summary>
     WolfVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    WolfSoundVariant,
     FrogVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    PigVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    ChickenVariant,
     /// <summary>
     /// String + Position
     /// </summary>

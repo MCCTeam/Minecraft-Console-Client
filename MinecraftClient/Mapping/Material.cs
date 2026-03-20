@@ -162,7 +162,9 @@ namespace MinecraftClient.Mapping
         BubbleCoralFan,
         BubbleCoralWallFan,
         BuddingAmethyst,
+        Bush, // bush
         Cactus,
+        CactusFlower, // cactus_flower
         Cake,
         Calcite,
         CalibratedSculkSensor,
@@ -394,6 +396,7 @@ namespace MinecraftClient.Mapping
         FireCoralBlock,
         FireCoralFan,
         FireCoralWallFan,
+        FireflyBush, // firefly_bush
         FletchingTable,
         FlowerPot,
         FloweringAzalea,
@@ -497,6 +500,7 @@ namespace MinecraftClient.Mapping
         LargeFern,
         Lava,
         LavaCauldron,
+        LeafLitter, // leaf_litter
         Lectern,
         Lever,
         Light,
@@ -879,6 +883,7 @@ namespace MinecraftClient.Mapping
         SeaLantern,
         SeaPickle,
         Seagrass,
+        ShortDryGrass, // short_dry_grass
         ShortGrass,
         Shroomlight,
         ShulkerBox,
@@ -972,10 +977,13 @@ namespace MinecraftClient.Mapping
         SuspiciousGravel,
         SuspiciousSand,
         SweetBerryBush,
+        TallDryGrass, // tall_dry_grass
         TallGrass,
         TallSeagrass,
         Target,
         Terracotta,
+        TestBlock, // test_block
+        TestInstanceBlock, // test_instance_block
         TintedGlass,
         Tnt,
         Torch,
@@ -1090,6 +1098,7 @@ namespace MinecraftClient.Mapping
         WhiteTulip,
         WhiteWallBanner,
         WhiteWool,
+        Wildflowers, // wildflowers
         WitherRose,
         WitherSkeletonSkull,
         WitherSkeletonWallSkull,

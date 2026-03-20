@@ -118,6 +118,8 @@ namespace MinecraftClient.Mapping
         Pillager,
         Player,
         PolarBear,
+        SplashPotion,
+        LingeringPotion,
         Potion,
         Pufferfish,
         Rabbit,

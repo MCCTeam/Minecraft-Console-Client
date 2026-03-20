@@ -134,6 +134,7 @@ namespace MinecraftClient.Protocol.Handlers
         TabComplete,                //
         Tags,                       //
         Teams,                      //
+        TestInstanceBlockStatus,    // Added in 1.21.5
         TimeUpdate,                 //
         Title,                      //
         TradeList,                  //

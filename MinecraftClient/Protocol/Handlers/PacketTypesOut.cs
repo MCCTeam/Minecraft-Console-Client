@@ -71,6 +71,8 @@ namespace MinecraftClient.Protocol.Handlers
         UpdateJigsawBlock,           //
         UpdateSign,                  //
         UpdateStructureBlock,        //
+        SetTestBlock,                // Added in 1.21.5
+        TestInstanceBlockAction,     // Added in 1.21.5
         UseItem,                     //
         VehicleMove,                 //
         WindowConfirmation,          //

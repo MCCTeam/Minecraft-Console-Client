@@ -826,6 +826,7 @@ namespace MinecraftClient.Protocol.Handlers
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.OptionalUuid: // Optional UUID
+                        case EntityMetaDataType.OptionalLivingEntityReference: // Optional Living Entity Reference (1.21.5+, same wire format)
                             if (ReadNextBool(cache))
                             {
                                 value = ReadNextUUID(cache);
@@ -873,10 +874,14 @@ namespace MinecraftClient.Protocol.Handlers
                         case EntityMetaDataType.CatVariant: // Cat Variant
                             value = ReadNextVarInt(cache);
                             break;
+                        case EntityMetaDataType.CowVariant: // Cow Variant (1.21.5+)
                         case EntityMetaDataType.WolfVariant: // Wolf Variant (1.20.6+)
+                        case EntityMetaDataType.WolfSoundVariant: // Wolf Sound Variant (1.21.5+)
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.FrogVariant: // Frog Variant
+                        case EntityMetaDataType.PigVariant: // Pig Variant (1.21.5+)
+                        case EntityMetaDataType.ChickenVariant: // Chicken Variant (1.21.5+)
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.GlobalPosition: // GlobalPos
