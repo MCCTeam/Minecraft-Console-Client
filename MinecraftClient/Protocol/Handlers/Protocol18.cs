@@ -1511,7 +1511,22 @@ namespace MinecraftClient.Protocol.Handlers
                                     dataTypes.ReadNextULongArray(
                                         packetData); // Bit Mask Length  and  Primary Bit Mask
 
-                            dataTypes.ReadNextNbt(packetData); // Heightmaps
+                            if (protocolVersion >= MC_1_21_5_Version)
+                            {
+                                // 1.21.5: Heightmaps encoded as map<VarInt, long[]> instead of NBT
+                                var hmCount = dataTypes.ReadNextVarInt(packetData);
+                                for (var hm = 0; hm < hmCount; hm++)
+                                {
+                                    dataTypes.ReadNextVarInt(packetData); // Heightmap type id
+                                    var longCount = dataTypes.ReadNextVarInt(packetData);
+                                    for (var l = 0; l < longCount; l++)
+                                        dataTypes.ReadNextLong(packetData);
+                                }
+                            }
+                            else
+                            {
+                                dataTypes.ReadNextNbt(packetData); // Heightmaps (NBT format)
+                            }
 
                             if (protocolVersion is MC_1_17_Version or MC_1_17_1_Version)
                             {
