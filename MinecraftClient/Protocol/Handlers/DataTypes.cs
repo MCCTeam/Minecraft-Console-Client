@@ -1680,6 +1680,33 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Get a byte array representing the given item as a HashedStack (1.21.5+).
+        /// Used for serverbound container_click where the server expects HashedStack instead of full ItemStack.
+        /// Wire format: Optional&lt;ActualItem&gt; where ActualItem = holderRegistry(item_id) + VarInt(count) + HashedPatchMap.
+        /// Since MCC doesn't track component hashes, we send an empty HashedPatchMap (0 added, 0 removed).
+        /// The server will detect the stateId mismatch and resync.
+        /// </summary>
+        public byte[] GetHashedItemSlot(Item? item, ItemPalette itemPalette)
+        {
+            List<byte> slotData = new();
+
+            if (item == null || item.IsEmpty)
+            {
+                slotData.AddRange(GetBool(false));
+            }
+            else
+            {
+                slotData.AddRange(GetBool(true));
+                slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
+                slotData.AddRange(GetVarInt(item.Count));
+                slotData.AddRange(GetVarInt(0)); // HashedPatchMap: 0 added components
+                slotData.AddRange(GetVarInt(0)); // HashedPatchMap: 0 removed components
+            }
+
+            return slotData.ToArray();
+        }
+
+        /// <summary>
         /// Get a byte array representing the given item as an item slot
         /// </summary>
         /// <param name="item">Item</param>

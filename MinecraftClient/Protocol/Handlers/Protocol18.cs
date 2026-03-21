@@ -4567,11 +4567,19 @@ namespace MinecraftClient.Protocol.Handlers
                     foreach (var slot in changedSlots)
                     {
                         packet.AddRange(dataTypes.GetShort(slot.Item1)); // slot ID
-                        packet.AddRange(dataTypes.GetItemSlot(slot.Item2, itemPalette)); // slot Data
+                        // 1.21.5+ uses HashedStack instead of ItemStack for container_click
+                        if (protocolVersion >= MC_1_21_5_Version)
+                            packet.AddRange(dataTypes.GetHashedItemSlot(slot.Item2, itemPalette));
+                        else
+                            packet.AddRange(dataTypes.GetItemSlot(slot.Item2, itemPalette));
                     }
                 }
 
-                packet.AddRange(dataTypes.GetItemSlot(item, itemPalette)); // Carried item (Clicked item)
+                // 1.21.5+ uses HashedStack instead of ItemStack for carried item
+                if (protocolVersion >= MC_1_21_5_Version)
+                    packet.AddRange(dataTypes.GetHashedItemSlot(item, itemPalette));
+                else
+                    packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
 
                 SendPacket(PacketTypesOut.ClickWindow, packet);
                 return true;

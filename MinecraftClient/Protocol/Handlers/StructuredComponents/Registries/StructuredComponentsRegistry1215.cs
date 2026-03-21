@@ -23,7 +23,7 @@ public class StructuredComponentsRegistry1215 : StructuredComponentRegistry
         RegisterComponent<ItemModelComponent>(7, "minecraft:item_model");
         RegisterComponent<LoreNameComponent1206>(8, "minecraft:lore");
         RegisterComponent<RarityComponent>(9, "minecraft:rarity");
-        RegisterComponent<EnchantmentsComponent>(10, "minecraft:enchantments");
+        RegisterComponent<EnchantmentsComponent1215>(10, "minecraft:enchantments");
         RegisterComponent<CanPlaceOnComponent>(11, "minecraft:can_place_on");
         RegisterComponent<CanBreakComponent>(12, "minecraft:can_break");
         RegisterComponent<AttributeModifiersComponent>(13, "minecraft:attribute_modifiers");
@@ -48,7 +48,7 @@ public class StructuredComponentsRegistry1215 : StructuredComponentRegistry
         RegisterComponent<TooltipStyleComponent>(31, "minecraft:tooltip_style");
         RegisterComponent<DeathProtectionComponent>(32, "minecraft:death_protection");
         RegisterComponent<BlocksAttacksComponent>(33, "minecraft:blocks_attacks"); // NEW
-        RegisterComponent<StoredEnchantmentsComponent>(34, "minecraft:stored_enchantments");
+        RegisterComponent<StoredEnchantmentsComponent1215>(34, "minecraft:stored_enchantments");
         RegisterComponent<DyeColorComponent>(35, "minecraft:dyed_color");
         RegisterComponent<MapColorComponent>(36, "minecraft:map_color");
         RegisterComponent<MapIdComponent>(37, "minecraft:map_id");
