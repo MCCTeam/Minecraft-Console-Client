@@ -813,6 +813,7 @@ namespace MinecraftClient.Inventory
         MusicDiscCreator,
         MusicDiscCreatorMusicBox,
         MusicDiscFar,
+        MusicDiscLavaChicken,
         MusicDiscMall,
         MusicDiscMellohi,
         MusicDiscOtherside,
