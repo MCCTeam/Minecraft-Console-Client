@@ -1,178 +1,83 @@
-# MCC Multibox Commander (GUI Fork)
+<div align="center">
 
-**A modern, dark-themed GUI for [Minecraft Console Client](https://github.com/MCCTeam/Minecraft-Console-Client) focused on multiboxing and macro management.**
+<img src="https://i.pics.rs/LLDhE.png" alt="Logo"/>
 
-[Features](#features) | [Installation](#installation) | [Usage](#usage) | [Building from Source](#building-from-source) | [Changelog](#changelog) | [License](#license)
+# Minecraft Console Client (MCC)
 
----
+[Documentation](https://mccteam.github.io/) | [Download](#download) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage.html)
 
-## Screenshot
+</div>
 
-![Screenshot](screenshot.png)
+<div align="center">
 
----
+[English](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README.md) | [Nederlands](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Dutch.md) | [Русский](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Russian.md) | [Српски](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Serbian_Cyrillic.md) | [Türkçe](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Turkish.md) | [Tiếng Việt](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Vietnamese.md) | [简体中文](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Chinese_Simplified.md) | [繁體中文](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Chinese_Traditional.md)
 
-## About
+</div>
 
-This project is a modified fork of **Minecraft Console Client (MCC)**. The core logic relies on the robust MCCTeam implementation, while the GUI has been completely rewritten to support **managing multiple bots simultaneously** in a clean, modern dark interface.
+<div align="center">
 
----
+[![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 
-## Features
+</div>
 
-### GUI Features (Added in this Fork)
-- **Multiboxing** — run multiple Minecraft accounts in separate tabs within a single window
-- **Dark Mode UI** — fully custom dark interface, no system white borders or artifacts
-- **Custom Tab Bar** — tabs with close (✕) buttons, active tab highlighting, no TabControl flickering
-- **Per-Tab Console** — each bot has its own output console with color-coded Minecraft chat
-- **Log Filters** — filter console output by **All / Chat / System / Errors** per tab
-- **Auto-save Logs** — each session is automatically saved to `logs/<nick>_<date>.txt`
-- **Connection Timer** — displays uptime (HH:MM:SS) for each connected account
-- **Bot Status Indicator** — colored dot (gray / green / red) shows connection state per tab
-- **Auto-scroll Toggle** — checkbox to pause auto-scrolling so you can read history
-- **Macro System** — side panel with quick-action buttons loaded from `macros.txt`
-- **Global Send** — send a message or command to all connected bots simultaneously
-- **Session History** — remembers last used usernames, IPs, and password (stored in `settings_v3.txt`)
-- **Bilingual Support** — switch between English and Polish instantly
+## **About ℹ️**
 
-### Core MCC Features (Inherited)
-- Connect to any Minecraft Java server (offline/online mode)
-- Lightweight and fast
-- Full chat and command support with Minecraft color code parsing
-- Inventory handling, auto-response, and other core MCC features run in the background
+**Minecraft Console Client (MCC)** is a lightweight cross-platform open-source Minecraft TUI client for **Java** edition that allows you to connect to any Minecraft Java server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game.
 
----
+## Download
 
-## Installation
+Get development builds from the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
 
-### Option 1: Installer (Recommended)
-1. Download the latest **publish.zip** from the [Releases](../../releases) section
-2. Extract the ZIP
-3. Run **`setup.exe`**
-4. Follow the installation prompts
+## How to use 📚
 
-### Option 2: Portable / Run from Folder
-1. Download and extract **publish.zip** from [Releases](../../releases)
-2. Run **`MinecraftClientGUI.exe`** directly — no installation needed
+-   🌐 [Full Documentation](https://mccteam.github.io/)
+-   📦 [Installation](https://mccteam.github.io/guide/installation.html)
+-   📖 [Usage](https://mccteam.github.io/guide/usage.html)
+-   ⚙️ [Configuration](https://mccteam.github.io/guide/configuration.html)
+-   🤖 [Chat Bots](https://mccteam.github.io/guide/chat-bots.html)
+-   📝 [Sample configuration files](MinecraftClient/config/)
 
-> On first launch, the app will automatically create `macros.txt` and `settings_v3.txt` in the same folder.
+## Getting Help 🙋
 
----
+Check out the [Website](https://mccteam.github.io/), [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section.
 
-## Usage
+## Discord
 
-### Connecting
-1. Enter your **Username / Email**
-2. Enter **Password** (leave blank for offline servers)
-3. Enter **Server IP**
-4. Click **+ Add Account**
-5. A new tab opens and the bot connects automatically
+We now have a Discord server, click [here](https://discord.gg/sfBv4TtpC9) to join.
 
-> If you use an email address, only the part before `@` is shown as the tab title.
+## Helping Us ❤️
 
-### Macros
-1. Click **Edit** in the Quick Actions panel
-2. Add lines in the format: `Label|/command|Color`
-   - Example: `Spawn|/spawn|Blue`
-3. Save the file and click **Reload**
-4. Click any macro button to send the command to the active tab (or all tabs if "Send to all" is checked)
+We are a small community so we need help to implement upgrades for new Minecraft versions, fixing bugs and expanding the project. We are always looking for motivated people to contribute. If you feel like it could be you, please have a look at the [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) section :)
 
-### Log Filters
-Each tab has a filter bar with four buttons:
-- **All** — show everything
-- **Chat** — show only in-game chat messages
-- **System** — show only `[SYS]` events (connect, disconnect, sent commands)
-- **Errors** — show only `[ERR]` events
+## How to contribute 📝
 
-### Session Logs
-Logs are saved automatically to the `logs/` folder next to the executable.  
-File format: `logs/<nick>_<yyyy-MM-dd_HH-mm>.txt`
+If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the _Master_ branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io).
 
----
+![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
 
-## Building from Source
+## Translating Minecraft Console Client 🌍
 
-### Requirements
-- Visual Studio 2019 or newer
-- .NET Framework 4.x
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
 
-### Steps
-1. Clone this repository:
-   ```
-   git clone https://github.com/AnonBOTpl/Minecraft-Console-Client-GUI
-   ```
-2. Open **`MinecraftClientGUI.sln`** in Visual Studio
-3. Set configuration to **Release** (not Debug) in the toolbar dropdown
-4. Build the solution: **Build → Build Solution** (`Ctrl+Shift+B`)
-5. The output will be in `MinecraftClientGUI\bin\Release\`
-6. Copy `MinecraftClient.exe` (built separately from the `MinecraftClient` project) to the same folder
+## Building from the source 🏗️
 
-### Creating the Installer
-1. Build in **Release** mode first (see above)
-2. In Visual Studio: **Build → Publish MinecraftClientGUI**
-3. The installer (`setup.exe` + `publish.zip`) will be generated in the `publish\` folder
+This section has been moved to our new [Documentation website](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
 
----
+## License ⚖️
 
-## Updating MCC Core
+Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
+The main terms of the CDDL-1.0 license are basically the following:
 
-This GUI ships with a specific version of `MinecraftClient.exe` (MCC build 285, for Minecraft 1.20.4).
+-   You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
+-   However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
+-   In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
 
-If you want to use a newer version of Minecraft, you can update the core manually:
+More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html
+Full license at http://opensource.org/licenses/CDDL-1.0
 
-1. Download the latest `MinecraftClient.exe` from the [official MCC releases](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
-2. Replace `MinecraftClient.exe` in the folder where `MinecraftClientGUI.exe` is located
-3. The GUI itself does not need to be rebuilt — it will automatically use the new core
-
-> **Note:** Newer versions of MCC may change their output format or arguments, which could cause display issues in the GUI. If something breaks after updating, check the [MCC changelog](https://github.com/MCCTeam/Minecraft-Console-Client/releases) for breaking changes.
-
----
-
-## Changelog
-
-### v2.0.0 — 2026-02-21
-**Major UI overhaul — complete rewrite of the graphical interface**
-
-#### New Features
-- Replaced `TabControl` with a fully custom tab bar — eliminates all white system borders
-- Active tab now visually elevated with a blue accent underline
-- Each tab has a **✕ close button**
-- **Log filter bar** per tab: All / Chat / System / Errors
-- **Auto-save session logs** — saved automatically to `logs/` folder on connect
-- **Connection uptime timer** (HH:MM:SS) displayed in each tab's header bar
-- **Bot status dot** — gray (connecting), green (connected), red (disconnected)
-- **Auto-scroll toggle checkbox** per tab
-- Email addresses are now trimmed — only the username part (before `@`) shown as tab title
-- Language switch button is now a large, clearly visible button at the top of the sidebar
-
-#### Improvements
-- Dark ComboBox with custom draw — no more white dropdown backgrounds
-- Macro buttons redesigned — colored left-side accent bar instead of full background color
-- Bottom chat bar padding fixed — no more phantom border below input field
-- Spacing between Disconnect and Auto-scroll buttons fixed
-
----
-
-### v1.0.0 — 2026-02-13
-**Initial release**
-
-- Dark-themed GUI for MCC
-- Multiboxing support with tabbed interface
-- Macro system (`macros.txt`)
-- EN/PL language support
-- Session history for logins and IPs (`settings_v3.txt`)
-- Minecraft chat color code parsing (`§` codes)
-- Global send (send to all connected bots)
-- Active account counter
-
----
-
-## Credits & License
-
-**This project is a fork of [Minecraft Console Client](https://github.com/MCCTeam/Minecraft-Console-Client).**
-
-- **GUI & Multibox modifications:** [AnonBOTpl](https://github.com/AnonBOTpl)
-- **Core Logic & Original Project:** Copyright © 2012–2024 MCC Team & Contributors
-
-Licensed under **CDDL-1.0**.  
-Full license: http://opensource.org/licenses/CDDL-1.0
+## Uses technologies from
+<div align="center">
+<a href="https://sentry.io/welcome/">
+  <img src="https://github.com/breadbyte/Minecraft-Console-Client/assets/14045257/411e9a2f-cd9b-4bb5-b7e9-cd7529c76b88" alt="Sentry"  />
+</a>
+</div>
