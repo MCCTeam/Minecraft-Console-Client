@@ -1,0 +1,39 @@
+{
+  "skill_name": "mcc-integration-testing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Configure the local 1.21.11 MCC test server for persistent offline mode, then run a deep MCC integration test covering chat, operator actions, creative inventory, entity tracking, sounds, particles, and TNT.",
+      "expected_output": "The server is left in offline mode with RCON enabled, MCC joins successfully, and the run reports clear pass or fail evidence from both MCC and server logs.",
+      "files": [],
+      "expectations": [
+        "The workflow sources ~/.zshrc without reading it directly.",
+        "The server is configured with online-mode=false and enable-rcon=true.",
+        "The run uses both mc-rcon and mcc-cmd.",
+        "The result includes evidence from MCC output and server logs."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Validate that MCC still works after a runtime or framework change by performing a repeatable offline smoke test against the local vanilla server and exercising entity and inventory handling.",
+      "expected_output": "The response runs the repeatable local workflow, checks for a successful join, verifies inventory and entity commands, and calls out any configuration or protocol regression.",
+      "files": [],
+      "expectations": [
+        "The workflow builds MCC before running the server scenario.",
+        "The workflow checks inventory and entity handling explicitly.",
+        "The response flags config reload failures as regressions."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Use the local MCC testing workflow to run a full-spectrum client/server exercise and summarize the important evidence only.",
+      "expected_output": "The response runs the scripted scenario and returns a concise summary with pass/fail status, affected commands, and log evidence.",
+      "files": [],
+      "expectations": [
+        "The workflow uses the scripted test runner.",
+        "The summary includes join status, MCC command coverage, and server-side effects.",
+        "The summary points to the saved log locations."
+      ]
+    }
+  ]
+}

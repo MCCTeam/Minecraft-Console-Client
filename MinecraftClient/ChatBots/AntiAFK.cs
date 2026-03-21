@@ -64,6 +64,12 @@ namespace MinecraftClient.ChatBots
             {
                 public double min, max;
 
+                public Range()
+                {
+                    min = 0;
+                    max = 0;
+                }
+
                 public Range(int value)
                 {
                     min = max = value;
