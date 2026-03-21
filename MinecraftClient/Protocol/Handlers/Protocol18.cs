@@ -2024,8 +2024,8 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolVersion >= MC_1_19_3_Version)
                     {
                         var actionBitset = dataTypes.ReadNextByte(packetData);
-                        var numberOfActions = dataTypes.ReadNextVarInt(packetData);
-                        for (var i = 0; i < numberOfActions; i++)
+                        var entryCount = dataTypes.ReadNextVarInt(packetData);
+                        for (var i = 0; i < entryCount; i++)
                         {
                             var playerUuid = dataTypes.ReadNextUUID(packetData);
 
@@ -2107,10 +2107,19 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             // Actions bit 5: update display name
-                            if ((actionBitset & 1 << 5) <= 0) continue;
-                            player.DisplayName = dataTypes.ReadNextBool(packetData)
-                                ? dataTypes.ReadNextChat(packetData)
-                                : null;
+                            if ((actionBitset & 1 << 5) > 0)
+                            {
+                                player.DisplayName = dataTypes.ReadNextBool(packetData)
+                                    ? dataTypes.ReadNextChat(packetData)
+                                    : null;
+                            }
+
+                            // Consume all action-selected fields to keep entry boundaries aligned.
+                            if (protocolVersion >= MC_1_21_2_Version && (actionBitset & 1 << 6) > 0) // Actions bit 6: update list order
+                                dataTypes.ReadNextVarInt(packetData);
+
+                            if (protocolVersion >= MC_1_21_4_Version && (actionBitset & 1 << 7) > 0) // Actions bit 7: update hat
+                                dataTypes.ReadNextBool(packetData);
                         }
                     }
                     else if (protocolVersion >= MC_1_8_Version)
