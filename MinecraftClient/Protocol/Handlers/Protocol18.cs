@@ -3704,7 +3704,17 @@ namespace MinecraftClient.Protocol.Handlers
                 List<Tuple<string, string>>? needSigned = null;
 
                 if (protocolVersion >= MC_1_19_Version && Config.Signature is { LoginWithSecureProfile: true, SignMessageInCommand: true })
-                    needSigned = DeclareCommands.CollectSignArguments(command);
+                {
+                    if (DeclareCommands.IsCommandTreeAvailable)
+                    {
+                        needSigned = DeclareCommands.CollectSignArguments(command);
+                    }
+                    else
+                    {
+                        needSigned = [];
+                        log.Debug("DeclareCommands tree unavailable, sending command without signed arguments.");
+                    }
+                }
 
                 lock (MessageSigningLock)
                 {
