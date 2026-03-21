@@ -559,11 +559,32 @@ namespace MinecraftClient.Protocol.Handlers
             int data = -1;
             byte entityPitch, entityYaw;
 
-            if (living)
+            if (protocolversion >= Protocol18Handler.MC_1_21_9_Version)
+            {
+                // 1.21.9+: LpVec3 movement before angles, unified format
+                ReadNextLpVec3(cache);                  // Movement (LpVec3)
+                entityPitch = ReadNextByte(cache);      // xRot
+                entityYaw = ReadNextByte(cache);        // yRot
+                ReadNextByte(cache);                    // yHeadRot
+                data = ReadNextVarInt(cache);            // Data
+            }
+            else if (living)
             {
                 entityYaw = ReadNextByte(cache); // Yaw
                 entityPitch = ReadNextByte(cache); // Pitch
                 entityPitch = ReadNextByte(cache); // Head Pitch
+
+                // Velocity (3 shorts)
+                if (protocolversion < Protocol18Handler.MC_1_9_Version)
+                {
+                    // no velocity for living entities in <1.9
+                }
+                else
+                {
+                    ReadNextShort(cache);
+                    ReadNextShort(cache);
+                    ReadNextShort(cache);
+                }
             }
             else
             {
@@ -577,23 +598,23 @@ namespace MinecraftClient.Protocol.Handlers
                 data = protocolversion >= Protocol18Handler.MC_1_19_Version
                     ? ReadNextVarInt(cache)
                     : ReadNextInt(cache);
-            }
 
-            // In 1.8 those 3 fields for Velocity are optional
-            if (protocolversion < Protocol18Handler.MC_1_9_Version)
-            {
-                if (data != 0)
+                // Velocity (3 shorts)
+                if (protocolversion < Protocol18Handler.MC_1_9_Version)
+                {
+                    if (data != 0)
+                    {
+                        ReadNextShort(cache);
+                        ReadNextShort(cache);
+                        ReadNextShort(cache);
+                    }
+                }
+                else
                 {
                     ReadNextShort(cache);
                     ReadNextShort(cache);
                     ReadNextShort(cache);
                 }
-            }
-            else
-            {
-                ReadNextShort(cache);
-                ReadNextShort(cache);
-                ReadNextShort(cache);
             }
 
             return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
@@ -943,6 +964,22 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 return new Dictionary<int, object?>();
             }
+        }
+
+        /// <summary>
+        /// Read an LpVec3 (low-precision vec3) from the cache (1.21.9+).
+        /// Variable-length encoding: first byte 0 = zero vector; otherwise
+        /// 2 bytes + 4 bytes (6 total), plus an optional VarInt continuation.
+        /// </summary>
+        public void ReadNextLpVec3(Queue<byte> cache)
+        {
+            int first = ReadNextByte(cache);
+            if (first == 0)
+                return;
+            ReadNextByte(cache);        // second byte
+            ReadData(4, cache);         // uint32
+            if ((first & 4) == 4)       // continuation bit set
+                ReadNextVarInt(cache);
         }
 
         /// <summary>
