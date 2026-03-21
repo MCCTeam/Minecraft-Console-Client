@@ -8,7 +8,6 @@
 /Other/
 /.vs/
 SessionCache.ini
-.*
 !/.github
 /packages
 
@@ -428,3 +427,6 @@ MinecraftOfficial/
 /mcc_input.txt
 /MinecraftClient.ini
 /MinecraftClient.backup.ini
+
+# Other
+.*
