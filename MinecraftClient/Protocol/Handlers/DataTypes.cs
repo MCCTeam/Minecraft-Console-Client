@@ -907,6 +907,13 @@ namespace MinecraftClient.Protocol.Handlers
                         case EntityMetaDataType.ArmadilloState: // Armadillo state (1.20.6+)
                             value = ReadNextVarInt(cache);
                             break;
+                        case EntityMetaDataType.CopperGolemState: // Copper Golem state (1.21.9+)
+                        case EntityMetaDataType.WeatheringCopperState: // Weathering Copper state (1.21.9+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.ResolvableProfile: // ResolvableProfile (1.21.9+)
+                            ReadNextResolvableProfile(cache);
+                            break;
                         case EntityMetaDataType.Vector3: // Vector 3f
                             value = new List<float>
                             {
@@ -935,6 +942,60 @@ namespace MinecraftClient.Protocol.Handlers
             catch(Exception ex)
             {
                 return new Dictionary<int, object?>();
+            }
+        }
+
+        /// <summary>
+        /// Consume bytes for a ResolvableProfile (1.21.9+).
+        /// Wire: Either(GameProfile, Partial) + PlayerSkin.Patch
+        /// </summary>
+        private void ReadNextResolvableProfile(Queue<byte> cache)
+        {
+            bool isFullProfile = ReadNextBool(cache); // Either flag: true=GameProfile, false=Partial
+            if (isFullProfile)
+            {
+                ReadNextUUID(cache);            // UUID
+                ReadNextString(cache);          // player name (max 16 chars)
+                ReadGameProfileProperties(cache);
+            }
+            else
+            {
+                // Partial: optional name, optional UUID, properties
+                if (ReadNextBool(cache))
+                    ReadNextString(cache);      // optional player name
+                if (ReadNextBool(cache))
+                    ReadNextUUID(cache);        // optional UUID
+                ReadGameProfileProperties(cache);
+            }
+
+            // PlayerSkin.Patch: 4 optional fields
+            // body (optional ResourceLocation string)
+            if (ReadNextBool(cache))
+                ReadNextString(cache);
+            // cape
+            if (ReadNextBool(cache))
+                ReadNextString(cache);
+            // elytra
+            if (ReadNextBool(cache))
+                ReadNextString(cache);
+            // model (optional bool: true=SLIM, false=WIDE)
+            if (ReadNextBool(cache))
+                ReadNextBool(cache);
+        }
+
+        /// <summary>
+        /// Read GameProfile properties (PropertyMap): VarInt count, then per entry:
+        /// name string, value string, optional signature string.
+        /// </summary>
+        private void ReadGameProfileProperties(Queue<byte> cache)
+        {
+            int count = ReadNextVarInt(cache);
+            for (int i = 0; i < count; i++)
+            {
+                ReadNextString(cache);          // property name
+                ReadNextString(cache);          // property value
+                if (ReadNextBool(cache))        // has signature?
+                    ReadNextString(cache);      // signature
             }
         }
 
