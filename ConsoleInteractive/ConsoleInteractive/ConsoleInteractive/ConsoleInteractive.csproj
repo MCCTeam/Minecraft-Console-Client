@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Title>ConsoleInteractive</Title>
+        <Authors>breadbyte</Authors>
+        <Description>A C# library that allows you to write and read from the console simultaneously</Description>
+        <RepositoryUrl>https://github.com/breadbyte/ConsoleInteractive</RepositoryUrl>
+        <Nullable>enable</Nullable>
+        <PackageId>ConsoleInteractivePrompt</PackageId>
+        <PackageLicenseUrl>https://github.com/breadbyte/ConsoleInteractive/blob/main/LICENSE</PackageLicenseUrl>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
+        <OutputType>Library</OutputType>
+        <PublishSingleFile>false</PublishSingleFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="PInvoke.Kernel32" Version="0.7.124" />
+      <PackageReference Include="Wcwidth" Version="1.0.0" />
+    </ItemGroup>
+
+</Project>
