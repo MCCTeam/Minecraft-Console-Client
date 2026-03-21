@@ -116,5 +116,13 @@ public enum EntityMetaDataType
     /// <summary>
     /// Either&lt;GameProfile, Partial&gt; + PlayerSkin.Patch (1.21.9+)
     /// </summary>
-    ResolvableProfile
+    ResolvableProfile,
+    /// <summary>
+    /// VarInt (1.21.11+, holder registry ID)
+    /// </summary>
+    ZombieNautilusVariant,
+    /// <summary>
+    /// VarInt (1.21.11+, 0=LEFT, 1=RIGHT)
+    /// </summary>
+    HumanoidArm
 }
