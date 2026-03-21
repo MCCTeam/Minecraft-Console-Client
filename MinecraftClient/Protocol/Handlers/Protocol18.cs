@@ -350,7 +350,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     break;
                 }
-                catch (Ionic.Zlib.ZlibException)
+                catch (System.IO.InvalidDataException)
                 {
                     break;
                 }

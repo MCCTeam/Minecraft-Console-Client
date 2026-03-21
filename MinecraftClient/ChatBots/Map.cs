@@ -259,7 +259,8 @@ namespace MinecraftClient.ChatBots
             {
                 using (var image = new MagickImage(fileName))
                 {
-                    var size = new MagickGeometry(Config.Resize_To, Config.Resize_To);
+                    uint resizeTo = (uint)Math.Max(Config.Resize_To, 1);
+                    var size = new MagickGeometry(resizeTo, resizeTo);
                     size.IgnoreAspectRatio = true;
 
                     image.Resize(size);

@@ -12,7 +12,6 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 using Tomlet.Attributes;
 using File = System.IO.File;
 
@@ -205,7 +204,7 @@ namespace MinecraftClient.ChatBots
 
             try
             {
-                botClient!.SendTextMessageAsync(Config.ChannelId.Trim(), message, ParseMode.Markdown).Wait(Config.Message_Send_Timeout);
+                botClient!.SendMessage(Config.ChannelId.Trim(), message, parseMode: ParseMode.Markdown).Wait(Config.Message_Send_Timeout);
             }
             catch (Exception e)
             {
@@ -224,9 +223,9 @@ namespace MinecraftClient.ChatBots
                 string fileName = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
 
                 Stream stream = File.OpenRead(filePath);
-                botClient!.SendDocumentAsync(
+                botClient!.SendDocument(
                     Config.ChannelId.Trim(),
-                    document: new InputOnlineFile(content: stream, fileName),
+                    document: InputFile.FromStream(stream, fileName),
                     caption: text,
                     parseMode: ParseMode.Markdown).Wait(Config.Message_Send_Timeout * 1000);
             }
@@ -260,14 +259,14 @@ namespace MinecraftClient.ChatBots
                 cancellationToken = new CancellationTokenSource();
 
                 botClient.StartReceiving(
-                    updateHandler: HandleUpdateAsync,
-                    pollingErrorHandler: HandlePollingErrorAsync,
-                    receiverOptions: new ReceiverOptions
+                    HandleUpdateAsync,
+                    HandlePollingErrorAsync,
+                    new ReceiverOptions
                     {
                         // receive all update types
                         AllowedUpdates = Array.Empty<UpdateType>()
                     },
-                    cancellationToken: cancellationToken.Token
+                    cancellationToken.Token
                 );
 
                 IsConnected = true;
@@ -313,9 +312,9 @@ namespace MinecraftClient.ChatBots
 
             if (text.ToLower().Contains(".chatid"))
             {
-                await botClient.SendTextMessageAsync(chatId: chatId,
-                    replyToMessageId: message.MessageId,
+                await botClient.SendMessage(chatId: chatId,
                     text: $"Chat ID: {chatId}",
+                    replyParameters: message.MessageId,
                     cancellationToken: _cancellationToken,
                     parseMode: ParseMode.Markdown);
                 return;
@@ -324,10 +323,10 @@ namespace MinecraftClient.ChatBots
             if (Config.Authorized_Chat_Ids.Length > 0 && !Config.Authorized_Chat_Ids.Contains(chatId))
             {
                 LogDebugToConsole($"Unauthorized message '{messageText}' received in a chat with with an ID: {chatId} !");
-                await botClient.SendTextMessageAsync(
+                await botClient.SendMessage(
                     chatId: chatId,
-                    replyToMessageId: message.MessageId,
                     text: Translations.bot_TelegramBridge_unauthorized,
+                    replyParameters: message.MessageId,
                     cancellationToken: _cancellationToken,
                     parseMode: ParseMode.Markdown);
                 return;
@@ -347,10 +346,10 @@ namespace MinecraftClient.ChatBots
 
                 if (command.ToLower().Contains("quit") || command.ToLower().Contains("exit"))
                 {
-                    await botClient.SendTextMessageAsync(
+                    await botClient.SendMessage(
                         chatId: chatId,
-                        replyToMessageId: message.MessageId,
                         text: $"{Translations.bot_TelegramBridge_quit_disabled}",
+                        replyParameters: message.MessageId,
                         cancellationToken: _cancellationToken,
                         parseMode: ParseMode.Markdown);
                     return;;
@@ -359,11 +358,10 @@ namespace MinecraftClient.ChatBots
                 CmdResult result = new();
                 PerformInternalCommand(command, ref result);
 
-                await botClient.SendTextMessageAsync(
+                await botClient.SendMessage(
                     chatId: chatId,
-                    replyToMessageId:
-                    message.MessageId,
                     text: $"{Translations.bot_TelegramBridge_command_executed}:\n\n{result}",
+                    replyParameters: message.MessageId,
                     cancellationToken: _cancellationToken,
                     parseMode: ParseMode.Markdown);
             }

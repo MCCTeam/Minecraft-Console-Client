@@ -70,7 +70,7 @@ namespace MinecraftClient
                     options.Dsn = SentryDSN;
                     options.AutoSessionTracking = true;
                     options.IsGlobalModeEnabled = true;
-                    options.EnableTracing = true;
+                    options.TracesSampleRate = 1.0;
                     options.SendDefaultPii = false;
                 });
                 

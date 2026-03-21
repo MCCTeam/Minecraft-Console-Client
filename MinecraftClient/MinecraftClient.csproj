@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <PublishUrl>publish\</PublishUrl>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -28,25 +28,22 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Brigadier.NET" Version="1.2.13" />
-    <PackageReference Include="DnsClient" Version="1.7.0" />
-    <PackageReference Include="DotNetZip" Version="1.16.0" />
-    <PackageReference Include="DSharpPlus" Version="4.2.0" />
-    <PackageReference Include="DynamicExpresso.Core" Version="2.13.0" />
+    <PackageReference Include="DnsClient" Version="1.8.0" />
+    <PackageReference Include="DSharpPlus" Version="4.5.1" />
+    <PackageReference Include="DynamicExpresso.Core" Version="2.19.3" />
     <PackageReference Include="FuzzySharp" Version="2.0.2" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.3.0" />
-    <PackageReference Include="MessagePack" Version="3.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
-    <PackageReference Include="Samboy063.Tomlet" Version="5.0.1" />
-    <PackageReference Include="Sentry" Version="4.1.0" />
-    <PackageReference Include="SingleFileExtractor.Core" Version="1.0.1" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.11.0" />
+    <PackageReference Include="MessagePack" Version="3.1.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.5" />
+    <PackageReference Include="Samboy063.Tomlet" Version="6.2.0" />
+    <PackageReference Include="Sentry" Version="6.2.0" />
+    <PackageReference Include="SingleFileExtractor.Core" Version="2.3.0" />
 	<PackageReference Include="starksoft.aspen" Version="1.1.8">
 		<NoWarn>NU1701</NoWarn>
 	</PackageReference>
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
-    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="22.9.5.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="config\ChatBots\AutoLeaveOnLowHp.cs" />

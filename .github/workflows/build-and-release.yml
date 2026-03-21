@@ -8,7 +8,7 @@ on:
   
 env:
   PROJECT: "MinecraftClient"
-  target-version: "net8.0"
+/us   target-version: "net10.0"
   compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded"
 
 jobs:
@@ -45,6 +45,11 @@ jobs:
       run: |
         echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
         echo file-ext=${{ (startsWith(matrix.target, 'win') && '.exe') || ' ' }} >> $GITHUB_ENV
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
         
     - name: Setup Environment Variables
       run: |
