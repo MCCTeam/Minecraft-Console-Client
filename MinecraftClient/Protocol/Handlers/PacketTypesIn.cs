@@ -164,5 +164,10 @@ namespace MinecraftClient.Protocol.Handlers
         Waypoint,                   // Added in 1.21.6
         ClearDialog,                // Added in 1.21.6
         ShowDialog,                 // Added in 1.21.6
+        DebugBlockValue,            // Added in 1.21.9
+        DebugChunkValue,            // Added in 1.21.9
+        DebugEntityValue,           // Added in 1.21.9
+        DebugEvent,                 // Added in 1.21.9
+        GameTestHighlightPos,       // Added in 1.21.9
     }
 }

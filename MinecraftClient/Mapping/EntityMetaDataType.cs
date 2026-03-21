@@ -98,11 +98,23 @@ public enum EntityMetaDataType
     /// </summary>
     ArmadilloState,
     /// <summary>
+    /// VarInt (1.21.9+)
+    /// </summary>
+    CopperGolemState,
+    /// <summary>
+    /// VarInt (1.21.9+)
+    /// </summary>
+    WeatheringCopperState,
+    /// <summary>
     /// Float x3
     /// </summary>
     Vector3,
     /// <summary>
     /// Float x4
     /// </summary>
-    Quaternion
+    Quaternion,
+    /// <summary>
+    /// Either&lt;GameProfile, Partial&gt; + PlayerSkin.Patch (1.21.9+)
+    /// </summary>
+    ResolvableProfile
 }
