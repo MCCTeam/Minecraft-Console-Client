@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +22,16 @@ namespace MinecraftClient.Mapping
         private static Dimension curDimension= new();
 
         private static readonly Dictionary<string, Dimension> dimensionList = new();
+
+        /// <summary>
+        /// VarInt ID → dimension name mapping, populated from RegistryData in 1.20.6+
+        /// </summary>
+        private static Dictionary<int, string> dimensionIdMap = new();
+
+        /// <summary>
+        /// VarInt ID → attribute name mapping, populated from RegistryData (minecraft:attribute) in 1.20.6+
+        /// </summary>
+        private static Dictionary<int, string> attributeIdMap = new();
 
         /// <summary>
         /// Chunk data parsing progress
@@ -69,6 +79,223 @@ namespace MinecraftClient.Mapping
             }
         }
 
+        public static void LoadDefaultDimensions1206Plus()
+        {
+            // TODO: Move this to a JSON file.
+            
+            var defaultRegistryCodec = new Dictionary<string, object>
+            {
+                { "minecraft:dimension_type", new Dictionary<string, object>
+                    {
+                        { "value", new object[]
+                            {
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:overworld" },
+                                    { "id", 0 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)0 },
+                                            { "natural", 1 },
+                                            { "ambient_light", 0.0 },
+                                            { "monster_spawn_block_light_limit", 0 },
+                                            { "infiniburn", "#minecraft:infiniburn_overworld" },
+                                            { "respawn_anchor_works", 0 },
+                                            { "has_skylight", 1 },
+                                            { "bed_works", 1 },
+                                            { "effects", "minecraft:overworld" },
+                                            { "has_raids", 1 },
+                                            { "logical_height", 384 },
+                                            { "coordinate_scale", 1.0 },
+                                            { "monster_spawn_light_level", new Dictionary<string, object>
+                                                {
+                                                    { "min_inclusive", 0 },
+                                                    { "max_inclusive", 7 },
+                                                    { "type", "minecraft:uniform" }
+                                                }
+                                            },
+                                            { "min_y", -64 },
+                                            { "ultrawarm", 0 },
+                                            { "has_ceiling", 0 },
+                                            { "height", 384 }
+                                        }
+                                    }
+                                },
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:overworld_caves" },
+                                    { "id", 1 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)0 },
+                                            { "natural", 1 },
+                                            { "ambient_light", 0.0 },
+                                            { "monster_spawn_block_light_limit", 0 },
+                                            { "infiniburn", "#minecraft:infiniburn_overworld" },
+                                            { "respawn_anchor_works", 0 },
+                                            { "has_skylight", 1 },
+                                            { "bed_works", 1 },
+                                            { "effects", "minecraft:overworld" },
+                                            { "has_raids", 1 },
+                                            { "logical_height", 384 },
+                                            { "coordinate_scale", 1.0 },
+                                            { "monster_spawn_light_level", new Dictionary<string, object>
+                                                {
+                                                    { "min_inclusive", 0 },
+                                                    { "max_inclusive", 7 },
+                                                    { "type", "minecraft:uniform" }
+                                                }
+                                            },
+                                            { "min_y", -64 },
+                                            { "ultrawarm", 0 },
+                                            { "has_ceiling", 1 },
+                                            { "height", 384 }
+                                        }
+                                    }
+                                },
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:the_end" },
+                                    { "id", 2 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)0 },
+                                            { "natural", 0 },
+                                            { "ambient_light", 0.0 },
+                                            { "monster_spawn_block_light_limit", 0 },
+                                            { "infiniburn", "#minecraft:infiniburn_end" },
+                                            { "respawn_anchor_works", 0 },
+                                            { "has_skylight", 0 },
+                                            { "bed_works", 0 },
+                                            { "effects", "minecraft:the_end" },
+                                            { "fixed_time", 6000 },
+                                            { "has_raids", 1 },
+                                            { "logical_height", 256 },
+                                            { "coordinate_scale", 1.0 },
+                                            { "monster_spawn_light_level", new Dictionary<string, object>
+                                                {
+                                                    { "min_inclusive", 0 },
+                                                    { "max_inclusive", 7 },
+                                                    { "type", "minecraft:uniform" }
+                                                }
+                                            },
+                                            { "min_y", 0 },
+                                            { "ultrawarm", 0 },
+                                            { "has_ceiling", 0 },
+                                            { "height", 256 }
+                                        }
+                                    }
+                                },
+                                new Dictionary<string, object>
+                                {
+                                    { "name", "minecraft:the_nether" },
+                                    { "id", 3 },
+                                    { "element", new Dictionary<string, object>
+                                        {
+                                            { "piglin_safe", (byte)1 },
+                                            { "natural", 0 },
+                                            { "ambient_light", 0.1 },
+                                            { "monster_spawn_block_light_limit", 15 },
+                                            { "infiniburn", "#minecraft:infiniburn_nether" },
+                                            { "respawn_anchor_works", 1 },
+                                            { "has_skylight", 0 },
+                                            { "bed_works", 0 },
+                                            { "effects", "minecraft:the_nether" },
+                                            { "fixed_time", 18000 },
+                                            { "has_raids", 0 },
+                                            { "logical_height", 128 },
+                                            { "coordinate_scale", 8.0 },
+                                            { "monster_spawn_light_level", 7 },
+                                            { "min_y", 0 },
+                                            { "ultrawarm", 1 },
+                                            { "has_ceiling", 1 },
+                                            { "height", 256 }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            StoreDimensionList(defaultRegistryCodec);
+        }
+
+        public static void SetDimensionIdMap(Dictionary<int, string> idMap)
+        {
+            dimensionIdMap = idMap;
+        }
+
+        public static string GetDimensionNameById(int id)
+        {
+            return dimensionIdMap.TryGetValue(id, out var name) ? name : "minecraft:overworld";
+        }
+
+        public static bool HasAnyDimension()
+        {
+            return dimensionList.Count > 0;
+        }
+
+        public static void SetAttributeIdMap(Dictionary<int, string> idMap)
+        {
+            attributeIdMap = idMap;
+        }
+
+        /// <summary>
+        /// Get attribute name by its registry VarInt ID. Returns null if the ID is unknown.
+        /// When KnownDataPacks negotiation tells the server we already have vanilla data,
+        /// the server skips sending the attribute registry. In that case we fall back to
+        /// the built-in vanilla 1.20.6 attribute order (22 entries).
+        /// </summary>
+        public static string? GetAttributeNameById(int id)
+        {
+            if (attributeIdMap.Count == 0)
+                LoadDefaultAttributes();
+            return attributeIdMap.TryGetValue(id, out var name) ? name : null;
+        }
+
+        private static void LoadDefaultAttributes()
+        {
+            // Fallback for when the server doesn't send attribute registry via RegistryData.
+            // Matches 1.21.1 Attributes.java registration order.
+            // For 1.20.6+ servers, SetAttributeIdMap() overrides this with the actual registry.
+            attributeIdMap = new Dictionary<int, string>
+            {
+                { 0, "generic.armor" },
+                { 1, "generic.armor_toughness" },
+                { 2, "generic.attack_damage" },
+                { 3, "generic.attack_knockback" },
+                { 4, "generic.attack_speed" },
+                { 5, "player.block_break_speed" },
+                { 6, "player.block_interaction_range" },
+                { 7, "generic.burning_time" },
+                { 8, "generic.explosion_knockback_resistance" },
+                { 9, "player.entity_interaction_range" },
+                { 10, "generic.fall_damage_multiplier" },
+                { 11, "generic.flying_speed" },
+                { 12, "generic.follow_range" },
+                { 13, "generic.gravity" },
+                { 14, "generic.jump_strength" },
+                { 15, "generic.knockback_resistance" },
+                { 16, "generic.luck" },
+                { 17, "generic.max_absorption" },
+                { 18, "generic.max_health" },
+                { 19, "player.mining_efficiency" },
+                { 20, "generic.movement_efficiency" },
+                { 21, "generic.movement_speed" },
+                { 22, "generic.oxygen_bonus" },
+                { 23, "generic.safe_fall_distance" },
+                { 24, "generic.scale" },
+                { 25, "player.sneaking_speed" },
+                { 26, "zombie.spawn_reinforcements" },
+                { 27, "generic.step_height" },
+                { 28, "player.submerged_mining_speed" },
+                { 29, "player.sweeping_damage_ratio" },
+                { 30, "generic.water_movement_efficiency" }
+            };
+        }
+
         /// <summary>
         /// Store one dimension - Directly used in 1.16.2 to 1.18.2
         /// </summary>
@@ -110,7 +337,6 @@ namespace MinecraftClient.Mapping
 	    // If still not found, dimension does not exist
 	    throw new KeyNotFoundException($"Dimension '{name}' not found in dimensions dictionary.");
 	}
-
 
 
 

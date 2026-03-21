@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Timers;
+using MessagePack;
 using static MinecraftClient.Settings;
 using static MinecraftClient.Settings.MainConfigHelper.MainConfig.AdvancedConfig;
 
@@ -14,7 +13,6 @@ namespace MinecraftClient.Protocol.Session
     /// </summary>
     public static class SessionCache
     {
-        private const string SessionCacheFilePlaintext = "SessionCache.ini";
         private const string SessionCacheFileSerialized = "SessionCache.db";
         private static readonly string SessionCacheFileMinecraft = String.Concat(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -28,7 +26,6 @@ namespace MinecraftClient.Protocol.Session
         private static readonly Dictionary<string, SessionToken> sessions = new();
         private static readonly Timer updatetimer = new(100);
         private static readonly List<KeyValuePair<string, SessionToken>> pendingadds = new();
-        private static readonly BinaryFormatter formatter = new();
 
         /// <summary>
         /// Retrieve whether SessionCache contains a session for the given login.
@@ -82,7 +79,7 @@ namespace MinecraftClient.Protocol.Session
         /// <returns>TRUE if session tokens are seeded from file</returns>
         public static bool InitializeDiskCache()
         {
-            cachemonitor = new FileMonitor(AppDomain.CurrentDomain.BaseDirectory, SessionCacheFilePlaintext, new FileSystemEventHandler(OnChanged));
+            cachemonitor = new FileMonitor(AppDomain.CurrentDomain.BaseDirectory, SessionCacheFileSerialized, new FileSystemEventHandler(OnChanged));
             updatetimer.Elapsed += HandlePending;
             return LoadFromDisk();
         }
@@ -121,7 +118,7 @@ namespace MinecraftClient.Protocol.Session
         /// <returns>True if data is successfully loaded</returns>
         private static bool LoadFromDisk()
         {
-            //Grab sessions in the Minecraft directory
+            // Grab sessions in the Minecraft directory
             if (File.Exists(SessionCacheFileMinecraft))
             {
                 if (Config.Logging.DebugMessages)
@@ -168,7 +165,7 @@ namespace MinecraftClient.Protocol.Session
                 }
             }
 
-            //Serialized session cache file in binary format
+            // Serialized session cache file in binary format
             if (File.Exists(SessionCacheFileSerialized))
             {
                 if (Config.Logging.DebugMessages)
@@ -177,10 +174,8 @@ namespace MinecraftClient.Protocol.Session
                 try
                 {
                     using FileStream fs = new(SessionCacheFileSerialized, FileMode.Open, FileAccess.Read, FileShare.Read);
-#pragma warning disable SYSLIB0011 // BinaryFormatter.Deserialize() is obsolete
-                    // Possible risk of information disclosure or remote code execution. The impact of this vulnerability is limited to the user side only.
-                    Dictionary<string, SessionToken> sessionsTemp = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
-#pragma warning restore SYSLIB0011 // BinaryFormatter.Deserialize() is obsolete
+                    // Deserialize using MessagePack
+                    Dictionary<string, SessionToken> sessionsTemp = MessagePackSerializer.Deserialize<Dictionary<string, SessionToken>>(fs);
                     foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
                     {
                         if (Config.Logging.DebugMessages)
@@ -192,51 +187,9 @@ namespace MinecraftClient.Protocol.Session
                 {
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.cache_read_fail, ex.Message));
                 }
-                catch (SerializationException ex2)
+                catch (MessagePackSerializationException ex2)
                 {
                     ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_malformed, ex2.Message));
-                }
-            }
-
-            //User-editable session cache file in text format
-            if (File.Exists(SessionCacheFilePlaintext))
-            {
-                if (Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loading_session, SessionCacheFilePlaintext));
-
-                try
-                {
-                    foreach (string line in FileMonitor.ReadAllLinesWithRetries(SessionCacheFilePlaintext))
-                    {
-                        if (!line.Trim().StartsWith("#"))
-                        {
-                            string[] keyValue = line.Split('=');
-                            if (keyValue.Length == 2)
-                            {
-                                try
-                                {
-                                    string login = Settings.ToLowerIfNeed(keyValue[0]);
-                                    SessionToken session = SessionToken.FromString(keyValue[1]);
-                                    if (Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loaded, login, session.ID));
-                                    sessions[login] = session;
-                                }
-                                catch (InvalidDataException e)
-                                {
-                                    if (Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string, keyValue[1], e.Message));
-                                }
-                            }
-                            else if (Config.Logging.DebugMessages)
-                            {
-                                ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_line, line));
-                            }
-                        }
-                    }
-                }
-                catch (IOException e)
-                {
-                    ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.cache_read_fail_plain, e.Message));
                 }
             }
 
@@ -251,17 +204,11 @@ namespace MinecraftClient.Protocol.Session
             if (Config.Logging.DebugMessages)
                 ConsoleIO.WriteLineFormatted("§8" + Translations.cache_saving, acceptnewlines: true);
 
-            List<string> sessionCacheLines = new()
-            {
-                "# Generated by MCC v" + Program.Version + " - Keep it secret & Edit at own risk!",
-                "# Login=SessionID,PlayerName,UUID,ClientID,RefreshToken,ServerIDhash,ServerPublicKey"
-            };
-            foreach (KeyValuePair<string, SessionToken> entry in sessions)
-                sessionCacheLines.Add(entry.Key + '=' + entry.Value.ToString());
-
             try
             {
-                FileMonitor.WriteAllLinesWithRetries(SessionCacheFilePlaintext, sessionCacheLines);
+                using FileStream fs = new(SessionCacheFileSerialized, FileMode.Create, FileAccess.Write, FileShare.None);
+                // Serialize using MessagePack
+                MessagePackSerializer.Serialize(fs, sessions);
             }
             catch (IOException e)
             {

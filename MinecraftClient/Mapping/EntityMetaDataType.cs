@@ -26,6 +26,10 @@ public enum EntityMetaDataType
     Direction,
     OptionalUuid,
     /// <summary>
+    /// Boolean + UUID (1.21.5+, replaces OptionalUuid)
+    /// </summary>
+    OptionalLivingEntityReference,
+    /// <summary>
     /// VarInt
     /// </summary>
     BlockId,
@@ -35,6 +39,10 @@ public enum EntityMetaDataType
     OptionalBlockId,
     Nbt,
     Particle,
+    /// <summary>
+    /// List of Particle (1.20.6+)
+    /// </summary>
+    Particles,
     /// <summary>
     /// VarInt x3
     /// </summary>
@@ -48,7 +56,27 @@ public enum EntityMetaDataType
     /// VarInt
     /// </summary>
     CatVariant,
+    /// <summary>
+    /// VarInt (1.20.6+)
+    /// </summary>
+    CowVariant,
+    /// <summary>
+    /// VarInt (1.20.6+)
+    /// </summary>
+    WolfVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    WolfSoundVariant,
     FrogVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    PigVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    ChickenVariant,
     /// <summary>
     /// String + Position
     /// </summary>
@@ -66,11 +94,35 @@ public enum EntityMetaDataType
     /// </summary>
     SnifferState,
     /// <summary>
+    /// VarInt (1.20.6+)
+    /// </summary>
+    ArmadilloState,
+    /// <summary>
+    /// VarInt (1.21.9+)
+    /// </summary>
+    CopperGolemState,
+    /// <summary>
+    /// VarInt (1.21.9+)
+    /// </summary>
+    WeatheringCopperState,
+    /// <summary>
     /// Float x3
     /// </summary>
     Vector3,
     /// <summary>
     /// Float x4
     /// </summary>
-    Quaternion
+    Quaternion,
+    /// <summary>
+    /// Either&lt;GameProfile, Partial&gt; + PlayerSkin.Patch (1.21.9+)
+    /// </summary>
+    ResolvableProfile,
+    /// <summary>
+    /// VarInt (1.21.11+, holder registry ID)
+    /// </summary>
+    ZombieNautilusVariant,
+    /// <summary>
+    /// VarInt (1.21.11+, 0=LEFT, 1=RIGHT)
+    /// </summary>
+    HumanoidArm
 }

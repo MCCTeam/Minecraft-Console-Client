@@ -103,6 +103,12 @@ namespace MinecraftClient.ChatBots
                 public Coordination? XYZ;
                 public Facing? facing;
 
+                public LocationConfig()
+                {
+                    XYZ = null;
+                    facing = null;
+                }
+
                 public LocationConfig(double yaw, double pitch)
                 {
                     this.XYZ = null;
@@ -125,6 +131,13 @@ namespace MinecraftClient.ChatBots
                 {
                     public double x, y, z;
 
+                    public Coordination()
+                    {
+                        x = 0;
+                        y = 0;
+                        z = 0;
+                    }
+
                     public Coordination(double x, double y, double z)
                     {
                         this.x = x; this.y = y; this.z = z;
@@ -134,6 +147,12 @@ namespace MinecraftClient.ChatBots
                 public struct Facing
                 {
                     public double yaw, pitch;
+
+                    public Facing()
+                    {
+                        yaw = 0;
+                        pitch = 0;
+                    }
 
                     public Facing(double yaw, double pitch)
                     {

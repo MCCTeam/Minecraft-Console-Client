@@ -7,7 +7,6 @@ https://github.com/laurentkempe/DynamicRun/blob/master/LICENSE
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -117,10 +116,11 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                     File.Copy(executablePath, tempFile);
 
                 // Access the contents of the executable.
-                ExecutableReader e = new();
-                var viewAccessor = MemoryMappedFile.CreateFromFile(tempFile, FileMode.Open).CreateViewAccessor();
-                var manifest = e.ReadManifest(viewAccessor);
-                var files = manifest.Files;
+                using ExecutableReader executableReader = new(tempFile);
+                if (!executableReader.IsSingleFile)
+                    throw new InvalidOperationException("[Script Error] The executable is not a single-file bundle.");
+
+                var files = executableReader.Bundle.Files;
 
                 Stream? assemblyStream;
 
@@ -133,8 +133,8 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                     if (string.IsNullOrEmpty(loadedAssembly.Location)) {
                         // Check if we can access the file from the executable.
                         var reference = files.FirstOrDefault(x =>
-                            x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
-                        var refCount = files.Count(x => x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
+                            Path.GetFileNameWithoutExtension(x.RelativePath) == refs.Name);
+                        var refCount = files.Count(x => Path.GetFileNameWithoutExtension(x.RelativePath) == refs.Name);
                         if (refCount > 1) {
                             // Safety net for the case where the assembly is referenced multiple times.
                             // Should not happen normally, but we can make exceptions when it does happen.
@@ -147,17 +147,13 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                                 "[Script Error] The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
                         }
 
-                        assemblyStream = GetStreamForFileEntry(viewAccessor, reference);
+                        assemblyStream = reference.AsStream();
                         references.Add(MetadataReference.CreateFromStream(assemblyStream!));
                         continue;
                     }
 
                     references.Add(MetadataReference.CreateFromFile(loadedAssembly.Location));
                 }
-
-                // Cleanup.
-                viewAccessor.Flush();
-                viewAccessor.Dispose();
             }
             else
             {
@@ -174,14 +170,6 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                     optimizationLevel: OptimizationLevel.Release,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
-        }
-
-        private static Stream? GetStreamForFileEntry(MemoryMappedViewAccessor viewAccessor, FileEntry file)
-        {
-            if (typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, file }) is not Stream stream)
-                throw new InvalidOperationException("[Script Error] The executable does not contain the assembly. Assembly name: " + file.RelativePath);
-
-            return stream;
         }
 
         internal struct CompileResult

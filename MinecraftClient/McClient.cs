@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -119,6 +119,9 @@ namespace MinecraftClient
 
         // ChatBot OnNetworkPacket event
         private bool networkPacketCaptureEnabled = false;
+        
+        // Cookies
+        private Dictionary<string, byte[]> Cookies { get; set; } = new();
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -144,9 +147,13 @@ namespace MinecraftClient
         public ILogger GetLogger() { return Log; }
         public int GetPlayerEntityID() { return playerEntityID; }
         public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
+        public void GetCookie(string key, out byte[]? data) => Cookies.TryGetValue(key, out data);
+        public void SetCookie(string key, byte[] data) => Cookies[key] = data;
+        public void DeleteCookie(string key) => Cookies.Remove(key, out var data);
 
-        readonly TcpClient client;
-        readonly IMinecraftCom handler;
+        TcpClient client;
+        IMinecraftCom handler;
+        SessionToken _sessionToken;
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
@@ -182,6 +189,7 @@ namespace MinecraftClient
             this.port = port;
             this.protocolversion = protocolversion;
             this.playerKeyPair = playerKeyPair;
+            _sessionToken = session;
 
             Log = Settings.Config.Logging.LogToFile
                 ? new FileLogLogger(Config.AppVar.ExpandVars(Settings.Config.Logging.LogFile), Settings.Config.Logging.PrependTimestamp)
@@ -317,6 +325,77 @@ namespace MinecraftClient
                 }
             }
         }
+        
+        public void Transfer(string newHost, int newPort)
+        {
+            try
+            {
+                Log.Info($"Initiating a transfer to: {host}:{port}");
+                
+                // Unload bots
+                UnloadAllBots();
+                bots.Clear();
+                
+                // Close existing connection
+                client.Close();
+
+                // Establish new connection
+                client = ProxyHandler.NewTcpClient(newHost, newPort);
+                client.ReceiveBufferSize = 1024 * 1024;
+                client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000;
+
+                // Reinitialize the protocol handler
+                handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, null, this);
+                Log.Info($"Connected to {host}:{port}");
+
+                // Retry login process
+                if (handler.Login(playerKeyPair, _sessionToken))
+                {
+                    foreach (var bot in botsOnHold)
+                        BotLoad(bot, false);
+                    botsOnHold.Clear();
+
+                    Log.Info("Successfully transferred connection and logged in.");
+                    cmdprompt = new CancellationTokenSource();
+                    ConsoleInteractive.ConsoleReader.BeginReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+                }
+                else
+                {
+                    Log.Error("Failed to login to the new host.");
+                    throw new Exception("Login failed after transfer.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Transfer to {newHost}:{newPort} failed: {ex.Message}");
+
+                // Handle reconnection attempts
+                if (timeoutdetector != null)
+                {
+                    timeoutdetector.Item2.Cancel();
+                    timeoutdetector = null;
+                }
+
+                if (ReconnectionAttemptsLeft > 0)
+                {
+                    Log.Info($"Reconnecting... Attempts left: {ReconnectionAttemptsLeft}");
+                    Thread.Sleep(5000);
+                    ReconnectionAttemptsLeft--;
+                    Program.Restart();
+                }
+                else if (InternalConfig.InteractiveMode)
+                {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    Program.HandleFailure();
+                }
+
+                throw new Exception("Transfer failed and reconnection attempts exhausted.");
+            }
+        }
 
         /// <summary>
         /// Register bots
@@ -346,8 +425,8 @@ namespace MinecraftClient
             if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
-            //Add your ChatBot here by uncommenting and adapting
-            //BotLoad(new ChatBots.YourBot());
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MCC_FILE_INPUT")))
+                BotLoad(new FileInputBot());
         }
 
         /// <summary>
@@ -1470,7 +1549,7 @@ namespace MinecraftClient
         /// <param name="changedSlots">Record changes</param>
         private static void StoreInNewSlot(Container inventory, Item item, int slotId, int newSlotId, List<Tuple<short, Item?>> changedSlots)
         {
-            Item newItem = new(item.Type, item.Count, item.NBT);
+            Item newItem = item.CloneWithCount(item.Count);
             inventory.Items[newSlotId] = newItem;
             inventory.Items.Remove(slotId);
 
@@ -1593,7 +1672,7 @@ namespace MinecraftClient
                             {
                                 // Drop 1 item count from cursor
                                 Item itemTmp = playerInventory.Items[-1];
-                                Item itemClone = new(itemTmp.Type, 1, itemTmp.NBT);
+                                Item itemClone = itemTmp.CloneWithCount(1);
                                 inventory.Items[slotId] = itemClone;
                                 playerInventory.Items[-1].Count--;
                             }
@@ -1622,14 +1701,14 @@ namespace MinecraftClient
                                     {
                                         // Can be evenly divided
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = itemTmp.CloneWithCount(itemTmp.Count / 2);
                                         inventory.Items[slotId].Count = itemTmp.Count / 2;
                                     }
                                     else
                                     {
                                         // Cannot be evenly divided. item count on cursor is always larger than item on inventory
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = itemTmp.CloneWithCount((itemTmp.Count + 1) / 2);
                                         inventory.Items[slotId].Count = (itemTmp.Count - 1) / 2;
                                     }
                                 }
@@ -2313,10 +2392,19 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to place block to</param>
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
+        /// <param name="lookAtBlock">Also look at the block before interacting</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
+        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand, bool lookAtBlock = false)
         {
-            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++));
+            return InvokeOnMainThread(() =>
+            {
+                if (lookAtBlock)
+                {
+                    UpdateLocation(GetCurrentLocation(), location.ToCenter());
+                    handler.SendLocationUpdate(GetCurrentLocation(), Movement.IsOnGround(world, GetCurrentLocation()), _yaw, _pitch);
+                }
+                return handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++);
+            });
         }
 
 
@@ -2877,27 +2965,27 @@ namespace MinecraftClient
                 // We got the last property for enchantment
                 if (propertyId == 9 && propertyValue != -1)
                 {
-                    short topEnchantmentLevelRequirement = inventory.Properties[0];
-                    short middleEnchantmentLevelRequirement = inventory.Properties[1];
-                    short bottomEnchantmentLevelRequirement = inventory.Properties[2];
+                    var topEnchantmentLevelRequirement = inventory.Properties[0];
+                    var middleEnchantmentLevelRequirement = inventory.Properties[1];
+                    var bottomEnchantmentLevelRequirement = inventory.Properties[2];
 
-                    Enchantment topEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var topEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[4]);
 
-                    Enchantment middleEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var middleEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[5]);
 
-                    Enchantment bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[6]);
 
-                    short topEnchantmentLevel = inventory.Properties[7];
-                    short middleEnchantmentLevel = inventory.Properties[8];
-                    short bottomEnchantmentLevel = inventory.Properties[9];
+                    var topEnchantmentLevel = inventory.Properties[7];
+                    var middleEnchantmentLevel = inventory.Properties[8];
+                    var bottomEnchantmentLevel = inventory.Properties[9];
 
-                    StringBuilder sb = new();
+                    var sb = new StringBuilder();
 
                     sb.AppendLine(Translations.Enchantment_enchantments_available + ":");
 

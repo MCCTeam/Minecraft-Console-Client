@@ -284,7 +284,7 @@ namespace MinecraftClient.ChatBots
                     if (text != null)
                         messageBuilder.WithContent(text);
 
-                    messageBuilder.WithFiles(new Dictionary<string, Stream>() { { $"attachment://{filePath}", fs } });
+                    messageBuilder.AddFiles(new Dictionary<string, Stream>() { { filePath, fs } });
 
                     discordBotClient!.SendMessageAsync(discordChannel, messageBuilder).Wait(Config.Message_Send_Timeout * 1000);
                 }
@@ -301,7 +301,7 @@ namespace MinecraftClient.ChatBots
             if (!CanSendMessages())
                 return;
 
-            SendMessage(new DiscordMessageBuilder().WithFile(fileStream));
+            SendMessage(new DiscordMessageBuilder().AddFile(fileStream));
         }
 
         private bool CanSendMessages()

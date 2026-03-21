@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Protocol.Handlers
+namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
     /// Incoming packet types
@@ -29,9 +29,12 @@
         CloseWindow,                //
         CollectItem,                //
         CombatEvent,                //
+        CookieRequest,              // Added in 1.20.6
         CraftRecipeResponse,        //
+        CustomReportDetails,        // Added in 1.21 (Not used)
         DamageEvent,                // Added in 1.19.4
         DeathCombatEvent,           //
+        DebugSample,                // Added in 1.20.6
         DeclareCommands,            //
         DeclareRecipes,             //
         DestroyEntities,            //
@@ -48,6 +51,7 @@
         EntityMovement,             //
         EntityPosition,             //
         EntityPositionAndRotation,  //
+        EntityPositionSync,         // Added in 1.21.2
         EntityProperties,           //
         EntityRotation,             //
         EntitySoundEffect,          //
@@ -55,6 +59,7 @@
         EntityTeleport,             //
         EntityVelocity,             //
         Explosion,                  //
+        MoveMinecartAlongTrack,     // Added in 1.21.2
         FacePlayer,                 //
         FeatureFlags,               // Added in 1.19.3
         HeldItemChange,             //
@@ -81,22 +86,31 @@
         PlayerListHeaderAndFooter,  //
         PlayerRemove,               // Added in 1.19.3 (Not used)
         PlayerPositionAndLook,      //
+        PlayerRotation,             // Added in 1.21.2
         PluginMessage,              //
         ProfilelessChatMessage,     // Added in 1.19.3
+        ProjectilePower,            // Added in 1.20.6
         RemoveEntityEffect,         //
         RemoveResourcePack,         // Added in 1.20.3
         ResetScore,                 // Added in 1.20.3
         ResourcePackSend,           //
         Respawn,                    //
+        RecipeBookAdd,              // Added in 1.21.2 (replaces UnlockRecipes)
+        RecipeBookRemove,           // Added in 1.21.2
+        RecipeBookSettings,         // Added in 1.21.2
         ScoreboardObjective,        //
         SelectAdvancementTab,       //
         ServerData,                 // Added in 1.19
         ServerDifficulty,           //
+        ServerLinks,                // Added in 1.21 (Not used)
         SetCompression,             // For 1.8 or below
         SetCooldown,                //
+        SetCursorItem,              // Added in 1.21.2
         SetDisplayChatPreview,      // Added in 1.19
         SetExperience,              //
+        SetHeldSlot,                // Added in 1.21.2 (replaces HeldItemChange clientbound)
         SetPassengers,              //
+        SetPlayerInventory,         // Added in 1.21.2
         SetSlot,                    //
         SetTickingState,            // Added in 1.20.3
         StepTick,                   // Added in 1.20.3
@@ -115,13 +129,16 @@
         StartConfiguration,         // Added in 1.20.2
         Statistics,                 //
         StopSound,                  //
+        StoreCookie,                // Added in 1.20.6
         SystemChat,                 // Added in 1.19
         TabComplete,                //
         Tags,                       //
         Teams,                      //
+        TestInstanceBlockStatus,    // Added in 1.21.5
         TimeUpdate,                 //
         Title,                      //
         TradeList,                  //
+        Transfer,                   // Added in 1.20.6
         Unknown,                    // For old version packet that have been removed and not used by mcc 
         UnloadChunk,                //
         UnlockRecipes,              //
@@ -144,5 +161,13 @@
         WorldBorderSize,            //
         WorldBorderWarningDelay,    //
         WorldBorderWarningReach,    //
+        Waypoint,                   // Added in 1.21.6
+        ClearDialog,                // Added in 1.21.6
+        ShowDialog,                 // Added in 1.21.6
+        DebugBlockValue,            // Added in 1.21.9
+        DebugChunkValue,            // Added in 1.21.9
+        DebugEntityValue,           // Added in 1.21.9
+        DebugEvent,                 // Added in 1.21.9
+        GameTestHighlightPos,       // Added in 1.21.9
     }
 }

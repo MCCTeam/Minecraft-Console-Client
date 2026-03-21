@@ -106,6 +106,13 @@ namespace MinecraftClient.ChatBots
             {
                 public double X, Y, Z;
 
+                public LocationConfig()
+                {
+                    X = 0;
+                    Y = 0;
+                    Z = 0;
+                }
+
                 public LocationConfig(double X, double Y, double Z)
                 {
                     this.X = X;
