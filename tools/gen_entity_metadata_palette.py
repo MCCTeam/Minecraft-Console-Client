@@ -62,6 +62,8 @@ FIELD_TO_ENUM = {
     "VECTOR3":               "Vector3",
     "QUATERNION":            "Quaternion",
     "RESOLVABLE_PROFILE":    "ResolvableProfile",
+    "ZOMBIE_NAUTILUS_VARIANT": "ZombieNautilusVariant",
+    "HUMANOID_ARM":          "HumanoidArm",
 }
 
 
