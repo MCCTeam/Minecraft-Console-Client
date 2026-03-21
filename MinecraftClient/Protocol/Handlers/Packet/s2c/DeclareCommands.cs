@@ -7,15 +7,23 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
     {
         private static int RootIdx;
         private static CommandNode[] Nodes = Array.Empty<CommandNode>();
+        private static bool HasLoadedTree;
+
+        public static bool IsCommandTreeAvailable => HasValidCommandTree();
 
         public static void Read(DataTypes dataTypes, Queue<byte> packetData, int protocolVersion)
         {
+            Reset();
+            ConsoleIO.OnDeclareMinecraftCommand(Array.Empty<string>());
+
             // TODO: Fix this
             // It crashes in 1.20.6+ , could not figure out why
             // it's hard to debug, so I'll just disable it for now
-            if(protocolVersion > Protocol18Handler.MC_1_20_4_Version)
+            if (protocolVersion > Protocol18Handler.MC_1_20_4_Version)
+            {
                 return;
-            
+            }
+
             int count = dataTypes.ReadNextVarInt(packetData);
             Nodes = new CommandNode[count];
             for (int i = 0; i < count; ++i)
@@ -159,16 +167,23 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 Nodes[i] = new(flags, childs, redirectNode, name, parser, suggestionsType, parserId);
             }
             RootIdx = dataTypes.ReadNextVarInt(packetData);
+            HasLoadedTree = IsValidNodeIndex(RootIdx);
 
-            ConsoleIO.OnDeclareMinecraftCommand(ExtractRootCommand());
+            ConsoleIO.OnDeclareMinecraftCommand(HasLoadedTree ? ExtractRootCommand() : Array.Empty<string>());
         }
 
         private static string[] ExtractRootCommand()
         {
+            if (!HasValidCommandTree())
+                return Array.Empty<string>();
+
             List<string> commands = new();
             CommandNode root = Nodes[RootIdx];
             foreach (var child in root.Clildren)
             {
+                if (!IsValidNodeIndex(child))
+                    continue;
+
                 string? childName = Nodes[child].Name;
                 if (childName != null)
                     commands.Add(childName);
@@ -179,12 +194,18 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
         public static List<Tuple<string, string>> CollectSignArguments(string command)
         {
             List<Tuple<string, string>> needSigned = new();
+            if (!HasValidCommandTree())
+                return needSigned;
+
             CollectSignArguments(RootIdx, command, needSigned);
             return needSigned;
         }
 
         private static void CollectSignArguments(int NodeIdx, string command, List<Tuple<string, string>> arguments)
         {
+            if (!IsValidNodeIndex(NodeIdx))
+                return;
+
             CommandNode node = Nodes[NodeIdx];
             string last_arg = command;
             switch (node.Flags & 0x03)
@@ -218,10 +239,31 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
 
             while (Nodes[NodeIdx].RedirectNode >= 0)
+            {
                 NodeIdx = Nodes[NodeIdx].RedirectNode;
+                if (!IsValidNodeIndex(NodeIdx))
+                    return;
+            }
 
             foreach (int childIdx in Nodes[NodeIdx].Clildren)
                 CollectSignArguments(childIdx, last_arg, arguments);
+        }
+
+        private static void Reset()
+        {
+            RootIdx = -1;
+            Nodes = Array.Empty<CommandNode>();
+            HasLoadedTree = false;
+        }
+
+        private static bool HasValidCommandTree()
+        {
+            return HasLoadedTree && IsValidNodeIndex(RootIdx);
+        }
+
+        private static bool IsValidNodeIndex(int nodeIdx)
+        {
+            return nodeIdx >= 0 && nodeIdx < Nodes.Length;
         }
 
         internal class CommandNode
