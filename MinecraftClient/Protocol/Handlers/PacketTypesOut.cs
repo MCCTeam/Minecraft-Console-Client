@@ -76,5 +76,7 @@ namespace MinecraftClient.Protocol.Handlers
         UseItem,                     //
         VehicleMove,                 //
         WindowConfirmation,          //
+        ChangeGameMode,              // Added in 1.21.6
+        CustomClickAction,           // Added in 1.21.6
     }
 }

@@ -19,6 +19,8 @@ public enum ConfigurationPacketTypesIn
     StoreCookie,
     Transfer,
     UpdateTags,
+    ClearDialog,        // Added in 1.21.6
+    ShowDialog,         // Added in 1.21.6
     
     Unknown
 }

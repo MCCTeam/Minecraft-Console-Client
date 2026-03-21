@@ -161,5 +161,8 @@ namespace MinecraftClient.Protocol.Handlers
         WorldBorderSize,            //
         WorldBorderWarningDelay,    //
         WorldBorderWarningReach,    //
+        Waypoint,                   // Added in 1.21.6
+        ClearDialog,                // Added in 1.21.6
+        ShowDialog,                 // Added in 1.21.6
     }
 }

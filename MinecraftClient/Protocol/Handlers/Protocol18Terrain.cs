@@ -213,7 +213,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     // 1.21.5: No VarInt length prefix; calculate from bits per entry
                                     // Biome container has 64 entries (4x4x4)
-                                    int dataArrayLength = (64 * bitsPerEntryBiome + 63) / 64;
+                                    // Uses SimpleBitStorage: valuesPerLong = 64/bitsPerEntry, longs = ceil(64/valuesPerLong)
+                                    int valuesPerLong = 64 / bitsPerEntryBiome;
+                                    int dataArrayLength = (64 + valuesPerLong - 1) / valuesPerLong;
                                     dataTypes.DropData(dataArrayLength * 8, cache);
                                 }
                                 else
