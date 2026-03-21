@@ -57,8 +57,11 @@ FIELD_TO_ENUM = {
     "PAINTING_VARIANT":      "PaintingVariant",
     "SNIFFER_STATE":         "SnifferState",
     "ARMADILLO_STATE":       "ArmadilloState",
+    "COPPER_GOLEM_STATE":    "CopperGolemState",
+    "WEATHERING_COPPER_STATE": "WeatheringCopperState",
     "VECTOR3":               "Vector3",
     "QUATERNION":            "Quaternion",
+    "RESOLVABLE_PROFILE":    "ResolvableProfile",
 }
 
 
