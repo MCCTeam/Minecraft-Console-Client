@@ -78,6 +78,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_21_5_Version = 770;
         internal const int MC_1_21_6_Version = 771;
         internal const int MC_1_21_7_Version = 772;
+        internal const int MC_1_21_9_Version = 773;
 
         private int compression_treshold = -1;
         private int autocomplete_transaction_id = 0;
@@ -129,21 +130,21 @@ namespace MinecraftClient.Protocol.Handlers
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
             chunkBatchStartTime = GetNanos();
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_21_7_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_21_9_Version)
             {
                 log.Error($"§c{Translations.extra_terrainandmovement_disabled}");
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_21_7_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_21_9_Version)
             {
                 log.Error($"§c{Translations.extra_inventory_disabled}");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_21_7_Version)
+                protocolVersion is < MC_1_8_Version or > MC_1_21_9_Version)
             {
                 log.Error($"§c{Translations.extra_entity_disabled}");
                 handler.SetEntityHandlingEnabled(false);
@@ -152,9 +153,10 @@ namespace MinecraftClient.Protocol.Handlers
             Block.Palette = protocolVersion switch
             {
                 // Block palette
-                > MC_1_21_7_Version when handler.GetTerrainEnabled() =>
+                > MC_1_21_9_Version when handler.GetTerrainEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_block),
-                >= MC_1_21_6_Version => new Palette1216(),  // 1.21.7 blocks unchanged, reuse 1216
+                >= MC_1_21_9_Version => new Palette1219(),
+                >= MC_1_21_6_Version => new Palette1216(),  // 1.21.7/1.21.8 blocks unchanged, reuse 1216
                 >= MC_1_21_5_Version => new Palette1215(),
                 >= MC_1_21_4_Version => new Palette1214(),
                 >= MC_1_21_2_Version => new Palette1212(),
@@ -175,9 +177,10 @@ namespace MinecraftClient.Protocol.Handlers
             entityPalette = protocolVersion switch
             {
                 // Entity palette
-                > MC_1_21_7_Version when handler.GetEntityHandlingEnabled() =>
+                > MC_1_21_9_Version when handler.GetEntityHandlingEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_entity),
-                >= MC_1_21_6_Version => new EntityPalette1216(),  // 1.21.7 entities unchanged, reuse 1216
+                >= MC_1_21_9_Version => new EntityPalette1219(),
+                >= MC_1_21_6_Version => new EntityPalette1216(),  // 1.21.7/1.21.8 entities unchanged, reuse 1216
                 >= MC_1_21_5_Version => new EntityPalette1215(),
                 >= MC_1_21_4_Version => new EntityPalette1214(),
                 >= MC_1_21_2_Version => new EntityPalette1212(),
@@ -202,8 +205,9 @@ namespace MinecraftClient.Protocol.Handlers
             itemPalette = protocolVersion switch
             {
                 // Item palette
-                > MC_1_21_7_Version when handler.GetInventoryEnabled() =>
+                > MC_1_21_9_Version when handler.GetInventoryEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_item),
+                >= MC_1_21_9_Version => new ItemPalette1219(),
                 >= MC_1_21_7_Version => new ItemPalette1217(),
                 >= MC_1_21_6_Version => new ItemPalette1216(),
                 >= MC_1_21_5_Version => new ItemPalette1215(),
@@ -2661,7 +2665,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Also make a palette for field? Will be a lot of work
                         var healthField = protocolVersion switch
                         {
-                            > MC_1_21_7_Version => throw new NotImplementedException(Translations
+                            > MC_1_21_9_Version => throw new NotImplementedException(Translations
                                 .exception_palette_healthfield),
                             // 1.17 and above
                             >= MC_1_17_Version => 9,
