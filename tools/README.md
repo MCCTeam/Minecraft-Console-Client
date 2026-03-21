@@ -102,6 +102,14 @@ Reads `EntityDataSerializers.java` static block registration order. Maps Java fi
 2. MCC's `EntityMetaDataType.cs` enum
 3. `DataTypes.cs` ReadNextMetadata() read logic
 
+## gen_command_argument_registry.py — Generate DeclareCommands registry arrays
+
+```bash
+python3 tools/gen_command_argument_registry.py 1.20.6 1.21.5 1.21.6
+```
+
+Reads `ArgumentTypeInfos.java`, skips the `SharedConstants.IS_RUNNING_IN_IDE` block, and prints C# array initializers for the runtime `COMMAND_ARGUMENT_TYPE` registry order. Use this when Mojang inserts new command argument types and the modern `DeclareCommands` parser needs updated ID routing.
+
 ## Recommended workflow
 
 1. Generate server reports (Step 0)

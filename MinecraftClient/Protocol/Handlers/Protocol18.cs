@@ -3702,8 +3702,13 @@ namespace MinecraftClient.Protocol.Handlers
             try
             {
                 List<Tuple<string, string>>? needSigned = null;
+                bool canSignCommand = protocolVersion >= MC_1_19_Version &&
+                                      isOnlineMode &&
+                                      playerKeyPair != null &&
+                                      Config.Signature.LoginWithSecureProfile &&
+                                      Config.Signature.SignMessageInCommand;
 
-                if (protocolVersion >= MC_1_19_Version && Config.Signature is { LoginWithSecureProfile: true, SignMessageInCommand: true })
+                if (canSignCommand)
                 {
                     if (DeclareCommands.IsCommandTreeAvailable)
                     {
