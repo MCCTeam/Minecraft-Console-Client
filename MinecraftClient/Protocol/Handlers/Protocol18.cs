@@ -153,6 +153,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Block palette
                 > MC_1_21_6_Version when handler.GetTerrainEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_block),
+                >= MC_1_21_6_Version => new Palette1216(),
                 >= MC_1_21_5_Version => new Palette1215(),
                 >= MC_1_21_4_Version => new Palette1214(),
                 >= MC_1_21_2_Version => new Palette1212(),
@@ -175,6 +176,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Entity palette
                 > MC_1_21_6_Version when handler.GetEntityHandlingEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_entity),
+                >= MC_1_21_6_Version => new EntityPalette1216(),
                 >= MC_1_21_5_Version => new EntityPalette1215(),
                 >= MC_1_21_4_Version => new EntityPalette1214(),
                 >= MC_1_21_2_Version => new EntityPalette1212(),
@@ -201,6 +203,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Item palette
                 > MC_1_21_6_Version when handler.GetInventoryEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_item),
+                >= MC_1_21_6_Version => new ItemPalette1216(),
                 >= MC_1_21_5_Version => new ItemPalette1215(),
                 >= MC_1_21_4_Version => new ItemPalette1214(),
                 >= MC_1_21_2_Version => new ItemPalette1212(),
