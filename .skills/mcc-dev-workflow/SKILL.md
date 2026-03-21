@@ -1,3 +1,8 @@
+---
+name: mcc-development-workflow
+description: Documentation of the typical development workflow for Minecraft Console Client (MCC), including project structure, build commands, and debugging steps.
+---
+
 # MCC Development Workflow
 
 ## Project Overview
