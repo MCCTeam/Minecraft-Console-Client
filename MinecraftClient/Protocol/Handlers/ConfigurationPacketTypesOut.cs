@@ -10,6 +10,7 @@ public enum ConfigurationPacketTypesOut
     ResourcePackResponse,
     CookieResponse,
     KnownDataPacks,
+    CustomClickAction,  // Added in 1.21.6
     
     Unknown
 }

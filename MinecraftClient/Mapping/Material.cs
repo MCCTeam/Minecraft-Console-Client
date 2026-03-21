@@ -364,6 +364,7 @@ namespace MinecraftClient.Mapping
         DragonEgg,
         DragonHead,
         DragonWallHead,
+        DriedGhast,
         DriedKelpBlock,
         DripstoneBlock,
         Dropper,

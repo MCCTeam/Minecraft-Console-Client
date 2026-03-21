@@ -79,6 +79,7 @@ namespace MinecraftClient.Mapping
         GlowSquid,
         Goat,
         Guardian,
+        HappyGhast,
         Hoglin,
         HopperMinecart,
         Horse,
