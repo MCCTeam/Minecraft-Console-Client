@@ -6,12 +6,19 @@ Compares Items, EntityTypes, Blocks, DataComponents, and EntityDataSerializers
 to determine which MCC palettes need updating for a new MC version.
 
 Usage:
-    python3 tools/diff_registries.py <old_version> <new_version>
+    python3 tools/diff_registries.py <old_version> <new_version> [--registry <registries.json>]
 
-Example:
+Examples:
     python3 tools/diff_registries.py 1.20.6 1.21.1
+    python3 tools/diff_registries.py 1.21.8 1.21.9 --registry /tmp/mc_reports/reports/registries.json
+
+The optional --registry flag cross-validates decompiled source counts against
+the server's authoritative registries.json (generated via --reports).
+Since MC 1.21.9, some items/blocks are registered outside Items.java/Blocks.java,
+making this cross-validation essential for detecting hidden entries.
 """
 
+import json
 import re
 import sys
 import os
@@ -65,7 +72,7 @@ def extract_static_register_order(filepath: Path) -> list[str]:
     return results
 
 
-def compare_lists(old: list[str], new: list[str], label: str):
+def compare_lists(old: list[str], new: list[str], label: str) -> bool:
     """Compare two ordered lists and report differences."""
     set_old, set_new = set(old), set(new)
     added = sorted(set_new - set_old)
@@ -117,7 +124,46 @@ def compare_lists(old: list[str], new: list[str], label: str):
     return True
 
 
-def diff_items(old_dir: Path, new_dir: Path):
+def cross_validate(registry_data: dict, java_entries: list[str], registry_key: str,
+                   label: str, convert_fn=None):
+    """Cross-validate Java source entries against server registries.json."""
+    reg = registry_data.get(registry_key, {}).get("entries", {})
+    server_names = set()
+    for key in reg:
+        name = key.removeprefix("minecraft:")
+        server_names.add(name)
+
+    if convert_fn:
+        java_names = set(convert_fn(n) for n in java_entries)
+    else:
+        java_names = set(n.lower() for n in java_entries)
+
+    server_count = len(server_names)
+    java_count = len(java_names)
+
+    print(f"\n  --- Cross-validation: {label} ---")
+    print(f"  Java source: {java_count} entries, Server registry: {server_count} entries")
+
+    if server_count == java_count:
+        print(f"  ✓ Counts match — Java source is complete")
+    else:
+        diff = server_count - java_count
+        print(f"  ⚠ Count MISMATCH: server has {diff:+d} entries vs Java source")
+        extra_in_server = server_names - java_names
+        extra_in_java = java_names - server_names
+        if extra_in_server:
+            print(f"  In server but NOT in Java source ({len(extra_in_server)}):")
+            for n in sorted(extra_in_server):
+                pid = reg[f"minecraft:{n}"]["protocol_id"]
+                print(f"    [{pid}] {n}")
+            print(f"  ⚠ MUST use --from-registry / server data to generate palette!")
+        if extra_in_java:
+            print(f"  In Java source but NOT in server ({len(extra_in_java)}):")
+            for n in sorted(extra_in_java):
+                print(f"    {n}")
+
+
+def diff_items(old_dir: Path, new_dir: Path, registry_data: dict | None = None):
     old_f = find_java_file(old_dir, "net/minecraft/world/item/Items.java")
     new_f = find_java_file(new_dir, "net/minecraft/world/item/Items.java")
     if not old_f or not new_f:
@@ -128,8 +174,12 @@ def diff_items(old_dir: Path, new_dir: Path):
     new = extract_field_names(new_f, pattern)
     compare_lists(old, new, "Items.java (Item registry)")
 
+    if registry_data:
+        cross_validate(registry_data, new, "minecraft:item", "Items",
+                       convert_fn=lambda n: n.lower())
 
-def diff_entity_types(old_dir: Path, new_dir: Path):
+
+def diff_entity_types(old_dir: Path, new_dir: Path, registry_data: dict | None = None):
     old_f = find_java_file(old_dir, "net/minecraft/world/entity/EntityType.java")
     new_f = find_java_file(new_dir, "net/minecraft/world/entity/EntityType.java")
     if not old_f or not new_f:
@@ -139,8 +189,12 @@ def diff_entity_types(old_dir: Path, new_dir: Path):
     new = extract_register_multiline(new_f)
     compare_lists(old, new, "EntityType.java (Entity registry)")
 
+    if registry_data:
+        cross_validate(registry_data, new, "minecraft:entity_type", "EntityType",
+                       convert_fn=lambda n: n)
 
-def diff_blocks(old_dir: Path, new_dir: Path):
+
+def diff_blocks(old_dir: Path, new_dir: Path, registry_data: dict | None = None):
     old_f = find_java_file(old_dir, "net/minecraft/world/level/block/Blocks.java")
     new_f = find_java_file(new_dir, "net/minecraft/world/level/block/Blocks.java")
     if not old_f or not new_f:
@@ -149,6 +203,10 @@ def diff_blocks(old_dir: Path, new_dir: Path):
     old = extract_register_multiline(old_f)
     new = extract_register_multiline(new_f)
     compare_lists(old, new, "Blocks.java (Block registry)")
+
+    if registry_data:
+        cross_validate(registry_data, new, "minecraft:block", "Blocks",
+                       convert_fn=lambda n: n)
 
 
 def diff_data_components(old_dir: Path, new_dir: Path):
@@ -183,11 +241,23 @@ def diff_entity_data_serializers(old_dir: Path, new_dir: Path):
 
 
 def main():
-    if len(sys.argv) != 3:
+    # Parse arguments
+    args = sys.argv[1:]
+    registry_path = None
+
+    if "--registry" in args:
+        idx = args.index("--registry")
+        if idx + 1 >= len(args):
+            print("Error: --registry requires a path argument")
+            sys.exit(1)
+        registry_path = Path(args[idx + 1])
+        args = args[:idx] + args[idx + 2:]
+
+    if len(args) != 2:
         print(__doc__)
         sys.exit(1)
 
-    old_ver, new_ver = sys.argv[1], sys.argv[2]
+    old_ver, new_ver = args[0], args[1]
     old_dir = DECOMPILED_ROOT / f"{old_ver}-decompiled"
     new_dir = DECOMPILED_ROOT / f"{new_ver}-decompiled"
 
@@ -199,13 +269,22 @@ def main():
                   f"--output {v}-remapped.jar --decompiled-output {v}-decompiled")
             sys.exit(1)
 
+    registry_data = None
+    if registry_path:
+        if not registry_path.exists():
+            print(f"Error: {registry_path} not found")
+            sys.exit(1)
+        with open(registry_path) as f:
+            registry_data = json.load(f)
+        print(f"Loaded server registries.json for cross-validation")
+
     print(f"Comparing MC {old_ver} → {new_ver}")
     print(f"Old: {old_dir}")
     print(f"New: {new_dir}")
 
-    diff_items(old_dir, new_dir)
-    diff_entity_types(old_dir, new_dir)
-    diff_blocks(old_dir, new_dir)
+    diff_items(old_dir, new_dir, registry_data)
+    diff_entity_types(old_dir, new_dir, registry_data)
+    diff_blocks(old_dir, new_dir, registry_data)
     diff_data_components(old_dir, new_dir)
     diff_entity_data_serializers(old_dir, new_dir)
 
@@ -215,6 +294,10 @@ def main():
     print("  Review each section above. For any marked 'PALETTE UPDATE NEEDED',")
     print("  create a new palette file in MCC and update the version routing.")
     print("  For 'IDENTICAL' sections, the existing palette can be reused.")
+    if registry_data:
+        print("\n  Cross-validation was performed against server registries.json.")
+        print("  If any count mismatches were found, use server data generator output")
+        print("  (--from-registry) instead of decompiled Java source for palette generation.")
 
 
 if __name__ == "__main__":

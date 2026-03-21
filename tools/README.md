@@ -2,46 +2,115 @@
 
 Scripts for analyzing Minecraft version differences and generating MCC palette files.
 
-Requires: Python 3.10+, decompiled MC server source in `MinecraftOfficial/<version>-decompiled/`.
+Requires: Python 3.10+
 
-## Decompiling a new MC version
+## Data Sources
+
+Two types of data can be used as input:
+
+| Source | How to Get | Authoritative? |
+|--------|-----------|---------------|
+| Decompiled Java source | `MinecraftDecompiler.jar` → `MinecraftOfficial/<ver>-decompiled/` | Mostly (see caveat below) |
+| Server data reports | `java -DbundlerMainClass=net.minecraft.data.Main -jar server.jar --reports` | **Yes** |
+
+**Important since MC 1.21.9**: Some items and blocks are registered outside `Items.java`/`Blocks.java` field declarations (via block registration callbacks). In these cases, the decompiled source undercounts entries. **Always use server data reports** for item and block palettes when available.
+
+### Decompiling a new MC version
 
 ```bash
 cd MinecraftOfficial
-java -jar MinecraftDecompiler.jar --version 1.21.4 --side SERVER \
-  --decompile --output 1.21.4-remapped.jar --decompiled-output 1.21.4-decompiled
+java -jar MinecraftDecompiler.jar --version 1.21.9 --side SERVER \
+  --decompile --output 1.21.9-remapped.jar --decompiled-output 1.21.9-decompiled
 ```
+
+### Generating server data reports
+
+```bash
+cd /tmp
+java -DbundlerMainClass=net.minecraft.data.Main \
+  -jar /path/to/server.jar \
+  --reports --output /tmp/mc_reports
+```
+
+This generates:
+- `/tmp/mc_reports/reports/registries.json` — all registries with protocol IDs
+- `/tmp/mc_reports/reports/blocks.json` — all blocks with block state IDs
+- `/tmp/mc_reports/reports/packets.json` — packet protocol definitions
 
 ## diff_registries.py — Compare registries between versions
 
 Compares Items, EntityTypes, Blocks, DataComponents, and EntityDataSerializers between two MC versions. Reports whether each palette needs updating, lists added/removed entries, and shows ID shift statistics.
 
 ```bash
-python3 tools/diff_registries.py 1.20.6 1.21.1
+# Basic comparison (decompiled source only)
+python3 tools/diff_registries.py 1.21.8 1.21.9
+
+# With cross-validation against server registries.json (recommended)
+python3 tools/diff_registries.py 1.21.8 1.21.9 --registry /tmp/mc_reports/reports/registries.json
 ```
+
+The `--registry` flag enables cross-validation: compares the count and set of entries found in decompiled Java source against the server's authoritative registry. Any mismatches indicate that palette generation must use server data instead of Java source.
 
 Output indicates for each registry:
 - **IDENTICAL** → reuse existing palette
 - **PALETTE UPDATE NEEDED** → create new palette file + update version routing
+- **Count MISMATCH** (with --registry) → server has entries not in Java source
 
 ## gen_item_palette.py — Generate ItemPalette C# file
 
-Reads `Items.java` field declaration order to generate a complete `ItemPaletteXXX.cs`.
+Two modes:
 
 ```bash
+# Preferred: from server registries.json (accurate since 1.21.9)
+python3 tools/gen_item_palette.py --from-registry /tmp/mc_reports/reports/registries.json 1219
+
+# Legacy: from decompiled Items.java
 python3 tools/gen_item_palette.py 1.21.1 121
-# → MinecraftClient/Inventory/ItemPalettes/ItemPalette121.cs
 ```
 
-Also validates each item name against `ItemType.cs` and warns about missing enum values.
+Output: `MinecraftClient/Inventory/ItemPalettes/ItemPalette<suffix>.cs`
+
+Validates each item name against `ItemType.cs` and warns about missing enum values. Add missing values to `ItemType.cs` in alphabetical order before compiling.
+
+## gen_block_palette.py — Generate BlockPalette C# file
+
+```bash
+python3 tools/gen_block_palette.py /tmp/mc_reports/reports/blocks.json 1219
+# → MinecraftClient/Mapping/BlockPalettes/Palette1219.cs
+```
+
+Generates a complete block palette with block state ID ranges from the server's `blocks.json`. Validates against `Material.cs` and warns about missing enum values.
+
+## gen_entity_palette.py — Generate EntityPalette C# file
+
+```bash
+python3 tools/gen_entity_palette.py /tmp/mc_reports/reports/registries.json 1219
+# → MinecraftClient/Mapping/EntityPalettes/EntityPalette1219.cs
+```
+
+Generates entity type palette from server's `registries.json`. Validates against `EntityType.cs` and warns about missing enum values.
 
 ## gen_entity_metadata_palette.py — Generate EntityMetadataPalette C# file
 
-Reads `EntityDataSerializers.java` static block registration order to generate `EntityMetadataPaletteXXX.cs`.
-
 ```bash
-python3 tools/gen_entity_metadata_palette.py 1.20.6 1206
-# → MinecraftClient/Mapping/EntityMetadataPalettes/EntityMetadataPalette1206.cs
+python3 tools/gen_entity_metadata_palette.py 1.21.9 1219
+# → MinecraftClient/Mapping/EntityMetadataPalettes/EntityMetadataPalette1219.cs
 ```
 
-The script maps Java field names to MCC's `EntityMetaDataType` enum. If a new serializer type appears that isn't in the mapping table, it will warn you to update both the script's `FIELD_TO_ENUM` dict and MCC's `EntityMetaDataType.cs` enum.
+Reads `EntityDataSerializers.java` static block registration order. Maps Java field names to MCC's `EntityMetaDataType` enum. If a new serializer type appears that isn't in the mapping table, it will warn you to update:
+1. The script's `FIELD_TO_ENUM` dict
+2. MCC's `EntityMetaDataType.cs` enum
+3. `DataTypes.cs` ReadNextMetadata() read logic
+
+## Recommended workflow
+
+1. Generate server reports (Step 0)
+2. Run `diff_registries.py --registry` to identify changes and validate source completeness
+3. For each registry needing update:
+   - Items: `gen_item_palette.py --from-registry`
+   - Blocks: `gen_block_palette.py`
+   - Entities: `gen_entity_palette.py`
+   - Metadata: `gen_entity_metadata_palette.py`
+4. Add any missing enum values to `ItemType.cs`, `Material.cs`, `EntityType.cs`, `EntityMetaDataType.cs`
+5. Update version routing (see SKILL.md)
+6. Build and test
