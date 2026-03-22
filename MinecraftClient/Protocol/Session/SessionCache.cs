@@ -123,35 +123,36 @@ namespace MinecraftClient.Protocol.Session
             {
                 if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loading, Path.GetFileName(SessionCacheFileMinecraft)));
-                Json.JSONData mcSession = new(Json.JSONData.DataType.String);
+                System.Text.Json.Nodes.JsonNode? mcSession = null;
                 try
                 {
                     mcSession = Json.ParseJson(File.ReadAllText(SessionCacheFileMinecraft));
                 }
                 catch (IOException) { /* Failed to read file from disk -- ignoring */ }
-                if (mcSession.Type == Json.JSONData.DataType.Object
-                    && mcSession.Properties.ContainsKey("clientToken")
-                    && mcSession.Properties.ContainsKey("authenticationDatabase"))
+                if (mcSession is System.Text.Json.Nodes.JsonObject mcSessionObj
+                    && mcSessionObj.ContainsKey("clientToken")
+                    && mcSessionObj.ContainsKey("authenticationDatabase"))
                 {
-                    string clientID = mcSession.Properties["clientToken"].StringValue.Replace("-", "");
-                    Dictionary<string, Json.JSONData> sessionItems = mcSession.Properties["authenticationDatabase"].Properties;
-                    foreach (string key in sessionItems.Keys)
+                    string clientID = mcSession["clientToken"]!.GetStringValue().Replace("-", "");
+                    var sessionItems = mcSession["authenticationDatabase"]!.AsObject();
+                    foreach (var kvp in sessionItems)
                     {
+                        string key = kvp.Key;
                         if (Guid.TryParseExact(key, "N", out Guid temp))
                         {
-                            Dictionary<string, Json.JSONData> sessionItem = sessionItems[key].Properties;
+                            var sessionItem = kvp.Value!.AsObject();
                             if (sessionItem.ContainsKey("displayName")
                                 && sessionItem.ContainsKey("accessToken")
                                 && sessionItem.ContainsKey("username")
                                 && sessionItem.ContainsKey("uuid"))
                             {
-                                string login = Settings.ToLowerIfNeed(sessionItem["username"].StringValue);
+                                string login = Settings.ToLowerIfNeed(sessionItem["username"]!.GetStringValue());
                                 try
                                 {
                                     SessionToken session = SessionToken.FromString(String.Join(",",
-                                        sessionItem["accessToken"].StringValue,
-                                        sessionItem["displayName"].StringValue,
-                                        sessionItem["uuid"].StringValue.Replace("-", ""),
+                                        sessionItem["accessToken"]!.GetStringValue(),
+                                        sessionItem["displayName"]!.GetStringValue(),
+                                        sessionItem["uuid"]!.GetStringValue().Replace("-", ""),
                                         clientID
                                     ));
                                     if (Config.Logging.DebugMessages)

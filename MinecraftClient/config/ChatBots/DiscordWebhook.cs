@@ -143,7 +143,7 @@ class SkinAPI
             var request = new ProxiedWebRequest("https://api.mojang.com/users/profiles/minecraft/" + name);
             request.Accept = "application/json";
             var response = request.Get();
-            string uuid = Json.ParseJson(response.Body).Properties["id"].StringValue;
+            string uuid = Json.ParseJson(response.Body)!["id"]!.GetStringValue();
             settings.GetNamesToUuidMojangCache().Add(name, uuid);
             return uuid;
         }

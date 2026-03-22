@@ -484,7 +484,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="jsonData">JSON data returned by the server</param>
         /// <param name="forgeInfo">ForgeInfo to populate</param>
         /// <returns>True if the server is running Forge</returns>
-        public static bool ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo? forgeInfo)
+        public static bool ServerInfoCheckForge(System.Text.Json.Nodes.JsonObject jsonData, ref ForgeInfo? forgeInfo)
         {
             return ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML)   // MC 1.12 and lower
                 || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML2) // MC 1.13 to 1.17
@@ -530,7 +530,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="forgeInfo">ForgeInfo to populate</param>
         /// <param name="fmlVersion">Forge protocol version</param>
         /// <returns>True if the server is running Forge</returns>
-        private static bool ServerInfoCheckForgeSub(Json.JSONData jsonData, ref ForgeInfo? forgeInfo, FMLVersion fmlVersion)
+        private static bool ServerInfoCheckForgeSub(System.Text.Json.Nodes.JsonObject jsonData, ref ForgeInfo? forgeInfo, FMLVersion fmlVersion)
         {
             string forgeDataTag;
             string versionField;
@@ -557,10 +557,9 @@ namespace MinecraftClient.Protocol.Handlers
                     throw new NotImplementedException("FMLVersion '" + fmlVersion + "' not implemented!");
             }
 
-            if (jsonData.Properties.ContainsKey(forgeDataTag) && jsonData.Properties[forgeDataTag].Type == Json.JSONData.DataType.Object)
+            if (jsonData[forgeDataTag] is System.Text.Json.Nodes.JsonObject modData)
             {
-                Json.JSONData modData = jsonData.Properties[forgeDataTag];
-                if (modData.Properties.ContainsKey(versionField) && modData.Properties[versionField].StringValue == versionString)
+                if (modData[versionField] is not null && modData[versionField]!.GetStringValue() == versionString)
                 {
                     forgeInfo = new ForgeInfo(modData, fmlVersion);
                     if (forgeInfo.Mods.Any())

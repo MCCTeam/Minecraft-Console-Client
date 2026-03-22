@@ -146,7 +146,7 @@ namespace MinecraftClient.Scripting
         /// Any text sent by the server will be sent here by MinecraftCom (extended variant)
         /// </summary>
         /// <remarks>
-        /// You can use Json.ParseJson() to process the JSON string.
+        /// You can use Json.ParseJson() to obtain a System.Text.Json.Nodes.JsonNode for processing.
         /// </remarks>
         /// <param name="text">Text from the server</param>
         /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
