@@ -287,7 +287,7 @@ using PacketMap = System.Collections.Generic.Dictionary<int, System.Action<byte[
 var greet = (string name, string prefix = "Player") => $"{prefix} {name}";
 ```
 
-## Modern Syntax (C# 10–12)
+## Modern Syntax (C# 10–14)
 
 ### File-Scoped Namespaces
 
@@ -961,9 +961,10 @@ public bool IsAlive => Health > 0;
 _ = int.TryParse(s, out int result);
 (_, int y, _) = GetCoordinates();
 
-// CORRECT: nameof for resilient refactoring
+// CORRECT: nameof for resilient refactoring (unbound generics in C# 14)
 throw new ArgumentException("Invalid value", nameof(packetId));
 LogToConsole($"{nameof(AutoEat)}: eating {item.Name}");
+string typeName = nameof(Dictionary<,>);  // "Dictionary"
 
 // CORRECT: static lambdas prevent accidental closure allocations
 list.Sort(static (a, b) => a.Id.CompareTo(b.Id));
