@@ -893,16 +893,20 @@ namespace MinecraftClient.Protocol.Handlers
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.CatVariant: // Cat Variant
+                        case EntityMetaDataType.CatSoundVariant: // Cat Sound Variant (26.1+)
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.CowVariant: // Cow Variant (1.21.5+)
+                        case EntityMetaDataType.CowSoundVariant: // Cow Sound Variant (26.1+)
                         case EntityMetaDataType.WolfVariant: // Wolf Variant (1.20.6+)
                         case EntityMetaDataType.WolfSoundVariant: // Wolf Sound Variant (1.21.5+)
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.FrogVariant: // Frog Variant
                         case EntityMetaDataType.PigVariant: // Pig Variant (1.21.5+)
+                        case EntityMetaDataType.PigSoundVariant: // Pig Sound Variant (26.1+)
                         case EntityMetaDataType.ChickenVariant: // Chicken Variant (1.21.5+)
+                        case EntityMetaDataType.ChickenSoundVariant: // Chicken Sound Variant (26.1+)
                             value = ReadNextVarInt(cache);
                             break;
                         case EntityMetaDataType.GlobalPosition: // GlobalPos

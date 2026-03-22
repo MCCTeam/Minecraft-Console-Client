@@ -80,12 +80,14 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_21_7_Version = 772;
         internal const int MC_1_21_9_Version = 773;
         internal const int MC_1_21_11_Version = 774;
+        internal const int MC_26_1_Version = 775;
 
         private int compression_treshold = -1;
         private int autocomplete_transaction_id = 0;
         private readonly Dictionary<int, short> window_actions = new();
         private CurrentState currentState = CurrentState.Login;
         private readonly int protocolVersion;
+        private readonly int rawProtocolVersion;
         private int currentDimension;
         private bool isOnlineMode = false;
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
@@ -119,13 +121,14 @@ namespace MinecraftClient.Protocol.Handlers
         readonly RandomNumberGenerator randomGen;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler,
-            ForgeInfo? forgeInfo)
+            ForgeInfo? forgeInfo, int rawProtocolVersion = 0)
         {
             ConsoleIO.SetAutoCompleteEngine(this);
             ChatParser.InitTranslations();
             socketWrapper = new SocketWrapper(Client);
             dataTypes = new DataTypes(protocolVersion);
             this.protocolVersion = protocolVersion;
+            this.rawProtocolVersion = rawProtocolVersion != 0 ? rawProtocolVersion : protocolVersion;
             this.handler = handler;
             pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
@@ -135,21 +138,21 @@ namespace MinecraftClient.Protocol.Handlers
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
             chunkBatchStartTime = GetNanos();
 
-            if (handler.GetTerrainEnabled() && protocolVersion > MC_1_21_11_Version)
+            if (handler.GetTerrainEnabled() && protocolVersion > MC_26_1_Version)
             {
                 log.Error($"§c{Translations.extra_terrainandmovement_disabled}");
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_21_11_Version)
+                protocolVersion is < MC_1_8_Version or > MC_26_1_Version)
             {
                 log.Error($"§c{Translations.extra_inventory_disabled}");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() &&
-                protocolVersion is < MC_1_8_Version or > MC_1_21_11_Version)
+                protocolVersion is < MC_1_8_Version or > MC_26_1_Version)
             {
                 log.Error($"§c{Translations.extra_entity_disabled}");
                 handler.SetEntityHandlingEnabled(false);
@@ -158,8 +161,9 @@ namespace MinecraftClient.Protocol.Handlers
             Block.Palette = protocolVersion switch
             {
                 // Block palette
-                > MC_1_21_11_Version when handler.GetTerrainEnabled() =>
+                > MC_26_1_Version when handler.GetTerrainEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_block),
+                >= MC_26_1_Version => new Palette261(),
                 >= MC_1_21_9_Version => new Palette1219(),
                 >= MC_1_21_6_Version => new Palette1216(),  // 1.21.7/1.21.8 blocks unchanged, reuse 1216
                 >= MC_1_21_5_Version => new Palette1215(),
@@ -182,8 +186,9 @@ namespace MinecraftClient.Protocol.Handlers
             entityPalette = protocolVersion switch
             {
                 // Entity palette
-                > MC_1_21_11_Version when handler.GetEntityHandlingEnabled() =>
+                > MC_26_1_Version when handler.GetEntityHandlingEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_entity),
+                >= MC_26_1_Version => new EntityPalette261(),
                 >= MC_1_21_11_Version => new EntityPalette12111(),
                 >= MC_1_21_9_Version => new EntityPalette1219(),
                 >= MC_1_21_6_Version => new EntityPalette1216(),  // 1.21.7/1.21.8 entities unchanged, reuse 1216
@@ -211,8 +216,9 @@ namespace MinecraftClient.Protocol.Handlers
             itemPalette = protocolVersion switch
             {
                 // Item palette
-                > MC_1_21_11_Version when handler.GetInventoryEnabled() =>
+                > MC_26_1_Version when handler.GetInventoryEnabled() =>
                     throw new NotImplementedException(Translations.exception_palette_item),
+                >= MC_26_1_Version => new ItemPalette261(),
                 >= MC_1_21_11_Version => new ItemPalette12111(),
                 >= MC_1_21_9_Version => new ItemPalette1219(),
                 >= MC_1_21_7_Version => new ItemPalette1217(),
@@ -2681,7 +2687,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Also make a palette for field? Will be a lot of work
                         var healthField = protocolVersion switch
                         {
-                            > MC_1_21_11_Version => throw new NotImplementedException(Translations
+                            > MC_26_1_Version => throw new NotImplementedException(Translations
                                 .exception_palette_healthfield),
                             // 1.17 and above
                             >= MC_1_17_Version => 9,
@@ -2711,11 +2717,30 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case PacketTypesIn.TimeUpdate:
-                    var worldAge = dataTypes.ReadNextLong(packetData);
-                    var timeOfDay = dataTypes.ReadNextLong(packetData);
-                    if (protocolVersion >= MC_1_21_2_Version)
-                        dataTypes.ReadNextBool(packetData); // Tick day time
-                    handler.OnTimeUpdate(worldAge, timeOfDay);
+                    if (protocolVersion >= MC_26_1_Version)
+                    {
+                        var worldAge = dataTypes.ReadNextLong(packetData);
+                        long timeOfDay = 0;
+                        var clockCount = dataTypes.ReadNextVarInt(packetData);
+                        for (int i = 0; i < clockCount; i++)
+                        {
+                            dataTypes.ReadNextVarInt(packetData); // clock holder id
+                            var totalTicks = dataTypes.ReadNextVarLong(packetData);
+                            dataTypes.ReadNextFloat(packetData); // partialTick
+                            dataTypes.ReadNextFloat(packetData); // rate
+                            if (i == 0)
+                                timeOfDay = totalTicks;
+                        }
+                        handler.OnTimeUpdate(worldAge, timeOfDay);
+                    }
+                    else
+                    {
+                        var worldAge = dataTypes.ReadNextLong(packetData);
+                        var timeOfDay = dataTypes.ReadNextLong(packetData);
+                        if (protocolVersion >= MC_1_21_2_Version)
+                            dataTypes.ReadNextBool(packetData); // Tick day time
+                        handler.OnTimeUpdate(worldAge, timeOfDay);
+                    }
                     break;
                 case PacketTypesIn.EntityTeleport:
                     if (handler.GetEntityHandlingEnabled())
@@ -3164,8 +3189,8 @@ namespace MinecraftClient.Protocol.Handlers
         {
             // 1. Send the handshake packet
             SendPacket(0x00, dataTypes.ConcatBytes(
-                    // Protocol Version
-                    DataTypes.GetVarInt(protocolVersion),
+                    // Protocol Version (use raw version for snapshot/RC servers)
+                    DataTypes.GetVarInt(rawProtocolVersion),
 
                     // Server Address
                     dataTypes.GetString(pForge.GetServerAddress(handler.GetServerHost())),
