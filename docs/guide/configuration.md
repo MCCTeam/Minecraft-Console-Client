@@ -188,7 +188,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
     The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
 
-    To find your language code, check [this link](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239s).
+    To find your language code, check [this list](https://mccteam.github.io/r/l-code.html).
 
 -   **Type:** `string`
 
@@ -199,6 +199,26 @@ Coordinate = { x = 145, y = 64, z = 2045 }
     ```
     Language = "en_us"
     ```
+
+#### `EnableSentry`
+
+-   **Description:**
+
+    Set this to `false` to opt out of Sentry error reporting.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `LoadMccTranslation`
+
+-   **Description:**
+
+    Set this to `false` to keep MCC in English even when translated strings are available.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
 
 #### `ConsoleTitle`
 
@@ -629,6 +649,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 **A movement speed higher than 2 may be considered cheating by some plugins.**
 
+</div>
+
 #### `IgnoreInvalidPlayerName`
 
 -   **Description:**
@@ -638,8 +660,6 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Type:** `boolean`
 
 -   **Default:** `true`
-
-</div>
 
 ### Account List section
 
@@ -744,7 +764,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Type:** `boolean`
 
--   **Default:** `false`
+-   **Default:** `true`
 
 #### `MarkModifiedMsg`
 
@@ -774,7 +794,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Type:** `boolean`
 
--   **Default:** `false`
+-   **Default:** `true`
 
 #### `ShowModifiedChat`
 
@@ -796,9 +816,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `true`
 
-### Logging section
+### App Vars values section
 
--   **Section header:** `Logging`
+-   **Section header:** `AppVar.VarStirng`
 
 #### `DebugMessages`
 
@@ -964,7 +984,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
     </div>
 
--   **Section header:** `Logging`
+-   **Section header:** `AppVar.VarStirng`
 
 -   **Examples:**
 
@@ -972,6 +992,116 @@ Coordinate = { x = 145, y = 64, z = 2045 }
     your_var = "your_value"
     "your var 2" = "your value 2"
     ```
+
+## Console section
+
+-   **Section header:** `Console`
+
+-   **Description:**
+
+    Console-related settings for input handling and command suggestions.
+
+### Console General section
+
+-   **Section header:** `Console.General`
+
+#### `ConsoleColorMode`
+
+-   **Description:**
+
+    Use `disable`, `legacy_4bit`, `vt100_4bit`, `vt100_8bit`, or `vt100_24bit`.
+
+    If the terminal shows garbled escape sequences like `←[0m`, try `legacy_4bit` or disable color output.
+
+-   **Type:** `string`
+
+-   **Default:** `vt100_24bit`
+
+#### `Display_Input`
+
+-   **Description:**
+
+    Set this to `false` if you do not want MCC to echo the current input line while typing.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `History_Input_Records`
+
+-   **Description:**
+
+    Maximum number of remembered console input lines.
+
+-   **Type:** `integer`
+
+-   **Default:** `32`
+
+### Console CommandSuggestion section
+
+-   **Section header:** `Console.CommandSuggestion`
+
+-   **Description:**
+
+    Command completion suggestions in the console.
+
+#### `Enable`
+
+-   **Description:**
+
+    Set this to `false` to disable command completion suggestions.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `Enable_Color`
+
+-   **Description:**
+
+    Enables colored suggestions when the terminal color mode supports it.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `Use_Basic_Arrow`
+
+-   **Description:**
+
+    Use this if the suggestion arrows are not displayed correctly in your terminal.
+
+-   **Type:** `boolean`
+
+-   **Default:** `false`
+
+#### `Max_Suggestion_Width`
+
+-   **Description:**
+
+    Maximum width of the suggestion popup.
+
+-   **Type:** `integer`
+
+-   **Default:** `30`
+
+#### `Max_Displayed_Suggestions`
+
+-   **Description:**
+
+    Maximum number of suggestions shown at once.
+
+-   **Type:** `integer`
+
+-   **Default:** `6`
+
+#### Color fields
+
+-   **Description:**
+
+    The suggestion text, tooltip, and arrow colors are stored as hex color strings such as `#f8fafc`.
+
+    MCC validates these values on startup and falls back to built-in defaults if a color string is invalid.
 
 ## Proxy section
 
@@ -986,6 +1116,16 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Description:**
 
     If Mojang session services or Microsoft login services are blocked on your network or your ip is blacklisted or rate limited by Microsoft, set the value to `true`.
+
+-   **Type:** `boolean`
+
+-   **Default:** `false`
+
+#### `Enabled_Update`
+
+-   **Description:**
+
+    Use the proxy when MCC checks for updates.
 
 -   **Type:** `boolean`
 
@@ -1033,14 +1173,14 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
     Available options:
 
-    -   `HTTPT`
+    -   `HTTP`
     -   `SOCKS4`
     -   `SOCKS4a`
     -   `SOCKS5`
 
 -   **Type:** `string`
 
--   **Default:** `HTTPT`
+-   **Default:** `HTTP`
 
 #### `Username`
 
@@ -1113,7 +1253,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Type:** `string`
 
--   **Default:** `normal`
+-   **Default:** `peaceful`
 
 #### `ChatMode`
 
@@ -1320,3 +1460,13 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Type:** `string`
 
 -   **Default:** `TeleportRequest = '^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$'`
+
+## Chat Bot section
+
+-   **Section header:** `ChatBot`
+
+-   **Description:**
+
+    This top-level section groups the built-in bot configs that ship with MCC.
+
+    The detailed options for each bot are documented in [Chat Bots](chat-bots.md), so this page only covers the shared runtime and client settings.
