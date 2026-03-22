@@ -185,6 +185,9 @@ namespace MinecraftClient.Protocol.Handlers
                         // Non-air block count inside chunk section, for lighting purposes
                         int blockCnt = dataTypes.ReadNextShort(cache);
 
+                        if (protocolversion >= Protocol18Handler.MC_26_1_Version)
+                            dataTypes.ReadNextShort(cache); // Fluid count (26.1+)
+
                         // Read Block states (Type: Paletted Container)
                         Chunk? chunk = ReadBlockStatesField(cache);
 

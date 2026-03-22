@@ -169,5 +169,7 @@ namespace MinecraftClient.Protocol.Handlers
         DebugEntityValue,           // Added in 1.21.9
         DebugEvent,                 // Added in 1.21.9
         GameTestHighlightPos,       // Added in 1.21.9
+        GameRuleValues,             // Added in 26.1
+        LowDiskSpaceWarning,        // Added in 26.1
     }
 }

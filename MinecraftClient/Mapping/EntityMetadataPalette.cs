@@ -27,6 +27,7 @@ public abstract class EntityMetadataPalette
             <= Protocol18Handler.MC_1_21_7_Version => new EntityMetadataPalette1215(),  // 1.21.5 - 1.21.8
             <= Protocol18Handler.MC_1_21_9_Version => new EntityMetadataPalette1219(),  // 1.21.9 - 1.21.10
             <= Protocol18Handler.MC_1_21_11_Version => new EntityMetadataPalette12111(), // 1.21.11
+            <= Protocol18Handler.MC_26_1_Version => new EntityMetadataPalette261(),    // 26.1
             _ => throw new NotImplementedException()
         };
     }

@@ -578,6 +578,7 @@ namespace MinecraftClient.Inventory
         GoldenAxe,
         GoldenBoots,
         GoldenCarrot,
+        GoldenDandelion,
         GoldenChestplate,
         GoldenHelmet,
         GoldenHoe,

@@ -145,20 +145,22 @@ namespace MinecraftClient.Protocol
         public static IMinecraftCom GetProtocolHandler(TcpClient client, int protocolVersion, ForgeInfo? forgeInfo,
             IMinecraftComHandler handler)
         {
+            int normalizedVersion = NormalizeSnapshotProtocol(protocolVersion);
+
             int[] suppoertedVersionsProtocol16 = { 51, 60, 61, 72, 73, 74, 78 };
 
-            if (Array.IndexOf(suppoertedVersionsProtocol16, protocolVersion) > -1)
-                return new Protocol16Handler(client, protocolVersion, handler);
+            if (Array.IndexOf(suppoertedVersionsProtocol16, normalizedVersion) > -1)
+                return new Protocol16Handler(client, normalizedVersion, handler);
 
             int[] suppoertedVersionsProtocol18 =
             {
                 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573,
                 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
-                769, 770, 771, 772, 773, 774
+                769, 770, 771, 772, 773, 774, 775
             };
 
-            if (Array.IndexOf(suppoertedVersionsProtocol18, protocolVersion) > -1)
-                return new Protocol18Handler(client, protocolVersion, handler, forgeInfo);
+            if (Array.IndexOf(suppoertedVersionsProtocol18, normalizedVersion) > -1)
+                return new Protocol18Handler(client, normalizedVersion, handler, forgeInfo, protocolVersion);
 
             throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, protocolVersion));
         }
@@ -370,6 +372,8 @@ namespace MinecraftClient.Protocol
                         return 773;
                     case "1.21.11":
                         return 774;
+                    case "26.1":
+                        return 775;
                     default:
                         return 0;
                 }
@@ -458,7 +462,24 @@ namespace MinecraftClient.Protocol
                 772 => "1.21.7",
                 773 => "1.21.9",
                 774 => "1.21.11",
+                775 => "26.1",
                 _ => "0.0"
+            };
+        }
+
+        /// <summary>
+        /// Normalize snapshot/pre-release protocol numbers (0x40000000 | data_version) to the
+        /// corresponding release protocol number. Unknown snapshot versions pass through unchanged.
+        /// </summary>
+        public static int NormalizeSnapshotProtocol(int protocol)
+        {
+            if ((protocol & 0x40000000) == 0)
+                return protocol;
+
+            return protocol switch
+            {
+                0x4000012E => 775, // 26.1-rc-2 → 26.1
+                _ => protocol
             };
         }
 

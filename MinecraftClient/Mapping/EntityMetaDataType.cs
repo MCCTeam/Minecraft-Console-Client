@@ -57,9 +57,17 @@ public enum EntityMetaDataType
     /// </summary>
     CatVariant,
     /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    CatSoundVariant,
+    /// <summary>
     /// VarInt (1.20.6+)
     /// </summary>
     CowVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    CowSoundVariant,
     /// <summary>
     /// VarInt (1.20.6+)
     /// </summary>
@@ -76,7 +84,15 @@ public enum EntityMetaDataType
     /// <summary>
     /// VarInt (1.21.5+)
     /// </summary>
+    PigSoundVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
     ChickenVariant,
+    /// <summary>
+    /// VarInt (1.21.5+)
+    /// </summary>
+    ChickenSoundVariant,
     /// <summary>
     /// String + Position
     /// </summary>
