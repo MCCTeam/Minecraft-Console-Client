@@ -203,7 +203,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: "artifacts/**/*"
-          tagName: ${{ needs.create-tag.outputs.build-tag }}
+          tag: ${{ needs.create-tag.outputs.build-tag }}
           name: '${{ needs.create-tag.outputs.build-tag }}: ${{ github.event.head_commit.message }}'
           generateReleaseNotes: true
           artifactErrorsFailBuild: true
