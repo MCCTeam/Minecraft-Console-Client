@@ -78,5 +78,7 @@ namespace MinecraftClient.Protocol.Handlers
         WindowConfirmation,          //
         ChangeGameMode,              // Added in 1.21.6
         CustomClickAction,           // Added in 1.21.6
+        Attack,                      // Added in 26.1
+        SetGameRule,                 // Added in 26.1
     }
 }

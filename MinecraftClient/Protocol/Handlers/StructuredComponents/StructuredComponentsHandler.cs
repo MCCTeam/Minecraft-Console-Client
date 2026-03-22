@@ -33,6 +33,7 @@ public class StructuredComponentsHandler
         {
             Protocol18Handler.MC_1_20_6_Version => typeof(StructuredComponentsRegistry1206),
             Protocol18Handler.MC_1_21_Version => typeof(StructuredComponentsRegistry121),
+            >= Protocol18Handler.MC_26_1_Version => typeof(StructuredComponentsRegistry261),
             >= Protocol18Handler.MC_1_21_11_Version => typeof(StructuredComponentsRegistry12111),
             >= Protocol18Handler.MC_1_21_5_Version => typeof(StructuredComponentsRegistry1215),
             >= Protocol18Handler.MC_1_21_2_Version => typeof(StructuredComponentsRegistry1212),
