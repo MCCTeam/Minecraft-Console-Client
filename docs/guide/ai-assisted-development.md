@@ -681,7 +681,7 @@ Use skills:
 Typical flow:
 
 ```bash
-tools/decompile.sh --version 1.21.11
+tools/decompile.sh --version 26.1
 ```
 
 Generate server reports:
@@ -689,14 +689,14 @@ Generate server reports:
 ```bash
 cd /tmp
 java -DbundlerMainClass=net.minecraft.data.Main \
-  -jar "$MCC_SERVERS/1.21.11/server.jar" \
+  -jar "$MCC_SERVERS/26.1/server.jar" \
   --reports --output /tmp/mc_reports
 ```
 
 Run the registry diff:
 
 ```bash
-python3 tools/diff_registries.py 1.21.10 1.21.11 --registry /tmp/mc_reports/reports/registries.json
+python3 tools/diff_registries.py 1.21.10 26.1 --registry /tmp/mc_reports/reports/registries.json
 ```
 
 Then regenerate the palettes that changed, update routing, build MCC, start a local server for the target version, and run live validation before calling the work done.

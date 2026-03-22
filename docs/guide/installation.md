@@ -35,11 +35,9 @@ Requirements:
 -   [Git](https://www.git-scm.com/)
 -   [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **If you want to modify the code, and you are new to C# or in programming in general, you might want to watch some C# tutorials, we recommend the ones listed in [Creating Bots](creating-bots.md#requirements) section.**
-
-</div>
+::: tip
+If you want to modify the code and you are new to C# or programming in general, the tutorials listed in [Creating Bots](creating-bots.md#requirements) are a good starting point.
+:::
 
 #### Cloning using Git
 

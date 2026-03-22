@@ -267,7 +267,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Current code support is `1.4.6` through `1.21.11`.**
+    **Current code support is `1.4.6` through `26.1`.**
 
     </div>
 
