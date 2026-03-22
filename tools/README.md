@@ -18,17 +18,21 @@ Two types of data can be used as input:
 ### Decompiling a new MC version
 
 ```bash
-cd MinecraftOfficial
-java -jar MinecraftDecompiler.jar --version 1.21.9 --side SERVER \
-  --decompile --output 1.21.9-remapped.jar --decompiled-output 1.21.9-decompiled
+# Server side (default) — also downloads server.jar into MinecraftOfficial/downloads/<ver>/
+tools/decompile.sh --version 1.21.9
+
+# Client side
+tools/decompile.sh --version 1.21.9 --side CLIENT
 ```
+
+The script auto-downloads `MinecraftDecompiler.jar` from GitHub releases if it doesn't exist.
 
 ### Generating server data reports
 
 ```bash
 cd /tmp
 java -DbundlerMainClass=net.minecraft.data.Main \
-  -jar /path/to/server.jar \
+  -jar $MCC_SERVERS/<version>/server.jar \
   --reports --output /tmp/mc_reports
 ```
 
