@@ -17,7 +17,6 @@ redirectFrom:
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Recently we have changed the configuration format from INI to TOML, this part of the documentation has only been partially updated, it's work in progress, for the time being please refer to the `MinecraftClient.ini` for setting names, the descriptions and options should be up to date in most cases, but not guaranteed.**
 
 </div>
 
@@ -29,30 +28,32 @@ redirectFrom:
 
 ## List of built-in Chat Bots
 
--   [Alerts](#alerts)
--   [Anti AFK](#anti-afk)
--   [Auto Attack](#auto-attack)
--   [Auto Craft](#auto-craft)
--   [Auto Dig](#auto-dig)
--   [Auto Drop](#auto-drop)
--   [Auto Eat](#auto-eat)
--   [Auto Fishing](#auto-fishing)
--   [Auto Relog](#auto-relog)
--   [Auto Respond](#auto-respond)
--   [Chat Log](#chat-log)
--   [Discord Bridge](#discord-bridge)
--   [Farmer](#farmer)
--   [Follow Player](#follow-player)
--   [Hangman](#hangman)
--   [Mailer](#mailer)
--   [Map](#map)
--   [PlayerList Logger](#playerlist-logger)
--   [Remote Control](#remote-control)
--   [Replay Mod](#replay-mod)
--   [Script Scheduler](#script-scheduler)
--   [Telegram Bridge](#telegram-bridge)
--   [Items Collector](#items-collector)
--   [WebSocket](#websocket-chat-bot)
+- [Chat Bots](#chat-bots)
+  - [About](#about)
+  - [List of built-in Chat Bots](#list-of-built-in-chat-bots)
+  - [Alerts](#alerts)
+  - [Anti AFK](#anti-afk)
+  - [Auto Attack](#auto-attack)
+  - [Auto Craft](#auto-craft)
+  - [Auto Dig](#auto-dig)
+  - [Auto Drop](#auto-drop)
+  - [Auto Eat](#auto-eat)
+  - [Auto Fishing](#auto-fishing)
+  - [Auto Relog](#auto-relog)
+  - [Auto Respond](#auto-respond)
+  - [Chat Log](#chat-log)
+  - [Discord Bridge](#discord-bridge)
+  - [Farmer](#farmer)
+  - [Follow player](#follow-player)
+  - [Hangman](#hangman)
+  - [Mailer](#mailer)
+  - [Map](#map)
+  - [PlayerList Logger](#playerlist-logger)
+  - [Remote Control](#remote-control)
+  - [Replay Capture](#replay-capture)
+  - [Script Scheduler](#script-scheduler)
+  - [Telegram Bridge](#telegram-bridge)
+  - [Items Collector](#items-collector)
 
 ## Alerts
 
@@ -347,7 +348,7 @@ redirectFrom:
 
         To enable it, set `Custom` (boolean) to `true` and change `value` (double) to your preferred value (eg. `1.5`).
 
-        By the default, this is disabled and the MCC calculates it based on the server TPS.
+        By default, this is disabled and MCC calculates it based on the server TPS.
 
     -   **Format:** `Cooldown_Time = { Custom = <is enabled (true|false)>, value = <seconds (double)> }`
 
@@ -2576,70 +2577,3 @@ redirectFrom:
     -   **Default:** `true`
 
 
-## WebSocket Chat Bot
-
--   **Description:**
-
-    This chat bot allows you to remotely execute commands on the MCC and make Chat Bots in other programming languages over Web Socket.
-
-    You can make your own library to do this, or use the reference implementation one which has been writen in TypeScript/JavaScript: [MCC.js](https://github.com/milutinke/MCC.js)
-
-    If you want to write your own library, you can follow this guide on the protocol specification and avaliable events and commands: [WebSocket Chat Bot Guide](websocket/README.md)
-
--   **Settings:**
-
-    **Section:** **`ChatBot.WebSocketBot`**
-
-    #### `Enabled`
-
-    -   **Description:**
-  
-        This setting specifies if the Web Socket chat bot is enabled.
-
-    -   **Available values:** `true` and `false`.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `false`
-
-    #### `Ip`
-
-    -   **Description:**
-
-        The IP address that Websocket server will be bound to.
-
-    -   **Type:** `string`
-
-    -   **Default:** `127.0.0.1` (localhost)
-
-    #### `Port`
-
-    -   **Description:**
-
-        The Port that Websocket server will be bound to.
-
-    -   **Type:** `number`
-
-    -   **Default:** `8043`
-
-    #### `Password`
-
-    -   **Description:**
-
-        A password that will be used to authenticate on thw Websocket server 
-        
-        **It is recommended to change the default password and to set a strong one**
-
-    -   **Type:** `string`
-
-    -   **Default:** `wspass12345`
-
-    #### `DebugMode`
-
-    -   **Description:**
-
-        This setting is for developers who are developing a library that uses this chat bot to remotely execute procedures/commands/functions.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `false`

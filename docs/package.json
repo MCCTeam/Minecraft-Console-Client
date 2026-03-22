@@ -7,18 +7,23 @@
   "license": "CDDL-1.0",
   "private": false,
   "scripts": {
-    "docs:build": "vuepress-cli build --clean-cache",
+    "docs:build": "vuepress build . --clean-cache",
     "docs:clean": "rimraf .vuepress/.temp .vuepress/.cache .vuepress/dist",
-    "docs:dev": "vuepress-cli dev --clean-cache",
+    "docs:dev": "vuepress dev . --clean-cache",
     "docs:serve": "anywhere -s -h localhost -d .vuepress/dist"
   },
   "devDependencies": {
-    "@vuepress/bundler-webpack": "^2.0.0-beta.53",
-    "@vuepress/plugin-search": "^2.0.0-beta.53",
-    "@vuepress/plugin-shiki": "^2.0.0-beta.53",
-    "vuepress": "^2.0.0-beta.53",
-    "vuepress-plugin-mermaidjs": "2.0.0-beta.2",
-    "vuepress-plugin-redirect": "^2.0.0-beta.120"
+    "@vuepress/bundler-vite": "2.0.0-rc.26",
+    "@vuepress/bundler-webpack": "2.0.0-rc.26",
+    "@vuepress/plugin-markdown-chart": "2.0.0-rc.125",
+    "@vuepress/plugin-redirect": "2.0.0-rc.125",
+    "@vuepress/plugin-search": "2.0.0-rc.125",
+    "@vuepress/plugin-shiki": "2.0.0-rc.125",
+    "@vuepress/theme-default": "2.0.0-rc.125",
+    "mermaid": "11.13.0",
+    "sass-embedded": "1.98.0",
+    "sass-loader": "16.0.7",
+    "vuepress": "2.0.0-rc.26"
   },
   "dependencies": {
     "anywhere": "^1.6.0"

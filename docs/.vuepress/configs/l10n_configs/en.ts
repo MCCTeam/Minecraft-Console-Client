@@ -62,6 +62,7 @@ export const defaultThemeConfig_en: DefaultThemeLocaleData = {
         "/guide/creating-text-script.md",
         "/guide/chat-bots.md", 
         "/guide/creating-bots.md", 
+        "/guide/ai-assisted-development.md",
         "/guide/contibuting.md"
     ],
 

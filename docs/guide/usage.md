@@ -47,7 +47,7 @@ screen -S mcc
 
 # Detach from the screen by pressing CTRL + A + D
 
-# Re-attach if you want to have accces again
+# Re-attach if you want access again
 screen -r mcc
 ```
 
@@ -59,7 +59,7 @@ See [Run using Docker](./installation.md#using-docker)
 
 ## Command-line usage
 
-**Minecraft Console Client** has a plethora of useful command line parameters, here you can learn about them.
+**Minecraft Console Client** has a number of useful command-line parameters. This section covers the most important ones.
 
 ### For people not familiar with the command line
 
@@ -97,6 +97,8 @@ Here is an example for using a `--help` command line parameter for MCC that will
 MinecraftClient.exe --help
 ```
 
+MCC also supports a few maintenance and debugging switches such as `--upgrade`, `--force-upgrade`, `--generate`, `--keyboard-debug`, `BasicIO`, and `BasicIO-NoColor`.
+
 ### Quick usage of MCC with examples
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -119,16 +121,16 @@ Examples:
 # Logging in as a user: notch, with a password: password123 onto a server with the ip: mc.someserver.com:25565
 MinecraftClient.exe notch password123 mc.someserver.com:25565
 
-# Overriding a setting from MinecraftClient.ini using a command line parameter
+# Overriding a setting from MinecraftClient.ini using a command-line parameter
 MinecraftClient.exe --debugmessages=false
 
-# Providing a custom settings ini file and overriding a language to Chinese
+# Providing a custom settings file and overriding the language to Chinese
 MinecraftClient.exe CustomSettingsFile.ini --language=zh
 ```
 
 ### Rules of using the command line parameters
 
-You can mix and match arguments by following theses rules:
+You can mix and match arguments by following these rules:
 
 -   First positional argument may be either the login or a settings file
 -   Other positional arguments are read in order: login, password, server, command
@@ -150,7 +152,7 @@ MinecraftClient.exe <login> <password> <server> "/mycommand"
 ```
 
 -   This will automatically send `/mycommand` to the server and close.
--   To send several commands and/or stay connected, use the 1ScriptScheduler1 bot instead.
+-   To send several commands or stay connected, use the `ScriptScheduler` bot instead.
 
 ```bash
 MinecraftClient.exe <myconfig.ini>
@@ -247,7 +249,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Reports the block type at the given position.
 
-    If you use the `-s` option it will report the types of blocks around the targeted blokcs.
+    If you use the `-s` option, it also reports the surrounding block types.
 
 -   **Usage:**
 
@@ -558,11 +560,11 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Description:**
 
-    Reloads settings from MinecraftClient.ini and Chat Bots.
+    Reloads the active configuration file and chat bots.
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
+    **Some settings are not reloaded because they are used before client initialization. Settings passed on the command line also override file values. ReplayCapture is not reloaded due to technical limitations.**
 
     </div>
 
@@ -800,7 +802,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This command is avaliable only with [Follow Player](chat-bots.md#follow-player) Chat Bot enabled.**
+    **This command is available only when the [Follow Player](chat-bots.md#follow-player) chat bot is enabled.**
 
     </div>
 
