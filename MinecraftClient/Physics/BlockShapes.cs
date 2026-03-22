@@ -173,6 +173,7 @@ namespace MinecraftClient.Physics
                 if (!prismarineBlocks.TryGetValue(snakeName, out var blockShapeData))
                     continue;
 
+                int globalStateOffset = 0;
                 foreach (var (start, end) in kvp.Value)
                 {
                     int stateCount = end - start + 1;
@@ -185,12 +186,13 @@ namespace MinecraftClient.Physics
                     }
                     else if (blockShapeData is List<int> shapeIdList)
                     {
-                        for (int i = 0; i < stateCount && i < shapeIdList.Count; i++)
+                        for (int i = 0; i < stateCount && (globalStateOffset + i) < shapeIdList.Count; i++)
                         {
-                            int shapeId = shapeIdList[i];
+                            int shapeId = shapeIdList[globalStateOffset + i];
                             stateToShape[start + i] = prismarineShapes.GetValueOrDefault(shapeId, EmptyArray);
                         }
                     }
+                    globalStateOffset += stateCount;
                 }
             }
 
