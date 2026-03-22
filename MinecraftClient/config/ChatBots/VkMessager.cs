@@ -426,9 +426,9 @@ internal class VkLongPoolClient
         var jsonResult = CallVkMethod("groups.getLongPollServer", "group_id=" + BotCommunityId);
         var data = Json.ParseJson(jsonResult);
 
-        Key = data.Properties["response"].Properties["key"].StringValue;
-        Server = data.Properties["response"].Properties["server"].StringValue;
-        LastTs = Convert.ToInt32(data.Properties["response"].Properties["ts"].StringValue);
+        Key = data!["response"]!["key"]!.GetStringValue();
+        Server = data["response"]!["server"]!.GetStringValue();
+        LastTs = Convert.ToInt32(data["response"]!["ts"].GetStringValue());
     }
 
     private void StartLongPoolAsync()
@@ -457,25 +457,25 @@ internal class VkLongPoolClient
     {
         var j = JsonConvert.DeserializeObject(jsonData) as JObject;
         var data = Json.ParseJson(jsonData);
-        if (data.Properties.ContainsKey("failed"))
+        if (data?.AsObject().ContainsKey("failed") == true)
         {
             Init();
         }
-        LastTs = Convert.ToInt32(data.Properties["ts"].StringValue);
-        var updates = data.Properties["updates"].DataArray;
+        LastTs = Convert.ToInt32(data!["ts"].GetStringValue());
+        var updates = data["updates"]!.AsArray();
         List<Tuple<string, string, string, string, string, string>> messages = new List<Tuple<string, string, string, string, string, string>>();
         foreach (var str in updates)
         {
-            if (str.Properties["type"].StringValue != "message_new") continue;
+            if (str!["type"]!.GetStringValue() != "message_new") continue;
 
-            var msgData = str.Properties["object"].Properties;
+            var msgData = str["object"]!.AsObject();
 
-            var id = msgData["from_id"].StringValue;
-            var userId = msgData["from_id"].StringValue;
-            var peer_id = msgData["peer_id"].StringValue;
+            var id = msgData["from_id"]!.GetStringValue();
+            var userId = msgData["from_id"]!.GetStringValue();
+            var peer_id = msgData["peer_id"]!.GetStringValue();
             string event_id = "";
-            var msgText = msgData["text"].StringValue;
-            var conversation_message_id = msgData["conversation_message_id"].StringValue;
+            var msgText = msgData["text"]!.GetStringValue();
+            var conversation_message_id = msgData["conversation_message_id"]!.GetStringValue();
 
             messages.Add(new Tuple<string, string, string, string, string, string>(userId, peer_id, msgText, conversation_message_id, id, event_id));
         }
