@@ -1,9 +1,10 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 set -euo pipefail
 
-set +eu
-source ~/.zshrc
-set -eu
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# shellcheck source=tools/mcc-env.sh
+source "$REPO_ROOT/tools/mcc-env.sh"
 
 VERSION="${1:-1.21.11-Vanilla}"
 SERVER_DIR="${MCC_SERVERS:?}/$VERSION"
