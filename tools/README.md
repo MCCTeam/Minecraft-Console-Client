@@ -120,7 +120,7 @@ Downloads block collision shapes from PrismarineJS `minecraft-data` and compacts
 
 ```bash
 # Auto-download for a specific MC version
-python3 tools/gen_block_shapes.py 1.21.11
+python3 tools/gen_block_shapes.py 26.1
 # → MinecraftClient/Physics/BlockShapeData.json
 
 # From a local file (if network is slow)

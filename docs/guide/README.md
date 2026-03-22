@@ -122,7 +122,7 @@ If you want the repeatable agent workflow used by maintainers, start with [AI-As
 
 ### Inventory, Terrain and Entity Handling
 
-MCC currently supports Minecraft versions `1.4.6` through `1.21.11`.
+MCC currently supports Minecraft versions `1.4.6` through `26.1`.
 
 Feature support still depends on protocol version:
 
@@ -136,16 +136,22 @@ If there was a major game update, and the MCC hasn't been updated to support the
 
 ### Path-Finding and Physics
 
-Currently the path-finding and physics have some limitations, those are:
-- Path finding under slabs is not supported
-- Swimming is not supported yet
-- Jumping is not supported yet
-- Knockback is not supported yet
+MCC now uses A* path-finding together with a physics-based movement system for movement and collision handling.
 
 What is supported and works:
-- Terrain navigation (path-finding with A* algorithm and walking)
-- Climbing up and down the ladders and all types of vines
-- Gravity
+- Terrain navigation with A* path-finding and physics-driven movement
+- Collision-aware movement using real block shapes
+- Automatic jumping when the path requires moving up
+- Step-up movement for slabs and similar low obstacles
+- Sneaking and sprinting
+- Movement physics in water and lava
+- Climbing up and down ladders and all types of vines
+- Gravity, friction, and block speed modifiers such as ice, soul sand, soul soil, and honey blocks
+
+Current limitations:
+- Path-finding is still block-based, so very complex terrain can still fail
+- Automatic route planning still avoids underwater routes by default, so this is not a full swimming path-finder yet
+- Knockback and other external velocity effects are not simulated yet
 
 ## Credits
 
