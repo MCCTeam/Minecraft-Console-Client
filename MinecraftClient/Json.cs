@@ -1,377 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
-namespace MinecraftClient
+namespace MinecraftClient;
+
+/// <summary>
+/// JSON utilities backed by System.Text.Json.
+/// </summary>
+public static class Json
+{
+    private static readonly JsonSerializerOptions s_escapeOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
+    /// <summary>
+    /// Parse a JSON string into a mutable <see cref="JsonNode"/> DOM.
+    /// Returns null for null, empty, or whitespace-only input.
+    /// Returns a <see cref="JsonValue"/> wrapping the raw string when the input
+    /// is not valid JSON (e.g. a plain-text Minecraft MOTD or chat message).
+    /// </summary>
+    public static JsonNode? ParseJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+        try { return JsonNode.Parse(json); }
+        catch (JsonException) { return JsonValue.Create(json); }
+    }
+
+    /// <summary>
+    /// Escape a string for embedding inside a JSON string literal.
+    /// Uses System.Text.Json serialization and strips the surrounding quotes.
+    /// </summary>
+    public static string EscapeString(string src) =>
+        JsonSerializer.Serialize(src, s_escapeOptions)[1..^1];
+}
+
+/// <summary>
+/// Extension helpers for <see cref="JsonNode"/> that replicate the access patterns
+/// of the former <c>JSONData.StringValue</c> property.
+/// </summary>
+public static class JsonNodeExtensions
 {
     /// <summary>
-    /// This class parses JSON data and returns an object describing that data.
-    /// Really lightweight JSON handling by ORelio - (c) 2013 - 2020
+    /// Return the string representation of any JSON value.
+    /// Strings are returned without quotes; numbers, booleans, and null
+    /// are returned as their text representation.
     /// </summary>
-    public static class Json
+    public static string GetStringValue(this JsonNode? node) => node switch
     {
-        /// <summary>
-        /// Parse some JSON and return the corresponding JSON object
-        /// </summary>
-        public static JSONData ParseJson(string json)
-        {
-            int cursorpos = 0;
-            return String2Data(json, ref cursorpos);
-        }
-
-        /// <summary>
-        /// The class storing unserialized JSON data
-        /// The data can be an object, an array or a string
-        /// </summary>
-        public class JSONData
-        {
-            public enum DataType
-            {
-                Object,
-                Array,
-                String
-            };
-
-            private readonly DataType type;
-
-            public DataType Type
-            {
-                get { return type; }
-            }
-
-            public Dictionary<string, JSONData> Properties;
-            public List<JSONData> DataArray;
-            public string StringValue;
-
-            public JSONData(DataType datatype)
-            {
-                type = datatype;
-                Properties = new Dictionary<string, JSONData>();
-                DataArray = new List<JSONData>();
-                StringValue = String.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Parse a JSON string to build a JSON object
-        /// </summary>
-        /// <param name="toparse">String to parse</param>
-        /// <param name="cursorpos">Cursor start (set to 0 for function init)</param>
-        private static JSONData String2Data(string toparse, ref int cursorpos)
-        {
-            try
-            {
-                JSONData data;
-                SkipSpaces(toparse, ref cursorpos);
-                switch (toparse[cursorpos])
-                {
-                    //Object
-                    case '{':
-                        data = new JSONData(JSONData.DataType.Object);
-                        cursorpos++;
-                        SkipSpaces(toparse, ref cursorpos);
-                        while (toparse[cursorpos] != '}')
-                        {
-                            if (toparse[cursorpos] == '"')
-                            {
-                                JSONData propertyname = String2Data(toparse, ref cursorpos);
-                                if (toparse[cursorpos] == ':')
-                                {
-                                    cursorpos++;
-                                }
-                                else
-                                {
-                                    /* parse error ? */
-                                }
-
-                                JSONData propertyData = String2Data(toparse, ref cursorpos);
-                                data.Properties[propertyname.StringValue] = propertyData;
-                            }
-                            else cursorpos++;
-                        }
-
-                        cursorpos++;
-                        break;
-
-                    //Array
-                    case '[':
-                        data = new JSONData(JSONData.DataType.Array);
-                        cursorpos++;
-                        SkipSpaces(toparse, ref cursorpos);
-                        while (toparse[cursorpos] != ']')
-                        {
-                            if (toparse[cursorpos] == ',')
-                            {
-                                cursorpos++;
-                            }
-
-                            JSONData arrayItem = String2Data(toparse, ref cursorpos);
-                            data.DataArray.Add(arrayItem);
-                        }
-
-                        cursorpos++;
-                        break;
-
-                    //String
-                    case '"':
-                        data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        while (toparse[cursorpos] != '"')
-                        {
-                            if (toparse[cursorpos] == '\\')
-                            {
-                                try //Unicode character \u0123
-                                {
-                                    if (toparse[cursorpos + 1] == 'u'
-                                        && IsHex(toparse[cursorpos + 2])
-                                        && IsHex(toparse[cursorpos + 3])
-                                        && IsHex(toparse[cursorpos + 4])
-                                        && IsHex(toparse[cursorpos + 5]))
-                                    {
-                                        //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
-                                        data.StringValue += char.ConvertFromUtf32(int.Parse(
-                                            toparse.Substring(cursorpos + 2, 4),
-                                            System.Globalization.NumberStyles.HexNumber));
-                                        cursorpos += 6;
-                                        continue;
-                                    }
-                                    else if (toparse[cursorpos + 1] == 'n')
-                                    {
-                                        data.StringValue += '\n';
-                                        cursorpos += 2;
-                                        continue;
-                                    }
-                                    else if (toparse[cursorpos + 1] == 'r')
-                                    {
-                                        data.StringValue += '\r';
-                                        cursorpos += 2;
-                                        continue;
-                                    }
-                                    else if (toparse[cursorpos + 1] == 't')
-                                    {
-                                        data.StringValue += '\t';
-                                        cursorpos += 2;
-                                        continue;
-                                    }
-                                    else cursorpos++; //Normal character escapement \"
-                                }
-                                catch (IndexOutOfRangeException)
-                                {
-                                    cursorpos++;
-                                } // \u01<end of string>
-                                catch (ArgumentOutOfRangeException)
-                                {
-                                    cursorpos++;
-                                } // Unicode index 0123 was invalid
-                            }
-
-                            data.StringValue += toparse[cursorpos];
-                            cursorpos++;
-                        }
-
-                        cursorpos++;
-                        break;
-
-                    //Number
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                    case '.':
-                    case '-':
-                        data = new JSONData(JSONData.DataType.String);
-                        StringBuilder sb = new();
-                        while ((toparse[cursorpos] >= '0' && toparse[cursorpos] <= '9') || toparse[cursorpos] == '.' ||
-                               toparse[cursorpos] == '-')
-                        {
-                            sb.Append(toparse[cursorpos]);
-                            cursorpos++;
-                        }
-
-                        data.StringValue = sb.ToString();
-                        break;
-
-                    //Boolean : true
-                    case 't':
-                        data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'r')
-                        {
-                            cursorpos++;
-                        }
-
-                        if (toparse[cursorpos] == 'u')
-                        {
-                            cursorpos++;
-                        }
-
-                        if (toparse[cursorpos] == 'e')
-                        {
-                            cursorpos++;
-                            data.StringValue = "true";
-                        }
-
-                        break;
-
-                    //Boolean : false
-                    case 'f':
-                        data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'a')
-                        {
-                            cursorpos++;
-                        }
-
-                        if (toparse[cursorpos] == 'l')
-                        {
-                            cursorpos++;
-                        }
-
-                        if (toparse[cursorpos] == 's')
-                        {
-                            cursorpos++;
-                        }
-
-                        if (toparse[cursorpos] == 'e')
-                        {
-                            cursorpos++;
-                            data.StringValue = "false";
-                        }
-
-                        break;
-
-                    //Null field
-                    case 'n':
-                        data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'u')
-                        {
-                            cursorpos++;
-                        }
-
-                        if (toparse[cursorpos] == 'l')
-                        {
-                            cursorpos++;
-                        }
-
-                        if (toparse[cursorpos] == 'l')
-                        {
-                            cursorpos++;
-                            data.StringValue = "null";
-                        }
-
-                        break;
-
-                    //Unknown data
-                    default:
-                        cursorpos++;
-                        return String2Data(toparse, ref cursorpos);
-                }
-
-                SkipSpaces(toparse, ref cursorpos);
-                return data;
-            }
-            catch (IndexOutOfRangeException)
-            {
-                return new JSONData(JSONData.DataType.String);
-            }
-        }
-
-        /// <summary>
-        /// Check if a char is an hexadecimal char (0-9 A-F a-f)
-        /// </summary>
-        /// <param name="c">Char to test</param>
-        /// <returns>True if hexadecimal</returns>
-        private static bool IsHex(char c)
-        {
-            return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
-        }
-
-        /// <summary>
-        /// Advance the cursor to skip white spaces and line breaks
-        /// </summary>
-        /// <param name="toparse">String to parse</param>
-        /// <param name="cursorpos">Cursor position to update</param>
-        private static void SkipSpaces(string toparse, ref int cursorpos)
-        {
-            while (cursorpos < toparse.Length
-                   && (char.IsWhiteSpace(toparse[cursorpos])
-                       || toparse[cursorpos] == '\r'
-                       || toparse[cursorpos] == '\n'))
-                cursorpos++;
-        }
-
-        // Original: https://github.com/mono/mono/blob/master/mcs/class/System.Json/System.Json/JsonValue.cs
-        private static bool NeedEscape(string src, int i)
-        {
-            var c = src[i];
-            return c < 32 || c == '"' || c == '\\'
-                   // Broken lead surrogate
-                   || (c is >= '\uD800' and <= '\uDBFF' &&
-                       (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF'))
-                   // Broken tail surrogate
-                   || (c is >= '\uDC00' and <= '\uDFFF' &&
-                       (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF'))
-                   // To produce valid JavaScript
-                   || c == '\u2028' || c == '\u2029'
-                   // Escape "</" for <script> tags
-                   || (c == '/' && i > 0 && src[i - 1] == '<');
-        }
-
-        public static string EscapeString(string src)
-        {
-            var sb = new StringBuilder();
-            var start = 0;
-
-            for (var i = 0; i < src.Length; i++)
-            {
-                if (!NeedEscape(src, i)) continue;
-                sb.Append(src, start, i - start);
-
-                switch (src[i])
-                {
-                    case '\b':
-                        sb.Append("\\b");
-                        break;
-                    case '\f':
-                        sb.Append("\\f");
-                        break;
-                    case '\n':
-                        sb.Append("\\n");
-                        break;
-                    case '\r':
-                        sb.Append("\\r");
-                        break;
-                    case '\t':
-                        sb.Append("\\t");
-                        break;
-                    case '\"':
-                        sb.Append("\\\"");
-                        break;
-                    case '\\':
-                        sb.Append("\\\\");
-                        break;
-                    case '/':
-                        sb.Append("\\/");
-                        break;
-
-                    default:
-                        sb.Append("\\u");
-                        sb.Append(((int)src[i]).ToString("x04"));
-                        break;
-                }
-
-                start = i + 1;
-            }
-
-            sb.Append(src, start, src.Length - start);
-            return sb.ToString();
-        }
-    }
+        null => "null",
+        JsonValue val when val.TryGetValue<string>(out var s) => s,
+        _ => node.ToJsonString()
+    };
 }

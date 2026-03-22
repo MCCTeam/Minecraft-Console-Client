@@ -121,7 +121,7 @@ namespace MinecraftClient.Protocol
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" + name);
                 fetchTask.Wait();
-                string result = Json.ParseJson(fetchTask.Result).Properties["id"].StringValue;
+                string result = Json.ParseJson(fetchTask.Result)!["id"]!.GetStringValue();
                 fetchTask.Dispose();
                 return result;
             }
@@ -140,11 +140,11 @@ namespace MinecraftClient.Protocol
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
                 fetchTask.Wait();
-                var nameChanges = Json.ParseJson(fetchTask.Result).DataArray;
+                var nameChanges = Json.ParseJson(fetchTask.Result)!.AsArray();
                 fetchTask.Dispose();
 
                 // Names are sorted from past to most recent. We need to get the last name in the list
-                return nameChanges[^1].Properties["name"].StringValue;
+                return nameChanges[^1]!["name"]!.GetStringValue();
             }
             catch (Exception) { return string.Empty; }
         }
@@ -157,40 +157,32 @@ namespace MinecraftClient.Protocol
         public static Dictionary<string, DateTime> UuidToNameHistory(string uuid)
         {
             Dictionary<string, DateTime> tempDict = new();
-            List<Json.JSONData> jsonDataList;
+            System.Text.Json.Nodes.JsonArray jsonDataList;
 
             // Perform web request
             try
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
                 fetchTask.Wait();
-                jsonDataList = Json.ParseJson(fetchTask.Result).DataArray;
+                jsonDataList = Json.ParseJson(fetchTask.Result)!.AsArray();
                 fetchTask.Dispose();
             }
             catch (Exception) { return tempDict; }
 
-            foreach (Json.JSONData jsonData in jsonDataList)
+            foreach (var jsonData in jsonDataList)
             {
-                if (jsonData.Properties.Count > 1)
+                var obj = jsonData!.AsObject();
+                if (obj.Count > 1)
                 {
-                    // Time is saved as long in the Unix format.
-                    // Convert it to normal time, before adding it to the dictionary.
-                    //
-                    // !! FromUnixTimeMilliseconds does not exist in the current version. !!
-                    // DateTimeOffset creationDate = DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(jsonData.Properties["changedToAt"].StringValue));
-                    //
+                    DateTimeOffset creationDate = UnixTimeStampToDateTime(Convert.ToDouble(jsonData["changedToAt"].GetStringValue()));
 
-                    // Workaround for converting Unix time to normal time.
-                    DateTimeOffset creationDate = UnixTimeStampToDateTime(Convert.ToDouble(jsonData.Properties["changedToAt"].StringValue));
-
-                    // Add Keyvaluepair to dict.
-                    tempDict.Add(jsonData.Properties["name"].StringValue, creationDate.DateTime);
+                    tempDict.Add(jsonData["name"]!.GetStringValue(), creationDate.DateTime);
                 }
                 // The first entry does not contain a change date.
-                else if (jsonData.Properties.Count > 0)
+                else if (obj.Count > 0)
                 {
                     // Add an undefined time to it.
-                    tempDict.Add(jsonData.Properties["name"].StringValue, new DateTime());
+                    tempDict.Add(jsonData["name"]!.GetStringValue(), new DateTime());
                 }
             }
 
@@ -203,14 +195,14 @@ namespace MinecraftClient.Protocol
         /// <returns>Dictionary of the Mojang services</returns>
         public static MojangServiceStatus GetMojangServiceStatus()
         {
-            List<Json.JSONData> jsonDataList;
+            System.Text.Json.Nodes.JsonArray jsonDataList;
 
             // Perform web request
             try
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://status.mojang.com/check");
                 fetchTask.Wait();
-                jsonDataList = Json.ParseJson(fetchTask.Result).DataArray;
+                jsonDataList = Json.ParseJson(fetchTask.Result)!.AsArray();
                 fetchTask.Dispose();
             }
             catch (Exception)
@@ -219,14 +211,14 @@ namespace MinecraftClient.Protocol
             }
 
             // Convert string to enum values and store them inside a MojangeServiceStatus object.
-            return new MojangServiceStatus(minecraftNet: StringToServiceStatus(jsonDataList[0].Properties["minecraft.net"].StringValue),
-                sessionMinecraftNet: StringToServiceStatus(jsonDataList[1].Properties["session.minecraft.net"].StringValue),
-                accountMojangCom: StringToServiceStatus(jsonDataList[2].Properties["account.mojang.com"].StringValue),
-                authserverMojangCom: StringToServiceStatus(jsonDataList[3].Properties["authserver.mojang.com"].StringValue),
-                sessionserverMojangCom: StringToServiceStatus(jsonDataList[4].Properties["sessionserver.mojang.com"].StringValue),
-                apiMojangCom: StringToServiceStatus(jsonDataList[5].Properties["api.mojang.com"].StringValue),
-                texturesMinecraftNet: StringToServiceStatus(jsonDataList[6].Properties["textures.minecraft.net"].StringValue),
-                mojangCom: StringToServiceStatus(jsonDataList[7].Properties["mojang.com"].StringValue)
+            return new MojangServiceStatus(minecraftNet: StringToServiceStatus(jsonDataList[0]!["minecraft.net"]!.GetStringValue()),
+                sessionMinecraftNet: StringToServiceStatus(jsonDataList[1]!["session.minecraft.net"]!.GetStringValue()),
+                accountMojangCom: StringToServiceStatus(jsonDataList[2]!["account.mojang.com"]!.GetStringValue()),
+                authserverMojangCom: StringToServiceStatus(jsonDataList[3]!["authserver.mojang.com"]!.GetStringValue()),
+                sessionserverMojangCom: StringToServiceStatus(jsonDataList[4]!["sessionserver.mojang.com"]!.GetStringValue()),
+                apiMojangCom: StringToServiceStatus(jsonDataList[5]!["api.mojang.com"]!.GetStringValue()),
+                texturesMinecraftNet: StringToServiceStatus(jsonDataList[6]!["textures.minecraft.net"]!.GetStringValue()),
+                mojangCom: StringToServiceStatus(jsonDataList[7]!["mojang.com"]!.GetStringValue())
                 );
         }
 
@@ -237,9 +229,9 @@ namespace MinecraftClient.Protocol
         /// <returns>Dictionary with a link to the skin and cape of a player.</returns>
         public static SkinInfo GetSkinInfo(string uuid)
         {
-            Dictionary<string, Json.JSONData> textureDict;
+            System.Text.Json.Nodes.JsonObject textureObj;
             string base64SkinInfo;
-            Json.JSONData decodedJsonSkinInfo;
+            System.Text.Json.Nodes.JsonNode? decodedJsonSkinInfo;
 
             // Perform web request
             try
@@ -247,7 +239,7 @@ namespace MinecraftClient.Protocol
                 Task<string> fetchTask = httpClient.GetStringAsync("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
                 fetchTask.Wait();
                 // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
-                base64SkinInfo = Json.ParseJson(fetchTask.Result).Properties["properties"].DataArray[0].Properties["value"].StringValue;
+                base64SkinInfo = Json.ParseJson(fetchTask.Result)!["properties"]![0]!["value"]!.GetStringValue();
                 fetchTask.Dispose();
             }
             catch (Exception) { return new SkinInfo(); }
@@ -257,23 +249,18 @@ namespace MinecraftClient.Protocol
 
             // Assert temporary variable for readablity.
             // Contains skin and cape information.
-            textureDict = decodedJsonSkinInfo.Properties["textures"].Properties;
+            textureObj = decodedJsonSkinInfo!["textures"]!.AsObject();
 
             // Can apparently be missing, if no custom skin is set.
-            // Probably for completely new accounts. 
-            // (Still exists after changing back to Steve or Alex skin.)
-            if (textureDict.ContainsKey("SKIN"))
+            if (textureObj.ContainsKey("SKIN"))
             {
-                return new SkinInfo(skinUrl: textureDict["SKIN"].Properties.ContainsKey("url") ? textureDict["SKIN"].Properties["url"].StringValue : string.Empty,
-                    capeUrl: textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty,
-                    skinModel: textureDict["SKIN"].Properties.ContainsKey("metadata") ? "Alex" : "Steve");
+                return new SkinInfo(skinUrl: textureObj["SKIN"]!["url"] is not null ? textureObj["SKIN"]!["url"]!.GetStringValue() : string.Empty,
+                    capeUrl: textureObj.ContainsKey("CAPE") ? textureObj["CAPE"]!["url"]!.GetStringValue() : string.Empty,
+                    skinModel: textureObj["SKIN"]!["metadata"] is not null ? "Alex" : "Steve");
             }
-            // Tested it on several players, this case never occured.
             else
             {
-                // This player has assumingly never changed their skin.
-                // Probably a completely new account.
-                return new SkinInfo(capeUrl: textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty,
+                return new SkinInfo(capeUrl: textureObj.ContainsKey("CAPE") ? textureObj["CAPE"]!["url"]!.GetStringValue() : string.Empty,
                     skinModel: DefaultModelAlex(uuid) ? "Alex" : "Steve");
             }
         }

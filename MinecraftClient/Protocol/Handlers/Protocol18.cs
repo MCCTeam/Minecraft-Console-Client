@@ -1031,10 +1031,10 @@ namespace MinecraftClient.Protocol.Handlers
                             ? dataTypes.ReadNextString(packetData)
                             : null;
 
-                        var chatInfo = Json.ParseJson(chatName).Properties;
-                        var senderDisplayName = chatInfo != null && chatInfo.Count > 0
+                        var chatInfo = Json.ParseJson(chatName)?.AsObject();
+                        var senderDisplayName = chatInfo is not null && chatInfo.Count > 0
                             ? (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
-                            .StringValue
+                            .GetStringValue()
                             : "";
                         string? senderTeamName = null;
                         var messageTypeEnum =
@@ -1043,8 +1043,8 @@ namespace MinecraftClient.Protocol.Handlers
                         if (targetName != null &&
                             (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING ||
                              messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
-                            senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0]
-                                .Properties["text"].StringValue;
+                            senderTeamName = Json.ParseJson(targetName)!["with"]![0]!
+                                ["text"]!.GetStringValue();
 
                         if (string.IsNullOrWhiteSpace(senderDisplayName))
                         {
@@ -3574,22 +3574,22 @@ namespace MinecraftClient.Protocol.Handlers
             if (string.IsNullOrEmpty(result) || !result.StartsWith("{") || !result.EndsWith("}")) return false;
 
             var jsonData = Json.ParseJson(result);
-            if (jsonData.Type != Json.JSONData.DataType.Object || !jsonData.Properties.ContainsKey("version"))
+            if (jsonData is not System.Text.Json.Nodes.JsonObject jsonObj || !jsonObj.ContainsKey("version"))
                 return false;
 
-            var versionData = jsonData.Properties["version"];
+            var versionData = jsonObj["version"]!.AsObject();
 
             //Retrieve display name of the Minecraft version
-            if (versionData.Properties.TryGetValue("name", out var property))
-                version = property.StringValue;
+            if (versionData["name"] is { } nameNode)
+                version = nameNode.GetStringValue();
 
             //Retrieve protocol version number for handling this server
-            if (versionData.Properties.TryGetValue("protocol", out var dataProperty))
-                protocolVersion = int.Parse(dataProperty.StringValue,
+            if (versionData["protocol"] is { } protocolNode)
+                protocolVersion = int.Parse(protocolNode.GetStringValue(),
                     NumberStyles.Any, CultureInfo.CurrentCulture);
 
             // Check for forge on the server.
-            Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
+            Protocol18Forge.ServerInfoCheckForge(jsonObj, ref forgeInfo);
 
             ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_server_protocol, version,
                 protocolVersion + (forgeInfo != null ? Translations.mcc_with_forge : "")));
