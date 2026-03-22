@@ -13,6 +13,7 @@ using MinecraftClient.Commands;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
+using MinecraftClient.Physics;
 using MinecraftClient.Protocol;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
@@ -68,6 +69,10 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
+        private readonly PlayerPhysics playerPhysics = new();
+        private readonly MovementInput physicsInput = new();
+        private bool physicsInitialized = false;
+        private Location? pathTarget; // Current waypoint for physics-driven pathfinding
         public enum MovementType { Sneak, Walk, Sprint }
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
         private bool CanSendMessage = false;
@@ -495,33 +500,47 @@ namespace MinecraftClient
             {
                 lock (locationLock)
                 {
-                    for (int i = 0; i < Config.Main.Advanced.MovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    if (!physicsInitialized)
                     {
-                        if (_yaw == null || _pitch == null)
-                        {
-                            if (steps != null && steps.Count > 0)
-                            {
-                                location = steps.Dequeue();
-                            }
-                            else if (path != null && path.Count > 0)
-                            {
-                                Location next = path.Dequeue();
-                                steps = Movement.Move2Steps(location, next, ref motionY);
-
-                                if (Config.Main.Advanced.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
-                                    UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
-                            }
-                            else
-                            {
-                                location = Movement.HandleGravity(world, location, ref motionY);
-                            }
-                        }
-                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
-                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
-                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
+                        BlockShapes.Initialize();
+                        playerPhysics.SetPosition(location.X, location.Y, location.Z);
+                        playerPhysics.Yaw = playerYaw;
+                        playerPhysics.Pitch = playerPitch;
+                        physicsInitialized = true;
                     }
-                    // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
-                    // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
+
+                    // Run 2 physics ticks per OnUpdate call (10 Hz * 2 = 20 TPS)
+                    for (int tick = 0; tick < 2; tick++)
+                    {
+                        // Navigate pathfinding: set input based on current path
+                        UpdatePathfindingInput();
+
+                        // Sync yaw/pitch if explicitly set (by commands/bots)
+                        if (_yaw != null) playerPhysics.Yaw = _yaw.Value;
+                        if (_pitch != null) playerPhysics.Pitch = _pitch.Value;
+
+                        // Update environment flags (water, lava, climbable)
+                        playerPhysics.UpdateEnvironment(world);
+
+                        // Apply movement input
+                        playerPhysics.ApplyInput(physicsInput);
+
+                        // Run one physics tick
+                        playerPhysics.Tick(world);
+
+                        // Sync back to MCC location
+                        location = new Location(
+                            playerPhysics.Position.X,
+                            playerPhysics.Position.Y,
+                            playerPhysics.Position.Z);
+
+                        playerYaw = _yaw ?? playerYaw;
+                        playerPitch = _pitch ?? playerPitch;
+
+                        // Send position packet
+                        handler.SendLocationUpdate(location, playerPhysics.OnGround, _yaw, _pitch);
+                    }
+
                     _yaw = null;
                     _pitch = null;
                 }
@@ -1335,7 +1354,7 @@ namespace MinecraftClient
                 }
                 else
                 {
-                    // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
+                    pathTarget = null;
                     path = Movement.CalculatePath(world, location, goal, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
                     return path != null;
                 }
@@ -2685,6 +2704,87 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Drive the physics engine input based on the current A* path.
+        /// Converts discrete waypoint pathfinding into continuous movement input.
+        /// </summary>
+        private void UpdatePathfindingInput()
+        {
+            physicsInput.Reset();
+
+            // Still heading toward a target (even if path queue is empty)
+            if (pathTarget != null && ReachedWaypoint(pathTarget.Value))
+            {
+                // Arrived at current waypoint — advance to next, or finish
+                if (path != null && path.Count > 0)
+                {
+                    pathTarget = path.Dequeue();
+                    if (Config.Main.Advanced.MoveHeadWhileWalking)
+                        UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
+                }
+                else
+                {
+                    pathTarget = null;
+                    path = null;
+                }
+            }
+
+            // Need a first target from a fresh path
+            if (pathTarget == null && path != null && path.Count > 0)
+            {
+                pathTarget = path.Dequeue();
+                if (Config.Main.Advanced.MoveHeadWhileWalking)
+                    UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
+            }
+
+            if (pathTarget != null)
+            {
+                SetInputToward(pathTarget.Value);
+            }
+        }
+
+        /// <summary>
+        /// Check if the player has approximately reached a waypoint.
+        /// </summary>
+        private bool ReachedWaypoint(Location target)
+        {
+            double dx = target.X - location.X;
+            double dz = target.Z - location.Z;
+            return dx * dx + dz * dz < 0.25; // within ~0.5 blocks horizontally
+        }
+
+        /// <summary>
+        /// Set movement input to walk toward a target location.
+        /// Calculates the yaw needed and sets Forward + Sprint.
+        /// </summary>
+        private void SetInputToward(Location target)
+        {
+            double dx = target.X - location.X;
+            double dz = target.Z - location.Z;
+            double dy = target.Y - location.Y;
+            double distSqr = dx * dx + dz * dz;
+
+            if (distSqr < 0.01) return; // Close enough horizontally
+
+            // Calculate yaw to face target
+            float targetYaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);
+            if (targetYaw < 0) targetYaw += 360;
+            playerPhysics.Yaw = targetYaw;
+            playerYaw = targetYaw;
+
+            physicsInput.Forward = true;
+
+            // Jump if target is above and we're on ground
+            if (dy > 0.5 && playerPhysics.OnGround)
+                physicsInput.Jump = true;
+
+            // Map MovementSpeed setting: 1=sneak, 2-4=walk, 5=sprint
+            if (Config.Main.Advanced.MovementSpeed >= 5)
+                physicsInput.Sprint = true;
+            else if (Config.Main.Advanced.MovementSpeed <= 1)
+                physicsInput.Sneak = true;
+        }
+
+        /// <summary>
         /// Check if the client is currently processing a Movement.
         /// </summary>
         /// <returns>true if a movement is currently handled</returns>
@@ -2752,6 +2852,12 @@ namespace MinecraftClient
                 }
                 else this.location = location;
                 locationReceived = true;
+
+                // Sync physics engine position
+                if (physicsInitialized)
+                {
+                    playerPhysics.Teleport(this.location.X, this.location.Y, this.location.Z);
+                }
             }
         }
 

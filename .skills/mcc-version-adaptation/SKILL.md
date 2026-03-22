@@ -10,13 +10,12 @@ Systematic workflow for updating Minecraft Console Client to support a new Minec
 ## Prerequisites
 
 - Decompiled server source for both the old and new MC versions in `$MCC_REPO/MinecraftOfficial/<version>-decompiled/`
-- If missing, decompile first:
+- If missing, decompile and download server.jar:
   ```bash
-  cd $MCC_REPO/MinecraftOfficial
-  java -jar MinecraftDecompiler.jar --version <ver> --side SERVER \
-    --decompile --output <ver>-remapped.jar --decompiled-output <ver>-decompiled
+  $MCC_REPO/tools/decompile.sh --version <ver>
   ```
-- A test server of the target version in `$MCC_SERVERS/` (see `mcc-dev-workflow` skill)
+  This auto-downloads `MinecraftDecompiler.jar` if needed, produces the decompiled source, and downloads `server.jar` into `$MCC_SERVERS/<ver>/`.
+- A test server of the target version in `$MCC_SERVERS/<version>/` (see `mcc-dev-workflow` skill)
 
 ## Step 0: Generate Server Reports (CRITICAL since 1.21.9)
 
@@ -24,7 +23,7 @@ Systematic workflow for updating Minecraft Console Client to support a new Minec
 
 ```bash
 cd /tmp && java -DbundlerMainClass=net.minecraft.data.Main \
-  -jar $MCC_SERVERS/<version>-Vanilla/server.jar \
+  -jar $MCC_SERVERS/<version>/server.jar \
   --reports --output /tmp/mc_reports
 ```
 
@@ -186,7 +185,37 @@ Compare key packet codec classes between versions. Known changes:
 
 When in doubt, compare the relevant packet class (e.g. `ClientboundAddEntityPacket.java`) between versions.
 
-## Step 8: Compile and Verify
+## Step 8: Update Block Collision Shapes (Physics Engine)
+
+MCC's physics engine uses block collision shape data from PrismarineJS `minecraft-data` to perform accurate AABB collision detection (stored in `MinecraftClient/Physics/BlockShapeData.json`, embedded as a resource).
+
+When a new MC version introduces new blocks or changes block shapes, update this data:
+
+```bash
+# Download and compact collision shapes for the target version
+python3 $MCC_REPO/tools/gen_block_shapes.py <version>
+# e.g. python3 tools/gen_block_shapes.py 1.21.11
+```
+
+If network is slow or unreliable, download the file manually and convert:
+```bash
+# Manual download
+curl -L -o /tmp/bcs.json \
+  "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc/<version>/blockCollisionShapes.json"
+
+# Then compact from local file
+python3 $MCC_REPO/tools/gen_block_shapes.py --from-file /tmp/bcs.json
+```
+
+Output: `MinecraftClient/Physics/BlockShapeData.json` (embedded via `MinecraftClient.csproj`)
+
+The JSON maps block names (snake_case) → collision shape IDs → AABB coordinates. At runtime, `BlockShapes.cs` maps MCC's block state IDs to these AABBs using the block palette.
+
+**When to update**: Whenever new blocks are added that have non-trivial collision shapes (e.g., new slab variants, stairs, fences). If only items or entities changed, this step can be skipped.
+
+**Data source**: PrismarineJS `minecraft-data` repo, path: `data/pc/<version>/blockCollisionShapes.json`. Version availability can be checked via `data/dataPaths.json`.
+
+## Step 9: Compile and Verify
 
 ```bash
 dotnet build $MCC_REPO/MinecraftClient.sln -c Release
@@ -244,3 +273,4 @@ All scripts are in `$MCC_REPO/tools/`. See `tools/README.md` for detailed usage.
 | `gen_block_palette.py` | Generate BlockPalette C# | blocks.json |
 | `gen_entity_palette.py` | Generate EntityPalette C# | registries.json |
 | `gen_entity_metadata_palette.py` | Generate EntityMetadataPalette C# | Decompiled source |
+| `gen_block_shapes.py` | Download & compact block collision shapes | PrismarineJS minecraft-data |

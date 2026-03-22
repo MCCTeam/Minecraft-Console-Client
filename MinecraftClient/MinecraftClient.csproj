@@ -19,6 +19,9 @@
     <StartupObject>MinecraftClient.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Physics\BlockShapeData.json" LogicalName="BlockShapeData.json" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Protocol\Handlers\Compression\**" />
     <EmbeddedResource Remove="Protocol\Handlers\Compression\**" />
     <None Remove="Protocol\Handlers\Compression\**" />
