@@ -32,6 +32,11 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Protocol version used to adjust wire encodings.
+        /// </summary>
+        public int ProtocolVersion => protocolversion;
+
+        /// <summary>
         /// Read some data from a cache of bytes and remove it from the cache
         /// </summary>
         /// <param name="offset">Amount of bytes to read</param>
