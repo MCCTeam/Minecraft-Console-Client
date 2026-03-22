@@ -190,6 +190,11 @@ You can find more examples in the [ChatBots](https://github.com/MCCTeam/Minecraf
 
 If you are using an AI coding agent on this repository, use the `mcc-chatbot-authoring` skill for bot work.
 
+Skill links:
+
+-   [Browse the skill on GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/.skills/mcc-chatbot-authoring)
+-   [Download the skill directory](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FMCCTeam%2FMinecraft-Console-Client%2Ftree%2Fmaster%2F.skills%2Fmcc-chatbot-authoring)
+
 This skill is meant for:
 
 -   standalone `/script` bots
