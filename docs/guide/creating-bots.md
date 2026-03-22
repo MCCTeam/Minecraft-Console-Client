@@ -14,7 +14,7 @@ title: Creating Chat Bots
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**For now this page contains only the bare basics of the Chat Bot API, enough of details to teach you how to make basic Chat Bots. For more details you need to take a look at the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and [Examples](#examples). This page will be improved in the future.**
+**This page covers the basics of the Chat Bot API. For the full surface area, read [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and the example scripts linked below.**
 
 </div>
 
@@ -42,7 +42,7 @@ This introduction assumes that you have the basic knowledge of C#.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**Here we will use terms Chat Bot and Script interchangeably**
+**In this page, "Chat Bot" and "Script" are used interchangeably.**
 
 </div>
 
@@ -59,8 +59,8 @@ MCC.LoadBot(new ExampleChatBot());
 
 // The code and comments above are defining a "Script Metadata" section
 
-// Every single chat bot (script) must be a class which extends the ChatBot class.
-// Your class must be instantiates in the "Script Metadata" section and passed to MCC.LoadBot function.
+// Every chat bot script must define a class that extends ChatBot.
+// Instantiate that class in the script metadata section and pass it to MCC.LoadBot.
 class ExampleChatBot : ChatBot
 {
     // This method will be called when the script has been initialized for the first time, it's called only once
@@ -92,7 +92,7 @@ class ExampleChatBot : ChatBot
 
 Start MCC, connect to a server and run the following internal command: `/script ExampleChatBot.cs`.
 
-If you did everything right you should see: `[Example Chat Bot] An example Chat Bot has been initialised!` message appear in your console log.
+If everything worked, you should see `[Example Chat Bot] An example Chat Bot has been initialized!` in the console.
 
 ### Structure of Chat Bots
 
@@ -111,9 +111,9 @@ Every single Chat Bot (Script) must have this section at the beginning in order 
 
 `//MCCScript 1.0` marks the beginning of the **Script Metadata** section, this must always be on the first line or the Chat Bot (Script) will not load and will throw an error.
 
-`//MCCScript Extensions` marks the end of the **Script Metadata** section, this must be defined before a Chat Bot (Script) class.
+`//MCCScript Extensions` marks the end of the **Script Metadata** section. It must appear before the Chat Bot class.
 
-In order for your Chat Bot (Script) to properly load in-between the `//MCCScript 1.0` and the `//MCCScript Extensions` lines you must instantiate your Chat Bot (Script) class and pass it to the `MCC.LoadBot` function.
+To load a Chat Bot script, instantiate the bot class between `//MCCScript 1.0` and `//MCCScript Extensions`, then pass it to `MCC.LoadBot`.
 
 Example code:
 
@@ -121,7 +121,7 @@ Example code:
 MCC.LoadBot(new YourChatBotClassNameHere());
 ```
 
-**Script Metadata** section allows for including C# packages and libraries with: `//using <namespace>` and `/dll <dll name>`.
+The **Script Metadata** section also lets you include namespaces and DLL references with `//using <namespace>` and `//dll <dll name>`.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -129,7 +129,7 @@ MCC.LoadBot(new YourChatBotClassNameHere());
 
 </div>
 
-By the default the following packages are loaded:
+By default, the following namespaces are loaded:
 
 ```csharp
 using System;
@@ -167,28 +167,28 @@ MCC.LoadBot(new ExampleChatBot());
 
 ### Chat Bot Class
 
-After the end of the **Script Metadata** section, you basically can define any number of classes you like, the only limitation is that the main class of your Chat Bot (Script) must extend `ChatBot` class.
+After the **Script Metadata** section, you can define any number of helper classes. The main bot class must extend `ChatBot`.
 
 There are no required methods, everything is optional.
 
-When the Chat Bot (Script) has been initialized for the first time the `Initialize` method will be called.
+When the Chat Bot is initialized for the first time, the `Initialize` method is called.
 
-In it you can initialize variables, eg. Dictionaries, etc..
+Use it to initialize state such as dictionaries or cached values.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
 **For allocating resources like a database connection, we recommend allocating them in `AfterGameJoined` and freeing them in `OnDisconnect`**
 
-</div>.
+</div>
 
 ## Examples
 
-You can find a lot of examples in our Git Hub Repository at [ChatBots](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/ChatBots) and [config](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config).
+You can find more examples in the [ChatBots](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/ChatBots) and [config](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config) folders in the GitHub repository.
 
 ## C# API
 
-As of the time of writing, the C# API has been changed in forks that are yet to be merged, so for now you can use the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) for reference.
+The authoritative reference for the C# API is [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs).
 
 Each method is well documented with standard C# documentation comments.
 
-In the future we will make a script to auto-generate this section based on the documentation in the code.
+This page intentionally stays focused on the basics. For newer hooks and overloads, check the source file directly.

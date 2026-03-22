@@ -7,34 +7,33 @@ redirectFrom:
 
 # Configuration
 
-**Minecraft Console Client** can be both configured by the [command line parameters](usage.md#command-line-parameters) and the configuration file.
+**Minecraft Console Client** can be configured through both [command-line parameters](usage.md#command-line-parameters) and the configuration file.
 
-By the default all of the configurations are stored in the configuration file named `MinecraftClient.ini` which is created the first time you run the program, but you also can specify your own configuration file by providing a path to it as a first parameter when starting the MCC, check out [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
+By default, MCC stores its settings in `MinecraftClient.ini`, which is created the first time you run the program. You can also pass a custom configuration file path as the first argument when starting MCC. See [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
 
 </div>
 
 ## Notes
 
--   Some settings will be omitted from the documentation due to them being not used often, we do not want documentation to be cluttered, we advise you to manually read through the configuration file, where every setting has a description next to it.
--   Some plugin/bot related settings will be covered in the plugins section, not here
+-   Some less common settings are not repeated here. The generated config file contains inline descriptions for every setting.
+-   Bot-specific settings are documented in [Chat Bots](chat-bots.md).
 
 ## Configuration File
 
 ### Format
 
-The configuration file uses the [TOML format](https://toml.io/en/), all of the options are key-value pairs separated into sections.
+The configuration file uses the [TOML format](https://toml.io/en/). Options are key-value pairs grouped into sections.
 
-Sections are defined in-between the square brackets (Example: `[This is a section]`), each occurrence of this marks a beginning of a new section.
+Sections are defined between square brackets, for example `[This is a section]`.
 
-The settings/options are defined as key-value pairs, where the name of the setting and the value are separated by the equals sign `=` (Example: `some-setting=some value`).
+Settings are written as key-value pairs, with the key and value separated by `=`, for example `some-setting = "some value"`.
 
 Lines starting with `#` are comments, they do not have an effect on the configuration of the program, their purpose is purely a descriptive one.
 
-**To get familiar with all the data types and styles of settings please read the [official TOML documenation](https://toml.io/en/v1.0.0).**
+**For the full syntax and data types, see the [official TOML documentation](https://toml.io/en/v1.0.0).**
 
 Full Example:
 
@@ -52,7 +51,7 @@ Section_Enabled = true
 colors = [ "red", "yellow", "green" ]
 
 [ThirdSection.Subsection]
-Coordinate = { x = 145, y = 64, y = 2045 }
+Coordinate = { x = 145, y = 64, z = 2045 }
 ```
 
 ## Main Section
@@ -107,11 +106,11 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you define the type of your account: `mojang` or `microsoft`
+    This setting defines the account type: `mojang`, `microsoft`, or `yggdrasil`.
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
+    **Use `microsoft` for normal Microsoft accounts. `yggdrasil` is for custom authlib/Yggdrasil servers.**
 
     </div>
 
@@ -159,12 +158,12 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Type:** `string`
 
--   **Default:** `en_gb`
+-   **Default:** `en_us`
 
 -   **Example:**
 
     ```
-    Language = "en_gb"
+    Language = "en_us"
     ```
 
 #### `ConsoleTitle`
@@ -268,7 +267,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **MCC supports only 1.4.6 - 1.19.2**
+    **Current code support is `1.4.6` through `1.21.11`.**
 
     </div>
 
@@ -286,7 +285,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     -   `no`
     -   `force`
 
--   **Default:** `auto`
+-   **Default:** `no`
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 

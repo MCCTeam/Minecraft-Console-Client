@@ -20,7 +20,7 @@ If you're not the kind of person that likes textual tutorials, our community has
 
 ## Download a compiled binary
 
-You can download a compiled binary file of the latest build from our Releases section on Git Hub: [Download](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
+You can download a compiled binary of the latest build from the [GitHub Releases](https://github.com/MCCTeam/Minecraft-Console-Client/releases) page.
 
 ## Building from the source code
 
@@ -33,7 +33,7 @@ However, if you want to build the program from source code, please follow the gu
 Requirements:
 
 -   [Git](https://www.git-scm.com/)
--   [.NET 7.0 or new-er](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
+-   [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -48,10 +48,16 @@ Install [Git](https://www.git-scm.com/)
 1. Make a new folder where you want to keep the source code
 2. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
 3. Click on `Git Bash Here` in the context menu
-4. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+4. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+```
+
+If you cloned the repository without `--recursive`, run:
+
+```bash
+git submodule update --init --recursive
 ```
 
 5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
@@ -83,7 +89,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 6. Right click on `MinecraftClient` solution in the `Solution Explorer`
 7. Click `Build`
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net7.0/win-x64/publish` folder.
+If the build succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
 
 #### Building using .NET manually without Visual Studio
 
@@ -92,10 +98,10 @@ If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in
 3. Run the following command to build the project:
 
 ```bash
-dotnet publish MinecraftClient -f net7.0 -r win-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
+dotnet publish MinecraftClient.sln -f net10.0 -r win-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
 ```
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net7.0/win-x64/publish` folder.
+If the build succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
 
 ### Linux, macOS
 
@@ -113,7 +119,7 @@ Requirements:
 
     -   [Install Git on macOS](https://git-scm.com/download/mac)
 
--   .NET SDK 7.0 or new-er
+-   .NET 10 SDK
 
     -   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
     -   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
@@ -121,7 +127,7 @@ Requirements:
 #### Cloning using Git
 
 1. Open up a terminal emulator and navigate to the folder where you will store the MCC
-2. Recursively clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+2. Recursively clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
@@ -134,31 +140,31 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
     - On Linux:
 
         ```bash
-        dotnet publish MinecraftClient -f net7.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
+        dotnet publish MinecraftClient.sln -f net10.0 -r linux-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
         ```
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-        **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `-r linux-64` with an appropriate `-r RID_NAME` (Example for arm: `-r linux-arm64`)**
+        **If you are using Linux on ARM, 32-bit, RHEL-based distributions, or Musl, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace `-r linux-x64` with it, for example `-r linux-arm64`.**
 
         </div>
 
     - On macOS:
 
         ```bash
-        dotnet publish MinecraftClient -f net7.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
+        dotnet publish MinecraftClient.sln -f net10.0 -r osx-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
         ```
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-        **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `-r osx-64` with an appropriate `-r RID_NAME` (Example for arm: `-r osx.12-arm64`)**
+        **If you are not using an Intel Mac, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) for your processor and replace `-r osx-x64` with it, for example `-r osx-arm64`.**
 
         </div>
 
 If the build has succeeded, the compiled binary `MinecraftClient` will be in:
 
--   Linux: `MinecraftClient/bin/Release/net7.0/linux-x64/publish/`
--   macOS: `MinecraftClient/bin/Release/net7.0/osx-x64/publish/`
+-   Linux: `MinecraftClient/bin/Release/net10.0/linux-x64/publish/`
+-   macOS: `MinecraftClient/bin/Release/net10.0/osx-x64/publish/`
 
 ## Using Docker
 
@@ -175,11 +181,11 @@ Requirements:
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Pay attention at warnings, Docker currently works, but you must start the containers in the interactive mode or MCC will crash, we're working on solving this.**
+**Docker works, but you need to start the container in interactive mode. Starting it in headless mode can still crash MCC.**
 
 </div>
 
-1. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+1. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
@@ -196,12 +202,12 @@ docker build -t minecraft-console-client:latest .
 
 <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-**There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+**Because of a ConsoleInteractive issue, starting the container in headless mode can crash MCC. Start it with the interactive command below, then detach with `CTRL + P` followed by `CTRL + Q` if you want to leave it running in the background.**
 
 </div>
 
 ```bash
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+# You can omit -v if you do not want a mounted volume. Keeping the volume makes it much easier to edit the TOML config stored in MinecraftClient.ini from the host.
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
@@ -234,11 +240,11 @@ Remember to remove the container after usage:
 docker-compose down
 ```
 
-If you use the INI file and entered your data (username, password, server) there, you can start your container using
+If you use `MinecraftClient.ini` and entered your data there, you can start your container using
 
 ```bash
 docker-compose up
-docker-compose up -d #for deamonized running in the background
+docker-compose up -d # for daemonized background running
 ```
 
 Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
@@ -251,11 +257,11 @@ docker-compose down
 
 ## Run on Android
 
-It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
+It is possible to run Minecraft Console Client on Android through Termux and Ubuntu 22.04, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
+**This section gets a bit technical. If you run into issues, open a discussion on our GitHub repository page.**
 
 </div>
 
@@ -277,11 +283,11 @@ It is possible to run the Minecraft Console Client on Android through Termux and
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**The Play Store version of Termux is outdated and not supported, do not use it, use the the [Github one](https://github.com/termux/termux-app/releases/latest/).**
+**The Play Store version of Termux is outdated and not supported. Use the [GitHub release](https://github.com/termux/termux-app/releases/latest/) instead.**
 
 </div>
 
-Go to [the Termux Github latest release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it and run it.
+Go to [the latest Termux GitHub release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it, and run it.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -350,7 +356,7 @@ Once the installation is complete, you can start Ubuntu with:
 
 #### Installing .NET on ARM
 
-Since there are issues installing .NET 7.0 via the APT package manager at the time of writing, we will have to install it manually.
+If the package-manager route does not provide a current enough SDK for your setup, install .NET manually instead.
 
 First we need to update the APT package manager repositories and install dependencies.
 
@@ -366,7 +372,7 @@ After you did it, we need to install dependencies for .NET, with the following c
 apt install wget nano unzip libc6 libgcc1 libgssapi-krb5-2 libstdc++6 zlib1g libicu70 libssl3 -y
 ```
 
-After you have installed dependencies, it's time to install .NET, you either can follow this tutorial or the [Microsoft one](https://docs.microsoft.com/en-us/dotnet/core/install/linux-scripted-manual#manual-install).
+After you have installed the dependencies, install .NET either by following this guide or by using Microsoft's [manual install instructions](https://learn.microsoft.com/en-us/dotnet/core/install/linux-scripted-manual#manual-install).
 
 Navigate to your `/root` home directory with the following command:
 
@@ -374,27 +380,27 @@ Navigate to your `/root` home directory with the following command:
 cd /root
 ```
 
-First you need to download .NET 7.0, you can do it with the following command:
+Download a current .NET SDK tarball for your platform from Microsoft. For example:
 
 ```bash
-wget https://download.visualstudio.microsoft.com/download/pr/6cd2eaa7-4c06-4168-b90b-ee2d6bb40b10/4a8387eb07e17d262bfb9965f6d34462/dotnet-sdk-7.0.203-linux-arm64.tar.gz
+wget <current-dotnet-sdk-linux-arm64-tarball-url>
 ```
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**This tutorial assumes that you have 64 bit version of ARM processor, if you happen to have a 32-bit version replace the link in the command above with [this one](https://download.visualstudio.microsoft.com/download/pr/55972ef4-146e-47e6-b014-0163cbaca6a3/fa9713f73f44088898843016d68c5929/dotnet-sdk-7.0.203-linux-arm.tar.gz)**
+**This example assumes a 64-bit ARM processor. If you are using a different architecture, download the matching SDK archive for that platform instead.**
 
 </div>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**This tutorial assumes that you're following along and using Ubuntu 22.04, if you're using a different distro, like Alpine, go to [here](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) and copy an appropriate link for your distro.**
+**This tutorial assumes Ubuntu 22.04. If you are using a different distro, get the current SDK archive for your platform from the [.NET download page](https://dotnet.microsoft.com/en-us/download).**
 
 </div>
 
 Once the file has been downloaded, you need to run the following commands in order:
 
-1. `DOTNET_FILE=dotnet-sdk-7.0.203-linux-arm64.tar.gz`
+1. `DOTNET_FILE=<downloaded-dotnet-sdk-archive-name>`
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
@@ -537,7 +543,7 @@ Also, here are some linux tutorials for people who are new to it:
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**This is a new section, if you find a mistake, please report it by opening an Issue in our [Github repository](https://github.com/MCCTeam/Minecraft-Console-Client). Thank you!**
+**This is a newer section. If you spot a mistake, please report it by opening an issue in our [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client).**
 
 </div>
 
@@ -1057,10 +1063,10 @@ Remove the file, we do not need it anymore:
 rm packages-microsoft-prod.deb
 ```
 
-Finally, install .NET Core 7:
+Finally, install the current .NET SDK:
 
 ```bash
-sudo apt-get update -y && sudo apt-get install -y dotnet-sdk-7.0
+sudo apt-get update -y && sudo apt-get install -y dotnet-sdk-10.0
 ```
 
 Run the following command to check if everything was installed correctly:
@@ -1087,11 +1093,11 @@ path-to-application:
 
 If you do not get this output and the installation was not successful, [try other methods](https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2204).
 
-If it was successful, you can now install the MCC.
+If it was successful, you can now install MCC.
 
 ### Installing MCC on a VPS
 
-Now that you have .NET Core 7.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
+Now that you have the .NET SDK and a user account, install the `screen` utility. You will need it if you want MCC to keep running after you close the SSH session.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
