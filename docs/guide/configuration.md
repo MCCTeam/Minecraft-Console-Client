@@ -147,19 +147,49 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Description:**
 
-    This setting is used when `AccountType` is set to `yggdrasil`. It points MCC at the authlib/Yggdrasil server used for login and session checks.
+    This subsection is used when `AccountType` is set to `yggdrasil`. It points MCC at the authlib/Yggdrasil server used for login, session checks, and profile key requests.
 
-    You can provide either just the host name or a `host:port` pair. If the port is omitted, MCC uses `443`.
+    MCC now writes this as a dedicated TOML subsection instead of an inline table:
 
--   **Type:** `inline table`
+    ```toml
+    [Main.General.AuthServer]
+    ```
 
--   **Default:** `{ Host = "", Port = 443 }`
+    `Host` accepts either a plain host name or a `host:port` pair. If you include the port there, MCC updates `Port` to match.
+
+    `AuthlibInjectorAPIPath` defaults to `/api/yggdrasil`. Change it if your authlib-injector server uses a different prefix, such as `/authlib-injector`.
+
+    `UseHttps` defaults to `true`. Set it to `false` if your local or development auth server only exposes plain HTTP.
+
+-   **Type:** `section`
+
+-   **Default:**
+
+    ```toml
+    [Main.General.AuthServer]
+    Port = 443
+    AuthlibInjectorAPIPath = "/api/yggdrasil"
+    UseHttps = true
+    Host = ""
+    ```
 
 -   **Example:**
 
-    ```
-    AuthServer = { Host = "auth.example.com", Port = 443 }
-    ```
+     ```
+     [Main.General.AuthServer]
+     Host = "auth.example.com"
+     Port = 443
+     AuthlibInjectorAPIPath = "/api/yggdrasil"
+     UseHttps = true
+     ```
+
+     ```
+     [Main.General.AuthServer]
+     Host = "127.0.0.1"
+     Port = 25585
+     AuthlibInjectorAPIPath = "/authlib-injector"
+     UseHttps = false
+     ```
 
 #### `AuthUser`
 
