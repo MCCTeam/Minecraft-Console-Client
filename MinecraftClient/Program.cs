@@ -596,7 +596,8 @@ namespace MinecraftClient
                 if ((Config.Main.General.AccountType == LoginType.microsoft || Config.Main.General.AccountType == LoginType.yggdrasil)
                     && (InternalConfig.Account.Password != "-" || Config.Main.General.Method == LoginMethod.browser)
                     && Config.Signature.LoginWithSecureProfile
-                    && protocolversion >= 759 /* 1.19 and above */)
+                    && protocolversion >= 759 /* 1.19 and above */
+                    && !string.IsNullOrWhiteSpace(session.ID))
                 {
                     // Load cached profile key from disk if necessary
                     if (Config.Main.Advanced.ProfileKeyCache == CacheType.disk)

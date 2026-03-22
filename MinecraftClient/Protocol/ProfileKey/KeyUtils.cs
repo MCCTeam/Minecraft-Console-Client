@@ -20,6 +20,9 @@ namespace MinecraftClient.Protocol.ProfileKey
             ProxiedWebRequest.Response? response = null;
             try
             {
+                if (!isYggdrasil && string.IsNullOrWhiteSpace(accessToken))
+                    return null;
+
                 if (!isYggdrasil)
                 {
                     var request = new ProxiedWebRequest(certificates)
@@ -34,11 +37,28 @@ namespace MinecraftClient.Protocol.ProfileKey
                     {
                         ConsoleIO.WriteLine(response.Body.ToString());
                     }
+
+                    if (response.StatusCode < 200 || response.StatusCode >= 300)
+                    {
+                        throw new InvalidOperationException(string.IsNullOrWhiteSpace(response.Body)
+                            ? "Certificate endpoint returned an error response."
+                            : response.Body);
+                    }
                 }
 
                 // see https://github.com/yushijinhun/authlib-injector/blob/da910956eaa30d2f6c2c457222d188aeb53b0d1f/src/main/java/moe/yushi/authlibinjector/httpd/ProfileKeyFilter.java#L49
                 // POST to "https://api.minecraftservices.com/player/certificates" with authlib-injector will get a dummy response
                 var json = isYggdrasil ? MakeDummyResponse() : Json.ParseJson(response!.Body);
+                if (json?["keyPair"]?["publicKey"] == null
+                    || json["keyPair"]?["privateKey"] == null
+                    || json["publicKeySignature"] == null
+                    || json["publicKeySignatureV2"] == null
+                    || json["expiresAt"] == null
+                    || json["refreshedAfter"] == null)
+                {
+                    throw new InvalidOperationException("Certificate endpoint returned an unexpected payload.");
+                }
+
                 // Error here
                 PublicKey publicKey = new(pemKey: json!["keyPair"]!["publicKey"]!.GetStringValue(),
                     sig: json["publicKeySignature"]!.GetStringValue(),
