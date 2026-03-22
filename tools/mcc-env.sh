@@ -1,7 +1,7 @@
 #!/bin/bash
 # MCC (Minecraft Console Client) Development Utilities
 # Source this file to get helper functions: source $MCC_REPO/tools/mcc-env.sh
-# Or add to ~/.bashrc:  source "$HOME/Minecraft/Minecraft-Console-Client-milutinke/tools/mcc-env.sh"
+# Or add to ~/.bashrc:  source "$HOME/Minecraft/Minecraft-Console-Client/tools/mcc-env.sh"
 
 TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export MCC_REPO="$(cd "$TOOLS_DIR/.." && pwd)"

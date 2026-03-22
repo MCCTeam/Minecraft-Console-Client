@@ -6,6 +6,8 @@ title: Contributing
 
 At this moment this page needs to be created.
 
+If you are working with SWE AI agents, start with [AI-Assisted Development](ai-assisted-development.md). It covers the shell setup, local server loop, and the skills in `.skills/`.
+
 For now you can use our article from the [Git Hub repository Wiki](https://github.com/MCCTeam/Minecraft-Console-Client/wiki/Update-console-client-to-new-version) written by [ReinforceZwei](https://github.com/ReinforceZwei).
 
 ## Translations

@@ -4,16 +4,23 @@ title: About & Features
 
 # Introduction
 
--   [About](#about)
--   [Quick Intro (YouTube Videos)](#quick-intro)
--   [Features](#features)
--   [Why Minecraft Console Client?](#why-minecraft-console-client)
--   [Getting Help](#getting-help)
--   [Submitting a bug report or an idea/feature-request](#bugs-ideas-feature-requests)
--   [Important notes on some features](#notes-on-some-features)
--   [Credits](#credits)
--   [Disclaimer](#disclaimer)
--   [License](#license)
+- [Introduction](#introduction)
+  - [About](#about)
+  - [Features](#features)
+  - [Why Minecraft Console Client?](#why-minecraft-console-client)
+  - [Quick Intro](#quick-intro)
+    - [The list of the tutorials:](#the-list-of-the-tutorials)
+  - [Getting Help](#getting-help)
+    - [Before getting help](#before-getting-help)
+  - [Bugs, Ideas, Feature Requests](#bugs-ideas-feature-requests)
+    - [Before submitting](#before-submitting)
+  - [AI-Assisted Development](#ai-assisted-development)
+  - [Notes on some features](#notes-on-some-features)
+    - [Inventory, Terrain and Entity Handling](#inventory-terrain-and-entity-handling)
+    - [Path-Finding and Physics](#path-finding-and-physics)
+  - [Credits](#credits)
+  - [Disclaimer](#disclaimer)
+  - [License](#license)
 
 ## About
 
@@ -106,6 +113,10 @@ If you're reporting a bug, please be descriptive as much as possible, try to exp
 
 -   **Please use the search option here or in the `Issues` section and read the documentation so we avoid duplicate questions/ideas/reports. Thank you!**
 -   **Please be kind, patient and respect others. Thank you!**
+
+## AI-Assisted Development
+
+If you want the repeatable agent workflow used by maintainers, start with [AI-Assisted Development](ai-assisted-development.md).
 
 ## Notes on some features
 
