@@ -67,6 +67,9 @@ redirectFrom:
 
     **Section:** **`ChatBot.Alerts`**
 
+    <details>
+    <summary>All settings</summary>
+
     #### `Enabled`
 
     -   **Description:**
@@ -181,6 +184,9 @@ redirectFrom:
         Excludes = [ "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is", ]
         ```
 
+
+    </details>
+
 ## Anti AFK
 
 -   **Description:**
@@ -190,6 +196,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AntiAFK`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -281,6 +290,9 @@ redirectFrom:
 
     -   **Default:** `20`
 
+
+    </details>
+
 ## Auto Attack
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -296,6 +308,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoAttack`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -432,6 +447,9 @@ redirectFrom:
 
     -   **Default:** `[ "Zombie", "Cow", ]`
 
+
+    </details>
+
 ## Auto Craft
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -465,6 +483,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoCraft`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -609,6 +630,9 @@ redirectFrom:
 
     </div>
 
+
+    </details>
+
 ## Auto Dig
 
 -   **Description:**
@@ -636,6 +660,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoDig`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -780,6 +807,9 @@ redirectFrom:
 
     -   **Default:** `[ "Cobblestone", "Stone", ]`
 
+
+    </details>
+
 ## Auto Drop
 
 -   **Description:**
@@ -795,6 +825,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoDrop`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -855,6 +888,9 @@ redirectFrom:
 
     -   **Default:** `[ "Cobblestone", "Dirt", ]`
 
+
+    </details>
+
 ## Auto Eat
 
 -   **Description:**
@@ -870,6 +906,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoEat`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -892,6 +931,9 @@ redirectFrom:
     -   **Type:** `integer`
 
     -   **Default:** `6`
+
+
+    </details>
 
 ## Auto Fishing
 
@@ -933,6 +975,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoFishing`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1150,6 +1195,9 @@ redirectFrom:
     facing = { yaw = -25.14, pitch = 36.25 }
     ```
 
+
+    </details>
+
 ## Auto Relog
 
 -   **Description:**
@@ -1159,6 +1207,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoRelog`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1226,6 +1277,9 @@ redirectFrom:
 
     -   **Default:** `[ "Connection has been lost", "Server is restarting", "Server is full", "Too Many people", ]`
 
+
+    </details>
+
 ## Auto Respond
 
 -   **Description:**
@@ -1247,6 +1301,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoRespond`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1306,6 +1363,9 @@ redirectFrom:
 
     -   **Default:** `false`
 
+
+    </details>
+
 ## Chat Log
 
 -   **Description:**
@@ -1315,6 +1375,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.ChatLog`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1373,6 +1436,9 @@ redirectFrom:
             Only internal messages and commands.
 
     -   **Default:** `messages`
+
+
+    </details>
 
 ## Discord Bridge
 
@@ -1441,6 +1507,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.DiscordBrdige`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1534,6 +1603,9 @@ redirectFrom:
 
     -   **Default:** `A new Teleport Request from **{username}**!`
 
+
+    </details>
+
 ## Farmer
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -1619,6 +1691,9 @@ redirectFrom:
 
     **Section:** **`ChatBot.Farmer`**
 
+    <details>
+    <summary>All settings</summary>
+
     #### `Enabled`
 
     -   **Description:**
@@ -1643,6 +1718,9 @@ redirectFrom:
 
     -   **Minimum:** `1`
 
+
+    </details>
+
 ## Follow player
 
 -   **Description:**
@@ -1664,6 +1742,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.FollowPlayer`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1699,6 +1780,9 @@ redirectFrom:
 
     -   **Default:** `3.0`
 
+
+    </details>
+
 ## Hangman
 
 -   **Description:**
@@ -1718,6 +1802,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.HangmanGame`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1768,6 +1855,9 @@ redirectFrom:
 
     -   **Default:** `hangman-fr.txt`
     -   **Example**: [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)
+
+
+    </details>
 
 ## Mailer
 
@@ -1921,6 +2011,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.Map`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2082,6 +2175,9 @@ redirectFrom:
 
     -   **Default:** `false`
 
+
+    </details>
+
 ## PlayerList Logger
 -   **Description:**
 
@@ -2090,6 +2186,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.PlayerListLogger`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2119,6 +2218,9 @@ redirectFrom:
 
     -   **Default:** `60.0`
 
+
+    </details>
+
 ## Remote Control
 
 -   **Description:**
@@ -2136,6 +2238,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.RemoteControl`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2173,6 +2278,9 @@ redirectFrom:
 
     -   **Default:** `false`
 
+
+    </details>
+
 ## Replay Capture
 
 -   **Description:**
@@ -2201,6 +2309,9 @@ redirectFrom:
 
     **Section:** **`ChatBot.ReplayCapture`**
 
+    <details>
+    <summary>All settings</summary>
+
     #### `Enabled`
 
     -   **Description:**
@@ -2225,6 +2336,9 @@ redirectFrom:
 
     -   **Default:** `300.0`
 
+
+    </details>
+
 ## Script Scheduler
 
 -   **Description:**
@@ -2234,6 +2348,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.ScriptScheduler`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2344,6 +2461,9 @@ redirectFrom:
         Action = "send /login pass"
     ```
 
+
+    </details>
+
 ## Telegram Bridge
 
 -   **Description:**
@@ -2387,6 +2507,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.TelegramBridge`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2478,6 +2601,9 @@ redirectFrom:
     -   **Default:** `A new Teleport Request from **{username}**!`
 
 
+    </details>
+
+
 ## Items Collector
 
 -   **Description:**
@@ -2487,6 +2613,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.ItemsCollector`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2575,5 +2704,8 @@ redirectFrom:
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
+
+    </details>
 
 

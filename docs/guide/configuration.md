@@ -60,6 +60,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Section header:** `Main.General`
 
+<details>
+<summary>Account, Server, and Authentication settings</summary>
+
 #### `Account`
 
 -   **Description:**
@@ -174,9 +177,14 @@ Coordinate = { x = 145, y = 64, z = 2045 }
     AuthUser = "SomePlayer"
     ```
 
+</details>
+
 ### Main Advanced section
 
 -   **Section header:** `Main.Advanced`
+
+<details>
+<summary>Advanced settings (Language, Version, Features, and more)</summary>
 
 #### `Language`
 
@@ -661,6 +669,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `true`
 
+</details>
+
 ### Account List section
 
 -   **Section header:** `Main.Advanced.AccountList`
@@ -723,6 +733,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
     Affects only Minecraft 1.19+.
 
     This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
+
+<details>
+<summary>Chat signing and verification settings</summary>
 
 #### `LoginWithSecureProfile`
 
@@ -816,9 +829,14 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `true`
 
+</details>
+
 ### App Vars values section
 
 -   **Section header:** `AppVar.VarStirng`
+
+<details>
+<summary>Logging and filtering settings</summary>
 
 #### `DebugMessages`
 
@@ -968,6 +986,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `false`
 
+</details>
+
 ## App Vars section
 
 -   **Section header:** `AppVar`
@@ -1005,6 +1025,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Section header:** `Console.General`
 
+<details>
+<summary>Console display settings</summary>
+
 #### `ConsoleColorMode`
 
 -   **Description:**
@@ -1037,6 +1060,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `32`
 
+</details>
+
 ### Console CommandSuggestion section
 
 -   **Section header:** `Console.CommandSuggestion`
@@ -1044,6 +1069,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Description:**
 
     Command completion suggestions in the console.
+
+<details>
+<summary>Command suggestion settings</summary>
 
 #### `Enable`
 
@@ -1103,6 +1131,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
     MCC validates these values on startup and falls back to built-in defaults if a color string is invalid.
 
+</details>
+
 ## Proxy section
 
 -   **Section header:** `Proxy`
@@ -1110,6 +1140,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Description:**
 
     Connect to a server via a proxy instead of connecting directly.
+
+<details>
+<summary>Proxy settings</summary>
 
 #### `Enabled_Login`
 
@@ -1202,6 +1235,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `` ``
 
+</details>
+
 ## MCSettings section
 
 -   **Section header:** `MCSettings`
@@ -1209,6 +1244,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Description:**
 
     Client settings related to language, render distance, difficulty, chat and skins.
+
+<details>
+<summary>Game client settings</summary>
 
 #### `Enabled`
 
@@ -1293,6 +1331,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `left`
 
+</details>
+
 ## MCSettings Skin section
 
 -   **Section header:** `MCSettings.Skin`
@@ -1300,6 +1340,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Description:**
 
     Skin options.
+
+<details>
+<summary>Skin visibility settings</summary>
 
 #### `Cape`
 
@@ -1371,6 +1414,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `false`
 
+</details>
+
 ## Chat Format section
 
 -   **Section header:** `ChatFormat`
@@ -1394,6 +1439,9 @@ Coordinate = { x = 145, y = 64, z = 2045 }
     -   Testing Regex expressions online:
         -   [https://regex101.com/](https://regex101.com/)
         -   [https://regexr.com/](https://regexr.com/)
+
+<details>
+<summary>Chat format settings</summary>
 
 #### `Builtins`
 
@@ -1460,6 +1508,8 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 -   **Type:** `string`
 
 -   **Default:** `TeleportRequest = '^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$'`
+
+</details>
 
 ## Chat Bot section
 
