@@ -473,7 +473,7 @@ namespace MinecraftClient.Protocol.Message
                     {
                         List<string> using_data = new();
                         if (obj.ContainsKey("using") && !obj.ContainsKey("with"))
-                            obj["with"] = System.Text.Json.Nodes.JsonNode.Parse(obj["using"]!.ToJsonString());
+                            obj["with"] = obj["using"]!.DeepClone();
                         if (obj.ContainsKey("with"))
                         {
                             foreach (var item in obj["with"]!.AsArray())

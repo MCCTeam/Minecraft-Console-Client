@@ -13,6 +13,8 @@ namespace MinecraftClient.Protocol
     /// </summary>
     public class ProxiedWebRequest
     {
+        private const int DefaultConnectTimeoutSeconds = 30;
+
         private readonly Uri _uri;
 
         public NameValueCollection Headers { get; } = new();
@@ -113,7 +115,9 @@ namespace MinecraftClient.Protocol
             try
             {
                 using var httpResponse = client.Send(request);
-                string responseBody = httpResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                using var stream = httpResponse.Content.ReadAsStream();
+                using var reader = new System.IO.StreamReader(stream);
+                string responseBody = reader.ReadToEnd();
 
                 var responseHeaders = new NameValueCollection();
                 foreach (var header in httpResponse.Headers)
@@ -150,7 +154,7 @@ namespace MinecraftClient.Protocol
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
                 AllowAutoRedirect = false,
-                ConnectTimeout = TimeSpan.FromSeconds(30),
+                ConnectTimeout = TimeSpan.FromSeconds(DefaultConnectTimeoutSeconds),
             };
 
             if (ProxyHandler.Config.Enabled_Login)
