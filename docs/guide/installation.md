@@ -30,6 +30,9 @@ However, if you want to build the program from source code, please follow the gu
 
 ### Windows
 
+<details>
+<summary>Windows build instructions</summary>
+
 Requirements:
 
 -   [Git](https://www.git-scm.com/)
@@ -119,7 +122,12 @@ dotnet --info
 
 If the publish step succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
 
+</details>
+
 ### Linux, macOS
+
+<details>
+<summary>Linux and macOS build instructions</summary>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -206,7 +214,12 @@ You can verify the SDK installation with:
 dotnet --info
 ```
 
+</details>
+
 ## Using Docker
+
+<details>
+<summary>Docker setup and usage</summary>
 
 Requirements:
 
@@ -295,6 +308,8 @@ As above, you can stop and remove the container using
 docker-compose down
 ```
 
+</details>
+
 ## Run on Android
 
 It is possible to run Minecraft Console Client on Android through Termux and Ubuntu 24.04, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
@@ -318,6 +333,9 @@ It is possible to run Minecraft Console Client on Android through Termux and Ubu
 </div>
 
 ### Installation
+
+<details>
+<summary>Android installation steps (Termux + Ubuntu + .NET + MCC)</summary>
 
 #### Termux
 
@@ -579,6 +597,8 @@ Also, here are some linux tutorials for people who are new to it:
 -   [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
 -   [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
 
+</details>
+
 ## Run on a VPS
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -635,6 +655,9 @@ Here is a [YouTube video](https://youtu.be/42fwh_1KP_o) that explains it in more
     - [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
 
 ### Where to get a VPS
+
+<details>
+<summary>VPS providers and pricing</summary>
 
 You have 2 options:
 
@@ -719,7 +742,12 @@ Register on AWS and enter all of your billing info and a phone number.
 
 Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an-aws-vps).
 
+</details>
+
 ### Initial Amazon VPS setup
+
+<details>
+<summary>AWS EC2 setup steps</summary>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -815,7 +843,12 @@ If you've provided the right info you should get `Welcome to Ubuntu 20.04.5 LTS`
 
 Now you can continue to [Creating a new user](#creating-a-new-user)
 
+</details>
+
 ### Initial VPS setup
+
+<details>
+<summary>Non-AWS VPS login steps</summary>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -855,7 +888,12 @@ ssh -p 2233 root@142.26.73.14
 
 Once you've logged in you should see a Linux prompt and a welcome message if there is one set by your provider.
 
+</details>
+
 ### Creating a new user
+
+<details>
+<summary>User account and SSH key setup</summary>
 
 Once you've logged in to your VPS you need to create a new user and give it SSH access.
 
@@ -1051,7 +1089,12 @@ You can do `whoami` to see your username.
 
 Now you can install the .NET 10 SDK and MCC.
 
+</details>
+
 ### Installing .NET 10 SDK
+
+<details>
+<summary>.NET SDK installation on VPS</summary>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -1105,7 +1148,12 @@ If you do not get this output and the installation was not successful, [try othe
 
 If it was successful, you can now install MCC.
 
+</details>
+
 ### Installing MCC on a VPS
+
+<details>
+<summary>MCC installation and screen usage</summary>
 
 Now that you have the .NET SDK and a user account, install the `screen` utility. You will need it if you want MCC to keep running after you close the SSH session.
 
@@ -1178,3 +1226,5 @@ screen -ls
 ```
 
 To stop the MCC, you can hit `CTRL + D` (hit it few times).
+
+</details>
