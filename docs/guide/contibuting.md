@@ -4,11 +4,17 @@ title: Contributing
 
 # Contributing
 
-This page is still being filled in. For now, use the links below for the current contributor workflow.
+This page is still being filled in. For now, use the sections below as the current contributor entry points for code, docs, and translation work.
 
-If you are working with SWE AI agents, start with [AI-Assisted Development](ai-assisted-development.md). It covers the shell setup, local server loop, and the skills in `.skills/`.
+If you are doing maintainer-style work with coding agents, start with [AI-Assisted Development](ai-assisted-development.md). It covers the shell setup, local server loop, and the skills in `.skills/`.
 
 You can also use the guide in the [GitHub repository wiki](https://github.com/MCCTeam/Minecraft-Console-Client/wiki/Update-console-client-to-new-version) written by [ReinforceZwei](https://github.com/ReinforceZwei).
+
+For now, the project has three main contribution paths:
+
+-   code and bot work in the main MCC client
+-   documentation updates in `docs/`
+-   translations through Crowdin
 
 ## Translations
 

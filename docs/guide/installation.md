@@ -95,13 +95,31 @@ If the build succeeds, the published binary `MinecraftClient.exe` will be in `Mi
 
 1. Open the `Minecraft-Console-Client` folder you've cloned or downloaded
 2. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
-3. Run the following command to build the project:
+3. Install the .NET 10 SDK if you do not already have it. The easiest current option on Windows is:
+
+```powershell
+winget install Microsoft.DotNet.SDK.10
+```
+
+4. Run the following command for a normal local build:
+
+```bash
+dotnet build MinecraftClient.sln -c Release
+```
+
+5. If you want a release-like published binary that matches the repo's CI workflow, run:
 
 ```bash
 dotnet publish MinecraftClient.sln -f net10.0 -r win-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
 ```
 
-If the build succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
+6. Verify the SDK installation if needed:
+
+```bash
+dotnet --info
+```
+
+If the publish step succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
 
 ### Linux, macOS
 
@@ -121,8 +139,9 @@ Requirements:
 
 -   .NET 10 SDK
 
-    -   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
-    -   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
+    -   [Install .NET on Linux](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
+    -   [Install .NET on Ubuntu](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install)
+    -   [Install .NET on macOS](https://learn.microsoft.com/en-us/dotnet/core/install/macos)
 
 #### Cloning using Git
 
@@ -134,8 +153,25 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
-4. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
-5. Run the following command to build the project:
+4. Install the .NET 10 SDK.
+
+    - On Ubuntu 24.04 LTS, use the built-in Ubuntu package feeds:
+
+        ```bash
+        sudo apt-get update && \
+          sudo apt-get install -y dotnet-sdk-10.0
+        ```
+
+    - On macOS, the normal path is to use the official installer from the [.NET download page](https://dotnet.microsoft.com/en-us/download). Pick `Arm64` for Apple Silicon and `x64` for Intel Macs.
+
+5. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
+6. Run the following command for a normal local build:
+
+    ```bash
+    dotnet build MinecraftClient.sln -c Release
+    ```
+
+7. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
 
     - On Linux:
 
@@ -165,6 +201,12 @@ If the build has succeeded, the compiled binary `MinecraftClient` will be in:
 
 -   Linux: `MinecraftClient/bin/Release/net10.0/linux-x64/publish/`
 -   macOS: `MinecraftClient/bin/Release/net10.0/osx-x64/publish/`
+
+You can verify the SDK installation with:
+
+```bash
+dotnet --info
+```
 
 ## Using Docker
 
@@ -257,7 +299,7 @@ docker-compose down
 
 ## Run on Android
 
-It is possible to run Minecraft Console Client on Android through Termux and Ubuntu 22.04, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
+It is possible to run Minecraft Console Client on Android through Termux and Ubuntu 24.04, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -301,20 +343,20 @@ Go to [the latest Termux GitHub release](https://github.com/termux/termux-app/re
 
 </div>
 
-#### Installing Ubuntu 22.04
+#### Installing Ubuntu 24.04
 
 At this stage, you have 2 options:
 
 1. Following this textual tutorial
-2. Watching a [Youtube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
+2. Watching a [YouTube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**If you decide to watch the Youtube tutorial, watch only up to `1:58`, the steps after are not needed and might just confuse you.**
+**If you decide to watch the YouTube tutorial, watch only up to `1:58`. The steps after that are not needed here and might just confuse you.**
 
 </div>
 
-In order to install Ubuntu 22.04 in Termux you require `wget` and `proot`, we're going to install them in the next step.
+In order to install Ubuntu 24.04 in Termux you require `wget` and `proot`, and we are going to install them in the next step.
 
 Once you have Termux installed open it up and run the following command one after other (in order):
 
@@ -380,7 +422,7 @@ Navigate to your `/root` home directory with the following command:
 cd /root
 ```
 
-Download a current .NET SDK tarball for your platform from Microsoft. For example:
+Download a current .NET SDK tarball for your platform from Microsoft. Replace the placeholder below with the actual current download URL from the [.NET download page](https://dotnet.microsoft.com/en-us/download):
 
 ```bash
 wget <current-dotnet-sdk-linux-arm64-tarball-url>
@@ -394,7 +436,7 @@ wget <current-dotnet-sdk-linux-arm64-tarball-url>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**This tutorial assumes Ubuntu 22.04. If you are using a different distro, get the current SDK archive for your platform from the [.NET download page](https://dotnet.microsoft.com/en-us/download).**
+**This tutorial assumes Ubuntu 24.04. If you are using a different distro, get the current SDK archive for your platform from the [.NET download page](https://dotnet.microsoft.com/en-us/download).**
 
 </div>
 
@@ -404,7 +446,7 @@ Once the file has been downloaded, you need to run the following commands in ord
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **If you're using a different download link, update the file name in this command to match your version.**
+    **Replace the placeholder with the exact filename you downloaded. If you are using a different archive, update this value to match it exactly.**
 
     </div>
 
@@ -423,7 +465,7 @@ Now we need to tell our shell to know where the `dotnet` command is, for future 
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**You will need a basic knowledge of Nano text editor, if you do not know how to use it, watch this [Youtube video tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A)**
+**You will need a basic knowledge of the Nano text editor. If you do not know how to use it, watch this [YouTube tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).**
 
 </div>
 
@@ -564,13 +606,13 @@ VPS stands for a **V**irtual **P**rivate **S**erver, it's basically a remote vir
 
 You can use a VPS for hosting a website, or a an app, or a game server, or your own VPN, or the Minecraft Console Client.
 
-Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more detail if you're interested.
+Here is a [YouTube video](https://youtu.be/42fwh_1KP_o) that explains it in more detail if you are interested.
 
 ### Prerequisites
 
-1. Gitbash (if you're on Windows)
+1. Git Bash (if you are on Windows)
 
-    Download and install [Gitbash](https://git-scm.com/downloads).
+    Download and install [Git Bash](https://git-scm.com/downloads).
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -578,7 +620,7 @@ Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
     </div>
 
-2. `ssh` and `ssh-keygen` commands (On Windows they're available with Gitbash, on macOs and Linux they should be available by default, it not, search on how to install them)
+2. `ssh` and `ssh-keygen` commands (on Windows they are available with Git Bash; on macOS and Linux they should be available by default. If not, install them first.)
 
 3. Basic knowledge of Linux shell commands, terminal emulator usage, SSH and Nano editor.
 
@@ -613,7 +655,7 @@ The MCC is not expensive to run, so it can run on basically any hardware, you do
 
 <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-**In this tutorial we will be using `Ubuntu 22.04`, make sure to select it as the OS when buying a VPS.**
+**In this tutorial we will be using `Ubuntu 24.04 LTS`, so pick that family when choosing your VPS image.**
 
 </div>
 
@@ -625,7 +667,7 @@ Some of the reliable and cheap hosting providers (sorted for price/performance):
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Does not have Ubuntu 22.04 in the dropdown menu when ordering, you will have to re-install later or ask support to do it.**
+    **If Ubuntu 24.04 LTS is not in the dropdown when ordering, you may need to reinstall later or ask support to do it.**
 
     </div>
 
@@ -701,7 +743,7 @@ Fill out the `Name` field with a name of your preference.
 
 ![VPS Name](/images/guide/VPS_Name.png)
 
-For the **Application and OS images** select `Ubuntu Server 22.04 LTS (HVM), SSD Volume Type`.
+For the **Application and OS images** select the current `Ubuntu Server 24.04 LTS` image. The exact AWS label may vary slightly by point release.
 
 <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
@@ -787,7 +829,7 @@ When you order the VPS, most likely you will be asked to provide the root accoun
 
 Other option is that you will get your login info in the email once the setup is done.
 
-Once you have the root login account info, you need [Gitbash](https://git-scm.com/downloads) on Windows and `ssh` if you're on macOS or Linux (if you do not have it by some chance, search on how to install it, it is simple).
+Once you have the root login account info, you need [Git Bash](https://git-scm.com/downloads) on Windows and `ssh` on macOS or Linux.
 
 If you're on Windows open `Git Bash`, on mac OS and Linux open a `Terminal` and type the following command:
 
@@ -1009,19 +1051,13 @@ If did everything correctly you should see a Linux prompt and a welcome message 
 
 You can do `whoami` to see your username.
 
-Now you can install .NET Core 7 and MCC.
+Now you can install the .NET 10 SDK and MCC.
 
-### Installing .NET Core 7
+### Installing .NET 10 SDK
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
 **If your VPS has an ARM CPU, follow [this](#installing-net-on-arm) part of the documentation and then return to section after this one.**
-
-</div>
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**With newer versions of .NET Core 7 on Ubuntu 22.04 you might get the following error: `A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders`, if you get it, use [this solution](https://github.com/dotnet/sdk/issues/27082#issuecomment-1211143446)**
 
 </div>
 
@@ -1033,40 +1069,16 @@ Update the system packages and package manager repositories:
 sudo apt update -y && sudo apt upgrade -y
 ```
 
-Install `wget`:
-
-```bash
-sudo apt install wget -y
-```
-
-Go to your home directory with:
-
-```bash
-cd ~
-```
-
-Download the Microsoft repository file:
-
-```bash
-wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-```
-
-Add Microsoft repositories to the package manager:
-
-```bash
-sudo dpkg -i packages-microsoft-prod.deb
-```
-
-Remove the file, we do not need it anymore:
-
-```bash
-rm packages-microsoft-prod.deb
-```
-
-Finally, install the current .NET SDK:
+On Ubuntu 24.04 LTS, the official Microsoft docs say .NET is available directly from the Ubuntu package feeds, so you do not need to add the old Microsoft package repository for .NET 10. Install the SDK with:
 
 ```bash
 sudo apt-get update -y && sudo apt-get install -y dotnet-sdk-10.0
+```
+
+You can verify the installation with:
+
+```bash
+dotnet --info
 ```
 
 Run the following command to check if everything was installed correctly:
@@ -1091,7 +1103,7 @@ path-to-application:
   The path to an application .dll file to execute.
 ```
 
-If you do not get this output and the installation was not successful, [try other methods](https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2204).
+If you do not get this output and the installation was not successful, [try other methods](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install).
 
 If it was successful, you can now install MCC.
 
@@ -1105,7 +1117,7 @@ Now that you have the .NET SDK and a user account, install the `screen` utility.
 
 </div>
 
-You also can learn about the screen command from [this Youtube tutorial](https://youtu.be/_ZJiEX4rmN4).
+You can also learn about the `screen` command from [this YouTube tutorial](https://youtu.be/_ZJiEX4rmN4).
 
 To install the `screen` execute the following command:
 

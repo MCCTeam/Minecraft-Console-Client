@@ -8,6 +8,7 @@ title: Creating Chat Bots
 -   [Requirements](#requirements)
 -   [Quick Introduction](#quick-introduction)
 -   [Examples](#examples)
+-   [AI-Assisted Bot Authoring](#ai-assisted-bot-authoring)
 -   [C# API](#c#-api)
 
 ## Notes
@@ -33,8 +34,8 @@ Crash courses:
 
 More in-depth:
 
--   [Learn C# Youtube Playlist by Microsoft](https://www.youtube.com/playlist?list=PLdo4fOcmZ0oVxKLQCHpiUWun7vlJJvUiN)
--   [Getting started with C# (An index of tutorials and the documentation) by Microsoft](https://docs.microsoft.com/en-us/dotnet/csharp/)
+-   [Learn C# YouTube Playlist by Microsoft](https://www.youtube.com/playlist?list=PLdo4fOcmZ0oVxKLQCHpiUWun7vlJJvUiN)
+-   [Getting started with C# (an index of tutorials and documentation) by Microsoft](https://learn.microsoft.com/en-us/dotnet/csharp/)
 
 ## Quick Introduction
 
@@ -184,6 +185,44 @@ Use it to initialize state such as dictionaries or cached values.
 ## Examples
 
 You can find more examples in the [ChatBots](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/ChatBots) and [config](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config) folders in the GitHub repository.
+
+## AI-Assisted Bot Authoring
+
+If you are using an AI coding agent on this repository, use the `mcc-chatbot-authoring` skill for bot work.
+
+This skill is meant for:
+
+-   standalone `/script` bots
+-   built-in MCC chat bots
+-   bot repairs and ports
+-   event handlers, movement logic, inventory logic, and plugin-channel work
+
+Its default behavior is important: if you ask for "a bot" without saying otherwise, it should prefer a standalone `//MCCScript` bot loaded with `/script`. It should only choose a built-in bot when you explicitly ask for repo wiring, automatic config loading, or a compiled MCC bot.
+
+The skill also follows MCC-specific rules, for example:
+
+-   do not send chat from `Initialize()`
+-   use `AfterGameJoined()` for chat or commands after login
+-   normalize chat with `GetVerbatim(text)` before `IsChatMessage(...)` or `IsPrivateMessage(...)`
+-   fully clean up commands, timers, plugin channels, and movement locks
+
+### Example prompts
+
+```text
+Create a standalone MCC /script bot that watches public chat for the word "auction" and logs matching messages to the console. Use the mcc-chatbot-authoring skill.
+```
+
+```text
+Fix this existing MCC script bot so it stops sending chat from Initialize() and moves the startup command to AfterGameJoined(). Use the mcc-chatbot-authoring skill.
+```
+
+```text
+Make a built-in MCC chat bot named AutoTorch and wire it fully into the repo config and bot registration. Use the mcc-chatbot-authoring skill.
+```
+
+```text
+Create a standalone MCC /script bot that follows private messages, uses GetVerbatim(text), and replies only to bot owners. Use the mcc-chatbot-authoring skill.
+```
 
 ## C# API
 

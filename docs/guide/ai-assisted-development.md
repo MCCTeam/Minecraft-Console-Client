@@ -6,6 +6,8 @@ title: AI-Assisted Development
 
 This guide documents the MCC AI-assisted development workflow as a real working loop, not a patch generator running on guesses. The goal is to give the agent an environment it can drive on its own: build MCC, start a local server, send commands, inspect logs, and repeat. Once that loop is in place, iteration is faster and regressions are easier to catch.
 
+If you are looking for the broader contributor entry point first, start with [Contributing](contibuting.md) and then come back here for the agent workflow.
+
 The practical goal is a closed loop:
 
 ```mermaid
