@@ -47,7 +47,7 @@ screen -S mcc
 
 # Detach from the screen by pressing CTRL + A + D
 
-# Re-attach if you want to have accces again
+# Re-attach if you want access again
 screen -r mcc
 ```
 
@@ -59,9 +59,13 @@ See [Run using Docker](./installation.md#using-docker)
 
 ## Command-line usage
 
-**Minecraft Console Client** has a plethora of useful command line parameters, here you can learn about them.
+**Minecraft Console Client** has a number of useful command-line parameters. This section covers the most important ones.
 
 ### For people not familiar with the command line
+
+<details>
+<summary>Introduction to command-line basics</summary>
+
 
 For people who are not familiar with the usage of programs in the command line (terminal emulators), here we will explain what every single thing means, if you're already experienced you can skip this.
 
@@ -97,6 +101,10 @@ Here is an example for using a `--help` command line parameter for MCC that will
 MinecraftClient.exe --help
 ```
 
+MCC also supports a few maintenance and debugging switches such as `--upgrade`, `--force-upgrade`, `--generate`, `--keyboard-debug`, `BasicIO`, and `BasicIO-NoColor`.
+
+</details>
+
 ### Quick usage of MCC with examples
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -119,16 +127,16 @@ Examples:
 # Logging in as a user: notch, with a password: password123 onto a server with the ip: mc.someserver.com:25565
 MinecraftClient.exe notch password123 mc.someserver.com:25565
 
-# Overriding a setting from MinecraftClient.ini using a command line parameter
+# Overriding a setting from MinecraftClient.ini using a command-line parameter
 MinecraftClient.exe --debugmessages=false
 
-# Providing a custom settings ini file and overriding a language to Chinese
+# Providing a custom settings file and overriding the language to Chinese
 MinecraftClient.exe CustomSettingsFile.ini --language=zh
 ```
 
 ### Rules of using the command line parameters
 
-You can mix and match arguments by following theses rules:
+You can mix and match arguments by following these rules:
 
 -   First positional argument may be either the login or a settings file
 -   Other positional arguments are read in order: login, password, server, command
@@ -150,7 +158,7 @@ MinecraftClient.exe <login> <password> <server> "/mycommand"
 ```
 
 -   This will automatically send `/mycommand` to the server and close.
--   To send several commands and/or stay connected, use the 1ScriptScheduler1 bot instead.
+-   To send several commands or stay connected, use the `ScriptScheduler` bot instead.
 
 ```bash
 MinecraftClient.exe <myconfig.ini>
@@ -187,7 +195,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 </div>
 
-### `animation`
+<details>
+<summary><code>animation</code></summary>
+
 
 -   **Description:**
 
@@ -199,7 +209,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /animation <mainhand|offhand>
     ```
 
-### `bed`
+</details>
+
+
+<details>
+<summary><code>bed</code></summary>
+
 
 -   **Description:**
 
@@ -235,7 +250,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /bed sleep 50
     ```
 
-### `blockinfo`
+</details>
+
+
+<details>
+<summary><code>blockinfo</code></summary>
+
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -247,7 +267,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Reports the block type at the given position.
 
-    If you use the `-s` option it will report the types of blocks around the targeted blokcs.
+    If you use the `-s` option, it also reports the surrounding block types.
 
 -   **Usage:**
 
@@ -257,7 +277,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /blockinfo <x> <y> <z> [-s]
     ```
 
-### `bots`
+</details>
+
+
+<details>
+<summary><code>bots</code></summary>
+
 
 -   **Description:**
 
@@ -285,7 +310,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /bots unload all
     ```
 
-### `changeslot`
+</details>
+
+
+<details>
+<summary><code>changeslot</code></summary>
+
 
 -   **Description:**
 
@@ -303,7 +333,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /changeslot <1-9>
     ```
 
-### `chunk`
+</details>
+
+
+<details>
+<summary><code>chunk</code></summary>
+
 
 -   **Description:**
 
@@ -331,7 +366,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     ![Chunk status](/images/guide/ChunkStatus.png)
 
-### `dig`
+</details>
+
+
+<details>
+<summary><code>dig</code></summary>
+
 
 -   **Description:**
 
@@ -355,7 +395,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /dig ~ ~-1 ~2
     ```
 
-### `dropitem`
+</details>
+
+
+<details>
+<summary><code>dropitem</code></summary>
+
 
 -   **Description:**
 
@@ -385,7 +430,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /dropitem diamond
     ```
 
-### `enchant`
+</details>
+
+
+<details>
+<summary><code>enchant</code></summary>
+
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -409,7 +459,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /enchant <top|middle|bottom>
     ```
 
-### `entity`
+</details>
+
+
+<details>
+<summary><code>entity</code></summary>
+
 
 -   **Description:**
 
@@ -449,7 +504,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /entity Zombie attack
     ```
 
-### `execif`
+</details>
+
+
+<details>
+<summary><code>execif</code></summary>
+
 
 -   **Description:**
 
@@ -511,7 +571,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /execif "1 == 1" "execmulti send 1 -> send 2 -> send 3"
     ```
 
-### `execmulti`
+</details>
+
+
+<details>
+<summary><code>execmulti</code></summary>
+
 
 -   **Description:**
 
@@ -529,14 +594,24 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /execmulti send 1 -> send 2 -> send 3 -> sneak
     ```
 
-### `quit`
+</details>
+
+
+<details>
+<summary><code>quit</code></summary>
+
 
 -   **Alias:** `exit`
 -   **Description:**
 
     Disconnect from the server and close the application
 
-### `reco`
+</details>
+
+
+<details>
+<summary><code>reco</code></summary>
+
 
 -   **Description:**
 
@@ -554,15 +629,20 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     </div>
 
-### `reload`
+</details>
+
+
+<details>
+<summary><code>reload</code></summary>
+
 
 -   **Description:**
 
-    Reloads settings from MinecraftClient.ini and Chat Bots.
+    Reloads the active configuration file and chat bots.
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
+    **Some settings are not reloaded because they are used before client initialization. Settings passed on the command line also override file values. ReplayCapture is not reloaded due to technical limitations.**
 
     </div>
 
@@ -572,7 +652,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /reload
     ```
 
-### `connect`
+</details>
+
+
+<details>
+<summary><code>connect</code></summary>
+
 
 -   **Description:**
 
@@ -596,7 +681,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     </div>
 
-### `script`
+</details>
+
+
+<details>
+<summary><code>script</code></summary>
+
 
 -   **Description:**
 
@@ -608,7 +698,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /script <script name>
     ```
 
-### `send`
+</details>
+
+
+<details>
+<summary><code>send</code></summary>
+
 
 -   **Description:**
 
@@ -620,7 +715,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /send <text>
     ```
 
-### `respawn`
+</details>
+
+
+<details>
+<summary><code>respawn</code></summary>
+
 
 -   **Description:**
 
@@ -632,7 +732,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /respawn
     ```
 
-### `log`
+</details>
+
+
+<details>
+<summary><code>log</code></summary>
+
 
 -   **Description:**
 
@@ -650,7 +755,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /log this is some text
     ```
 
-### `list`
+</details>
+
+
+<details>
+<summary><code>list</code></summary>
+
 
 -   **Description:**
 
@@ -662,7 +772,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /list
     ```
 
-### `set`
+</details>
+
+
+<details>
+<summary><code>set</code></summary>
+
 
 -   **Description:**
 
@@ -680,7 +795,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /set abc=123
     ```
 
-### `setrnd`
+</details>
+
+
+<details>
+<summary><code>setrnd</code></summary>
+
 
 -   **Description:**
 
@@ -700,7 +820,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     (Set a `%variable%` to a number from -7 to 10)
 
-### `sneak`
+</details>
+
+
+<details>
+<summary><code>sneak</code></summary>
+
 
 -   **Description:**
 
@@ -712,7 +837,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /Sneak
     ```
 
-### `tps`
+</details>
+
+
+<details>
+<summary><code>tps</code></summary>
+
 
 -   **Description:**
 
@@ -724,7 +854,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /tps
     ```
 
-### `useitem`
+</details>
+
+
+<details>
+<summary><code>useitem</code></summary>
+
 
 -   **Description:**
 
@@ -748,7 +883,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /useitem
     ```
 
-### `useblock`
+</details>
+
+
+<details>
+<summary><code>useblock</code></summary>
+
 
 -   **Description:**
 
@@ -792,7 +932,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /useblock 43 72 7
     ```
 
-### `follow`
+</details>
+
+
+<details>
+<summary><code>follow</code></summary>
+
 
 -   **Description:**
 
@@ -800,7 +945,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This command is avaliable only with [Follow Player](chat-bots.md#follow-player) Chat Bot enabled.**
+    **This command is available only when the [Follow Player](chat-bots.md#follow-player) chat bot is enabled.**
 
     </div>
 
@@ -828,7 +973,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /follow milutinke
     ```
 
-### `wait`
+</details>
+
+
+<details>
+<summary><code>wait</code></summary>
+
 
 -   **Description:**
 
@@ -868,7 +1018,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /wait 20-35
     ```
 
-### `move`
+</details>
+
+
+<details>
+<summary><code>move</code></summary>
+
 
 -   **Description:**
 
@@ -912,7 +1067,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /move center
     ```
 
-### `nameitem`
+</details>
+
+
+<details>
+<summary><code>nameitem</code></summary>
+
 
 -   **Description:**
 
@@ -957,7 +1117,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /inventory container close
     ```
 
-### `look`
+</details>
+
+
+<details>
+<summary><code>look</code></summary>
+
 
 -   **Description:**
 
@@ -979,7 +1144,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /look east
     ```
 
-### `inventory`
+</details>
+
+
+<details>
+<summary><code>inventory</code></summary>
+
 
 -   **Description:**
 
@@ -1164,13 +1334,23 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /inventory s SlimeBlock 10
     ```
 
-### `debug`
+</details>
+
+
+<details>
+<summary><code>debug</code></summary>
+
 
 -   **Description:**
 
     Toggle debug messages, useful for chatbot developers.
 
-### `help`
+</details>
+
+
+<details>
+<summary><code>help</code></summary>
+
 
 -   **Description:**
 
@@ -1181,3 +1361,6 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     **Use "/send /help" for server help**
 
     </div>
+
+</details>
+

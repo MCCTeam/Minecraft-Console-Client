@@ -116,6 +116,12 @@ namespace MinecraftClient.ChatBots
                     public bool Enable = false;
                     public TimeSpan[] Times;
 
+                    public TriggerOnTimeConfig()
+                    {
+                        Enable = false;
+                        Times = Array.Empty<TimeSpan>();
+                    }
+
                     public TriggerOnTimeConfig(bool Enable, TimeSpan[] Time)
                     {
                         this.Enable = Enable;
@@ -133,6 +139,13 @@ namespace MinecraftClient.ChatBots
                 {
                     public bool Enable = false;
                     public double MinTime, MaxTime;
+
+                    public TriggerOnIntervalConfig()
+                    {
+                        Enable = false;
+                        MinTime = 0;
+                        MaxTime = 0;
+                    }
 
                     public TriggerOnIntervalConfig(double value)
                     {

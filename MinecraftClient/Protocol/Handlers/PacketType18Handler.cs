@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -48,8 +48,13 @@ namespace MinecraftClient.Protocol.Handlers
         {
             PacketTypePalette p = protocol switch
             {
-                > Protocol18Handler.MC_1_20_4_Version => throw new NotImplementedException(Translations
+                > Protocol18Handler.MC_26_1_Version => throw new NotImplementedException(Translations
                     .exception_palette_packet),
+                >= Protocol18Handler.MC_26_1_Version => new PacketPalette261(),
+                <= Protocol18Handler.MC_1_21_11_Version and > Protocol18Handler.MC_1_21_7_Version => new PacketPalette1219(),
+                <= Protocol18Handler.MC_1_21_7_Version and > Protocol18Handler.MC_1_21_5_Version => new PacketPalette1216(),
+                <= Protocol18Handler.MC_1_21_5_Version and > Protocol18Handler.MC_1_21_4_Version => new PacketPalette1215(),
+                <= Protocol18Handler.MC_1_21_4_Version and > Protocol18Handler.MC_1_21_2_Version => new PacketPalette1214(),
                 <= Protocol18Handler.MC_1_8_Version => new PacketPalette17(),
                 <= Protocol18Handler.MC_1_11_2_Version => new PacketPalette110(),
                 <= Protocol18Handler.MC_1_12_Version => new PacketPalette112(),
@@ -67,7 +72,10 @@ namespace MinecraftClient.Protocol.Handlers
                 <= Protocol18Handler.MC_1_19_4_Version => new PacketPalette1194(),
                 <= Protocol18Handler.MC_1_20_Version => new PacketPalette1194(),
                 <= Protocol18Handler.MC_1_20_2_Version => new PacketPalette1202(),
-                _ => new PacketPalette1204()
+                <= Protocol18Handler.MC_1_20_4_Version => new PacketPalette1204(),
+                <= Protocol18Handler.MC_1_20_6_Version => new PacketPalette1206(),
+                <= Protocol18Handler.MC_1_21_Version => new PacketPalette121(),
+                _ => new PacketPalette1212()
             };
 
             p.SetForgeEnabled(forgeEnabled);

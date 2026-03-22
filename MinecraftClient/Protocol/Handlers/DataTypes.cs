@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -6,6 +6,8 @@ using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Protocol.Handlers.StructuredComponents;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -13,7 +15,7 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Handle data types encoding / decoding
     /// </summary>
-    class DataTypes
+    public class DataTypes
     {
         /// <summary>
         /// Protocol version for adjusting data types
@@ -419,37 +421,90 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The item that was read or NULL for an empty slot</returns>
         public Item? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
-            // MC 1.13.2 and greater
-            if (protocolversion >= Protocol18Handler.MC_1_13_Version)
+            var itemId = -1;
+            var itemCount = 0;
+            var nbt = null as Dictionary<string, object>;
+            var item = null as Item;
+            var strcturedComponentsToAdd = new List<StructuredComponent>();
+            
+            switch (protocolversion)
             {
-                var itemPresent = ReadNextBool(cache);
+                // MC 1.13.2 and greater
+                case >= Protocol18Handler.MC_1_20_6_Version:
+                    itemCount = ReadNextVarInt(cache);
 
-                if (!itemPresent)
-                    return null;
+                    if (itemCount <= 0) return null;
+                    
+                    itemId = ReadNextVarInt(cache);
+                    item = new Item(itemPalette.FromId(itemId), itemCount, null);
+                        
+                    var numberOfComponentsToAdd = ReadNextVarInt(cache);
+                    var numberofComponentsToRemove = ReadNextVarInt(cache);
 
-                var itemId = ReadNextVarInt(cache);
+                    for (var i = 0; i < numberOfComponentsToAdd; i++)
+                    {
+                        var componentTypeId = ReadNextVarInt(cache);
 
-                if (itemId == -1)
-                    return null;
+                        var strcuturedComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
+                        strcturedComponentsToAdd.Add(strcuturedComponentHandler.Parse(componentTypeId, cache));
+                    }
 
-                var type = itemPalette.FromId(itemId);
-                var itemCount = ReadNextByte(cache);
-                var nbt = ReadNextNbt(cache);
-                return new Item(type, itemCount, nbt);
+                    for (var i = 0; i < numberofComponentsToRemove; i++)
+                        ReadNextVarInt(cache);
+
+                    if (strcturedComponentsToAdd.Count > 0)
+                        item.Components = strcturedComponentsToAdd;
+
+                    return item;
+                case >= Protocol18Handler.MC_1_13_Version:
+                {
+                    var itemPresent = ReadNextBool(cache);
+
+                    if (!itemPresent)
+                        return null;
+
+                    itemId = ReadNextVarInt(cache);
+
+                    if (itemId == -1)
+                        return null;
+
+                    var type = itemPalette.FromId(itemId); 
+                    itemCount = ReadNextByte(cache); 
+                    nbt = ReadNextNbt(cache);
+                    return new Item(type, itemCount, nbt);
+                }
+                default:
+                {
+                    itemId = ReadNextShort(cache);
+
+                    if (itemId == -1)
+                        return null;
+
+                    itemCount = ReadNextByte(cache);
+                    var data = ReadNextShort(cache); 
+                    nbt = ReadNextNbt(cache);
+
+                    // For 1.8 - 1.12.2 we combine Item Id and Item Data/Damage to a single value using: (id << 16) | data
+                    return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
+                }
             }
-            else
+        }
+
+        private void ReadNextDetail(Queue<byte> cache)
+        {
+            var potionEffectId = ReadNextVarInt(cache);
+                                        
+            // Details
+            var potionEffectAmplifier = ReadNextVarInt(cache);
+            var duration = ReadNextVarInt(cache); // -1 for infinite
+            var ambient = ReadNextBool(cache);
+            var showParticles = ReadNextBool(cache);
+            var showIcon = ReadNextBool(cache);
+            var hasHiddenEffect = ReadNextBool(cache);
+
+            if (hasHiddenEffect)
             {
-                var itemId = ReadNextShort(cache);
-
-                if (itemId == -1)
-                    return null;
-
-                var itemCount = ReadNextByte(cache);
-                var data = ReadNextShort(cache);
-                var nbt = ReadNextNbt(cache);
-
-                // For 1.8 - 1.12.2 we combine Item Id and Item Data/Damage to a single value using: (id << 16) | data
-                return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
+                ReadNextDetail(cache);
             }
         }
 
@@ -504,11 +559,32 @@ namespace MinecraftClient.Protocol.Handlers
             int data = -1;
             byte entityPitch, entityYaw;
 
-            if (living)
+            if (protocolversion >= Protocol18Handler.MC_1_21_9_Version)
+            {
+                // 1.21.9+: LpVec3 movement before angles, unified format
+                ReadNextLpVec3(cache);                  // Movement (LpVec3)
+                entityPitch = ReadNextByte(cache);      // xRot
+                entityYaw = ReadNextByte(cache);        // yRot
+                ReadNextByte(cache);                    // yHeadRot
+                data = ReadNextVarInt(cache);            // Data
+            }
+            else if (living)
             {
                 entityYaw = ReadNextByte(cache); // Yaw
                 entityPitch = ReadNextByte(cache); // Pitch
                 entityPitch = ReadNextByte(cache); // Head Pitch
+
+                // Velocity (3 shorts)
+                if (protocolversion < Protocol18Handler.MC_1_9_Version)
+                {
+                    // no velocity for living entities in <1.9
+                }
+                else
+                {
+                    ReadNextShort(cache);
+                    ReadNextShort(cache);
+                    ReadNextShort(cache);
+                }
             }
             else
             {
@@ -522,23 +598,23 @@ namespace MinecraftClient.Protocol.Handlers
                 data = protocolversion >= Protocol18Handler.MC_1_19_Version
                     ? ReadNextVarInt(cache)
                     : ReadNextInt(cache);
-            }
 
-            // In 1.8 those 3 fields for Velocity are optional
-            if (protocolversion < Protocol18Handler.MC_1_9_Version)
-            {
-                if (data != 0)
+                // Velocity (3 shorts)
+                if (protocolversion < Protocol18Handler.MC_1_9_Version)
+                {
+                    if (data != 0)
+                    {
+                        ReadNextShort(cache);
+                        ReadNextShort(cache);
+                        ReadNextShort(cache);
+                    }
+                }
+                else
                 {
                     ReadNextShort(cache);
                     ReadNextShort(cache);
                     ReadNextShort(cache);
                 }
-            }
-            else
-            {
-                ReadNextShort(cache);
-                ReadNextShort(cache);
-                ReadNextShort(cache);
             }
 
             return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
@@ -674,188 +750,298 @@ namespace MinecraftClient.Protocol.Handlers
         public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette,
             EntityMetadataPalette metadataPalette)
         {
-            Dictionary<int, object?> data = new();
-            byte key = ReadNextByte(cache);
-            byte terminteValue = protocolversion <= Protocol18Handler.MC_1_8_Version
-                ? (byte)0x7f // 1.8 (https://wiki.vg/index.php?title=Entity_metadata&oldid=6220#Entity_Metadata_Format)
-                : (byte)0xff; // 1.9+
-
-            while (key != terminteValue)
+            try
             {
-                int typeId = protocolversion <= Protocol18Handler.MC_1_8_Version
-                    ? key >> 5 // 1.8
-                    : ReadNextVarInt(cache); // 1.9+
+                Dictionary<int, object?> data = new();
+                byte key = ReadNextByte(cache);
+                byte terminteValue = protocolversion <= Protocol18Handler.MC_1_8_Version
+                    ? (byte)0x7f // 1.8 (https://wiki.vg/index.php?title=Entity_metadata&oldid=6220#Entity_Metadata_Format)
+                    : (byte)0xff; // 1.9+
 
-                EntityMetaDataType type;
-                try
+                while (key != terminteValue)
                 {
-                    type = metadataPalette.GetDataType(typeId);
-                }
-                catch (KeyNotFoundException)
-                {
-                    throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId +
-                                                             ". Is this up to date for new MC Version?");
-                }
+                    int typeId = protocolversion <= Protocol18Handler.MC_1_8_Version
+                        ? key >> 5 // 1.8
+                        : ReadNextVarInt(cache); // 1.9+
 
-                if (protocolversion <= Protocol18Handler.MC_1_8_Version)
-                    key = (byte)(key & 0x1f);
+                    EntityMetaDataType type;
+                    try
+                    {
+                        type = metadataPalette.GetDataType(typeId);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + typeId +
+                                                                 ". Is this up to date for new MC Version?");
+                    }
 
-                // Value's data type is depended on Type
-                object? value = null;
+                    if (protocolversion <= Protocol18Handler.MC_1_8_Version)
+                        key = (byte)(key & 0x1f);
 
-                switch (type)
-                {
-                    case EntityMetaDataType.Short: // 1.8 only
-                        value = ReadNextShort(cache);
-                        break;
-                    case EntityMetaDataType.Int: // 1.8 only
-                        value = ReadNextInt(cache);
-                        break;
-                    case EntityMetaDataType.Vector3Int: // 1.8 only
-                        value = new List<int>()
-                        {
-                            ReadNextInt(cache),
-                            ReadNextInt(cache),
-                            ReadNextInt(cache),
-                        };
-                        break;
-                    case EntityMetaDataType.Byte: // byte
-                        value = ReadNextByte(cache);
-                        break;
-                    case EntityMetaDataType.VarInt: // VarInt
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.VarLong: // Long
-                        value = ReadNextVarLong(cache);
-                        break;
-                    case EntityMetaDataType.Float: // Float
-                        value = ReadNextFloat(cache);
-                        break;
-                    case EntityMetaDataType.String: // String
-                        value = ReadNextString(cache);
-                        break;
-                    case EntityMetaDataType.Chat: // Chat
-                        value = ReadNextChat(cache);
-                        break;
-                    case EntityMetaDataType.OptionalChat: // Optional Chat
-                        if (ReadNextBool(cache))
-                            value = ReadNextChat(cache);
-                        break;
-                    case EntityMetaDataType.Slot: // Slot
-                        value = ReadNextItemSlot(cache, itemPalette);
-                        break;
-                    case EntityMetaDataType.Boolean: // Boolean
-                        value = ReadNextBool(cache);
-                        break;
-                    case EntityMetaDataType.Rotation: // Rotation (3x floats)
-                        value = new List<float>
-                        {
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache)
-                        };
-                        break;
-                    case EntityMetaDataType.Position: // Position
-                        value = ReadNextLocation(cache);
-                        break;
-                    case EntityMetaDataType.OptionalPosition: // Optional Position
-                        if (ReadNextBool(cache))
-                        {
-                            value = ReadNextLocation(cache);
-                        }
+                    // Value's data type is depended on Type
+                    object? value = null;
 
-                        break;
-                    case EntityMetaDataType.Direction: // Direction (VarInt)
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.OptionalUuid: // Optional UUID
-                        if (ReadNextBool(cache))
-                        {
-                            value = ReadNextUUID(cache);
-                        }
-
-                        break;
-                    case EntityMetaDataType.BlockId: // BlockID (VarInt)
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.OptionalBlockId: // Optional BlockID (VarInt)
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.Nbt: // NBT
-                        value = ReadNextNbt(cache);
-                        break;
-                    case EntityMetaDataType.Particle: // Particle
-                        // Skip data only, not used
-                        ReadParticleData(cache, itemPalette);
-                        break;
-                    case EntityMetaDataType.VillagerData: // Villager Data (3x VarInt)
-                        value = new List<int>
-                        {
-                            ReadNextVarInt(cache),
-                            ReadNextVarInt(cache),
-                            ReadNextVarInt(cache)
-                        };
-                        break;
-                    case EntityMetaDataType.OptionalVarInt: // Optional VarInt
-                        if (ReadNextBool(cache))
-                        {
+                    switch (type)
+                    {
+                        case EntityMetaDataType.Short: // 1.8 only
+                            value = ReadNextShort(cache);
+                            break;
+                        case EntityMetaDataType.Int: // 1.8 only
+                            value = ReadNextInt(cache);
+                            break;
+                        case EntityMetaDataType.Vector3Int: // 1.8 only
+                            value = new List<int>()
+                            {
+                                ReadNextInt(cache),
+                                ReadNextInt(cache),
+                                ReadNextInt(cache),
+                            };
+                            break;
+                        case EntityMetaDataType.Byte: // byte
+                            value = ReadNextByte(cache);
+                            break;
+                        case EntityMetaDataType.VarInt: // VarInt
                             value = ReadNextVarInt(cache);
-                        }
+                            break;
+                        case EntityMetaDataType.VarLong: // Long
+                            value = ReadNextVarLong(cache);
+                            break;
+                        case EntityMetaDataType.Float: // Float
+                            value = ReadNextFloat(cache);
+                            break;
+                        case EntityMetaDataType.String: // String
+                            value = ReadNextString(cache);
+                            break;
+                        case EntityMetaDataType.Chat: // Chat
+                            value = ReadNextChat(cache);
+                            break;
+                        case EntityMetaDataType.OptionalChat: // Optional Chat
+                            if (ReadNextBool(cache))
+                                value = ReadNextChat(cache);
+                            break;
+                        case EntityMetaDataType.Slot: // Slot
+                            value = ReadNextItemSlot(cache, itemPalette);
+                            break;
+                        case EntityMetaDataType.Boolean: // Boolean
+                            value = ReadNextBool(cache);
+                            break;
+                        case EntityMetaDataType.Rotation: // Rotation (3x floats)
+                            value = new List<float>
+                            {
+                                ReadNextFloat(cache),
+                                ReadNextFloat(cache),
+                                ReadNextFloat(cache)
+                            };
+                            break;
+                        case EntityMetaDataType.Position: // Position
+                            value = ReadNextLocation(cache);
+                            break;
+                        case EntityMetaDataType.OptionalPosition: // Optional Position
+                            if (ReadNextBool(cache))
+                            {
+                                value = ReadNextLocation(cache);
+                            }
 
-                        break;
-                    case EntityMetaDataType.Pose: // Pose
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.CatVariant: // Cat Variant
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.FrogVariant: // Frog Varint
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.GlobalPosition: // GlobalPos
-                        // Dimension and blockPos, currently not in use
-                        value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
-                        break;
-                    case EntityMetaDataType.OptionalGlobalPosition:
-                        // FIXME: wiki.vg is bool + string + location
-                        //        but minecraft-data is bool + string
-                        if (ReadNextBool(cache))
-                        {
+                            break;
+                        case EntityMetaDataType.Direction: // Direction (VarInt)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.OptionalUuid: // Optional UUID
+                        case EntityMetaDataType.OptionalLivingEntityReference: // Optional Living Entity Reference (1.21.5+, same wire format)
+                            if (ReadNextBool(cache))
+                            {
+                                value = ReadNextUUID(cache);
+                            }
+
+                            break;
+                        case EntityMetaDataType.BlockId: // BlockID (VarInt)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.OptionalBlockId: // Optional BlockID (VarInt)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.Nbt: // NBT
+                            value = ReadNextNbt(cache);
+                            break;
+                        case EntityMetaDataType.Particle: // Particle
+                            ReadParticleData(cache, itemPalette);
+                            break;
+                        case EntityMetaDataType.Particles: // List of Particle (1.20.6+)
+                            int particleCount = ReadNextVarInt(cache);
+                            for (int i = 0; i < particleCount; i++)
+                                ReadParticleData(cache, itemPalette);
+                            break;
+                        case EntityMetaDataType.VillagerData: // Villager Data (3x VarInt)
+                            value = new List<int>
+                            {
+                                ReadNextVarInt(cache),
+                                ReadNextVarInt(cache),
+                                ReadNextVarInt(cache)
+                            };
+                            break;
+                        case EntityMetaDataType.OptionalVarInt: // Optional VarInt
+
+                            if (protocolversion < Protocol18Handler.MC_1_20_6_Version)
+                            {
+                                if (ReadNextBool(cache))
+                                    value = ReadNextVarInt(cache);
+                            }
+                            else value = ReadNextVarInt(cache);
+
+                            break;
+                        case EntityMetaDataType.Pose: // Pose
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.CatVariant: // Cat Variant
+                        case EntityMetaDataType.CatSoundVariant: // Cat Sound Variant (26.1+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.CowVariant: // Cow Variant (1.21.5+)
+                        case EntityMetaDataType.CowSoundVariant: // Cow Sound Variant (26.1+)
+                        case EntityMetaDataType.WolfVariant: // Wolf Variant (1.20.6+)
+                        case EntityMetaDataType.WolfSoundVariant: // Wolf Sound Variant (1.21.5+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.FrogVariant: // Frog Variant
+                        case EntityMetaDataType.PigVariant: // Pig Variant (1.21.5+)
+                        case EntityMetaDataType.PigSoundVariant: // Pig Sound Variant (26.1+)
+                        case EntityMetaDataType.ChickenVariant: // Chicken Variant (1.21.5+)
+                        case EntityMetaDataType.ChickenSoundVariant: // Chicken Sound Variant (26.1+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.GlobalPosition: // GlobalPos
                             // Dimension and blockPos, currently not in use
                             value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
-                        }
+                            break;
+                        case EntityMetaDataType.OptionalGlobalPosition:
+                            // FIXME: wiki.vg is bool + string + location
+                            //        but minecraft-data is bool + string
+                            if (ReadNextBool(cache))
+                            {
+                                // Dimension and blockPos, currently not in use
+                                value = new Tuple<string, Location>(ReadNextString(cache), ReadNextLocation(cache));
+                            }
 
-                        break;
-                    case EntityMetaDataType.PaintingVariant: // Painting Variant
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.SnifferState: // Sniffer state
-                        value = ReadNextVarInt(cache);
-                        break;
-                    case EntityMetaDataType.Vector3: // Vector 3f
-                        value = new List<float>
-                        {
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache)
-                        };
-                        break;
-                    case EntityMetaDataType.Quaternion: // Quaternion
-                        value = new List<float>
-                        {
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache),
-                            ReadNextFloat(cache)
-                        };
-                        break;
+                            break;
+                        case EntityMetaDataType.PaintingVariant: // Painting Variant
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.SnifferState: // Sniffer state
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.ArmadilloState: // Armadillo state (1.20.6+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.CopperGolemState: // Copper Golem state (1.21.9+)
+                        case EntityMetaDataType.WeatheringCopperState: // Weathering Copper state (1.21.9+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.ZombieNautilusVariant: // ZombieNautilus Variant (1.21.11+)
+                        case EntityMetaDataType.HumanoidArm: // Humanoid Arm (1.21.11+)
+                            value = ReadNextVarInt(cache);
+                            break;
+                        case EntityMetaDataType.ResolvableProfile: // ResolvableProfile (1.21.9+)
+                            ReadNextResolvableProfile(cache);
+                            break;
+                        case EntityMetaDataType.Vector3: // Vector 3f
+                            value = new List<float>
+                            {
+                                ReadNextFloat(cache),
+                                ReadNextFloat(cache),
+                                ReadNextFloat(cache)
+                            };
+                            break;
+                        case EntityMetaDataType.Quaternion: // Quaternion
+                            value = new List<float>
+                            {
+                                ReadNextFloat(cache),
+                                ReadNextFloat(cache),
+                                ReadNextFloat(cache),
+                                ReadNextFloat(cache)
+                            };
+                            break;
+                    }
+
+                    data[key] = value;
+                    key = ReadNextByte(cache);
                 }
 
-                data[key] = value;
-                key = ReadNextByte(cache);
+                return data;
+            }
+            catch(Exception ex)
+            {
+                return new Dictionary<int, object?>();
+            }
+        }
+
+        /// <summary>
+        /// Read an LpVec3 (low-precision vec3) from the cache (1.21.9+).
+        /// Variable-length encoding: first byte 0 = zero vector; otherwise
+        /// 2 bytes + 4 bytes (6 total), plus an optional VarInt continuation.
+        /// </summary>
+        public void ReadNextLpVec3(Queue<byte> cache)
+        {
+            int first = ReadNextByte(cache);
+            if (first == 0)
+                return;
+            ReadNextByte(cache);        // second byte
+            ReadData(4, cache);         // uint32
+            if ((first & 4) == 4)       // continuation bit set
+                ReadNextVarInt(cache);
+        }
+
+        /// <summary>
+        /// Consume bytes for a ResolvableProfile (1.21.9+).
+        /// Wire: Either(GameProfile, Partial) + PlayerSkin.Patch
+        /// </summary>
+        private void ReadNextResolvableProfile(Queue<byte> cache)
+        {
+            bool isFullProfile = ReadNextBool(cache); // Either flag: true=GameProfile, false=Partial
+            if (isFullProfile)
+            {
+                ReadNextUUID(cache);            // UUID
+                ReadNextString(cache);          // player name (max 16 chars)
+                ReadGameProfileProperties(cache);
+            }
+            else
+            {
+                // Partial: optional name, optional UUID, properties
+                if (ReadNextBool(cache))
+                    ReadNextString(cache);      // optional player name
+                if (ReadNextBool(cache))
+                    ReadNextUUID(cache);        // optional UUID
+                ReadGameProfileProperties(cache);
             }
 
-            return data;
+            // PlayerSkin.Patch: 4 optional fields
+            // body (optional ResourceLocation string)
+            if (ReadNextBool(cache))
+                ReadNextString(cache);
+            // cape
+            if (ReadNextBool(cache))
+                ReadNextString(cache);
+            // elytra
+            if (ReadNextBool(cache))
+                ReadNextString(cache);
+            // model (optional bool: true=SLIM, false=WIDE)
+            if (ReadNextBool(cache))
+                ReadNextBool(cache);
+        }
+
+        /// <summary>
+        /// Read GameProfile properties (PropertyMap): VarInt count, then per entry:
+        /// name string, value string, optional signature string.
+        /// </summary>
+        private void ReadGameProfileProperties(Queue<byte> cache)
+        {
+            int count = ReadNextVarInt(cache);
+            for (int i = 0; i < count; i++)
+            {
+                ReadNextString(cache);          // property name
+                ReadNextString(cache);          // property value
+                if (ReadNextBool(cache))        // has signature?
+                    ReadNextString(cache);      // signature
+            }
         }
 
         /// <summary>
@@ -879,15 +1065,21 @@ namespace MinecraftClient.Protocol.Handlers
 
             switch (particleId)
             {
+                case 1: // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // BlockState (minecraft:block)
+                    break;
+                    
                 case 2:
-                    // 1.18 +
+                    // 1.18
                     if (protocolversion > Protocol18Handler.MC_1_17_1_Version)
-                        ReadNextVarInt(cache); // Block state (minecraft:block)
+                        ReadNextVarInt(cache); // Block state (minecraft:block before 1.20.6, minecraft:block_marker in 1.20.6+)
                     break;
                 case 3:
-                    if (protocolversion is < Protocol18Handler.MC_1_17_Version or > Protocol18Handler.MC_1_17_1_Version)
+                    if (protocolversion is (< Protocol18Handler.MC_1_17_Version or > Protocol18Handler.MC_1_17_1_Version) 
+                        and < Protocol18Handler.MC_1_20_6_Version)
                         ReadNextVarInt(
-                            cache); // Block State (minecraft:block before 1.18, minecraft:block_marker after 1.18)
+                            cache); // Block State (minecraft:block before 1.18, minecraft:block_marker after 1.18 up to 1.20.6)
                     break;
                 case 4:
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version)
@@ -898,11 +1090,24 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion < Protocol18Handler.MC_1_15_Version)
                         ReadDustParticle(cache);
                     break;
+                case 13:
+                    // 1.20.6+ - minecraft:dust
+                    ReadDustParticle(cache);
+                    break;
                 case 14:
-                    // 1.15 - 1.16.5 and 1.18 - 1.19.4
-                    if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version
-                        or > Protocol18Handler.MC_1_17_1_Version)
-                        ReadDustParticle(cache);
+                    switch (protocolversion)
+                    {
+                        // 1.15 - 1.16.5 and 1.18 - 1.20.4
+                        case >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version
+                            or > Protocol18Handler.MC_1_17_1_Version and < Protocol18Handler.MC_1_20_6_Version:
+                            ReadDustParticle(cache);
+                            break;
+                        // 1.20.6+
+                        case >= Protocol18Handler.MC_1_20_6_Version:
+                            ReadDustParticleColorTransition(cache);
+                            break;
+                    }
+
                     break;
                 case 15:
                     switch (protocolversion)
@@ -910,7 +1115,8 @@ namespace MinecraftClient.Protocol.Handlers
                         case Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version:
                             ReadDustParticle(cache);
                             break;
-                        case > Protocol18Handler.MC_1_17_1_Version:
+                        // 1.18 - 1.20.4
+                        case > Protocol18Handler.MC_1_17_1_Version and < Protocol18Handler.MC_1_20_6_Version:
                             ReadDustParticleColorTransition(cache);
                             break;
                     }
@@ -920,21 +1126,26 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version)
                         ReadDustParticleColorTransition(cache);
                     break;
+                case 20:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextInt(cache); // minecraft:entity_effect
+                    break;
                 case 23:
                     // 1.15 - 1.16.5
                     if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 24:
-                    // 1.18 - 1.19.2 onwards
+                    // 1.18 - 1.19.3
                     if (protocolversion is > Protocol18Handler.MC_1_17_1_Version
                         and < Protocol18Handler.MC_1_19_3_Version)
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 25:
-                    // 1.17 - 1.17.1 and 1.19.3 onwards
+                    // 1.17 - 1.17.1 and 1.19.3 - 1.20.4
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version
-                        or >= Protocol18Handler.MC_1_19_3_Version)
+                        or (>= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version))
                         ReadNextVarInt(cache); // Block State (minecraft:falling_dust)
                     break;
                 case 27:
@@ -942,14 +1153,25 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion < Protocol18Handler.MC_1_15_Version)
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                     break;
+                case 28:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // minecraft:falling_dust (BlockState)
+                    break;
                 case 30:
-                    if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                    // 1.19.3 - 1.20.4
+                    if (protocolversion is >= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version)
                         ReadNextFloat(cache); // Roll (minecraft:sculk_charge)
                     break;
                 case 32:
                     // 1.15 - 1.16.5
                     if (protocolversion is >= Protocol18Handler.MC_1_15_Version and < Protocol18Handler.MC_1_17_Version)
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
+                    break;
+                case 35:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextFloat(cache); // minecraft:sculk_charge (Roll)
                     break;
                 case 36:
                     switch (protocolversion)
@@ -958,6 +1180,7 @@ namespace MinecraftClient.Protocol.Handlers
                         case Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version:
                             ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                             break;
+                        // 1.18 - 1.19.2
                         case > Protocol18Handler.MC_1_17_1_Version and < Protocol18Handler.MC_1_19_3_Version:
                             // minecraft:vibration
                             ReadNextLocation(cache); // Origin (Starting Position)
@@ -968,7 +1191,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case 37:
-                    // minecraft:vibration
+                    // minecraft:vibration - 1.17 - 1.17.1
                     if (protocolversion is Protocol18Handler.MC_1_17_Version or Protocol18Handler.MC_1_17_1_Version)
                     {
                         ReadNextDouble(cache); // Origin X
@@ -982,11 +1205,13 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case 39:
-                    if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                    // 1.19.3 - 1.20.4
+                    if (protocolversion is >= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version)
                         ReadNextItemSlot(cache, itemPalette); // Item (minecraft:item)
                     break;
                 case 40:
-                    if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+                    // 1.19.3 - 1.20.4
+                    if (protocolversion is >= Protocol18Handler.MC_1_19_3_Version and < Protocol18Handler.MC_1_20_6_Version)
                     {
                         var positionSourceType = ReadNextString(cache);
                         switch (positionSourceType)
@@ -1004,6 +1229,26 @@ namespace MinecraftClient.Protocol.Handlers
                     }
 
                     break;
+                case 44:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextItemSlot(cache, itemPalette); // minecraft:item (Item)
+                    break;
+                case 45:
+                    // 1.21+
+                    if(protocolversion >= Protocol18Handler.MC_1_21_Version)
+                        ReadVibration(cache);
+                    break;
+                case 99:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // minecraft:shriek (Delay)
+                    break;
+                case 105:
+                    // 1.20.6+
+                    if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                        ReadNextVarInt(cache); // minecraft:dust_pillar (BlockState)
+                    break;
             }
         }
 
@@ -1020,12 +1265,21 @@ namespace MinecraftClient.Protocol.Handlers
             ReadNextFloat(cache); // From red
             ReadNextFloat(cache); // From green
             ReadNextFloat(cache); // From blue
-            ReadNextFloat(cache); // Scale
             ReadNextFloat(cache); // To red
             ReadNextFloat(cache); // To green
-            ReadNextFloat(cache); // To Blue
+            ReadNextFloat(cache); // To blue
+            ReadNextFloat(cache); // Scale
         }
 
+        private void ReadVibration(Queue<byte> cache)
+        {
+            ReadNextVarInt(cache);   // Position Source Type
+            ReadNextLocation(cache); // Block Position
+            ReadNextVarInt(cache);   // Entity ID
+            ReadNextFloat(cache);    // Entity eye height
+            ReadNextVarInt(cache);   // Ticks
+        }
+        
         /// <summary>
         /// Read a single villager trade from a cache of bytes and remove it from the cache
         /// </summary>
@@ -1098,18 +1352,31 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (root)
             {
+                if (protocolversion >= Protocol18Handler.MC_1_20_4_Version
+                    && nbt.Count == 1
+                    && nbt.TryGetValue("", out var rootVal) && rootVal is string rootStr)
+                {
+                    bytes.Add(8); // TAG_String
+                    var strBytes = Encoding.UTF8.GetBytes(rootStr);
+                    bytes.AddRange(GetUShort((ushort)strBytes.Length));
+                    bytes.AddRange(strBytes);
+                    return bytes.ToArray();
+                }
+
                 bytes.Add(10); // TAG_Compound
 
-                // NBT root name
-                string? rootName = null;
+                if (protocolversion < Protocol18Handler.MC_1_20_2_Version)
+                {
+                    string? rootName = null;
 
-                if (nbt.ContainsKey(""))
-                    rootName = nbt[""] as string;
+                    if (nbt.ContainsKey(""))
+                        rootName = nbt[""] as string;
 
-                rootName ??= "";
+                    rootName ??= "";
 
-                bytes.AddRange(GetUShort((ushort)rootName.Length));
-                bytes.AddRange(Encoding.ASCII.GetBytes(rootName));
+                    bytes.AddRange(GetUShort((ushort)rootName.Length));
+                    bytes.AddRange(Encoding.ASCII.GetBytes(rootName));
+                }
             }
 
             foreach (var item in nbt)
@@ -1417,6 +1684,33 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Get a byte array representing the given item as a HashedStack (1.21.5+).
+        /// Used for serverbound container_click where the server expects HashedStack instead of full ItemStack.
+        /// Wire format: Optional&lt;ActualItem&gt; where ActualItem = holderRegistry(item_id) + VarInt(count) + HashedPatchMap.
+        /// Since MCC doesn't track component hashes, we send an empty HashedPatchMap (0 added, 0 removed).
+        /// The server will detect the stateId mismatch and resync.
+        /// </summary>
+        public byte[] GetHashedItemSlot(Item? item, ItemPalette itemPalette)
+        {
+            List<byte> slotData = new();
+
+            if (item == null || item.IsEmpty)
+            {
+                slotData.AddRange(GetBool(false));
+            }
+            else
+            {
+                slotData.AddRange(GetBool(true));
+                slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
+                slotData.AddRange(GetVarInt(item.Count));
+                slotData.AddRange(GetVarInt(0)); // HashedPatchMap: 0 added components
+                slotData.AddRange(GetVarInt(0)); // HashedPatchMap: 0 removed components
+            }
+
+            return slotData.ToArray();
+        }
+
+        /// <summary>
         /// Get a byte array representing the given item as an item slot
         /// </summary>
         /// <param name="item">Item</param>
@@ -1425,14 +1719,43 @@ namespace MinecraftClient.Protocol.Handlers
         public byte[] GetItemSlot(Item? item, ItemPalette itemPalette)
         {
             List<byte> slotData = new();
-            if (protocolversion > Protocol18Handler.MC_1_13_Version)
+
+            if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
             {
-                // MC 1.13 and greater
                 if (item == null || item.IsEmpty)
-                    slotData.AddRange(GetBool(false)); // No item
+                {
+                    slotData.AddRange(GetVarInt(0));
+                }
                 else
                 {
-                    slotData.AddRange(GetBool(true)); // Item is present
+                    slotData.AddRange(GetVarInt(item.Count));
+                    slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
+
+                    if (item.Components != null && item.Components.Count > 0)
+                    {
+                        slotData.AddRange(GetVarInt(item.Components.Count));
+                        slotData.AddRange(GetVarInt(0)); // components to remove
+                        foreach (var component in item.Components)
+                        {
+                            slotData.AddRange(GetVarInt(component.TypeId));
+                            var serialized = component.Serialize();
+                            slotData.AddRange(serialized);
+                        }
+                    }
+                    else
+                    {
+                        slotData.AddRange(GetVarInt(0)); // no components to add
+                        slotData.AddRange(GetVarInt(0)); // no components to remove
+                    }
+                }
+            }
+            else if (protocolversion > Protocol18Handler.MC_1_13_Version)
+            {
+                if (item == null || item.IsEmpty)
+                    slotData.AddRange(GetBool(false));
+                else
+                {
+                    slotData.AddRange(GetBool(true));
                     slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
@@ -1440,13 +1763,10 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                // MC 1.12.2 and lower
                 if (item == null || item.IsEmpty)
                     slotData.AddRange(GetShort(-1));
                 else
                 {
-                    // For 1.8 - 1.12.2 we combine Item Id and Item Data to a single value using: (id << 16) | data
-                    // Thus to get an ID we do a right shift by 16 bits
                     slotData.AddRange(GetShort((short)(itemPalette.ToId(item.Type) >> 16)));
                     slotData.Add((byte)item.Count);
                     slotData.Add((byte)item.Data);

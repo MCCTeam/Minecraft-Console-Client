@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -13,6 +13,7 @@ using MinecraftClient.Commands;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
+using MinecraftClient.Physics;
 using MinecraftClient.Protocol;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
@@ -68,6 +69,10 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
+        private readonly PlayerPhysics playerPhysics = new();
+        private readonly MovementInput physicsInput = new();
+        private bool physicsInitialized = false;
+        private Location? pathTarget; // Current waypoint for physics-driven pathfinding
         public enum MovementType { Sneak, Walk, Sprint }
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
         private bool CanSendMessage = false;
@@ -119,6 +124,9 @@ namespace MinecraftClient
 
         // ChatBot OnNetworkPacket event
         private bool networkPacketCaptureEnabled = false;
+        
+        // Cookies
+        private Dictionary<string, byte[]> Cookies { get; set; } = new();
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -144,9 +152,13 @@ namespace MinecraftClient
         public ILogger GetLogger() { return Log; }
         public int GetPlayerEntityID() { return playerEntityID; }
         public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
+        public void GetCookie(string key, out byte[]? data) => Cookies.TryGetValue(key, out data);
+        public void SetCookie(string key, byte[] data) => Cookies[key] = data;
+        public void DeleteCookie(string key) => Cookies.Remove(key, out var data);
 
-        readonly TcpClient client;
-        readonly IMinecraftCom handler;
+        TcpClient client;
+        IMinecraftCom handler;
+        SessionToken _sessionToken;
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
@@ -182,6 +194,7 @@ namespace MinecraftClient
             this.port = port;
             this.protocolversion = protocolversion;
             this.playerKeyPair = playerKeyPair;
+            _sessionToken = session;
 
             Log = Settings.Config.Logging.LogToFile
                 ? new FileLogLogger(Config.AppVar.ExpandVars(Settings.Config.Logging.LogFile), Settings.Config.Logging.PrependTimestamp)
@@ -317,6 +330,77 @@ namespace MinecraftClient
                 }
             }
         }
+        
+        public void Transfer(string newHost, int newPort)
+        {
+            try
+            {
+                Log.Info($"Initiating a transfer to: {host}:{port}");
+                
+                // Unload bots
+                UnloadAllBots();
+                bots.Clear();
+                
+                // Close existing connection
+                client.Close();
+
+                // Establish new connection
+                client = ProxyHandler.NewTcpClient(newHost, newPort);
+                client.ReceiveBufferSize = 1024 * 1024;
+                client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000;
+
+                // Reinitialize the protocol handler
+                handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, null, this);
+                Log.Info($"Connected to {host}:{port}");
+
+                // Retry login process
+                if (handler.Login(playerKeyPair, _sessionToken))
+                {
+                    foreach (var bot in botsOnHold)
+                        BotLoad(bot, false);
+                    botsOnHold.Clear();
+
+                    Log.Info("Successfully transferred connection and logged in.");
+                    cmdprompt = new CancellationTokenSource();
+                    ConsoleInteractive.ConsoleReader.BeginReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+                }
+                else
+                {
+                    Log.Error("Failed to login to the new host.");
+                    throw new Exception("Login failed after transfer.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Transfer to {newHost}:{newPort} failed: {ex.Message}");
+
+                // Handle reconnection attempts
+                if (timeoutdetector != null)
+                {
+                    timeoutdetector.Item2.Cancel();
+                    timeoutdetector = null;
+                }
+
+                if (ReconnectionAttemptsLeft > 0)
+                {
+                    Log.Info($"Reconnecting... Attempts left: {ReconnectionAttemptsLeft}");
+                    Thread.Sleep(5000);
+                    ReconnectionAttemptsLeft--;
+                    Program.Restart();
+                }
+                else if (InternalConfig.InteractiveMode)
+                {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    Program.HandleFailure();
+                }
+
+                throw new Exception("Transfer failed and reconnection attempts exhausted.");
+            }
+        }
 
         /// <summary>
         /// Register bots
@@ -346,8 +430,8 @@ namespace MinecraftClient
             if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
-            //Add your ChatBot here by uncommenting and adapting
-            //BotLoad(new ChatBots.YourBot());
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MCC_FILE_INPUT")))
+                BotLoad(new FileInputBot());
         }
 
         /// <summary>
@@ -416,33 +500,47 @@ namespace MinecraftClient
             {
                 lock (locationLock)
                 {
-                    for (int i = 0; i < Config.Main.Advanced.MovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    if (!physicsInitialized)
                     {
-                        if (_yaw == null || _pitch == null)
-                        {
-                            if (steps != null && steps.Count > 0)
-                            {
-                                location = steps.Dequeue();
-                            }
-                            else if (path != null && path.Count > 0)
-                            {
-                                Location next = path.Dequeue();
-                                steps = Movement.Move2Steps(location, next, ref motionY);
-
-                                if (Config.Main.Advanced.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
-                                    UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
-                            }
-                            else
-                            {
-                                location = Movement.HandleGravity(world, location, ref motionY);
-                            }
-                        }
-                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
-                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
-                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
+                        BlockShapes.Initialize();
+                        playerPhysics.SetPosition(location.X, location.Y, location.Z);
+                        playerPhysics.Yaw = playerYaw;
+                        playerPhysics.Pitch = playerPitch;
+                        physicsInitialized = true;
                     }
-                    // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
-                    // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
+
+                    // Run 2 physics ticks per OnUpdate call (10 Hz * 2 = 20 TPS)
+                    for (int tick = 0; tick < 2; tick++)
+                    {
+                        // Navigate pathfinding: set input based on current path
+                        UpdatePathfindingInput();
+
+                        // Sync yaw/pitch if explicitly set (by commands/bots)
+                        if (_yaw != null) playerPhysics.Yaw = _yaw.Value;
+                        if (_pitch != null) playerPhysics.Pitch = _pitch.Value;
+
+                        // Update environment flags (water, lava, climbable)
+                        playerPhysics.UpdateEnvironment(world);
+
+                        // Apply movement input
+                        playerPhysics.ApplyInput(physicsInput);
+
+                        // Run one physics tick
+                        playerPhysics.Tick(world);
+
+                        // Sync back to MCC location
+                        location = new Location(
+                            playerPhysics.Position.X,
+                            playerPhysics.Position.Y,
+                            playerPhysics.Position.Z);
+
+                        playerYaw = _yaw ?? playerYaw;
+                        playerPitch = _pitch ?? playerPitch;
+
+                        // Send position packet
+                        handler.SendLocationUpdate(location, playerPhysics.OnGround, _yaw, _pitch);
+                    }
+
                     _yaw = null;
                     _pitch = null;
                 }
@@ -1256,7 +1354,7 @@ namespace MinecraftClient
                 }
                 else
                 {
-                    // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
+                    pathTarget = null;
                     path = Movement.CalculatePath(world, location, goal, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
                     return path != null;
                 }
@@ -1470,7 +1568,7 @@ namespace MinecraftClient
         /// <param name="changedSlots">Record changes</param>
         private static void StoreInNewSlot(Container inventory, Item item, int slotId, int newSlotId, List<Tuple<short, Item?>> changedSlots)
         {
-            Item newItem = new(item.Type, item.Count, item.NBT);
+            Item newItem = item.CloneWithCount(item.Count);
             inventory.Items[newSlotId] = newItem;
             inventory.Items.Remove(slotId);
 
@@ -1593,7 +1691,7 @@ namespace MinecraftClient
                             {
                                 // Drop 1 item count from cursor
                                 Item itemTmp = playerInventory.Items[-1];
-                                Item itemClone = new(itemTmp.Type, 1, itemTmp.NBT);
+                                Item itemClone = itemTmp.CloneWithCount(1);
                                 inventory.Items[slotId] = itemClone;
                                 playerInventory.Items[-1].Count--;
                             }
@@ -1622,14 +1720,14 @@ namespace MinecraftClient
                                     {
                                         // Can be evenly divided
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = itemTmp.CloneWithCount(itemTmp.Count / 2);
                                         inventory.Items[slotId].Count = itemTmp.Count / 2;
                                     }
                                     else
                                     {
                                         // Cannot be evenly divided. item count on cursor is always larger than item on inventory
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = itemTmp.CloneWithCount((itemTmp.Count + 1) / 2);
                                         inventory.Items[slotId].Count = (itemTmp.Count - 1) / 2;
                                     }
                                 }
@@ -2313,10 +2411,19 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to place block to</param>
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
+        /// <param name="lookAtBlock">Also look at the block before interacting</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
+        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand, bool lookAtBlock = false)
         {
-            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++));
+            return InvokeOnMainThread(() =>
+            {
+                if (lookAtBlock)
+                {
+                    UpdateLocation(GetCurrentLocation(), location.ToCenter());
+                    handler.SendLocationUpdate(GetCurrentLocation(), Movement.IsOnGround(world, GetCurrentLocation()), _yaw, _pitch);
+                }
+                return handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++);
+            });
         }
 
 
@@ -2597,6 +2704,87 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Drive the physics engine input based on the current A* path.
+        /// Converts discrete waypoint pathfinding into continuous movement input.
+        /// </summary>
+        private void UpdatePathfindingInput()
+        {
+            physicsInput.Reset();
+
+            // Still heading toward a target (even if path queue is empty)
+            if (pathTarget != null && ReachedWaypoint(pathTarget.Value))
+            {
+                // Arrived at current waypoint — advance to next, or finish
+                if (path != null && path.Count > 0)
+                {
+                    pathTarget = path.Dequeue();
+                    if (Config.Main.Advanced.MoveHeadWhileWalking)
+                        UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
+                }
+                else
+                {
+                    pathTarget = null;
+                    path = null;
+                }
+            }
+
+            // Need a first target from a fresh path
+            if (pathTarget == null && path != null && path.Count > 0)
+            {
+                pathTarget = path.Dequeue();
+                if (Config.Main.Advanced.MoveHeadWhileWalking)
+                    UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
+            }
+
+            if (pathTarget != null)
+            {
+                SetInputToward(pathTarget.Value);
+            }
+        }
+
+        /// <summary>
+        /// Check if the player has approximately reached a waypoint.
+        /// </summary>
+        private bool ReachedWaypoint(Location target)
+        {
+            double dx = target.X - location.X;
+            double dz = target.Z - location.Z;
+            return dx * dx + dz * dz < 0.25; // within ~0.5 blocks horizontally
+        }
+
+        /// <summary>
+        /// Set movement input to walk toward a target location.
+        /// Calculates the yaw needed and sets Forward + Sprint.
+        /// </summary>
+        private void SetInputToward(Location target)
+        {
+            double dx = target.X - location.X;
+            double dz = target.Z - location.Z;
+            double dy = target.Y - location.Y;
+            double distSqr = dx * dx + dz * dz;
+
+            if (distSqr < 0.01) return; // Close enough horizontally
+
+            // Calculate yaw to face target
+            float targetYaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);
+            if (targetYaw < 0) targetYaw += 360;
+            playerPhysics.Yaw = targetYaw;
+            playerYaw = targetYaw;
+
+            physicsInput.Forward = true;
+
+            // Jump if target is above and we're on ground
+            if (dy > 0.5 && playerPhysics.OnGround)
+                physicsInput.Jump = true;
+
+            // Map MovementSpeed setting: 1=sneak, 2-4=walk, 5=sprint
+            if (Config.Main.Advanced.MovementSpeed >= 5)
+                physicsInput.Sprint = true;
+            else if (Config.Main.Advanced.MovementSpeed <= 1)
+                physicsInput.Sneak = true;
+        }
+
+        /// <summary>
         /// Check if the client is currently processing a Movement.
         /// </summary>
         /// <returns>true if a movement is currently handled</returns>
@@ -2664,6 +2852,12 @@ namespace MinecraftClient
                 }
                 else this.location = location;
                 locationReceived = true;
+
+                // Sync physics engine position
+                if (physicsInitialized)
+                {
+                    playerPhysics.Teleport(this.location.X, this.location.Y, this.location.Z);
+                }
             }
         }
 
@@ -2877,27 +3071,27 @@ namespace MinecraftClient
                 // We got the last property for enchantment
                 if (propertyId == 9 && propertyValue != -1)
                 {
-                    short topEnchantmentLevelRequirement = inventory.Properties[0];
-                    short middleEnchantmentLevelRequirement = inventory.Properties[1];
-                    short bottomEnchantmentLevelRequirement = inventory.Properties[2];
+                    var topEnchantmentLevelRequirement = inventory.Properties[0];
+                    var middleEnchantmentLevelRequirement = inventory.Properties[1];
+                    var bottomEnchantmentLevelRequirement = inventory.Properties[2];
 
-                    Enchantment topEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var topEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[4]);
 
-                    Enchantment middleEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var middleEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[5]);
 
-                    Enchantment bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
+                    var bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
                         inventory.Properties[6]);
 
-                    short topEnchantmentLevel = inventory.Properties[7];
-                    short middleEnchantmentLevel = inventory.Properties[8];
-                    short bottomEnchantmentLevel = inventory.Properties[9];
+                    var topEnchantmentLevel = inventory.Properties[7];
+                    var middleEnchantmentLevel = inventory.Properties[8];
+                    var bottomEnchantmentLevel = inventory.Properties[9];
 
-                    StringBuilder sb = new();
+                    var sb = new StringBuilder();
 
                     sb.AppendLine(Translations.Enchantment_enchantments_available + ":");
 

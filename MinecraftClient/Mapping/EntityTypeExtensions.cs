@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Mapping
+namespace MinecraftClient.Mapping
 {
     public static class EntityTypeExtensions
     {
@@ -110,6 +110,8 @@
                 case EntityType.Egg:
                 case EntityType.EnderPearl:
                 case EntityType.Potion:
+                case EntityType.SplashPotion:
+                case EntityType.LingeringPotion:
                 case EntityType.Fireball:
                 case EntityType.FireworkRocket:
                     return true;

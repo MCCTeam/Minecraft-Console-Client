@@ -2,24 +2,34 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MessagePack;
 using MinecraftClient.Scripting;
 using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol.Session
 {
     [Serializable]
+    [MessagePackObject]
     public class SessionToken
     {
         private static readonly Regex JwtRegex = new("^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$");
 
+        [Key(0)]
         public string ID { get; set; }
+        [Key(1)]
         public string PlayerName { get; set; }
+        [Key(2)]
         public string PlayerID { get; set; }
+        [Key(3)]
         public string ClientID { get; set; }
+        [Key(4)]
         public string RefreshToken { get; set; }
+        [Key(5)]
         public string ServerIDhash { get; set; }
+        [Key(6)]
         public byte[]? ServerPublicKey { get; set; }
-
+        
+        [IgnoreMember]
         public Task<bool>? SessionPreCheckTask = null;
 
         public SessionToken()

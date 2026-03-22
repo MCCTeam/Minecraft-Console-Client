@@ -17,7 +17,6 @@ redirectFrom:
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Recently we have changed the configuration format from INI to TOML, this part of the documentation has only been partially updated, it's work in progress, for the time being please refer to the `MinecraftClient.ini` for setting names, the descriptions and options should be up to date in most cases, but not guaranteed.**
 
 </div>
 
@@ -29,30 +28,32 @@ redirectFrom:
 
 ## List of built-in Chat Bots
 
--   [Alerts](#alerts)
--   [Anti AFK](#anti-afk)
--   [Auto Attack](#auto-attack)
--   [Auto Craft](#auto-craft)
--   [Auto Dig](#auto-dig)
--   [Auto Drop](#auto-drop)
--   [Auto Eat](#auto-eat)
--   [Auto Fishing](#auto-fishing)
--   [Auto Relog](#auto-relog)
--   [Auto Respond](#auto-respond)
--   [Chat Log](#chat-log)
--   [Discord Bridge](#discord-bridge)
--   [Farmer](#farmer)
--   [Follow Player](#follow-player)
--   [Hangman](#hangman)
--   [Mailer](#mailer)
--   [Map](#map)
--   [PlayerList Logger](#playerlist-logger)
--   [Remote Control](#remote-control)
--   [Replay Mod](#replay-mod)
--   [Script Scheduler](#script-scheduler)
--   [Telegram Bridge](#telegram-bridge)
--   [Items Collector](#items-collector)
--   [WebSocket](#websocket-chat-bot)
+- [Chat Bots](#chat-bots)
+  - [About](#about)
+  - [List of built-in Chat Bots](#list-of-built-in-chat-bots)
+  - [Alerts](#alerts)
+  - [Anti AFK](#anti-afk)
+  - [Auto Attack](#auto-attack)
+  - [Auto Craft](#auto-craft)
+  - [Auto Dig](#auto-dig)
+  - [Auto Drop](#auto-drop)
+  - [Auto Eat](#auto-eat)
+  - [Auto Fishing](#auto-fishing)
+  - [Auto Relog](#auto-relog)
+  - [Auto Respond](#auto-respond)
+  - [Chat Log](#chat-log)
+  - [Discord Bridge](#discord-bridge)
+  - [Farmer](#farmer)
+  - [Follow player](#follow-player)
+  - [Hangman](#hangman)
+  - [Mailer](#mailer)
+  - [Map](#map)
+  - [PlayerList Logger](#playerlist-logger)
+  - [Remote Control](#remote-control)
+  - [Replay Capture](#replay-capture)
+  - [Script Scheduler](#script-scheduler)
+  - [Telegram Bridge](#telegram-bridge)
+  - [Items Collector](#items-collector)
 
 ## Alerts
 
@@ -65,6 +66,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.Alerts`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -180,6 +184,9 @@ redirectFrom:
         Excludes = [ "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is", ]
         ```
 
+
+    </details>
+
 ## Anti AFK
 
 -   **Description:**
@@ -189,6 +196,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AntiAFK`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -280,6 +290,9 @@ redirectFrom:
 
     -   **Default:** `20`
 
+
+    </details>
+
 ## Auto Attack
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -295,6 +308,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoAttack`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -347,7 +363,7 @@ redirectFrom:
 
         To enable it, set `Custom` (boolean) to `true` and change `value` (double) to your preferred value (eg. `1.5`).
 
-        By the default, this is disabled and the MCC calculates it based on the server TPS.
+        By default, this is disabled and MCC calculates it based on the server TPS.
 
     -   **Format:** `Cooldown_Time = { Custom = <is enabled (true|false)>, value = <seconds (double)> }`
 
@@ -431,6 +447,9 @@ redirectFrom:
 
     -   **Default:** `[ "Zombie", "Cow", ]`
 
+
+    </details>
+
 ## Auto Craft
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -464,6 +483,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoCraft`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -608,6 +630,9 @@ redirectFrom:
 
     </div>
 
+
+    </details>
+
 ## Auto Dig
 
 -   **Description:**
@@ -635,6 +660,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoDig`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -779,6 +807,9 @@ redirectFrom:
 
     -   **Default:** `[ "Cobblestone", "Stone", ]`
 
+
+    </details>
+
 ## Auto Drop
 
 -   **Description:**
@@ -794,6 +825,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoDrop`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -854,6 +888,9 @@ redirectFrom:
 
     -   **Default:** `[ "Cobblestone", "Dirt", ]`
 
+
+    </details>
+
 ## Auto Eat
 
 -   **Description:**
@@ -869,6 +906,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoEat`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -891,6 +931,9 @@ redirectFrom:
     -   **Type:** `integer`
 
     -   **Default:** `6`
+
+
+    </details>
 
 ## Auto Fishing
 
@@ -932,6 +975,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoFishing`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1149,6 +1195,9 @@ redirectFrom:
     facing = { yaw = -25.14, pitch = 36.25 }
     ```
 
+
+    </details>
+
 ## Auto Relog
 
 -   **Description:**
@@ -1158,6 +1207,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoRelog`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1225,6 +1277,9 @@ redirectFrom:
 
     -   **Default:** `[ "Connection has been lost", "Server is restarting", "Server is full", "Too Many people", ]`
 
+
+    </details>
+
 ## Auto Respond
 
 -   **Description:**
@@ -1246,6 +1301,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.AutoRespond`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1305,6 +1363,9 @@ redirectFrom:
 
     -   **Default:** `false`
 
+
+    </details>
+
 ## Chat Log
 
 -   **Description:**
@@ -1314,6 +1375,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.ChatLog`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1372,6 +1436,9 @@ redirectFrom:
             Only internal messages and commands.
 
     -   **Default:** `messages`
+
+
+    </details>
 
 ## Discord Bridge
 
@@ -1440,6 +1507,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.DiscordBrdige`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1533,6 +1603,9 @@ redirectFrom:
 
     -   **Default:** `A new Teleport Request from **{username}**!`
 
+
+    </details>
+
 ## Farmer
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -1618,6 +1691,9 @@ redirectFrom:
 
     **Section:** **`ChatBot.Farmer`**
 
+    <details>
+    <summary>All settings</summary>
+
     #### `Enabled`
 
     -   **Description:**
@@ -1642,6 +1718,9 @@ redirectFrom:
 
     -   **Minimum:** `1`
 
+
+    </details>
+
 ## Follow player
 
 -   **Description:**
@@ -1663,6 +1742,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.FollowPlayer`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1698,6 +1780,9 @@ redirectFrom:
 
     -   **Default:** `3.0`
 
+
+    </details>
+
 ## Hangman
 
 -   **Description:**
@@ -1717,6 +1802,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.HangmanGame`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -1767,6 +1855,9 @@ redirectFrom:
 
     -   **Default:** `hangman-fr.txt`
     -   **Example**: [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)
+
+
+    </details>
 
 ## Mailer
 
@@ -1920,6 +2011,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.Map`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2081,6 +2175,9 @@ redirectFrom:
 
     -   **Default:** `false`
 
+
+    </details>
+
 ## PlayerList Logger
 -   **Description:**
 
@@ -2089,6 +2186,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.PlayerListLogger`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2118,6 +2218,9 @@ redirectFrom:
 
     -   **Default:** `60.0`
 
+
+    </details>
+
 ## Remote Control
 
 -   **Description:**
@@ -2135,6 +2238,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.RemoteControl`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2172,6 +2278,9 @@ redirectFrom:
 
     -   **Default:** `false`
 
+
+    </details>
+
 ## Replay Capture
 
 -   **Description:**
@@ -2200,6 +2309,9 @@ redirectFrom:
 
     **Section:** **`ChatBot.ReplayCapture`**
 
+    <details>
+    <summary>All settings</summary>
+
     #### `Enabled`
 
     -   **Description:**
@@ -2224,6 +2336,9 @@ redirectFrom:
 
     -   **Default:** `300.0`
 
+
+    </details>
+
 ## Script Scheduler
 
 -   **Description:**
@@ -2233,6 +2348,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.ScriptScheduler`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2343,6 +2461,9 @@ redirectFrom:
         Action = "send /login pass"
     ```
 
+
+    </details>
+
 ## Telegram Bridge
 
 -   **Description:**
@@ -2386,6 +2507,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.TelegramBridge`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2477,6 +2601,9 @@ redirectFrom:
     -   **Default:** `A new Teleport Request from **{username}**!`
 
 
+    </details>
+
+
 ## Items Collector
 
 -   **Description:**
@@ -2486,6 +2613,9 @@ redirectFrom:
 -   **Settings:**
 
     **Section:** **`ChatBot.ItemsCollector`**
+
+    <details>
+    <summary>All settings</summary>
 
     #### `Enabled`
 
@@ -2576,70 +2706,6 @@ redirectFrom:
     -   **Default:** `true`
 
 
-## WebSocket Chat Bot
+    </details>
 
--   **Description:**
 
-    This chat bot allows you to remotely execute commands on the MCC and make Chat Bots in other programming languages over Web Socket.
-
-    You can make your own library to do this, or use the reference implementation one which has been writen in TypeScript/JavaScript: [MCC.js](https://github.com/milutinke/MCC.js)
-
-    If you want to write your own library, you can follow this guide on the protocol specification and avaliable events and commands: [WebSocket Chat Bot Guide](websocket/README.md)
-
--   **Settings:**
-
-    **Section:** **`ChatBot.WebSocketBot`**
-
-    #### `Enabled`
-
-    -   **Description:**
-  
-        This setting specifies if the Web Socket chat bot is enabled.
-
-    -   **Available values:** `true` and `false`.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `false`
-
-    #### `Ip`
-
-    -   **Description:**
-
-        The IP address that Websocket server will be bound to.
-
-    -   **Type:** `string`
-
-    -   **Default:** `127.0.0.1` (localhost)
-
-    #### `Port`
-
-    -   **Description:**
-
-        The Port that Websocket server will be bound to.
-
-    -   **Type:** `number`
-
-    -   **Default:** `8043`
-
-    #### `Password`
-
-    -   **Description:**
-
-        A password that will be used to authenticate on thw Websocket server 
-        
-        **It is recommended to change the default password and to set a strong one**
-
-    -   **Type:** `string`
-
-    -   **Default:** `wspass12345`
-
-    #### `DebugMode`
-
-    -   **Description:**
-
-        This setting is for developers who are developing a library that uses this chat bot to remotely execute procedures/commands/functions.
-
-    -   **Type:** `boolean`
-
-    -   **Default:** `false`

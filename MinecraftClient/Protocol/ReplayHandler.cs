@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using Ionic.Zip;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
@@ -138,12 +138,18 @@ namespace MinecraftClient.Protocol
             using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
             {
                 using Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open);
-                using ZipOutputStream zs = new(Path.Combine(ReplayFileDirectory, replayFileName));
-                zs.PutNextEntry(recordingTmpFileName);
-                recordingFile.CopyTo(zs);
-                zs.PutNextEntry(MetaData.MetaDataFileName);
-                metaDataFile.CopyTo(zs);
-                zs.Close();
+                using FileStream replayArchiveFile = new(Path.Combine(ReplayFileDirectory, replayFileName), FileMode.Create, FileAccess.Write);
+                using ZipArchive replayArchive = new(replayArchiveFile, ZipArchiveMode.Create);
+
+                ZipArchiveEntry recordingEntry = replayArchive.CreateEntry(recordingTmpFileName);
+                using (Stream recordingEntryStream = recordingEntry.Open())
+                {
+                    recordingFile.CopyTo(recordingEntryStream);
+                }
+
+                ZipArchiveEntry metadataEntry = replayArchive.CreateEntry(MetaData.MetaDataFileName);
+                using Stream metadataEntryStream = metadataEntry.Open();
+                metaDataFile.CopyTo(metadataEntryStream);
             }
 
             File.Delete(Path.Combine(temporaryCache, recordingTmpFileName));
@@ -167,18 +173,29 @@ namespace MinecraftClient.Protocol
 
             using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
             {
-                using ZipOutputStream zs = new(replayFileName);
-                zs.PutNextEntry(recordingTmpFileName);
-                // .CopyTo() method start from stream current position
-                // We need to reset position in order to get full content
-                var lastPosition = recordStream!.BaseStream.Position;
-                recordStream.BaseStream.Position = 0;
-                recordStream.BaseStream.CopyTo(zs);
-                recordStream.BaseStream.Position = lastPosition;
+                using FileStream replayArchiveFile = new(replayFileName, FileMode.Create, FileAccess.Write);
+                using ZipArchive replayArchive = new(replayArchiveFile, ZipArchiveMode.Create);
 
-                zs.PutNextEntry(MetaData.MetaDataFileName);
-                metaDataFile.CopyTo(zs);
-                zs.Close();
+                ZipArchiveEntry recordingEntry = replayArchive.CreateEntry(recordingTmpFileName);
+                using (Stream recordingEntryStream = recordingEntry.Open())
+                {
+                    // .CopyTo() method start from stream current position
+                    // We need to reset position in order to get full content
+                    long lastPosition = recordStream!.BaseStream.Position;
+                    try
+                    {
+                        recordStream.BaseStream.Position = 0;
+                        recordStream.BaseStream.CopyTo(recordingEntryStream);
+                    }
+                    finally
+                    {
+                        recordStream.BaseStream.Position = lastPosition;
+                    }
+                }
+
+                ZipArchiveEntry metadataEntry = replayArchive.CreateEntry(MetaData.MetaDataFileName);
+                using Stream metadataEntryStream = metadataEntry.Open();
+                metaDataFile.CopyTo(metadataEntryStream);
             }
 
             WriteDebugLog("Backup replay file created.");
@@ -239,8 +256,8 @@ namespace MinecraftClient.Protocol
             // format: timestamp + packetLength + RawPacket
             List<byte> line = new();
             int nowTime = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
-            line.AddRange(BitConverter.GetBytes((Int32)nowTime).Reverse().ToArray());
-            line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).Reverse().ToArray());
+            line.AddRange(BitConverter.GetBytes((Int32)nowTime).AsEnumerable().Reverse().ToArray());
+            line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).AsEnumerable().Reverse().ToArray());
             line.AddRange(rawPacket.ToArray());
             // Write out to the file
             recordStream!.Write(line.ToArray());

@@ -496,6 +496,9 @@ namespace MinecraftClient
                     public LoginMethod Method = LoginMethod.mcc;
                     [TomlInlineComment("$Main.General.AuthlibServer$")]
                     public AuthlibServer AuthServer = new(string.Empty);
+
+                    [TomlInlineComment("$Main.General.AuthlibUser$")]
+                    public string AuthUser = "";
                   
 
                     public enum LoginType { mojang, microsoft,yggdrasil };
@@ -658,6 +661,12 @@ namespace MinecraftClient
                 {
                     public string Login = string.Empty, Password = string.Empty;
 
+                    public AccountInfoConfig()
+                    {
+                        Login = string.Empty;
+                        Password = string.Empty;
+                    }
+
                     public AccountInfoConfig(string Login)
                     {
                         this.Login = Login;
@@ -675,6 +684,12 @@ namespace MinecraftClient
                 {
                     public string Host = string.Empty;
                     public ushort? Port = null;
+
+                    public ServerInfoConfig()
+                    {
+                        Host = string.Empty;
+                        Port = null;
+                    }
 
                     public ServerInfoConfig(string Host)
                     {
@@ -698,6 +713,12 @@ namespace MinecraftClient
                 {
                     public string Host = string.Empty;
                     public int Port = 443;
+
+                    public AuthlibServer()
+                    {
+                        Host = string.Empty;
+                        Port = 443;
+                    }
 
                     public AuthlibServer(string Host)
                     {

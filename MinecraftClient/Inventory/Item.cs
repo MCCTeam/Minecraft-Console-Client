@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Inventory
@@ -33,6 +35,11 @@ namespace MinecraftClient.Inventory
         public Dictionary<string, object>? NBT;
 
         /// <summary>
+        /// 1.20.6+ structured components (raw list for round-trip serialization)
+        /// </summary>
+        public List<StructuredComponent>? Components;
+
+        /// <summary>
         /// Create an item with ItemType, Count and Metadata
         /// </summary>
         /// <param name="itemType">Type of the item</param>
@@ -51,6 +58,14 @@ namespace MinecraftClient.Inventory
         }
 
         /// <summary>
+        /// Create a shallow clone with a specific count (preserves NBT and Components).
+        /// </summary>
+        public Item CloneWithCount(int count)
+        {
+            return new Item(Type, count, Data, NBT) { Components = Components };
+        }
+
+        /// <summary>
         /// Check if the item slot is empty
         /// </summary>
         /// <returns>TRUE if the item is empty</returns>
@@ -60,12 +75,26 @@ namespace MinecraftClient.Inventory
         }
 
         /// <summary>
-        /// Retrieve item display name from NBT properties. NULL if no display name is defined.
+        /// Retrieve item display name. For 1.20.6+ reads from structured components
+        /// (CustomNameComponent, then ItemNameComponent as fallback); for older versions reads from NBT.
         /// </summary>
         public string? DisplayName
         {
             get
             {
+                if (Components != null)
+                {
+                    var customName = Components.OfType<CustomNameComponent>().FirstOrDefault();
+                    if (customName != null && !string.IsNullOrEmpty(customName.CustomName))
+                        return customName.CustomName;
+
+                    var itemName = Components.OfType<ItemNameComponent>().FirstOrDefault();
+                    if (itemName != null && !string.IsNullOrEmpty(itemName.ItemName))
+                        return itemName.ItemName;
+
+                    return null;
+                }
+
                 if (NBT != null && NBT.ContainsKey("display"))
                 {
                     if (NBT["display"] is Dictionary<string, object> displayProperties &&
@@ -82,12 +111,21 @@ namespace MinecraftClient.Inventory
         }
 
         /// <summary>
-        /// Retrieve item lores from NBT properties. Returns null if no lores is defined.
+        /// Retrieve item lores. For 1.20.6+ reads from LoreNameComponent1206; for older versions reads from NBT.
         /// </summary>
         public string[]? Lores
         {
             get
             {
+                if (Components != null)
+                {
+                    var loreComponent = Components.OfType<LoreNameComponent1206>().FirstOrDefault();
+                    if (loreComponent != null && loreComponent.Lines.Count > 0)
+                        return loreComponent.Lines.ToArray();
+
+                    return null;
+                }
+
                 List<string> lores = new();
                 if (NBT != null && NBT.ContainsKey("display"))
                 {
@@ -107,12 +145,21 @@ namespace MinecraftClient.Inventory
         }
 
         /// <summary>
-        /// Retrieve item damage from NBT properties. Returns 0 if no damage is defined.
+        /// Retrieve item damage. For 1.20.6+ reads from DamageComponent; for older versions reads from NBT.
         /// </summary>
         public int Damage
         {
             get
             {
+                if (Components != null)
+                {
+                    var damageComponent = Components.OfType<DamageComponent>().FirstOrDefault();
+                    if (damageComponent != null)
+                        return damageComponent.Damage;
+
+                    return 0;
+                }
+
                 if (NBT != null && NBT.ContainsKey("Damage"))
                 {
                     object damage = NBT["Damage"];
@@ -124,6 +171,26 @@ namespace MinecraftClient.Inventory
                 }
 
                 return 0;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve enchantments from structured components (1.20.6+). Returns null for older versions.
+        /// Both normal enchantments (EnchantmentsComponent) and stored enchantments
+        /// (StoredEnchantmentsComponent, e.g. enchanted books) are checked.
+        /// </summary>
+        public List<Enchantment>? EnchantmentList
+        {
+            get
+            {
+                if (Components == null)
+                    return null;
+
+                var enchComp = Components.OfType<EnchantmentsComponent>().FirstOrDefault();
+                if (enchComp != null && enchComp.Enchantments.Count > 0)
+                    return enchComp.Enchantments;
+
+                return null;
             }
         }
 
@@ -152,8 +219,18 @@ namespace MinecraftClient.Inventory
 
             try
             {
-                if (NBT != null && (NBT.TryGetValue("Enchantments", out object? enchantments) ||
-                                    NBT.TryGetValue("StoredEnchantments", out enchantments)))
+                var enchList = EnchantmentList;
+                if (enchList != null)
+                {
+                    foreach (var ench in enchList)
+                    {
+                        string name = EnchantmentMapping.GetEnchantmentName(ench.Type);
+                        string level = EnchantmentMapping.ConvertLevelToRomanNumbers(ench.Level);
+                        sb.AppendFormat(" | {0} {1}", name, level);
+                    }
+                }
+                else if (NBT != null && (NBT.TryGetValue("Enchantments", out object? enchantments) ||
+                                         NBT.TryGetValue("StoredEnchantments", out enchantments)))
                 {
                     foreach (Dictionary<string, object> enchantment in (object[])enchantments)
                     {

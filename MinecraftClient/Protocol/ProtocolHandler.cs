@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Globalization;
@@ -145,19 +145,22 @@ namespace MinecraftClient.Protocol
         public static IMinecraftCom GetProtocolHandler(TcpClient client, int protocolVersion, ForgeInfo? forgeInfo,
             IMinecraftComHandler handler)
         {
+            int normalizedVersion = NormalizeSnapshotProtocol(protocolVersion);
+
             int[] suppoertedVersionsProtocol16 = { 51, 60, 61, 72, 73, 74, 78 };
 
-            if (Array.IndexOf(suppoertedVersionsProtocol16, protocolVersion) > -1)
-                return new Protocol16Handler(client, protocolVersion, handler);
+            if (Array.IndexOf(suppoertedVersionsProtocol16, normalizedVersion) > -1)
+                return new Protocol16Handler(client, normalizedVersion, handler);
 
             int[] suppoertedVersionsProtocol18 =
             {
                 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573,
-                575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765
+                575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
+                769, 770, 771, 772, 773, 774, 775
             };
 
-            if (Array.IndexOf(suppoertedVersionsProtocol18, protocolVersion) > -1)
-                return new Protocol18Handler(client, protocolVersion, handler, forgeInfo);
+            if (Array.IndexOf(suppoertedVersionsProtocol18, normalizedVersion) > -1)
+                return new Protocol18Handler(client, normalizedVersion, handler, forgeInfo, protocolVersion);
 
             throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, protocolVersion));
         }
@@ -345,6 +348,32 @@ namespace MinecraftClient.Protocol
                     case "1.20.3":
                     case "1.20.4":
                         return 765;
+                    case "1.20.5":
+                    case "1.20.6":
+                        return 766;
+                    case "1.21":
+                    case "1.21.1":
+                        return 767;
+                    case "1.21.2":
+                        return 768;
+                    case "1.21.3":
+                        return 768;
+                    case "1.21.4":
+                        return 769;
+                    case "1.21.5":
+                        return 770;
+                    case "1.21.6":
+                        return 771;
+                    case "1.21.7":
+                    case "1.21.8":
+                        return 772;
+                    case "1.21.9":
+                    case "1.21.10":
+                        return 773;
+                    case "1.21.11":
+                        return 774;
+                    case "26.1":
+                        return 775;
                     default:
                         return 0;
                 }
@@ -424,7 +453,33 @@ namespace MinecraftClient.Protocol
                 763 => "1.20",
                 764 => "1.20.2",
                 765 => "1.20.4",
+                766 => "1.20.6",
+                767 => "1.21",
+                768 => "1.21.2",
+                769 => "1.21.4",
+                770 => "1.21.5",
+                771 => "1.21.6",
+                772 => "1.21.7",
+                773 => "1.21.9",
+                774 => "1.21.11",
+                775 => "26.1",
                 _ => "0.0"
+            };
+        }
+
+        /// <summary>
+        /// Normalize snapshot/pre-release protocol numbers (0x40000000 | data_version) to the
+        /// corresponding release protocol number. Unknown snapshot versions pass through unchanged.
+        /// </summary>
+        public static int NormalizeSnapshotProtocol(int protocol)
+        {
+            if ((protocol & 0x40000000) == 0)
+                return protocol;
+
+            return protocol switch
+            {
+                0x4000012E => 775, // 26.1-rc-2 → 26.1
+                _ => protocol
             };
         }
 
@@ -637,9 +692,17 @@ namespace MinecraftClient.Protocol
 
                                 ConsoleIO.WriteLine(Translations.mcc_avaliable_profiles + availableProfiles);
 
-                                ConsoleIO.WriteLine(Translations.mcc_select_profile);
-                                string selectedProfileName = ConsoleIO.ReadLine();
+                                string selectedProfileName;
+
+                                if (String.IsNullOrEmpty(Config.Main.General.AuthUser) || String.IsNullOrWhiteSpace(Config.Main.General.AuthUser))
+                                {
+                                    ConsoleIO.WriteLine(Translations.mcc_select_profile);
+                                    selectedProfileName = ConsoleIO.ReadLine();
+                                }
+                                else selectedProfileName = Config.Main.General.AuthUser;
+
                                 ConsoleIO.WriteLine(Translations.mcc_selected_profile + " " + selectedProfileName);
+
                                 Json.JSONData? selectedProfile = null;
                                 foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"]
                                              .DataArray)

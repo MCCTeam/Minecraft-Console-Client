@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,6 +30,29 @@ namespace MinecraftClient.Protocol.Message
         };
 
         public static Dictionary<int, MessageType>? ChatId2Type;
+
+        // Used to store Chat Types in 1.20.6+
+        public static void ReadChatType(Dictionary<int, string> data)
+        {
+            var chatTypeDictionary = ChatId2Type ?? new Dictionary<int, MessageType>();
+
+            foreach (var (chatId, chatName) in data)
+            {
+                chatTypeDictionary[chatId] = chatName switch
+                {
+                    "minecraft:chat" => MessageType.CHAT,
+                    "minecraft:emote_command" => MessageType.EMOTE_COMMAND,
+                    "minecraft:msg_command_incoming" => MessageType.MSG_COMMAND_INCOMING,
+                    "minecraft:msg_command_outgoing" => MessageType.MSG_COMMAND_OUTGOING,
+                    "minecraft:say_command" => MessageType.SAY_COMMAND,
+                    "minecraft:team_msg_command_incoming" => MessageType.TEAM_MSG_COMMAND_INCOMING,
+                    "minecraft:team_msg_command_outgoing" => MessageType.TEAM_MSG_COMMAND_OUTGOING,
+                    _ => MessageType.CHAT,
+                };
+            }
+
+            ChatId2Type = chatTypeDictionary;
+        }
 
         public static void ReadChatType(Dictionary<string, object> registryCodec)
         {
@@ -515,9 +538,7 @@ namespace MinecraftClient.Protocol.Message
         private static string NbtToString(Dictionary<string, object> nbt, string formatting)
         {
             if (nbt.Count == 1 && nbt.TryGetValue("", out object? rootMessage))
-            {
-                return formatting + (string)rootMessage;
-            }
+                return formatting + (rootMessage?.ToString() ?? string.Empty);
 
             string message = string.Empty;
             StringBuilder extraBuilder = new StringBuilder();
@@ -563,7 +584,7 @@ namespace MinecraftClient.Protocol.Message
                 {
                     case "text":
                     {
-                        message = (string)value;
+                        message = value?.ToString() ?? string.Empty;
                     }
                         break;
                     case "extra":

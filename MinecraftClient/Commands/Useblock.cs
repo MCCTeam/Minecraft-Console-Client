@@ -1,4 +1,4 @@
-﻿using Brigadier.NET;
+using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
@@ -48,7 +48,7 @@ namespace MinecraftClient.Commands
             Location current = handler.GetCurrentLocation();
             block = block.ToAbsolute(current).ToFloor();
             Location blockCenter = block.ToCenter();
-            bool res = handler.PlaceBlock(block, Direction.Down);
+            bool res = handler.PlaceBlock(block, Direction.Down, lookAtBlock: true);
             return r.SetAndReturn(string.Format(Translations.cmd_useblock_use, blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed"), res);
         }
     }

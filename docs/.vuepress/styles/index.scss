@@ -1,0 +1,163 @@
+.custom-container {
+  --custom-container-accent: var(--vp-c-accent-bg);
+  --custom-container-title: var(--vp-c-accent-text);
+  --custom-container-soft: var(--vp-c-accent-soft);
+
+  margin: 0.75rem 0;
+  padding: 0.85rem 1rem;
+  border-inline-start: 0.35rem solid var(--custom-container-accent);
+  border-radius: 0.75rem;
+  background: var(--custom-container-soft);
+  color: inherit;
+  font-size: var(--hint-font-size, 0.92rem);
+  transition:
+    background var(--vp-t-color),
+    color var(--vp-t-color),
+    border-color var(--vp-t-color);
+}
+
+.custom-container > .custom-container-title {
+  margin: 0 0 0.45rem;
+  color: var(--custom-container-title);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.custom-container > :last-child {
+  margin-bottom: 0;
+}
+
+.custom-container > :not(.custom-container-title):first-child {
+  margin-top: 0;
+}
+
+.custom-container a {
+  color: var(--vp-c-accent);
+}
+
+.custom-container :not(pre) > code {
+  background: var(--vp-c-control);
+}
+
+.custom-container.tip {
+  --custom-container-accent: var(--tip-c-accent, var(--vp-c-green-bg));
+  --custom-container-title: var(--tip-c-text, var(--vp-c-green-text));
+  --custom-container-soft: var(--tip-c-soft, var(--vp-c-green-soft));
+}
+
+.custom-container.info {
+  --custom-container-accent: var(--info-c-accent, var(--vp-c-blue-bg));
+  --custom-container-title: var(--info-c-text, var(--vp-c-blue-text));
+  --custom-container-soft: var(--info-c-soft, var(--vp-c-blue-soft));
+}
+
+.custom-container.note {
+  --custom-container-accent: var(--note-c-accent, var(--vp-c-grey-bg));
+  --custom-container-title: var(--note-c-text, var(--vp-c-grey-text));
+  --custom-container-soft: var(--note-c-soft, var(--vp-c-grey-soft));
+}
+
+.custom-container.important {
+  --custom-container-accent: var(--important-c-accent, var(--vp-c-purple-bg));
+  --custom-container-title: var(--important-c-text, var(--vp-c-purple-text));
+  --custom-container-soft: var(--important-c-soft, var(--vp-c-purple-soft));
+}
+
+.custom-container.warning {
+  --custom-container-accent: var(--warning-c-accent, var(--vp-c-yellow-bg));
+  --custom-container-title: var(--warning-c-text, var(--vp-c-yellow-text));
+  --custom-container-soft: var(--warning-c-soft, var(--vp-c-yellow-soft));
+}
+
+.custom-container.danger,
+.custom-container.caution {
+  --custom-container-accent: var(--caution-c-accent, var(--vp-c-red-bg));
+  --custom-container-title: var(--caution-c-text, var(--vp-c-red-text));
+  --custom-container-soft: var(--caution-c-soft, var(--vp-c-red-soft));
+}
+
+@media (max-width: 719px) {
+  .custom-container {
+    margin-inline: -0.75rem;
+    border-radius: 0.5rem;
+  }
+}
+
+/* Collapsible <details> sections */
+details {
+  margin: 1rem 0;
+  padding: 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 0.5rem;
+  transition:
+    background var(--vp-t-color),
+    border-color var(--vp-t-color);
+
+  > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.75rem 1.15rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    border-radius: 0.5rem;
+    background: var(--vp-c-bg-soft);
+    transition: background var(--vp-t-color);
+
+    &::before {
+      content: '▶';
+      display: inline-block;
+      font-size: 0.55em;
+      color: var(--vp-c-text-2);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    /* Hide the default marker in all browsers */
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::marker {
+      content: none;
+    }
+
+    &:hover {
+      background: var(--vp-c-bg-mute);
+    }
+
+    > code {
+      font-size: 0.95em;
+      font-weight: 700;
+      color: var(--vp-c-accent);
+      background: var(--vp-c-control);
+      padding: 0.15em 0.45em;
+      border-radius: 0.25rem;
+    }
+  }
+
+  &[open] > summary {
+    border-bottom: 1px solid var(--vp-c-divider);
+    border-radius: 0.5rem 0.5rem 0 0;
+    margin-bottom: 0;
+
+    &::before {
+      transform: rotate(90deg);
+    }
+  }
+
+  &[open] > :not(summary) {
+    margin-left: 1.25rem;
+    margin-right: 1.25rem;
+  }
+
+  &[open] > :nth-child(2) {
+    margin-top: 1rem;
+  }
+
+  &[open] > :last-child {
+    margin-bottom: 1rem;
+  }
+}

@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace MinecraftClientGUI
 {
     static class Program
     {
+        private const string ReleasesUrl = "https://github.com/MCCTeam/Minecraft-Console-Client/releases";
+
         /// <summary>
         /// Minecraft Console Client GUI by ORelio (c) 2013.
         /// Allows to use Minecraft Console Client in a more user friendly interface
@@ -18,7 +19,26 @@ namespace MinecraftClientGUI
         {
             if (!System.IO.File.Exists(MinecraftClient.ExePath))
             {
-                MessageBox.Show("File not found: " + MinecraftClient.ExePath, "Minecraft client not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                DialogResult result = MessageBox.Show(
+                    "File not found: " + MinecraftClient.ExePath + Environment.NewLine + Environment.NewLine
+                    + "Place MinecraftClient.exe in the same folder as MinecraftClientGUI.exe." + Environment.NewLine + Environment.NewLine
+                    + "Download MinecraftClient.exe from:" + Environment.NewLine
+                    + ReleasesUrl + Environment.NewLine + Environment.NewLine
+                    + "Open the releases page now?",
+                    "Minecraft client not found",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo(ReleasesUrl) { UseShellExecute = true });
+                    }
+                    catch
+                    {
+                    }
+                }
             }
             else
             {

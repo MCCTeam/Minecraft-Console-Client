@@ -4,22 +4,29 @@ title: About & Features
 
 # Introduction
 
--   [About](#about)
--   [Quick Intro (YouTube Videos)](#quick-intro)
--   [Features](#features)
--   [Why Minecraft Console Client?](#why-minecraft-console-client)
--   [Getting Help](#getting-help)
--   [Submitting a bug report or an idea/feature-request](#bugs-ideas-feature-requests)
--   [Important notes on some features](#notes-on-some-features)
--   [Credits](#credits)
--   [Disclaimer](#disclaimer)
--   [License](#license)
+- [Introduction](#introduction)
+  - [About](#about)
+  - [Features](#features)
+  - [Why Minecraft Console Client?](#why-minecraft-console-client)
+  - [Quick Intro](#quick-intro)
+    - [The list of the tutorials:](#the-list-of-the-tutorials)
+  - [Getting Help](#getting-help)
+    - [Before getting help](#before-getting-help)
+  - [Bugs, Ideas, Feature Requests](#bugs-ideas-feature-requests)
+    - [Before submitting](#before-submitting)
+  - [AI-Assisted Development](#ai-assisted-development)
+  - [Notes on some features](#notes-on-some-features)
+    - [Inventory, Terrain and Entity Handling](#inventory-terrain-and-entity-handling)
+    - [Path-Finding and Physics](#path-finding-and-physics)
+  - [Credits](#credits)
+  - [Disclaimer](#disclaimer)
+  - [License](#license)
 
 ## About
 
-**Minecraft Console Client (MCC)** is a lightweight cross-platform open-source **Minecraft** TUI client for **Java edition** that allows you to connect to any Minecraft Java server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game.
+**Minecraft Console Client (MCC)** is a lightweight, cross-platform, open-source **Minecraft** TUI client for **Java Edition**. It lets you connect to Minecraft Java servers, send commands, and receive text messages without launching the main game.
 
-It also provides various automations that you can enable for administration and other purposes, as well as extensible C# API for creating Bots.
+It also includes built-in automation for administration and utility work, plus an extensible C# API for creating bots and runtime scripts.
 
 It was originally made by [ORelio](https://github.com/ORelio) in 2012 on the [Minecraft Forum](http://www.minecraftforum.net/topic/1314800-/), now it's maintained by him and many other contributors from the community.
 
@@ -50,7 +57,7 @@ It was originally made by [ORelio](https://github.com/ORelio) in 2012 on the [Mi
 -   [Terrain Traversing](usage.md#move)
 -   Entity Handling
 
-_NOTE: Some of mentioned features are disabled by default and you will have to turn them on in the configuration file and some may require additional configuration on your part for your specific usage._
+_Note: Some of these features are disabled by default. You need to enable them in the configuration file, and some also require additional setup._
 
 ## Why Minecraft Console Client?
 
@@ -67,7 +74,7 @@ _NOTE: Some of mentioned features are disabled by default and you will have to t
 
 ## Quick Intro
 
-Don't have time to read through the documentation, we got you, our community has made some simple introduction videos about the **Minecraft Console Client**.
+If you do not want to read through the documentation right away, the community has made a few short introduction videos for **Minecraft Console Client**.
 
 ### The list of the tutorials:
 
@@ -83,7 +90,7 @@ Using Commands, Scripts and other features:
 
 ## Getting Help
 
-MCC has a community that is willing to help, we have a Discussions section in out Git Hub repository.
+MCC has an active community, and the GitHub Discussions section is the best place to ask for help.
 
 Click [here](https://github.com/MCCTeam/Minecraft-Console-Client/discussions) to access it.
 
@@ -94,45 +101,57 @@ Click [here](https://github.com/MCCTeam/Minecraft-Console-Client/discussions) to
 
 ## Bugs, Ideas, Feature Requests
 
-Bug reporting, idea submitting or feature requesting are done in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section of our [Github repository]([here](https://github.com/MCCTeam/Minecraft-Console-Client)).
+Bug reports, ideas, and feature requests all go through the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section of our [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client).
 
-Navigate to the Issues section, search for a bug, idea or a feature using the search option here in the documentation and in the `Issues` section on Git Hub before making your own.
+Before opening a new issue, search both the documentation and the `Issues` section to avoid duplicates.
 
-If you haven't found anything similar, go ahead and click on the `New issue` button, then choose what you want to do.
+If you do not find anything similar, click `New issue` and choose the appropriate template.
 
-If you're reporting a bug, please be descriptive as much as possible, try to explain how to re-create the bug, attack screenshots and logs, make sure that you have [`debugmessages`](configuration.me#debugmessages) set to `true` before sending a bug report or taking a screenshot.
+If you are reporting a bug, be as specific as possible. Explain how to reproduce it, attach screenshots and logs, and make sure debug logging is enabled before collecting them.
 
 ### Before submitting
 
 -   **Please use the search option here or in the `Issues` section and read the documentation so we avoid duplicate questions/ideas/reports. Thank you!**
 -   **Please be kind, patient and respect others. Thank you!**
 
+## AI-Assisted Development
+
+If you want the repeatable agent workflow used by maintainers, start with [AI-Assisted Development](ai-assisted-development.md).
+
 ## Notes on some features
 
 ### Inventory, Terrain and Entity Handling
 
-Inventory handling is currently not supported in versions: `1.4.6 - 1.9` (*The inventory handling code is in the place, but we're missing Item Palettes, on which we're working.*)
+MCC currently supports Minecraft versions `1.4.6` through `26.1`.
 
-Terrain handling is currently not supported in versions: `1.4.6 - 1.6`
+Feature support still depends on protocol version:
 
-Entity handling is currently not supported in versions: `1.4.6 - 1.7`
+- Inventory handling is supported on `1.8+`.
+- Terrain handling is supported on `1.7.2+`.
+- Entity handling is supported on `1.8+`.
 
-There features might not always be implemented in the latest version of the game, since they're often subjected to major changes by Mojang, and we need some time to figure out what has changed and to implement the required changes.
+These features may lag behind brand-new Minecraft releases when Mojang changes the protocol or registries in a major way.
 
 If there was a major game update, and the MCC hasn't been updated to support these features, if you're a programmer, feel free to contribute to the project.
 
 ### Path-Finding and Physics
 
-Currently the path-finding and physics have some limitations, those are:
-- Path finding under slabs is not supported (currently being worked on, partialy complete but not avaliable in the main branch)
-- Swimming is not supported yet
-- Jumping is not supported yet
-- Knockback is not supported yet
+MCC now uses A* path-finding together with a physics-based movement system for movement and collision handling.
 
 What is supported and works:
-- Terrain navigation (path-finding with A* algorithm and walking)
-- Climbing up and down the ladders and all types of vines
-- Gravity
+- Terrain navigation with A* path-finding and physics-driven movement
+- Collision-aware movement using real block shapes
+- Automatic jumping when the path requires moving up
+- Step-up movement for slabs and similar low obstacles
+- Sneaking and sprinting
+- Movement physics in water and lava
+- Climbing up and down ladders and all types of vines
+- Gravity, friction, and block speed modifiers such as ice, soul sand, soul soil, and honey blocks
+
+Current limitations:
+- Path-finding is still block-based, so very complex terrain can still fail
+- Automatic route planning still avoids underwater routes by default, so this is not a full swimming path-finder yet
+- Knockback and other external velocity effects are not simulated yet
 
 ## Credits
 
@@ -186,7 +205,7 @@ We remind you that **you may get banned** by your server for using this program.
 
 Minecraft Console Client is a totally free of charge, open source project.
 
-The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client)
+The source code is available at the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client)
 
 Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0.
 

@@ -7,34 +7,33 @@ redirectFrom:
 
 # Configuration
 
-**Minecraft Console Client** can be both configured by the [command line parameters](usage.md#command-line-parameters) and the configuration file.
+**Minecraft Console Client** can be configured through both [command-line parameters](usage.md#command-line-parameters) and the configuration file.
 
-By the default all of the configurations are stored in the configuration file named `MinecraftClient.ini` which is created the first time you run the program, but you also can specify your own configuration file by providing a path to it as a first parameter when starting the MCC, check out [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
+By default, MCC stores its settings in `MinecraftClient.ini`, which is created the first time you run the program. You can also pass a custom configuration file path as the first argument when starting MCC. See [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
 
 </div>
 
 ## Notes
 
--   Some settings will be omitted from the documentation due to them being not used often, we do not want documentation to be cluttered, we advise you to manually read through the configuration file, where every setting has a description next to it.
--   Some plugin/bot related settings will be covered in the plugins section, not here
+-   Some less common settings are not repeated here. The generated config file contains inline descriptions for every setting.
+-   Bot-specific settings are documented in [Chat Bots](chat-bots.md).
 
 ## Configuration File
 
 ### Format
 
-The configuration file uses the [TOML format](https://toml.io/en/), all of the options are key-value pairs separated into sections.
+The configuration file uses the [TOML format](https://toml.io/en/). Options are key-value pairs grouped into sections.
 
-Sections are defined in-between the square brackets (Example: `[This is a section]`), each occurrence of this marks a beginning of a new section.
+Sections are defined between square brackets, for example `[This is a section]`.
 
-The settings/options are defined as key-value pairs, where the name of the setting and the value are separated by the equals sign `=` (Example: `some-setting=some value`).
+Settings are written as key-value pairs, with the key and value separated by `=`, for example `some-setting = "some value"`.
 
 Lines starting with `#` are comments, they do not have an effect on the configuration of the program, their purpose is purely a descriptive one.
 
-**To get familiar with all the data types and styles of settings please read the [official TOML documenation](https://toml.io/en/v1.0.0).**
+**For the full syntax and data types, see the [official TOML documentation](https://toml.io/en/v1.0.0).**
 
 Full Example:
 
@@ -52,7 +51,7 @@ Section_Enabled = true
 colors = [ "red", "yellow", "green" ]
 
 [ThirdSection.Subsection]
-Coordinate = { x = 145, y = 64, y = 2045 }
+Coordinate = { x = 145, y = 64, z = 2045 }
 ```
 
 ## Main Section
@@ -60,6 +59,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 ### Main General section
 
 -   **Section header:** `Main.General`
+
+<details>
+<summary>Account, Server, and Authentication settings</summary>
 
 #### `Account`
 
@@ -107,11 +109,11 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you define the type of your account: `mojang` or `microsoft`
+    This setting defines the account type: `mojang`, `microsoft`, or `yggdrasil`.
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
+    **Use `microsoft` for normal Microsoft accounts. `yggdrasil` is for custom authlib/Yggdrasil servers.**
 
     </div>
 
@@ -141,9 +143,48 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     Method = "mcc"
     ```
 
+#### `AuthServer`
+
+-   **Description:**
+
+    This setting is used when `AccountType` is set to `yggdrasil`. It points MCC at the authlib/Yggdrasil server used for login and session checks.
+
+    You can provide either just the host name or a `host:port` pair. If the port is omitted, MCC uses `443`.
+
+-   **Type:** `inline table`
+
+-   **Default:** `{ Host = "", Port = 443 }`
+
+-   **Example:**
+
+    ```
+    AuthServer = { Host = "auth.example.com", Port = 443 }
+    ```
+
+#### `AuthUser`
+
+-   **Description:**
+
+    This setting allows for Yggdrasil authlib multi-user selection. It selects which profile MCC should use when the authlib/Yggdrasil server returns multiple available profiles. Leave it empty to pick the profile interactively.
+
+-   **Type:** `string`
+
+-   **Default:** `""`
+
+-   **Example:**
+
+    ```
+    AuthUser = "SomePlayer"
+    ```
+
+</details>
+
 ### Main Advanced section
 
 -   **Section header:** `Main.Advanced`
+
+<details>
+<summary>Advanced settings (Language, Version, Features, and more)</summary>
 
 #### `Language`
 
@@ -155,17 +196,37 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
 
-    To find your language code, check [this link](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239s).
+    To find your language code, check [this list](https://mccteam.github.io/r/l-code.html).
 
 -   **Type:** `string`
 
--   **Default:** `en_gb`
+-   **Default:** `en_us`
 
 -   **Example:**
 
     ```
-    Language = "en_gb"
+    Language = "en_us"
     ```
+
+#### `EnableSentry`
+
+-   **Description:**
+
+    Set this to `false` to opt out of Sentry error reporting.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `LoadMccTranslation`
+
+-   **Description:**
+
+    Set this to `false` to keep MCC in English even when translated strings are available.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
 
 #### `ConsoleTitle`
 
@@ -268,7 +329,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **MCC supports only 1.4.6 - 1.19.2**
+    **Current code support is `1.4.6` through `26.1`.**
 
     </div>
 
@@ -286,7 +347,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     -   `no`
     -   `force`
 
--   **Default:** `auto`
+-   **Default:** `no`
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -596,6 +657,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 **A movement speed higher than 2 may be considered cheating by some plugins.**
 
+</div>
+
 #### `IgnoreInvalidPlayerName`
 
 -   **Description:**
@@ -606,7 +669,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `true`
 
-</div>
+</details>
 
 ### Account List section
 
@@ -671,6 +734,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
 
+<details>
+<summary>Chat signing and verification settings</summary>
+
 #### `LoginWithSecureProfile`
 
 -   **Description:**
@@ -711,7 +777,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Type:** `boolean`
 
--   **Default:** `false`
+-   **Default:** `true`
 
 #### `MarkModifiedMsg`
 
@@ -741,7 +807,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Type:** `boolean`
 
--   **Default:** `false`
+-   **Default:** `true`
 
 #### `ShowModifiedChat`
 
@@ -763,9 +829,14 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `true`
 
-### Logging section
+</details>
 
--   **Section header:** `Logging`
+### App Vars values section
+
+-   **Section header:** `AppVar.VarStirng`
+
+<details>
+<summary>Logging and filtering settings</summary>
 
 #### `DebugMessages`
 
@@ -915,6 +986,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
+</details>
+
 ## App Vars section
 
 -   **Section header:** `AppVar`
@@ -931,7 +1004,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     </div>
 
--   **Section header:** `Logging`
+-   **Section header:** `AppVar.VarStirng`
 
 -   **Examples:**
 
@@ -939,6 +1012,126 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     your_var = "your_value"
     "your var 2" = "your value 2"
     ```
+
+## Console section
+
+-   **Section header:** `Console`
+
+-   **Description:**
+
+    Console-related settings for input handling and command suggestions.
+
+### Console General section
+
+-   **Section header:** `Console.General`
+
+<details>
+<summary>Console display settings</summary>
+
+#### `ConsoleColorMode`
+
+-   **Description:**
+
+    Use `disable`, `legacy_4bit`, `vt100_4bit`, `vt100_8bit`, or `vt100_24bit`.
+
+    If the terminal shows garbled escape sequences like `←[0m`, try `legacy_4bit` or disable color output.
+
+-   **Type:** `string`
+
+-   **Default:** `vt100_24bit`
+
+#### `Display_Input`
+
+-   **Description:**
+
+    Set this to `false` if you do not want MCC to echo the current input line while typing.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `History_Input_Records`
+
+-   **Description:**
+
+    Maximum number of remembered console input lines.
+
+-   **Type:** `integer`
+
+-   **Default:** `32`
+
+</details>
+
+### Console CommandSuggestion section
+
+-   **Section header:** `Console.CommandSuggestion`
+
+-   **Description:**
+
+    Command completion suggestions in the console.
+
+<details>
+<summary>Command suggestion settings</summary>
+
+#### `Enable`
+
+-   **Description:**
+
+    Set this to `false` to disable command completion suggestions.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `Enable_Color`
+
+-   **Description:**
+
+    Enables colored suggestions when the terminal color mode supports it.
+
+-   **Type:** `boolean`
+
+-   **Default:** `true`
+
+#### `Use_Basic_Arrow`
+
+-   **Description:**
+
+    Use this if the suggestion arrows are not displayed correctly in your terminal.
+
+-   **Type:** `boolean`
+
+-   **Default:** `false`
+
+#### `Max_Suggestion_Width`
+
+-   **Description:**
+
+    Maximum width of the suggestion popup.
+
+-   **Type:** `integer`
+
+-   **Default:** `30`
+
+#### `Max_Displayed_Suggestions`
+
+-   **Description:**
+
+    Maximum number of suggestions shown at once.
+
+-   **Type:** `integer`
+
+-   **Default:** `6`
+
+#### Color fields
+
+-   **Description:**
+
+    The suggestion text, tooltip, and arrow colors are stored as hex color strings such as `#f8fafc`.
+
+    MCC validates these values on startup and falls back to built-in defaults if a color string is invalid.
+
+</details>
 
 ## Proxy section
 
@@ -948,11 +1141,24 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Connect to a server via a proxy instead of connecting directly.
 
+<details>
+<summary>Proxy settings</summary>
+
 #### `Enabled_Login`
 
 -   **Description:**
 
     If Mojang session services or Microsoft login services are blocked on your network or your ip is blacklisted or rate limited by Microsoft, set the value to `true`.
+
+-   **Type:** `boolean`
+
+-   **Default:** `false`
+
+#### `Enabled_Update`
+
+-   **Description:**
+
+    Use the proxy when MCC checks for updates.
 
 -   **Type:** `boolean`
 
@@ -1000,14 +1206,14 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Available options:
 
-    -   `HTTPT`
+    -   `HTTP`
     -   `SOCKS4`
     -   `SOCKS4a`
     -   `SOCKS5`
 
 -   **Type:** `string`
 
--   **Default:** `HTTPT`
+-   **Default:** `HTTP`
 
 #### `Username`
 
@@ -1029,6 +1235,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `` ``
 
+</details>
+
 ## MCSettings section
 
 -   **Section header:** `MCSettings`
@@ -1036,6 +1244,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 -   **Description:**
 
     Client settings related to language, render distance, difficulty, chat and skins.
+
+<details>
+<summary>Game client settings</summary>
 
 #### `Enabled`
 
@@ -1080,7 +1291,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Type:** `string`
 
--   **Default:** `normal`
+-   **Default:** `peaceful`
 
 #### `ChatMode`
 
@@ -1120,6 +1331,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `left`
 
+</details>
+
 ## MCSettings Skin section
 
 -   **Section header:** `MCSettings.Skin`
@@ -1127,6 +1340,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 -   **Description:**
 
     Skin options.
+
+<details>
+<summary>Skin visibility settings</summary>
 
 #### `Cape`
 
@@ -1198,6 +1414,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
+</details>
+
 ## Chat Format section
 
 -   **Section header:** `ChatFormat`
@@ -1221,6 +1439,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     -   Testing Regex expressions online:
         -   [https://regex101.com/](https://regex101.com/)
         -   [https://regexr.com/](https://regexr.com/)
+
+<details>
+<summary>Chat format settings</summary>
 
 #### `Builtins`
 
@@ -1287,3 +1508,15 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 -   **Type:** `string`
 
 -   **Default:** `TeleportRequest = '^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$'`
+
+</details>
+
+## Chat Bot section
+
+-   **Section header:** `ChatBot`
+
+-   **Description:**
+
+    This top-level section groups the built-in bot configs that ship with MCC.
+
+    The detailed options for each bot are documented in [Chat Bots](chat-bots.md), so this page only covers the shared runtime and client settings.
