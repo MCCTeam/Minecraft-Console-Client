@@ -140,6 +140,40 @@ Coordinate = { x = 145, y = 64, z = 2045 }
     Method = "mcc"
     ```
 
+#### `AuthServer`
+
+-   **Description:**
+
+    This setting is used when `AccountType` is set to `yggdrasil`. It points MCC at the authlib/Yggdrasil server used for login and session checks.
+
+    You can provide either just the host name or a `host:port` pair. If the port is omitted, MCC uses `443`.
+
+-   **Type:** `inline table`
+
+-   **Default:** `{ Host = "", Port = 443 }`
+
+-   **Example:**
+
+    ```
+    AuthServer = { Host = "auth.example.com", Port = 443 }
+    ```
+
+#### `AuthUser`
+
+-   **Description:**
+
+    This setting allows for Yggdrasil authlib multi-user selection. It selects which profile MCC should use when the authlib/Yggdrasil server returns multiple available profiles. Leave it empty to pick the profile interactively.
+
+-   **Type:** `string`
+
+-   **Default:** `""`
+
+-   **Example:**
+
+    ```
+    AuthUser = "SomePlayer"
+    ```
+
 ### Main Advanced section
 
 -   **Section header:** `Main.Advanced`
