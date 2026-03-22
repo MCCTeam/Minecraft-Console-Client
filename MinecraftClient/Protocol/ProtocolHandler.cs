@@ -581,16 +581,15 @@ namespace MinecraftClient.Protocol
                     }
                     else
                     {
-                        Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        var loginResponse = Json.ParseJson(result);
+                        if (loginResponse?["accessToken"] is not null
+                            && loginResponse["selectedProfile"]?["id"] is not null
+                            && loginResponse["selectedProfile"]?["name"] is not null)
                         {
-                            session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
-                                .StringValue;
+                            session.ID = loginResponse["accessToken"]!.GetStringValue();
+                            session.PlayerID = loginResponse["selectedProfile"]!["id"]!.GetStringValue();
+                            session.PlayerName = loginResponse["selectedProfile"]!["name"]!
+                                .GetStringValue();
                             return LoginResult.Success;
                         }
                         else return LoginResult.InvalidResponse;
@@ -667,27 +666,25 @@ namespace MinecraftClient.Protocol
                     }
                     else
                     {
-                        Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken"))
+                        var loginResponse = Json.ParseJson(result);
+                        if (loginResponse?["accessToken"] is not null)
                         {
-                            session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            if (loginResponse.Properties.ContainsKey("selectedProfile")
-                                && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                                && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                            session.ID = loginResponse["accessToken"]!.GetStringValue();
+                            if (loginResponse["selectedProfile"]?["id"] is not null
+                                && loginResponse["selectedProfile"]?["name"] is not null)
                             {
-                                session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"]
-                                    .StringValue;
-                                session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
-                                    .StringValue;
+                                session.PlayerID = loginResponse["selectedProfile"]!["id"]!
+                                    .GetStringValue();
+                                session.PlayerName = loginResponse["selectedProfile"]!["name"]!
+                                    .GetStringValue();
                                 return LoginResult.Success;
                             }
                             else
                             {
                                 string availableProfiles = "";
-                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"]
-                                             .DataArray)
+                                foreach (var profile in loginResponse["availableProfiles"]!.AsArray())
                                 {
-                                    availableProfiles += " " + profile.Properties["name"].StringValue;
+                                    availableProfiles += " " + profile!["name"]!.GetStringValue();
                                 }
 
                                 ConsoleIO.WriteLine(Translations.mcc_avaliable_profiles + availableProfiles);
@@ -703,19 +700,18 @@ namespace MinecraftClient.Protocol
 
                                 ConsoleIO.WriteLine(Translations.mcc_selected_profile + " " + selectedProfileName);
 
-                                Json.JSONData? selectedProfile = null;
-                                foreach (Json.JSONData profile in loginResponse.Properties["availableProfiles"]
-                                             .DataArray)
+                                System.Text.Json.Nodes.JsonNode? selectedProfile = null;
+                                foreach (var profile in loginResponse["availableProfiles"]!.AsArray())
                                 {
-                                    selectedProfile = profile.Properties["name"].StringValue == selectedProfileName
+                                    selectedProfile = profile!["name"]!.GetStringValue() == selectedProfileName
                                         ? profile
                                         : selectedProfile;
                                 }
 
-                                if (selectedProfile != null)
+                                if (selectedProfile is not null)
                                 {
-                                    session.PlayerID = selectedProfile.Properties["id"].StringValue;
-                                    session.PlayerName = selectedProfile.Properties["name"].StringValue;
+                                    session.PlayerID = selectedProfile["id"]!.GetStringValue();
+                                    session.PlayerName = selectedProfile["name"]!.GetStringValue();
                                     SessionToken currentsession = session;
                                     return GetNewYggdrasilToken(currentsession, out session);
                                 }
@@ -889,7 +885,7 @@ namespace MinecraftClient.Protocol
         {
             var payload = JwtPayloadDecode.GetPayload(session.ID);
             var json = Json.ParseJson(payload);
-            var expTimestamp = long.Parse(json.Properties["exp"].StringValue, NumberStyles.Any,
+            var expTimestamp = long.Parse(json!["exp"]!.GetStringValue(), NumberStyles.Any,
                 CultureInfo.CurrentCulture);
             var now = DateTime.Now;
             var tokenExp = UnixTimeStampToDateTime(expTimestamp);
@@ -935,16 +931,15 @@ namespace MinecraftClient.Protocol
                     }
                     else
                     {
-                        Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        var loginResponse = Json.ParseJson(result);
+                        if (loginResponse?["accessToken"] is not null
+                            && loginResponse["selectedProfile"]?["id"] is not null
+                            && loginResponse["selectedProfile"]?["name"] is not null)
                         {
-                            session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
-                                .StringValue;
+                            session.ID = loginResponse["accessToken"]!.GetStringValue();
+                            session.PlayerID = loginResponse["selectedProfile"]!["id"]!.GetStringValue();
+                            session.PlayerName = loginResponse["selectedProfile"]!["name"]!
+                                .GetStringValue();
                             return LoginResult.Success;
                         }
                         else return LoginResult.InvalidResponse;
@@ -986,16 +981,15 @@ namespace MinecraftClient.Protocol
                     }
                     else
                     {
-                        Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        var loginResponse = Json.ParseJson(result);
+                        if (loginResponse?["accessToken"] is not null
+                            && loginResponse["selectedProfile"]?["id"] is not null
+                            && loginResponse["selectedProfile"]?["name"] is not null)
                         {
-                            session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"]
-                                .StringValue;
+                            session.ID = loginResponse["accessToken"]!.GetStringValue();
+                            session.PlayerID = loginResponse["selectedProfile"]!["id"]!.GetStringValue();
+                            session.PlayerName = loginResponse["selectedProfile"]!["name"]!
+                                .GetStringValue();
                             return LoginResult.Success;
                         }
                         else return LoginResult.InvalidResponse;
@@ -1065,28 +1059,27 @@ namespace MinecraftClient.Protocol
                 string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username,
                     Program.MCHighestVersion);
                 DoHTTPSGet("pc.realms.minecraft.net", 443, "/worlds", cookies, ref result);
-                Json.JSONData realmsWorlds = Json.ParseJson(result);
-                if (realmsWorlds.Properties.ContainsKey("servers")
-                    && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
-                    && realmsWorlds.Properties["servers"].DataArray.Count > 0)
+                var realmsWorlds = Json.ParseJson(result);
+                if (realmsWorlds?["servers"] is System.Text.Json.Nodes.JsonArray serversArray
+                    && serversArray.Count > 0)
                 {
                     List<string> availableWorlds = new(); // Store string to print
                     int index = 0;
-                    foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
+                    foreach (var realmsServer in serversArray)
                     {
-                        if (realmsServer.Properties.ContainsKey("name")
-                            && realmsServer.Properties.ContainsKey("owner")
-                            && realmsServer.Properties.ContainsKey("id")
-                            && realmsServer.Properties.ContainsKey("expired"))
+                        if (realmsServer?["name"] is not null
+                            && realmsServer["owner"] is not null
+                            && realmsServer["id"] is not null
+                            && realmsServer["expired"] is not null)
                         {
-                            if (realmsServer.Properties["expired"].StringValue == "false")
+                            if (realmsServer["expired"].GetStringValue() == "false")
                             {
                                 availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
                                     index++,
-                                    realmsServer.Properties["id"].StringValue,
-                                    realmsServer.Properties["name"].StringValue,
-                                    realmsServer.Properties["owner"].StringValue));
-                                realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
+                                    realmsServer["id"]!.GetStringValue(),
+                                    realmsServer["name"]!.GetStringValue(),
+                                    realmsServer["owner"]!.GetStringValue()));
+                                realmsWorldsResult.Add(realmsServer["id"]!.GetStringValue());
                             }
                         }
                     }
@@ -1132,9 +1125,9 @@ namespace MinecraftClient.Protocol
                     cookies, ref result);
                 if (statusCode == 200)
                 {
-                    Json.JSONData serverAddress = Json.ParseJson(result);
-                    if (serverAddress.Properties.ContainsKey("address"))
-                        return serverAddress.Properties["address"].StringValue;
+                    var serverAddress = Json.ParseJson(result);
+                    if (serverAddress?["address"] is not null)
+                        return serverAddress["address"]!.GetStringValue();
                     else
                     {
                         ConsoleIO.WriteLine(Translations.error_realms_ip_error);

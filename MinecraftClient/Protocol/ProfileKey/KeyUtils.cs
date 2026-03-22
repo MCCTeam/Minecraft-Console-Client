@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Nodes;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Protocol.Message.LastSeenMessageList;
@@ -19,6 +20,9 @@ namespace MinecraftClient.Protocol.ProfileKey
             ProxiedWebRequest.Response? response = null;
             try
             {
+                if (!isYggdrasil && string.IsNullOrWhiteSpace(accessToken))
+                    return null;
+
                 if (!isYggdrasil)
                 {
                     var request = new ProxiedWebRequest(certificates)
@@ -33,21 +37,38 @@ namespace MinecraftClient.Protocol.ProfileKey
                     {
                         ConsoleIO.WriteLine(response.Body.ToString());
                     }
+
+                    if (response.StatusCode < 200 || response.StatusCode >= 300)
+                    {
+                        throw new InvalidOperationException(string.IsNullOrWhiteSpace(response.Body)
+                            ? "Certificate endpoint returned an error response."
+                            : response.Body);
+                    }
                 }
 
                 // see https://github.com/yushijinhun/authlib-injector/blob/da910956eaa30d2f6c2c457222d188aeb53b0d1f/src/main/java/moe/yushi/authlibinjector/httpd/ProfileKeyFilter.java#L49
                 // POST to "https://api.minecraftservices.com/player/certificates" with authlib-injector will get a dummy response
-                Json.JSONData json = isYggdrasil ? MakeDummyResponse() : Json.ParseJson(response!.Body);
-                // Error here
-                PublicKey publicKey = new(pemKey: json.Properties["keyPair"].Properties["publicKey"].StringValue,
-                    sig: json.Properties["publicKeySignature"].StringValue,
-                    sigV2: json.Properties["publicKeySignatureV2"].StringValue);
+                var json = isYggdrasil ? MakeDummyResponse() : Json.ParseJson(response!.Body);
+                if (json?["keyPair"]?["publicKey"] == null
+                    || json["keyPair"]?["privateKey"] == null
+                    || json["publicKeySignature"] == null
+                    || json["publicKeySignatureV2"] == null
+                    || json["expiresAt"] == null
+                    || json["refreshedAfter"] == null)
+                {
+                    throw new InvalidOperationException("Certificate endpoint returned an unexpected payload.");
+                }
 
-                PrivateKey privateKey = new(pemKey: json.Properties["keyPair"].Properties["privateKey"].StringValue);
+                // Error here
+                PublicKey publicKey = new(pemKey: json!["keyPair"]!["publicKey"]!.GetStringValue(),
+                    sig: json["publicKeySignature"]!.GetStringValue(),
+                    sigV2: json["publicKeySignatureV2"]!.GetStringValue());
+
+                PrivateKey privateKey = new(pemKey: json["keyPair"]!["privateKey"]!.GetStringValue());
 
                 return new PlayerKeyPair(publicKey, privateKey,
-                    expiresAt: json.Properties["expiresAt"].StringValue,
-                    refreshedAfter: json.Properties["refreshedAfter"].StringValue);
+                    expiresAt: json["expiresAt"]!.GetStringValue(),
+                    refreshedAfter: json["refreshedAfter"]!.GetStringValue());
             }
             catch (Exception e)
             {
@@ -191,51 +212,10 @@ namespace MinecraftClient.Protocol.ProfileKey
             return data.ToArray();
         }
 
-        // https://github.com/mono/mono/blob/master/mcs/class/System.Json/System.Json/JsonValue.cs
-        public static string EscapeString(string src)
-        {
-            StringBuilder sb = new();
+        // Delegate to the shared Json.EscapeString backed by System.Text.Json
+        public static string EscapeString(string src) => Json.EscapeString(src);
 
-            int start = 0;
-            for (int i = 0; i < src.Length; i++)
-            {
-                char c = src[i];
-                bool needEscape = c < 32 || c == '"' || c == '\\';
-                // Broken lead surrogate
-                needEscape = needEscape || c >= '\uD800' && c <= '\uDBFF' &&
-                    (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF');
-                // Broken tail surrogate
-                needEscape = needEscape || c >= '\uDC00' && c <= '\uDFFF' &&
-                    (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF');
-                // To produce valid JavaScript
-                needEscape = needEscape || c == '\u2028' || c == '\u2029';
-
-                if (needEscape)
-                {
-                    sb.Append(src, start, i - start);
-                    switch (src[i])
-                    {
-                        case '\b': sb.Append("\\b"); break;
-                        case '\f': sb.Append("\\f"); break;
-                        case '\n': sb.Append("\\n"); break;
-                        case '\r': sb.Append("\\r"); break;
-                        case '\t': sb.Append("\\t"); break;
-                        case '\"': sb.Append("\\\""); break;
-                        case '\\': sb.Append("\\\\"); break;
-                        default:
-                            sb.Append("\\u");
-                            sb.Append(((int)src[i]).ToString("x04"));
-                            break;
-                    }
-                    start = i + 1;
-                }
-
-            }
-            sb.Append(src, start, src.Length - start);
-            return sb.ToString();
-        }
-
-        public static Json.JSONData MakeDummyResponse()
+        public static JsonNode MakeDummyResponse()
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048);
             var mimePublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
@@ -245,19 +225,20 @@ namespace MinecraftClient.Protocol.ProfileKey
             DateTime now = DateTime.UtcNow;
             DateTime expiresAt = now.AddHours(48);
             DateTime refreshedAfter = now.AddHours(36);
-            Json.JSONData response = new(Json.JSONData.DataType.Object);
-            Json.JSONData keyPairObj = new(Json.JSONData.DataType.Object);
-            keyPairObj.Properties["privateKey"] = new(Json.JSONData.DataType.String){ StringValue = privateKeyPEM };
-            keyPairObj.Properties["publicKey"] = new(Json.JSONData.DataType.String){ StringValue = publicKeyPEM };
-
-            response.Properties["keyPair"] = keyPairObj;
-            response.Properties["publicKeySignature"] = new(Json.JSONData.DataType.String){ StringValue = "AA==" };
-            response.Properties["publicKeySignatureV2"] = new(Json.JSONData.DataType.String){ StringValue = "AA==" };
             string format = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
-            response.Properties["expiresAt"] = new(Json.JSONData.DataType.String){ StringValue = expiresAt.ToString(format) };
-            response.Properties["refreshedAfter"] = new(Json.JSONData.DataType.String){ StringValue = refreshedAfter.ToString(format) };
 
-            return response;
+            return new JsonObject
+            {
+                ["keyPair"] = new JsonObject
+                {
+                    ["privateKey"] = privateKeyPEM,
+                    ["publicKey"] = publicKeyPEM
+                },
+                ["publicKeySignature"] = "AA==",
+                ["publicKeySignatureV2"] = "AA==",
+                ["expiresAt"] = expiresAt.ToString(format),
+                ["refreshedAfter"] = refreshedAfter.ToString(format)
+            };
         }
     }
 }

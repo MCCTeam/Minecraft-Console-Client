@@ -1031,10 +1031,10 @@ namespace MinecraftClient.Protocol.Handlers
                             ? dataTypes.ReadNextString(packetData)
                             : null;
 
-                        var chatInfo = Json.ParseJson(chatName).Properties;
-                        var senderDisplayName = chatInfo != null && chatInfo.Count > 0
+                        var chatInfo = Json.ParseJson(chatName)?.AsObject();
+                        var senderDisplayName = chatInfo is not null && chatInfo.Count > 0
                             ? (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"])
-                            .StringValue
+                            .GetStringValue()
                             : "";
                         string? senderTeamName = null;
                         var messageTypeEnum =
@@ -1043,8 +1043,8 @@ namespace MinecraftClient.Protocol.Handlers
                         if (targetName != null &&
                             (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING ||
                              messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
-                            senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0]
-                                .Properties["text"].StringValue;
+                            senderTeamName = Json.ParseJson(targetName)!["with"]![0]!
+                                ["text"]!.GetStringValue();
 
                         if (string.IsNullOrWhiteSpace(senderDisplayName))
                         {
@@ -3520,81 +3520,113 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if ping was successful</returns>
         public static bool DoPing(string host, int port, ref int protocolVersion, ref ForgeInfo? forgeInfo)
         {
-            var version = "";
-            var tcp = ProxyHandler.NewTcpClient(host, port);
-            tcp.ReceiveTimeout = 30000; // 30 seconds
-            tcp.ReceiveBufferSize = 1024 * 1024;
-            SocketWrapper socketWrapper = new(tcp);
-            DataTypes dataTypes = new(MC_1_8_Version);
+            SocketWrapper? socketWrapper = null;
 
-            var serverPort = BitConverter.GetBytes((ushort)port);
-            Array.Reverse(serverPort);
-
-            // Ping Packet
-            var pingPacket = dataTypes.ConcatBytes(
-                // Packet Id
-                DataTypes.GetVarInt(0),
-
-                // Protocol Version
-                DataTypes.GetVarInt(-1),
-
-                // Server IP (Host)
-                dataTypes.GetString(host),
-
-                // Server port
-                serverPort,
-
-                // Next State
-                DataTypes.GetVarInt(1));
-
-            socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(pingPacket.Length), pingPacket));
-
-            // Status Request Packet
-            var statusRequest = DataTypes.GetVarInt(0);
-            socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(statusRequest.Length), statusRequest));
-
-            // Read Response length
-            var packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
-            if (packetLength <= 0) return false;
-
-            // Read the Packet Id
-            var packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
-            if (dataTypes.ReadNextVarInt(packetData) != 0x00) return false;
-
-            var result = dataTypes.ReadNextString(packetData); // Get the Json data
-
-            if (Config.Logging.DebugMessages)
+            try
             {
-                // May contain formatting codes, cannot use WriteLineFormatted
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine(result);
-                Console.ForegroundColor = ConsoleColor.Gray;
+                var version = "";
+                var tcp = ProxyHandler.NewTcpClient(host, port);
+                tcp.ReceiveTimeout = 30000; // 30 seconds
+                tcp.ReceiveBufferSize = 1024 * 1024;
+                socketWrapper = new SocketWrapper(tcp);
+                DataTypes dataTypes = new(MC_1_8_Version);
+
+                var serverPort = BitConverter.GetBytes((ushort)port);
+                Array.Reverse(serverPort);
+
+                // Ping Packet
+                var pingPacket = dataTypes.ConcatBytes(
+                    // Packet Id
+                    DataTypes.GetVarInt(0),
+
+                    // Protocol Version
+                    DataTypes.GetVarInt(-1),
+
+                    // Server IP (Host)
+                    dataTypes.GetString(host),
+
+                    // Server port
+                    serverPort,
+
+                    // Next State
+                    DataTypes.GetVarInt(1));
+
+                socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(pingPacket.Length), pingPacket));
+
+                // Status Request Packet
+                var statusRequest = DataTypes.GetVarInt(0);
+                socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(statusRequest.Length), statusRequest));
+
+                // Read Response length
+                var packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
+                if (packetLength <= 0)
+                    return false;
+
+                // Read the Packet Id
+                var packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
+                if (dataTypes.ReadNextVarInt(packetData) != 0x00)
+                    return false;
+
+                var result = dataTypes.ReadNextString(packetData); // Get the Json data
+
+                if (Config.Logging.DebugMessages)
+                {
+                    // May contain formatting codes, cannot use WriteLineFormatted
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    ConsoleIO.WriteLine(result);
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                }
+
+                if (string.IsNullOrEmpty(result) || !result.StartsWith("{") || !result.EndsWith("}"))
+                    return false;
+
+                var jsonData = Json.ParseJson(result);
+                if (jsonData is not System.Text.Json.Nodes.JsonObject jsonObj || !jsonObj.ContainsKey("version"))
+                    return false;
+
+                var versionData = jsonObj["version"]!.AsObject();
+
+                // Retrieve display name of the Minecraft version
+                if (versionData["name"] is { } nameNode)
+                    version = nameNode.GetStringValue();
+
+                // Retrieve protocol version number for handling this server
+                if (versionData["protocol"] is { } protocolNode)
+                    protocolVersion = int.Parse(protocolNode.GetStringValue(),
+                        NumberStyles.Any, CultureInfo.CurrentCulture);
+
+                // Check for forge on the server.
+                Protocol18Forge.ServerInfoCheckForge(jsonObj, ref forgeInfo);
+
+                // Complete the normal status exchange so the probe connection closes cleanly server-side.
+                try
+                {
+                    long pingPayload = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var pingRequest = dataTypes.ConcatBytes(DataTypes.GetVarInt(0x01), DataTypes.GetLong(pingPayload));
+                    socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(pingRequest.Length), pingRequest));
+
+                    packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
+                    if (packetLength > 0)
+                    {
+                        packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
+                        if (dataTypes.ReadNextVarInt(packetData) == 0x01)
+                            dataTypes.ReadNextLong(packetData);
+                    }
+                }
+                catch
+                {
+                    // Some servers may close the probe connection immediately after the status response.
+                }
+
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_server_protocol, version,
+                    protocolVersion + (forgeInfo != null ? Translations.mcc_with_forge : "")));
+
+                return true;
             }
-
-            if (string.IsNullOrEmpty(result) || !result.StartsWith("{") || !result.EndsWith("}")) return false;
-
-            var jsonData = Json.ParseJson(result);
-            if (jsonData.Type != Json.JSONData.DataType.Object || !jsonData.Properties.ContainsKey("version"))
-                return false;
-
-            var versionData = jsonData.Properties["version"];
-
-            //Retrieve display name of the Minecraft version
-            if (versionData.Properties.TryGetValue("name", out var property))
-                version = property.StringValue;
-
-            //Retrieve protocol version number for handling this server
-            if (versionData.Properties.TryGetValue("protocol", out var dataProperty))
-                protocolVersion = int.Parse(dataProperty.StringValue,
-                    NumberStyles.Any, CultureInfo.CurrentCulture);
-
-            // Check for forge on the server.
-            Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
-
-            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_server_protocol, version,
-                protocolVersion + (forgeInfo != null ? Translations.mcc_with_forge : "")));
-
-            return true;
+            finally
+            {
+                socketWrapper?.Disconnect();
+            }
         }
 
         /// <summary>

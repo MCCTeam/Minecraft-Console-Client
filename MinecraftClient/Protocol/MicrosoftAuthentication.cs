@@ -68,20 +68,20 @@ namespace MinecraftClient.Protocol
             var jsonData = Json.ParseJson(response.Body);
 
             // Error handling
-            if (jsonData.Properties.ContainsKey("error"))
+            if (jsonData?["error"] is not null)
             {
-                throw new Exception(jsonData.Properties["error_description"].StringValue);
+                throw new Exception(jsonData["error_description"].GetStringValue());
             }
             else
             {
-                string accessToken = jsonData.Properties["access_token"].StringValue;
-                string refreshToken = jsonData.Properties["refresh_token"].StringValue;
-                int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
+                string accessToken = jsonData!["access_token"]!.GetStringValue();
+                string refreshToken = jsonData["refresh_token"]!.GetStringValue();
+                int expiresIn = int.Parse(jsonData["expires_in"].GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
 
                 // Extract email from JWT
-                string payload = JwtPayloadDecode.GetPayload(jsonData.Properties["id_token"].StringValue);
+                string payload = JwtPayloadDecode.GetPayload(jsonData["id_token"]!.GetStringValue());
                 var jsonPayload = Json.ParseJson(payload);
-                string email = jsonPayload.Properties["email"].StringValue;
+                string email = jsonPayload!["email"]!.GetStringValue();
                 return new LoginResponse()
                 {
                     Email = email,
@@ -299,9 +299,9 @@ namespace MinecraftClient.Protocol
                 string jsonString = response.Body;
                 //Console.WriteLine(jsonString);
 
-                Json.JSONData json = Json.ParseJson(jsonString);
-                string token = json.Properties["Token"].StringValue;
-                string userHash = json.Properties["DisplayClaims"].Properties["xui"].DataArray[0].Properties["uhs"].StringValue;
+                var json = Json.ParseJson(jsonString);
+                string token = json!["Token"]!.GetStringValue();
+                string userHash = json["DisplayClaims"]!["xui"]![0]!["uhs"]!.GetStringValue();
                 return new XblAuthenticateResponse()
                 {
                     Token = token,
@@ -347,9 +347,9 @@ namespace MinecraftClient.Protocol
             if (response.StatusCode == 200)
             {
                 string jsonString = response.Body;
-                Json.JSONData json = Json.ParseJson(jsonString);
-                string token = json.Properties["Token"].StringValue;
-                string userHash = json.Properties["DisplayClaims"].Properties["xui"].DataArray[0].Properties["uhs"].StringValue;
+                var json = Json.ParseJson(jsonString);
+                string token = json!["Token"]!.GetStringValue();
+                string userHash = json["DisplayClaims"]!["xui"]![0]!["uhs"]!.GetStringValue();
                 return new XSTSAuthenticateResponse()
                 {
                     Token = token,
@@ -360,16 +360,16 @@ namespace MinecraftClient.Protocol
             {
                 if (response.StatusCode == 401)
                 {
-                    Json.JSONData json = Json.ParseJson(response.Body);
-                    if (json.Properties["XErr"].StringValue == "2148916233")
+                    var json = Json.ParseJson(response.Body);
+                    if (json!["XErr"]!.GetStringValue() == "2148916233")
                     {
                         throw new Exception("The account doesn't have an Xbox account");
                     }
-                    else if (json.Properties["XErr"].StringValue == "2148916238")
+                    else if (json["XErr"]!.GetStringValue() == "2148916238")
                     {
                         throw new Exception("The account is a child (under 18) and cannot proceed unless the account is added to a Family by an adult");
                     }
-                    else throw new Exception("Unknown XSTS error code: " + json.Properties["XErr"].StringValue);
+                    else throw new Exception("Unknown XSTS error code: " + json["XErr"]!.GetStringValue());
                 }
                 else
                 {
@@ -426,9 +426,9 @@ namespace MinecraftClient.Protocol
             }
 
             string jsonString = response.Body;
-            Json.JSONData json = Json.ParseJson(jsonString);
+            var json = Json.ParseJson(jsonString);
 
-            return json.Properties["access_token"].StringValue;
+            return json!["access_token"]!.GetStringValue();
         }
 
         /// <summary>
@@ -448,8 +448,8 @@ namespace MinecraftClient.Protocol
             }
 
             string jsonString = response.Body;
-            Json.JSONData json = Json.ParseJson(jsonString);
-            return json.Properties["items"].DataArray.Count > 0;
+            var json = Json.ParseJson(jsonString);
+            return json!["items"]!.AsArray().Count > 0;
         }
 
         public static UserProfile GetUserProfile(string accessToken)
@@ -464,11 +464,11 @@ namespace MinecraftClient.Protocol
             }
 
             string jsonString = response.Body;
-            Json.JSONData json = Json.ParseJson(jsonString);
+            var json = Json.ParseJson(jsonString);
             return new UserProfile()
             {
-                UUID = json.Properties["id"].StringValue,
-                UserName = json.Properties["name"].StringValue
+                UUID = json!["id"]!.GetStringValue(),
+                UserName = json["name"]!.GetStringValue()
             };
         }
 

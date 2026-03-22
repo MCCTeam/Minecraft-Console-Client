@@ -436,74 +436,70 @@ namespace MinecraftClient.Protocol.Message
         /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
         /// <param name="links">Container for links from JSON serialized text</param>
         /// <returns>returns the Minecraft-formatted string</returns>
-        private static string JSONData2String(Json.JSONData data, string colorcode, List<string>? links)
+        private static string JSONData2String(System.Text.Json.Nodes.JsonNode? data, string colorcode, List<string>? links)
         {
             string extra_result = "";
-            switch (data.Type)
+            switch (data)
             {
-                case Json.JSONData.DataType.Object:
-                    if (data.Properties.ContainsKey("color"))
+                case System.Text.Json.Nodes.JsonObject obj:
+                    if (obj.ContainsKey("color"))
                     {
-                        colorcode = Color2tag(JSONData2String(data.Properties["color"], "", links));
+                        colorcode = Color2tag(JSONData2String(obj["color"], "", links));
                     }
 
-                    if (data.Properties.ContainsKey("clickEvent") && links != null)
+                    if (obj.ContainsKey("clickEvent") && links is not null)
                     {
-                        Json.JSONData clickEvent = data.Properties["clickEvent"];
-                        if (clickEvent.Properties.ContainsKey("action")
-                            && clickEvent.Properties.ContainsKey("value")
-                            && clickEvent.Properties["action"].StringValue == "open_url"
-                            && !string.IsNullOrEmpty(clickEvent.Properties["value"].StringValue))
+                        var clickEvent = obj["clickEvent"]!.AsObject();
+                        if (clickEvent.ContainsKey("action")
+                            && clickEvent.ContainsKey("value")
+                            && clickEvent["action"]!.GetStringValue() == "open_url"
+                            && !string.IsNullOrEmpty(clickEvent["value"]!.GetStringValue()))
                         {
-                            links.Add(clickEvent.Properties["value"].StringValue);
+                            links.Add(clickEvent["value"]!.GetStringValue());
                         }
                     }
 
-                    if (data.Properties.ContainsKey("extra"))
+                    if (obj.ContainsKey("extra"))
                     {
-                        Json.JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
-                        foreach (Json.JSONData item in extras)
+                        foreach (var item in obj["extra"]!.AsArray())
                             extra_result = extra_result + JSONData2String(item, colorcode, links) + "§r";
                     }
 
-                    if (data.Properties.ContainsKey("text"))
+                    if (obj.ContainsKey("text"))
                     {
-                        return colorcode + JSONData2String(data.Properties["text"], colorcode, links) + extra_result;
+                        return colorcode + JSONData2String(obj["text"], colorcode, links) + extra_result;
                     }
-                    else if (data.Properties.ContainsKey("translate"))
+                    else if (obj.ContainsKey("translate"))
                     {
                         List<string> using_data = new();
-                        if (data.Properties.ContainsKey("using") && !data.Properties.ContainsKey("with"))
-                            data.Properties["with"] = data.Properties["using"];
-                        if (data.Properties.ContainsKey("with"))
+                        if (obj.ContainsKey("using") && !obj.ContainsKey("with"))
+                            obj["with"] = obj["using"]!.DeepClone();
+                        if (obj.ContainsKey("with"))
                         {
-                            Json.JSONData[] array = data.Properties["with"].DataArray.ToArray();
-                            for (int i = 0; i < array.Length; i++)
+                            foreach (var item in obj["with"]!.AsArray())
                             {
-                                using_data.Add(JSONData2String(array[i], colorcode, links));
+                                using_data.Add(JSONData2String(item, colorcode, links));
                             }
                         }
 
                         return colorcode +
-                               TranslateString(JSONData2String(data.Properties["translate"], "", links), using_data) +
+                               TranslateString(JSONData2String(obj["translate"], "", links), using_data) +
                                extra_result;
                     }
                     else return extra_result;
 
-                case Json.JSONData.DataType.Array:
+                case System.Text.Json.Nodes.JsonArray arr:
                     string result = "";
-                    foreach (Json.JSONData item in data.DataArray)
+                    foreach (var item in arr)
                     {
                         result += JSONData2String(item, colorcode, links);
                     }
 
                     return result;
 
-                case Json.JSONData.DataType.String:
-                    return colorcode + data.StringValue;
+                default:
+                    return colorcode + data.GetStringValue();
             }
-
-            return "";
         }
 
         private static string NbtToString(Dictionary<string, object> nbt)

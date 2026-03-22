@@ -51,8 +51,8 @@ namespace MinecraftClient.Mapping.BlockPalettes
             HashSet<int> knownStates = new();
             Dictionary<string, HashSet<int>> blocks = new();
 
-            Json.JSONData palette = Json.ParseJson(File.ReadAllText(blocksJsonFile, Encoding.UTF8));
-            foreach (KeyValuePair<string, Json.JSONData> item in palette.Properties)
+            var palette = Json.ParseJson(File.ReadAllText(blocksJsonFile, Encoding.UTF8))!.AsObject();
+            foreach (var item in palette)
             {
                 //minecraft:item_name => ItemName
                 string blockType = String.Concat(
@@ -65,9 +65,9 @@ namespace MinecraftClient.Mapping.BlockPalettes
                     throw new InvalidDataException("Duplicate block type " + blockType + "!?");
                 blocks[blockType] = new HashSet<int>();
 
-                foreach (Json.JSONData state in item.Value.Properties["states"].DataArray)
+                foreach (var state in item.Value!["states"]!.AsArray())
                 {
-                    int id = int.Parse(state.Properties["id"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
+                    int id = int.Parse(state!["id"].GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
 
                     if (knownStates.Contains(id))
                         throw new InvalidDataException("Duplicate state id " + id + "!?");

@@ -63,7 +63,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// </summary>
         /// <param name="data">The modinfo JSON tag.</param>
         /// <param name="fmlVersion">Forge protocol version</param>
-        internal ForgeInfo(Json.JSONData data, FMLVersion fmlVersion)
+        internal ForgeInfo(System.Text.Json.Nodes.JsonObject data, FMLVersion fmlVersion)
         {
             Mods = new List<ForgeMod>();
             Version = fmlVersion;
@@ -91,10 +91,10 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     //     }]
                     // }
 
-                    foreach (Json.JSONData mod in data.Properties["modList"].DataArray)
+                    foreach (var mod in data["modList"]!.AsArray())
                     {
-                        String modid = mod.Properties["modid"].StringValue;
-                        String modversion = mod.Properties["version"].StringValue;
+                        String modid = mod!["modid"]!.GetStringValue();
+                        String modversion = mod["version"]!.GetStringValue();
 
                         Mods.Add(new ForgeMod(modid, modversion));
                     }
@@ -131,10 +131,10 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     //     "fmlNetworkVersion": 2
                     // }
 
-                    foreach (Json.JSONData mod in data.Properties["mods"].DataArray)
+                    foreach (var mod in data["mods"]!.AsArray())
                     {
-                        String modid = mod.Properties["modId"].StringValue;
-                        String modmarker = mod.Properties["modmarker"].StringValue;
+                        String modid = mod!["modId"]!.GetStringValue();
+                        String modmarker = mod["modmarker"]!.GetStringValue();
 
                         Mods.Add(new ForgeMod(modid, modmarker));
                     }
@@ -157,7 +157,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     // - Here is the discussion:
                     // see https://github.com/MinecraftForge/MinecraftForge/pull/8169
 
-                    string encodedData = data.Properties["d"].StringValue;
+                    string encodedData = data["d"]!.GetStringValue();
                     Queue<byte> dataPackage = decodeOptimized(encodedData);
                     DataTypes dataTypes = new DataTypes(Protocol18Handler.MC_1_18_1_Version);
 
