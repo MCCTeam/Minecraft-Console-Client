@@ -804,7 +804,7 @@ foreach (var s in items) combined += s + ", ";
 | Immutable snapshots | `ImmutableDictionary<K,V>` | Persistent structure |
 | Membership test | `HashSet<T>` / `FrozenSet<T>` | FrozenSet for static |
 | Priority queue | `PriorityQueue<E,P>` | .NET 6+ |
-| Synchronisation | `System.Threading.Lock` | C# 13; prefer over `lock(obj)` |
+| Synchronization | `System.Threading.Lock` | C# 13; prefer over `lock(obj)` |
 | Producer-consumer | `Channel<T>` | Over `BlockingCollection<T>` |
 | Temp buffer | `ArrayPool<T>` / `stackalloc` | Zero/low alloc |
 
