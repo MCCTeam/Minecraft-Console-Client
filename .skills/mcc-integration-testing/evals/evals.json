@@ -7,7 +7,7 @@
       "expected_output": "The server is left in offline mode with RCON enabled, MCC joins successfully, and the run reports clear pass or fail evidence from both MCC and server logs.",
       "files": [],
       "expectations": [
-        "The workflow sources ~/.zshrc without reading it directly.",
+        "The workflow sources tools/mcc-env.sh or calls tools/start-server.sh and tools/mc-rcon.sh directly.",
         "The server is configured with online-mode=false and enable-rcon=true.",
         "The run uses both mc-rcon and mcc-cmd.",
         "The result includes evidence from MCC output and server logs."

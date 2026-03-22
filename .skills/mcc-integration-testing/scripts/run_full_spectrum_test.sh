@@ -1,12 +1,11 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 set -euo pipefail
 
-set +eu
-source ~/.zshrc
-set -eu
-
-SCRIPT_DIR="${0:A:h}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# shellcheck source=tools/mcc-env.sh
+source "$REPO_ROOT/tools/mcc-env.sh"
+
 VERSION="${1:-1.21.11-Vanilla}"
 RUN_ROOT="${TMPDIR:-/tmp}/mcc-integration-testing"
 RUN_ID="$(date +%Y%m%d-%H%M%S)"

@@ -5,24 +5,23 @@ description: Repeatable local offline integration testing for Minecraft Console 
 
 # MCC Integration Testing
 
-Use this skill for local MCC validation against the user's `mc-*` and `mcc-*` shell helpers.
+Use this skill for local MCC validation. Helper functions (`mc-*`, `mcc-*`) come from `tools/mcc-env.sh`; standalone tools (`tools/start-server.sh`, `tools/mc-rcon.sh`) can also be called directly without sourcing.
 
 ## Workflow
 
-1. Source `~/.zshrc` in command invocations.
-2. Do not read `~/.zshrc` directly.
-3. Ensure the target server is configured for persistent offline testing:
+1. Source `tools/mcc-env.sh` to load `mc-*` and `mcc-*` helpers, or call `tools/start-server.sh` and `tools/mc-rcon.sh` directly for non-interactive shells.
+2. Ensure the target server is configured for persistent offline testing:
    - `online-mode=false`
    - `enforce-secure-profile=false`
    - `enable-rcon=true`
    - `rcon.password=test123`
-4. Build with `mcc-build`.
-5. Run the scripted scenario with `scripts/run_full_spectrum_test.sh`.
-6. Summarize the evidence with `scripts/summarize_test_run.sh`.
+3. Build with `dotnet build MinecraftClient.sln -c Release`.
+4. Run the scripted scenario with `scripts/run_full_spectrum_test.sh`.
+5. Summarize the evidence with `scripts/summarize_test_run.sh`.
 
 ## Required Preconditions
 
-- Server jar exists under `~/Minecraft/Servers/<version>/server.jar`
+- Server jar exists under `MinecraftOfficial/downloads/<version>/server.jar`
 - `eula.txt` contains `eula=true`
 - Repo root `MinecraftClient.ini` is the offline MCC test profile
 - The MCC config round-trip issue must be fixed before relying on repeated launches
