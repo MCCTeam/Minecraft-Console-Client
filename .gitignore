@@ -430,3 +430,7 @@ FodyWeavers.xsd
 /mcc_input.txt
 /MinecraftClient.ini
 /MinecraftClient.backup.ini
+
+# SpecStory files
+/.specstory/
+/.vscode/settings.json
