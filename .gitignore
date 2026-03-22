@@ -423,7 +423,7 @@ FodyWeavers.xsd
 /docs/.vuepress/public/MCC-README/
 
 # Floder to store the decompiled Minecraft official source code
-MinecraftOfficial/
+/MinecraftOfficial/
 
 # Possible debug files
 /lang/*

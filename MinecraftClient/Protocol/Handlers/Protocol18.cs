@@ -90,6 +90,10 @@ namespace MinecraftClient.Protocol.Handlers
         private bool isOnlineMode = false;
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
         private float LastYaw, LastPitch;
+        private double lastSentX, lastSentY, lastSentZ;
+        private float lastSentYaw, lastSentPitch;
+        private bool lastSentOnGround;
+        private int positionReminder;
         private long chunkBatchStartTime;
         private double aggregatedNanosPerChunk = 2000000.0;
         private int oldSamplesWeight = 1;
@@ -4061,47 +4065,92 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (handler.GetTerrainEnabled())
             {
-                var yawPitch = Array.Empty<byte>();
-                var packetType = PacketTypesOut.PlayerPosition;
+                // Vanilla-like packet selection (LocalPlayer.sendPosition):
+                // Send position if delta > (2e-4)^2 or every 20 ticks
+                // Send rotation if yaw/pitch changed
+                // Send StatusOnly if only onGround changed
 
-                if (Config.Main.Advanced.TemporaryFixBadpacket)
-                {
-                    if (yaw.HasValue && pitch.HasValue &&
-                        (forceUpdate || yaw.Value != LastYaw || pitch.Value != LastPitch))
-                    {
-                        yawPitch = dataTypes.ConcatBytes(dataTypes.GetFloat(yaw.Value),
-                            dataTypes.GetFloat(pitch.Value));
-                        packetType = PacketTypesOut.PlayerPositionAndRotation;
+                double dx = location.X - lastSentX;
+                double dy = location.Y - lastSentY;
+                double dz = location.Z - lastSentZ;
+                double distSqr = dx * dx + dy * dy + dz * dz;
 
-                        LastYaw = yaw.Value;
-                        LastPitch = pitch.Value;
-                    }
-                }
-                else
-                {
-                    if (yaw.HasValue && pitch.HasValue)
-                    {
-                        yawPitch = dataTypes.ConcatBytes(dataTypes.GetFloat(yaw.Value),
-                            dataTypes.GetFloat(pitch.Value));
-                        packetType = PacketTypesOut.PlayerPositionAndRotation;
+                bool positionChanged = distSqr > 4.0E-8 || positionReminder >= 20;
+                bool rotationChanged = false;
+                if (yaw.HasValue && pitch.HasValue)
+                    rotationChanged = forceUpdate || yaw.Value != lastSentYaw || pitch.Value != lastSentPitch;
+                bool groundChanged = onGround != lastSentOnGround;
 
-                        LastYaw = yaw.Value;
-                        LastPitch = pitch.Value;
-                    }
-                }
+                positionReminder++;
+
+                if (!positionChanged && !rotationChanged && !groundChanged)
+                    return true; // Nothing to send
 
                 try
                 {
-                    SendPacket(packetType, dataTypes.ConcatBytes(
-                        dataTypes.GetDouble(location.X),
-                        dataTypes.GetDouble(location.Y),
-                        protocolVersion < MC_1_8_Version
-                            ? dataTypes.GetDouble(location.Y + 1.62)
-                            : Array.Empty<byte>(),
-                        dataTypes.GetDouble(location.Z),
-                        yawPitch,
-                        new byte[] { onGround ? (byte)1 : (byte)0 })
-                    );
+                    PacketTypesOut packetType;
+                    byte[] payload;
+                    byte flags = (byte)(onGround ? 1 : 0);
+
+                    if (positionChanged && rotationChanged && yaw.HasValue && pitch.HasValue)
+                    {
+                        packetType = PacketTypesOut.PlayerPositionAndRotation;
+                        payload = dataTypes.ConcatBytes(
+                            dataTypes.GetDouble(location.X),
+                            dataTypes.GetDouble(location.Y),
+                            protocolVersion < MC_1_8_Version
+                                ? dataTypes.GetDouble(location.Y + 1.62)
+                                : Array.Empty<byte>(),
+                            dataTypes.GetDouble(location.Z),
+                            dataTypes.GetFloat(yaw.Value),
+                            dataTypes.GetFloat(pitch.Value),
+                            new[] { flags });
+                        lastSentYaw = yaw.Value;
+                        lastSentPitch = pitch.Value;
+                        LastYaw = yaw.Value;
+                        LastPitch = pitch.Value;
+                    }
+                    else if (positionChanged)
+                    {
+                        packetType = PacketTypesOut.PlayerPosition;
+                        payload = dataTypes.ConcatBytes(
+                            dataTypes.GetDouble(location.X),
+                            dataTypes.GetDouble(location.Y),
+                            protocolVersion < MC_1_8_Version
+                                ? dataTypes.GetDouble(location.Y + 1.62)
+                                : Array.Empty<byte>(),
+                            dataTypes.GetDouble(location.Z),
+                            new[] { flags });
+                    }
+                    else if (rotationChanged && yaw.HasValue && pitch.HasValue)
+                    {
+                        packetType = PacketTypesOut.PlayerRotation;
+                        payload = dataTypes.ConcatBytes(
+                            dataTypes.GetFloat(yaw.Value),
+                            dataTypes.GetFloat(pitch.Value),
+                            new[] { flags });
+                        lastSentYaw = yaw.Value;
+                        lastSentPitch = pitch.Value;
+                        LastYaw = yaw.Value;
+                        LastPitch = pitch.Value;
+                    }
+                    else
+                    {
+                        // Only onGround changed — send StatusOnly (PlayerMovement)
+                        packetType = PacketTypesOut.PlayerMovement;
+                        payload = new[] { flags };
+                    }
+
+                    if (positionChanged)
+                    {
+                        lastSentX = location.X;
+                        lastSentY = location.Y;
+                        lastSentZ = location.Z;
+                        positionReminder = 0;
+                    }
+                    lastSentOnGround = onGround;
+
+                    SendPacket(packetType, payload);
                     return true;
                 }
                 catch (SocketException)

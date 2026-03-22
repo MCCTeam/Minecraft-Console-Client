@@ -114,6 +114,25 @@ python3 tools/gen_command_argument_registry.py 1.20.6 1.21.5 1.21.6
 
 Reads `ArgumentTypeInfos.java`, skips the `SharedConstants.IS_RUNNING_IN_IDE` block, and prints C# array initializers for the runtime `COMMAND_ARGUMENT_TYPE` registry order. Use this when Mojang inserts new command argument types and the modern `DeclareCommands` parser needs updated ID routing.
 
+## gen_block_shapes.py — Download & compact block collision shapes
+
+Downloads block collision shapes from PrismarineJS `minecraft-data` and compacts them into a single JSON for MCC's physics engine.
+
+```bash
+# Auto-download for a specific MC version
+python3 tools/gen_block_shapes.py 1.21.11
+# → MinecraftClient/Physics/BlockShapeData.json
+
+# From a local file (if network is slow)
+python3 tools/gen_block_shapes.py --from-file /path/to/blockCollisionShapes.json
+```
+
+Output: `MinecraftClient/Physics/BlockShapeData.json` (embedded as a resource via `.csproj`).
+
+Data source: `https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc/<version>/blockCollisionShapes.json`
+
+Uses `curl` with resume (`-C -`) for reliable download over slow connections. Falls back to manual download if retries are exhausted.
+
 ## Recommended workflow
 
 1. Generate server reports (Step 0)
@@ -123,6 +142,7 @@ Reads `ArgumentTypeInfos.java`, skips the `SharedConstants.IS_RUNNING_IN_IDE` bl
    - Blocks: `gen_block_palette.py`
    - Entities: `gen_entity_palette.py`
    - Metadata: `gen_entity_metadata_palette.py`
-4. Add any missing enum values to `ItemType.cs`, `Material.cs`, `EntityType.cs`, `EntityMetaDataType.cs`
-5. Update version routing (see SKILL.md)
-6. Build and test
+4. Update block collision shapes: `gen_block_shapes.py`
+5. Add any missing enum values to `ItemType.cs`, `Material.cs`, `EntityType.cs`, `EntityMetaDataType.cs`
+6. Update version routing (see SKILL.md)
+7. Build and test
