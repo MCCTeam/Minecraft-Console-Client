@@ -16,8 +16,10 @@ public static class Json
 
     /// <summary>
     /// Parse a JSON string into a mutable <see cref="JsonNode"/> DOM.
+    /// Returns null for null, empty, or whitespace-only input.
     /// </summary>
-    public static JsonNode? ParseJson(string json) => JsonNode.Parse(json);
+    public static JsonNode? ParseJson(string? json) =>
+        string.IsNullOrWhiteSpace(json) ? null : JsonNode.Parse(json);
 
     /// <summary>
     /// Escape a string for embedding inside a JSON string literal.
