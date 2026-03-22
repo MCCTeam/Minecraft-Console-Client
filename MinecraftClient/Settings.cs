@@ -495,7 +495,7 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.General.method$")]
                     public LoginMethod Method = LoginMethod.mcc;
                     [TomlInlineComment("$Main.General.AuthlibServer$")]
-                    public AuthlibServer AuthServer = new(string.Empty);
+                    public AuthlibServer AuthServer = new();
 
                     [TomlInlineComment("$Main.General.AuthlibUser$")]
                     public string AuthUser = "";
@@ -709,34 +709,39 @@ namespace MinecraftClient
                         this.Port = Port;
                     }
                 }
-                public struct AuthlibServer
+                [TomlDoNotInlineObject]
+                public class AuthlibServer
                 {
-                    public string Host = string.Empty;
-                    public int Port = 443;
+                    [NonSerialized]
+                    private string _host = string.Empty;
 
-                    public AuthlibServer()
+                    [TomlInlineComment("$AuthlibServer.Host$")]
+                    public string Host
                     {
-                        Host = string.Empty;
-                        Port = 443;
-                    }
-
-                    public AuthlibServer(string Host)
-                    {
-                        string[] sip = Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
-                        this.Host = sip[0];
-
-                        if (sip.Length > 1)
+                        get => _host;
+                        set
                         {
-                            try { this.Port = Convert.ToUInt16(sip[1]); }
-                            catch (FormatException) { }
+                            string[] split = value.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                            if (split.Length >= 1)
+                                _host = split[0];
+                            if (split.Length >= 2)
+                            {
+                                try { Port = Convert.ToUInt16(split[1]); }
+                                catch (FormatException) { }
+                            }
                         }
                     }
 
-                    public AuthlibServer(string Host, ushort Port)
-                    {
-                        this.Host = Host.Split(new[] { ":", "：" }, StringSplitOptions.None)[0];
-                        this.Port = Port;
-                    }
+                    [TomlInlineComment("$AuthlibServer.Port$")]
+                    public int Port = 443;
+
+                    [TomlInlineComment("$AuthlibServer.AuthlibInjectorAPIPath$")]
+                    public string AuthlibInjectorAPIPath = "/api/yggdrasil";
+
+                    [TomlInlineComment("$AuthlibServer.UseHttps$")]
+                    public bool UseHttps = true;
+
+
                 }
             }
         }

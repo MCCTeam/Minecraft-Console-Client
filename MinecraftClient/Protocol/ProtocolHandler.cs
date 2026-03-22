@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Globalization;
 using System.Linq;
-using System.Net.Security;
+using System.Net.Http;
 using System.Net.Sockets;
-using System.Security.Authentication;
 using System.Text;
 using DnsClient;
 using MinecraftClient.Protocol.Handlers;
@@ -657,7 +656,8 @@ namespace MinecraftClient.Protocol
                                       JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) +
                                       "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
                 int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port,
-                    "/api/yggdrasil/authserver/authenticate", json_request, ref result);
+                    Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/authserver/authenticate", json_request,
+                    Config.Main.General.AuthServer.UseHttps, ref result);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
@@ -972,7 +972,8 @@ namespace MinecraftClient.Protocol
                                       "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) +
                                       "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
                 int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port,
-                    "/api/yggdrasil/authserver/refresh", json_request, ref result);
+                    Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/authserver/refresh", json_request,
+                    Config.Main.General.AuthServer.UseHttps, ref result);
                 if (code == 200)
                 {
                     if (result == null)
@@ -1031,10 +1032,11 @@ namespace MinecraftClient.Protocol
                     : "sessionserver.mojang.com";
                 int port = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.Port : 443;
                 string endpoint = type == LoginType.yggdrasil
-                    ? "/api/yggdrasil/sessionserver/session/minecraft/join"
+                    ? Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/sessionserver/session/minecraft/join"
                     : "/session/minecraft/join";
 
-                int code = DoHTTPSPost(host, port, endpoint, json_request, ref result);
+                bool useHttps = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.UseHttps : true;
+                int code = DoHTTPSPost(host, port, endpoint, json_request, useHttps, ref result);
                 return (code >= 200 && code < 300);
             }
             catch
@@ -1156,61 +1158,68 @@ namespace MinecraftClient.Protocol
         /// Make a HTTPS GET request to the specified endpoint of the Mojang API
         /// </summary>
         /// <param name="host">Host to connect to</param>
-        /// <param name="endpoint">Endpoint for making the request</param>
+        /// <param name="port">Port to connect on</param>
+        /// <param name="path">Path for making the request</param>
         /// <param name="cookies">Cookies for making the request</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSGet(string host, int port, string endpoint, string cookies, ref string result)
+        private static int DoHTTPSGet(string host, int port, string path, string cookies, ref string result)
         {
-            List<String> http_request = new()
+            Dictionary<string, string> headers = new()
             {
-                "GET " + endpoint + " HTTP/1.1",
-                "Cookie: " + cookies,
-                "Cache-Control: no-cache",
-                "Pragma: no-cache",
-                "Host: " + host,
-                "User-Agent: Java/1.6.0_27",
-                "Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7",
-                "Connection: close",
-                "",
-                ""
+                { "Cookie", cookies },
+                { "Cache-Control", "no-cache" },
+                { "Pragma", "no-cache" },
+                { "User-Agent", "Java/1.6.0_27" }
             };
-            return DoHTTPSRequest(http_request, host, port, ref result);
+            return DoHTTPSRequest(HttpMethod.Get, host, port, path, headers, null, useHttps: true, ref result);
         }
 
         /// <summary>
-        /// Make a HTTPS POST request to the specified endpoint of the Mojang API
+        /// Make a POST request to the specified endpoint of the Mojang API
         /// </summary>
         /// <param name="host">Host to connect to</param>
-        /// <param name="endpoint">Endpoint for making the request</param>
-        /// <param name="request">Request payload</param>
+        /// <param name="port">Port to connect on</param>
+        /// <param name="path">Path for making the request</param>
+        /// <param name="body">Request payload</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSPost(string host, int port, string endpoint, string request, ref string result)
+        private static int DoHTTPSPost(string host, int port, string path, string body, ref string result)
+            => DoHTTPSPost(host, port, path, body, useHttps: true, ref result);
+
+        /// <summary>
+        /// Make a POST request to the specified endpoint of the Mojang API
+        /// </summary>
+        /// <param name="host">Host to connect to</param>
+        /// <param name="port">Port to connect on</param>
+        /// <param name="path">Path for making the request</param>
+        /// <param name="body">Request payload</param>
+        /// <param name="useHttps">Whether to use HTTPS (true) or plain HTTP (false)</param>
+        /// <param name="result">Request result</param>
+        /// <returns>HTTP Status code</returns>
+        private static int DoHTTPSPost(string host, int port, string path, string body, bool useHttps, ref string result)
         {
-            List<String> http_request = new()
+            Dictionary<string, string> headers = new()
             {
-                "POST " + endpoint + " HTTP/1.1",
-                "Host: " + host,
-                "User-Agent: MCC/" + Program.Version,
-                "Content-Type: application/json",
-                "Content-Length: " + Encoding.ASCII.GetBytes(request).Length,
-                "Connection: close",
-                "",
-                request
+                { "User-Agent", "MCC/" + Program.Version },
+                { "Content-Type", "application/json" }
             };
-            return DoHTTPSRequest(http_request, host, port, ref result);
+            return DoHTTPSRequest(HttpMethod.Post, host, port, path, headers, body, useHttps, ref result);
         }
 
         /// <summary>
-        /// Manual HTTPS request since we must directly use a TcpClient because of the proxy.
-        /// This method connects to the server, enables SSL, do the request and read the response.
+        /// This method connects to the server and performs an HTTP or HTTPS request via proxy if configured.
         /// </summary>
-        /// <param name="headers">Request headers and optional body (POST)</param>
+        /// <param name="method">HTTP method</param>
         /// <param name="host">Host to connect to</param>
+        /// <param name="port">Port to connect on</param>
+        /// <param name="path">Request path</param>
+        /// <param name="headers">Request headers</param>
+        /// <param name="body">Optional request body (POST)</param>
+        /// <param name="useHttps">Whether to use HTTPS (true) or plain HTTP (false)</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSRequest(List<string> headers, string host, int port, ref string result)
+        private static int DoHTTPSRequest(HttpMethod method, string host, int port, string path, Dictionary<string, string> headers, string? body, bool useHttps, ref string result)
         {
             string? postResult = null;
             int statusCode = 520;
@@ -1222,40 +1231,45 @@ namespace MinecraftClient.Protocol
                     if (Settings.Config.Logging.DebugMessages)
                         ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.debug_request, host));
 
-                    TcpClient client = ProxyHandler.NewTcpClient(host, port, true);
-                    SslStream stream = new(client.GetStream());
-                    stream.AuthenticateAsClient(host, null, SslProtocols.Tls12,
-                        true); // Enable TLS 1.2. Hotfix for #1780
+                    using SocketsHttpHandler handler = new SocketsHttpHandler();
+                    handler.ConnectCallback = async (ctx, ct) =>
+                    {
+                        TcpClient client = ProxyHandler.NewTcpClient(host, port, true);
+                        return client.GetStream();
+                    };
+
+                    using HttpClient client = new HttpClient(handler);
+
+                    string scheme = useHttps ? "https" : "http";
+                    var request = new HttpRequestMessage(method, scheme + "://" + host + ":" + port + path);
+
+                    var contentType = "text/plain";
+                    foreach (var header in headers)
+                    {
+                        request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                        if (header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+                            contentType = header.Value;
+                    }
+
+                    if (body != null)
+                        request.Content = new StringContent(body, Encoding.UTF8, contentType);
 
                     if (Settings.Config.Logging.DebugMessages)
-                        foreach (string line in headers)
-                            ConsoleIO.WriteLineFormatted("§8> " + line);
+                        ConsoleIO.WriteLineFormatted("§8> " + request);
 
-                    stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
-                    System.IO.StreamReader sr = new(stream);
-                    string raw_result = sr.ReadToEnd();
+                    HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
+                    statusCode = (int)response.StatusCode;
+
+                    postResult = statusCode == 204
+                        ? "No Content"
+                        : response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                     if (Settings.Config.Logging.DebugMessages)
                     {
                         ConsoleIO.WriteLine("");
-                        foreach (string line in raw_result.Split('\n'))
+                        foreach (string line in postResult.Split('\n'))
                             ConsoleIO.WriteLineFormatted("§8< " + line);
                     }
-
-                    if (raw_result.StartsWith("HTTP/1.1"))
-                    {
-                        statusCode = int.Parse(raw_result.Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
-                        if (statusCode != 204)
-                        {
-                            var splited = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..].Split("\r\n");
-                            postResult = splited[1] + splited[3];
-                        }
-                        else
-                        {
-                            postResult = "No Content";
-                        }
-                    }
-                    else statusCode = 520; //Web server is returning an unknown error
                 }
                 catch (Exception e)
                 {
