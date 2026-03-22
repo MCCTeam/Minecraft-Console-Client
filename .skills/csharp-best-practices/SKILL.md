@@ -1,15 +1,15 @@
 ---
 name: csharp-best-practices
 description: >
-  C# 12 / .NET 8 coding conventions, idiomatic patterns, and performance best practices
+  C# 14 / .NET 10 coding conventions, idiomatic patterns, and performance best practices
   for the Minecraft Console Client codebase. Use when writing, reviewing, or modifying C# code.
-version: 0.3.0
+version: 0.4.0
 ---
 
-# C# 12 / .NET 8 Best Practices
+# C# 14 / .NET 10 Best Practices
 
-Target: **.NET 8**, **C# 12**, nullable enabled.
-Sources: [MS C# Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) · [.NET Runtime Style](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md) · [C# 12 Docs](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-12) · [.NET 8 Perf](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/)
+Target: **.NET 10**, **C# 14**, nullable enabled.
+Sources: [MS C# Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) · [.NET Runtime Style](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md) · [C# 14 Proposals](https://github.com/dotnet/csharplang/blob/main/Language-Version-History.md) · [C# 13 Docs](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-13)
 
 ## Naming
 
@@ -39,6 +39,188 @@ private Dictionary<int, Entity> entities = new();   // missing _
 private static TimeSpan reconnectDelay;              // missing s_
 public int packet_count { get; set; }                // snake_case
 public async Task<bool> Connect(CancellationToken ct) { }  // missing Async suffix
+```
+
+## C# 14 Features
+
+### Extension Members (C# 14)
+
+Declare extension methods, properties, and operators inside `extension(...)` blocks. Replaces `this`-parameter pattern for new extensions.
+
+```csharp
+// CORRECT: extension property + method (C# 14)
+public static class EntityExtensions
+{
+    extension(Entity entity)
+    {
+        public bool IsAlive => entity.Health > 0;
+        public void Heal(int amount) => entity.Health = Math.Min(entity.Health + amount, 20);
+    }
+    extension<T>(IEnumerable<T> items)
+    {
+        public bool IsEmpty => !items.GetEnumerator().MoveNext();
+    }
+}
+```
+
+```csharp
+// WRONG: classic extension method when C# 14 extension block is available
+public static bool IsAlive(this Entity entity) => entity.Health > 0;
+```
+
+### `field` Keyword in Properties (C# 14)
+
+Access the auto-generated backing field without declaring it. Mix auto and full accessors.
+
+```csharp
+// CORRECT: lazy init with field keyword
+public string DisplayName => field ??= ComputeDisplayName();
+
+// CORRECT: INotifyPropertyChanged pattern
+public bool IsConnected
+{
+    get;
+    set
+    {
+        if (field == value) return;
+        field = value;
+        OnPropertyChanged();
+    }
+}
+```
+
+```csharp
+// WRONG: manual backing field when field keyword suffices
+private string? _displayName;
+public string DisplayName => _displayName ??= ComputeDisplayName();
+```
+
+### Null-Conditional Assignment (C# 14)
+
+Assign through `?.` — RHS is only evaluated when receiver is non-null.
+
+```csharp
+// CORRECT: null-conditional assignment
+player?.Health = 20;
+connection?.OnDisconnect += HandleDisconnect;
+inventory?[slot] = newItem;
+```
+
+```csharp
+// WRONG: manual null check for simple assignment
+if (player is not null)
+    player.Health = 20;
+```
+
+### Simple Lambda Parameters with Modifiers (C# 14)
+
+Omit types on lambda parameters while still applying modifiers.
+
+```csharp
+// CORRECT: modifiers without explicit types
+TryParse<int> parse = (text, out result) => int.TryParse(text, out result);
+ReadOnlySpan<int> data = [1, 2, 3];
+ProcessSpan((scoped span) => span.Length);
+```
+
+```csharp
+// WRONG: fully explicit types just for a modifier
+TryParse<int> parse = (string text, out int result) => int.TryParse(text, out result);
+```
+
+### First-Class Span Types (C# 14)
+
+Implicit conversions between `T[]`, `Span<T>`, and `ReadOnlySpan<T>` — no explicit cast needed. Extension methods on `ReadOnlySpan<T>` apply to arrays and spans automatically.
+
+```csharp
+// CORRECT: pass array where ReadOnlySpan<T> is expected (C# 14)
+int[] data = [1, 2, 3];
+bool found = data.StartsWith(1);  // ReadOnlySpan<int> extension resolved
+ReadOnlySpan<byte> span = stackalloc byte[4];
+```
+
+### Unbound Generics in `nameof` (C# 14)
+
+```csharp
+// CORRECT: no need to pick a dummy type argument
+string name = nameof(Dictionary<,>);  // "Dictionary"
+string prop = nameof(List<>.Count);   // "Count"
+```
+
+```csharp
+// WRONG: arbitrary type argument just to satisfy nameof
+string name = nameof(Dictionary<object, object>);
+```
+
+### Partial Events and Constructors (C# 14)
+
+Separate declaration from implementation for source-generator scenarios.
+
+```csharp
+// CORRECT: partial constructor for source-gen interop
+partial class ServerConnection
+{
+    partial ServerConnection(string host, int port);
+}
+partial class ServerConnection
+{
+    partial ServerConnection(string host, int port) { /* generated */ }
+}
+```
+
+### `#:` Ignored Directives (C# 14)
+
+For file-based `dotnet run app.cs` programs — ignored by the compiler.
+
+```csharp
+#!/usr/bin/dotnet run
+#:package System.CommandLine@2.0.0-*
+Console.WriteLine("Hello");
+```
+
+## C# 13 Features
+
+### `Lock` Object (C# 13)
+
+Use `System.Threading.Lock` instead of `lock(obj)` on arbitrary objects.
+
+```csharp
+// CORRECT: dedicated Lock type
+private readonly Lock _lock = new();
+public void Enqueue(ChatMessage msg) { lock (_lock) _queue.Add(msg); }
+```
+
+```csharp
+// WRONG: locking on an object reference
+private readonly object _syncRoot = new();
+lock (_syncRoot) { }
+```
+
+### `params` Collections (C# 13)
+
+`params` now works with `ReadOnlySpan<T>`, `Span<T>`, `IEnumerable<T>`, and other collection types.
+
+```csharp
+// CORRECT: params span avoids array allocation
+public void Log(params ReadOnlySpan<string> messages)
+{
+    foreach (var msg in messages) Console.WriteLine(msg);
+}
+```
+
+### Partial Properties (C# 13)
+
+```csharp
+// CORRECT: partial property for source generators
+partial class Config
+{
+    public partial string Host { get; set; }
+}
+partial class Config
+{
+    public partial string Host { get => _host; set => _host = value; }
+    private string _host = "";
+}
 ```
 
 ## C# 12 Features
@@ -105,7 +287,7 @@ using PacketMap = System.Collections.Generic.Dictionary<int, System.Action<byte[
 var greet = (string name, string prefix = "Player") => $"{prefix} {name}";
 ```
 
-## Modern Syntax (C# 10–12)
+## Modern Syntax (C# 10–14)
 
 ### File-Scoped Namespaces
 
@@ -518,7 +700,7 @@ for (int i = 0; i < data.Length; i++)
 int found = data.ToArray().Count(b => b == target);
 ```
 
-## Performance (.NET 8)
+## Performance (.NET 8+)
 
 ### Span\<T\> / Memory\<T\>
 
@@ -617,11 +799,12 @@ foreach (var s in items) combined += s + ", ";
 | Scenario | Type | Notes |
 |---|---|---|
 | General key-value | `Dictionary<K,V>` | O(1) lookup |
-| Build once, read many | `FrozenDictionary<K,V>` | .NET 8; faster reads |
+| Build once, read many | `FrozenDictionary<K,V>` | .NET 8+; faster reads |
 | Thread-safe | `ConcurrentDictionary<K,V>` | Lock-free reads |
 | Immutable snapshots | `ImmutableDictionary<K,V>` | Persistent structure |
 | Membership test | `HashSet<T>` / `FrozenSet<T>` | FrozenSet for static |
 | Priority queue | `PriorityQueue<E,P>` | .NET 6+ |
+| Synchronization | `System.Threading.Lock` | C# 13; prefer over `lock(obj)` |
 | Producer-consumer | `Channel<T>` | Over `BlockingCollection<T>` |
 | Temp buffer | `ArrayPool<T>` / `stackalloc` | Zero/low alloc |
 
@@ -778,9 +961,10 @@ public bool IsAlive => Health > 0;
 _ = int.TryParse(s, out int result);
 (_, int y, _) = GetCoordinates();
 
-// CORRECT: nameof for resilient refactoring
+// CORRECT: nameof for resilient refactoring (unbound generics in C# 14)
 throw new ArgumentException("Invalid value", nameof(packetId));
 LogToConsole($"{nameof(AutoEat)}: eating {item.Name}");
+string typeName = nameof(Dictionary<,>);  // "Dictionary"
 
 // CORRECT: static lambdas prevent accidental closure allocations
 list.Sort(static (a, b) => a.Id.CompareTo(b.Id));
