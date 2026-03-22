@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json.Nodes;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
 using static MinecraftClient.Protocol.Message.LastSeenMessageList;
@@ -13,42 +12,87 @@ namespace MinecraftClient.Protocol.ProfileKey
     {
         private static readonly SHA256 sha256Hash = SHA256.Create();
 
-        private static readonly string certificates = "https://api.minecraftservices.com/player/certificates";
-
-        public static PlayerKeyPair? GetNewProfileKeys(string accessToken, bool isYggdrasil)
+        /// <summary>
+        /// Check whether the authentication server supports player profile keys.
+        /// For Yggdrasil servers, this fetches the authlib-injector metadata and checks the
+        /// <c>feature.enable_profile_key</c> flag documented at
+        /// https://github.com/yushijinhun/authlib-injector/wiki/Yggdrasil-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8A%80%E6%9C%AF%E8%A7%84%E8%8C%83
+        /// </summary>
+        public static bool AuthServerSupportsProfileKeys(bool isYggdrasil)
         {
+            if (!isYggdrasil)
+                return true;
+
             ProxiedWebRequest.Response? response = null;
             try
             {
-                if (!isYggdrasil && string.IsNullOrWhiteSpace(accessToken))
-                    return null;
-
-                if (!isYggdrasil)
+                var authServer = Settings.Config.Main.General.AuthServer;
+                var request = new ProxiedWebRequest(
+                    (authServer.UseHttps ? "https" : "http") + "://" + authServer.Host + ":" + authServer.Port + authServer.AuthlibInjectorAPIPath)
                 {
-                    var request = new ProxiedWebRequest(certificates)
-                    {
-                        Accept = "application/json"
-                    };
-                    request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
+                    Accept = "application/json"
+                };
 
-                    response = request.Post("application/json", "");
+                response = request.Get();
+                if (Settings.Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLine(response.Body.ToString());
 
-                    if (Settings.Config.Logging.DebugMessages)
-                    {
-                        ConsoleIO.WriteLine(response.Body.ToString());
-                    }
+                var json = Json.ParseJson(response.Body);
+                bool enableProfileKey = json?["meta"]?["feature.enable_profile_key"]?.GetStringValue() == "true";
+                return enableProfileKey;
+            }
+            catch (Exception e)
+            {
+                int code = response == null ? 0 : response.StatusCode;
+                ConsoleIO.WriteLineFormatted("§cFetch authlib-injector metadata failed: HttpCode = " + code + ", Error = " + e.Message);
+                if (Settings.Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
+            }
+            return false;
+        }
 
-                    if (response.StatusCode < 200 || response.StatusCode >= 300)
-                    {
-                        throw new InvalidOperationException(string.IsNullOrWhiteSpace(response.Body)
-                            ? "Certificate endpoint returned an error response."
-                            : response.Body);
-                    }
+        public static PlayerKeyPair? GetNewProfileKeys(string accessToken, bool isYggdrasil)
+        {
+            if (string.IsNullOrWhiteSpace(accessToken))
+                return null;
+
+            if (!AuthServerSupportsProfileKeys(isYggdrasil))
+            {
+                if (Settings.Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLine("AuthServer does not support profile keys, will not attempt to fetch them.");
+                return null;
+            }
+
+            string certificatesURL = "https://api.minecraftservices.com/player/certificates";
+            if (isYggdrasil)
+            {
+                var authServer = Settings.Config.Main.General.AuthServer;
+                certificatesURL = (authServer.UseHttps ? "https" : "http") + "://" + authServer.Host + ":" + authServer.Port +
+                    authServer.AuthlibInjectorAPIPath + "/minecraftservices/player/certificates";
+            }
+
+            ProxiedWebRequest.Response? response = null;
+            try
+            {
+                var request = new ProxiedWebRequest(certificatesURL)
+                {
+                    Accept = "application/json"
+                };
+                request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
+
+                response = request.Post("application/json", "");
+
+                if (Settings.Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLine(response.Body.ToString());
+
+                if (response.StatusCode < 200 || response.StatusCode >= 300)
+                {
+                    throw new InvalidOperationException(string.IsNullOrWhiteSpace(response.Body)
+                        ? "Certificate endpoint returned an error response."
+                        : response.Body);
                 }
 
-                // see https://github.com/yushijinhun/authlib-injector/blob/da910956eaa30d2f6c2c457222d188aeb53b0d1f/src/main/java/moe/yushi/authlibinjector/httpd/ProfileKeyFilter.java#L49
-                // POST to "https://api.minecraftservices.com/player/certificates" with authlib-injector will get a dummy response
-                var json = isYggdrasil ? MakeDummyResponse() : Json.ParseJson(response!.Body);
+                var json = Json.ParseJson(response.Body);
                 if (json?["keyPair"]?["publicKey"] == null
                     || json["keyPair"]?["privateKey"] == null
                     || json["publicKeySignature"] == null
@@ -59,7 +103,6 @@ namespace MinecraftClient.Protocol.ProfileKey
                     throw new InvalidOperationException("Certificate endpoint returned an unexpected payload.");
                 }
 
-                // Error here
                 PublicKey publicKey = new(pemKey: json!["keyPair"]!["publicKey"]!.GetStringValue(),
                     sig: json["publicKeySignature"]!.GetStringValue(),
                     sigV2: json["publicKeySignatureV2"]!.GetStringValue());
@@ -75,9 +118,7 @@ namespace MinecraftClient.Protocol.ProfileKey
                 int code = response == null ? 0 : response.StatusCode;
                 ConsoleIO.WriteLineFormatted("§cFetch profile key failed: HttpCode = " + code + ", Error = " + e.Message);
                 if (Settings.Config.Logging.DebugMessages)
-                {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
-                }
                 return null;
             }
         }
@@ -214,31 +255,5 @@ namespace MinecraftClient.Protocol.ProfileKey
 
         // Delegate to the shared Json.EscapeString backed by System.Text.Json
         public static string EscapeString(string src) => Json.EscapeString(src);
-
-        public static JsonNode MakeDummyResponse()
-        {
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048);
-            var mimePublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
-            var mimePrivateKey = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
-            string publicKeyPEM = $"-----BEGIN RSA PUBLIC KEY-----\n{mimePublicKey}\n-----END RSA PUBLIC KEY-----\n";
-            string privateKeyPEM = $"-----BEGIN RSA PRIVATE KEY-----\n{mimePrivateKey}\n-----END RSA PRIVATE KEY-----\n";
-            DateTime now = DateTime.UtcNow;
-            DateTime expiresAt = now.AddHours(48);
-            DateTime refreshedAfter = now.AddHours(36);
-            string format = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
-
-            return new JsonObject
-            {
-                ["keyPair"] = new JsonObject
-                {
-                    ["privateKey"] = privateKeyPEM,
-                    ["publicKey"] = publicKeyPEM
-                },
-                ["publicKeySignature"] = "AA==",
-                ["publicKeySignatureV2"] = "AA==",
-                ["expiresAt"] = expiresAt.ToString(format),
-                ["refreshedAfter"] = refreshedAfter.ToString(format)
-            };
-        }
     }
 }

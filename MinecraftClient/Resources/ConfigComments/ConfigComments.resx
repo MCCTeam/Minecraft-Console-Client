@@ -850,7 +850,19 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Ignore invalid player name</value>
   </data>
   <data name="Main.General.AuthlibServer" xml:space="preserve">
-    <value>Yggdrasil authlib server domain name and port.</value>
+    <value>authlib-injector authentication server to use for Yggdrasil accounts</value>
+  </data>
+  <data name="AuthlibServer.Host" xml:space="preserve">
+    <value>Domain name or IP address</value>
+  </data>
+  <data name="AuthlibServer.Port" xml:space="preserve">
+    <value>Port to connect on</value>
+  </data>
+  <data name="AuthlibServer.AuthlibInjectorAPIPath" xml:space="preserve">
+    <value>Path component of the authlib-injector API location. Refer to the authlib-injector documentation for more info.</value>
+  </data>
+  <data name="AuthlibServer.UseHttps" xml:space="preserve">
+    <value>Set to false if your authlib-injector server uses plain HTTP (e.g. for local testing without TLS).</value>
   </data>
   <data name="Main.Advanced.enable_sentry" xml:space="preserve">
     <value>Set to false to opt-out of Sentry error logging.</value>
