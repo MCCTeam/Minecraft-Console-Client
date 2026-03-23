@@ -390,6 +390,9 @@ For Discord message formatting, check the following: https://mccteam.github.io/r
   <data name="ChatBot.DiscordBridge.Token" xml:space="preserve">
     <value>Your Discord Bot token.</value>
   </data>
+  <data name="ChatBot.DiscordBridge.AllowOtherBotMessages" xml:space="preserve">
+    <value>When enabled, messages from other Discord bots in the channel will be relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.</value>
+  </data>
   <data name="ChatBot.Farmer" xml:space="preserve">
     <value>Automatically farms crops for you (plants, breaks and bonemeals them).
 Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
@@ -829,7 +832,13 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>A Chat Bot that collects items on the ground</value>
   </data>
   <data name="ChatBot.DiscordRpc" xml:space="preserve">
-    <value>Show a Discord Rich Presence status with your current Minecraft session info.\nRequires a Discord Application ID from https://discord.com/developers/applications\nYou can customize what is shown using placeholders: {server_host}, {server_port}, {username}, {health}, {max_health}, {food}, {dimension}, {gamemode}, {x}, {y}, {z}, {player_count}, {protocol}</value>
+    <value>Show a Discord Rich Presence status with your current Minecraft session info.
+Setup:
+1. Go to https://discord.com/developers/applications and log in with your Discord account.
+2. Click "New Application", give it a name (e.g. "MCC") and confirm.
+3. On the application page, copy the "Application ID" and paste it in the "ApplicationId" field below.
+4. (Optional) Go to "Rich Presence" -&gt; "Art Assets" to upload custom images for LargeImageKey/SmallImageKey.
+Note: This does NOT require a Bot Token, only an Application ID. Discord must be running on the same machine as MCC.</value>
   </data>
   <data name="ChatBot.DiscordRpc.ApplicationId" xml:space="preserve">
     <value>Your Discord Application ID. Create one at https://discord.com/developers/applications</value>

@@ -772,7 +772,16 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Automatically farms crops for you (plants, breaks and bonemeals them).
+        ///   Looks up a localized string similar to When enabled, messages from other Discord bots in the channel will be relayed to Minecraft chat..
+        /// </summary>
+        internal static string ChatBot_DiscordBridge_AllowOtherBotMessages {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordBridge.AllowOtherBotMessages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatically farms cropsfor you (plants, breaks and bonemeals them).
         ///Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
         ///Usage: &quot;/farmer start&quot; command and &quot;/farmer stop&quot; command.
         ///NOTE: This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues like not being able to bonemeal carrots/potatoes sometimes.
@@ -899,7 +908,9 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show a Discord Rich Presence status with your current Minecraft session info..
+        ///   Looks up a localized string similar to Show a Discord Rich Presence status with your current Minecraft session info.
+        ///Setup:
+        ///1. Go to https://discord.com/developers/applications and log in with your Discord account. [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatBot_DiscordRpc {
             get {
