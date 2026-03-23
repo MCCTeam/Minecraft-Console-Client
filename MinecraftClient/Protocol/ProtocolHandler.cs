@@ -808,7 +808,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
 
-                return LoginResult.WrongPassword;
+                return LoginResult.OtherError;
             }
         }
 

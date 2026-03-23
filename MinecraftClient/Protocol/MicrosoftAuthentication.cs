@@ -94,6 +94,10 @@ namespace MinecraftClient.Protocol
         /// <returns>Login response with access token and refresh token</returns>
         public static LoginResponse PollDeviceCodeToken(string deviceCode, int expiresIn, int interval)
         {
+            // Per OAuth 2.0 device code spec, server may respond with "slow_down" requiring
+            // the client to increase its polling interval by this amount
+            const int SlowDownIncrementSeconds = 5;
+
             string postData = string.Format(
                 "client_id={0}&grant_type=urn:ietf:params:oauth:grant-type:device_code&device_code={1}",
                 clientId, deviceCode);
@@ -123,8 +127,8 @@ namespace MinecraftClient.Protocol
                     }
                     else if (error == "slow_down")
                     {
-                        // Server asked us to slow down, increase interval by 5 seconds
-                        pollInterval += 5;
+                        // Server asked us to slow down
+                        pollInterval += SlowDownIncrementSeconds;
                         continue;
                     }
                     else if (error == "expired_token")
