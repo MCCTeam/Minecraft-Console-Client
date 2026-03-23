@@ -776,20 +776,27 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
-        /// Sign-in to Microsoft Account without using browser. Only works if 2FA is disabled.
-        /// Might not work well in some rare cases.
+        /// Sign-in to Microsoft Account using OAuth 2.0 device code flow.
+        /// Supports accounts with 2FA enabled.
         /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
+        /// <param name="email">Email hint (unused in device code flow, kept for API compatibility)</param>
+        /// <param name="password">Password (unused in device code flow, kept for API compatibility)</param>
         /// <param name="session"></param>
         /// <returns></returns>
         private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
         {
             try
             {
-                var msaResponse = XboxLive.UserLogin(email, password, XboxLive.PreAuth());
-                // Remove refresh token for MCC sign method
-                msaResponse.RefreshToken = string.Empty;
+                var deviceCode = Microsoft.RequestDeviceCode();
+
+                ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_device_code_prompt, deviceCode.VerificationUri, deviceCode.UserCode));
+
+                // Try to open the verification URL in the user's browser
+                Microsoft.OpenBrowser(deviceCode.VerificationUri);
+
+                ConsoleIO.WriteLineFormatted(Translations.mcc_device_code_waiting);
+
+                var msaResponse = Microsoft.PollDeviceCodeToken(deviceCode.DeviceCode, deviceCode.ExpiresIn, deviceCode.Interval);
                 return MicrosoftLogin(msaResponse, out session);
             }
             catch (Exception e)
@@ -801,7 +808,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
 
-                return LoginResult.WrongPassword; // Might not always be wrong password
+                return LoginResult.WrongPassword;
             }
         }
 

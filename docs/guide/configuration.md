@@ -131,7 +131,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Description:**
 
-    This setting is where you define the way you will sign in with your Microsoft account, available options are `mcc` and `browser`.
+    This setting is where you define the way you will sign in with your Microsoft account, available options are `mcc` and `browser`. The `mcc` method uses the OAuth 2.0 device code flow: MCC will display a code and a URL, and you complete the sign-in (including 2FA) in your browser. The `browser` method opens a sign-in page in your browser and you paste the resulting code back into MCC.
 
 -   **Type:** `string`
 
