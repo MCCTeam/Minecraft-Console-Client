@@ -407,12 +407,12 @@ apt update -y && apt upgrade -y
 apt install wget curl nano -y
 ```
 
-Then install .NET 8.0 using Microsoft's official install script:
+Then install .NET 10.0 using Microsoft's official install script:
 
 ```bash
 wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 chmod +x dotnet-install.sh
-./dotnet-install.sh --channel 8.0
+./dotnet-install.sh --channel 10.0
 ```
 
 Now add .NET to your PATH so it works in future sessions. Open `.bashrc`:
@@ -446,7 +446,7 @@ Verify the installation by running:
 dotnet --version
 ```
 
-You should see a version number like `8.0.xxx`.
+You should see a version number like `10.0.xxx`.
 
 #### Installing MCC
 
