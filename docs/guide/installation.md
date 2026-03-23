@@ -404,7 +404,7 @@ apt update -y && apt upgrade -y
 ```
 
 ```bash
-apt install wget curl nano unzip -y
+apt install wget curl nano -y
 ```
 
 Then install .NET 8.0 using Microsoft's official install script:
@@ -452,45 +452,37 @@ You should see a version number like `8.0.xxx`.
 
 Finally, we can install MCC.
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
-
-</div>
-
-Let's make a folder where the MCC will be stored with the following command:
+Let's make a folder where MCC will be stored:
 
 ```bash
 mkdir MinecraftConsoleClient
-```
-
-Then enter it the newly created folder:
-
-```bash
 cd MinecraftConsoleClient
 ```
 
-Download the MCC with the following command:
+Download the latest MCC binary for ARM64:
 
 ```bash
-wget https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest/download/MinecraftClient-linux-arm64.zip
+wget -O MinecraftClient \
+  "$(curl -s https://api.github.com/repos/MCCTeam/Minecraft-Console-Client/releases/latest \
+    | grep 'browser_download_url.*linux-arm64"' \
+    | cut -d '"' -f 4)"
 ```
 
-Unzip it with the following command:
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+**If you have a 32-bit ARM device, replace `linux-arm64` with `linux-arm` in the command above.**
+
+</div>
+
+Make it executable:
 
 ```bash
-unzip MinecraftClient-linux-arm64.zip
+chmod +x MinecraftClient
 ```
 
-You can remove the zip archive now, we do not need it anymore, with:
+And run it with:
 
 ```bash
-rm MinecraftClient-linux-arm64.zip
-```
-
-And finally run it with:
-
-```
 ./MinecraftClient
 ```
 
