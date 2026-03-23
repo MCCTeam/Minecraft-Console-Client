@@ -104,7 +104,7 @@ namespace MinecraftClient.ChatBots
 
             try
             {
-                _rpcClient = new DiscordRpcClient(Config.ApplicationId.Trim())
+                _rpcClient = new DiscordRpcClient(Config.ApplicationId.Trim(), client: new DiscordRpcPipeClient())
                 {
                     Logger = Settings.Config.Logging.DebugMessages
                         ? new ConsoleLogger(LogLevel.Trace)
