@@ -642,7 +642,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Some settings are not reloaded because they are used before client initialization. Settings passed on the command line also override file values. ReplayCapture is not reloaded due to technical limitations.**
+    **Some settings are not reloaded because they are used before client initialization. Settings passed on the command line also override file values.**
 
     </div>
 
@@ -982,7 +982,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Description:**
 
-    Wait X ticks (10 ticks = ~1 second. Only for scripts)
+    Wait X ticks (20 ticks = ~1 second. Only for scripts)
 
 -   **Usage:**
 
@@ -1363,4 +1363,3 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     </div>
 
 </details>
-

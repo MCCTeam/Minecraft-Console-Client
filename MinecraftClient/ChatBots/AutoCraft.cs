@@ -160,9 +160,9 @@ namespace MinecraftClient.ChatBots
         private Recipe? recipeInUse;
         private readonly List<ActionStep> actionSteps = new();
 
-        private int updateDebounceValue = 2;
+        private int updateDebounceValue = Settings.DoubleToTick(0.2);
         private int updateDebounce = 0;
-        private readonly int updateTimeoutValue = 10;
+        private readonly int updateTimeoutValue = Settings.ClientTicksPerSecond;
         private int updateTimeout = 0;
         private string timeoutAction = "unspecified";
 

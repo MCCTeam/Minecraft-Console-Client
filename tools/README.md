@@ -25,6 +25,8 @@ tools/decompile.sh --version 1.21.9
 tools/decompile.sh --version 1.21.9 --side CLIENT
 ```
 
+If you keep server assets outside the repo, set `MCC_SERVERS=/path/to/servers` before using `tools/mcc-env.sh` or `tools/start-server.sh`.
+
 The script auto-downloads `MinecraftDecompiler.jar` from GitHub releases if it doesn't exist.
 
 ### Generating server data reports

@@ -426,7 +426,7 @@ namespace MinecraftClient
             if (Config.ChatBot.Map.Enabled) { BotLoad(new Map()); }
             if (Config.ChatBot.PlayerListLogger.Enabled) { BotLoad(new PlayerListLogger()); }
             if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
-            if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
+            if (Config.ChatBot.ReplayCapture.Enabled) { BotLoad(new ReplayCapture()); }
             if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
@@ -453,7 +453,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called ~10 times per second by the protocol handler
+        /// Called 20 times per second by the protocol handler
         /// </summary>
         public void OnUpdate()
         {
@@ -510,37 +510,33 @@ namespace MinecraftClient
                         physicsInitialized = true;
                     }
 
-                    // Run 2 physics ticks per OnUpdate call (10 Hz * 2 = 20 TPS)
-                    for (int tick = 0; tick < 2; tick++)
-                    {
-                        // Navigate pathfinding: set input based on current path
-                        UpdatePathfindingInput();
+                    // Navigate pathfinding: set input based on current path
+                    UpdatePathfindingInput();
 
-                        // Sync yaw/pitch if explicitly set (by commands/bots)
-                        if (_yaw != null) playerPhysics.Yaw = _yaw.Value;
-                        if (_pitch != null) playerPhysics.Pitch = _pitch.Value;
+                    // Sync yaw/pitch if explicitly set (by commands/bots)
+                    if (_yaw != null) playerPhysics.Yaw = _yaw.Value;
+                    if (_pitch != null) playerPhysics.Pitch = _pitch.Value;
 
-                        // Update environment flags (water, lava, climbable)
-                        playerPhysics.UpdateEnvironment(world);
+                    // Update environment flags (water, lava, climbable)
+                    playerPhysics.UpdateEnvironment(world);
 
-                        // Apply movement input
-                        playerPhysics.ApplyInput(physicsInput);
+                    // Apply movement input
+                    playerPhysics.ApplyInput(physicsInput);
 
-                        // Run one physics tick
-                        playerPhysics.Tick(world);
+                    // Run one physics tick
+                    playerPhysics.Tick(world);
 
-                        // Sync back to MCC location
-                        location = new Location(
-                            playerPhysics.Position.X,
-                            playerPhysics.Position.Y,
-                            playerPhysics.Position.Z);
+                    // Sync back to MCC location
+                    location = new Location(
+                        playerPhysics.Position.X,
+                        playerPhysics.Position.Y,
+                        playerPhysics.Position.Z);
 
-                        playerYaw = _yaw ?? playerYaw;
-                        playerPitch = _pitch ?? playerPitch;
+                    playerYaw = _yaw ?? playerYaw;
+                    playerPitch = _pitch ?? playerPitch;
 
-                        // Send position packet
-                        handler.SendLocationUpdate(location, playerPhysics.OnGround, _yaw, _pitch);
-                    }
+                    // Send position packet
+                    handler.SendLocationUpdate(location, playerPhysics.OnGround, playerPhysics.HorizontalCollision, _yaw, _pitch);
 
                     _yaw = null;
                     _pitch = null;
@@ -1350,7 +1346,7 @@ namespace MinecraftClient
                 {
                     // 1-step path to the desired location without checking anything
                     UpdateLocation(goal, goal); // Update yaw and pitch to look at next step
-                    handler.SendLocationUpdate(goal, Movement.IsOnGround(world, goal), _yaw, _pitch);
+                    handler.SendLocationUpdate(goal, Movement.IsOnGround(world, goal), false, _yaw, _pitch);
                     return true;
                 }
                 else
@@ -2421,7 +2417,7 @@ namespace MinecraftClient
                 if (lookAtBlock)
                 {
                     UpdateLocation(GetCurrentLocation(), location.ToCenter());
-                    handler.SendLocationUpdate(GetCurrentLocation(), Movement.IsOnGround(world, GetCurrentLocation()), _yaw, _pitch);
+                    handler.SendLocationUpdate(GetCurrentLocation(), Movement.IsOnGround(world, GetCurrentLocation()), false, _yaw, _pitch);
                 }
                 return handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId++);
             });
@@ -3562,7 +3558,7 @@ namespace MinecraftClient
                 if (Config.Main.Advanced.AutoRespawn)
                 {
                     Log.Info(Translations.mcc_player_dead_respawn);
-                    respawnTicks = 10;
+                    respawnTicks = Settings.ClientTicksPerSecond;
                 }
                 else
                 {

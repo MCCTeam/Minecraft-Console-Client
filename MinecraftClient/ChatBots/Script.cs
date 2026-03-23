@@ -19,7 +19,7 @@ namespace MinecraftClient.ChatBots
         private string? file;
         private string[] lines = Array.Empty<string>();
         private string[] args = Array.Empty<string>();
-        private int sleepticks = 10;
+        private int sleepticks = Settings.ClientTicksPerSecond;
         private int nextline = 0;
         private readonly string? owner;
         private bool csharp;
@@ -202,7 +202,7 @@ namespace MinecraftClient.ChatBots
                                 switch (instruction_name.ToLower())
                                 {
                                     case "wait":
-                                        int ticks = 10;
+                                        int ticks = Settings.ClientTicksPerSecond;
                                         try
                                         {
                                             if (instruction_line[5..].Contains("to", StringComparison.OrdinalIgnoreCase) ||

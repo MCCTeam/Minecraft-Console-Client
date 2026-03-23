@@ -180,8 +180,8 @@ namespace MinecraftClient.ChatBots
         private static bool firstlogin_done = false;
 
         private bool serverlogin_done = false;
-        private int verifytasks_timeleft = 10;
-        private readonly int verifytasks_delay = 10;
+        private int verifytasks_timeleft = Settings.ClientTicksPerSecond;
+        private readonly int verifytasks_delay = Settings.ClientTicksPerSecond;
 
         public override void Update()
         {

@@ -57,7 +57,7 @@ namespace MinecraftClient.Scripting
         }
 
         /// <summary>
-        /// Will be called every ~100ms.
+        /// Will be called every client tick (~50ms at 20 TPS).
         /// </summary>
         /// <remarks>
         /// <see cref="Update"/> method can be overridden by child class so need an extra update method
@@ -117,7 +117,7 @@ namespace MinecraftClient.Scripting
         public virtual void AfterGameJoined() { }
 
         /// <summary>
-        /// Will be called every ~100ms (10fps) if loaded in MinecraftCom
+        /// Will be called every client tick (~50ms, 20 TPS) if loaded in MinecraftCom
         /// </summary>
         public virtual void Update() { }
 
@@ -1673,11 +1673,11 @@ namespace MinecraftClient.Scripting
         /// Schedule a task to run on the main thread, and do not wait for completion
         /// </summary>
         /// <param name="task">Task to run</param>
-        /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~100ms). 0 for no delay</param>
+        /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~50ms at 20 TPS). 0 for no delay</param>
         /// <example>
-        /// <example>InvokeOnMainThread(methodThatReturnsNothing, 10);</example>
-        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument), 10);</example>
-        /// <example>InvokeOnMainThread(() => { yourCode(); }, 10);</example>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing, 20);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument), 20);</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); }, 20);</example>
         /// </example>
         protected void ScheduleOnMainThread(Action task, int delayTicks = 0)
         {
