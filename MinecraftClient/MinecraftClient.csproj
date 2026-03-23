@@ -32,6 +32,7 @@
   <ItemGroup>
     <PackageReference Include="Brigadier.NET" Version="1.2.13" />
     <PackageReference Include="DiscordRichPresence" Version="1.143.0" />
+    <PackageReference Include="Consolonia" Version="11.3.9" />
     <PackageReference Include="DnsClient" Version="1.8.0" />
     <PackageReference Include="DSharpPlus" Version="4.5.1" />
     <PackageReference Include="DynamicExpresso.Core" Version="2.19.3" />

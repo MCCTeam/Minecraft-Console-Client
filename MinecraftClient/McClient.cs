@@ -804,6 +804,14 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get the console message handler delegate for re-attaching after TUI mode.
+        /// </summary>
+        public EventHandler<string> GetConsoleMessageHandler()
+        {
+            return ConsoleReaderOnMessageReceived;
+        }
+
+        /// <summary>
         /// Allows the user to send chat messages, commands, and leave the server.
         /// Process text from the MCC command prompt on the main thread.
         /// </summary>
