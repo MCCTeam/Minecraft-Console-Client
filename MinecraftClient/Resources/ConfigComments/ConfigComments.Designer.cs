@@ -899,6 +899,105 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show a Discord Rich Presence status with your current Minecraft session info..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your Discord Application ID..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ApplicationId {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ApplicationId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The top line of the Rich Presence display. Supports placeholders..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_PresenceDetails {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.PresenceDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The second line of the Rich Presence display. Supports placeholders..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_PresenceState {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.PresenceState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key of the large image asset uploaded to your Discord application..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_LargeImageKey {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.LargeImageKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tooltip text for the large image. Supports placeholders..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_LargeImageText {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.LargeImageText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key of the small image asset uploaded to your Discord application (leave empty to hide)..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_SmallImageKey {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.SmallImageKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tooltip text for the small image. Supports placeholders..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_SmallImageText {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.SmallImageText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show elapsed session time in the Discord presence..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ShowElapsedTime {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ShowElapsedTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the online player count as a party size in the Discord presence..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ShowPlayerCount {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ShowPlayerCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How often (in seconds) to refresh the Discord presence. Minimum: 1.
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_UpdateIntervalSeconds {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.UpdateIntervalSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relay messages between players and servers, like a mail plugin
         ///This bot can store messages when the recipients are offline, and send them when they join the server
         /// /!\ Server admins can spoof PMs (/tellraw, /nick) so enable this bot only if you trust server admins.

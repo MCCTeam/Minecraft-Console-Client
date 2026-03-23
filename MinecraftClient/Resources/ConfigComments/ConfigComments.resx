@@ -828,6 +828,39 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="ChatBot.ItemsCollector" xml:space="preserve">
     <value>A Chat Bot that collects items on the ground</value>
   </data>
+  <data name="ChatBot.DiscordRpc" xml:space="preserve">
+    <value>Show a Discord Rich Presence status with your current Minecraft session info.\nRequires a Discord Application ID from https://discord.com/developers/applications\nYou can customize what is shown using placeholders: {server_host}, {server_port}, {username}, {health}, {max_health}, {food}, {dimension}, {gamemode}, {x}, {y}, {z}, {player_count}, {protocol}</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ApplicationId" xml:space="preserve">
+    <value>Your Discord Application ID. Create one at https://discord.com/developers/applications</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.PresenceDetails" xml:space="preserve">
+    <value>The top line of the Rich Presence display. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.PresenceState" xml:space="preserve">
+    <value>The second line of the Rich Presence display. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.LargeImageKey" xml:space="preserve">
+    <value>The key of the large image asset uploaded to your Discord application.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.LargeImageText" xml:space="preserve">
+    <value>Tooltip text for the large image. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.SmallImageKey" xml:space="preserve">
+    <value>The key of the small image asset uploaded to your Discord application (leave empty to hide).</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.SmallImageText" xml:space="preserve">
+    <value>Tooltip text for the small image. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowElapsedTime" xml:space="preserve">
+    <value>Show elapsed session time in the Discord presence.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowPlayerCount" xml:space="preserve">
+    <value>Show the online player count as a party size in the Discord presence.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.UpdateIntervalSeconds" xml:space="preserve">
+    <value>How often (in seconds) to refresh the Discord presence. Minimum: 1</value>
+  </data>
   <data name="ChatBot.WebSocketBot" xml:space="preserve">
     <value>Remotely control the client using Web Sockets.\n# This is useful if you want to implement an application that can remotely and asynchronously execute procedures in MCC.\n# Example implementation written in JavaScript: https://github.com/milutinke/MCC.js.git\n# The protocol specification will be available in the documentation soon.</value>
   </data>

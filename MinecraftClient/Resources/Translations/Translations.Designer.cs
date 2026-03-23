@@ -1096,6 +1096,69 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please provide a valid Discord Application ID!.
+        /// </summary>
+        internal static string bot_DiscordRpc_missing_app_id {
+            get {
+                return ResourceManager.GetString("bot.DiscordRpc.missing_app_id", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connected to Discord as {0}.
+        /// </summary>
+        internal static string bot_DiscordRpc_connected {
+            get {
+                return ResourceManager.GetString("bot.DiscordRpc.connected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to connect to Discord (pipe {0}). Is Discord running?.
+        /// </summary>
+        internal static string bot_DiscordRpc_connection_failed {
+            get {
+                return ResourceManager.GetString("bot.DiscordRpc.connection_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Discord Rich Presence initialized successfully..
+        /// </summary>
+        internal static string bot_DiscordRpc_initialized {
+            get {
+                return ResourceManager.GetString("bot.DiscordRpc.initialized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to initialize Discord Rich Presence: {0}.
+        /// </summary>
+        internal static string bot_DiscordRpc_init_error {
+            get {
+                return ResourceManager.GetString("bot.DiscordRpc.init_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error updating Discord presence: {0}.
+        /// </summary>
+        internal static string bot_DiscordRpc_update_error {
+            get {
+                return ResourceManager.GetString("bot.DiscordRpc.update_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid update interval, must be at least 1 second. Using default of 10 seconds..
+        /// </summary>
+        internal static string bot_DiscordRpc_invalid_interval {
+            get {
+                return ResourceManager.GetString("bot.DiscordRpc.invalid_interval", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The bot is already farming!.
         /// </summary>
         internal static string bot_farmer_already_running {
@@ -2086,6 +2149,15 @@ namespace MinecraftClient {
         internal static string botname_DiscordBridge {
             get {
                 return ResourceManager.GetString("botname.DiscordBridge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DiscordRpc.
+        /// </summary>
+        internal static string botname_DiscordRpc {
+            get {
+                return ResourceManager.GetString("botname.DiscordRpc", resourceCulture);
             }
         }
         
