@@ -312,7 +312,7 @@ docker-compose down
 
 ## Run on Android
 
-It is possible to run Minecraft Console Client on Android through Termux and Ubuntu 24.04, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
+It is possible to run Minecraft Console Client on Android through Termux and Ubuntu, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -341,246 +341,160 @@ It is possible to run Minecraft Console Client on Android through Termux and Ubu
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**The Play Store version of Termux is outdated and not supported. Use the [GitHub release](https://github.com/termux/termux-app/releases/latest/) instead.**
+**The Play Store version of Termux is outdated and not supported. Install Termux from [F-Droid](https://f-droid.org/packages/com.termux/) (recommended) or from the [GitHub releases page](https://github.com/termux/termux-app/releases/latest/).**
 
 </div>
 
-Go to [the latest Termux GitHub release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it, and run it.
+**F-Droid (recommended):** Install the [F-Droid](https://f-droid.org/) app store, search for "Termux", and install it.
+
+**GitHub releases:** Go to [the latest Termux GitHub release](https://github.com/termux/termux-app/releases/latest/), download the APK file whose name contains `universal` (e.g. `termux-app_v...-debug_universal.apk`), and install it.
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
+**If your file manager does not let you install APK files, install and use `File Manager +` and grant it permission to install third-party applications when asked.**
 
 </div>
 
 <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-**Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
+**Once you have installed Termux, open it, pull down the Android notification drawer, find the Termux notification, and expand it (swipe down on the notification) until you see `Exit | Acquire wakelock`. Tap `Acquire wakelock` and allow Termux to bypass battery optimization when prompted. Skipping this step may cause Termux to be killed by Android when running in the background.**
 
 </div>
 
-#### Installing Ubuntu 24.04
+#### Installing Ubuntu
 
-At this stage, you have 2 options:
+We use `proot-distro`, an official Termux utility, to install Ubuntu. It will install the latest Ubuntu LTS release available for your device architecture.
 
-1. Following this textual tutorial
-2. Watching a [YouTube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**If you decide to watch the YouTube tutorial, watch only up to `1:58`. The steps after that are not needed here and might just confuse you.**
-
-</div>
-
-In order to install Ubuntu 24.04 in Termux you require `wget` and `proot`, and we are going to install them in the next step.
-
-Once you have Termux installed open it up and run the following command one after other (in order):
+Open Termux and run the following commands one at a time, in order:
 
 1. `pkg update`
 2. `pkg upgrade`
-3. `pkg install proot wget`
+3. `pkg install proot-distro`
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
+**If you are asked to press Y/N during the update or upgrade step, enter Y and press Enter.**
 
 </div>
 
-Then you need to download an installation script using the following command:
+Now install Ubuntu:
 
 ```bash
-wget https://raw.githubusercontent.com/MFDGaming/ubuntu-in-termux/master/ubuntu.sh
+proot-distro install ubuntu
 ```
 
-Once the script has downloaded, run it with:
+Once the installation finishes, start Ubuntu with:
 
 ```bash
-bash ubuntu.sh
-```
-
-Then you will be asked a question, enter `Y` and press `Enter`.
-
-Once the installation is complete, you can start Ubuntu with:
-
-```bash
-./startubuntu.sh
+proot-distro login ubuntu
 ```
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**Now every time you open Termux after it has been closed, in order to access Ubuntu you have to use this command**
+**Every time you open Termux after it has been closed, run this command to get back into Ubuntu.**
 
 </div>
 
-#### Installing .NET on ARM
+#### Installing .NET
 
-If the package-manager route does not provide a current enough SDK for your setup, install .NET manually instead.
-
-First we need to update the APT package manager repositories and install dependencies.
-
-To update the APT repositories, run the following command:
+First, update the Ubuntu package lists and install a few tools:
 
 ```bash
 apt update -y && apt upgrade -y
 ```
 
-After you did it, we need to install dependencies for .NET, with the following command:
-
 ```bash
-apt install wget nano unzip libc6 libgcc1 libgssapi-krb5-2 libstdc++6 zlib1g libicu70 libssl3 -y
+apt install wget curl nano -y
 ```
 
-After you have installed the dependencies, install .NET either by following this guide or by using Microsoft's [manual install instructions](https://learn.microsoft.com/en-us/dotnet/core/install/linux-scripted-manual#manual-install).
-
-Navigate to your `/root` home directory with the following command:
+Then install .NET 10.0 using Microsoft's official install script:
 
 ```bash
-cd /root
+wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+chmod +x dotnet-install.sh
+./dotnet-install.sh --channel 10.0
 ```
 
-Download a current .NET SDK tarball for your platform from Microsoft. Replace the placeholder below with the actual current download URL from the [.NET download page](https://dotnet.microsoft.com/en-us/download):
+Now add .NET to your PATH so it works in future sessions. Open `.bashrc`:
 
 ```bash
-wget <current-dotnet-sdk-linux-arm64-tarball-url>
+nano ~/.bashrc
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**This example assumes a 64-bit ARM processor. If you are using a different architecture, download the matching SDK archive for that platform instead.**
-
-</div>
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**This tutorial assumes Ubuntu 24.04. If you are using a different distro, get the current SDK archive for your platform from the [.NET download page](https://dotnet.microsoft.com/en-us/download).**
-
-</div>
-
-Once the file has been downloaded, you need to run the following commands in order:
-
-1. `DOTNET_FILE=<downloaded-dotnet-sdk-archive-name>`
-
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-    **Replace the placeholder with the exact filename you downloaded. If you are using a different archive, update this value to match it exactly.**
-
-    </div>
-
-2. `export DOTNET_ROOT=/root/.dotnet`
-
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-    **Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
-
-    </div>
-
-3. `mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"`
-4. `export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools`
-
-Now we need to tell our shell to know where the `dotnet` command is, for future sessions, since the commands above just tell this current session where the `dotnet` is located.
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**You will need a basic knowledge of the Nano text editor. If you do not know how to use it, watch this [YouTube tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).**
-
-</div>
-
-To enable this, we need to edit our `/root/.bashrc` file with the following command:
+Scroll to the bottom of the file using the `Page Down` key, add a blank line, and paste the following:
 
 ```bash
-nano /root/.bashrc
-```
-
-Scroll down to the bottom of the file using `Page Down` (`PGDN`) button, make a new line and paste the following text:
-
-```bash
-export DOTNET_ROOT=/root/.dotnet/
-export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+export DOTNET_ROOT=$HOME/.dotnet
+export PATH=$PATH:$HOME/.dotnet:$HOME/.dotnet/tools
 ```
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
+**If you do not know how to use Nano, watch this [YouTube tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).**
 
 </div>
 
-Save the file usign the following combination of keys: `CTRL + X`, type `Y` and press Enter.
-
-Veryfy that .NET was installed correctly by running:
+Save the file with `CTRL + X`, type `Y`, and press Enter. Then apply the changes:
 
 ```bash
-dotnet
+source ~/.bashrc
 ```
 
-You should get a help page:
+Verify the installation by running:
 
 ```bash
-root@localhost:~# dotnet
-
-Usage: dotnet [options]
-Usage: dotnet [path-to-application]
-
-Options:
-  -h|--help         Display help.
-  --info            Display .NET information.
-  --list-sdks       Display the installed SDKs.
-  --list-runtimes   Display the installed runtimes.
-
-path-to-application:
-  The path to an application .dll file to execute.
+dotnet --version
 ```
+
+You should see a version number like `10.0.xxx`.
 
 #### Installing MCC
 
 Finally, we can install MCC.
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
-
-</div>
-
-Let's make a folder where the MCC will be stored with the following command:
+Let's make a folder where MCC will be stored:
 
 ```bash
 mkdir MinecraftConsoleClient
-```
-
-Then enter it the newly created folder:
-
-```bash
 cd MinecraftConsoleClient
 ```
 
-Download the MCC with the following command:
+Download the latest MCC binary for ARM64:
 
 ```bash
-wget https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest/download/MinecraftClient-linux-arm64.zip
+wget -O MinecraftClient \
+  "$(curl -s https://api.github.com/repos/MCCTeam/Minecraft-Console-Client/releases/latest \
+    | grep 'browser_download_url.*linux-arm64"' \
+    | cut -d '"' -f 4)"
 ```
 
-Unzip it with the following command:
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+**If you have a 32-bit ARM device, replace `linux-arm64` with `linux-arm` in the command above.**
+
+</div>
+
+Make it executable:
 
 ```bash
-unzip MinecraftClient-linux-arm64.zip
+chmod +x MinecraftClient
 ```
 
-You can remove the zip archive now, we do not need it anymore, with:
+And run it with:
 
 ```bash
-rm MinecraftClient-linux-arm64.zip
-```
-
-And finally run it with:
-
-```
 ./MinecraftClient
 ```
 
 #### After installation
 
-When you run Termux next time, you need to start Ubuntu with: `./startubuntu.sh`
+When you open Termux next time, start Ubuntu with:
 
-Then you can start the MCC again with `./MinecraftClient`
+```bash
+proot-distro login ubuntu
+```
+
+Then run MCC with `./MinecraftClient`
 
 To stop MCC from running you can press `CTRL + C`
 
