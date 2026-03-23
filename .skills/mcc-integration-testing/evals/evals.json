@@ -3,36 +3,38 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Configure the local 1.21.11 MCC test server for persistent offline mode, then run a deep MCC integration test covering chat, operator actions, creative inventory, entity tracking, sounds, particles, and TNT.",
-      "expected_output": "The server is left in offline mode with RCON enabled, MCC joins successfully, and the run reports clear pass or fail evidence from both MCC and server logs.",
+      "prompt": "Run a real 1.21.11 MCC regression test in creative mode covering connect, send messages, send commands, receive messages, movement, physics, mobs, effects, and inventory, in that order.",
+      "expected_output": "The workflow uses the ordered creative-mode E2E harness on a real server, reports pass or fail for each phase, and points to the saved logs.",
       "files": [],
       "expectations": [
-        "The workflow sources tools/mcc-env.sh or calls tools/start-server.sh and tools/mc-rcon.sh directly.",
-        "The server is configured with online-mode=false and enable-rcon=true.",
-        "The run uses both mc-rcon and mcc-cmd.",
-        "The result includes evidence from MCC output and server logs."
+        "The workflow uses a real 1.21.11 server.",
+        "The workflow uses the ordered creative E2E harness instead of improvising the whole scenario.",
+        "The result reports phase-by-phase outcomes in the requested order.",
+        "The result includes the log directory for the run."
       ]
     },
     {
       "id": 2,
-      "prompt": "Validate that MCC still works after a runtime or framework change by performing a repeatable offline smoke test against the local vanilla server and exercising entity and inventory handling.",
-      "expected_output": "The response runs the repeatable local workflow, checks for a successful join, verifies inventory and entity commands, and calls out any configuration or protocol regression.",
+      "prompt": "Validate that MCC still works after a runtime or protocol change by running a deep single-version 1.21.11 integration test with chat, creative inventory, entity tracking, sounds, particles, TNT, and kill/respawn coverage.",
+      "expected_output": "The workflow uses the full-spectrum test runner on a real server and returns a concise pass or fail summary backed by MCC and server log evidence.",
       "files": [],
       "expectations": [
-        "The workflow builds MCC before running the server scenario.",
-        "The workflow checks inventory and entity handling explicitly.",
-        "The response flags config reload failures as regressions."
+        "The workflow builds MCC before the scenario unless a fresh build is explicitly reused.",
+        "The workflow uses the full-spectrum runner instead of only manual spot checks.",
+        "The result includes evidence from both MCC output and server logs.",
+        "The result points to the saved run directory."
       ]
     },
     {
       "id": 3,
-      "prompt": "Use the local MCC testing workflow to run a full-spectrum client/server exercise and summarize the important evidence only.",
-      "expected_output": "The response runs the scripted scenario and returns a concise summary with pass/fail status, affected commands, and log evidence.",
+      "prompt": "Validate a timing-sensitive MCC change on a real 1.21.11 server by collecting tick-rate and outbound packet-cadence evidence, then summarize the results clearly.",
+      "expected_output": "The response uses a real server, a temp config, and the provided sample scripts to capture tick-rate and packet evidence instead of relying on intuition.",
       "files": [],
       "expectations": [
-        "The workflow uses the scripted test runner.",
-        "The summary includes join status, MCC command coverage, and server-side effects.",
-        "The summary points to the saved log locations."
+        "The workflow uses the real 1.21.11 server.",
+        "The workflow uses the tick counter and packet capture scripts or clearly equivalent targeted instrumentation.",
+        "The workflow keeps the run isolated with a temp config.",
+        "The summary reports concrete counts or cadence evidence."
       ]
     }
   ]

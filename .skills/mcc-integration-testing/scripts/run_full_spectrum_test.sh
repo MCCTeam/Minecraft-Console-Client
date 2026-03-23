@@ -7,6 +7,10 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 source "$REPO_ROOT/tools/mcc-env.sh"
 
 VERSION="${1:-1.21.11-Vanilla}"
+MC_VERSION="${VERSION%-Vanilla}"
+if [[ "$MC_VERSION" == "$VERSION" ]]; then
+    MC_VERSION="$VERSION"
+fi
 RUN_ROOT="${TMPDIR:-/tmp}/mcc-integration-testing"
 RUN_ID="$(date +%Y%m%d-%H%M%S)"
 RUN_DIR="$RUN_ROOT/$RUN_ID"
@@ -16,6 +20,7 @@ BUILD_LOG="$RUN_DIR/build.log"
 SERVER_TMUX_LOG="$RUN_DIR/server-tmux.log"
 SERVER_FILE_LOG="$RUN_DIR/server-latest.log"
 INPUT_FILE="$REPO_ROOT/mcc_input.txt"
+CFG="$RUN_DIR/MinecraftClient.$MC_VERSION.ini"
 MCC_PID=""
 
 mkdir -p "$RUN_DIR"
@@ -31,6 +36,27 @@ cleanup() {
     mc-stop "$VERSION" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
+
+prepare_config() {
+    cp "$REPO_ROOT/MinecraftClient.ini" "$CFG"
+
+    sed -i \
+        -e 's/Account = { Login = "test", Password = "-" }/Account = { Login = "CursorBot", Password = "-" }/' \
+        -e "s/MinecraftVersion = \"auto\"/MinecraftVersion = \"$MC_VERSION\"/" \
+        -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
+        -e 's/InventoryHandling = false/InventoryHandling = true/' \
+        -e 's/EntityHandling = false/EntityHandling = true/' \
+        -e 's/AutoRespawn = false/AutoRespawn = true/' \
+        "$CFG"
+
+    sed -i '/^\[ChatBot.ScriptScheduler\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    sed -i '/^\[ChatBot.DiscordRpc\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    sed -i '/^\[ChatBot.AntiAFK\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    sed -i '/^\[ChatBot.AutoDig\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    sed -i '/^\[ChatBot.AutoAttack\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    sed -i '/^\[ChatBot.PlayerListLogger\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    sed -i '/^\[ChatBot.ReplayCapture\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+}
 
 wait_for_file_pattern() {
     local file="$1"
@@ -119,8 +145,15 @@ assert_not_contains() {
 
 run_server_command() {
     local cmd="$1"
+    local attempt
     echo "SERVER> $cmd"
-    mc-rcon "$cmd" >/dev/null || fail "Server command failed: $cmd"
+    for attempt in 1 2 3 4 5; do
+        if mc-rcon "$cmd" >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 1
+    done
+    fail "Server command failed: $cmd"
 }
 
 run_mcc_command() {
@@ -131,6 +164,7 @@ run_mcc_command() {
 }
 
 "$SCRIPT_DIR/ensure_offline_server.sh" "$VERSION"
+prepare_config
 
 : > "$INPUT_FILE"
 
@@ -142,11 +176,10 @@ mc-start "$VERSION" >/dev/null
 wait_for_server_ready || fail "Server did not become ready"
 
 echo "Starting MCC..."
-mcc-run 25565 \
-  --advanced.terrainandmovements=true \
-  --advanced.inventoryhandling=true \
-  --advanced.entityhandling=true \
-  > "$MCC_LOG" 2>&1 &
+(
+    cd "$REPO_ROOT"
+    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "$CFG" > "$MCC_LOG" 2>&1
+) &
 MCC_PID=$!
 
 wait_for_file_pattern "$MCC_LOG" "Server was successfully joined." "MCC join success" 90 || fail "MCC failed to join"
