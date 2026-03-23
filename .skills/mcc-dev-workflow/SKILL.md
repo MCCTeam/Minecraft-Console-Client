@@ -1,149 +1,141 @@
 ---
 name: mcc-dev-workflow
-description: Build, run, and debug Minecraft Console Client (MCC) in WSL. Use when the user wants to compile MCC, start a Minecraft test server, connect MCC to a server, debug MCC protocol issues, or run MCC commands.
+description: Build, run, and debug Minecraft Console Client (MCC) against a real local Minecraft Java server in WSL. Use this whenever the user wants to compile MCC, start or inspect a local test server, connect MCC to a server, debug protocol or login issues, validate a code change end-to-end, or run MCC commands on a real server instead of guessing from static code.
 ---
 
 # MCC Development Workflow
 
-## Project Overview
+Use this skill when the task needs a real local server loop, not just code reading.
 
-- Solution: `MinecraftClient.sln` (projects: `MinecraftClient` + `ConsoleInteractive`)
-- Build: `dotnet build MinecraftClient.sln -c Release`
-- Output: `MinecraftClient/bin/Release/net10.0/MinecraftClient`
-- Servers: `MinecraftOfficial/downloads/<version>/` — server.jar + runtime data (config, world, etc.)
+## Defaults
 
-Environment: WSL Ubuntu, Java 21, .NET 10 SDK, tmux, python3.
+- Solution: `MinecraftClient.sln`
+- Runtime target: `.NET 10` / `net10.0`
+- Environment: WSL Ubuntu, Java 21, tmux, python3
+- Default server root: `${MCC_SERVERS:-$MCC_REPO/MinecraftOfficial/downloads}`
+- Default validation target when the user does not specify a version: `1.21.11-Vanilla`
 
-## Compile
+## Core rules
+
+- Prefer a real local server over static reasoning for protocol, login, movement, inventory, entity, or command-path work.
+- Treat tmux `mc-*` sessions as shared state. Do not run multi-version server workflows in parallel unless the harness explicitly isolates them.
+- For scripted or repeatable runs, prefer a temporary config copied from `MinecraftClient.ini`. Use the repo-root config only for ad hoc manual work.
+- A server log line containing `Done (` means startup finished. It does not guarantee that RCON is ready on the first attempt. Retry early `mc-rcon` commands.
+- When instructions, docs, and code disagree, trust current code and current tool behavior first.
+
+## Build
 
 ```bash
 dotnet build MinecraftClient.sln -c Release
 ```
 
-## Start a Test Server
+## Server management
 
-Servers live in `MinecraftOfficial/downloads/` with directories named by version (e.g. `1.20.6`, `1.21.11`).
-
-```bash
-tools/start-server.sh 1.20.6
-```
-
-Creates a tmux session `mc-1_20_6` with a named pipe `stdin.pipe` for command input. The server persists across Cursor sessions.
+Interactive shell:
 
 ```bash
-echo "op CursorBot" > MinecraftOfficial/downloads/1.20.6/stdin.pipe   # server command
-tmux capture-pane -t mc-1_20_6 -p -S -50                              # view output
-echo "stop" > MinecraftOfficial/downloads/1.20.6/stdin.pipe           # stop
+source tools/mcc-env.sh
+mc-start 1.21.11-Vanilla
+mc-log 1.21.11-Vanilla 100
+mc-rcon "op CursorBot"
+mc-stop 1.21.11-Vanilla
 ```
 
-### Server config checklist
+Non-interactive shell:
 
-- `eula.txt`: `eula=true`
-- `server.properties`: `online-mode=false` for offline testing
+```bash
+tools/start-server.sh 1.21.11-Vanilla
+tools/mc-rcon.sh "op CursorBot"
+```
+
+If the servers live outside the repo, set `MCC_SERVERS` before sourcing or invoking the tools:
+
+```bash
+export MCC_SERVERS=/home/anon/Minecraft/Servers
+source tools/mcc-env.sh
+```
+
+## Recommended automation recipe
+
+Use this for reproducible local runs:
+
+1. Source `tools/mcc-env.sh`.
+2. Pick a concrete server directory, usually `1.21.11-Vanilla`.
+3. Copy `MinecraftClient.ini` to a temp location and pin the account, version, and feature gates there.
+4. Start the server and wait for `Done (` in the tmux log.
+5. Launch MCC with `MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "<temp-config>"`.
+6. Drive MCC through `mcc_input.txt`.
+7. Stop MCC and the server cleanly, then keep the temp logs.
+
+## Temporary config recipe
+
+```bash
+source tools/mcc-env.sh
+TEST_ROOT="${TMPDIR:-/tmp}/mcc-dev"
+CFG="$TEST_ROOT/MinecraftClient.1.21.11.ini"
+mkdir -p "$TEST_ROOT"
+cp "$MCC_REPO/MinecraftClient.ini" "$CFG"
+sed -i \
+  -e 's/Account = { Login = "test", Password = "-" }/Account = { Login = "CursorBot", Password = "-" }/' \
+  -e 's/MinecraftVersion = "auto"/MinecraftVersion = "1.21.11"/' \
+  -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
+  -e 's/InventoryHandling = false/InventoryHandling = true/' \
+  -e 's/EntityHandling = false/EntityHandling = true/' \
+  "$CFG"
+```
+
+Add extra `sed -i` edits only for the scenario you are testing.
 
 ## Run MCC
 
-ConsoleInteractive is patched for non-interactive terminals.
+Direct temp-config launch:
 
 ```bash
-MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - localhost 2>&1
+cd "$MCC_REPO"
+MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "$CFG" 2>&1
 ```
 
-- Format: `MinecraftClient <username> <password> <server>`, password `-` = offline mode
-- Use `block_until_ms: 0` to background; `sleep 2` then read terminal to confirm join
-- Config: `MinecraftClient.ini` (auto-generated). Set `MinecraftVersion = "auto"` unless pinning.
+Quick manual launch with the repo-root config:
 
-### FileInputBot
+```bash
+source tools/mcc-env.sh
+mcc-run 25565
+```
 
-Set `MCC_FILE_INPUT=1` (shown above). MCC monitors `mcc_input.txt`:
+`mcc-run` is fine for manual smoke tests. Use a temp config for repeatable automation.
+
+## Verify connection and a basic command
+
+MCC output should include:
+
+- `[MCC] Server was successfully joined.`
+
+Server output should include:
+
+- `CursorBot joined the game`
+
+Basic command check:
 
 ```bash
 echo "inventory player list" >> mcc_input.txt
 ```
 
-Polled every ~500ms. `sleep 1` then read terminal for response.
+## Typical debug loop
 
-### RCON
+1. `source tools/mcc-env.sh`
+2. `dotnet build MinecraftClient.sln -c Release`
+3. start `1.21.11-Vanilla`
+4. wait for `Done (`
+5. launch MCC with a temp config
+6. confirm the join in both logs
+7. run one MCC command and one server command
+8. inspect logs
+9. stop both sides and iterate
 
-```bash
-tools/mc-rcon.sh "give CursorBot diamond_sword 1"
-tools/mc-rcon.sh "op CursorBot"
-tools/mc-rcon.sh "say hello" 25575 test123    # explicit port and password
-```
+## Debugging tips
 
-## Verify Connection
-
-MCC output: `[MCC] Server was successfully joined.`
-Server output: `CursorBot joined the game`
-
-## Server Lifecycle
-
-**Keep the server running** unless you need to restart/switch version/user asks to stop.
-
-Check before starting: `tmux list-sessions 2>/dev/null | grep "^mc-"`
-
-## Typical Debug Workflow
-
-1. `tools/start-server.sh 1.20.6` (background, `block_until_ms: 0`)
-2. Wait for "Done": `tmux capture-pane -t mc-1_20_6 -p -S -5`
-3. Build: `dotnet build MinecraftClient.sln -c Release`
-4. Run MCC: `MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- CursorBot - localhost 2>&1` (background, `block_until_ms: 0`)
-5. `sleep 2`, read terminal to confirm join
-6. RCON: `tools/mc-rcon.sh "op CursorBot"`
-7. MCC cmd: `echo "inventory player list" >> mcc_input.txt`
-8. `sleep 1`, read terminal for output
-9. `pkill -f MinecraftClient` → rebuild → repeat
-
-| Operation | Typical Duration |
-|-----------|-----------------|
-| MCC startup → join | ~1s |
-| FileInput → response | <500ms |
-
-## Tools
-
-All in `tools/`:
-
-| Script | Purpose |
-|--------|---------|
-| `start-server.sh <ver>` | Start MC server in tmux |
-| `mc-rcon.sh "cmd" [port] [pw]` | RCON command (default: 25575, test123) |
-| `decompile.sh --version <ver>` | Decompile MC version + download server.jar |
-| `mcc-env.sh` | Source for shell helpers (`mc-start`, `mcc-build`, etc.) |
-
-`mcc-env.sh` exports `$MCC_REPO` and `$MCC_SERVERS` and defines convenience functions. Source it in interactive shells or `~/.bashrc`. In Cursor's non-interactive Shell, use the standalone scripts directly.
-
-## Decompiled Server Source
-
-`MinecraftOfficial/` contains decompiled official server/client code:
-
-```bash
-tools/decompile.sh --version 1.21.1                  # server (default)
-tools/decompile.sh --version 1.21.1 --side CLIENT    # client
-```
-
-Auto-downloads `MinecraftDecompiler.jar` if missing; downloads `server.jar` into `MinecraftOfficial/downloads/<ver>/` for SERVER side.
-
-## Key Code Paths
-
-| Area | Files |
-|------|-------|
-| Protocol version map | `Protocol/ProtocolHandler.cs` |
-| Packet palette (ID mapping) | `Protocol/Handlers/PacketPalettes/PacketPalette*.cs` |
-| Core packet handling | `Protocol/Handlers/Protocol18.cs` |
-| Data serialization | `Protocol/Handlers/DataTypes.cs` |
-| Structured components (1.20.6+) | `Protocol/Handlers/StructuredComponents/` |
-| Client logic | `McClient.cs` |
-| Config phase packets | `Protocol/Handlers/ConfigurationPacketTypesIn.cs` / `Out.cs` |
-| Console I/O library | `ConsoleInteractive/` |
-
-## Debugging Tips
-
-- Debug output: `DebugMessages = true` in `[Logging]` of `MinecraftClient.ini`
-- Protocol version shown during connection: `Server version : X.XX.X (protocol vNNN)`
-- Server `EncoderException` = protocol mismatch
-- Packet reference: https://minecraft.wiki/w/Java_Edition_protocol/Packets
-- Use `block_until_ms: 0` for long-running processes, read terminal files for output
-
-## Git Commits
-
-Commit at meaningful milestones. Messages in English with sufficient context.
+- Protocol mismatches usually show up as a version line such as `Server version : 1.21.11 (protocol vNNN)` before the failure.
+- If an early `mc-rcon` command fails, retry it before assuming the server setup is broken.
+- If a supposedly isolated run behaves strangely, check `tmux list-sessions` and kill stale `mc-*` sessions first.
+- Legacy `1.8` and `1.8.9` servers may need `use-native-transport=false` in `server.properties` on some Linux environments.
+- For timing-sensitive work, do not trust wall-clock intuition. Use a real server run and capture evidence from logs or test scripts.

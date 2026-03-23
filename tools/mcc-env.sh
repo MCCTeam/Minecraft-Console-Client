@@ -3,7 +3,16 @@
 # Source this file to get helper functions: source $MCC_REPO/tools/mcc-env.sh
 # Or add to ~/.bashrc:  source "$HOME/Minecraft/Minecraft-Console-Client/tools/mcc-env.sh"
 
-TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
+  _mcc_env_source="${BASH_SOURCE[0]}"
+elif [[ -n "${ZSH_VERSION:-}" ]]; then
+  _mcc_env_source="${(%):-%N}"
+else
+  _mcc_env_source="$0"
+fi
+
+TOOLS_DIR="$(cd "$(dirname "$_mcc_env_source")" && pwd)"
+unset _mcc_env_source
 export MCC_REPO="$(cd "$TOOLS_DIR/.." && pwd)"
 export MCC_SERVERS="${MCC_SERVERS:-$MCC_REPO/MinecraftOfficial/downloads}"
 

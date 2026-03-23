@@ -8,22 +8,25 @@
 ## Build / Run
 - Init submodules first: `git submodule update --init --recursive`
 - Build: `dotnet build MinecraftClient.sln -c Release`
-- Publish (matches CI shape): `dotnet publish MinecraftClient.sln -f net8.0 -r <RID> --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded`
+- Publish (matches CI shape): `dotnet publish MinecraftClient.sln -f net10.0 -r <RID> --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded`
 - Run from source: `dotnet run --project MinecraftClient -- --help`
 - Docs: `cd docs && npm install && npm run docs:dev` or `npm run docs:build`
 - Docker: `cd Docker && docker build -t minecraft-console-client:latest .`
 - Tests: no dedicated test project is present in the main solution.
 - Current state: the solution builds after submodule init, but `dotnet build` emits many analyzer and NuGet vulnerability warnings; treat them as real.
+- Server roots: `tools/` helpers look for server jars under `MinecraftOfficial/downloads/<version>/` by default, but also support an external root via the `MCC_SERVERS` environment variable.
+- Multi-version testing: tmux-based local server sessions are shared state. Run cross-version test matrices sequentially unless you have explicit per-version isolation. A server logging `Done` does not guarantee immediate RCON availability; retry RCON setup commands.
+- Automated test configs: for repeated or matrix test runs, prefer generating a temporary MCC config per run instead of reusing the repo-root `MinecraftClient.ini`, to avoid leaking state between runs.
 
 ## Architecture
 - `Program` bootstraps console I/O, TOML config, auth/session state, MC version selection, Forge detection, then creates `McClient`.
 - `McClient` is the live session runtime: TCP client, selected protocol handler, Brigadier command dispatcher, loaded bots, world/inventory/entity state, queued chat, movement/pathing, reconnect flow.
 - `Protocol/` is the network/auth boundary. `ProtocolHandler` maps Minecraft versions to protocol numbers and selects either `Protocol16Handler` (1.4.6-1.6.4) or `Protocol18Handler` (1.7.2+).
 - `Scripting/ChatBot` is the extension boundary. Built-in bots and `/script` C# bots share the same event/tick API.
-- Main runtime flow: console input -> internal Brigadier command or server chat; packets -> protocol handler -> `McClient` state update -> bot events; `OnUpdate()` (~10 Hz) drives bot ticks, delayed work, chat cooldowns, movement, and main-thread tasks.
+- Main runtime flow: console input -> internal Brigadier command or server chat; packets -> protocol handler -> `McClient` state update -> bot events; `OnUpdate()` (20 TPS) drives bot ticks, delayed work, chat cooldowns, movement, and main-thread tasks.
 
 ## Technology Stack
-- Main app: C#, .NET 8, nullable enabled.
+- Main app: C#, .NET 10, nullable enabled.
 - Command system: `Brigadier.NET`.
 - Config: TOML via `Samboy063.Tomlet`.
 - Runtime scripting: Roslyn (`Microsoft.CodeAnalysis.CSharp`) with in-memory compilation.
@@ -63,7 +66,7 @@ Notes:
 
 | Module | What It Owns | Important Files |
 | --- | --- | --- |
-| `MinecraftClient/` | Main `net8.0` runtime assembly and the best starting point. `Program.cs` owns startup, config load/writeback, CLI handling, auth/version selection, update/data-generation entrypoints, and restart/failure flow. `McClient.cs` owns the live session runtime: protocol handler ownership, command dispatch, bot lifecycle, world/inventory/entity state, queued chat, movement ticks, reconnect/disconnect logic, and the main-thread invoke queue. `Settings.cs` defines the TOML schema and runtime/internal overrides used across the app. | `Program.cs`, `McClient.cs`, `Settings.cs`, `ConsoleIO.cs`, `Command.cs`, `UpgradeHelper.cs`, `AutoTimeout.cs` |
+| `MinecraftClient/` | Main `net10.0` runtime assembly and the best starting point. `Program.cs` owns startup, config load/writeback, CLI handling, auth/version selection, update/data-generation entrypoints, and restart/failure flow. `McClient.cs` owns the live session runtime: protocol handler ownership, command dispatch, bot lifecycle, world/inventory/entity state, queued chat, movement ticks, reconnect/disconnect logic, and the main-thread invoke queue. `Settings.cs` defines the TOML schema and runtime/internal overrides used across the app. | `Program.cs`, `McClient.cs`, `Settings.cs`, `ConsoleIO.cs`, `Command.cs`, `UpgradeHelper.cs`, `AutoTimeout.cs` |
 | `MinecraftClient/Protocol/` | Network/auth/session boundary. `ProtocolHandler.cs` does DNS SRV lookup, server ping/version detection, MC-version to protocol mapping, and handler selection. `Protocol16.cs` and `Protocol18.cs` implement the packet flow for legacy and modern versions. `Protocol18Terrain.cs` decodes chunk sections/biomes into `World`. `DataTypes.cs` is the low-level reader/writer layer for VarInts, metadata, NBT-like structures, and packet fields. `Message/`, `ProfileKey/`, `Session/`, `Handlers/Forge/`, `Handlers/PacketPalettes/`, `Handlers/Packet/`, and `Handlers/StructuredComponents/` cover chat/signing, cached auth, Forge, packet IDs, packet-level parsing, and 1.20.6+ item components with versioned registries under `StructuredComponents/Registries/`. | `Protocol/ProtocolHandler.cs`, `Protocol/Handlers/Protocol16.cs`, `Protocol/Handlers/Protocol18.cs`, `Protocol/Handlers/Protocol18Terrain.cs`, `Protocol/Handlers/DataTypes.cs`, `Protocol/Message/ChatParser.cs`, `Protocol/MicrosoftAuthentication.cs`, `Protocol/MojangAPI.cs` |
 | `MinecraftClient/Mapping/` | World model, terrain storage, movement logic, and versioned block/entity metadata. `World.cs` stores chunk columns, dimension data, and 1.20.6+ registry-derived dimension/attribute mappings. `Chunk*`, `Block.cs`, and `Location.cs` are the terrain primitives. `Movement.cs` contains step generation, gravity/on-ground checks, and path execution support. `Material.cs` plus `BlockPalettes/*.cs` map block-state IDs to MCC materials. `Entity.cs`, `EntityType.cs`, `EntityPalettes/*.cs`, `EntityMetadataPalette.cs`, and `EntityMetadataPalettes/*.cs` do the same for entities and metadata serializers. | `Mapping/World.cs`, `Mapping/ChunkColumn.cs`, `Mapping/Chunk.cs`, `Mapping/Block.cs`, `Mapping/Location.cs`, `Mapping/Movement.cs`, `Mapping/RaycastHelper.cs`, `Mapping/Material.cs`, `Mapping/Entity.cs`, `Mapping/EntityType.cs` |
 | `MinecraftClient/Inventory/` | Inventory/container snapshots, item decoding, and versioned item registries. `Container.cs` models player inventories and server windows, including slot contents and container properties. `Item.cs` bridges older NBT-based items with 1.20.6+ structured components. `ItemType.cs` plus `ItemPalettes/*.cs` provide version-specific item ID mapping. Enchantment, effects, and villager-trade files add higher-level semantics on top of raw inventory data. | `Inventory/Container.cs`, `Inventory/ContainerType.cs`, `Inventory/Item.cs`, `Inventory/ItemMovingHelper.cs`, `Inventory/ItemType.cs`, `Inventory/ItemPalettes/*.cs`, `Inventory/EnchantmentMapping.cs`, `Inventory/VillagerTrade.cs` |
@@ -87,7 +90,7 @@ Notes:
 | `docs/` | VuePress documentation site. `.vuepress/config.ts` sets bundler, theme, plugins, and redirects. `.vuepress/configs/**` holds locale and nav wiring. `guide/*.md` contains the user-facing install, usage, bot, and scripting docs. | `docs/.vuepress/config.ts`, `docs/.vuepress/configs/**`, `docs/guide/README.md`, `docs/guide/configuration.md`, `docs/guide/chat-bots.md`, `docs/guide/creating-bots.md`, `docs/guide/creating-text-script.md`, `docs/guide/ai-assisted-development.md` |
 | `tools/` | Python helpers for Minecraft version adaptation and palette generation. `README.md` is the authoritative workflow. `diff_registries.py` compares versions and validates decompiled data against server reports. The `gen_*` scripts emit the versioned palette source files consumed by `Protocol/`, `Mapping/`, `Inventory/`, and `Physics/`. | `tools/README.md`, `tools/diff_registries.py`, `tools/gen_block_palette.py`, `tools/gen_item_palette.py`, `tools/gen_entity_palette.py`, `tools/gen_entity_metadata_palette.py`, `tools/gen_block_shapes.py`, `tools/gen_command_argument_registry.py` |
 | `DebugTools/` | Standalone packet/proxy debugging utilities for inspecting traffic and compression behavior outside the main client runtime. | `DebugTools/MinecraftClientProxy/Program.cs`, `DebugTools/MinecraftClientProxy/PacketProxy.cs`, `DebugTools/MinecraftClientProxy/ZlibUtils.cs` |
-| `MinecraftClientGUI/` | Legacy Windows GUI wrapper around the console app. WinForms shell that launches and communicates with the console executable; not part of the main `net8.0` runtime path. | `MinecraftClientGUI/Program.cs`, `MinecraftClientGUI/Form1.cs`, `MinecraftClientGUI/Form1.Designer.cs`, `MinecraftClientGUI/MinecraftClient.cs` |
+| `MinecraftClientGUI/` | Legacy Windows GUI wrapper around the console app. WinForms shell that launches and communicates with the console executable; not part of the main `net10.0` runtime path. | `MinecraftClientGUI/Program.cs`, `MinecraftClientGUI/Form1.cs`, `MinecraftClientGUI/Form1.Designer.cs`, `MinecraftClientGUI/MinecraftClient.cs` |
 
 ## Engineering Guidance
 
@@ -114,5 +117,5 @@ Read `docs/guide/ai-assisted-development.md` before starting development work on
 - Never modify `ConsoleInteractive/`; treat it as an external required submodule.
 - Don't start background workers when `Update()` or delayed tasks are sufficient; if you must, stop them on unload/disconnect.
 - Don't leave movement locks, plugin channels, or dispatcher registrations behind.
-- Don't trust older docs over current code for supported versions or feature gates.
+- Don't trust older docs over current code for supported versions or feature gates. When AGENTS.md, skills, and older docs disagree, prefer current code and current tool behavior, then update the stale source.
 - Never use "—" ("em dash"), unless specifically being instructed to do so!
