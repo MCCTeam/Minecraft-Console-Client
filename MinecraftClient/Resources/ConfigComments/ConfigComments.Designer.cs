@@ -980,6 +980,42 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show the player coordinates in the Discord presence..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ShowCoordinates {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ShowCoordinates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show health and food level in the Discord presence..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ShowHealth {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ShowHealth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the current dimension in the Discord presence..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ShowDimension {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ShowDimension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the current gamemode in the Discord presence..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ShowGamemode {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ShowGamemode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show elapsed session time in the Discord presence..
         /// </summary>
         internal static string ChatBot_DiscordRpc_ShowElapsedTime {

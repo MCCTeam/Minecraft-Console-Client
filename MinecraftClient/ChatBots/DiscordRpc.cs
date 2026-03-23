@@ -49,6 +49,18 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$ChatBot.DiscordRpc.ShowServerAddress$")]
             public bool ShowServerAddress = true;
 
+            [TomlInlineComment("$ChatBot.DiscordRpc.ShowCoordinates$")]
+            public bool ShowCoordinates = true;
+
+            [TomlInlineComment("$ChatBot.DiscordRpc.ShowHealth$")]
+            public bool ShowHealth = true;
+
+            [TomlInlineComment("$ChatBot.DiscordRpc.ShowDimension$")]
+            public bool ShowDimension = true;
+
+            [TomlInlineComment("$ChatBot.DiscordRpc.ShowGamemode$")]
+            public bool ShowGamemode = true;
+
             [TomlInlineComment("$ChatBot.DiscordRpc.ShowElapsedTime$")]
             public bool ShowElapsedTime = true;
 
@@ -254,50 +266,62 @@ namespace MinecraftClient.ChatBots
             int gamemode = GetGamemode();
             int protocolVersion = GetProtocolVersion();
 
-            string dimensionName = "Unknown";
-            try
+            string healthStr = Config.ShowHealth ? ((int)Math.Ceiling(health)).ToString() : "?";
+            string maxHealthStr = Config.ShowHealth ? "20" : "?";
+            string foodStr = Config.ShowHealth ? foodLevel.ToString() : "?";
+            string xStr = Config.ShowCoordinates ? ((int)location.X).ToString() : "?";
+            string yStr = Config.ShowCoordinates ? ((int)location.Y).ToString() : "?";
+            string zStr = Config.ShowCoordinates ? ((int)location.Z).ToString() : "?";
+
+            string dimensionName = Config.ShowDimension ? "Unknown" : "Hidden";
+            if (Config.ShowDimension)
             {
-                var dim = World.GetDimension();
-                dimensionName = dim.Name ?? "Unknown";
-
-                // Clean up the dimension name for display
-                if (dimensionName.StartsWith("minecraft:"))
-                    dimensionName = dimensionName["minecraft:".Length..];
-
-                dimensionName = dimensionName switch
+                try
                 {
-                    "overworld" => "Overworld",
-                    "the_nether" => "The Nether",
-                    "the_end" => "The End",
-                    _ => dimensionName
-                };
-            }
-            catch
-            {
-                // World may not be available
+                    var dim = World.GetDimension();
+                    dimensionName = dim.Name ?? "Unknown";
+
+                    // Clean up the dimension name for display
+                    if (dimensionName.StartsWith("minecraft:"))
+                        dimensionName = dimensionName["minecraft:".Length..];
+
+                    dimensionName = dimensionName switch
+                    {
+                        "overworld" => "Overworld",
+                        "the_nether" => "The Nether",
+                        "the_end" => "The End",
+                        _ => dimensionName
+                    };
+                }
+                catch
+                {
+                    // World may not be available
+                }
             }
 
-            string gamemodeStr = gamemode switch
-            {
-                0 => "Survival",
-                1 => "Creative",
-                2 => "Adventure",
-                3 => "Spectator",
-                _ => "Unknown"
-            };
+            string gamemodeStr = Config.ShowGamemode
+                ? gamemode switch
+                {
+                    0 => "Survival",
+                    1 => "Creative",
+                    2 => "Adventure",
+                    3 => "Spectator",
+                    _ => "Unknown"
+                }
+                : "Hidden";
 
             return template
                 .Replace("{server_host}", serverHost)
                 .Replace("{server_port}", serverPortStr)
                 .Replace("{username}", username)
-                .Replace("{health}", ((int)Math.Ceiling(health)).ToString())
-                .Replace("{max_health}", "20")
-                .Replace("{food}", foodLevel.ToString())
+                .Replace("{health}", healthStr)
+                .Replace("{max_health}", maxHealthStr)
+                .Replace("{food}", foodStr)
                 .Replace("{dimension}", dimensionName)
                 .Replace("{gamemode}", gamemodeStr)
-                .Replace("{x}", ((int)location.X).ToString())
-                .Replace("{y}", ((int)location.Y).ToString())
-                .Replace("{z}", ((int)location.Z).ToString())
+                .Replace("{x}", xStr)
+                .Replace("{y}", yStr)
+                .Replace("{z}", zStr)
                 .Replace("{player_count}", onlinePlayers.Length.ToString())
                 .Replace("{protocol}", protocolVersion.ToString());
         }

@@ -853,7 +853,19 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Tooltip text for the small image. Supports placeholders.</value>
   </data>
   <data name="ChatBot.DiscordRpc.ShowServerAddress" xml:space="preserve">
-    <value>Show the server address (host and port) in the Discord presence. When disabled, {server_host} and {server_port} are masked for privacy.</value>
+    <value>Show the server address (host and port) in the Discord presence. When disabled, {server_host} and {server_port} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowCoordinates" xml:space="preserve">
+    <value>Show the player coordinates in the Discord presence. When disabled, {x}, {y}, {z} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowHealth" xml:space="preserve">
+    <value>Show health and food level in the Discord presence. When disabled, {health}, {max_health}, {food} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowDimension" xml:space="preserve">
+    <value>Show the current dimension in the Discord presence. When disabled, {dimension} is masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowGamemode" xml:space="preserve">
+    <value>Show the current gamemode in the Discord presence. When disabled, {gamemode} is masked.</value>
   </data>
   <data name="ChatBot.DiscordRpc.ShowElapsedTime" xml:space="preserve">
     <value>Show elapsed session time in the Discord presence.</value>
