@@ -224,6 +224,9 @@ namespace MinecraftClient.Protocol
         /// <param name="isInbound"></param>
         public void AddPacket(int packetID, IEnumerable<byte> packetData, bool isLogin, bool isInbound)
         {
+            if (cleanedUp || prepareCleanUp)
+                return;
+
             try
             {
                 if (isInbound)

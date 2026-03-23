@@ -1,9 +1,9 @@
 #!/bin/bash
 # Start a Minecraft server in a tmux session with named pipe for stdin
-# Servers live in MinecraftOfficial/downloads/<version>/ alongside the downloaded server.jar
+# Servers live under $MCC_SERVERS or default to MinecraftOfficial/downloads/<version>/.
 VERSION="${1}"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DOWNLOADS="$REPO_ROOT/MinecraftOfficial/downloads"
+DOWNLOADS="${MCC_SERVERS:-$REPO_ROOT/MinecraftOfficial/downloads}"
 DIR="$DOWNLOADS/$VERSION"
 PIPE="$DIR/stdin.pipe"
 SESSION="mc-${VERSION//\./_}"

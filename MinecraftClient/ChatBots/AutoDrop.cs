@@ -41,7 +41,7 @@ namespace MinecraftClient.ChatBots
         }
 
         private int updateDebounce = 0;
-        private readonly int updateDebounceValue = 2;
+        private readonly int updateDebounceValue = Settings.DoubleToTick(0.2);
         private int inventoryUpdated = -1;
 
         public override void Initialize()

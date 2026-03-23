@@ -112,7 +112,7 @@ namespace MinecraftClient.ChatBots
             if (Config.Cooldown_Time.Custom)
             {
                 attackCooldownSeconds = Config.Cooldown_Time.value;
-                attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
+                attackCooldown = SecondsToAttackCooldownTicks(attackCooldownSeconds);
             }
 
             attackHostile = Config.Attack_Hostile;
@@ -274,7 +274,7 @@ namespace MinecraftClient.ChatBots
                         serverTPS = GetServerTPS();
                         attackSpeed = prop[attackSpeedKey];
                         attackCooldownSeconds = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
-                        attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
+                        attackCooldown = SecondsToAttackCooldownTicks(attackCooldownSeconds);
                     }
                 }
             }
@@ -288,7 +288,13 @@ namespace MinecraftClient.ChatBots
             serverTPS = tps;
             // re-calculate attack speed
             attackCooldownSeconds = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
-            attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
+            attackCooldown = SecondsToAttackCooldownTicks(attackCooldownSeconds);
+        }
+
+        private static int SecondsToAttackCooldownTicks(double seconds)
+        {
+            seconds = Math.Min(int.MaxValue / (double)Settings.ClientTicksPerSecond, seconds);
+            return Math.Max(1, (int)Math.Truncate(seconds * Settings.ClientTicksPerSecond) + 1);
         }
 
         /// <summary>

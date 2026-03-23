@@ -142,7 +142,11 @@ mc-start "$VERSION" >/dev/null
 wait_for_server_ready || fail "Server did not become ready"
 
 echo "Starting MCC..."
-mcc-run 25565 > "$MCC_LOG" 2>&1 &
+mcc-run 25565 \
+  --advanced.terrainandmovements=true \
+  --advanced.inventoryhandling=true \
+  --advanced.entityhandling=true \
+  > "$MCC_LOG" 2>&1 &
 MCC_PID=$!
 
 wait_for_file_pattern "$MCC_LOG" "Server was successfully joined." "MCC join success" 90 || fail "MCC failed to join"

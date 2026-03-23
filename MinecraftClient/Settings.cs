@@ -38,6 +38,8 @@ namespace MinecraftClient
         public const string TranslationsFile_Website_Download = "https://resources.download.minecraft.net";
 
         public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
+        public const int ClientTicksPerSecond = 20;
+        public const int ClientTickIntervalMilliseconds = 1000 / ClientTicksPerSecond;
 
         public static GlobalConfig Config = new();
 
@@ -1928,8 +1930,8 @@ namespace MinecraftClient
 
         public static int DoubleToTick(double time)
         {
-            time = Math.Min(int.MaxValue / 10, time);
-            return (int)Math.Round(time * 10);
+            time = Math.Min(int.MaxValue / (double)ClientTicksPerSecond, time);
+            return (int)Math.Round(time * ClientTicksPerSecond);
         }
     }
 

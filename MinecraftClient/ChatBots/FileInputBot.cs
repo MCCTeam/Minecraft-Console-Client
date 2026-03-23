@@ -41,8 +41,8 @@ namespace MinecraftClient.ChatBots
 
         public override void Update()
         {
-            // Poll every ~500ms (Update is called every ~100ms)
-            if (++_tickCounter < 5)
+            // Poll every ~500ms while the MCC main loop runs at 20 TPS.
+            if (++_tickCounter < Settings.DoubleToTick(0.5))
                 return;
             _tickCounter = 0;
 

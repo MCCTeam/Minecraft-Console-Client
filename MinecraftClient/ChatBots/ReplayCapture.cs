@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
@@ -86,7 +87,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (replay!.RecordRunning)
                 {
-                    replay.CreateBackupReplay(@"replay_recordings\" + replay.GetReplayDefaultName());
+                    replay.CreateBackupReplay(Path.Combine("replay_recordings", replay.GetReplayDefaultName()));
                     return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_replayCapture_created);
                 }
                 else
@@ -127,7 +128,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (backupCounter <= 0)
                 {
-                    replay.CreateBackupReplay(@"recording_cache\REPLAY_BACKUP.mcpr");
+                    replay.CreateBackupReplay(Path.Combine("recording_cache", "REPLAY_BACKUP.mcpr"));
                     backupCounter = Settings.DoubleToTick(Config.Backup_Interval);
                 }
                 else backupCounter--;

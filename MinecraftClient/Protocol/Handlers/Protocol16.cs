@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Sockets;
@@ -70,24 +71,41 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void Updater(object? o)
         {
-            if (((CancellationToken)o!).IsCancellationRequested)
+            var cancelToken = (CancellationToken)o!;
+
+            if (cancelToken.IsCancellationRequested)
                 return;
 
             try
             {
-                while (!((CancellationToken)o!).IsCancellationRequested)
+                Stopwatch stopWatch = Stopwatch.StartNew();
+                long nextUpdateDue = 0;
+
+                while (!cancelToken.IsCancellationRequested)
                 {
-                    do
+                    cancelToken.ThrowIfCancellationRequested();
+
+                    long elapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    while (elapsedMilliseconds >= nextUpdateDue)
                     {
-                        Thread.Sleep(100);
-                    } while (Update());
+                        if (!Update())
+                            return;
+
+                        nextUpdateDue += ClientTickIntervalMilliseconds;
+                        elapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    }
+
+                    long sleepLength = nextUpdateDue - stopWatch.ElapsedMilliseconds;
+                    if (sleepLength > 1)
+                        Thread.Sleep((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds));
                 }
             }
             catch (System.IO.IOException) { }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
+            catch (OperationCanceledException) { }
 
-            if (((CancellationToken)o!).IsCancellationRequested)
+            if (cancelToken.IsCancellationRequested)
                 return;
 
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
@@ -737,7 +755,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch)
+        public bool SendLocationUpdate(Location location, bool onGround, bool horizontalCollision, float? yaw, float? pitch)
         {
             return false; //Currently not implemented
         }

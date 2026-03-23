@@ -63,12 +63,15 @@
     <Compile Remove="config\ChatBots\TreeFarmer.cs" />
     <Compile Remove="config\ChatBots\VkMessager.cs" />
     <Compile Remove="config\sample-script-extended.cs" />
+    <Compile Remove="config\sample-script-packet-capture.cs" />
     <Compile Remove="config\sample-script-pm-forwarder.cs" />
     <Compile Remove="config\sample-script-random-command.cs" />
+    <Compile Remove="config\sample-script-tick-counter.cs" />
     <Compile Remove="config\sample-script-with-chatbot.cs" />
     <Compile Remove="config\sample-script-with-http-request.cs" />
     <Compile Remove="config\sample-script-with-task.cs" />
     <Compile Remove="config\sample-script-with-world-access.cs" />
+    <Compile Remove="config\sample-script-packet-capture.cs" />
     <Compile Remove="config\sample-script.cs" />
     <Compile Remove="config\ChatBots\MineCube.cs" />
     <Compile Remove="config\ChatBots\SugarCaneFarmer.cs" />

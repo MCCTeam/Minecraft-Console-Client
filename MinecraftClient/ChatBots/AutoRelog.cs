@@ -39,8 +39,9 @@ namespace MinecraftClient.ChatBots
                 Delay.min = Math.Max(0.1, Delay.min);
                 Delay.max = Math.Max(0.1, Delay.max);
 
-                Delay.min = Math.Min(int.MaxValue / 10, Delay.min);
-                Delay.max = Math.Min(int.MaxValue / 10, Delay.max);
+                double maxDelaySeconds = int.MaxValue / (double)Settings.ClientTicksPerSecond;
+                Delay.min = Math.Min(maxDelaySeconds, Delay.min);
+                Delay.max = Math.Min(maxDelaySeconds, Delay.max);
 
                 if (Delay.min > Delay.max)
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);

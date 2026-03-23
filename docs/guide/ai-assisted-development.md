@@ -338,7 +338,7 @@ tools/decompile.sh --version 1.20.6
 
 That creates the paths used by the harness and the version-adaptation workflow:
 
--   `MinecraftOfficial/downloads/1.20.6/server.jar`
+-   `$MCC_SERVERS/1.20.6/server.jar`
 -   `MinecraftOfficial/1.20.6-decompiled/`
 
 If you are doing protocol work, this step is not optional.
