@@ -465,8 +465,9 @@ The tools above do the work. The skills in `.skills/` tell the AI when to use th
 | `mcc-integration-testing` | Repeatable end-to-end testing against a local offline server. | This skill bundles its own scripts under `.skills/mcc-integration-testing/scripts/`. Those are skill resources, not top-level repo scripts. |
 | `mcc-version-adaptation` | Protocol and palette updates for new Minecraft versions. | Use this when routing, registries, metadata, palettes, or structured components change. |
 | `mcc-chatbot-authoring` | Authoring or repairing built-in bots and standalone `/script` bots. | This skill bundles references and templates under `.skills/mcc-chatbot-authoring/`. It defaults to standalone `/script` bots unless built-in wiring is requested. |
-| `csharp-best-practices` | C# 12 / .NET 10 coding guidance for this repo. | Use it whenever the change touches MCC runtime code. |
+| `csharp-best-practices` | C# 14 / .NET 10 coding guidance for this repo. | Use it whenever the change touches MCC runtime code. |
 | `humanizer` | Documentation and prose cleanup. | Use it for docs, guides, release notes, and anything that starts sounding machine-written. |
+| `mcc-prompt-engineer` | Generating structured prompts for MCC development tasks. | Manually triggered. Interviews the user, explores the codebase, and produces a self-contained prompt with reasoning framework, skill references, and sub-agent directives. |
 | `skill-creator` | Creating or evolving skills themselves. | This is for improving the AI workflow, not for normal MCC feature work. |
 
 The important distinction is this:
