@@ -390,6 +390,9 @@ For Discord message formatting, check the following: https://mccteam.github.io/r
   <data name="ChatBot.DiscordBridge.Token" xml:space="preserve">
     <value>Your Discord Bot token.</value>
   </data>
+  <data name="ChatBot.DiscordBridge.AllowOtherBotMessages" xml:space="preserve">
+    <value>When enabled, messages from other Discord bots in the channel will be relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.</value>
+  </data>
   <data name="ChatBot.Farmer" xml:space="preserve">
     <value>Automatically farms crops for you (plants, breaks and bonemeals them).
 Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
@@ -827,6 +830,60 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   </data>
   <data name="ChatBot.ItemsCollector" xml:space="preserve">
     <value>A Chat Bot that collects items on the ground</value>
+  </data>
+  <data name="ChatBot.DiscordRpc" xml:space="preserve">
+    <value>Show a Discord Rich Presence status with your current Minecraft session info.
+Setup:
+1. Go to https://discord.com/developers/applications and log in with your Discord account.
+2. Click "New Application", give it a name (e.g. "MCC") and confirm.
+3. On the application page, copy the "Application ID" and paste it in the "ApplicationId" field below.
+4. (Optional) Go to "Rich Presence" -&gt; "Art Assets" to upload custom images for LargeImageKey/SmallImageKey.
+Note: This does NOT require a Bot Token, only an Application ID. Discord must be running on the same machine as MCC.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ApplicationId" xml:space="preserve">
+    <value>Your Discord Application ID. Create one at https://discord.com/developers/applications</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.PresenceDetails" xml:space="preserve">
+    <value>The top line of the Rich Presence display. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.PresenceState" xml:space="preserve">
+    <value>The second line of the Rich Presence display. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.LargeImageKey" xml:space="preserve">
+    <value>The key of the large image asset uploaded to your Discord application.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.LargeImageText" xml:space="preserve">
+    <value>Tooltip text for the large image. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.SmallImageKey" xml:space="preserve">
+    <value>The key of the small image asset uploaded to your Discord application (leave empty to hide).</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.SmallImageText" xml:space="preserve">
+    <value>Tooltip text for the small image. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowServerAddress" xml:space="preserve">
+    <value>Show the server address (host and port) in the Discord presence. When disabled, {server_host} and {server_port} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowCoordinates" xml:space="preserve">
+    <value>Show the player coordinates in the Discord presence. When disabled, {x}, {y}, {z} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowHealth" xml:space="preserve">
+    <value>Show health and food level in the Discord presence. When disabled, {health}, {max_health}, {food} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowDimension" xml:space="preserve">
+    <value>Show the current dimension in the Discord presence. When disabled, {dimension} is masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowGamemode" xml:space="preserve">
+    <value>Show the current gamemode in the Discord presence. When disabled, {gamemode} is masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowElapsedTime" xml:space="preserve">
+    <value>Show elapsed session time in the Discord presence.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowPlayerCount" xml:space="preserve">
+    <value>Show the online player count as a party size in the Discord presence.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.UpdateIntervalSeconds" xml:space="preserve">
+    <value>How often (in seconds) to refresh the Discord presence. Minimum: 1</value>
   </data>
   <data name="ChatBot.WebSocketBot" xml:space="preserve">
     <value>Remotely control the client using Web Sockets.\n# This is useful if you want to implement an application that can remotely and asynchronously execute procedures in MCC.\n# Example implementation written in JavaScript: https://github.com/milutinke/MCC.js.git\n# The protocol specification will be available in the documentation soon.</value>

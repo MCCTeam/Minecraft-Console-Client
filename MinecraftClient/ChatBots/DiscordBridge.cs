@@ -58,6 +58,9 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$ChatBot.DiscordBridge.MessageSendTimeout$")]
             public int Message_Send_Timeout = 3;
 
+            [TomlInlineComment("$ChatBot.DiscordBridge.AllowOtherBotMessages$")]
+            public bool Allow_Other_Bot_Messages = false;
+
             [TomlPrecedingComment("$ChatBot.DiscordBridge.Formats$")]
             public string PrivateMessageFormat = "**[Private Message]** {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
@@ -372,12 +375,25 @@ namespace MinecraftClient.ChatBots
                     if (e.Channel.Id != Config.ChannelId)
                         return;
 
-                    if (!Config.OwnersIds.Contains(e.Author.Id))
+                    // Always ignore own messages to prevent loops
+                    if (e.Author.Id == discordBotClient.CurrentUser.Id)
                         return;
 
                     string message = e.Message.Content.Trim();
 
-                    if (string.IsNullOrEmpty(message) || string.IsNullOrWhiteSpace(message))
+                    if (string.IsNullOrWhiteSpace(message))
+                        return;
+
+                    // Relay messages from other bots when configured, but never process commands from them.
+                    // Skip relay when direction is Discord-only (Discord -> MC disabled).
+                    if (e.Author.IsBot)
+                    {
+                        if (Config.Allow_Other_Bot_Messages && bridgeDirection != BridgeDirection.Discord)
+                            SendText(message);
+                        return;
+                    }
+
+                    if (!Config.OwnersIds.Contains(e.Author.Id))
                         return;
 
                     if (bridgeDirection == BridgeDirection.Discord)

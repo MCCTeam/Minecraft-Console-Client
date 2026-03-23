@@ -155,6 +155,7 @@ run_server_command "time set day"
 run_server_command "weather clear"
 sleep 2
 
+# ── Phase 1: Basic status and info commands ──
 run_mcc_command "health"
 run_mcc_command "list"
 run_mcc_command "inventory player list"
@@ -165,6 +166,34 @@ run_mcc_command "entity"
 run_mcc_command "/time query daytime"
 run_mcc_command "smoke_test_from_mcc_full_spectrum"
 
+# ── Phase 2: Movement and look commands ──
+run_mcc_command "/tp CursorBot 0 -60 0"
+sleep 3
+run_mcc_command "look up"
+sleep 1
+run_mcc_command "look down"
+sleep 1
+run_mcc_command "look east"
+sleep 1
+
+# ── Phase 3: Advanced inventory operations ──
+run_mcc_command "inventory creativegive 37 IronSword 1"
+run_mcc_command "inventory creativegive 38 GoldenApple 8"
+run_mcc_command "inventory player list"
+run_mcc_command "inventory creativeclear 38"
+run_mcc_command "inventory player list"
+
+# ── Phase 4: Block placement and interaction ──
+run_server_command "execute as CursorBot at @s run fill ~1 ~ ~1 ~3 ~2 ~3 minecraft:stone"
+sleep 2
+run_server_command "execute as CursorBot at @s run setblock ~5 ~ ~5 minecraft:chest"
+sleep 1
+run_server_command "execute as CursorBot at @s run setblock ~5 ~1 ~5 minecraft:furnace"
+sleep 1
+run_server_command "execute as CursorBot at @s run setblock ~6 ~ ~5 minecraft:crafting_table"
+sleep 1
+
+# ── Phase 5: Entity spawning (expanded coverage) ──
 run_server_command "execute as CursorBot at @s run summon minecraft:cow ~2 ~ ~"
 run_server_command "execute as CursorBot at @s run summon minecraft:zombie ~4 ~ ~"
 run_server_command "execute as CursorBot at @s run summon minecraft:creeper ~6 ~ ~"
@@ -172,41 +201,99 @@ run_server_command "execute as CursorBot at @s run summon minecraft:skeleton ~8 
 run_server_command "execute as CursorBot at @s run summon minecraft:villager ~-2 ~ ~"
 run_server_command "execute as CursorBot at @s run summon minecraft:allay ~-4 ~ ~"
 run_server_command "execute as CursorBot at @s run summon minecraft:armor_stand ~ ~ ~2"
+run_server_command "execute as CursorBot at @s run summon minecraft:item_display ~-6 ~ ~ {item:{id:\"minecraft:diamond\",count:1}}"
+run_server_command "execute as CursorBot at @s run summon minecraft:spider ~10 ~ ~"
+run_server_command "execute as CursorBot at @s run summon minecraft:pig ~-8 ~ ~"
 
 sleep 2
 run_mcc_command "entity"
 
+# ── Phase 6: Effects and environment ──
+run_server_command "effect give CursorBot minecraft:speed 30 1"
+sleep 2
+run_mcc_command "health"
+run_server_command "effect give CursorBot minecraft:regeneration 10 1"
+sleep 2
+run_mcc_command "health"
+
+# ── Phase 7: Gamemode cycling ──
+run_mcc_command "/gamemode survival"
+sleep 2
+run_mcc_command "health"
+run_mcc_command "/gamemode creative"
+sleep 2
+
+# ── Phase 8: Dimension change (nether) ──
+run_server_command "execute in minecraft:the_nether run tp CursorBot 0 64 0"
+sleep 4
+run_mcc_command "health"
+run_server_command "execute in minecraft:overworld run tp CursorBot 0 -60 0"
+sleep 4
+
+# ── Phase 9: Server chat and whisper ──
+run_server_command "say Hello from the server console"
+sleep 2
+run_server_command "msg CursorBot This is a private whisper"
+sleep 2
+run_mcc_command "integration_test_chat_response"
+
+# ── Phase 10: Particles, sounds, and explosions ──
 run_server_command "execute as CursorBot at @s run particle minecraft:happy_villager ~ ~1 ~ 0.5 0.5 0.5 0 12 force"
 run_server_command "execute as CursorBot at @s run particle minecraft:end_rod ~ ~1 ~ 0.5 0.5 0.5 0.01 20 force"
 run_server_command "execute as CursorBot at @s run particle minecraft:explosion ~ ~1 ~ 0 0 0 0 1 force"
 run_server_command "execute as CursorBot at @s run particle minecraft:totem_of_undying ~ ~1 ~ 0.5 0.5 0.5 0.1 20 force"
+run_server_command "execute as CursorBot at @s run particle minecraft:flame ~ ~1 ~ 0.2 0.2 0.2 0.02 30 force"
+run_server_command "execute as CursorBot at @s run particle minecraft:heart ~ ~2 ~ 0.3 0.3 0.3 0 5 force"
 
 run_server_command "execute as CursorBot at @s run playsound minecraft:entity.lightning_bolt.thunder master CursorBot ~ ~ ~ 1 1 0"
 run_server_command "execute as CursorBot at @s run playsound minecraft:block.note_block.bell master CursorBot ~ ~ ~ 1 1 0"
+run_server_command "execute as CursorBot at @s run playsound minecraft:entity.experience_orb.pickup master CursorBot ~ ~ ~ 1 1 0"
 
 run_server_command "execute as CursorBot at @s run summon minecraft:tnt ~3 ~ ~"
 sleep 2
 run_server_command "execute as CursorBot at @s run summon minecraft:tnt ~6 ~ ~"
 
+# ── Phase 11: Kill and respawn cycle ──
+run_mcc_command "/gamemode survival"
+sleep 2
+run_server_command "kill CursorBot"
+sleep 4
+run_mcc_command "respawn"
+sleep 4
+run_mcc_command "health"
+run_mcc_command "/gamemode creative"
+sleep 2
+
 sleep 6
 capture_server_logs
 
+# ── Assertions: MCC log ──
 assert_contains "$MCC_LOG" "Server was successfully joined." "MCC never joined the server"
 assert_contains "$MCC_LOG" "[FileInput] > inventory player list" "Inventory command was not executed"
 assert_contains "$MCC_LOG" "[FileInput] > entity" "Entity command was not executed"
 assert_contains "$MCC_LOG" "[FileInput] > /gamemode creative" "Creative mode command was not executed from MCC"
 assert_contains "$MCC_LOG" "Requested Diamond x16 in slot #36" "Creative inventory give did not succeed"
 assert_contains "$MCC_LOG" "smoke_test_from_mcc_full_spectrum" "Client-originated chat was not observed"
+assert_contains "$MCC_LOG" "[FileInput] > look up" "Look command was not executed"
+assert_contains "$MCC_LOG" "[FileInput] > /gamemode survival" "Survival mode switch was not executed"
+assert_contains "$MCC_LOG" "[FileInput] > respawn" "Respawn command was not executed"
+assert_contains "$MCC_LOG" "[FileInput] > health" "Health command was not executed"
+assert_contains "$MCC_LOG" "integration_test_chat_response" "Chat response test message was not observed"
 assert_not_contains "$MCC_LOG" "Please enable InventoryHandling" "Inventory handling is still disabled"
 assert_not_contains "$MCC_LOG" "Please enable EntityHandling" "Entity handling is still disabled"
 assert_not_contains "$MCC_LOG" "You must be in Creative gamemode" "Creative mode was not active when creativegive ran"
 assert_not_contains "$MCC_LOG" "Failed to load settings" "MCC failed to reload its config"
+assert_not_contains "$MCC_LOG" "NullReferenceException" "A NullReferenceException occurred during the test"
 
+# ── Assertions: Server log ──
 assert_contains "$SERVER_FILE_LOG" "CursorBot joined the game" "Server never saw CursorBot join"
 assert_contains "$SERVER_FILE_LOG" "smoke_test_from_mcc_full_spectrum" "Server never received the client chat message"
 assert_contains "$SERVER_FILE_LOG" "Displaying particle minecraft:happy_villager" "Particle events were not recorded on the server"
 assert_contains "$SERVER_FILE_LOG" "Played sound minecraft:block.note_block.bell to CursorBot" "Sound events were not recorded on the server"
 assert_contains "$SERVER_FILE_LOG" "Summoned new Primed TNT" "TNT summon did not occur on the server"
+assert_contains "$SERVER_FILE_LOG" "integration_test_chat_response" "Server never received the chat response test message"
+assert_contains "$SERVER_FILE_LOG" "Hello from the server console" "Server say command was not logged"
+assert_contains "$SERVER_FILE_LOG" "Killed CursorBot" "Server kill command did not execute"
 assert_not_contains "$SERVER_FILE_LOG" "Sending unknown packet 'clientbound/minecraft:disconnect'" "Server hit the disconnect packet regression during the test"
 
 cat <<EOF

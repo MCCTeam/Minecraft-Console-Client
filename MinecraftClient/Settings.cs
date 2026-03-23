@@ -1466,6 +1466,13 @@ namespace MinecraftClient
                         ChatBots.ItemsCollector.Config.OnSettingUpdate();
                     }
                 }
+
+                [TomlPrecedingComment("$ChatBot.DiscordRpc$")]
+                public ChatBots.DiscordRpc.Configs DiscordRpc
+                {
+                    get { return ChatBots.DiscordRpc.Config; }
+                    set { ChatBots.DiscordRpc.Config = value; ChatBots.DiscordRpc.Config.OnSettingUpdate(); }
+                }
             }
         }
 

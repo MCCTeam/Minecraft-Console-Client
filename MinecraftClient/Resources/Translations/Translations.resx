@@ -463,6 +463,27 @@ cooldown: {6}</value>
   <data name="bot.DiscordBridge.unknown_error" xml:space="preserve">
     <value>An unknown error has occured!</value>
   </data>
+  <data name="bot.DiscordRpc.missing_app_id" xml:space="preserve">
+    <value>Please provide a valid Discord Application ID! Get one at https://discord.com/developers/applications</value>
+  </data>
+  <data name="bot.DiscordRpc.connected" xml:space="preserve">
+    <value>Connected to Discord as {0}</value>
+  </data>
+  <data name="bot.DiscordRpc.connection_failed" xml:space="preserve">
+    <value>Failed to connect to Discord (pipe {0}). Is Discord running?</value>
+  </data>
+  <data name="bot.DiscordRpc.initialized" xml:space="preserve">
+    <value>Discord Rich Presence initialized successfully.</value>
+  </data>
+  <data name="bot.DiscordRpc.init_error" xml:space="preserve">
+    <value>Failed to initialize Discord Rich Presence: {0}</value>
+  </data>
+  <data name="bot.DiscordRpc.update_error" xml:space="preserve">
+    <value>Error updating Discord presence: {0}</value>
+  </data>
+  <data name="bot.DiscordRpc.invalid_interval" xml:space="preserve">
+    <value>Invalid update interval, must be at least 1 second. Using default of 10 seconds.</value>
+  </data>
   <data name="bot.farmer.already_running" xml:space="preserve">
     <value>The bot is already farming!</value>
   </data>
@@ -769,6 +790,9 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
   </data>
   <data name="botname.DiscordBridge" xml:space="preserve">
     <value>DiscordBridge</value>
+  </data>
+  <data name="botname.DiscordRpc" xml:space="preserve">
+    <value>DiscordRpc</value>
   </data>
   <data name="botname.Farmer" xml:space="preserve">
     <value>Farmer</value>
