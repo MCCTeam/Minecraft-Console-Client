@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using DiscordRPC;
 using DiscordRPC.Logging;
 using MinecraftClient.Mapping;
@@ -88,11 +87,11 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private DiscordRpcClient? rpcClient;
-        private int tickCounter;
-        private int updateIntervalTicks;
-        private Timestamps? sessionTimestamps;
-        private float lastHealth;
+        private DiscordRpcClient? _rpcClient;
+        private int _tickCounter;
+        private int _updateIntervalTicks;
+        private Timestamps? _sessionTimestamps;
+        private float _lastHealth;
 
         public override void Initialize()
         {
@@ -105,32 +104,26 @@ namespace MinecraftClient.ChatBots
 
             try
             {
-                rpcClient = new DiscordRpcClient(Config.ApplicationId.Trim())
+                _rpcClient = new DiscordRpcClient(Config.ApplicationId.Trim())
                 {
                     Logger = Settings.Config.Logging.DebugMessages
                         ? new ConsoleLogger(LogLevel.Trace)
                         : new ConsoleLogger(LogLevel.None)
                 };
 
-                rpcClient.OnReady += (_, e) =>
+                _rpcClient.OnReady += (_, e) =>
                 {
                     LogToConsole(string.Format(Translations.bot_DiscordRpc_connected, e.User.Username));
                 };
 
-                rpcClient.OnConnectionFailed += (_, e) =>
+                _rpcClient.OnConnectionFailed += (_, e) =>
                 {
                     LogToConsole(string.Format(Translations.bot_DiscordRpc_connection_failed, e.FailedPipe));
                 };
 
-                rpcClient.Initialize();
-                updateIntervalTicks = Settings.DoubleToTick(Config.UpdateIntervalSeconds);
+                _rpcClient.Initialize();
+                _updateIntervalTicks = Settings.DoubleToTick(Config.UpdateIntervalSeconds);
 
-                if (Config.ShowElapsedTime)
-                    sessionTimestamps = Timestamps.Now;
-
-                lastHealth = Handler.GetHealth();
-
-                SetPresence();
                 LogToConsole(Translations.bot_DiscordRpc_initialized);
             }
             catch (Exception e)
@@ -143,49 +136,51 @@ namespace MinecraftClient.ChatBots
 
         public override void OnUnload()
         {
-            if (rpcClient is { IsDisposed: false })
+            if (_rpcClient is { IsDisposed: false })
             {
-                rpcClient.ClearPresence();
-                rpcClient.Dispose();
+                _rpcClient.ClearPresence();
+                _rpcClient.Dispose();
             }
 
-            rpcClient = null;
+            _rpcClient = null;
         }
 
         public override void AfterGameJoined()
         {
             if (Config.ShowElapsedTime)
-                sessionTimestamps = Timestamps.Now;
+                _sessionTimestamps = Timestamps.Now;
 
+            _lastHealth = Handler.GetHealth();
+            _tickCounter = 0;
             SetPresence();
         }
 
         public override void Update()
         {
-            tickCounter++;
-            if (tickCounter < updateIntervalTicks)
+            _tickCounter++;
+            if (_tickCounter < _updateIntervalTicks)
                 return;
 
-            tickCounter = 0;
+            _tickCounter = 0;
             SetPresence();
         }
 
         public override void OnHealthUpdate(float health, int food)
         {
-            lastHealth = health;
+            _lastHealth = health;
         }
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            if (rpcClient is { IsDisposed: false })
-                rpcClient.ClearPresence();
+            if (_rpcClient is { IsDisposed: false })
+                _rpcClient.ClearPresence();
 
             return false;
         }
 
         private void SetPresence()
         {
-            if (rpcClient is null or { IsDisposed: true })
+            if (_rpcClient is null or { IsDisposed: true })
                 return;
 
             try
@@ -223,8 +218,8 @@ namespace MinecraftClient.ChatBots
                     presence.Assets = assets;
 
                 // Timestamps
-                if (Config.ShowElapsedTime && sessionTimestamps is not null)
-                    presence.Timestamps = sessionTimestamps;
+                if (Config.ShowElapsedTime && _sessionTimestamps is not null)
+                    presence.Timestamps = _sessionTimestamps;
 
                 // Player count as party
                 if (Config.ShowPlayerCount)
@@ -242,7 +237,7 @@ namespace MinecraftClient.ChatBots
                     }
                 }
 
-                rpcClient.SetPresence(presence);
+                _rpcClient.SetPresence(presence);
             }
             catch (Exception e)
             {
@@ -282,7 +277,7 @@ namespace MinecraftClient.ChatBots
                     dimensionName = dim.Name ?? "Unknown";
 
                     // Clean up the dimension name for display
-                    if (dimensionName.StartsWith("minecraft:"))
+                    if (dimensionName.StartsWith("minecraft:", StringComparison.Ordinal))
                         dimensionName = dimensionName["minecraft:".Length..];
 
                     dimensionName = dimensionName switch

@@ -381,7 +381,7 @@ namespace MinecraftClient.ChatBots
 
                     string message = e.Message.Content.Trim();
 
-                    if (string.IsNullOrEmpty(message) || string.IsNullOrWhiteSpace(message))
+                    if (string.IsNullOrWhiteSpace(message))
                         return;
 
                     // Relay messages from other bots when configured, but never process commands from them.
