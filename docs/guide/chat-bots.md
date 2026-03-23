@@ -43,6 +43,7 @@ redirectFrom:
   - [Auto Respond](#auto-respond)
   - [Chat Log](#chat-log)
   - [Discord Bridge](#discord-bridge)
+  - [Discord RPC](#discord-rpc)
   - [Farmer](#farmer)
   - [Follow player](#follow-player)
   - [Hangman](#hangman)
@@ -1506,7 +1507,7 @@ redirectFrom:
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.DiscordBrdige`**
+    **Section:** **`ChatBot.DiscordBridge`**
 
     <details>
     <summary>All settings</summary>
@@ -1555,17 +1556,39 @@ redirectFrom:
 
     -   **Type:** `list/array of: unsigned long`
 
+    #### `Message_Send_Timeout`
+
+    -   **Description:**
+
+        How long (in seconds) to wait for a message to be sent to Discord before giving up.
+
+    -   **Type:** `integer`
+
+    -   **Default:** `3`
+
+    #### `Allow_Other_Bot_Messages`
+
+    -   **Description:**
+
+        When enabled, messages from other Discord bots in the channel are relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
     #### `PrivateMessageFormat`
 
     -   **Description:**
 
-        This is a format that will be used when someone has sent you a private message on the server.
+        The format used when someone sends you a private message on the server.
 
-        Parts of the message that are between `{` and `}` will be replaced by the Chat Bot during runtime, you should not change them in any way!
+        Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
 
-        For example `{message}` will be replaced with an actual message, `{username}` will be replaced with the username of the person who sent a message on the server and `{timestamp}` will be replaced with the current date and time.
+        `{message}` is replaced with the message text, `{username}` with the sender's name, and `{timestamp}` with the current date and time.
 
-        For Discord message formatting/styling, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+        For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
 
     -   **Type:** `string`
 
@@ -1575,13 +1598,13 @@ redirectFrom:
 
     -   **Description:**
 
-        This is a format that will be used when sending a public message to the Discord channel.
+        The format used when sending a public message to the Discord channel.
 
-        Parts of the message that are between `{` and `}` will be replaced by the Chat Bot during runtime, you should not change them in any way!
+        Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
 
-        For example `{message}` will be replaced with an actual message, `{username}` will be replaced with the username of the person who sent a message on the server and `{timestamp}` will be replaced with the current date and time.
+        `{message}` is replaced with the message text, `{username}` with the sender's name, and `{timestamp}` with the current date and time.
 
-        For Discord message formatting/styling, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+        For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
 
     -   **Type:** `string`
 
@@ -1591,18 +1614,252 @@ redirectFrom:
 
     -   **Description:**
 
-        This is a format that will be used when someone has sent you a Teleport Request.
+        The format used when someone sends you a teleport request.
 
-        Parts of the message that are between `{` and `}` will be replaced by the Chat Bot during runtime, you should not change them in any way!
+        Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
 
-        For example `{message}` will be replaced with an actual message, `{username}` will be replaced with the username of the person who sent a message on the server and `{timestamp}` will be replaced with the current date and time.
+        `{username}` is replaced with the requester's name.
 
-        For Discord message formatting/styling, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+        For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
 
     -   **Type:** `string`
 
     -   **Default:** `A new Teleport Request from **{username}**!`
 
+    </details>
+
+## Discord RPC
+
+-   **Description:**
+
+    This Chat Bot shows your current Minecraft session as a Discord Rich Presence status. It displays information like the server address, your health, current dimension, coordinates, gamemode, and how long you have been connected.
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **Discord RPC uses a local IPC socket to communicate with the Discord client. MCC and Discord must be running on the same machine for this to work.**
+
+    </div>
+
+-   **Setup:**
+
+    You need a Discord Application ID to use this bot. Here is how to get one:
+
+    1. Go to the [Discord Developer Portal](https://discord.com/developers/applications/) and click **New Application**.
+
+    2. Give it a name (this is what shows up in your Discord status, e.g. "Minecraft Console Client"), accept the terms, and click **Create**.
+
+    3. On the **General Information** page, copy the **Application ID** and paste it into the `ApplicationId` field in your MCC configuration.
+
+    4. *(Optional)* If you want a custom image in your status, go to the **Rich Presence** tab and click **Art Assets**. Upload an image and give it a name (the **key**). Use that key in the `LargeImageKey` or `SmallImageKey` settings. The default value `mcc_icon` references a built-in MCC icon already registered on the application -- no upload needed if you are happy with that.
+
+    5. Enable the bot by setting `Enabled` to `true` in your MCC configuration and start MCC with Discord already running.
+
+    Discord updates Rich Presence at most once every 15 seconds regardless of how often MCC sends updates, so you may notice a short delay before your status reflects changes.
+
+-   **Settings:**
+
+    **Section:** **`ChatBot.DiscordRpc`**
+
+    <details>
+    <summary>All settings</summary>
+
+    #### `Enabled`
+
+    -   **Description:**
+
+        This setting specifies if the Discord RPC Chat Bot is enabled.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `false`
+
+    #### `ApplicationId`
+
+    -   **Description:**
+
+        Your Discord Application ID. Create one at [discord.com/developers/applications](https://discord.com/developers/applications/).
+
+    -   **Type:** `string`
+
+    #### `PresenceDetails`
+
+    -   **Description:**
+
+        The top line of the Rich Presence display. Supports placeholders (see below).
+
+    -   **Type:** `string`
+
+    -   **Default:** `Playing on {server_host}:{server_port}`
+
+    #### `PresenceState`
+
+    -   **Description:**
+
+        The second line of the Rich Presence display. Supports placeholders (see below).
+
+    -   **Type:** `string`
+
+    -   **Default:** `{dimension} - HP: {health}/{max_health}`
+
+    #### `LargeImageKey`
+
+    -   **Description:**
+
+        The key of the large image asset uploaded to your Discord application. Leave empty to show no image.
+
+    -   **Type:** `string`
+
+    -   **Default:** `mcc_icon`
+
+    #### `LargeImageText`
+
+    -   **Description:**
+
+        Tooltip text shown when hovering over the large image. Supports placeholders (see below).
+
+    -   **Type:** `string`
+
+    -   **Default:** `Minecraft Console Client`
+
+    #### `SmallImageKey`
+
+    -   **Description:**
+
+        The key of the small image asset uploaded to your Discord application. Leave empty to hide the small image.
+
+    -   **Type:** `string`
+
+    -   **Default:** *(empty)*
+
+    #### `SmallImageText`
+
+    -   **Description:**
+
+        Tooltip text shown when hovering over the small image. Supports placeholders (see below).
+
+    -   **Type:** `string`
+
+    -   **Default:** *(empty)*
+
+    #### `ShowServerAddress`
+
+    -   **Description:**
+
+        Show the server address in the Discord presence. When set to `false`, `{server_host}` and `{server_port}` are replaced with `Hidden` and `****`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `ShowCoordinates`
+
+    -   **Description:**
+
+        Show your coordinates in the Discord presence. When set to `false`, `{x}`, `{y}`, and `{z}` are replaced with `?`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `ShowHealth`
+
+    -   **Description:**
+
+        Show health and food level in the Discord presence. When set to `false`, `{health}`, `{max_health}`, and `{food}` are replaced with `?`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `ShowDimension`
+
+    -   **Description:**
+
+        Show the current dimension in the Discord presence. When set to `false`, `{dimension}` is replaced with `Hidden`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `ShowGamemode`
+
+    -   **Description:**
+
+        Show the current gamemode in the Discord presence. When set to `false`, `{gamemode}` is replaced with `Hidden`.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `ShowElapsedTime`
+
+    -   **Description:**
+
+        Show how long you have been connected to the server as an elapsed time in the Discord presence.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `ShowPlayerCount`
+
+    -   **Description:**
+
+        Show the number of online players as a party size in the Discord presence.
+
+    -   **Available values:** `true` and `false`.
+
+    -   **Type:** `boolean`
+
+    -   **Default:** `true`
+
+    #### `UpdateIntervalSeconds`
+
+    -   **Description:**
+
+        How often (in seconds) to refresh the Discord presence. Minimum value is `1`.
+
+        Note: Discord itself only accepts presence updates once every 15 seconds, so setting this lower than `15` has no visible effect on the Discord side.
+
+    -   **Type:** `integer`
+
+    -   **Default:** `10`
+
+    ---
+
+    #### Placeholders
+
+    The following placeholders can be used in `PresenceDetails`, `PresenceState`, `LargeImageText`, and `SmallImageText`:
+
+    | Placeholder | Description |
+    |---|---|
+    | `{server_host}` | Server hostname (masked if `ShowServerAddress` is `false`) |
+    | `{server_port}` | Server port (masked if `ShowServerAddress` is `false`) |
+    | `{username}` | Your Minecraft username |
+    | `{health}` | Current health (masked if `ShowHealth` is `false`) |
+    | `{max_health}` | Maximum health, always `20` (masked if `ShowHealth` is `false`) |
+    | `{food}` | Current food level (masked if `ShowHealth` is `false`) |
+    | `{dimension}` | Current dimension name, e.g. `Overworld` (masked if `ShowDimension` is `false`) |
+    | `{gamemode}` | Current gamemode, e.g. `Survival` (masked if `ShowGamemode` is `false`) |
+    | `{x}` | X coordinate (masked if `ShowCoordinates` is `false`) |
+    | `{y}` | Y coordinate (masked if `ShowCoordinates` is `false`) |
+    | `{z}` | Z coordinate (masked if `ShowCoordinates` is `false`) |
+    | `{player_count}` | Number of players currently online |
+    | `{protocol}` | Minecraft protocol version number |
 
     </details>
 
