@@ -46,6 +46,9 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$ChatBot.DiscordRpc.SmallImageText$")]
             public string SmallImageText = string.Empty;
 
+            [TomlInlineComment("$ChatBot.DiscordRpc.ShowServerAddress$")]
+            public bool ShowServerAddress = true;
+
             [TomlInlineComment("$ChatBot.DiscordRpc.ShowElapsedTime$")]
             public bool ShowElapsedTime = true;
 
@@ -222,7 +225,7 @@ namespace MinecraftClient.ChatBots
                         {
                             ID = $"mcc_{GetServerHost()}_{GetServerPort()}",
                             Size = playerCount,
-                            Max = Math.Max(playerCount, playerCount)
+                            Max = playerCount
                         };
                     }
                 }
@@ -240,11 +243,12 @@ namespace MinecraftClient.ChatBots
             if (string.IsNullOrEmpty(template))
                 return string.Empty;
 
-            string serverHost = GetServerHost();
+            string serverHost = Config.ShowServerAddress ? GetServerHost() : "Hidden";
             int serverPort = GetServerPort();
+            string serverPortStr = Config.ShowServerAddress ? serverPort.ToString() : "****";
             string username = GetUsername();
             float health = Handler.GetHealth();
-            int food = Handler.GetSaturation();
+            int foodLevel = Handler.GetSaturation();
             Location location = GetCurrentLocation();
             string[] onlinePlayers = GetOnlinePlayers();
             int gamemode = GetGamemode();
@@ -284,11 +288,11 @@ namespace MinecraftClient.ChatBots
 
             return template
                 .Replace("{server_host}", serverHost)
-                .Replace("{server_port}", serverPort.ToString())
+                .Replace("{server_port}", serverPortStr)
                 .Replace("{username}", username)
                 .Replace("{health}", ((int)Math.Ceiling(health)).ToString())
                 .Replace("{max_health}", "20")
-                .Replace("{food}", food.ToString())
+                .Replace("{food}", foodLevel.ToString())
                 .Replace("{dimension}", dimensionName)
                 .Replace("{gamemode}", gamemodeStr)
                 .Replace("{x}", ((int)location.X).ToString())

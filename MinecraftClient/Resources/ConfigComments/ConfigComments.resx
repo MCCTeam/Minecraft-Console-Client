@@ -852,6 +852,9 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="ChatBot.DiscordRpc.SmallImageText" xml:space="preserve">
     <value>Tooltip text for the small image. Supports placeholders.</value>
   </data>
+  <data name="ChatBot.DiscordRpc.ShowServerAddress" xml:space="preserve">
+    <value>Show the server address (host and port) in the Discord presence. When disabled, {server_host} and {server_port} are masked for privacy.</value>
+  </data>
   <data name="ChatBot.DiscordRpc.ShowElapsedTime" xml:space="preserve">
     <value>Show elapsed session time in the Discord presence.</value>
   </data>

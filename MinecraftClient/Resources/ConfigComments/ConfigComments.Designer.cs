@@ -971,6 +971,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show the server address (host and port) in the Discord presence..
+        /// </summary>
+        internal static string ChatBot_DiscordRpc_ShowServerAddress {
+            get {
+                return ResourceManager.GetString("ChatBot.DiscordRpc.ShowServerAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show elapsed session time in the Discord presence..
         /// </summary>
         internal static string ChatBot_DiscordRpc_ShowElapsedTime {
