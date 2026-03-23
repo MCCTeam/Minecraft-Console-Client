@@ -384,7 +384,8 @@ namespace MinecraftClient.ChatBots
                     if (string.IsNullOrEmpty(message) || string.IsNullOrWhiteSpace(message))
                         return;
 
-                    // Relay messages from other bots when configured, but never process commands from them
+                    // Relay messages from other bots when configured, but never process commands from them.
+                    // Skip relay when direction is Discord-only (Discord -> MC disabled).
                     if (e.Author.IsBot)
                     {
                         if (Config.Allow_Other_Bot_Messages && bridgeDirection != BridgeDirection.Discord)
