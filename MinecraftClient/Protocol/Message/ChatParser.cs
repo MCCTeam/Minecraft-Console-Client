@@ -501,7 +501,9 @@ namespace MinecraftClient.Protocol.Message
 
                     if (obj.ContainsKey("text"))
                     {
-                        return formatting + JSONData2String(obj["text"], formatting, links) + extra_result;
+                        // Pass "" to the leaf text node: formatting is already prepended here,
+                        // and the default: case would add it a second time if we passed formatting.
+                        return formatting + JSONData2String(obj["text"], "", links) + extra_result;
                     }
                     else if (obj.ContainsKey("translate"))
                     {
