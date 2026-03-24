@@ -123,7 +123,7 @@ namespace MinecraftClient.ChatBots
 
             public enum OnFailConfig { abort, wait }
 
-            public class RecipeConfig
+            public record RecipeConfig
             {
                 public string Name = "Recipe Name";
 
@@ -241,7 +241,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Represent a crafting recipe
         /// </summary>
-        private class Recipe
+        private record Recipe
         {
             /// <summary>
             /// The results item of this recipe
@@ -276,7 +276,7 @@ namespace MinecraftClient.ChatBots
             /// <remarks>so that it can be used in crafting table</remarks>
             public static Recipe ConvertToCraftingTable(Recipe recipe)
             {
-                if (recipe.CraftingAreaType == ContainerType.PlayerInventory && recipe.Materials != null)
+                if (recipe.CraftingAreaType == ContainerType.PlayerInventory && recipe.Materials is not null)
                 {
                     if (recipe.Materials.ContainsKey(4))
                     {
@@ -500,7 +500,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            if (recipe.Materials != null)
+            if (recipe.Materials is not null)
             {
                 foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
                 {

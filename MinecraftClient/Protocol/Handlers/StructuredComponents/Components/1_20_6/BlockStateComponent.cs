@@ -11,9 +11,9 @@ public class BlockStateComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     
     public override void Parse(Queue<byte> data)
     {
-        var count = dataTypes.ReadNextVarInt(data);
+        var count = DataTypes.ReadNextVarInt(data);
         for(var i = 0; i < count; i++)
-            Properties.Add((dataTypes.ReadNextString(data), dataTypes.ReadNextString(data)));
+            Properties.Add((DataTypes.ReadNextString(data), DataTypes.ReadNextString(data)));
     }
 
     public override Queue<byte> Serialize()

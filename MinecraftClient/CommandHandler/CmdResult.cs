@@ -87,7 +87,7 @@ namespace MinecraftClient.CommandHandler
 
         public override string ToString()
         {
-            if (result != null)
+            if (result is not null)
                 return result;
             else
                 return status.ToString();

@@ -27,40 +27,40 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
     
     public override void Parse(Queue<byte> data)
     {
-        TrimMaterialType = dataTypes.ReadNextVarInt(data);
+        TrimMaterialType = DataTypes.ReadNextVarInt(data);
 
         if (TrimMaterialType == 0)
         {
-            AssetName = dataTypes.ReadNextString(data);
-            Ingredient = dataTypes.ReadNextVarInt(data);
-            ItemModelIndex = dataTypes.ReadNextFloat(data);
-            NumberOfOverrides = dataTypes.ReadNextVarInt(data);
+            AssetName = DataTypes.ReadNextString(data);
+            Ingredient = DataTypes.ReadNextVarInt(data);
+            ItemModelIndex = DataTypes.ReadNextFloat(data);
+            NumberOfOverrides = DataTypes.ReadNextVarInt(data);
 
             if (NumberOfOverrides > 0)
             {
                 Overrides = [];
 
                 for (var i = 0; i < NumberOfOverrides; i++)
-                    Overrides.Add(new TrimAssetOverride(dataTypes.ReadNextVarInt(data),
-                        dataTypes.ReadNextString(data)));
+                    Overrides.Add(new TrimAssetOverride(DataTypes.ReadNextVarInt(data),
+                        DataTypes.ReadNextString(data)));
             }
 
-            DescriptionNbt = dataTypes.ReadNextNbt(data);
+            DescriptionNbt = DataTypes.ReadNextNbt(data);
             Description = ChatParser.ParseText(DescriptionNbt);
         }
 
-        TrimPatternType = dataTypes.ReadNextVarInt(data);
+        TrimPatternType = DataTypes.ReadNextVarInt(data);
 
         if (TrimPatternType == 0)
         {
-            TrimPatternTypeAssetName = dataTypes.ReadNextString(data);
-            TemplateItem = dataTypes.ReadNextVarInt(data);
-            TrimPatternTypeDescriptionNbt = dataTypes.ReadNextNbt(data);
+            TrimPatternTypeAssetName = DataTypes.ReadNextString(data);
+            TemplateItem = DataTypes.ReadNextVarInt(data);
+            TrimPatternTypeDescriptionNbt = DataTypes.ReadNextNbt(data);
             TrimPatternTypeDescription = ChatParser.ParseText(TrimPatternTypeDescriptionNbt);
-            Decal = dataTypes.ReadNextBool(data);
+            Decal = DataTypes.ReadNextBool(data);
         }
 
-        ShowInTooltip = dataTypes.ReadNextBool(data);
+        ShowInTooltip = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

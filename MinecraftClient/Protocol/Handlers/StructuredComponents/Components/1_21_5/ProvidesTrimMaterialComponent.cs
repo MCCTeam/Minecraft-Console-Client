@@ -10,28 +10,28 @@ public class ProvidesTrimMaterialComponent(DataTypes dataTypes, ItemPalette item
     public override void Parse(Queue<byte> data)
     {
         // EitherHolder<TrimMaterial>: Bool + (Holder<TrimMaterial> OR ResourceLocation)
-        var isHolder = dataTypes.ReadNextBool(data);
+        var isHolder = DataTypes.ReadNextBool(data);
         if (isHolder)
         {
-            var holderId = dataTypes.ReadNextVarInt(data);
+            var holderId = DataTypes.ReadNextVarInt(data);
             if (holderId == 0)
             {
                 // Inline TrimMaterial: MaterialAssetGroup + Component description
                 // MaterialAssetGroup: string + map<ResourceLocation, string>
-                dataTypes.ReadNextString(data); // base asset suffix
-                var overrideCount = dataTypes.ReadNextVarInt(data);
+                DataTypes.ReadNextString(data); // base asset suffix
+                var overrideCount = DataTypes.ReadNextVarInt(data);
                 for (var i = 0; i < overrideCount; i++)
                 {
-                    dataTypes.ReadNextString(data); // ResourceKey<EquipmentAsset>
-                    dataTypes.ReadNextString(data); // override suffix
+                    DataTypes.ReadNextString(data); // ResourceKey<EquipmentAsset>
+                    DataTypes.ReadNextString(data); // override suffix
                 }
                 // description Component
-                dataTypes.ReadNextString(data);
+                DataTypes.ReadNextString(data);
             }
         }
         else
         {
-            dataTypes.ReadNextString(data); // ResourceLocation key
+            DataTypes.ReadNextString(data); // ResourceLocation key
         }
     }
 

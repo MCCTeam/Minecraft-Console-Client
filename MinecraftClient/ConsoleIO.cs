@@ -225,7 +225,7 @@ namespace MinecraftClient
                         sugList.Add(new("/"));
 
                         var childs = McClient.dispatcher.GetRoot().Children;
-                        if (childs != null)
+                        if (childs is not null)
                             foreach (var child in childs)
                                 sugList.Add(new(child.Name));
 
@@ -247,7 +247,7 @@ namespace MinecraftClient
                     else
                     {
                         CommandDispatcher<CmdResult>? dispatcher = McClient.dispatcher;
-                        if (dispatcher == null)
+                        if (dispatcher is null)
                             return;
 
                         ParseResults<CmdResult> parse = dispatcher.Parse(command, CmdResult.Empty);

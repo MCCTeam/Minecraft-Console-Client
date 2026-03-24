@@ -11,7 +11,7 @@ public class RepairCostComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     
     public override void Parse(Queue<byte> data)
     {
-        Cost = dataTypes.ReadNextVarInt(data);
+        Cost = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

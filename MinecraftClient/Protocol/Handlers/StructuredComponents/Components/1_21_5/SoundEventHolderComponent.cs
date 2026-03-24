@@ -14,13 +14,13 @@ public class SoundEventHolderComponent(DataTypes dataTypes, ItemPalette itemPale
 
     public override void Parse(Queue<byte> data)
     {
-        HolderId = dataTypes.ReadNextVarInt(data);
+        HolderId = DataTypes.ReadNextVarInt(data);
         if (HolderId == 0)
         {
-            SoundLocation = dataTypes.ReadNextString(data);
-            HasFixedRange = dataTypes.ReadNextBool(data);
+            SoundLocation = DataTypes.ReadNextString(data);
+            HasFixedRange = DataTypes.ReadNextBool(data);
             if (HasFixedRange)
-                FixedRange = dataTypes.ReadNextFloat(data);
+                FixedRange = DataTypes.ReadNextFloat(data);
         }
     }
 

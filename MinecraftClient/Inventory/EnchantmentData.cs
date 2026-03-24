@@ -1,6 +1,6 @@
 ﻿namespace MinecraftClient.Inventory
 {
-    public class EnchantmentData
+    public record EnchantmentData
     {
         public Enchantments TopEnchantment { get; set; }
         public Enchantments MiddleEnchantment { get; set; }

@@ -260,20 +260,20 @@ namespace MinecraftClient.Commands
                     sb.Append($"\n [MCC] {Translations.cmd_entityCmd_item}: {item.GetTypeString()} x{item.Count} - {displayName}§8");
             }
 
-            if (entity.Equipment.Count >= 1 && entity.Equipment != null)
+            if (entity.Equipment is not null && entity.Equipment.Count >= 1)
             {
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_equipment}:");
-                if (entity.Equipment.ContainsKey(0) && entity.Equipment[0] != null)
+                if (entity.Equipment.ContainsKey(0) && entity.Equipment[0] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_mainhand}: {entity.Equipment[0].GetTypeString()} x{entity.Equipment[0].Count}");
-                if (entity.Equipment.ContainsKey(1) && entity.Equipment[1] != null)
+                if (entity.Equipment.ContainsKey(1) && entity.Equipment[1] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_offhand}: {entity.Equipment[1].GetTypeString()} x{entity.Equipment[1].Count}");
-                if (entity.Equipment.ContainsKey(5) && entity.Equipment[5] != null)
+                if (entity.Equipment.ContainsKey(5) && entity.Equipment[5] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_helmet}: {entity.Equipment[5].GetTypeString()} x{entity.Equipment[5].Count}");
-                if (entity.Equipment.ContainsKey(4) && entity.Equipment[4] != null)
+                if (entity.Equipment.ContainsKey(4) && entity.Equipment[4] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_chestplate}: {entity.Equipment[4].GetTypeString()} x{entity.Equipment[4].Count}");
-                if (entity.Equipment.ContainsKey(3) && entity.Equipment[3] != null)
+                if (entity.Equipment.ContainsKey(3) && entity.Equipment[3] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_leggings}: {entity.Equipment[3].GetTypeString()} x{entity.Equipment[3].Count}");
-                if (entity.Equipment.ContainsKey(2) && entity.Equipment[2] != null)
+                if (entity.Equipment.ContainsKey(2) && entity.Equipment[2] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_boots}: {entity.Equipment[2].GetTypeString()} x{entity.Equipment[2].Count}");
             }
 

@@ -19,10 +19,10 @@ namespace MinecraftClient.CommandHandler.ArgumentType
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
             McClient? client = CmdResult.currentHandler;
-            if (client != null)
+            if (client is not null)
             {
                 var bot = (Map?)client.GetLoadedChatBots().Find(bot => bot.GetType().Name == "Map");
-                if (bot != null)
+                if (bot is not null)
                 {
                     var mapList = bot.cachedMaps;
                     foreach (var map in mapList)

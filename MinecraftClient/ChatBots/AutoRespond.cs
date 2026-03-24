@@ -132,7 +132,7 @@ namespace MinecraftClient.ChatBots
                 if (String.IsNullOrEmpty(toSend))
                     return null;
 
-                if (regex != null)
+                if (regex is not null)
                 {
                     if (regex.IsMatch(message))
                     {
@@ -261,15 +261,15 @@ namespace MinecraftClient.ChatBots
         /// <param name="cooldown">Minimal cooldown between two matches</param>
         private void CheckAddMatch(Regex? matchRegex, string? matchString, string? matchAction, string? matchActionPrivate, string? matchActionOther, bool ownersOnly, TimeSpan cooldown)
         {
-            if (matchRegex != null || matchString != null || matchAction != null || matchActionPrivate != null || matchActionOther != null || ownersOnly || cooldown != TimeSpan.Zero)
+            if (matchRegex is not null || matchString is not null || matchAction is not null || matchActionPrivate is not null || matchActionOther is not null || ownersOnly || cooldown != TimeSpan.Zero)
             {
-                RespondRule rule = matchRegex != null
+                RespondRule rule = matchRegex is not null
                     ? new RespondRule(matchRegex, matchAction, matchActionPrivate, matchActionOther, ownersOnly, cooldown)
                     : new RespondRule(matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly, cooldown);
 
-                if (matchAction != null || matchActionPrivate != null || matchActionOther != null)
+                if (matchAction is not null || matchActionPrivate is not null || matchActionOther is not null)
                 {
-                    if (matchRegex != null || matchString != null)
+                    if (matchRegex is not null || matchString is not null)
                     {
                         respondRules!.Add(rule);
                         LogDebugToConsole(string.Format(Translations.bot_autoRespond_loaded_match, rule));

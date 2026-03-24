@@ -102,7 +102,7 @@ namespace MinecraftClient.Protocol.Handlers
         private int oldSamplesWeight = 1;
 
         private bool receiveDeclareCommands = false, receivePlayerInfo = false;
-        private object MessageSigningLock = new();
+        private readonly Lock MessageSigningLock = new();
         private Guid chatUuid = Guid.NewGuid();
         private int pendingAcknowledgments = 0, messageIndex = 0;
         private LastSeenMessagesCollector lastSeenMessagesCollector;
@@ -133,7 +133,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.handler = handler;
             pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
-            packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo != null).GetTypeHandler();
+            packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo is not null).GetTypeHandler();
             log = handler.GetLogger();
             randomGen = RandomNumberGenerator.Create();
             lastSeenMessagesCollector = protocolVersion >= MC_1_19_3_Version ? new(20) : new(5);
@@ -524,7 +524,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         else if (isDimension)
                                         {
                                             dimensionIdMap!.Add(i, entryId);
-                                            if (nbtData != null && handler.GetTerrainEnabled())
+                                            if (nbtData is not null && handler.GetTerrainEnabled())
                                                 World.StoreOneDimension(entryId, nbtData);
                                         }
                                         else if (isAttribute)
@@ -691,7 +691,7 @@ namespace MinecraftClient.Protocol.Handlers
             var responseHeader =
                 protocolVersion < MC_1_10_Version // After 1.10, the MC does not include resource pack hash in responses
                     ? dataTypes.ConcatBytes(DataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash))
-                    : Array.Empty<byte>();
+                    : [];
 
             var basePacketData = protocolVersion >= MC_1_20_4_Version && uuid != Guid.Empty
                 ? dataTypes.ConcatBytes(responseHeader, DataTypes.GetUUID(uuid))
@@ -984,7 +984,7 @@ namespace MinecraftClient.Protocol.Handlers
                         else
                         {
                             var player = handler.GetPlayerInfo(senderUuid);
-                            verifyResult = player != null && player.VerifyMessage(signedChat, timestamp, salt,
+                            verifyResult = player is not null && player.VerifyMessage(signedChat, timestamp, salt,
                                 ref messageSignature);
                         }
 
@@ -1043,7 +1043,7 @@ namespace MinecraftClient.Protocol.Handlers
                         var messageTypeEnum =
                             ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
 
-                        if (targetName != null &&
+                        if (targetName is not null &&
                             (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING ||
                              messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
                             senderTeamName = Json.ParseJson(targetName)!["with"]![0]!
@@ -1052,7 +1052,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (string.IsNullOrWhiteSpace(senderDisplayName))
                         {
                             var player = handler.GetPlayerInfo(senderUuid);
-                            if (player != null && (player.DisplayName != null || player is { Name: not null }) &&
+                            if (player is not null && (player.DisplayName is not null || player is { Name: not null }) &&
                                 string.IsNullOrWhiteSpace(senderDisplayName))
                             {
                                 senderDisplayName = ChatParser.ParseText(player.DisplayName ?? player.Name);
@@ -1071,7 +1071,7 @@ namespace MinecraftClient.Protocol.Handlers
                         else
                         {
                             var player = handler.GetPlayerInfo(senderUuid);
-                            if (player == null || !player.IsMessageChainLegal())
+                            if (player is null || !player.IsMessageChainLegal())
                                 verifyResult = false;
                             else
                             {
@@ -1158,7 +1158,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (string.IsNullOrWhiteSpace(senderDisplayName))
                         {
                             var player = handler.GetPlayerInfo(senderUuid);
-                            if (player != null && (player.DisplayName != null || player.Name != null) &&
+                            if (player is not null && (player.DisplayName is not null || player.Name is not null) &&
                                 string.IsNullOrWhiteSpace(senderDisplayName))
                             {
                                 senderDisplayName = player.DisplayName ?? player.Name;
@@ -1170,7 +1170,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
 
                         bool verifyResult;
-                        if (!isOnlineMode || messageSignature == null)
+                        if (!isOnlineMode || messageSignature is null)
                             verifyResult = false;
                         else
                         {
@@ -1179,7 +1179,7 @@ namespace MinecraftClient.Protocol.Handlers
                             else
                             {
                                 var player = handler.GetPlayerInfo(senderUuid);
-                                if (player == null || !player.IsMessageChainLegal())
+                                if (player is null || !player.IsMessageChainLegal())
                                     verifyResult = false;
                                 else
                                 {
@@ -1336,7 +1336,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             var player = handler.GetPlayerInfo(senderUuid);
 
-                            if (player == null || !player.IsMessageChainLegal())
+                            if (player is null || !player.IsMessageChainLegal())
                                 verifyResult = false;
                             else
                             {
@@ -2017,7 +2017,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Warning: It is legal to include unloaded chunks in the UnloadChunk packet.
                         // Since chunks that have not been loaded are not recorded, this may result
                         // in loading chunks that should be unloaded and inaccurate statistics.
-                        if (handler.GetWorld()[chunkX, chunkZ] != null)
+                        if (handler.GetWorld()[chunkX, chunkZ] is not null)
                             Interlocked.Decrement(ref handler.GetWorld().chunkCnt);
 
                         handler.GetWorld()[chunkX, chunkZ] = null;
@@ -2061,7 +2061,7 @@ namespace MinecraftClient.Protocol.Handlers
                             else
                             {
                                 var playerGet = handler.GetPlayerInfo(playerUuid);
-                                if (playerGet == null)
+                                if (playerGet is null)
                                 {
                                     player = new(string.Empty, playerUuid);
                                     handler.OnPlayerJoin(player);
@@ -2221,7 +2221,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     if (dataTypes.ReadNextBool(packetData))
                                     {
                                         var player = handler.GetPlayerInfo(uuid);
-                                        if (player != null)
+                                        if (player is not null)
                                             player.DisplayName = dataTypes.ReadNextString(packetData);
                                         else
                                             dataTypes.SkipNextString(packetData);
@@ -2365,7 +2365,7 @@ namespace MinecraftClient.Protocol.Handlers
                         for (var slotId = 0; slotId < elements; slotId++)
                         {
                             var item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
-                            if (item != null)
+                            if (item is not null)
                                 inventorySlots[slotId] = item;
                         }
 
@@ -3109,7 +3109,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetMainThreadId()
         {
-            return netMain != null ? netMain.Item1.ManagedThreadId : -1;
+            return netMain is not null ? netMain.Item1.ManagedThreadId : -1;
         }
 
         /// <summary>
@@ -3119,12 +3119,12 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                if (netMain != null)
+                if (netMain is not null)
                 {
                     netMain.Item2.Cancel();
                 }
 
-                if (netReader != null)
+                if (netReader is not null)
                 {
                     netReader.Item2.Cancel();
                     socketWrapper.Disconnect();
@@ -3212,7 +3212,7 @@ namespace MinecraftClient.Protocol.Handlers
             // 1.19 - 1.19.2
             if (protocolVersion is >= MC_1_19_Version and < MC_1_19_3_Version)
             {
-                if (playerKeyPair == null)
+                if (playerKeyPair is null)
                     fullLoginPacket.AddRange(dataTypes.GetBool(false)); // Has Sig Data
                 else
                 {
@@ -3371,7 +3371,7 @@ namespace MinecraftClient.Protocol.Handlers
             // 1.19 - 1.19.2
             if (protocolVersion is >= MC_1_19_Version and < MC_1_19_3_Version)
             {
-                if (playerKeyPair == null)
+                if (playerKeyPair is null)
                 {
                     encryptionResponse.AddRange(dataTypes.GetBool(true)); // Has Verify Token
                     encryptionResponse.AddRange(dataTypes.GetArray(RSAService.Encrypt(token, false))); // Verify Token
@@ -3486,9 +3486,9 @@ namespace MinecraftClient.Protocol.Handlers
                 return -1;
 
             var transactionId = DataTypes.GetVarInt(autocomplete_transaction_id);
-            var assumeCommand = new byte[] { 0x00 };
-            var hasPosition = new byte[] { 0x00 };
-            var tabCompletePacket = Array.Empty<byte>();
+            byte[] assumeCommand = [0x00];
+            byte[] hasPosition = [0x00];
+            byte[] tabCompletePacket = [];
 
             switch (protocolVersion)
             {
@@ -3622,7 +3622,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
 
                 ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_server_protocol, version,
-                    protocolVersion + (forgeInfo != null ? Translations.mcc_with_forge : "")));
+                    protocolVersion + (forgeInfo is not null ? Translations.mcc_with_forge : "")));
 
                 return true;
             }
@@ -3719,7 +3719,7 @@ namespace MinecraftClient.Protocol.Handlers
         public void Acknowledge(ChatMessage message)
         {
             var entry = message.ToLastSeenMessageEntry();
-            if (entry == null) return;
+            if (entry is null) return;
 
             if (protocolVersion >= MC_1_19_3_Version)
             {
@@ -3768,7 +3768,7 @@ namespace MinecraftClient.Protocol.Handlers
                 List<Tuple<string, string>>? needSigned = null;
                 bool canSignCommand = protocolVersion >= MC_1_19_Version &&
                                       isOnlineMode &&
-                                      playerKeyPair != null &&
+                                      playerKeyPair is not null &&
                                       Config.Signature.LoginWithSecureProfile &&
                                       Config.Signature.SignMessageInCommand;
 
@@ -3798,7 +3798,7 @@ namespace MinecraftClient.Protocol.Handlers
                     var timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(DataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    if (needSigned == null || needSigned.Count == 0)
+                    if (needSigned is null || needSigned.Count == 0)
                     {
                         fields.AddRange(DataTypes.GetLong(0));
                         fields.AddRange(DataTypes.GetVarInt(0));
@@ -3902,7 +3902,7 @@ namespace MinecraftClient.Protocol.Handlers
                         var timeNow = DateTimeOffset.UtcNow;
                         fields.AddRange(DataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                        if (!isOnlineMode || playerKeyPair == null || !Config.Signature.LoginWithSecureProfile ||
+                        if (!isOnlineMode || playerKeyPair is null || !Config.Signature.LoginWithSecureProfile ||
                             !Config.Signature.SignChat)
                         {
                             fields.AddRange(DataTypes.GetLong(0)); // Salt: Long
@@ -4009,7 +4009,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                SendPacket(PacketTypesOut.ClientStatus, new byte[] { 0 });
+                SendPacket(PacketTypesOut.ClientStatus, [0]);
                 return true;
             }
             catch (SocketException)
@@ -4064,7 +4064,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 fields.AddRange(protocolVersion >= MC_1_9_Version
                     ? DataTypes.GetVarInt(chatMode)
-                    : new byte[] { chatMode });
+                    : [chatMode]);
 
                 fields.Add(chatColors ? (byte)1 : (byte)0);
                 if (protocolVersion < MC_1_8_Version)
@@ -4163,7 +4163,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 dataTypes.GetFloat(yaw.Value),
                                 dataTypes.GetFloat(pitch.Value),
@@ -4181,7 +4181,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 new[] { flags });
                         }
@@ -4223,7 +4223,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 dataTypes.GetFloat(yaw.Value),
                                 dataTypes.GetFloat(pitch.Value),
@@ -4241,7 +4241,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 new[] { flags });
                         }
@@ -4549,7 +4549,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (playerInventory?.Items is null)
                             return false;
 
-                        var slotWindowIds = new int[]{ 36, 37, 38, 39, 40, 41, 42, 43, 44 }; 
+                        int[] slotWindowIds = [36, 37, 38, 39, 40, 41, 42, 43, 44]; 
                         var currentSlot = ((McClient)handler).GetCurrentSlot();
                         
                         playerInventory.Items.TryGetValue(slotWindowIds[currentSlot], out var item);
@@ -5105,7 +5105,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool SendPlayerSession(PlayerKeyPair? playerKeyPair)
         {
-            if (playerKeyPair == null || !isOnlineMode)
+            if (playerKeyPair is null || !isOnlineMode)
                 return false;
 
             if (protocolVersion >= MC_1_19_3_Version)

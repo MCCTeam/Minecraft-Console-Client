@@ -17,13 +17,13 @@ public class ToolComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfRules = dataTypes.ReadNextVarInt(data);
+        NumberOfRules = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfRules; i++)
-            Rules.Add((RuleSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.Rule, data));
+            Rules.Add((RuleSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Rule, data));
 
-        DefaultMiningSpeed = dataTypes.ReadNextFloat(data);
-        DamagePerBlock = dataTypes.ReadNextVarInt(data);
+        DefaultMiningSpeed = DataTypes.ReadNextFloat(data);
+        DamagePerBlock = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

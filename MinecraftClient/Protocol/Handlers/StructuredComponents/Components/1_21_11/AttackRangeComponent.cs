@@ -16,12 +16,12 @@ public class AttackRangeComponent(DataTypes dataTypes, ItemPalette itemPalette, 
 
     public override void Parse(Queue<byte> data)
     {
-        MinRange = dataTypes.ReadNextFloat(data);
-        MaxRange = dataTypes.ReadNextFloat(data);
-        MinCreativeRange = dataTypes.ReadNextFloat(data);
-        MaxCreativeRange = dataTypes.ReadNextFloat(data);
-        HitboxMargin = dataTypes.ReadNextFloat(data);
-        MobFactor = dataTypes.ReadNextFloat(data);
+        MinRange = DataTypes.ReadNextFloat(data);
+        MaxRange = DataTypes.ReadNextFloat(data);
+        MinCreativeRange = DataTypes.ReadNextFloat(data);
+        MaxCreativeRange = DataTypes.ReadNextFloat(data);
+        HitboxMargin = DataTypes.ReadNextFloat(data);
+        MobFactor = DataTypes.ReadNextFloat(data);
     }
 
     public override Queue<byte> Serialize()

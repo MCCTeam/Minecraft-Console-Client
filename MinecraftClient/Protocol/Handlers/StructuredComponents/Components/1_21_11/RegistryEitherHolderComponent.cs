@@ -18,11 +18,11 @@ public class RegistryEitherHolderComponent(DataTypes dataTypes, ItemPalette item
 
     public override void Parse(Queue<byte> data)
     {
-        IsHolder = dataTypes.ReadNextBool(data);
+        IsHolder = DataTypes.ReadNextBool(data);
         if (IsHolder)
-            HolderId = dataTypes.ReadNextVarInt(data);
+            HolderId = DataTypes.ReadNextVarInt(data);
         else
-            ResourceKey = dataTypes.ReadNextString(data);
+            ResourceKey = DataTypes.ReadNextString(data);
     }
 
     public override Queue<byte> Serialize()

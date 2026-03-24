@@ -15,21 +15,12 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Handle data types encoding / decoding
     /// </summary>
-    public class DataTypes
+    public class DataTypes(int protocol)
     {
         /// <summary>
         /// Protocol version for adjusting data types
         /// </summary>
-        private readonly int protocolversion;
-
-        /// <summary>
-        /// Initialize a new DataTypes instance
-        /// </summary>
-        /// <param name="protocol">Protocol version</param>
-        public DataTypes(int protocol)
-        {
-            protocolversion = protocol;
-        }
+        private readonly int protocolversion = protocol;
 
         /// <summary>
         /// Protocol version used to adjust wire encodings.
@@ -461,7 +452,7 @@ namespace MinecraftClient.Protocol.Handlers
                         item.Components = strcturedComponentsToAdd;
 
                     return item;
-                case >= Protocol18Handler.MC_1_13_Version:
+                case >= Protocol18Handler.MC_1_13_2_Version:
                 {
                     var itemPresent = ReadNextBool(cache);
 
@@ -475,6 +466,18 @@ namespace MinecraftClient.Protocol.Handlers
 
                     var type = itemPalette.FromId(itemId); 
                     itemCount = ReadNextByte(cache); 
+                    nbt = ReadNextNbt(cache);
+                    return new Item(type, itemCount, nbt);
+                }
+                case >= Protocol18Handler.MC_1_13_Version:
+                {
+                    itemId = ReadNextShort(cache);
+
+                    if (itemId == -1)
+                        return null;
+
+                    var type = itemPalette.FromId(itemId);
+                    itemCount = ReadNextByte(cache);
                     nbt = ReadNextNbt(cache);
                     return new Item(type, itemCount, nbt);
                 }
@@ -973,7 +976,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 return data;
             }
-            catch(Exception ex)
+            catch (Exception)
             {
                 return new Dictionary<int, object?>();
             }
@@ -1350,8 +1353,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Byte array for this NBT tag</returns>
         private byte[] GetNbt(Dictionary<string, object>? nbt, bool root)
         {
-            if (nbt == null || nbt.Count == 0)
-                return new byte[] { 0 }; // TAG_End
+            if (nbt is null || nbt.Count == 0)
+                return [0]; // TAG_End
 
             List<byte> bytes = new();
 
@@ -1699,7 +1702,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             List<byte> slotData = new();
 
-            if (item == null || item.IsEmpty)
+            if (item is null || item.IsEmpty)
             {
                 slotData.AddRange(GetBool(false));
             }
@@ -1727,7 +1730,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
             {
-                if (item == null || item.IsEmpty)
+                if (item is null || item.IsEmpty)
                 {
                     slotData.AddRange(GetVarInt(0));
                 }
@@ -1736,7 +1739,7 @@ namespace MinecraftClient.Protocol.Handlers
                     slotData.AddRange(GetVarInt(item.Count));
                     slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
 
-                    if (item.Components != null && item.Components.Count > 0)
+                    if (item.Components is not null && item.Components.Count > 0)
                     {
                         slotData.AddRange(GetVarInt(item.Components.Count));
                         slotData.AddRange(GetVarInt(0)); // components to remove
@@ -1754,9 +1757,9 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
             }
-            else if (protocolversion > Protocol18Handler.MC_1_13_Version)
+            else if (protocolversion >= Protocol18Handler.MC_1_13_2_Version)
             {
-                if (item == null || item.IsEmpty)
+                if (item is null || item.IsEmpty)
                     slotData.AddRange(GetBool(false));
                 else
                 {
@@ -1766,15 +1769,27 @@ namespace MinecraftClient.Protocol.Handlers
                     slotData.AddRange(GetNbt(item.NBT));
                 }
             }
+            else if (protocolversion >= Protocol18Handler.MC_1_13_Version)
+            {
+                if (item is null || item.IsEmpty)
+                    slotData.AddRange(GetShort(-1));
+                else
+                {
+                    slotData.AddRange(GetShort((short)itemPalette.ToId(item.Type)));
+                    slotData.Add((byte)item.Count);
+                    slotData.AddRange(GetNbt(item.NBT));
+                }
+            }
             else
             {
-                if (item == null || item.IsEmpty)
+                if (item is null || item.IsEmpty)
                     slotData.AddRange(GetShort(-1));
                 else
                 {
                     slotData.AddRange(GetShort((short)(itemPalette.ToId(item.Type) >> 16)));
                     slotData.Add((byte)item.Count);
-                    slotData.Add((byte)item.Data);
+                    // Legacy (<1.13) item slot wire format uses a SHORT for item damage/data.
+                    slotData.AddRange(GetShort((short)item.Data));
                     slotData.AddRange(GetNbt(item.NBT));
                 }
             }
@@ -1849,7 +1864,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>String representation</returns>
         public string ByteArrayToString(byte[]? bytes)
         {
-            if (bytes == null)
+            if (bytes is null)
                 return "null";
             else
                 return BitConverter.ToString(bytes).Replace("-", " ");
@@ -1890,7 +1905,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             List<byte> fields = new();
             fields.AddRange(GetLastSeenMessageList(ack.lastSeen, isOnlineMode));
-            if (!isOnlineMode || ack.lastReceived == null)
+            if (!isOnlineMode || ack.lastReceived is null)
                 fields.AddRange(GetBool(false)); // Has last received message
             else
             {

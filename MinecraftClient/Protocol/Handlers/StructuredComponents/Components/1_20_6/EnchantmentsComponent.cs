@@ -14,16 +14,16 @@ public class EnchantmentsComponent(DataTypes dataTypes, ItemPalette itemPalette,
 
     public override void Parse(Queue<byte> data)
     {
-        NumberOfEnchantments = dataTypes.ReadNextVarInt(data);
+        NumberOfEnchantments = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfEnchantments; i++)
         {
-            var registryId = dataTypes.ReadNextVarInt(data);
-            var level = dataTypes.ReadNextVarInt(data);
+            var registryId = DataTypes.ReadNextVarInt(data);
+            var level = DataTypes.ReadNextVarInt(data);
             Enchantments.Add(new Enchantment(EnchantmentMapping.GetEnchantmentByRegistryId1206(registryId), level));
         }
 
-        ShowTooltip = dataTypes.ReadNextBool(data);
+        ShowTooltip = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

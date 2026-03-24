@@ -13,7 +13,7 @@ public class ItemNameComponent(DataTypes dataTypes, ItemPalette itemPalette, Sub
     
     public override void Parse(Queue<byte> data)
     {
-        ItemNameNbt = dataTypes.ReadNextNbt(data);
+        ItemNameNbt = DataTypes.ReadNextNbt(data);
         ItemName = ChatParser.ParseText(ItemNameNbt);
     }
 

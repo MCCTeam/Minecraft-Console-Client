@@ -17,17 +17,17 @@ public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
     
     public override void Parse(Queue<byte> data)
     {
-        HasPotionId = dataTypes.ReadNextBool(data);
+        HasPotionId = DataTypes.ReadNextBool(data);
         if (HasPotionId)
-            PotionId = dataTypes.ReadNextVarInt(data);
+            PotionId = DataTypes.ReadNextVarInt(data);
 
-        HasCustomColor = dataTypes.ReadNextBool(data);
+        HasCustomColor = DataTypes.ReadNextBool(data);
         if (HasCustomColor)
-            CustomColor = dataTypes.ReadNextInt(data);
+            CustomColor = DataTypes.ReadNextInt(data);
 
-        var numberOfEffects = dataTypes.ReadNextVarInt(data);
+        var numberOfEffects = DataTypes.ReadNextVarInt(data);
         for (var i = 0; i < numberOfEffects; i++)
-            Effects.Add((PotionEffectSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.PotionEffect, data));
+            Effects.Add((PotionEffectSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.PotionEffect, data));
     }
 
     public override Queue<byte> Serialize()

@@ -51,7 +51,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
             string[] args = builder.Remaining.Split(' ', StringSplitOptions.TrimEntries);
             if (args.Length == 0 || (args.Length == 1 && string.IsNullOrWhiteSpace(args[0])))
             {
-                if (client != null)
+                if (client is not null)
                 {
                     Location current = client.GetCurrentLocation();
                     builder.Suggest(string.Format("{0:0.00}", current.X));
@@ -68,7 +68,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
             else if (args.Length == 1 || (args.Length == 2 && string.IsNullOrWhiteSpace(args[1])))
             {
                 string add = args.Length == 1 ? " " : string.Empty;
-                if (client != null)
+                if (client is not null)
                 {
                     Location current = client.GetCurrentLocation();
                     builder.Suggest(string.Format("{0}{2}{1:0.00}", builder.Remaining, current.Y, add));
@@ -83,7 +83,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
             else if (args.Length == 2 || (args.Length == 3 && string.IsNullOrWhiteSpace(args[2])))
             {
                 string add = args.Length == 2 ? " " : string.Empty;
-                if (client != null)
+                if (client is not null)
                 {
                     Location current = client.GetCurrentLocation();
                     builder.Suggest(string.Format("{0}{2}{1:0.00}", builder.Remaining, current.Z, add));

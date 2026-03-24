@@ -247,7 +247,7 @@ namespace MinecraftClient.Mapping
             }
 
             // Goal could not be reached. Set the path to the closest location if close enough
-            if (current != null && openSet.MinHScoreNode != null &&
+            if (current is not null && openSet.MinHScoreNode is not null &&
                 (maxOffset == int.MaxValue || openSet.MinHScoreNode.HScore <= maxOffset))
                 return ReconstructPath(cameFrom, openSet.MinHScoreNode.Location, start, goal);
 
@@ -306,27 +306,9 @@ namespace MinecraftClient.Mapping
             /// <summary>
             /// Represents a location and its attributes
             /// </summary>
-            public class Node
+            public record Node(int GScore, int HScore, Location Location)
             {
-                // Distance to start
-                public int GScore;
-
-                // Distance to Goal
-                public int HScore;
-
-                public int FScore
-                {
-                    get { return HScore + GScore; }
-                }
-
-                public Location Location;
-
-                public Node(int gScore, int hScore, Location loc)
-                {
-                    this.GScore = gScore;
-                    this.HScore = hScore;
-                    Location = loc;
-                }
+                public int FScore => HScore + GScore;
             }
 
             // List which contains all nodes in form of a Binary Heap
@@ -338,8 +320,8 @@ namespace MinecraftClient.Mapping
 
             public BinaryHeap()
             {
-                heapList = new List<Node>();
-                locationList = new HashSet<Location>();
+                heapList = new();
+                locationList = new();
                 MinHScoreNode = null;
             }
 
@@ -362,7 +344,7 @@ namespace MinecraftClient.Mapping
                 locationList.Add(loc);
 
                 // Save node with the smallest H-Score => Distance to goal
-                if (MinHScoreNode == null || newNode.HScore < MinHScoreNode.HScore)
+                if (MinHScoreNode is null || newNode.HScore < MinHScoreNode.HScore)
                     MinHScoreNode = newNode;
 
                 if (i == 0)
@@ -491,7 +473,7 @@ namespace MinecraftClient.Mapping
         public static bool IsOnGround(World world, Location location)
         {
             ChunkColumn? chunkColumn = world.GetChunkColumn(location);
-            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+            if (chunkColumn is null || chunkColumn.FullyLoaded == false)
                 return true; // avoid moving downward in a not loaded chunk
 
             Location down = Move(location, Direction.Down);
@@ -721,11 +703,11 @@ namespace MinecraftClient.Mapping
         public static bool CheckChunkLoading(World world, Location start, Location dest)
         {
             var chunkColumn = world.GetChunkColumn(dest);
-            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+            if (chunkColumn is null || chunkColumn.FullyLoaded == false)
                 return false;
 
             chunkColumn = world.GetChunkColumn(start);
-            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+            if (chunkColumn is null || chunkColumn.FullyLoaded == false)
                 return false;
 
             return true;

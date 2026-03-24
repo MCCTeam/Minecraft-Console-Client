@@ -6,7 +6,7 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subc
 
 public class RuleSubComponent(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : SubComponent(dataTypes, subComponentRegistry)
 {
-    public BlockSetSubcomponent Blocks { get; set; }
+    public BlockSetSubcomponent Blocks { get; set; } = null!;
     public bool HasSpeed { get; set; }
     public float Speed { get; set; }
     public bool HasCorrectDropForBlocks { get; set; }
@@ -14,16 +14,16 @@ public class RuleSubComponent(DataTypes dataTypes, SubComponentRegistry subCompo
     
     protected override void Parse(Queue<byte> data)
     {
-        Blocks = (BlockSetSubcomponent)subComponentRegistry.ParseSubComponent(SubComponents.BlockSet, data);
-        HasSpeed = dataTypes.ReadNextBool(data);
+        Blocks = (BlockSetSubcomponent)SubComponentRegistry.ParseSubComponent(SubComponents.BlockSet, data);
+        HasSpeed = DataTypes.ReadNextBool(data);
         
         if(HasSpeed)
-            Speed = dataTypes.ReadNextFloat(data);
+            Speed = DataTypes.ReadNextFloat(data);
         
-        HasCorrectDropForBlocks = dataTypes.ReadNextBool(data);
+        HasCorrectDropForBlocks = DataTypes.ReadNextBool(data);
         
         if(HasCorrectDropForBlocks)
-            CorrectDropForBlocks = dataTypes.ReadNextBool(data);
+            CorrectDropForBlocks = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

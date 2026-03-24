@@ -89,7 +89,7 @@ namespace MinecraftClient.Crypto
             }
 
             Span<byte> blockOutput = stackalloc byte[blockSize];
-            if (FastAes != null)
+            if (FastAes is not null)
                 FastAes.EncryptEcb(ReadStreamIV, blockOutput);
             else
                 Aes!.EncryptEcb(ReadStreamIV, blockOutput, PaddingMode.None);
@@ -122,7 +122,7 @@ namespace MinecraftClient.Crypto
                 }
 
                 int processEnd = readed + curRead;
-                if (FastAes != null)
+                if (FastAes is not null)
                 {
                     for (int idx = readed; idx < processEnd; idx++)
                     {
@@ -161,7 +161,7 @@ namespace MinecraftClient.Crypto
         {
             Span<byte> blockOutput = stackalloc byte[blockSize];
 
-            if (FastAes != null)
+            if (FastAes is not null)
                 FastAes.EncryptEcb(WriteStreamIV, blockOutput);
             else
                 Aes!.EncryptEcb(WriteStreamIV, blockOutput, PaddingMode.None);
@@ -185,7 +185,7 @@ namespace MinecraftClient.Crypto
             for (int wirtten = 0; wirtten < required; ++wirtten)
             {
                 ReadOnlySpan<byte> blockInput = new(outputBuf, wirtten, blockSize);
-                if (FastAes != null)
+                if (FastAes is not null)
                     FastAes.EncryptEcb(blockInput, blockOutput);
                 else
                     Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);

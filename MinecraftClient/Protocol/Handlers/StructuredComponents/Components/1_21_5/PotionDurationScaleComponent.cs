@@ -11,7 +11,7 @@ public class PotionDurationScaleComponent(DataTypes dataTypes, ItemPalette itemP
 
     public override void Parse(Queue<byte> data)
     {
-        Scale = dataTypes.ReadNextFloat(data);
+        Scale = DataTypes.ReadNextFloat(data);
     }
 
     public override Queue<byte> Serialize()

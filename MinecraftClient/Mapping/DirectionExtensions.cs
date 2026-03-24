@@ -1,63 +1,42 @@
 ﻿using System;
 
-namespace MinecraftClient.Mapping
+namespace MinecraftClient.Mapping;
+
+public static class DirectionExtensions
 {
-    public static class DirectionExtensions
+    public static Direction GetOpposite(this Direction direction) => direction switch
     {
-        public static Direction GetOpposite(this Direction direction)
-        {
-            switch (direction)
-            {
-                case Direction.SouthEast:
-                    return Direction.NorthEast;
-                case Direction.SouthWest:
-                    return Direction.NorthWest;
+        Direction.SouthEast => Direction.NorthEast,
+        Direction.SouthWest => Direction.NorthWest,
+        Direction.NorthEast => Direction.SouthEast,
+        Direction.NorthWest => Direction.SouthWest,
+        Direction.West => Direction.East,
+        Direction.East => Direction.West,
+        Direction.North => Direction.South,
+        Direction.South => Direction.North,
+        Direction.Down => Direction.Up,
+        Direction.Up => Direction.Down,
+        _ => Direction.Up,
+    };
 
-                case Direction.NorthEast:
-                    return Direction.SouthEast;
-                case Direction.NorthWest:
-                    return Direction.SouthWest;
+    public static Direction[] HORIZONTAL =
+    [
+        Direction.South,
+        Direction.West,
+        Direction.North,
+        Direction.East,
+    ];
 
-                case Direction.West:
-                    return Direction.East;
-                case Direction.East:
-                    return Direction.West;
+    public static Direction FromRotation(double rotation)
+    {
+        double floor = Math.Floor((rotation / 90.0) + 0.5);
+        int value = (int)floor & 3;
 
-                case Direction.North:
-                    return Direction.South;
-                case Direction.South:
-                    return Direction.North;
+        return FromHorizontal(value);
+    }
 
-                case Direction.Down:
-                    return Direction.Up;
-                case Direction.Up:
-                    return Direction.Down;
-                default:
-                    return Direction.Up;
-
-            }
-        }
-        
-
-        public static Direction[] HORIZONTAL =
-        {
-            Direction.South,
-            Direction.West,
-            Direction.North,
-            Direction.East
-        };
-
-        public static Direction FromRotation(double rotation)
-        {
-            double floor = Math.Floor((rotation / 90.0) + 0.5);
-            int value = (int)floor & 3;
-
-            return FromHorizontal(value);
-        }
-
-        public static Direction FromHorizontal(int value)
-        {
-            return HORIZONTAL[Math.Abs(value % HORIZONTAL.Length)];
-        }
+    public static Direction FromHorizontal(int value)
+    {
+        return HORIZONTAL[Math.Abs(value % HORIZONTAL.Length)];
     }
 }

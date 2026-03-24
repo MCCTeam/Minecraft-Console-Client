@@ -15,12 +15,12 @@ public class AttributeModifiersComponent(DataTypes dataTypes, ItemPalette itemPa
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfAttributes = dataTypes.ReadNextVarInt(data);
+        NumberOfAttributes = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfAttributes; i++)
-            Attributes.Add(subComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
+            Attributes.Add(SubComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
 
-        ShowInTooltip = dataTypes.ReadNextBool(data);
+        ShowInTooltip = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

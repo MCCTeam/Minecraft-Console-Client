@@ -59,9 +59,9 @@ namespace MinecraftClient
         /// </summary>
         public void Dispose()
         {
-            if (monitor != null)
+            if (monitor is not null)
                 monitor.Item1.Dispose();
-            if (polling != null)
+            if (polling is not null)
                 polling.Item2.Cancel();
         }
 

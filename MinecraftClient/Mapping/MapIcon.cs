@@ -1,11 +1,11 @@
 ﻿namespace MinecraftClient.Mapping
 {
-    public class MapIcon
+    public record MapIcon
     {
-        public MapIconType Type { set; get; }
-        public byte X { set; get; }
-        public byte Z { set; get; }
-        public byte Direction { set; get; }
-        public string? DisplayName { set; get; } = null;
+        public MapIconType Type { get; set; }
+        public byte X { get; set; }
+        public byte Z { get; set; }
+        public byte Direction { get; set; }
+        public string? DisplayName { get; set; } = null;
     }
 }

@@ -15,14 +15,14 @@ public class BlockSetSubcomponent(DataTypes dataTypes, SubComponentRegistry subC
         Type = DataTypes.ReadNextVarInt(data);
 
         if (Type == 0)
-            TagName = dataTypes.ReadNextString(data);
+            TagName = DataTypes.ReadNextString(data);
 
         if (Type == 0) return;
         
         BlockIds = [];
             
         for (var i = 0; i < Type - 1; i++)
-            BlockIds.Add(dataTypes.ReadNextVarInt(data));
+            BlockIds.Add(DataTypes.ReadNextVarInt(data));
     }
 
     public override Queue<byte> Serialize()
@@ -39,7 +39,7 @@ public class BlockSetSubcomponent(DataTypes dataTypes, SubComponentRegistry subC
 
         if (Type == 0) return new Queue<byte>(data);
         
-        if(BlockIds == null || BlockIds.Count == 0)
+        if(BlockIds is null || BlockIds.Count == 0)
             throw new ArgumentNullException($"Can not serialize an empty list of Block IDs in a Block Set when the type is not 0!");
             
         for(var i = 0; i < Type - 1; i++)

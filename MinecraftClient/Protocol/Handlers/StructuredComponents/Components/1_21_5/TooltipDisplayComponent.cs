@@ -12,10 +12,10 @@ public class TooltipDisplayComponent(DataTypes dataTypes, ItemPalette itemPalett
 
     public override void Parse(Queue<byte> data)
     {
-        HideTooltip = dataTypes.ReadNextBool(data);
-        var count = dataTypes.ReadNextVarInt(data);
+        HideTooltip = DataTypes.ReadNextBool(data);
+        var count = DataTypes.ReadNextVarInt(data);
         for (var i = 0; i < count; i++)
-            HiddenComponentIds.Add(dataTypes.ReadNextVarInt(data));
+            HiddenComponentIds.Add(DataTypes.ReadNextVarInt(data));
     }
 
     public override Queue<byte> Serialize()

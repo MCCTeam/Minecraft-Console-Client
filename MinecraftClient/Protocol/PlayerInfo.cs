@@ -44,13 +44,13 @@ namespace MinecraftClient.Protocol
         {
             Uuid = uuid;
             Name = name;
-            if (property != null)
+            if (property is not null)
                 Property = property;
             Gamemode = gamemode;
             Ping = ping;
             DisplayName = displayName;
             lastMessageVerified = false;
-            if (timeStamp != null && publicKey != null && signature != null)
+            if (timeStamp is not null && publicKey is not null && signature is not null)
             {
                 DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeMilliseconds((long)timeStamp);
                 KeyExpiresAt = dateTimeOffset.UtcDateTime;
@@ -119,7 +119,7 @@ namespace MinecraftClient.Protocol
         /// <returns>Is this message vaild</returns>
         public bool VerifyMessage(string message, long timestamp, long salt, ref byte[] signature)
         {
-            if (PublicKey == null || IsKeyExpired())
+            if (PublicKey is null || IsKeyExpired())
                 return false;
             else
             {
@@ -146,12 +146,12 @@ namespace MinecraftClient.Protocol
         {
             if (lastMessageVerified == false)
                 return false;
-            if (PublicKey == null || IsKeyExpired() || (this.precedingSignature != null && precedingSignature == null))
+            if (PublicKey is null || IsKeyExpired() || (this.precedingSignature is not null && precedingSignature is null))
             {
                 lastMessageVerified = false;
                 return false;
             }
-            if (this.precedingSignature != null && !this.precedingSignature.SequenceEqual(precedingSignature!))
+            if (this.precedingSignature is not null && !this.precedingSignature.SequenceEqual(precedingSignature!))
             {
                 lastMessageVerified = false;
                 return false;
@@ -181,12 +181,12 @@ namespace MinecraftClient.Protocol
         {
             if (lastMessageVerified == false)
                 return false;
-            if (PublicKey == null || IsKeyExpired() || (this.precedingSignature != null && precedingSignature == null))
+            if (PublicKey is null || IsKeyExpired() || (this.precedingSignature is not null && precedingSignature is null))
             {
                 lastMessageVerified = false;
                 return false;
             }
-            if (this.precedingSignature != null && !this.precedingSignature.SequenceEqual(precedingSignature!))
+            if (this.precedingSignature is not null && !this.precedingSignature.SequenceEqual(precedingSignature!))
             {
                 lastMessageVerified = false;
                 return false;
@@ -212,7 +212,7 @@ namespace MinecraftClient.Protocol
         /// <returns>Is this message chain vaild</returns>
         public bool VerifyMessage(string message, Guid playerUuid, Guid chatUuid, int messageIndex, long timestamp, long salt, ref byte[] signature, Tuple<int, byte[]?>[] previousMessageSignatures)
         {
-            if (PublicKey == null || IsKeyExpired())
+            if (PublicKey is null || IsKeyExpired())
                 return false;
 
             // net.minecraft.server.network.ServerPlayNetworkHandler#validateMessage

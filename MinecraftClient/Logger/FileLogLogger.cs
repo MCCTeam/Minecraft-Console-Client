@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Logger
@@ -8,7 +9,7 @@ namespace MinecraftClient.Logger
     {
         private readonly string logFile;
         private readonly bool prependTimestamp;
-        private readonly object logFileLock = new();
+        private readonly Lock logFileLock = new();
 
         public FileLogLogger(string file, bool prependTimestamp = false)
         {

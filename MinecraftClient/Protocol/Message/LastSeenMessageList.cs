@@ -8,17 +8,12 @@ namespace MinecraftClient.Protocol.Message
     /// <summary>
     /// A list of messages a client has seen.
     /// </summary>
-    public class LastSeenMessageList
+    public class LastSeenMessageList(AcknowledgedMessage[] list)
     {
         public static readonly LastSeenMessageList EMPTY = new(Array.Empty<AcknowledgedMessage>());
         public static readonly int MAX_ENTRIES = 5;
 
-        public AcknowledgedMessage[] entries;
-
-        public LastSeenMessageList(AcknowledgedMessage[] list)
-        {
-            entries = list;
-        }
+        public AcknowledgedMessage[] entries = list;
 
         public void WriteForSign(List<byte> data)
         {
@@ -56,16 +51,10 @@ namespace MinecraftClient.Protocol.Message
         /// A record of messages acknowledged by a client.
         /// This holds the messages the client has recently seen, as well as the last message they received, if any.
         /// </summary>
-        public class Acknowledgment
+        public class Acknowledgment(LastSeenMessageList lastSeenMessageList, AcknowledgedMessage? lastReceivedMessage)
         {
-            public LastSeenMessageList lastSeen;
-            public AcknowledgedMessage? lastReceived;
-
-            public Acknowledgment(LastSeenMessageList lastSeenMessageList, AcknowledgedMessage? lastReceivedMessage)
-            {
-                lastSeen = lastSeenMessageList;
-                lastReceived = lastReceivedMessage;
-            }
+            public LastSeenMessageList lastSeen = lastSeenMessageList;
+            public AcknowledgedMessage? lastReceived = lastReceivedMessage;
         }
     }
 
@@ -107,7 +96,7 @@ namespace MinecraftClient.Protocol.Message
                 }
             }
 
-            if (lastEntry != null && messageCount < acknowledgedMessages.Length)
+            if (lastEntry is not null && messageCount < acknowledgedMessages.Length)
                 acknowledgedMessages[messageCount++] = lastEntry;
 
             LastSeenMessageList.AcknowledgedMessage[] msgList = new LastSeenMessageList.AcknowledgedMessage[messageCount];
@@ -120,7 +109,7 @@ namespace MinecraftClient.Protocol.Message
         {
             // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.MessageSignatureData, boolean)
             // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.AcknowledgedMessage)
-            if (lastEntry != null && entry.signature.SequenceEqual(lastEntry.signature))
+            if (lastEntry is not null && entry.signature.SequenceEqual(lastEntry.signature))
                 return false;
             lastEntry = entry;
 
@@ -143,7 +132,7 @@ namespace MinecraftClient.Protocol.Message
             {
                 int k = (nextIndex + j) % acknowledgedMessages.Length;
                 AcknowledgedMessage? acknowledgedMessage = acknowledgedMessages[k];
-                if (acknowledgedMessage == null)
+                if (acknowledgedMessage is null)
                     continue;
                 bitset[j / 8] |= (byte)(1 << (j % 8)); // bitSet.set(j, true);
                 objectList.Add(acknowledgedMessage);

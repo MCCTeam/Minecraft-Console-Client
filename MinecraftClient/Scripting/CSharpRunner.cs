@@ -109,7 +109,7 @@ namespace MinecraftClient.Scripting
                     var result = compiler.Compile(code, Guid.NewGuid().ToString(), dlls);
 
                     //Process compile warnings and errors
-                    if (result.Failures != null)
+                    if (result.Failures is not null)
                     {
 
                         ConsoleIO.WriteLogLine("[Script] Compilation failed with error(s):");
@@ -309,7 +309,7 @@ namespace MinecraftClient.Scripting
         /// <returns>Value of the variable or null if no variable</returns>
         public object? GetVar(string varName)
         {
-            if (localVars != null && localVars.ContainsKey(varName))
+            if (localVars is not null && localVars.ContainsKey(varName))
                 return localVars[varName];
             else
                 return Config.AppVar.GetVar(varName);
@@ -322,7 +322,7 @@ namespace MinecraftClient.Scripting
         /// <param name="varValue">Value of the variable</param>
         public bool SetVar(string varName, object varValue)
         {
-            if (localVars != null && localVars.ContainsKey(varName))
+            if (localVars is not null && localVars.ContainsKey(varName))
                 localVars.Remove(varName);
             return Config.AppVar.SetVar(varName, varValue);
         }
@@ -339,12 +339,12 @@ namespace MinecraftClient.Scripting
             object? value = GetVar(varName);
             if (value is T Tval)
                 return Tval;
-            if (value != null)
+            if (value is not null)
             {
                 try
                 {
                     TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
-                    if (converter != null)
+                    if (converter is not null)
                         return (T?)converter.ConvertFromString(value.ToString() ?? string.Empty);
                 }
                 catch (NotSupportedException) { /* Was worth trying */ }

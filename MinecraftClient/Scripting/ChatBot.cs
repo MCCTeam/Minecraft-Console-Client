@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Brigadier.NET;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Inventory;
@@ -42,15 +43,15 @@ namespace MinecraftClient.Scripting
         private McClient? _handler = null;
         private ChatBot? master = null;
         private readonly List<string> registeredPluginChannels = new();
-        private readonly object delayTasksLock = new();
+        private readonly Lock delayTasksLock = new();
         private readonly List<TaskWithDelay> delayedTasks = new();
         protected McClient Handler
         {
             get
             {
-                if (master != null)
+                if (master is not null)
                     return master.Handler;
-                if (_handler != null)
+                if (_handler is not null)
                     return _handler;
                 throw new InvalidOperationException(Translations.exception_chatbot_init);
             }
@@ -784,7 +785,7 @@ namespace MinecraftClient.Scripting
                         string prefix = tmp[0];
                         string user = tmp[1];
                         string semicolon = tmp[2];
-                        if (prefix.All(c => char.IsLetterOrDigit(c) || new char[] { '*', '<', '>', '_' }.Contains(c))
+                        if (prefix.All(c => char.IsLetterOrDigit(c) || new[] { '*', '<', '>', '_' }.Contains(c))
                             && semicolon == ":")
                         {
                             message = text[(prefix.Length + user.Length + 4)..];
@@ -861,7 +862,7 @@ namespace MinecraftClient.Scripting
         protected void LogToConsole(object? text)
         {
             string botName = Translations.ResourceManager.GetString("botname." + GetType().Name) ?? GetType().Name;
-            if (_handler == null || master == null)
+            if (_handler is null || master is null)
                 ConsoleIO.WriteLogLine(string.Format("[{0}] {1}", botName, text));
             else
                 Handler.Log.Info(string.Format("[{0}] {1}", botName, text));
@@ -877,7 +878,7 @@ namespace MinecraftClient.Scripting
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, [GetTimestamp() + ' ' + text]);
             }
         }
 
@@ -897,7 +898,7 @@ namespace MinecraftClient.Scripting
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, [GetTimestamp() + ' ' + text]);
             }
         }
 
@@ -1217,7 +1218,7 @@ namespace MinecraftClient.Scripting
             else
             {
                 LogToConsole("File not found: " + Path.GetFullPath(file));
-                return Array.Empty<string>();
+                return [];
             }
         }
 

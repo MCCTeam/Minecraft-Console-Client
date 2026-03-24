@@ -31,7 +31,7 @@ public abstract class SubComponentRegistry(DataTypes dataTypes)
         
         var parseMethod = instance.GetType().GetMethod("Parse", BindingFlags.Instance | BindingFlags.NonPublic);
         
-        if (parseMethod == null)
+        if (parseMethod is null)
             throw new InvalidOperationException($"Sub component parser type {subComponentParserType.Name} does not have a Parse method.");
         
         parseMethod.Invoke(instance, new object[] { data });

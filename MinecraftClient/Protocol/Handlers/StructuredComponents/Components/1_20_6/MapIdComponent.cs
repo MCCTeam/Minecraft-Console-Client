@@ -11,7 +11,7 @@ public class MapIdComponent(DataTypes dataTypes, ItemPalette itemPalette, SubCom
     
     public override void Parse(Queue<byte> data)
     {
-        Id = dataTypes.ReadNextVarInt(data);
+        Id = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

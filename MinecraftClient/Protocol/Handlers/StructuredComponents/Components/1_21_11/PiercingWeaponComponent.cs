@@ -12,21 +12,21 @@ public class PiercingWeaponComponent(DataTypes dataTypes, ItemPalette itemPalett
 
     public override void Parse(Queue<byte> data)
     {
-        DealsKnockback = dataTypes.ReadNextBool(data);
-        Dismounts = dataTypes.ReadNextBool(data);
+        DealsKnockback = DataTypes.ReadNextBool(data);
+        Dismounts = DataTypes.ReadNextBool(data);
         ReadOptionalSoundEventHolder(data);
         ReadOptionalSoundEventHolder(data);
     }
 
     private void ReadOptionalSoundEventHolder(Queue<byte> data)
     {
-        if (!dataTypes.ReadNextBool(data)) return;
-        var holderId = dataTypes.ReadNextVarInt(data);
+        if (!DataTypes.ReadNextBool(data)) return;
+        var holderId = DataTypes.ReadNextVarInt(data);
         if (holderId == 0)
         {
-            dataTypes.ReadNextString(data);
-            if (dataTypes.ReadNextBool(data))
-                dataTypes.ReadNextFloat(data);
+            DataTypes.ReadNextString(data);
+            if (DataTypes.ReadNextBool(data))
+                DataTypes.ReadNextFloat(data);
         }
     }
 

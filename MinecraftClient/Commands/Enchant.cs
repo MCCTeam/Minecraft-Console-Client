@@ -66,7 +66,7 @@ namespace MinecraftClient.Commands
                 }
             }
 
-            if (enchantingTable == null)
+            if (enchantingTable is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_enchant_enchanting_table_not_opened);
 
             int[] emptySlots = enchantingTable.GetEmpytSlots();
@@ -84,7 +84,7 @@ namespace MinecraftClient.Commands
 
             EnchantmentData? enchantment = handler.GetLastEnchantments();
 
-            if (enchantment == null)
+            if (enchantment is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_enchant_no_enchantments);
 
             short requiredLevel = slotId switch

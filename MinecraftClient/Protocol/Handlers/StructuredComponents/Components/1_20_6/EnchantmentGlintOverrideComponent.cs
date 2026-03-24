@@ -11,7 +11,7 @@ public class EnchantmentGlintOverrideComponent(DataTypes dataTypes, ItemPalette 
     
     public override void Parse(Queue<byte> data)
     {
-        HasGlint = dataTypes.ReadNextBool(data);
+        HasGlint = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

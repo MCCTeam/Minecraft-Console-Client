@@ -12,8 +12,8 @@ public class DyeColorComponent(DataTypes dataTypes, ItemPalette itemPalette, Sub
     
     public override void Parse(Queue<byte> data)
     {
-        Color = dataTypes.ReadNextInt(data);
-        ShowInTooltip = dataTypes.ReadNextBool(data);
+        Color = DataTypes.ReadNextInt(data);
+        ShowInTooltip = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

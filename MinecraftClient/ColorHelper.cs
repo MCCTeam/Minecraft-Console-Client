@@ -163,7 +163,7 @@ namespace MinecraftClient
         }
     }
 
-    public class ColorRGBA
+    public record struct ColorRGBA
     {
         public byte R { get; set; }
         public byte G { get; set; }

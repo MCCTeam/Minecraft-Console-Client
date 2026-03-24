@@ -18,10 +18,10 @@ namespace MinecraftClient.CommandHandler.ArgumentType
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
             McClient? client = CmdResult.currentHandler;
-            if (client != null)
+            if (client is not null)
             {
                 Inventory.Container? inventory = client.GetInventory(0);
-                if (inventory != null)
+                if (inventory is not null)
                 {
                     for (int i = 1; i <= 9; ++i)
                     {

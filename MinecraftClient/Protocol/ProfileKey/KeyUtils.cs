@@ -43,7 +43,7 @@ namespace MinecraftClient.Protocol.ProfileKey
             }
             catch (Exception e)
             {
-                int code = response == null ? 0 : response.StatusCode;
+                int code = response is null ? 0 : response.StatusCode;
                 ConsoleIO.WriteLineFormatted("§cFetch authlib-injector metadata failed: HttpCode = " + code + ", Error = " + e.Message);
                 if (Settings.Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
@@ -93,12 +93,12 @@ namespace MinecraftClient.Protocol.ProfileKey
                 }
 
                 var json = Json.ParseJson(response.Body);
-                if (json?["keyPair"]?["publicKey"] == null
-                    || json["keyPair"]?["privateKey"] == null
-                    || json["publicKeySignature"] == null
-                    || json["publicKeySignatureV2"] == null
-                    || json["expiresAt"] == null
-                    || json["refreshedAfter"] == null)
+                if (json?["keyPair"]?["publicKey"] is null
+                    || json["keyPair"]?["privateKey"] is null
+                    || json["publicKeySignature"] is null
+                    || json["publicKeySignatureV2"] is null
+                    || json["expiresAt"] is null
+                    || json["refreshedAfter"] is null)
                 {
                     throw new InvalidOperationException("Certificate endpoint returned an unexpected payload.");
                 }
@@ -115,7 +115,7 @@ namespace MinecraftClient.Protocol.ProfileKey
             }
             catch (Exception e)
             {
-                int code = response == null ? 0 : response.StatusCode;
+                int code = response is null ? 0 : response.StatusCode;
                 ConsoleIO.WriteLineFormatted("§cFetch profile key failed: HttpCode = " + code + ", Error = " + e.Message);
                 if (Settings.Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
@@ -209,7 +209,7 @@ namespace MinecraftClient.Protocol.ProfileKey
         {
             List<byte> data = new();
 
-            if (precedingSignature != null)
+            if (precedingSignature is not null)
                 data.AddRange(precedingSignature);
 
             data.AddRange(sender.ToBigEndianBytes());

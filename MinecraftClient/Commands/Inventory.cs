@@ -276,7 +276,7 @@ namespace MinecraftClient.Commands
             }
 
             Container? inventory = handler.GetInventory(inventoryId.Value);
-            if (inventory == null)
+            if (inventory is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_inventory_not_exist, inventoryId));
 
             if (handler.CloseInventory(inventoryId.Value))
@@ -299,7 +299,7 @@ namespace MinecraftClient.Commands
             }
 
             Container? inventory = handler.GetInventory(inventoryId.Value);
-            if (inventory == null)
+            if (inventory is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_inventory_not_exist, inventoryId));
 
             StringBuilder response = new();
@@ -307,7 +307,7 @@ namespace MinecraftClient.Commands
             response.AppendLine(String.Format(" #{0} - {1}§8", inventoryId, inventory.Title));
 
             string? asciiArt = inventory.Type.GetAsciiArt();
-            if (asciiArt != null && Settings.Config.Main.Advanced.ShowInventoryLayout)
+            if (asciiArt is not null && Settings.Config.Main.Advanced.ShowInventoryLayout)
                 response.AppendLine(asciiArt);
 
             int selectedHotbar = handler.GetCurrentSlot() + 1;
@@ -342,7 +342,7 @@ namespace MinecraftClient.Commands
             }
 
             Container? inventory = handler.GetInventory(inventoryId.Value);
-            if (inventory == null)
+            if (inventory is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_inventory_not_exist, inventoryId));
 
             string keyName = actionType switch
@@ -373,7 +373,7 @@ namespace MinecraftClient.Commands
             }
 
             Container? inventory = handler.GetInventory(inventoryId.Value);
-            if (inventory == null)
+            if (inventory is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_inventory_not_exist, inventoryId));
 
             // check item exist

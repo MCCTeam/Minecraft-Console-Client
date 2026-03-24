@@ -202,21 +202,8 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Basic HTTP response object.
         /// </summary>
-        public class Response
+        public record Response(int StatusCode, string Body, NameValueCollection Headers, NameValueCollection Cookies)
         {
-            public int StatusCode;
-            public string Body;
-            public NameValueCollection Headers;
-            public NameValueCollection Cookies;
-
-            public Response(int statusCode, string body, NameValueCollection headers, NameValueCollection cookies)
-            {
-                StatusCode = statusCode;
-                Body = body;
-                Headers = headers;
-                Cookies = cookies;
-            }
-
             public static Response Empty() =>
                 new(204, "", new NameValueCollection(), new NameValueCollection());
 

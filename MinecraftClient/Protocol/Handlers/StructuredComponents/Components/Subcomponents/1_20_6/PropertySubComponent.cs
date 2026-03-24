@@ -14,17 +14,17 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
     
     protected override void Parse(Queue<byte> data)
     {
-        Name = dataTypes.ReadNextString(data);
-        IsExactMatch = dataTypes.ReadNextBool(data);
+        Name = DataTypes.ReadNextString(data);
+        IsExactMatch = DataTypes.ReadNextBool(data);
 
         if (IsExactMatch)
         {
-            ExactValue = dataTypes.ReadNextString(data);
+            ExactValue = DataTypes.ReadNextString(data);
         }
         else
         {
-            MinValue = dataTypes.ReadNextBool(data) ? dataTypes.ReadNextString(data) : null;
-            MaxValue = dataTypes.ReadNextBool(data) ? dataTypes.ReadNextString(data) : null;
+            MinValue = DataTypes.ReadNextBool(data) ? DataTypes.ReadNextString(data) : null;
+            MaxValue = DataTypes.ReadNextBool(data) ? DataTypes.ReadNextString(data) : null;
         }
     }
 
@@ -47,12 +47,12 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
         }
         else
         {
-            data.AddRange(DataTypes.GetBool(MinValue != null));
-            if (MinValue != null)
+            data.AddRange(DataTypes.GetBool(MinValue is not null));
+            if (MinValue is not null)
                 data.AddRange(DataTypes.GetString(MinValue));
             
-            data.AddRange(DataTypes.GetBool(MaxValue != null));
-            if (MaxValue != null)
+            data.AddRange(DataTypes.GetBool(MaxValue is not null));
+            if (MaxValue is not null)
                 data.AddRange(DataTypes.GetString(MaxValue));
         }
         

@@ -251,7 +251,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetMainThreadId()
         {
-            return netRead != null ? netRead.Item1.ManagedThreadId : -1;
+            return netRead is not null ? netRead.Item1.ManagedThreadId : -1;
         }
 
         public bool SendCookieResponse(string name, byte[]? data)
@@ -268,7 +268,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                if (netRead != null)
+                if (netRead is not null)
                 {
                     netRead.Item2.Cancel();
                     c.Close();
@@ -556,7 +556,7 @@ namespace MinecraftClient.Protocol.Handlers
                 string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
 
                 bool needCheckSession = true;
-                if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
+                if (session.ServerPublicKey is not null && session.SessionPreCheckTask is not null
                     && serverIDhash == session.ServerIDhash && Enumerable.SequenceEqual(serverPublicKey, session.ServerPublicKey))
                 {
                     session.SessionPreCheckTask.Wait();

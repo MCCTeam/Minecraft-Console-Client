@@ -15,12 +15,12 @@ public class AttributeSubComponent(DataTypes dataTypes, SubComponentRegistry sub
     
     protected override void Parse(Queue<byte> data)
     {
-        TypeId = dataTypes.ReadNextVarInt(data);
-        Uuid = dataTypes.ReadNextUUID(data);
-        Name = dataTypes.ReadNextString(data);
-        Value = dataTypes.ReadNextDouble(data);
-        Operation = dataTypes.ReadNextVarInt(data);
-        Slot = dataTypes.ReadNextVarInt(data);
+        TypeId = DataTypes.ReadNextVarInt(data);
+        Uuid = DataTypes.ReadNextUUID(data);
+        Name = DataTypes.ReadNextString(data);
+        Value = DataTypes.ReadNextDouble(data);
+        Operation = DataTypes.ReadNextVarInt(data);
+        Slot = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

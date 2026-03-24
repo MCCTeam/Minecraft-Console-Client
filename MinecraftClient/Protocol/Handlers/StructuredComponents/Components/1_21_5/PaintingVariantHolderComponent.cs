@@ -10,21 +10,21 @@ public class PaintingVariantHolderComponent(DataTypes dataTypes, ItemPalette ite
     public override void Parse(Queue<byte> data)
     {
         // Holder<PaintingVariant>: VarInt discriminator
-        var holderId = dataTypes.ReadNextVarInt(data);
+        var holderId = DataTypes.ReadNextVarInt(data);
         if (holderId == 0)
         {
             // Inline PaintingVariant: VarInt width + VarInt height + ResourceLocation assetId
-            dataTypes.ReadNextVarInt(data); // width
-            dataTypes.ReadNextVarInt(data); // height
-            dataTypes.ReadNextString(data); // assetId
+            DataTypes.ReadNextVarInt(data); // width
+            DataTypes.ReadNextVarInt(data); // height
+            DataTypes.ReadNextString(data); // assetId
 
             // Optional<Component> title
-            if (dataTypes.ReadNextBool(data))
-                dataTypes.ReadNextString(data);
+            if (DataTypes.ReadNextBool(data))
+                DataTypes.ReadNextString(data);
 
             // Optional<Component> author
-            if (dataTypes.ReadNextBool(data))
-                dataTypes.ReadNextString(data);
+            if (DataTypes.ReadNextBool(data))
+                DataTypes.ReadNextString(data);
         }
     }
 

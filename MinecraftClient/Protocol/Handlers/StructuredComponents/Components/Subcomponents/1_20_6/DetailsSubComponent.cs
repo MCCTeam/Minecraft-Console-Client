@@ -16,15 +16,15 @@ public class DetailsSubComponent(DataTypes dataTypes, SubComponentRegistry subCo
     
     protected override void Parse(Queue<byte> data)
     {
-        Amplifier = dataTypes.ReadNextVarInt(data);
-        Duration = dataTypes.ReadNextVarInt(data);
-        Ambient = dataTypes.ReadNextBool(data);
-        ShowParticles = dataTypes.ReadNextBool(data);
-        ShowIcon = dataTypes.ReadNextBool(data);
-        HasHiddenEffects = dataTypes.ReadNextBool(data);
+        Amplifier = DataTypes.ReadNextVarInt(data);
+        Duration = DataTypes.ReadNextVarInt(data);
+        Ambient = DataTypes.ReadNextBool(data);
+        ShowParticles = DataTypes.ReadNextBool(data);
+        ShowIcon = DataTypes.ReadNextBool(data);
+        HasHiddenEffects = DataTypes.ReadNextBool(data);
         
         if(HasHiddenEffects)
-            Detail = (DetailsSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.Details, data);
+            Detail = (DetailsSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
     }
 
     public override Queue<byte> Serialize()

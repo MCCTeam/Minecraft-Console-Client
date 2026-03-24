@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
@@ -218,7 +219,7 @@ namespace MinecraftClient.ChatBots
         private IgnoreList ignoreList = new();
         private FileMonitor? mailDbFileMonitor;
         private FileMonitor? ignoreListFileMonitor;
-        private readonly object readWriteLock = new();
+        private readonly Lock readWriteLock = new();
 
         /// <summary>
         /// Initialization of the Mailer bot
