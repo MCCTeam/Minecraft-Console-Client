@@ -306,27 +306,9 @@ namespace MinecraftClient.Mapping
             /// <summary>
             /// Represents a location and its attributes
             /// </summary>
-            public class Node
+            public record Node(int GScore, int HScore, Location Location)
             {
-                // Distance to start
-                public int GScore;
-
-                // Distance to Goal
-                public int HScore;
-
-                public int FScore
-                {
-                    get { return HScore + GScore; }
-                }
-
-                public Location Location;
-
-                public Node(int gScore, int hScore, Location loc)
-                {
-                    this.GScore = gScore;
-                    this.HScore = hScore;
-                    Location = loc;
-                }
+                public int FScore => HScore + GScore;
             }
 
             // List which contains all nodes in form of a Binary Heap

@@ -2,13 +2,8 @@
 
 namespace MinecraftClient.CommandHandler
 {
-    internal class SuggestionTooltip : IMessage
+    internal class SuggestionTooltip(string tooltip) : IMessage
     {
-        public SuggestionTooltip(string tooltip)
-        {
-            String = tooltip;
-        }
-
-        public string String { get; set; }
+        public string String { get; set; } = tooltip;
     }
 }

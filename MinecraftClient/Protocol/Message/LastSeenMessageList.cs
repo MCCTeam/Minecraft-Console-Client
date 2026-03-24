@@ -8,17 +8,12 @@ namespace MinecraftClient.Protocol.Message
     /// <summary>
     /// A list of messages a client has seen.
     /// </summary>
-    public class LastSeenMessageList
+    public class LastSeenMessageList(AcknowledgedMessage[] list)
     {
         public static readonly LastSeenMessageList EMPTY = new(Array.Empty<AcknowledgedMessage>());
         public static readonly int MAX_ENTRIES = 5;
 
-        public AcknowledgedMessage[] entries;
-
-        public LastSeenMessageList(AcknowledgedMessage[] list)
-        {
-            entries = list;
-        }
+        public AcknowledgedMessage[] entries = list;
 
         public void WriteForSign(List<byte> data)
         {
@@ -56,16 +51,10 @@ namespace MinecraftClient.Protocol.Message
         /// A record of messages acknowledged by a client.
         /// This holds the messages the client has recently seen, as well as the last message they received, if any.
         /// </summary>
-        public class Acknowledgment
+        public class Acknowledgment(LastSeenMessageList lastSeenMessageList, AcknowledgedMessage? lastReceivedMessage)
         {
-            public LastSeenMessageList lastSeen;
-            public AcknowledgedMessage? lastReceived;
-
-            public Acknowledgment(LastSeenMessageList lastSeenMessageList, AcknowledgedMessage? lastReceivedMessage)
-            {
-                lastSeen = lastSeenMessageList;
-                lastReceived = lastReceivedMessage;
-            }
+            public LastSeenMessageList lastSeen = lastSeenMessageList;
+            public AcknowledgedMessage? lastReceived = lastReceivedMessage;
         }
     }
 

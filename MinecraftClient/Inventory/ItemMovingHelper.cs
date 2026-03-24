@@ -7,24 +7,10 @@ namespace MinecraftClient.Inventory
     /// <summary>
     /// Class that contains useful methods to move item around in a container
     /// </summary>
-    public class ItemMovingHelper
+    public class ItemMovingHelper(Container c, McClient mc)
     {
-        private readonly Container c;
-        private readonly McClient mc;
-
-        /// <summary>
-        /// Create a helper that contains useful methods to move item around in container
-        /// </summary>
-        /// <param name="c">Source container to use. All method will use this container for handling first slot parameter</param>
-        /// <param name="mc">McClient handler. Needed for sending WindowAction packet to the server</param>
-        /// <remarks>
-        /// If you are using ChatBot API and cannot have direct access to McClient handler, use <see cref="ChatBot.WindowAction(int, int, WindowActionType)"/> as second parameter
-        /// </remarks>
-        public ItemMovingHelper(Container c, McClient mc)
-        {
-            this.c = c;
-            this.mc = mc;
-        }
+        private readonly Container c = c;
+        private readonly McClient mc = mc;
 
         /// <summary>
         /// Move an item fron source to dest. Source should contain an item and dest slot should be empty

@@ -15,21 +15,12 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Handle data types encoding / decoding
     /// </summary>
-    public class DataTypes
+    public class DataTypes(int protocol)
     {
         /// <summary>
         /// Protocol version for adjusting data types
         /// </summary>
-        private readonly int protocolversion;
-
-        /// <summary>
-        /// Initialize a new DataTypes instance
-        /// </summary>
-        /// <param name="protocol">Protocol version</param>
-        public DataTypes(int protocol)
-        {
-            protocolversion = protocol;
-        }
+        private readonly int protocolversion = protocol;
 
         /// <summary>
         /// Protocol version used to adjust wire encodings.

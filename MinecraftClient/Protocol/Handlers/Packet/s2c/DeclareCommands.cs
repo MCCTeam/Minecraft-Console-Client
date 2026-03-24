@@ -729,54 +729,25 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             ForgeEnum
         }
 
-        private sealed class CommandNode
+        private sealed record CommandNode(
+            byte Flags,
+            int[] Children,
+            int RedirectNode = -1,
+            string? Name = null,
+            CommandArgumentDescriptor? Argument = null,
+            string? SuggestionsType = null,
+            int ParserId = -1)
         {
-            public byte Flags { get; }
-            public int[] Children { get; }
-            public int RedirectNode { get; }
-            public string? Name { get; }
-            public CommandArgumentDescriptor? Argument { get; }
-            public string? SuggestionsType { get; }
-            public int ParserId { get; }
-
             public CommandNodeKind Kind => (CommandNodeKind)(Flags & NodeTypeMask);
             public bool IsExecutable => (Flags & NodeExecutableFlag) != 0;
             public bool IsRestricted => (Flags & NodeRestrictedFlag) != 0;
-
-            public CommandNode(
-                byte flags,
-                int[] children,
-                int redirectNode = -1,
-                string? name = null,
-                CommandArgumentDescriptor? argument = null,
-                string? suggestionsType = null,
-                int parserId = -1)
-            {
-                Flags = flags;
-                Children = children;
-                RedirectNode = redirectNode;
-                Name = name;
-                Argument = argument;
-                SuggestionsType = suggestionsType;
-                ParserId = parserId;
-            }
         }
 
-        private readonly struct CommandArgumentDescriptor
-        {
-            public string Name { get; }
-            public ArgumentConsumption Consumption { get; }
-            public int TokenCount { get; }
-            public bool IsSigned { get; }
-
-            public CommandArgumentDescriptor(string name, ArgumentConsumption consumption, int tokenCount = 1, bool isSigned = false)
-            {
-                Name = name;
-                Consumption = consumption;
-                TokenCount = tokenCount;
-                IsSigned = isSigned;
-            }
-        }
+        private readonly record struct CommandArgumentDescriptor(
+            string Name,
+            ArgumentConsumption Consumption,
+            int TokenCount = 1,
+            bool IsSigned = false);
 
         private readonly struct ArgumentTypeLayout
         {

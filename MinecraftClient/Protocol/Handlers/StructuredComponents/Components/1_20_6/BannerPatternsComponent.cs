@@ -59,7 +59,7 @@ public class BannerPatternsComponent(DataTypes dataTypes, ItemPalette itemPalett
     }
 }
 
-public class BannerLayer
+public record BannerLayer
 {
     public int PatternType { get; set; }
     public string? AssetId { get; set; } = null!;
