@@ -7,7 +7,7 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subc
 public class PotionEffectSubComponent(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : SubComponent(dataTypes, subComponentRegistry)
 {
     public int TypeId { get; set; }
-    public DetailsSubComponent Details { get; set; }
+    public DetailsSubComponent Details { get; set; } = null!;
     
     protected override void Parse(Queue<byte> data)
     {

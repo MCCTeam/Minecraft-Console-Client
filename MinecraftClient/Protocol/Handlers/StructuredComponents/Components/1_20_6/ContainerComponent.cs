@@ -22,7 +22,7 @@ public class ContainerComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(Items.Count));
         foreach (var item in Items)
-            data.AddRange(DataTypes.GetItemSlot(item, itemPalette));
+            data.AddRange(DataTypes.GetItemSlot(item, ItemPalette));
             
         return new Queue<byte>(data);
     }

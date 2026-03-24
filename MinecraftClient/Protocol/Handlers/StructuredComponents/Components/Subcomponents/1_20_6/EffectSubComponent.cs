@@ -6,7 +6,7 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subc
 
 public class EffectSubComponent(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : SubComponent(dataTypes, subComponentRegistry)
 {
-    public PotionEffectSubComponent TypeId { get; set; }
+    public PotionEffectSubComponent TypeId { get; set; } = null!;
     public float Probability { get; set; }
     
     protected override void Parse(Queue<byte> data)

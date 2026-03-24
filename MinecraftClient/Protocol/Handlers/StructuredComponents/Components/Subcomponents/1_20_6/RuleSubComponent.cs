@@ -6,7 +6,7 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subc
 
 public class RuleSubComponent(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : SubComponent(dataTypes, subComponentRegistry)
 {
-    public BlockSetSubcomponent Blocks { get; set; }
+    public BlockSetSubcomponent Blocks { get; set; } = null!;
     public bool HasSpeed { get; set; }
     public float Speed { get; set; }
     public bool HasCorrectDropForBlocks { get; set; }

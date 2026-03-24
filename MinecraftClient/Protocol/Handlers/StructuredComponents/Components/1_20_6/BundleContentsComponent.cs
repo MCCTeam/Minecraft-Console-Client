@@ -16,7 +16,7 @@ public class BundleContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
 
         for (var i = 0; i < count; i++)
         {
-            var item = DataTypes.ReadNextItemSlot(data, itemPalette);
+            var item = DataTypes.ReadNextItemSlot(data, ItemPalette);
             if (item is not null)
                 Items.Add(item);
         }
@@ -28,7 +28,7 @@ public class BundleContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
         data.AddRange(DataTypes.GetVarInt(Items.Count));
 
         foreach (var item in Items)
-            data.AddRange(DataTypes.GetItemSlot(item, itemPalette));
+            data.AddRange(DataTypes.GetItemSlot(item, ItemPalette));
 
         return new Queue<byte>(data);
     }

@@ -82,6 +82,8 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
             {
                 // Create a temporary file to copy the executable to.
                 var executablePath = Environment.ProcessPath;
+                if (executablePath is null)
+                    throw new InvalidOperationException("Cannot determine the process path for self-contained scripting extraction.");
                 var tempPath = Path.Combine(Path.GetTempPath(), "mcc-scripting");
                 Directory.CreateDirectory(tempPath);
                 

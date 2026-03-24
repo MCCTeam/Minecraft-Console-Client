@@ -973,7 +973,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 return data;
             }
-            catch(Exception ex)
+            catch (Exception)
             {
                 return new Dictionary<int, object?>();
             }

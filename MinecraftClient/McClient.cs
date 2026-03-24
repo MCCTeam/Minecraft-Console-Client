@@ -61,14 +61,12 @@ namespace MinecraftClient
         private readonly Lock locationLock = new();
         private bool locationReceived = false;
         private readonly World world = new();
-        private Queue<Location>? steps;
         private Queue<Location>? path;
         private Location location;
         private float? _yaw; // Used for calculation ONLY!!! Doesn't reflect the client yaw
         private float? _pitch; // Used for calculation ONLY!!! Doesn't reflect the client pitch
         private float playerYaw;
         private float playerPitch;
-        private double motionY;
         private readonly PlayerPhysics playerPhysics = new();
         private readonly MovementInput physicsInput = new();
         private bool physicsInitialized = false;
@@ -156,8 +154,8 @@ namespace MinecraftClient
         public void SetCookie(string key, byte[] data) => Cookies[key] = data;
         public void DeleteCookie(string key) => Cookies.Remove(key, out var data);
 
-        TcpClient client;
-        IMinecraftCom handler;
+        TcpClient client = null!;
+        IMinecraftCom handler = null!;
         SessionToken _sessionToken;
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
@@ -213,7 +211,7 @@ namespace MinecraftClient
                 scope.SetTag("MCC Build", Program.BuildInfo is null ? "Debug" : Program.BuildInfo);
                     
                 if (forgeInfo is not null)
-                    scope.SetTag("Forge Version", forgeInfo?.Version.ToString());
+                    scope.SetTag("Forge Version", forgeInfo.Version.ToString());
 
                 scope.Contexts["Server Information"] = new
                 {
@@ -2782,7 +2780,7 @@ namespace MinecraftClient
         /// <returns>true if a movement is currently handled</returns>
         public bool ClientIsMoving()
         {
-            return terrainAndMovementsEnabled && locationReceived && ((steps is not null && steps.Count > 0) || (path is not null && path.Count > 0));
+            return terrainAndMovementsEnabled && locationReceived && path is not null && path.Count > 0;
         }
 
         /// <summary>

@@ -545,11 +545,11 @@ namespace MinecraftClient.Protocol.Message
                         break;
                     case "translate":
                     {
-                        if (nbt.TryGetValue("translate", out object translate))
+                        if (nbt.TryGetValue("translate", out object? translate))
                         {
                             var translateKey = (string)translate;
                             List<string> translateString = new();
-                            if (nbt.TryGetValue("with", out object withComponent))
+                            if (nbt.TryGetValue("with", out object? withComponent))
                             {
                                 var withs = (object[])withComponent;
                                 for (var i = 0; i < withs.Length; i++)
@@ -574,7 +574,7 @@ namespace MinecraftClient.Protocol.Message
                         break;
                     case "color":
                     {
-                        if (nbt.TryGetValue("color", out object color))
+                        if (nbt.TryGetValue("color", out object? color))
                         {
                             colorCode = Color2tag((string)color);
                         }

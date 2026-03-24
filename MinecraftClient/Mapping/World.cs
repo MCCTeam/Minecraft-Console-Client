@@ -317,7 +317,7 @@ namespace MinecraftClient.Mapping
 	public static void SetDimension(string name)
 	{
 	    // Try to get the dimension using the name as is
-	    if (dimensionList.TryGetValue(name, out Dimension dimension))
+	    if (dimensionList.TryGetValue(name, out Dimension? dimension))
 	    {
 		curDimension = dimension;
 		return; // Dimension found
