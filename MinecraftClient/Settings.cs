@@ -1174,10 +1174,10 @@ namespace MinecraftClient
                                 string varname = var_name.ToString();
                                 string varname_lower = Settings.ToLowerIfNeed(varname);
                                 i = i + varname.Length + 1;
-
+                                
                                 if (TryGetReadOnlyVar(varname_lower, out object? readOnlyVar))
                                 {
-                                    result.Append(readOnlyVar?.ToString());
+                                    result.Append(readOnlyVar.ToString());
                                 }
                                 else if (localVars is not null && localVars.ContainsKey(varname_lower))
                                 {

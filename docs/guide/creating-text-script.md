@@ -6,7 +6,7 @@ title: Creating Simple Script
 
 A simple script is a text file with one command per line. See the [Internal Commands](usage.md#internal-commands) section, or type `/help` in the console to see the available commands. Any line beginning with `#` is ignored and treated as a comment.
 
-Application variables defined with the `set` command or in the `[AppVars]` config section can be used. The following read-only variables are also available: `%username%`, `%login%`, `%serverip%`, `%serverport%`, `%datetime%`, `%players%` (`%players%` expands to the current online player names separated by commas).
+Application variables defined with the `set` command or in the `[AppVars]` config section can be used. The following read-only variables are also available: `%username%`, `%login%`, `%serverip%`, `%serverport%`, `%datetime%`, `%players%` (`%players%` expands to the current online player names separated by commas, or an empty string when not connected).
 
 ## Example
 
