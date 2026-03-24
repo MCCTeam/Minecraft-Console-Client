@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
@@ -175,7 +176,7 @@ namespace MinecraftClient.ChatBots
         private Entity fishItem = new(-1, EntityType.Item, Location.Zero);
 
         private int counter = 0;
-        private readonly object stateLock = new();
+        private readonly Lock stateLock = new();
         private FishingState state = FishingState.WaitJoinGame;
 
         private int curLocationIdx = 0, moveDir = 1;

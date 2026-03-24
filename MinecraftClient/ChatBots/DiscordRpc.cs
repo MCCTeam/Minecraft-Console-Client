@@ -361,8 +361,8 @@ namespace MinecraftClient.ChatBots
 
             private readonly byte[] _buffer = new byte[PipeFrame.MAX_SIZE];
             private readonly Queue<PipeFrame> _frameQueue = new();
-            private readonly object _frameQueueLock = new();
-            private readonly object _streamLock = new();
+            private readonly Lock _frameQueueLock = new();
+            private readonly Lock _streamLock = new();
 
             private int _connectedPipe;
             private NamedPipeClientStream? _stream;

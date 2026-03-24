@@ -102,7 +102,7 @@ namespace MinecraftClient.Protocol.Handlers
         private int oldSamplesWeight = 1;
 
         private bool receiveDeclareCommands = false, receivePlayerInfo = false;
-        private object MessageSigningLock = new();
+        private readonly Lock MessageSigningLock = new();
         private Guid chatUuid = Guid.NewGuid();
         private int pendingAcknowledgments = 0, messageIndex = 0;
         private LastSeenMessagesCollector lastSeenMessagesCollector;

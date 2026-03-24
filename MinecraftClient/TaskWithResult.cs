@@ -14,7 +14,7 @@ namespace MinecraftClient
         private T? result = default;
         private Exception? exception = null;
         private bool taskRun = false;
-        private readonly object taskRunLock = new();
+        private readonly Lock taskRunLock = new();
 
         /// <summary>
         /// Create a new asynchronous task with return value

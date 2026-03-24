@@ -43,7 +43,7 @@ namespace MinecraftClient
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
         private readonly Queue<Action> threadTasks = new();
-        private readonly object threadTasksLock = new();
+        private readonly Lock threadTasksLock = new();
 
         private readonly List<ChatBot> bots = new();
         private static readonly List<ChatBot> botsOnHold = new();
@@ -58,7 +58,7 @@ namespace MinecraftClient
         private bool inventoryHandlingRequested = false;
         private bool entityHandlingEnabled;
 
-        private readonly object locationLock = new();
+        private readonly Lock locationLock = new();
         private bool locationReceived = false;
         private readonly World world = new();
         private Queue<Location>? steps;
@@ -86,7 +86,7 @@ namespace MinecraftClient
         private readonly string sessionid;
         private readonly PlayerKeyPair? playerKeyPair;
         private DateTime lastKeepAlive;
-        private readonly object lastKeepAliveLock = new();
+        private readonly Lock lastKeepAliveLock = new();
         private int respawnTicks = 0;
         private int gamemode = 0;
         private bool isSupportPreviewsChat;
@@ -94,7 +94,7 @@ namespace MinecraftClient
 
         private int playerEntityID;
 
-        private object DigLock = new();
+        private readonly Lock DigLock = new();
         private Tuple<Location, Direction>? LastDigPosition;
         private int RemainingDiggingTime = 0;
 

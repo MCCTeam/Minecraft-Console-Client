@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Brigadier.NET;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Inventory;
@@ -42,7 +43,7 @@ namespace MinecraftClient.Scripting
         private McClient? _handler = null;
         private ChatBot? master = null;
         private readonly List<string> registeredPluginChannels = new();
-        private readonly object delayTasksLock = new();
+        private readonly Lock delayTasksLock = new();
         private readonly List<TaskWithDelay> delayedTasks = new();
         protected McClient Handler
         {

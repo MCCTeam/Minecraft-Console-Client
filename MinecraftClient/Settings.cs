@@ -1011,7 +1011,7 @@ namespace MinecraftClient
                 private readonly Dictionary<string, object> VarObject = new();
 
                 [NonSerialized]
-                readonly object varLock = new();
+                readonly Lock varLock = new();
 
                 /// <summary>
                 /// Set a custom %variable% which will be available through expandVars()

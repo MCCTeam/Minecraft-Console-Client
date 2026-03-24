@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
@@ -50,7 +51,7 @@ namespace MinecraftClient.ChatBots
         private bool saveChat = true;
         private bool savePrivate = true;
         private bool saveInternal = true;
-        private readonly object logfileLock = new();
+        private readonly Lock logfileLock = new();
 
         /// <summary>
         /// This bot saves the messages received in the specified file, with some filters and date/time tagging.

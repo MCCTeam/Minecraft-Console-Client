@@ -4,12 +4,14 @@ MCC.LoadBot(new PacketCadenceCaptureBot());
 
 //MCCScript Extensions
 
+using System.Threading;
+
 public class PacketCadenceCaptureBot : ChatBot
 {
     private const int CaptureDurationSeconds = 5;
     private const int CaptureDurationTicks = CaptureDurationSeconds * 20;
 
-    private readonly object _countsLock = new();
+    private readonly Lock _countsLock = new();
     private readonly Dictionary<string, int> _counts = new()
     {
         { "PlayerMovement", 0 },
