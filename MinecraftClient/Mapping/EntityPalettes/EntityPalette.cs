@@ -29,9 +29,9 @@ namespace MinecraftClient.Mapping.EntityPalettes
             Dictionary<int, EntityType> entityTypes = GetDict();
             Dictionary<int, EntityType>? entityTypesNonLiving = GetDictNonLiving();
 
-            if (entityTypesNonLiving != null && !living)
+            if (entityTypesNonLiving is not null && !living)
             {
-                //Pre-1.14 non-living entities have a different set of IDs (entityTypesNonLiving != null)
+                //Pre-1.14 non-living entities have a different set of IDs (entityTypesNonLiving is not null)
                 if (entityTypesNonLiving.ContainsKey(id))
                     return entityTypesNonLiving[id];
             }

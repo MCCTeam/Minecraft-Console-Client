@@ -142,7 +142,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                                 "[Script Error] Too many references to the same assembly. Assembly name: " + refs.Name);
                         }
 
-                        if (reference == null) {
+                        if (reference is null) {
                             throw new InvalidOperationException(
                                 "[Script Error] The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
                         }

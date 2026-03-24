@@ -172,7 +172,7 @@ namespace MinecraftClient.Inventory
         public int[] SearchItem(ItemType itemType)
         {
             List<int> result = new();
-            if (Items != null)
+            if (Items is not null)
             {
                 foreach (var item in Items)
                 {

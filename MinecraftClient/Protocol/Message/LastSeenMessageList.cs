@@ -107,7 +107,7 @@ namespace MinecraftClient.Protocol.Message
                 }
             }
 
-            if (lastEntry != null && messageCount < acknowledgedMessages.Length)
+            if (lastEntry is not null && messageCount < acknowledgedMessages.Length)
                 acknowledgedMessages[messageCount++] = lastEntry;
 
             LastSeenMessageList.AcknowledgedMessage[] msgList = new LastSeenMessageList.AcknowledgedMessage[messageCount];
@@ -120,7 +120,7 @@ namespace MinecraftClient.Protocol.Message
         {
             // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.MessageSignatureData, boolean)
             // net.minecraft.network.message.LastSeenMessagesCollector#add(net.minecraft.network.message.AcknowledgedMessage)
-            if (lastEntry != null && entry.signature.SequenceEqual(lastEntry.signature))
+            if (lastEntry is not null && entry.signature.SequenceEqual(lastEntry.signature))
                 return false;
             lastEntry = entry;
 
@@ -143,7 +143,7 @@ namespace MinecraftClient.Protocol.Message
             {
                 int k = (nextIndex + j) % acknowledgedMessages.Length;
                 AcknowledgedMessage? acknowledgedMessage = acknowledgedMessages[k];
-                if (acknowledgedMessage == null)
+                if (acknowledgedMessage is null)
                     continue;
                 bitset[j / 8] |= (byte)(1 << (j % 8)); // bitSet.set(j, true);
                 objectList.Add(acknowledgedMessage);

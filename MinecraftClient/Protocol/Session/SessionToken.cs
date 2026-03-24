@@ -45,7 +45,7 @@ namespace MinecraftClient.Protocol.Session
 
         public bool SessionPreCheck(LoginType type)
         {
-            if (ID == string.Empty || PlayerID == String.Empty || ServerPublicKey == null)
+            if (ID == string.Empty || PlayerID == String.Empty || ServerPublicKey is null)
                 return false;
             Crypto.CryptoHandler.ClientAESPrivateKey ??= Crypto.CryptoHandler.GenerateAESPrivateKey();
             string serverHash = Crypto.CryptoHandler.GetServerHash(ServerIDhash, ServerPublicKey, Crypto.CryptoHandler.ClientAESPrivateKey);
@@ -57,7 +57,7 @@ namespace MinecraftClient.Protocol.Session
         public override string ToString()
         {
             return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken, ServerIDhash,
-                (ServerPublicKey == null) ? String.Empty : Convert.ToBase64String(ServerPublicKey));
+                (ServerPublicKey is null) ? String.Empty : Convert.ToBase64String(ServerPublicKey));
         }
 
         public static SessionToken FromString(string tokenString)

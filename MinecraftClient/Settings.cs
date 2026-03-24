@@ -1150,7 +1150,7 @@ namespace MinecraftClient
 
                                         break;
                                     default:
-                                        if (localVars != null && localVars.ContainsKey(varname_lower))
+                                        if (localVars is not null && localVars.ContainsKey(varname_lower))
                                             result.Append(localVars[varname_lower].ToString());
                                         else if (TryGetVar(varname_lower, out object? var_value))
                                             result.Append(var_value.ToString());
@@ -1979,7 +1979,7 @@ namespace MinecraftClient
         public static string GetFullMessage(this Exception ex)
         {
             string msg = ex.Message.Replace("+", "->");
-            return ex.InnerException == null
+            return ex.InnerException is null
                  ? msg
                  : msg + "\n --> " + ex.InnerException.GetFullMessage();
         }

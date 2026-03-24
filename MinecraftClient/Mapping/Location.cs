@@ -108,7 +108,7 @@ namespace MinecraftClient.Mapping
         public static Location Parse(string x, string y, string z)
         {
             Location.TryParse(x, y, z, out Location? res);
-            if (res == null)
+            if (res is null)
                 throw new FormatException();
             else
                 return (Location)res;
@@ -308,7 +308,7 @@ namespace MinecraftClient.Mapping
         /// <returns>TRUE if the locations are equals</returns>
         public override bool Equals(object? obj)
         {
-            if (obj == null)
+            if (obj is null)
                 return false;
             if (obj is Location location)
             {

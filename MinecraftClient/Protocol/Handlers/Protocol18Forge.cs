@@ -21,7 +21,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private readonly ForgeInfo? forgeInfo;
         private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
-        private bool ForgeEnabled() { return forgeInfo != null; }
+        private bool ForgeEnabled() { return forgeInfo is not null; }
 
         /// <summary>
         /// Initialize a new Forge protocol handler

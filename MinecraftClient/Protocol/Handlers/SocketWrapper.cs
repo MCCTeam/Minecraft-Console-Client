@@ -29,7 +29,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <remarks>Silently dropped connection can only be detected by attempting to read/write data</remarks>
         public bool IsConnected()
         {
-            return c.Client != null && c.Connected;
+            return c.Client is not null && c.Connected;
         }
 
         /// <summary>
