@@ -115,7 +115,10 @@ namespace MinecraftClient
             }
 
             if (!ConsoleIO.BasicIO)
-                ConsoleInteractive.ConsoleWriter.Init();
+            {
+                ConsoleIO.Backend = new ClassicConsoleBackend();
+                ConsoleIO.Backend.Init();
+            }
 
             ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
 
@@ -170,14 +173,14 @@ namespace MinecraftClient
                 }
                 else if (!loadSucceed)
                 {
-                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleIO.Backend?.StopReadThread();
                     string command = " ";
                     while (command.Length > 0)
                     {
                         ConsoleIO.WriteLine(string.Empty);
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_invaild_config, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                         ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
-                        command = ConsoleInteractive.ConsoleReader.RequestImmediateInput().Trim();
+                        command = ConsoleIO.ReadLine().Trim();
                         if (command.Length > 0)
                         {
                             if (Config.Main.Advanced.InternalCmdChar.ToChar() != ' '
@@ -215,6 +218,26 @@ namespace MinecraftClient
                     _sentrySdk?.Dispose();
             }
 
+            // Switch to TUI mode if configured (must happen after config load)
+            if (!ConsoleIO.BasicIO && Config.Console.General.ConsoleMode == ConsoleModeType.tui)
+            {
+                ConsoleIO.Backend?.Shutdown();
+                var tuiBackend = new Tui.TuiConsoleBackend();
+                ConsoleIO.Backend = tuiBackend;
+                tuiBackend.RunTuiMainLoop(args);
+                return;
+            }
+
+            ContinueAfterTuiInit(args);
+        }
+
+        /// <summary>
+        /// Continues MCC startup after console mode has been determined.
+        /// Called directly from Main for classic/basic mode, or from a background
+        /// thread for TUI mode (after the Avalonia UI loop has started).
+        /// </summary>
+        internal static void ContinueAfterTuiInit(string[] args)
+        {
             //Other command-line arguments
             if (args.Length >= 1)
             {
@@ -723,7 +746,7 @@ namespace MinecraftClient
         /// <param name="keepAccountAndServerSettings">Optional, keep account and server settings</param>
         public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
-            ConsoleInteractive.ConsoleReader.StopReadThread();
+            ConsoleIO.Backend.StopReadThread();
             new Thread(new ThreadStart(delegate
             {
                 if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
@@ -742,7 +765,7 @@ namespace MinecraftClient
         public static void DoExit(int exitcode = 0)
         {
             WriteBackSettings();
-            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+            ConsoleIO.Backend?.Shutdown();
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
             if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
@@ -789,7 +812,7 @@ namespace MinecraftClient
                 if (versionError)
                 {
                     ConsoleIO.WriteLine(Translations.mcc_server_version);
-                    InternalConfig.MinecraftVersion = ConsoleInteractive.ConsoleReader.RequestImmediateInput();
+                    InternalConfig.MinecraftVersion = ConsoleIO.ReadLine();
                     if (InternalConfig.MinecraftVersion != "")
                     {
                         useMcVersionOnce = true;
@@ -805,7 +828,7 @@ namespace MinecraftClient
                 
                 if (offlinePrompt is null)
                 {
-                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleIO.Backend.StopReadThread();
 
                     var cancellationTokenSource = new CancellationTokenSource();
                     offlinePrompt = new(new Thread(new ThreadStart(delegate
@@ -826,7 +849,7 @@ namespace MinecraftClient
                                 if (cancellationTokenSource.IsCancellationRequested)
                                     return;
 
-                                command = ConsoleInteractive.ConsoleReader.RequestImmediateInput().Trim();
+                                command = ConsoleIO.ReadLine().Trim();
                                 if (command.Length > 0)
                                 {
                                     string message = "";

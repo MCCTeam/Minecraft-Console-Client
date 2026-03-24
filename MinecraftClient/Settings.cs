@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -1086,36 +1086,29 @@ namespace MinecraftClient
 
                 public void OnSettingUpdate()
                 {
-                    // Reader
-                    ConsoleInteractive.ConsoleReader.DisplayUesrInput = General.Display_Input;
+                    var backend = ConsoleIO.Backend;
+                    if (backend == null) return;
 
-                    // Writer
-                    ConsoleInteractive.ConsoleWriter.EnableColor = General.ConsoleColorMode != ConsoleColorModeType.disable;
+                    backend.DisplayUserInput = General.Display_Input;
+                    backend.SetBackreadBufferLimit(General.History_Input_Records);
 
-                    ConsoleInteractive.ConsoleWriter.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
-
-                    // Buffer
-                    General.History_Input_Records =
-                        ConsoleInteractive.ConsoleBuffer.SetBackreadBufferLimit(General.History_Input_Records);
-
-                    // Suggestion
-                    if (General.ConsoleColorMode == ConsoleColorModeType.disable)
-                        CommandSuggestion.Enable_Color = false;
-
-                    ConsoleInteractive.ConsoleSuggestion.EnableColor = CommandSuggestion.Enable_Color;
-
-                    ConsoleInteractive.ConsoleSuggestion.Enable24bitColor = General.ConsoleColorMode == ConsoleColorModeType.vt100_24bit;
-
-                    ConsoleInteractive.ConsoleSuggestion.UseBasicArrow = CommandSuggestion.Use_Basic_Arrow;
-
-                    CommandSuggestion.Max_Suggestion_Width =
-                        ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionLength(CommandSuggestion.Max_Suggestion_Width);
-
-                    CommandSuggestion.Max_Displayed_Suggestions =
-                        ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionCount(CommandSuggestion.Max_Displayed_Suggestions);
-
-                    // Suggestion color settings
+                    if (backend is ClassicConsoleBackend classic)
                     {
+                        classic.EnableWriterColor = General.ConsoleColorMode != ConsoleColorModeType.disable;
+                        classic.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
+
+                        if (General.ConsoleColorMode == ConsoleColorModeType.disable)
+                            CommandSuggestion.Enable_Color = false;
+
+                        classic.EnableSuggestionColor = CommandSuggestion.Enable_Color;
+                        classic.Enable24bitColor = General.ConsoleColorMode == ConsoleColorModeType.vt100_24bit;
+                        classic.UseBasicArrow = CommandSuggestion.Use_Basic_Arrow;
+
+                        CommandSuggestion.Max_Suggestion_Width =
+                            classic.SetMaxSuggestionLength(CommandSuggestion.Max_Suggestion_Width);
+                        CommandSuggestion.Max_Displayed_Suggestions =
+                            classic.SetMaxSuggestionCount(CommandSuggestion.Max_Displayed_Suggestions);
+
                         if (!CheckColorCode(CommandSuggestion.Text_Color))
                         {
                             ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.TextColor", CommandSuggestion.Text_Color));
@@ -1152,7 +1145,7 @@ namespace MinecraftClient
                             CommandSuggestion.Arrow_Symbol_Color = "#d1d5db";
                         }
 
-                        ConsoleInteractive.ConsoleSuggestion.SetColors(
+                        classic.SetSuggestionColors(
                             CommandSuggestion.Text_Color, CommandSuggestion.Text_Background_Color,
                             CommandSuggestion.Highlight_Text_Color, CommandSuggestion.Highlight_Text_Background_Color,
                             CommandSuggestion.Tooltip_Color, CommandSuggestion.Highlight_Tooltip_Color,
@@ -1184,6 +1177,9 @@ namespace MinecraftClient
                 [TomlDoNotInlineObject]
                 public class MainConfig
                 {
+                    [TomlInlineComment("Console mode: \"classic\" (ConsoleInteractive), \"tui\" (Avalonia/Consolonia full-screen)")]
+                    public ConsoleModeType ConsoleMode = ConsoleModeType.classic;
+
                     [TomlInlineComment("$Console.General.ConsoleColorMode$")]
                     public ConsoleColorModeType ConsoleColorMode = ConsoleColorModeType.vt100_24bit;
 
@@ -1224,6 +1220,7 @@ namespace MinecraftClient
                     public string Arrow_Symbol_Color = "#d1d5db";
                 }
 
+                public enum ConsoleModeType { classic, tui };
                 public enum ConsoleColorModeType { disable, legacy_4bit, vt100_4bit, vt100_8bit, vt100_24bit };
             }
         }

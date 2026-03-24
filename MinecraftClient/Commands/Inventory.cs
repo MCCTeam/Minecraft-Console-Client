@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,7 @@ using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Inventory;
+using MinecraftClient.Tui;
 
 namespace MinecraftClient.Commands
 {
@@ -22,6 +23,8 @@ namespace MinecraftClient.Commands
                     .Executes(r => GetUsage(r.Source, string.Empty))
                     .Then(l => l.Literal("list")
                         .Executes(r => GetUsage(r.Source, "list")))
+                    .Then(l => l.Literal("open")
+                        .Executes(r => GetUsage(r.Source, "open")))
                     .Then(l => l.Literal("close")
                         .Executes(r => GetUsage(r.Source, "close")))
                     .Then(l => l.Literal("click")
@@ -59,6 +62,9 @@ namespace MinecraftClient.Commands
                         .Then(l => l.Argument("Count", Arguments.Integer(0, 64))
                             .Executes(r => SearchItem(r.Source, MccArguments.GetItemType(r, "ItemType"), Arguments.GetInteger(r, "Count"))))))
                 .Then(l => l.Argument("InventoryId", MccArguments.InventoryId())
+                    .Executes(r => DoOpenOrList(r.Source, Arguments.GetInteger(r, "InventoryId")))
+                    .Then(l => l.Literal("open")
+                        .Executes(r => DoOpenTui(r.Source, Arguments.GetInteger(r, "InventoryId"))))
                     .Then(l => l.Literal("close")
                         .Executes(r => DoCloseAction(r.Source, Arguments.GetInteger(r, "InventoryId"))))
                     .Then(l => l.Literal("list")
@@ -113,6 +119,7 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(cmd switch
             {
 #pragma warning disable format // @formatter:off
+                "open"           => "Open interactive TUI inventory viewer (TUI mode only)" + usageStr + "/inventory <id> open",
                 "list"           => Translations.cmd_inventory_help_list           + usageStr + "/inventory <player|container|<id>> list",
                 "close"          => Translations.cmd_inventory_help_close          + usageStr + "/inventory <player|container|<id>> close",
                 "click"          => Translations.cmd_inventory_help_click          + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle|shift|shiftright]\nDefault is left click",
@@ -393,6 +400,54 @@ namespace MinecraftClient.Commands
             }
         }
 
+
+        private int DoOpenOrList(CmdResult r, int inventoryId)
+        {
+            if (ConsoleIO.Backend is TuiConsoleBackend)
+                return DoOpenTui(r, inventoryId);
+            return DoListAction(r, inventoryId);
+        }
+
+        private int DoOpenTui(CmdResult r, int inventoryId)
+        {
+            McClient handler = CmdResult.currentHandler!;
+
+            if (!handler.GetInventoryEnabled())
+                return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
+
+            if (ConsoleIO.Backend is not TuiConsoleBackend)
+            {
+                handler.Log.Warn("Interactive TUI is only available in TUI console mode. Use '/inventory <id> list' instead.");
+                return r.SetAndReturn(CmdResult.Status.Fail);
+            }
+
+            if (InventoryTuiHost.IsRunning)
+            {
+                handler.Log.Warn("TUI is already running.");
+                return r.SetAndReturn(CmdResult.Status.Fail);
+            }
+
+            var container = handler.GetInventory(inventoryId);
+            if (container == null)
+            {
+                handler.Log.Warn($"Inventory #{inventoryId} not found.");
+                return r.SetAndReturn(CmdResult.Status.Fail, $"Inventory #{inventoryId} not found");
+            }
+
+            handler.Log.Info($"Opening TUI for Inventory #{inventoryId}...");
+
+            bool success = InventoryTuiHost.Launch(handler, inventoryId);
+            if (success)
+            {
+                handler.Log.Info("Inventory dialog opened.");
+                return r.SetAndReturn(CmdResult.Status.Done);
+            }
+            else
+            {
+                handler.Log.Warn("Failed to launch TUI.");
+                return r.SetAndReturn(CmdResult.Status.Fail);
+            }
+        }
 
         #region Methods for commands help
 

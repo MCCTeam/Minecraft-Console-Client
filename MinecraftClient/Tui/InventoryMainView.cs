@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -12,10 +14,11 @@ namespace MinecraftClient.Tui
 {
     public class InventoryMainView : UserControl
     {
-        private static readonly IBrush BrSlotEmpty = new SolidColorBrush(Color.FromRgb(50, 50, 50));
-        private static readonly IBrush BrSlotFill = new SolidColorBrush(Color.FromRgb(70, 70, 80));
+        private static readonly IBrush BrSlotEmptyA = new SolidColorBrush(Color.FromRgb(40, 40, 40));
+        private static readonly IBrush BrSlotEmptyB = new SolidColorBrush(Color.FromRgb(55, 55, 55));
+        private static readonly IBrush BrSlotFillA = new SolidColorBrush(Color.FromRgb(60, 60, 75));
+        private static readonly IBrush BrSlotFillB = new SolidColorBrush(Color.FromRgb(75, 75, 90));
         private static readonly IBrush BrSlotHover = new SolidColorBrush(Color.FromRgb(100, 100, 140));
-        private static readonly IBrush BrEmptyBorder = new SolidColorBrush(Color.FromRgb(90, 90, 90));
         private static readonly IBrush BrName = Brushes.White;
         private static readonly IBrush BrCount = Brushes.Yellow;
         private static readonly IBrush BrDim = new SolidColorBrush(Color.FromRgb(80, 80, 80));
@@ -37,17 +40,18 @@ namespace MinecraftClient.Tui
         private readonly TextBlock _infoDetailText;
         private readonly TextBlock _cursorItemText;
         private readonly TextBlock _helpText;
-        private readonly TextBlock _statusBar;
 
         private readonly TextBlock[] _hotbarIndicators = new TextBlock[9];
         private int _currentHotbarSlot = -1;
 
-        private Button? _lastHoveredButton;
+        private Border? _lastHoveredSlotBorder;
 
         private readonly Canvas _overlayCanvas;
         private readonly Border _heldItemFloater;
         private readonly TextBlock _heldItemFloaterName;
         private readonly TextBlock _heldItemFloaterCount;
+
+        private readonly ScrollViewer _chatScrollViewer;
 
         public InventoryMainView()
         {
@@ -70,15 +74,15 @@ namespace MinecraftClient.Tui
                 termH = 40;
             }
 
-            int availW = _termW - 30;
+            int availW = _termW - 26;
             _slotW = Math.Clamp(availW / 9, 8, 18);
-            _nameMaxLen = _slotW - 1;
+            _nameMaxLen = _slotW;
 
             int topUsedW = _slotW * 4 + 8 + _slotW * 2 + 4 + _slotW;
             _topGap = Math.Max(2, (_slotW * 9 - topUsedW) / 2);
 
             _slotH = Math.Max(2, (termH - 8) / 6);
-            _nameLines = Math.Max(1, _slotH - 1);
+            _nameLines = _slotH;
 
             _vm.SetSlotDisplayParams(_nameMaxLen, _nameLines);
 
@@ -120,13 +124,7 @@ namespace MinecraftClient.Tui
                     "Q       Drop x1\n" +
                     "Ctrl+Q  Drop Stack\n" +
                     "R       Refresh\n" +
-                    "ESC     Exit",
-            };
-
-            _statusBar = new TextBlock
-            {
-                Foreground = Brushes.Gray,
-                HorizontalAlignment = HorizontalAlignment.Center,
+                    "E/ESC   Exit",
             };
 
             _heldItemFloaterName = new TextBlock
@@ -154,30 +152,73 @@ namespace MinecraftClient.Tui
                 },
             };
 
-            _overlayCanvas = new Canvas
-            {
-                IsHitTestVisible = false,
-            };
+            _overlayCanvas = new Canvas { IsHitTestVisible = false };
             _overlayCanvas.Children.Add(_heldItemFloater);
+
+            var chatLines = TuiConsoleBackend.Instance?.GetView()?.GetRecentLogLines(50)
+                ?? new ObservableCollection<string>();
+            chatLines.CollectionChanged += (_, _) =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    _chatScrollViewer.Offset = new Vector(0, _chatScrollViewer.Extent.Height),
+                    Avalonia.Threading.DispatcherPriority.Background);
+            };
+            var chatItemsControl = new ItemsControl
+            {
+                ItemsSource = chatLines,
+                Focusable = false,
+                ItemTemplate = new FuncDataTemplate<string>((s, _) =>
+                    new TextBlock
+                    {
+                        Text = s,
+                        Foreground = Brushes.Gray,
+                        Padding = new Thickness(0),
+                        Margin = new Thickness(0),
+                        TextWrapping = TextWrapping.NoWrap,
+                    }),
+            };
+            _chatScrollViewer = new ScrollViewer
+            {
+                Content = chatItemsControl,
+                Background = Brushes.Black,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Focusable = false,
+                Padding = new Thickness(0),
+            };
 
             Content = BuildRootLayout();
             UpdateTitle();
             UpdateInfoPanel();
-            UpdateStatusBar();
+
+            _chatScrollViewer.LayoutUpdated += OnChatLayoutUpdatedOnce;
+        }
+
+        private void OnChatLayoutUpdatedOnce(object? sender, EventArgs e)
+        {
+            _chatScrollViewer.LayoutUpdated -= OnChatLayoutUpdatedOnce;
+            _chatScrollViewer.Offset = new Vector(0, _chatScrollViewer.Extent.Height);
         }
 
         private Control BuildRootLayout()
         {
+            // Layout (top-down):
+            //   Title
+            //   [InfoPanel(right)] [InventoryGrid(left)]   <-- inventory area
+            //   ChatScrollViewer (full width, fills remaining)
+
+            var inventoryArea = BuildMainArea();
             DockPanel.SetDock(_titleText, Dock.Top);
-            DockPanel.SetDock(_statusBar, Dock.Bottom);
+            DockPanel.SetDock(inventoryArea, Dock.Top);
 
             var mainContent = new DockPanel
             {
-                Children = { _titleText, _statusBar, BuildMainArea() }
+                Children = { _titleText, inventoryArea, _chatScrollViewer }
             };
 
             return new Panel
             {
+                Background = Brushes.Black,
                 Children = { mainContent, _overlayCanvas }
             };
         }
@@ -225,9 +266,8 @@ namespace MinecraftClient.Tui
             };
 
             root.Children.Add(BuildTopSection());
-            root.Children.Add(MakeSeparator());
+            root.Children.Add(new Border { Height = 1 });
             root.Children.Add(BuildSlotGrid(_vm.MainInventorySlots, 9));
-            root.Children.Add(MakeSeparator());
             root.Children.Add(BuildHotbarSection());
 
             return new Border
@@ -258,7 +298,7 @@ namespace MinecraftClient.Tui
                 FontWeight = FontWeight.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
             });
-            offPanel.Children.Add(CreateSlotButton(_vm.OffhandSlot));
+            offPanel.Children.Add(CreateSlotCell(_vm.OffhandSlot, 0, 0));
             row.Children.Add(offPanel);
 
             var equipGrid = new Grid
@@ -267,40 +307,22 @@ namespace MinecraftClient.Tui
                 ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"),
             };
 
-            var headLbl = MakeLabel("Hd");
-            Grid.SetRow(headLbl, 0); Grid.SetColumn(headLbl, 0);
-            equipGrid.Children.Add(headLbl);
+            void AddEquipSlot(int r, int gc, string label, int eqIdx)
+            {
+                var lbl = MakeLabel(label);
+                Grid.SetRow(lbl, r); Grid.SetColumn(lbl, gc);
+                equipGrid.Children.Add(lbl);
+                var btn = CreateSlotCell(_vm.EquipmentSlots[eqIdx], r, gc / 2);
+                Grid.SetRow(btn, r); Grid.SetColumn(btn, gc + 1);
+                equipGrid.Children.Add(btn);
+            }
 
-            var headBtn = CreateSlotButton(_vm.EquipmentSlots[0]);
-            Grid.SetRow(headBtn, 0); Grid.SetColumn(headBtn, 1);
-            equipGrid.Children.Add(headBtn);
-
-            var bodyLbl = MakeLabel("Bd");
-            Grid.SetRow(bodyLbl, 0); Grid.SetColumn(bodyLbl, 2);
-            equipGrid.Children.Add(bodyLbl);
-
-            var bodyBtn = CreateSlotButton(_vm.EquipmentSlots[1]);
-            Grid.SetRow(bodyBtn, 0); Grid.SetColumn(bodyBtn, 3);
-            equipGrid.Children.Add(bodyBtn);
-
-            var legsLbl = MakeLabel("Lg");
-            Grid.SetRow(legsLbl, 1); Grid.SetColumn(legsLbl, 0);
-            equipGrid.Children.Add(legsLbl);
-
-            var legsBtn = CreateSlotButton(_vm.EquipmentSlots[2]);
-            Grid.SetRow(legsBtn, 1); Grid.SetColumn(legsBtn, 1);
-            equipGrid.Children.Add(legsBtn);
-
-            var feetLbl = MakeLabel("Ft");
-            Grid.SetRow(feetLbl, 1); Grid.SetColumn(feetLbl, 2);
-            equipGrid.Children.Add(feetLbl);
-
-            var feetBtn = CreateSlotButton(_vm.EquipmentSlots[3]);
-            Grid.SetRow(feetBtn, 1); Grid.SetColumn(feetBtn, 3);
-            equipGrid.Children.Add(feetBtn);
+            AddEquipSlot(0, 0, "Hd", 0);
+            AddEquipSlot(0, 2, "Bd", 1);
+            AddEquipSlot(1, 0, "Lg", 2);
+            AddEquipSlot(1, 2, "Ft", 3);
 
             row.Children.Add(equipGrid);
-
             row.Children.Add(new Border { Width = _topGap });
 
             var craftGrid = new Grid
@@ -309,69 +331,50 @@ namespace MinecraftClient.Tui
                 ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"),
             };
 
-            var c1 = CreateSlotButton(_vm.CraftingInputSlots[0]);
-            Grid.SetRow(c1, 0); Grid.SetColumn(c1, 0);
-            craftGrid.Children.Add(c1);
+            for (int ci = 0; ci < 4; ci++)
+            {
+                int cr = ci / 2, cc = ci % 2;
+                var cs = CreateSlotCell(_vm.CraftingInputSlots[ci], cr, cc);
+                Grid.SetRow(cs, cr);
+                Grid.SetColumn(cs, cc);
+                craftGrid.Children.Add(cs);
+            }
 
-            var c2 = CreateSlotButton(_vm.CraftingInputSlots[1]);
-            Grid.SetRow(c2, 0); Grid.SetColumn(c2, 1);
-            craftGrid.Children.Add(c2);
-
-            var c3 = CreateSlotButton(_vm.CraftingInputSlots[2]);
-            Grid.SetRow(c3, 1); Grid.SetColumn(c3, 0);
-            craftGrid.Children.Add(c3);
-
-            var c4 = CreateSlotButton(_vm.CraftingInputSlots[3]);
-            Grid.SetRow(c4, 1); Grid.SetColumn(c4, 1);
-            craftGrid.Children.Add(c4);
-
-            int arrowPadTop = Math.Max(0, _slotH - 1);
             var arrowTb = new TextBlock
             {
                 Text = "=>",
                 Foreground = Brushes.White,
                 FontWeight = FontWeight.Bold,
-                Padding = new Thickness(1, arrowPadTop, 1, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Padding = new Thickness(1, 0),
             };
-            Grid.SetRow(arrowTb, 0);
-            Grid.SetColumn(arrowTb, 2);
+            Grid.SetRow(arrowTb, 0); Grid.SetColumn(arrowTb, 2);
             Grid.SetRowSpan(arrowTb, 2);
             craftGrid.Children.Add(arrowTb);
 
-            var craftOut = CreateSlotButton(_vm.CraftingOutputSlot);
-            Grid.SetRow(craftOut, 0);
-            Grid.SetColumn(craftOut, 3);
-            Grid.SetRowSpan(craftOut, 2);
-            craftGrid.Children.Add(craftOut);
+            var craftOutPanel = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            craftOutPanel.Children.Add(new TextBlock
+            {
+                Text = "Out",
+                Foreground = BrEquipLbl,
+                FontWeight = FontWeight.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            });
+            craftOutPanel.Children.Add(CreateSlotCell(_vm.CraftingOutputSlot, 0, 1));
+            Grid.SetRow(craftOutPanel, 0); Grid.SetColumn(craftOutPanel, 3);
+            Grid.SetRowSpan(craftOutPanel, 2);
+            craftGrid.Children.Add(craftOutPanel);
 
             row.Children.Add(craftGrid);
-
             return row;
         }
 
         private Control BuildHotbarSection()
         {
             var panel = new StackPanel { Spacing = 0 };
-
-            var indicatorRow = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            for (int i = 0; i < 9; i++)
-            {
-                var indicator = new TextBlock
-                {
-                    Text = i == _currentHotbarSlot ? "▼" : " ",
-                    Width = _slotW,
-                    TextAlignment = TextAlignment.Center,
-                    Foreground = Brushes.LightGreen,
-                    FontWeight = FontWeight.Bold,
-                };
-                _hotbarIndicators[i] = indicator;
-                indicatorRow.Children.Add(indicator);
-            }
-            panel.Children.Add(indicatorRow);
 
             var numberRow = new StackPanel
             {
@@ -380,14 +383,19 @@ namespace MinecraftClient.Tui
             };
             for (int i = 0; i < 9; i++)
             {
-                numberRow.Children.Add(new TextBlock
+                bool active = i == _currentHotbarSlot;
+                string label = active ? $"{i + 1} \u25bc" : $" {i + 1} ";
+
+                var tb = new TextBlock
                 {
-                    Text = (i + 1).ToString(),
+                    Text = label,
                     Width = _slotW,
                     TextAlignment = TextAlignment.Center,
-                    Foreground = i == _currentHotbarSlot ? Brushes.LightGreen : Brushes.DarkCyan,
+                    Foreground = active ? Brushes.LightGreen : Brushes.DarkCyan,
                     FontWeight = FontWeight.Bold,
-                });
+                };
+                _hotbarIndicators[i] = tb;
+                numberRow.Children.Add(tb);
             }
             panel.Children.Add(numberRow);
             panel.Children.Add(BuildSlotGrid(_vm.HotbarSlots, 9));
@@ -406,16 +414,6 @@ namespace MinecraftClient.Tui
             };
         }
 
-        private static Control MakeSeparator()
-        {
-            return new Border
-            {
-                Height = 1,
-                Margin = new Thickness(1, 0),
-                Background = new SolidColorBrush(Color.FromRgb(60, 60, 60)),
-            };
-        }
-
         private Control BuildSlotGrid(ObservableCollection<SlotViewModel> slots, int columns)
         {
             var grid = new Grid();
@@ -428,72 +426,72 @@ namespace MinecraftClient.Tui
 
             for (int i = 0; i < slots.Count; i++)
             {
-                var btn = CreateSlotButton(slots[i]);
-                Grid.SetRow(btn, i / columns);
-                Grid.SetColumn(btn, i % columns);
-                grid.Children.Add(btn);
+                int row = i / columns;
+                int col = i % columns;
+                var cell = CreateSlotCell(slots[i], row, col);
+                Grid.SetRow(cell, row);
+                Grid.SetColumn(cell, col);
+                grid.Children.Add(cell);
             }
 
             return grid;
         }
 
-        private Button CreateSlotButton(SlotViewModel slot)
+        private static IBrush GetSlotBg(bool isEmpty, int row, int col)
+        {
+            bool isA = (row + col) % 2 == 0;
+            return isEmpty
+                ? (isA ? BrSlotEmptyA : BrSlotEmptyB)
+                : (isA ? BrSlotFillA : BrSlotFillB);
+        }
+
+        private Border CreateSlotCell(SlotViewModel slot, int row = 0, int col = 0)
         {
             var nameTb = new TextBlock
             {
-                HorizontalAlignment = HorizontalAlignment.Center,
                 TextWrapping = TextWrapping.Wrap,
+                Padding = new Thickness(0),
+                Margin = new Thickness(0),
+                VerticalAlignment = VerticalAlignment.Top,
             };
 
             var countTb = new TextBlock
             {
-                HorizontalAlignment = HorizontalAlignment.Right,
                 Foreground = BrCount,
                 FontWeight = FontWeight.Bold,
+                Padding = new Thickness(0),
+                Margin = new Thickness(0),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom,
             };
 
             ApplySlotVisual(slot, nameTb, countTb);
 
-            // Inner border: visible outline for empty slots, transparent for filled
-            var innerBorder = new Border
+            int r = row, c = col;
+            var border = new Border
             {
-                BorderBrush = slot.IsEmpty ? BrEmptyBorder : Brushes.Transparent,
-                BorderThickness = new Thickness(1),
-                Child = new StackPanel
+                Width = _slotW,
+                Height = _slotH,
+                Background = GetSlotBg(slot.IsEmpty, r, c),
+                Child = new Panel
                 {
-                    Width = _slotW - 2,
                     Children = { nameTb, countTb },
                 },
+                Tag = (slot, r, c),
             };
 
-            var button = new Button
-            {
-                Content = innerBorder,
-                Padding = new Thickness(0),
-                Margin = new Thickness(0),
-                MinWidth = 0,
-                MinHeight = 0,
-                Height = _slotH,
-                Width = _slotW,
-                Tag = slot,
-                Background = slot.IsEmpty ? BrSlotEmpty : BrSlotFill,
-                BorderThickness = new Thickness(0),
-                VerticalContentAlignment = VerticalAlignment.Center,
-            };
-
-            button.AddHandler(PointerPressedEvent, OnSlotPointerPressed, Avalonia.Interactivity.RoutingStrategies.Tunnel);
-            button.PointerEntered += OnSlotPointerEnter;
-            button.PointerExited += OnSlotPointerExit;
-            button.PointerMoved += OnSlotPointerMoved;
+            border.PointerPressed += OnSlotPointerPressed;
+            border.PointerEntered += OnSlotPointerEnter;
+            border.PointerExited += OnSlotPointerExit;
+            border.PointerMoved += OnSlotPointerMoved;
 
             slot.PropertyChanged += (_, _) =>
             {
                 ApplySlotVisual(slot, nameTb, countTb);
-                button.Background = slot.IsEmpty ? BrSlotEmpty : BrSlotFill;
-                innerBorder.BorderBrush = slot.IsEmpty ? BrEmptyBorder : Brushes.Transparent;
+                border.Background = GetSlotBg(slot.IsEmpty, r, c);
             };
 
-            return button;
+            return border;
         }
 
         private void ApplySlotVisual(SlotViewModel slot, TextBlock nameTb, TextBlock countTb)
@@ -514,12 +512,12 @@ namespace MinecraftClient.Tui
 
         private void OnSlotPointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            if (sender is not Button btn || btn.Tag is not SlotViewModel slot)
+            if (sender is not Border border || border.Tag is not (SlotViewModel slot, int, int))
                 return;
 
-            SetHover(btn, slot);
+            SetHover(border, slot);
 
-            var point = e.GetCurrentPoint(btn);
+            var point = e.GetCurrentPoint(border);
             bool isShift = (e.KeyModifiers & KeyModifiers.Shift) != 0;
 
             WindowActionType action;
@@ -530,46 +528,44 @@ namespace MinecraftClient.Tui
 
             _vm.PerformAction(slot.SlotId, action);
             UpdateInfoPanel();
-            UpdateStatusBar();
             UpdateHeldItemFloater(e);
-
             e.Handled = true;
         }
 
         private void OnSlotPointerEnter(object? sender, PointerEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is SlotViewModel slot)
+            if (sender is Border b && b.Tag is (SlotViewModel slot, int, int))
             {
-                SetHover(btn, slot);
+                SetHover(b, slot);
                 UpdateHeldItemFloater(e);
             }
         }
 
         private void OnSlotPointerMoved(object? sender, PointerEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is SlotViewModel slot)
+            if (sender is Border b && b.Tag is (SlotViewModel slot, int, int))
             {
-                SetHover(btn, slot);
+                SetHover(b, slot);
                 UpdateHeldItemFloater(e);
             }
         }
 
         private void OnSlotPointerExit(object? sender, PointerEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is SlotViewModel slot)
-                btn.Background = slot.IsEmpty ? BrSlotEmpty : BrSlotFill;
+            if (sender is Border b && b.Tag is (SlotViewModel slot, int row, int col))
+                b.Background = GetSlotBg(slot.IsEmpty, row, col);
         }
 
-        private void SetHover(Button btn, SlotViewModel slot)
+        private void SetHover(Border border, SlotViewModel slot)
         {
-            if (_lastHoveredButton != null && _lastHoveredButton != btn)
+            if (_lastHoveredSlotBorder != null && _lastHoveredSlotBorder != border)
             {
-                if (_lastHoveredButton.Tag is SlotViewModel oldSlot)
-                    _lastHoveredButton.Background = oldSlot.IsEmpty ? BrSlotEmpty : BrSlotFill;
+                if (_lastHoveredSlotBorder.Tag is (SlotViewModel oldSlot, int or, int oc))
+                    _lastHoveredSlotBorder.Background = GetSlotBg(oldSlot.IsEmpty, or, oc);
             }
 
-            _lastHoveredButton = btn;
-            btn.Background = BrSlotHover;
+            _lastHoveredSlotBorder = border;
+            border.Background = BrSlotHover;
             _vm.HoveredSlot = slot;
             UpdateInfoPanel();
         }
@@ -589,7 +585,7 @@ namespace MinecraftClient.Tui
             {
                 var pos = e.GetPosition(_overlayCanvas);
                 double left = pos.X + 2;
-                double remainingW = _termW - left - 2; // 2 for border
+                double remainingW = _termW - left - 2;
                 int maxW = Math.Max(8, (int)remainingW);
                 _heldItemFloater.MaxWidth = maxW;
                 Canvas.SetLeft(_heldItemFloater, left);
@@ -630,9 +626,12 @@ namespace MinecraftClient.Tui
             _titleText.Text = _vm.Title;
         }
 
-        private void UpdateStatusBar()
+        private void CloseInventory()
         {
-            _statusBar.Text = $"LClick: Pick/Place | RClick: Half/Place1 | Shift+C: QuickMove | Q: Drop | ESC: Exit  ({_vm.StatusText})";
+            if (ConsoleIO.Backend is TuiConsoleBackend tuiBackend)
+                tuiBackend.GetView()?.HideOverlay();
+            else
+                (Application.Current?.ApplicationLifetime as IControlledApplicationLifetime)?.Shutdown();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -642,7 +641,8 @@ namespace MinecraftClient.Tui
             switch (e.Key)
             {
                 case Key.Escape:
-                    (Application.Current?.ApplicationLifetime as IControlledApplicationLifetime)?.Shutdown();
+                case Key.E:
+                    CloseInventory();
                     e.Handled = true;
                     break;
 
@@ -652,7 +652,6 @@ namespace MinecraftClient.Tui
                     {
                         _vm.PerformAction(_vm.HoveredSlot.SlotId, WindowActionType.ShiftClick);
                         UpdateInfoPanel();
-                        UpdateStatusBar();
                     }
                     e.Handled = true;
                     break;
@@ -665,7 +664,6 @@ namespace MinecraftClient.Tui
                             : WindowActionType.DropItem;
                         _vm.PerformAction(_vm.HoveredSlot.SlotId, action);
                         UpdateInfoPanel();
-                        UpdateStatusBar();
                     }
                     e.Handled = true;
                     break;
@@ -675,7 +673,6 @@ namespace MinecraftClient.Tui
                     _currentHotbarSlot = _vm.Handler.GetCurrentSlot();
                     UpdateHotbarIndicators();
                     UpdateInfoPanel();
-                    UpdateStatusBar();
                     e.Handled = true;
                     break;
             }
@@ -685,7 +682,9 @@ namespace MinecraftClient.Tui
         {
             for (int i = 0; i < 9; i++)
             {
-                _hotbarIndicators[i].Text = i == _currentHotbarSlot ? "▼" : " ";
+                bool active = i == _currentHotbarSlot;
+                _hotbarIndicators[i].Text = active ? $"{i + 1} \u25bc" : $" {i + 1} ";
+                _hotbarIndicators[i].Foreground = active ? Brushes.LightGreen : Brushes.DarkCyan;
             }
         }
 

@@ -5,11 +5,15 @@ using MinecraftClient.Tui;
 
 namespace MinecraftClient.Commands
 {
+    /// <summary>
+    /// Shortcut command that opens the interactive inventory TUI.
+    /// Equivalent to "/inventory &lt;id&gt; open".
+    /// </summary>
     class InventoryTui : Command
     {
         public override string CmdName => "inventui";
         public override string CmdUsage => "inventui [inventoryId]";
-        public override string CmdDesc => "Open interactive TUI inventory viewer";
+        public override string CmdDesc => "Open interactive TUI inventory viewer (alias for /inventory <id> open)";
 
         public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
         {
@@ -31,8 +35,7 @@ namespace MinecraftClient.Commands
             McClient handler = CmdResult.currentHandler!;
             handler.Log.Info($"§b{CmdName}§r - {CmdDesc}");
             handler.Log.Info($"Usage: §e{CmdUsage}");
-            handler.Log.Info("Opens a full-screen interactive TUI for browsing and managing inventory.");
-            handler.Log.Info("Press ESC to exit, click slots to interact, Q to drop items.");
+            handler.Log.Info("Equivalent to: /inventory <id> open");
             return r.SetAndReturn(CmdResult.Status.Done);
         }
 
@@ -43,21 +46,15 @@ namespace MinecraftClient.Commands
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
-            if (ConsoleIO.BasicIO)
+            if (ConsoleIO.Backend is not TuiConsoleBackend)
             {
-                handler.Log.Warn("Interactive TUI is not available in BasicIO mode. Use '/inventory' instead.");
+                handler.Log.Warn("Interactive TUI is only available in TUI console mode. Use '/inventory <id> list' instead.");
                 return r.SetAndReturn(CmdResult.Status.Fail);
             }
 
             if (InventoryTuiHost.IsRunning)
             {
                 handler.Log.Warn("TUI is already running.");
-                return r.SetAndReturn(CmdResult.Status.Fail);
-            }
-
-            if (!InventoryTuiHost.CanLaunch)
-            {
-                handler.Log.Warn("TUI can only be opened once per session. Please restart MCC to use it again.");
                 return r.SetAndReturn(CmdResult.Status.Fail);
             }
 
@@ -68,28 +65,12 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(CmdResult.Status.Fail, $"Inventory #{inventoryId} not found");
             }
 
-            InventoryTuiHost.OnSuspendConsole = () =>
-            {
-                ConsoleInteractive.ConsoleReader.StopReadThread();
-                ConsoleInteractive.ConsoleReader.MessageReceived -= handler.GetConsoleMessageHandler();
-                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-            };
-
-            InventoryTuiHost.OnResumeConsole = () =>
-            {
-                ConsoleInteractive.ConsoleWriter.Init();
-                ConsoleInteractive.ConsoleReader.BeginReadThread();
-                ConsoleInteractive.ConsoleReader.MessageReceived += handler.GetConsoleMessageHandler();
-                ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
-            };
-
             handler.Log.Info($"Opening TUI for Inventory #{inventoryId}...");
 
             bool success = InventoryTuiHost.Launch(handler, inventoryId);
-
             if (success)
             {
-                handler.Log.Info("TUI closed.");
+                handler.Log.Info("Inventory dialog opened.");
                 return r.SetAndReturn(CmdResult.Status.Done);
             }
             else

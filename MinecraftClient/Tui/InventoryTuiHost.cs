@@ -1,35 +1,47 @@
 using System;
 using System.Threading;
 using Avalonia;
+using Avalonia.Threading;
 using Consolonia;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Tui
 {
     /// <summary>
-    /// Manages the lifecycle of the Consolonia-based inventory TUI.
-    /// Runs on a dedicated thread to avoid blocking MCC's network thread.
+    /// Manages the lifecycle of the inventory TUI.
+    /// In TUI mode: opens as a Consolonia dialog window.
+    /// In classic mode: launches standalone Consolonia on a dedicated thread.
     /// </summary>
     public static class InventoryTuiHost
     {
         private static volatile bool _isRunning;
-        private static bool _everLaunched;
+        private static bool _classicEverLaunched;
 
         public static McClient? ActiveHandler { get; private set; }
         public static int ActiveWindowId { get; private set; }
 
         public static bool IsRunning => _isRunning;
-        public static bool CanLaunch => !_isRunning && !_everLaunched;
 
         /// <summary>
-        /// Called before TUI takes over the terminal.
-        /// Should stop ConsoleInteractive's read thread and detach events.
+        /// Whether the TUI can be launched (classic mode has a one-shot limit).
+        /// </summary>
+        public static bool CanLaunch
+        {
+            get
+            {
+                if (_isRunning) return false;
+                if (ConsoleIO.Backend is TuiConsoleBackend) return true;
+                return !_classicEverLaunched;
+            }
+        }
+
+        /// <summary>
+        /// Called before standalone TUI takes over the terminal (classic mode only).
         /// </summary>
         public static Action? OnSuspendConsole { get; set; }
 
         /// <summary>
-        /// Called after TUI releases the terminal.
-        /// Should re-initialize ConsoleInteractive and reattach events.
+        /// Called after standalone TUI releases the terminal (classic mode only).
         /// </summary>
         public static Action? OnResumeConsole { get; set; }
 
@@ -37,9 +49,6 @@ namespace MinecraftClient.Tui
         {
             if (_isRunning)
                 return false;
-
-            if (_everLaunched)
-                return false; // Avalonia doesn't support re-initialization
 
             Container? container = handler.GetInventory(windowId);
             if (container == null)
@@ -49,19 +58,71 @@ namespace MinecraftClient.Tui
             ActiveHandler = handler;
             ActiveWindowId = windowId;
 
-            var tuiThread = new Thread(RunTui) { Name = "InventoryTUI", IsBackground = false };
-            tuiThread.Start();
+            if (ConsoleIO.Backend is TuiConsoleBackend)
+            {
+                LaunchAsDialog();
+            }
+            else
+            {
+                if (_classicEverLaunched)
+                {
+                    _isRunning = false;
+                    ActiveHandler = null;
+                    return false;
+                }
+                var tuiThread = new Thread(RunClassicTui) { Name = "InventoryTUI", IsBackground = false };
+                tuiThread.Start();
+            }
 
             return true;
         }
 
-        private static void RunTui()
+        /// <summary>
+        /// Open inventory as an overlay panel within the main TUI view.
+        /// </summary>
+        private static void LaunchAsDialog()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var view = TuiConsoleBackend.Instance?.GetView();
+                    if (view != null)
+                    {
+                        var content = new InventoryMainView();
+                        view.ShowOverlay(content, () =>
+                        {
+                            ActiveHandler = null;
+                            _isRunning = false;
+                        });
+                    }
+                    else
+                    {
+                        ActiveHandler = null;
+                        _isRunning = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ConsoleIO.WriteLineFormatted($"§c[InventoryTUI] Error: {ex.Message}");
+                    ConsoleIO.WriteLineFormatted($"§c[InventoryTUI] Stack: {ex.StackTrace}");
+                    if (ex.InnerException != null)
+                        ConsoleIO.WriteLineFormatted($"§c[InventoryTUI] Inner: {ex.InnerException.Message}");
+                    ActiveHandler = null;
+                    _isRunning = false;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Classic mode: run standalone Consolonia on a dedicated thread.
+        /// </summary>
+        private static void RunClassicTui()
         {
             try
             {
                 OnSuspendConsole?.Invoke();
-
-                _everLaunched = true;
+                _classicEverLaunched = true;
 
                 AppBuilder builder = AppBuilder.Configure<InventoryApp>()
                     .UseConsolonia()
@@ -81,7 +142,6 @@ namespace MinecraftClient.Tui
             {
                 RestoreTerminalState();
                 OnResumeConsole?.Invoke();
-
                 ActiveHandler = null;
                 _isRunning = false;
             }
@@ -91,15 +151,15 @@ namespace MinecraftClient.Tui
         {
             try
             {
-                System.Console.Write("\x1b[?1049l"); // leave alternate screen
-                System.Console.Write("\x1b[?25h");   // show cursor
-                System.Console.Write("\x1b[?1000l"); // disable mouse click tracking
-                System.Console.Write("\x1b[?1002l"); // disable mouse button tracking
-                System.Console.Write("\x1b[?1003l"); // disable mouse any-event tracking
-                System.Console.Write("\x1b[?1006l"); // disable SGR mouse mode
-                System.Console.Write("\x1b[?2004l"); // disable bracketed paste
-                System.Console.Write("\x1b[0m");     // reset attributes
-                System.Console.Write("\x1b(B");      // reset character set
+                System.Console.Write("\x1b[?1049l");
+                System.Console.Write("\x1b[?25h");
+                System.Console.Write("\x1b[?1000l");
+                System.Console.Write("\x1b[?1002l");
+                System.Console.Write("\x1b[?1003l");
+                System.Console.Write("\x1b[?1006l");
+                System.Console.Write("\x1b[?2004l");
+                System.Console.Write("\x1b[0m");
+                System.Console.Write("\x1b(B");
                 System.Console.Out.Flush();
 
                 try
@@ -116,9 +176,7 @@ namespace MinecraftClient.Tui
                 }
                 catch { }
             }
-            catch
-            {
-            }
+            catch { }
         }
     }
 }
