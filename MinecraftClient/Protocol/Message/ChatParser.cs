@@ -531,12 +531,9 @@ namespace MinecraftClient.Protocol.Message
                         {
                             var extraDict = extras[i] switch
                             {
-                                int => new Dictionary<string, object> { { "text", $"{extras[i]}" } },
-                                string => new Dictionary<string, object>
-                                {
-                                    { "text", (string)extras[i] }
-                                },
-                                _ => (Dictionary<string, object>)extras[i]
+                                string s => new Dictionary<string, object> { { "text", s } },
+                                Dictionary<string, object> d => d,
+                                _ => new Dictionary<string, object> { { "text", extras[i]?.ToString() ?? string.Empty } }
                             };
 
                             extraBuilder.Append(NbtToString(extraDict) + "§r");
@@ -556,12 +553,9 @@ namespace MinecraftClient.Protocol.Message
                                 {
                                     var withDict = withs[i] switch
                                     {
-                                        int => new Dictionary<string, object> { { "text", $"{withs[i]}" } },
-                                        string => new Dictionary<string, object>
-                                        {
-                                            { "text", (string)withs[i] }
-                                        },
-                                        _ => (Dictionary<string, object>)withs[i]
+                                        string s => new Dictionary<string, object> { { "text", s } },
+                                        Dictionary<string, object> d => d,
+                                        _ => new Dictionary<string, object> { { "text", withs[i]?.ToString() ?? string.Empty } }
                                     };
 
                                     translateString.Add(NbtToString(withDict));
