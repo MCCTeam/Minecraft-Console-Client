@@ -38,24 +38,7 @@ cleanup() {
 trap cleanup EXIT
 
 prepare_config() {
-    cp "$REPO_ROOT/MinecraftClient.ini" "$CFG"
-
-    sed -i \
-        -e 's/Account = { Login = "test", Password = "-" }/Account = { Login = "CursorBot", Password = "-" }/' \
-        -e "s/MinecraftVersion = \"auto\"/MinecraftVersion = \"$MC_VERSION\"/" \
-        -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
-        -e 's/InventoryHandling = false/InventoryHandling = true/' \
-        -e 's/EntityHandling = false/EntityHandling = true/' \
-        -e 's/AutoRespawn = false/AutoRespawn = true/' \
-        "$CFG"
-
-    sed -i '/^\[ChatBot.ScriptScheduler\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.DiscordRpc\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.AntiAFK\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.AutoDig\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.AutoAttack\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.PlayerListLogger\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.ReplayCapture\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    bash "$SCRIPT_DIR/prepare_offline_mcc_config.sh" "$REPO_ROOT/MinecraftClient.ini" "$CFG" "$MC_VERSION" >/dev/null
 }
 
 wait_for_file_pattern() {
@@ -165,6 +148,7 @@ run_mcc_command() {
 
 "$SCRIPT_DIR/ensure_offline_server.sh" "$VERSION"
 prepare_config
+SERVER_PORT="$(bash "$SCRIPT_DIR/get_server_port.sh" "$VERSION")"
 
 : > "$INPUT_FILE"
 
@@ -178,7 +162,7 @@ wait_for_server_ready || fail "Server did not become ready"
 echo "Starting MCC..."
 (
     cd "$REPO_ROOT"
-    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "$CFG" > "$MCC_LOG" 2>&1
+    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "$CFG" CursorBot - "localhost:$SERVER_PORT" > "$MCC_LOG" 2>&1
 ) &
 MCC_PID=$!
 
