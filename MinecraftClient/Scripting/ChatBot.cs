@@ -6,7 +6,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Brigadier.NET;
+using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.Settings;
@@ -43,6 +45,7 @@ namespace MinecraftClient.Scripting
         private McClient? _handler = null;
         private ChatBot? master = null;
         private readonly List<string> registeredPluginChannels = new();
+        private readonly List<string> registeredChatBotCommands = new();
         private readonly Lock delayTasksLock = new();
         private readonly List<TaskWithDelay> delayedTasks = new();
         protected McClient Handler
@@ -1711,6 +1714,34 @@ namespace MinecraftClient.Scripting
         public delegate string CommandRunner(string command, string[] args);
 
         /// <summary>
+        /// Register a simple ChatBot command with the Brigadier dispatcher.
+        /// The command is automatically unregistered when the bot is unloaded.
+        /// </summary>
+        /// <param name="cmdName">Name of the command (used as the literal command name)</param>
+        /// <param name="cmdDesc">Description of the command</param>
+        /// <param name="cmdUsage">Usage string for the command</param>
+        /// <param name="callback">Method to handle the command execution</param>
+        protected void RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
+        {
+            var command = new ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
+            command.RegisterCommand(McClient.dispatcher);
+            registeredChatBotCommands.Add(cmdName);
+        }
+
+        /// <summary>
+        /// Unregisters all commands that were registered via RegisterChatBotCommand.
+        /// Called automatically by McClient.BotUnLoad() during bot unload - do not call manually.
+        /// </summary>
+        internal void UnregisterChatBotCommands()
+        {
+            foreach (var cmdName in registeredChatBotCommands)
+            {
+                McClient.dispatcher.Unregister(cmdName);
+            }
+            registeredChatBotCommands.Clear();
+        }
+
+        /// <summary>
         /// Command class with constructor for creating command for ChatBots.
         /// </summary>
         public class ChatBotCommand : Command
@@ -1727,7 +1758,22 @@ namespace MinecraftClient.Scripting
 
             public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
             {
-
+                dispatcher.Register(l => l.Literal(_cmdName)
+                    .Then(l => l.Argument("args", Arguments.GreedyString())
+                        .Executes(r =>
+                        {
+                            string fullArgs = Arguments.GetString(r, "args");
+                            string result = Runner(
+                                $"{_cmdName} {fullArgs}",
+                                fullArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+                            return r.Source.SetAndReturn(CmdResult.Status.Done, result);
+                        }))
+                    .Executes(r =>
+                    {
+                        string result = Runner(_cmdName, Array.Empty<string>());
+                        return r.Source.SetAndReturn(CmdResult.Status.Done, result);
+                    })
+                );
             }
 
             /// <summary>

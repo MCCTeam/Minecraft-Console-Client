@@ -49,7 +49,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
         private static CSharpCompilation GenerateCode(string sourceCode, string fileName, List<string> additionalAssemblies)
         {
             var codeString = SourceText.From(sourceCode);
-            var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp9);
+            var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest);
 
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
 
@@ -129,9 +129,22 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()!;
                 assemblyrefs.Add(new("MinecraftClient"));
                 assemblyrefs.Add(new("System.Private.CoreLib"));
+                // Facade assemblies needed for compiling scripts that reference netstandard libraries (e.g. Brigadier.NET)
+                assemblyrefs.Add(new("netstandard"));
+                assemblyrefs.Add(new("System.Runtime"));
 
                 foreach (var refs in assemblyrefs) {
-                    var loadedAssembly = Assembly.Load(refs);
+                    Assembly? loadedAssembly;
+                    try
+                    {
+                        loadedAssembly = Assembly.Load(refs);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // Facade assemblies like netstandard may not be loadable in all environments
+                        continue;
+                    }
+
                     if (string.IsNullOrEmpty(loadedAssembly.Location)) {
                         // Check if we can access the file from the executable.
                         var reference = files.FirstOrDefault(x =>
@@ -145,8 +158,8 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                         }
 
                         if (reference is null) {
-                            throw new InvalidOperationException(
-                                "[Script Error] The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
+                            // Facade assemblies may not be in the bundle - skip them silently
+                            continue;
                         }
 
                         assemblyStream = reference.AsStream();
@@ -163,6 +176,16 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 references.Add(MetadataReference.CreateFromFile(SystemConsole));
                 references.Add(MetadataReference.CreateFromFile(MinecraftClientDll));
                 Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
+
+                // Add facade assemblies needed for Roslyn compilation when referencing
+                // libraries that target netstandard (e.g. Brigadier.NET).
+                var runtimeDir = Path.GetDirectoryName(SystemPrivateCoreLib)!;
+                foreach (var facadeName in new[] { "netstandard.dll", "System.Runtime.dll" })
+                {
+                    var facadePath = Path.Combine(runtimeDir, facadeName);
+                    if (File.Exists(facadePath))
+                        references.Add(MetadataReference.CreateFromFile(facadePath));
+                }
             }
 #pragma warning restore IL3000
 

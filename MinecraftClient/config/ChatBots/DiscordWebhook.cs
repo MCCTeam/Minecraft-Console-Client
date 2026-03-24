@@ -306,7 +306,7 @@ class DiscordWebhook : ChatBot
         LogToConsole("Made by Daenges.\nSpecial thanks to Crafatar for providing the beautiful avatars!");
         LogToConsole("Please set a Webhook with '/dw changeurl [URL]'. For further information type '/discordwebhook help'.");
 
-        Handler.dispatcher.Register(l => l.Literal(CommandName)
+        McClient.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Argument("Commands", Arguments.GreedyString())
                     .Executes(r => {
                         CommandHandler(Arguments.GetString(r, "Commands").Split(' ', StringSplitOptions.TrimEntries));
@@ -317,7 +317,7 @@ class DiscordWebhook : ChatBot
 
     public override void OnUnload()
     {
-        Handler.dispatcher.Unregister(CommandName);
+        McClient.dispatcher.Unregister(CommandName);
     }
 
     public override void Update()

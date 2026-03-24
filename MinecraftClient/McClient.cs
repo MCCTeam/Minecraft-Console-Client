@@ -1025,6 +1025,7 @@ namespace MinecraftClient
             }
 
             b.OnUnload();
+            b.UnregisterChatBotCommands();
 
             bots.RemoveAll(item => ReferenceEquals(item, b));
 
