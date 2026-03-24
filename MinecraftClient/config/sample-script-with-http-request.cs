@@ -7,28 +7,17 @@ MCC.LogToConsole(mojangStatus);
 
 string PerformHttpRequest(string uri)
 {
-    var request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(uri);
-    var response = (System.Net.HttpWebResponse)request.GetResponse();
-    string responseString;
-    using (var stream = response.GetResponseStream())
-        using (var reader = new StreamReader(stream))
-            responseString = reader.ReadToEnd();
-    return responseString;
+    using var httpClient = new System.Net.Http.HttpClient();
+    return httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
 }
 
 void SendHttpPostAsync(string uri, string text)
 {
     new Thread(() => {
-        var request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(uri);
-        request.ContentType = "text/plain";
-        request.Method = "POST";
-        using (var streamWriter = new StreamWriter(request.GetRequestStream()))
-            streamWriter.Write(text);
-        var response = (System.Net.HttpWebResponse)request.GetResponse();
-        string responseString;
-        using (var stream = response.GetResponseStream())
-        using (var reader = new StreamReader(stream))
-            responseString = reader.ReadToEnd();
+        using var httpClient = new System.Net.Http.HttpClient();
+        using var content = new System.Net.Http.StringContent(text, System.Text.Encoding.UTF8, "text/plain");
+        using var response = httpClient.PostAsync(uri, content).GetAwaiter().GetResult();
+        string responseString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         //LogToConsole(responseString);
     }).Start();
 }
