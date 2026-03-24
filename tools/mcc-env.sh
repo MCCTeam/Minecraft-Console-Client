@@ -38,9 +38,24 @@ mcc-run()   {
   cd "$MCC_REPO" && MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - "localhost:${port}" "$@" 2>&1
 }
 mcc-cmd()   { echo "$1" >> "$MCC_REPO/mcc_input.txt"; }
-mcc-kill()  { pkill -f "MinecraftClient" 2>/dev/null && echo "MCC killed" || echo "No MCC process found"; }
+mcc-kill()  { pkill -f "MinecraftClient" 2>/dev/null && echo "MCC killed" || echo "No MCC process found"; tmux kill-session -t mcc-debug 2>/dev/null || true; }
 mcc-reload() {
   mcc-kill
   sleep 1
   mcc-build && mcc-run
 }
+
+# --- TUI Mode ---
+mcc-tui()   {
+  local port="${1:-25565}"
+  shift || true
+  tmux new-session -d -s mcc-debug -x 160 -y 50 \
+    "cd '$MCC_REPO' && dotnet run --project MinecraftClient -c Release -- CursorBot - localhost:${port} $* 2>&1; echo '=== MCC EXITED ==='; sleep 600"
+  echo "TUI mode launched in tmux session 'mcc-debug'"
+  echo "Attach: tmux attach -t mcc-debug"
+}
+
+# --- Debug helpers ---
+mcc-debug()   { bash "$MCC_REPO/tools/mcc-debug.sh" "$@"; }
+mcc-log-mcc() { tail -f "${TMPDIR:-/tmp}/mcc-debug/mcc-debug.log" 2>/dev/null || echo "No MCC log found"; }
+mcc-state()   { echo "debug state" >> "$MCC_REPO/mcc_input.txt"; sleep 1; tail -30 "${TMPDIR:-/tmp}/mcc-debug/mcc-debug.log" 2>/dev/null; }
