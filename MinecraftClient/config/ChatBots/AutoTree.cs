@@ -75,7 +75,7 @@ public class AutoTree : ChatBot
         }
     }
 
-    public override void Initialize(CommandDispatcher<CmdResult> dispatcher)
+    public override void Initialize()
     {
         if (!GetTerrainEnabled())
         {
@@ -89,7 +89,7 @@ public class AutoTree : ChatBot
         }
         else
         {
-            dispatcher.Register(l => l.Literal("help")
+            McClient.dispatcher.Register(l => l.Literal("help")
                 .Then(l => l.Literal(CommandName)
                     .Executes(r => OnCommandHelp(r.Source, string.Empty))
                     .Then(l => l.Literal("set")
@@ -99,7 +99,7 @@ public class AutoTree : ChatBot
                 )
             );
 
-            dispatcher.Register(l => l.Literal(CommandName)
+            McClient.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Literal("toggle")
                     .Executes(r => { return r.Source.SetAndReturn(CmdResult.Status.Done, Toggle() ? "Now is running" : "Now is stopping"); }))
                 .Then(l => l.Literal("set")
@@ -109,17 +109,17 @@ public class AutoTree : ChatBot
                     .Then(l => l.Argument("TreeType", Arguments.String())
                         .Executes(r => OnCommandType(r.Source, Arguments.GetString(r, "TreeType")))))
                 .Then(l => l.Literal("_help")
-                    .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
+                    .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 
             LogToConsole("Loaded.");
         }
     }
 
-    public override void OnUnload(CommandDispatcher<CmdResult> dispatcher)
+    public override void OnUnload()
     {
-        dispatcher.Unregister(CommandName);
-        dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+        McClient.dispatcher.Unregister(CommandName);
+        McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
     }
 
     private int OnCommandHelp(CmdResult r, string? cmd)

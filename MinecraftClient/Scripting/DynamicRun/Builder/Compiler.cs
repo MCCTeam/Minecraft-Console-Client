@@ -49,7 +49,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
         private static CSharpCompilation GenerateCode(string sourceCode, string fileName, List<string> additionalAssemblies)
         {
             var codeString = SourceText.From(sourceCode);
-            var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp9);
+            var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest);
 
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
 
