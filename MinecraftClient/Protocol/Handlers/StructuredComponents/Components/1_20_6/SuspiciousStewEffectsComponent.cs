@@ -15,10 +15,10 @@ public class SuspiciousStewEffectsComponent(DataTypes dataTypes, ItemPalette ite
 
     public override void Parse(Queue<byte> data)
     {
-        NumberOfEffects = dataTypes.ReadNextVarInt(data);
+        NumberOfEffects = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfEffects; i++)
-            Effects.Add(new SuspiciousStewEffect(dataTypes.ReadNextVarInt(data), dataTypes.ReadNextVarInt(data)));
+            Effects.Add(new SuspiciousStewEffect(DataTypes.ReadNextVarInt(data), DataTypes.ReadNextVarInt(data)));
     }
 
     public override Queue<byte> Serialize()

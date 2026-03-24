@@ -12,8 +12,8 @@ public class SwingAnimationComponent(DataTypes dataTypes, ItemPalette itemPalett
 
     public override void Parse(Queue<byte> data)
     {
-        AnimationType = dataTypes.ReadNextVarInt(data);
-        Duration = dataTypes.ReadNextVarInt(data);
+        AnimationType = DataTypes.ReadNextVarInt(data);
+        Duration = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

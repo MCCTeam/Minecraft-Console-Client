@@ -12,8 +12,8 @@ public class WeaponComponent(DataTypes dataTypes, ItemPalette itemPalette, SubCo
 
     public override void Parse(Queue<byte> data)
     {
-        ItemDamagePerAttack = dataTypes.ReadNextVarInt(data);
-        DisableBlockingForSeconds = dataTypes.ReadNextFloat(data);
+        ItemDamagePerAttack = DataTypes.ReadNextVarInt(data);
+        DisableBlockingForSeconds = DataTypes.ReadNextFloat(data);
     }
 
     public override Queue<byte> Serialize()

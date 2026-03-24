@@ -13,10 +13,10 @@ public class UseCooldownComponent(DataTypes dataTypes, ItemPalette itemPalette, 
 
     public override void Parse(Queue<byte> data)
     {
-        Seconds = dataTypes.ReadNextFloat(data);
-        HasCooldownGroup = dataTypes.ReadNextBool(data);
+        Seconds = DataTypes.ReadNextFloat(data);
+        HasCooldownGroup = DataTypes.ReadNextBool(data);
         if (HasCooldownGroup)
-            CooldownGroup = dataTypes.ReadNextString(data);
+            CooldownGroup = DataTypes.ReadNextString(data);
     }
 
     public override Queue<byte> Serialize()

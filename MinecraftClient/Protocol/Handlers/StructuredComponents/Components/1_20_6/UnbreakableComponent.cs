@@ -11,7 +11,7 @@ public class UnbrekableComponent1206(DataTypes dataTypes, ItemPalette itemPalett
     
     public override void Parse(Queue<byte> data)
     {
-        Unbrekable = dataTypes.ReadNextBool(data);
+        Unbrekable = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

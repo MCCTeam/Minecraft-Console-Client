@@ -11,7 +11,7 @@ public class OmniousBottleAmplifierComponent(DataTypes dataTypes, ItemPalette it
     
     public override void Parse(Queue<byte> data)
     {
-        Amplifier = dataTypes.ReadNextVarInt(data);
+        Amplifier = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

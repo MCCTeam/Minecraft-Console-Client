@@ -12,11 +12,11 @@ public class ChargedProjectilesComponent(DataTypes dataTypes, ItemPalette itemPa
 
     public override void Parse(Queue<byte> data)
     {
-        var count = dataTypes.ReadNextVarInt(data);
+        var count = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < count; i++)
         {
-            var item = dataTypes.ReadNextItemSlot(data, itemPalette);
+            var item = DataTypes.ReadNextItemSlot(data, itemPalette);
             if (item is not null)
                 Items.Add(item);
         }

@@ -13,9 +13,9 @@ public class FoodComponent1212(DataTypes dataTypes, ItemPalette itemPalette, Sub
 
     public override void Parse(Queue<byte> data)
     {
-        Nutrition = dataTypes.ReadNextVarInt(data);
-        Saturation = dataTypes.ReadNextFloat(data);
-        CanAlwaysEat = dataTypes.ReadNextBool(data);
+        Nutrition = DataTypes.ReadNextVarInt(data);
+        Saturation = DataTypes.ReadNextFloat(data);
+        CanAlwaysEat = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

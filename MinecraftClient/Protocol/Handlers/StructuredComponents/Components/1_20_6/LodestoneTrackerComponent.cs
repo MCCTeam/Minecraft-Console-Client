@@ -15,15 +15,15 @@ public class LodestoneTrackerComponent(DataTypes dataTypes, ItemPalette itemPale
     
     public override void Parse(Queue<byte> data)
     {
-        HasGlobalPosition = dataTypes.ReadNextBool(data);
+        HasGlobalPosition = DataTypes.ReadNextBool(data);
 
         if (HasGlobalPosition)
         {
-            Dimension = dataTypes.ReadNextString(data);
-            Position = dataTypes.ReadNextLocation(data);
+            Dimension = DataTypes.ReadNextString(data);
+            Position = DataTypes.ReadNextLocation(data);
         }
         
-        Tracked = dataTypes.ReadNextBool(data);
+        Tracked = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

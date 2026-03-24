@@ -11,7 +11,7 @@ public class MapColorComponent(DataTypes dataTypes, ItemPalette itemPalette, Sub
     
     public override void Parse(Queue<byte> data)
     {
-        Id = dataTypes.ReadNextInt(data);
+        Id = DataTypes.ReadNextInt(data);
     }
 
     public override Queue<byte> Serialize()

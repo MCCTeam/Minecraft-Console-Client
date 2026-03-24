@@ -15,25 +15,25 @@ public class BlockPredicateSubcomponent(DataTypes dataTypes, SubComponentRegistr
         
     protected override void Parse(Queue<byte> data)
     {
-        HasBlocks = dataTypes.ReadNextBool(data);
+        HasBlocks = DataTypes.ReadNextBool(data);
 
         if (HasBlocks)
-            BlockSet = (BlockSetSubcomponent)subComponentRegistry.ParseSubComponent(SubComponents.BlockSet, data);
+            BlockSet = (BlockSetSubcomponent)SubComponentRegistry.ParseSubComponent(SubComponents.BlockSet, data);
 
-        HasProperities = dataTypes.ReadNextBool(data);
+        HasProperities = DataTypes.ReadNextBool(data);
 
         if (HasProperities)
         {
             Properties = new();
-            var numberOfProperties = dataTypes.ReadNextVarInt(data);
+            var numberOfProperties = DataTypes.ReadNextVarInt(data);
             for (var i = 0; i < numberOfProperties; i++)
-                Properties.Add((PropertySubComponent)subComponentRegistry.ParseSubComponent(SubComponents.Property, data));
+                Properties.Add((PropertySubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Property, data));
         }
 
-        HasNbt = dataTypes.ReadNextBool(data);
+        HasNbt = DataTypes.ReadNextBool(data);
         
         if (HasNbt)
-            Nbt = dataTypes.ReadNextNbt(data);
+            Nbt = DataTypes.ReadNextNbt(data);
     }
 
     public override Queue<byte> Serialize()

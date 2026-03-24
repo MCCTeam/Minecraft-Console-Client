@@ -13,7 +13,7 @@ public class CustomNameComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     
     public override void Parse(Queue<byte> data)
     {
-        CustomNameNbt = dataTypes.ReadNextNbt(data);
+        CustomNameNbt = DataTypes.ReadNextNbt(data);
         CustomName = ChatParser.ParseText(CustomNameNbt);
     }
 

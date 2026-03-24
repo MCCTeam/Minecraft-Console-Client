@@ -11,7 +11,7 @@ public class BaseColorComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
     
     public override void Parse(Queue<byte> data)
     {
-        DyeColor = dataTypes.ReadNextVarInt(data);
+        DyeColor = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

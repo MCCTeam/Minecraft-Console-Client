@@ -13,10 +13,10 @@ public class DeathProtectionComponent(DataTypes dataTypes, ItemPalette itemPalet
 
     public override void Parse(Queue<byte> data)
     {
-        var effectCount = dataTypes.ReadNextVarInt(data);
+        var effectCount = DataTypes.ReadNextVarInt(data);
         for (var i = 0; i < effectCount; i++)
         {
-            var effectTypeId = dataTypes.ReadNextVarInt(data);
+            var effectTypeId = DataTypes.ReadNextVarInt(data);
             var effectData = ReadConsumeEffectPayload(effectTypeId, data);
             DeathEffects.Add(new ConsumeEffectData(effectTypeId, effectData));
         }
@@ -28,11 +28,11 @@ public class DeathProtectionComponent(DataTypes dataTypes, ItemPalette itemPalet
         switch (effectTypeId)
         {
             case 0: // apply_effects
-                var effectCount = dataTypes.ReadNextVarInt(data);
+                var effectCount = DataTypes.ReadNextVarInt(data);
                 payload.AddRange(DataTypes.GetVarInt(effectCount));
                 for (var i = 0; i < effectCount; i++)
                     payload.AddRange(ReadMobEffectInstance(data));
-                payload.AddRange(DataTypes.GetFloat(dataTypes.ReadNextFloat(data)));
+                payload.AddRange(DataTypes.GetFloat(DataTypes.ReadNextFloat(data)));
                 break;
             case 1: // remove_effects
                 payload.AddRange(ReadHolderSet(data));
@@ -40,10 +40,10 @@ public class DeathProtectionComponent(DataTypes dataTypes, ItemPalette itemPalet
             case 2: // clear_all_effects
                 break;
             case 3: // teleport_randomly
-                payload.AddRange(DataTypes.GetFloat(dataTypes.ReadNextFloat(data)));
+                payload.AddRange(DataTypes.GetFloat(DataTypes.ReadNextFloat(data)));
                 break;
             case 4: // play_sound
-                var sound = (SoundEventSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
+                var sound = (SoundEventSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
                 payload.AddRange(sound.Serialize());
                 break;
         }
@@ -53,7 +53,7 @@ public class DeathProtectionComponent(DataTypes dataTypes, ItemPalette itemPalet
     private byte[] ReadMobEffectInstance(Queue<byte> data)
     {
         var result = new List<byte>();
-        result.AddRange(DataTypes.GetVarInt(dataTypes.ReadNextVarInt(data)));
+        result.AddRange(DataTypes.GetVarInt(DataTypes.ReadNextVarInt(data)));
         result.AddRange(ReadMobEffectDetails(data));
         return result.ToArray();
     }
@@ -61,12 +61,12 @@ public class DeathProtectionComponent(DataTypes dataTypes, ItemPalette itemPalet
     private byte[] ReadMobEffectDetails(Queue<byte> data)
     {
         var result = new List<byte>();
-        result.AddRange(DataTypes.GetVarInt(dataTypes.ReadNextVarInt(data)));
-        result.AddRange(DataTypes.GetVarInt(dataTypes.ReadNextVarInt(data)));
-        result.AddRange(DataTypes.GetBool(dataTypes.ReadNextBool(data)));
-        result.AddRange(DataTypes.GetBool(dataTypes.ReadNextBool(data)));
-        result.AddRange(DataTypes.GetBool(dataTypes.ReadNextBool(data)));
-        var hasHidden = dataTypes.ReadNextBool(data);
+        result.AddRange(DataTypes.GetVarInt(DataTypes.ReadNextVarInt(data)));
+        result.AddRange(DataTypes.GetVarInt(DataTypes.ReadNextVarInt(data)));
+        result.AddRange(DataTypes.GetBool(DataTypes.ReadNextBool(data)));
+        result.AddRange(DataTypes.GetBool(DataTypes.ReadNextBool(data)));
+        result.AddRange(DataTypes.GetBool(DataTypes.ReadNextBool(data)));
+        var hasHidden = DataTypes.ReadNextBool(data);
         result.AddRange(DataTypes.GetBool(hasHidden));
         if (hasHidden)
             result.AddRange(ReadMobEffectDetails(data));
@@ -76,16 +76,16 @@ public class DeathProtectionComponent(DataTypes dataTypes, ItemPalette itemPalet
     private byte[] ReadHolderSet(Queue<byte> data)
     {
         var result = new List<byte>();
-        var type = dataTypes.ReadNextVarInt(data);
+        var type = DataTypes.ReadNextVarInt(data);
         result.AddRange(DataTypes.GetVarInt(type));
         if (type == 0)
         {
-            result.AddRange(DataTypes.GetString(dataTypes.ReadNextString(data)));
+            result.AddRange(DataTypes.GetString(DataTypes.ReadNextString(data)));
         }
         else
         {
             for (var i = 0; i < type - 1; i++)
-                result.AddRange(DataTypes.GetVarInt(dataTypes.ReadNextVarInt(data)));
+                result.AddRange(DataTypes.GetVarInt(DataTypes.ReadNextVarInt(data)));
         }
         return result.ToArray();
     }

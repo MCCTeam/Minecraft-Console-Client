@@ -16,19 +16,19 @@ public class FireworkExplosionSubComponent(DataTypes dataTypes, SubComponentRegi
     
     protected override void Parse(Queue<byte> data)
     {
-        Shape = dataTypes.ReadNextVarInt(data);
-        NumberOfColors = dataTypes.ReadNextVarInt(data);
+        Shape = DataTypes.ReadNextVarInt(data);
+        NumberOfColors = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfColors; i++)
-            Colors.Add(dataTypes.ReadNextInt(data));
+            Colors.Add(DataTypes.ReadNextInt(data));
         
-        NumberOfFadeColors = dataTypes.ReadNextVarInt(data);
+        NumberOfFadeColors = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfFadeColors; i++)
-            FadeColors.Add(dataTypes.ReadNextInt(data));
+            FadeColors.Add(DataTypes.ReadNextInt(data));
         
-        HasTrail = dataTypes.ReadNextBool(data);
-        HasTwinkle = dataTypes.ReadNextBool(data);
+        HasTrail = DataTypes.ReadNextBool(data);
+        HasTwinkle = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

@@ -20,34 +20,34 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
     
     public override void Parse(Queue<byte> data)
     {
-        RawTitle = dataTypes.ReadNextString(data);
-        HasFilteredTitle = dataTypes.ReadNextBool(data);
+        RawTitle = DataTypes.ReadNextString(data);
+        HasFilteredTitle = DataTypes.ReadNextBool(data);
 
         if (HasFilteredTitle)
-            FilteredTitle = dataTypes.ReadNextString(data);
+            FilteredTitle = DataTypes.ReadNextString(data);
         
-        Author = dataTypes.ReadNextString(data);
-        Generation = dataTypes.ReadNextVarInt(data);
-        NumberOfPages = dataTypes.ReadNextVarInt(data);
+        Author = DataTypes.ReadNextString(data);
+        Generation = DataTypes.ReadNextVarInt(data);
+        NumberOfPages = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfPages; i++)
         {
-            var rawContentNbt = dataTypes.ReadNextNbt(data);
+            var rawContentNbt = DataTypes.ReadNextNbt(data);
             var rawContent = ChatParser.ParseText(rawContentNbt);
-            var hasFilteredContent = dataTypes.ReadNextBool(data);
+            var hasFilteredContent = DataTypes.ReadNextBool(data);
             Dictionary<string, object>? filteredContentNbt = null;
             string? filteredContent = null;
             
             if (hasFilteredContent)
             {
-                filteredContentNbt = dataTypes.ReadNextNbt(data);
+                filteredContentNbt = DataTypes.ReadNextNbt(data);
                 filteredContent = ChatParser.ParseText(filteredContentNbt);
             }
             
             Pages.Add(new BookPage(rawContent, hasFilteredContent, filteredContent, rawContentNbt, filteredContentNbt));
         }
 
-        Resolved = dataTypes.ReadNextBool(data);
+        Resolved = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

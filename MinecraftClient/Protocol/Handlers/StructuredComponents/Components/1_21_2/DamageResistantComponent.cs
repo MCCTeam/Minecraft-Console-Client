@@ -11,7 +11,7 @@ public class DamageResistantComponent(DataTypes dataTypes, ItemPalette itemPalet
 
     public override void Parse(Queue<byte> data)
     {
-        Types = dataTypes.ReadNextString(data);
+        Types = DataTypes.ReadNextString(data);
     }
 
     public override Queue<byte> Serialize()

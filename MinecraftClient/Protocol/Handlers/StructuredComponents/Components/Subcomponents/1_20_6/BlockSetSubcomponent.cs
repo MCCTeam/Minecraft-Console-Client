@@ -15,14 +15,14 @@ public class BlockSetSubcomponent(DataTypes dataTypes, SubComponentRegistry subC
         Type = DataTypes.ReadNextVarInt(data);
 
         if (Type == 0)
-            TagName = dataTypes.ReadNextString(data);
+            TagName = DataTypes.ReadNextString(data);
 
         if (Type == 0) return;
         
         BlockIds = [];
             
         for (var i = 0; i < Type - 1; i++)
-            BlockIds.Add(dataTypes.ReadNextVarInt(data));
+            BlockIds.Add(DataTypes.ReadNextVarInt(data));
     }
 
     public override Queue<byte> Serialize()

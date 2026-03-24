@@ -13,16 +13,16 @@ public class RepairableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
 
     public override void Parse(Queue<byte> data)
     {
-        Type = dataTypes.ReadNextVarInt(data);
+        Type = DataTypes.ReadNextVarInt(data);
         if (Type == 0)
         {
-            TagName = dataTypes.ReadNextString(data);
+            TagName = DataTypes.ReadNextString(data);
         }
         else
         {
             ItemIds = new List<int>();
             for (var i = 0; i < Type - 1; i++)
-                ItemIds.Add(dataTypes.ReadNextVarInt(data));
+                ItemIds.Add(DataTypes.ReadNextVarInt(data));
         }
     }
 

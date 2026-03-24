@@ -11,9 +11,9 @@ public class PotDecorationsComponent(DataTypes dataTypes, ItemPalette itemPalett
     
     public override void Parse(Queue<byte> data)
     {
-        var count = dataTypes.ReadNextVarInt(data);
+        var count = DataTypes.ReadNextVarInt(data);
         for(var i = 0; i < count; i++)
-            Items.Add(dataTypes.ReadNextVarInt(data));
+            Items.Add(DataTypes.ReadNextVarInt(data));
     }
 
     public override Queue<byte> Serialize()

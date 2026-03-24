@@ -17,15 +17,15 @@ public class ConsumableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
 
     public override void Parse(Queue<byte> data)
     {
-        ConsumeSeconds = dataTypes.ReadNextFloat(data);
-        Animation = dataTypes.ReadNextVarInt(data);
-        Sound = (SoundEventSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
-        HasConsumeParticles = dataTypes.ReadNextBool(data);
+        ConsumeSeconds = DataTypes.ReadNextFloat(data);
+        Animation = DataTypes.ReadNextVarInt(data);
+        Sound = (SoundEventSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
+        HasConsumeParticles = DataTypes.ReadNextBool(data);
 
-        var effectCount = dataTypes.ReadNextVarInt(data);
+        var effectCount = DataTypes.ReadNextVarInt(data);
         for (var i = 0; i < effectCount; i++)
         {
-            var effectTypeId = dataTypes.ReadNextVarInt(data);
+            var effectTypeId = DataTypes.ReadNextVarInt(data);
             var effectData = ReadConsumeEffectPayload(effectTypeId, data);
             Effects.Add(new ConsumeEffectData(effectTypeId, effectData));
         }
@@ -37,11 +37,11 @@ public class ConsumableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
         switch (effectTypeId)
         {
             case 0: // apply_effects: List<MobEffectInstance> + probability(float)
-                var effectCount = dataTypes.ReadNextVarInt(data);
+                var effectCount = DataTypes.ReadNextVarInt(data);
                 payload.AddRange(DataTypes.GetVarInt(effectCount));
                 for (var i = 0; i < effectCount; i++)
                     payload.AddRange(ReadMobEffectInstance(data));
-                payload.AddRange(DataTypes.GetFloat(dataTypes.ReadNextFloat(data)));
+                payload.AddRange(DataTypes.GetFloat(DataTypes.ReadNextFloat(data)));
                 break;
             case 1: // remove_effects: HolderSet<MobEffect>
                 payload.AddRange(ReadHolderSet(data));
@@ -49,10 +49,10 @@ public class ConsumableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
             case 2: // clear_all_effects: empty
                 break;
             case 3: // teleport_randomly: float diameter
-                payload.AddRange(DataTypes.GetFloat(dataTypes.ReadNextFloat(data)));
+                payload.AddRange(DataTypes.GetFloat(DataTypes.ReadNextFloat(data)));
                 break;
             case 4: // play_sound: Holder<SoundEvent>
-                var sound = (SoundEventSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
+                var sound = (SoundEventSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
                 payload.AddRange(sound.Serialize());
                 break;
         }
@@ -62,7 +62,7 @@ public class ConsumableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     private byte[] ReadMobEffectInstance(Queue<byte> data)
     {
         var result = new List<byte>();
-        var effectId = dataTypes.ReadNextVarInt(data);
+        var effectId = DataTypes.ReadNextVarInt(data);
         result.AddRange(DataTypes.GetVarInt(effectId));
         result.AddRange(ReadMobEffectDetails(data));
         return result.ToArray();
@@ -71,17 +71,17 @@ public class ConsumableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     private byte[] ReadMobEffectDetails(Queue<byte> data)
     {
         var result = new List<byte>();
-        var amplifier = dataTypes.ReadNextVarInt(data);
+        var amplifier = DataTypes.ReadNextVarInt(data);
         result.AddRange(DataTypes.GetVarInt(amplifier));
-        var duration = dataTypes.ReadNextVarInt(data);
+        var duration = DataTypes.ReadNextVarInt(data);
         result.AddRange(DataTypes.GetVarInt(duration));
-        var ambient = dataTypes.ReadNextBool(data);
+        var ambient = DataTypes.ReadNextBool(data);
         result.AddRange(DataTypes.GetBool(ambient));
-        var showParticles = dataTypes.ReadNextBool(data);
+        var showParticles = DataTypes.ReadNextBool(data);
         result.AddRange(DataTypes.GetBool(showParticles));
-        var showIcon = dataTypes.ReadNextBool(data);
+        var showIcon = DataTypes.ReadNextBool(data);
         result.AddRange(DataTypes.GetBool(showIcon));
-        var hasHiddenEffect = dataTypes.ReadNextBool(data);
+        var hasHiddenEffect = DataTypes.ReadNextBool(data);
         result.AddRange(DataTypes.GetBool(hasHiddenEffect));
         if (hasHiddenEffect)
             result.AddRange(ReadMobEffectDetails(data));
@@ -91,18 +91,18 @@ public class ConsumableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     private byte[] ReadHolderSet(Queue<byte> data)
     {
         var result = new List<byte>();
-        var type = dataTypes.ReadNextVarInt(data);
+        var type = DataTypes.ReadNextVarInt(data);
         result.AddRange(DataTypes.GetVarInt(type));
         if (type == 0)
         {
-            var tagName = dataTypes.ReadNextString(data);
+            var tagName = DataTypes.ReadNextString(data);
             result.AddRange(DataTypes.GetString(tagName));
         }
         else
         {
             for (var i = 0; i < type - 1; i++)
             {
-                var id = dataTypes.ReadNextVarInt(data);
+                var id = DataTypes.ReadNextVarInt(data);
                 result.AddRange(DataTypes.GetVarInt(id));
             }
         }

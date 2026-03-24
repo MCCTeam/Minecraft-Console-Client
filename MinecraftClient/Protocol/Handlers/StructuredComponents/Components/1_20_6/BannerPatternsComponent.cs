@@ -13,17 +13,17 @@ public class BannerPatternsComponent(DataTypes dataTypes, ItemPalette itemPalett
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfLayers = dataTypes.ReadNextVarInt(data);
+        NumberOfLayers = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfLayers; i++)
         {
-            var patternType = dataTypes.ReadNextVarInt(data);
+            var patternType = DataTypes.ReadNextVarInt(data);
             Layers.Add(new BannerLayer
             {
                 PatternType = patternType,
-                AssetId = patternType == 0 ? dataTypes.ReadNextString(data) : null,
-                TranslationKey = patternType == 0 ? dataTypes.ReadNextString(data) : null,
-                DyeColor = dataTypes.ReadNextVarInt(data)
+                AssetId = patternType == 0 ? DataTypes.ReadNextString(data) : null,
+                TranslationKey = patternType == 0 ? DataTypes.ReadNextString(data) : null,
+                DyeColor = DataTypes.ReadNextVarInt(data)
             });
         }
     }

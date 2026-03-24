@@ -18,14 +18,14 @@ public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette
     
     public override void Parse(Queue<byte> data)
     {
-        Nutrition = dataTypes.ReadNextVarInt(data);
-        Saturation = dataTypes.ReadNextFloat(data);
-        CanAlwaysEat = dataTypes.ReadNextBool(data);
-        SecondsToEat = dataTypes.ReadNextFloat(data);
-        var numberOfEffects = dataTypes.ReadNextVarInt(data);
+        Nutrition = DataTypes.ReadNextVarInt(data);
+        Saturation = DataTypes.ReadNextFloat(data);
+        CanAlwaysEat = DataTypes.ReadNextBool(data);
+        SecondsToEat = DataTypes.ReadNextFloat(data);
+        var numberOfEffects = DataTypes.ReadNextVarInt(data);
         
         for(var i = 0; i < numberOfEffects; i++)
-            Effects.Add((EffectSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.Effect, data));
+            Effects.Add((EffectSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Effect, data));
     }
 
     public override Queue<byte> Serialize()

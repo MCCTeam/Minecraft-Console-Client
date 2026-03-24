@@ -11,8 +11,8 @@ public class PotionEffectSubComponent(DataTypes dataTypes, SubComponentRegistry 
     
     protected override void Parse(Queue<byte> data)
     {
-        TypeId = dataTypes.ReadNextVarInt(data);
-        Details = (DetailsSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.Details, data);
+        TypeId = DataTypes.ReadNextVarInt(data);
+        Details = (DetailsSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
     }
 
     public override Queue<byte> Serialize()

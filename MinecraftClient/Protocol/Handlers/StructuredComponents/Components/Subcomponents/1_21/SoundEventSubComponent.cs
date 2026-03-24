@@ -13,15 +13,15 @@ public class SoundEventSubComponent(DataTypes dataTypes, SubComponentRegistry su
     
     protected override void Parse(Queue<byte> data)
     {
-        Type = dataTypes.ReadNextVarInt(data);
+        Type = DataTypes.ReadNextVarInt(data);
 
         if (Type != 0) return;
         
-        SoundName = dataTypes.ReadNextString(data);
-        HasFixedRange = dataTypes.ReadNextBool(data);
+        SoundName = DataTypes.ReadNextString(data);
+        HasFixedRange = DataTypes.ReadNextBool(data);
 
         if (HasFixedRange)
-            FixedRange = dataTypes.ReadNextFloat(data);
+            FixedRange = DataTypes.ReadNextFloat(data);
     }
 
     public override Queue<byte> Serialize()

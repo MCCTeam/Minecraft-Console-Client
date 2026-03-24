@@ -16,12 +16,12 @@ public class CanBreakComponent(DataTypes dataTypes, ItemPalette itemPalette, Sub
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfPredicates = dataTypes.ReadNextVarInt(data);
+        NumberOfPredicates = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfPredicates; i++)
-            BlockPredicates.Add((BlockPredicateSubcomponent)subComponentRegistry.ParseSubComponent(SubComponents.BlockPredicate, data));
+            BlockPredicates.Add((BlockPredicateSubcomponent)SubComponentRegistry.ParseSubComponent(SubComponents.BlockPredicate, data));
 
-        ShowInTooltip = dataTypes.ReadNextBool(data);
+        ShowInTooltip = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

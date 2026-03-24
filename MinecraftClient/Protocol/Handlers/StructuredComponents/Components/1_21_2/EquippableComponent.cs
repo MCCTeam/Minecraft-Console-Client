@@ -25,36 +25,36 @@ public class EquippableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
 
     public override void Parse(Queue<byte> data)
     {
-        Slot = dataTypes.ReadNextVarInt(data);
-        EquipSound = (SoundEventSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
+        Slot = DataTypes.ReadNextVarInt(data);
+        EquipSound = (SoundEventSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
         
-        HasModel = dataTypes.ReadNextBool(data);
+        HasModel = DataTypes.ReadNextBool(data);
         if (HasModel)
-            Model = dataTypes.ReadNextString(data);
+            Model = DataTypes.ReadNextString(data);
 
-        HasCameraOverlay = dataTypes.ReadNextBool(data);
+        HasCameraOverlay = DataTypes.ReadNextBool(data);
         if (HasCameraOverlay)
-            CameraOverlay = dataTypes.ReadNextString(data);
+            CameraOverlay = DataTypes.ReadNextString(data);
 
-        HasAllowedEntities = dataTypes.ReadNextBool(data);
+        HasAllowedEntities = DataTypes.ReadNextBool(data);
         if (HasAllowedEntities)
         {
-            AllowedEntitiesType = dataTypes.ReadNextVarInt(data);
+            AllowedEntitiesType = DataTypes.ReadNextVarInt(data);
             if (AllowedEntitiesType == 0)
             {
-                AllowedEntitiesTag = dataTypes.ReadNextString(data);
+                AllowedEntitiesTag = DataTypes.ReadNextString(data);
             }
             else
             {
                 AllowedEntitiesIds = new List<int>();
                 for (var i = 0; i < AllowedEntitiesType - 1; i++)
-                    AllowedEntitiesIds.Add(dataTypes.ReadNextVarInt(data));
+                    AllowedEntitiesIds.Add(DataTypes.ReadNextVarInt(data));
             }
         }
 
-        Dispensable = dataTypes.ReadNextBool(data);
-        Swappable = dataTypes.ReadNextBool(data);
-        DamageOnHurt = dataTypes.ReadNextBool(data);
+        Dispensable = DataTypes.ReadNextBool(data);
+        Swappable = DataTypes.ReadNextBool(data);
+        DamageOnHurt = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

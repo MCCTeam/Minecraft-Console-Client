@@ -12,9 +12,9 @@ public class ContainerComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
     
     public override void Parse(Queue<byte> data)
     {
-        var count = dataTypes.ReadNextVarInt(data);
+        var count = DataTypes.ReadNextVarInt(data);
         for (var i = 0; i < count; i++)
-            Items.Add(dataTypes.ReadNextItemSlot(data, ItemPalette));
+            Items.Add(DataTypes.ReadNextItemSlot(data, ItemPalette));
     }
 
     public override Queue<byte> Serialize()

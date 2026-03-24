@@ -14,13 +14,13 @@ public class LoreNameComponent1206(DataTypes dataTypes, ItemPalette itemPalette,
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfLines = dataTypes.ReadNextVarInt(data);
+        NumberOfLines = DataTypes.ReadNextVarInt(data);
         
         if (NumberOfLines <= 0) return;
         
         for (var i = 0; i < NumberOfLines; i++)
         {
-            var lineNbt = dataTypes.ReadNextNbt(data);
+            var lineNbt = DataTypes.ReadNextNbt(data);
             LinesNbt.Add(lineNbt);
             Lines.Add(ChatParser.ParseText(lineNbt));
         }

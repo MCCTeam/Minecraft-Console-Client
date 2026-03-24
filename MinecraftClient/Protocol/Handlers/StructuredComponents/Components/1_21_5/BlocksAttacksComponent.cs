@@ -16,63 +16,63 @@ public class BlocksAttacksComponent(DataTypes dataTypes, ItemPalette itemPalette
 
     public override void Parse(Queue<byte> data)
     {
-        BlockDelaySeconds = dataTypes.ReadNextFloat(data);
-        DisableCooldownScale = dataTypes.ReadNextFloat(data);
+        BlockDelaySeconds = DataTypes.ReadNextFloat(data);
+        DisableCooldownScale = DataTypes.ReadNextFloat(data);
 
-        var reductionCount = dataTypes.ReadNextVarInt(data);
+        var reductionCount = DataTypes.ReadNextVarInt(data);
         for (var i = 0; i < reductionCount; i++)
         {
-            var horizontalBlockingAngle = dataTypes.ReadNextFloat(data);
+            var horizontalBlockingAngle = DataTypes.ReadNextFloat(data);
 
-            var hasTypeFilter = dataTypes.ReadNextBool(data);
+            var hasTypeFilter = DataTypes.ReadNextBool(data);
             if (hasTypeFilter)
                 ReadHolderSet(data);
 
-            var baseDmg = dataTypes.ReadNextFloat(data);
-            var factor = dataTypes.ReadNextFloat(data);
+            var baseDmg = DataTypes.ReadNextFloat(data);
+            var factor = DataTypes.ReadNextFloat(data);
         }
 
-        ItemDamageThreshold = dataTypes.ReadNextFloat(data);
-        ItemDamageBase = dataTypes.ReadNextFloat(data);
-        ItemDamageFactor = dataTypes.ReadNextFloat(data);
+        ItemDamageThreshold = DataTypes.ReadNextFloat(data);
+        ItemDamageBase = DataTypes.ReadNextFloat(data);
+        ItemDamageFactor = DataTypes.ReadNextFloat(data);
 
-        var hasBypassedBy = dataTypes.ReadNextBool(data);
+        var hasBypassedBy = DataTypes.ReadNextBool(data);
         if (hasBypassedBy)
-            dataTypes.ReadNextString(data); // TagKey<DamageType> as ResourceLocation
+            DataTypes.ReadNextString(data); // TagKey<DamageType> as ResourceLocation
 
-        var hasBlockSound = dataTypes.ReadNextBool(data);
+        var hasBlockSound = DataTypes.ReadNextBool(data);
         if (hasBlockSound)
             ReadSoundEventHolder(data);
 
-        var hasDisableSound = dataTypes.ReadNextBool(data);
+        var hasDisableSound = DataTypes.ReadNextBool(data);
         if (hasDisableSound)
             ReadSoundEventHolder(data);
     }
 
     private void ReadHolderSet(Queue<byte> data)
     {
-        var sizeOrTag = dataTypes.ReadNextVarInt(data);
+        var sizeOrTag = DataTypes.ReadNextVarInt(data);
         if (sizeOrTag == 0)
         {
-            dataTypes.ReadNextString(data); // Tag ResourceLocation
+            DataTypes.ReadNextString(data); // Tag ResourceLocation
         }
         else
         {
             var count = sizeOrTag - 1;
             for (var i = 0; i < count; i++)
-                dataTypes.ReadNextVarInt(data); // Holder<DamageType> registry ids
+                DataTypes.ReadNextVarInt(data); // Holder<DamageType> registry ids
         }
     }
 
     private void ReadSoundEventHolder(Queue<byte> data)
     {
-        var holderId = dataTypes.ReadNextVarInt(data);
+        var holderId = DataTypes.ReadNextVarInt(data);
         if (holderId == 0)
         {
-            dataTypes.ReadNextString(data); // ResourceLocation
-            var hasFixedRange = dataTypes.ReadNextBool(data);
+            DataTypes.ReadNextString(data); // ResourceLocation
+            var hasFixedRange = DataTypes.ReadNextBool(data);
             if (hasFixedRange)
-                dataTypes.ReadNextFloat(data);
+                DataTypes.ReadNextFloat(data);
         }
     }
 
