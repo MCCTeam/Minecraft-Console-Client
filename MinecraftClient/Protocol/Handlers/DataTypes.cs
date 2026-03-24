@@ -452,7 +452,7 @@ namespace MinecraftClient.Protocol.Handlers
                         item.Components = strcturedComponentsToAdd;
 
                     return item;
-                case >= Protocol18Handler.MC_1_13_Version:
+                case >= Protocol18Handler.MC_1_13_2_Version:
                 {
                     var itemPresent = ReadNextBool(cache);
 
@@ -466,6 +466,18 @@ namespace MinecraftClient.Protocol.Handlers
 
                     var type = itemPalette.FromId(itemId); 
                     itemCount = ReadNextByte(cache); 
+                    nbt = ReadNextNbt(cache);
+                    return new Item(type, itemCount, nbt);
+                }
+                case >= Protocol18Handler.MC_1_13_Version:
+                {
+                    itemId = ReadNextShort(cache);
+
+                    if (itemId == -1)
+                        return null;
+
+                    var type = itemPalette.FromId(itemId);
+                    itemCount = ReadNextByte(cache);
                     nbt = ReadNextNbt(cache);
                     return new Item(type, itemCount, nbt);
                 }
@@ -1745,7 +1757,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
             }
-            else if (protocolversion > Protocol18Handler.MC_1_13_Version)
+            else if (protocolversion >= Protocol18Handler.MC_1_13_2_Version)
             {
                 if (item is null || item.IsEmpty)
                     slotData.AddRange(GetBool(false));
@@ -1753,6 +1765,17 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     slotData.AddRange(GetBool(true));
                     slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
+                    slotData.Add((byte)item.Count);
+                    slotData.AddRange(GetNbt(item.NBT));
+                }
+            }
+            else if (protocolversion >= Protocol18Handler.MC_1_13_Version)
+            {
+                if (item is null || item.IsEmpty)
+                    slotData.AddRange(GetShort(-1));
+                else
+                {
+                    slotData.AddRange(GetShort((short)itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
                 }
@@ -1765,7 +1788,8 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     slotData.AddRange(GetShort((short)(itemPalette.ToId(item.Type) >> 16)));
                     slotData.Add((byte)item.Count);
-                    slotData.Add((byte)item.Data);
+                    // Legacy (<1.13) item slot wire format uses a SHORT for item damage/data.
+                    slotData.AddRange(GetShort((short)item.Data));
                     slotData.AddRange(GetNbt(item.NBT));
                 }
             }
