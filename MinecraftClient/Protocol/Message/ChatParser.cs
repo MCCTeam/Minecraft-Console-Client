@@ -430,13 +430,30 @@ namespace MinecraftClient.Protocol.Message
         }
 
         /// <summary>
+        /// Mapping from JSON/NBT property names to Minecraft formatting codes (without §).
+        /// Both "underlined" (canonical Minecraft name) and "underline" (alias) are supported.
+        /// </summary>
+        private static readonly Dictionary<string, string> FormattingCodes = new()
+        {
+            { "obfuscated",    "k" },
+            { "bold",          "l" },
+            { "strikethrough", "m" },
+            { "underlined",    "n" },
+            { "underline",     "n" },
+            { "italic",        "o" },
+        };
+
+        /// <summary>Matches a single color code (§0–§9, §a–§f). Used to strip color when replacing.</summary>
+        private static readonly Regex ColorCodeRegex = new(@"§[0-9a-f]", RegexOptions.Compiled);
+
+        /// <summary>
         /// Use a JSON Object to build the corresponding string
         /// </summary>
         /// <param name="data">JSON object to convert</param>
-        /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
+        /// <param name="formatting">Inherited formatting codes from parent elements (set to "" for function init)</param>
         /// <param name="links">Container for links from JSON serialized text</param>
         /// <returns>returns the Minecraft-formatted string</returns>
-        private static string JSONData2String(System.Text.Json.Nodes.JsonNode? data, string colorcode, List<string>? links)
+        private static string JSONData2String(System.Text.Json.Nodes.JsonNode? data, string formatting, List<string>? links)
         {
             string extra_result = "";
             switch (data)
@@ -444,7 +461,20 @@ namespace MinecraftClient.Protocol.Message
                 case System.Text.Json.Nodes.JsonObject obj:
                     if (obj.ContainsKey("color"))
                     {
-                        colorcode = Color2tag(JSONData2String(obj["color"], "", links));
+                        formatting = ColorCodeRegex.Replace(formatting, "");
+                        formatting += Color2tag(JSONData2String(obj["color"], "", links));
+                    }
+
+                    foreach (var (key, code) in FormattingCodes)
+                    {
+                        if (obj.ContainsKey(key))
+                        {
+                            string val = obj[key]!.GetStringValue();
+                            if (val == "true")
+                                formatting += "§" + code;
+                            else if (val == "false")
+                                formatting = formatting.Replace("§" + code, "");
+                        }
                     }
 
                     if (obj.ContainsKey("clickEvent") && links is not null)
@@ -462,12 +492,16 @@ namespace MinecraftClient.Protocol.Message
                     if (obj.ContainsKey("extra"))
                     {
                         foreach (var item in obj["extra"]!.AsArray())
-                            extra_result = extra_result + JSONData2String(item, colorcode, links) + "§r";
+                            extra_result += JSONData2String(item, "§r" + formatting, links);
                     }
+
+                    // Strip any formatting codes that appear before the last §r, since §r resets all
+                    // prior formatting. The greedy .* matches up to the last §r in the string.
+                    formatting = Regex.Replace(formatting, ".*(§r.*)", "$1");
 
                     if (obj.ContainsKey("text"))
                     {
-                        return colorcode + JSONData2String(obj["text"], colorcode, links) + extra_result;
+                        return formatting + JSONData2String(obj["text"], formatting, links) + extra_result;
                     }
                     else if (obj.ContainsKey("translate"))
                     {
@@ -478,11 +512,11 @@ namespace MinecraftClient.Protocol.Message
                         {
                             foreach (var item in obj["with"]!.AsArray())
                             {
-                                using_data.Add(JSONData2String(item, colorcode, links));
+                                using_data.Add(JSONData2String(item, formatting, links));
                             }
                         }
 
-                        return colorcode +
+                        return formatting +
                                TranslateString(JSONData2String(obj["translate"], "", links), using_data) +
                                extra_result;
                     }
@@ -492,98 +526,93 @@ namespace MinecraftClient.Protocol.Message
                     string result = "";
                     foreach (var item in arr)
                     {
-                        result += JSONData2String(item, colorcode, links);
+                        result += JSONData2String(item, formatting, links);
                     }
 
                     return result;
 
                 default:
-                    return colorcode + data.GetStringValue();
+                    return formatting + data.GetStringValue();
             }
         }
 
-        private static string NbtToString(Dictionary<string, object> nbt)
+        private static string NbtToString(Dictionary<string, object> nbt, string formatting = "")
         {
             if (nbt.Count == 1 && nbt.TryGetValue("", out object? rootMessage))
             {
-                return rootMessage?.ToString() ?? string.Empty;
+                return formatting + (rootMessage?.ToString() ?? string.Empty);
             }
 
             string message = string.Empty;
-            string colorCode = string.Empty;
             StringBuilder extraBuilder = new();
-            foreach (var kvp in nbt)
+
+            // Build formatting from color and formatting flags first
+            if (nbt.TryGetValue("color", out object? color))
             {
-                string key = kvp.Key;
-                object value = kvp.Value;
+                formatting = ColorCodeRegex.Replace(formatting, "");
+                formatting += Color2tag((string)color);
+            }
 
-                switch (key)
+            foreach (var (key, code) in FormattingCodes)
+            {
+                if (nbt.TryGetValue(key, out object? flagValue))
                 {
-                    case "text":
+                    bool isActive = flagValue switch
                     {
-                        message = value?.ToString() ?? string.Empty;
-                    }
-                        break;
-                    case "extra":
-                    {
-                        object[] extras = (object[])value;
-                        for (var i = 0; i < extras.Length; i++)
-                        {
-                            var extraDict = extras[i] switch
-                            {
-                                int => new Dictionary<string, object> { { "text", $"{extras[i]}" } },
-                                string => new Dictionary<string, object>
-                                {
-                                    { "text", (string)extras[i] }
-                                },
-                                _ => (Dictionary<string, object>)extras[i]
-                            };
-
-                            extraBuilder.Append(NbtToString(extraDict) + "§r");
-                        }
-                    }
-                        break;
-                    case "translate":
-                    {
-                        if (nbt.TryGetValue("translate", out object? translate))
-                        {
-                            var translateKey = (string)translate;
-                            List<string> translateString = new();
-                            if (nbt.TryGetValue("with", out object? withComponent))
-                            {
-                                var withs = (object[])withComponent;
-                                for (var i = 0; i < withs.Length; i++)
-                                {
-                                    var withDict = withs[i] switch
-                                    {
-                                        int => new Dictionary<string, object> { { "text", $"{withs[i]}" } },
-                                        string => new Dictionary<string, object>
-                                        {
-                                            { "text", (string)withs[i] }
-                                        },
-                                        _ => (Dictionary<string, object>)withs[i]
-                                    };
-
-                                    translateString.Add(NbtToString(withDict));
-                                }
-                            }
-
-                            message = TranslateString(translateKey, translateString);
-                        }
-                    }
-                        break;
-                    case "color":
-                    {
-                        if (nbt.TryGetValue("color", out object? color))
-                        {
-                            colorCode = Color2tag((string)color);
-                        }
-                    }
-                        break;
+                        byte b => b > 0,
+                        bool b => b,
+                        _ => flagValue?.ToString()?.ToLower() == "true"
+                    };
+                    if (isActive)
+                        formatting += "§" + code;
+                    else
+                        formatting = formatting.Replace("§" + code, "");
                 }
             }
 
-            return colorCode + message + extraBuilder.ToString();
+            // Process text
+            if (nbt.TryGetValue("text", out object? textValue))
+                message = textValue?.ToString() ?? string.Empty;
+
+            // Process translate
+            if (nbt.TryGetValue("translate", out object? translate))
+            {
+                var translateKey = (string)translate;
+                List<string> translateString = new();
+                if (nbt.TryGetValue("with", out object? withComponent))
+                {
+                    var withs = (object[])withComponent;
+                    for (var i = 0; i < withs.Length; i++)
+                    {
+                        var withDict = withs[i] switch
+                        {
+                            int => new Dictionary<string, object> { { "text", $"{withs[i]}" } },
+                            string => new Dictionary<string, object> { { "text", (string)withs[i] } },
+                            _ => (Dictionary<string, object>)withs[i]
+                        };
+                        translateString.Add(NbtToString(withDict, formatting));
+                    }
+                }
+                message = TranslateString(translateKey, translateString);
+            }
+
+            // Process extras, each starting with a reset then inheriting the current formatting
+            if (nbt.TryGetValue("extra", out object? extraValue))
+            {
+                object[] extras = (object[])extraValue;
+                for (var i = 0; i < extras.Length; i++)
+                {
+                    var extraDict = extras[i] switch
+                    {
+                        int => new Dictionary<string, object> { { "text", $"{extras[i]}" } },
+                        string => new Dictionary<string, object> { { "text", (string)extras[i] } },
+                        _ => (Dictionary<string, object>)extras[i]
+                    };
+                    extraBuilder.Append(NbtToString(extraDict, "§r" + formatting));
+                }
+            }
+
+            return formatting + message + extraBuilder.ToString();
         }
     }
 }
