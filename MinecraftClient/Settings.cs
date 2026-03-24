@@ -1024,6 +1024,34 @@ namespace MinecraftClient
                 [NonSerialized]
                 readonly Lock varLock = new();
 
+                private static bool TryGetReadOnlyVar(string varName, [NotNullWhen(true)] out object? varData)
+                {
+                    switch (Settings.ToLowerIfNeed(varName))
+                    {
+                        case "username":
+                            varData = InternalConfig.Username;
+                            return true;
+                        case "login":
+                            varData = InternalConfig.Account.Login;
+                            return true;
+                        case "serverip":
+                            varData = InternalConfig.ServerIP;
+                            return true;
+                        case "serverport":
+                            varData = InternalConfig.ServerPort;
+                            return true;
+                        case "datetime":
+                            varData = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                            return true;
+                        case "players":
+                            varData = string.Join(", ", McClient.Instance?.GetOnlinePlayers() ?? []);
+                            return true;
+                        default:
+                            varData = null;
+                            return false;
+                    }
+                }
+
                 /// <summary>
                 /// Set a custom %variable% which will be available through expandVars()
                 /// </summary>
@@ -1066,6 +1094,8 @@ namespace MinecraftClient
                 /// <returns>The value or null if the variable does not exists</returns>
                 public object? GetVar(string varName)
                 {
+                    if (TryGetReadOnlyVar(varName, out object? readOnlyVar))
+                        return readOnlyVar;
                     if (VarStirng.TryGetValue(varName, out string? valueString))
                         return valueString;
                     else if (VarObject.TryGetValue(varName, out object? valueObject))
@@ -1081,6 +1111,8 @@ namespace MinecraftClient
                 /// <returns>The value or null if the variable does not exists</returns>
                 public bool TryGetVar(string varName, [NotNullWhen(true)] out object? varData)
                 {
+                    if (TryGetReadOnlyVar(varName, out varData))
+                        return true;
                     if (VarStirng.TryGetValue(varName, out string? valueString))
                     {
                         varData = valueString;
@@ -1142,32 +1174,22 @@ namespace MinecraftClient
                                 string varname = var_name.ToString();
                                 string varname_lower = Settings.ToLowerIfNeed(varname);
                                 i = i + varname.Length + 1;
-
-                                switch (varname_lower)
+                                
+                                if (TryGetReadOnlyVar(varname_lower, out object? readOnlyVar))
                                 {
-                                    case "username": result.Append(InternalConfig.Username); break;
-                                    case "login": result.Append(InternalConfig.Account.Login); break;
-                                    case "serverip": result.Append(InternalConfig.ServerIP); break;
-                                    case "serverport": result.Append(InternalConfig.ServerPort); break;
-                                    case "datetime":
-                                        DateTime time = DateTime.Now;
-                                        result.Append(String.Format("{0}-{1}-{2} {3}:{4}:{5}",
-                                            time.Year.ToString("0000"),
-                                            time.Month.ToString("00"),
-                                            time.Day.ToString("00"),
-                                            time.Hour.ToString("00"),
-                                            time.Minute.ToString("00"),
-                                            time.Second.ToString("00")));
-
-                                        break;
-                                    default:
-                                        if (localVars is not null && localVars.ContainsKey(varname_lower))
-                                            result.Append(localVars[varname_lower].ToString());
-                                        else if (TryGetVar(varname_lower, out object? var_value))
-                                            result.Append(var_value.ToString());
-                                        else
-                                            result.Append("%" + varname + '%');
-                                        break;
+                                    result.Append(readOnlyVar.ToString());
+                                }
+                                else if (localVars is not null && localVars.ContainsKey(varname_lower))
+                                {
+                                    result.Append(localVars[varname_lower].ToString());
+                                }
+                                else if (TryGetVar(varname_lower, out object? var_value))
+                                {
+                                    result.Append(var_value.ToString());
+                                }
+                                else
+                                {
+                                    result.Append("%" + varname + '%');
                                 }
                             }
                             else result.Append(str[i]);

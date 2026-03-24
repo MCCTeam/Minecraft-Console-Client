@@ -1066,7 +1066,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **`%username%`, `%serverip%`, `%datetime%` are reserved variables**
+    **`%username%`, `%login%`, `%serverip%`, `%serverport%`, `%datetime%`, `%players%` are reserved read-only variables**
 
     </div>
 
