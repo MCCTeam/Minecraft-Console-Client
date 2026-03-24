@@ -338,8 +338,8 @@ namespace MinecraftClient.Mapping
 
             public BinaryHeap()
             {
-                heapList = new List<Node>();
-                locationList = new HashSet<Location>();
+                heapList = new();
+                locationList = new();
                 MinHScoreNode = null;
             }
 

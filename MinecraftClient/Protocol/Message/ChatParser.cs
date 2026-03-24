@@ -511,7 +511,7 @@ namespace MinecraftClient.Protocol.Message
 
             string message = string.Empty;
             string colorCode = string.Empty;
-            StringBuilder extraBuilder = new StringBuilder();
+            StringBuilder extraBuilder = new();
             foreach (var kvp in nbt)
             {
                 string key = kvp.Key;

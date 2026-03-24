@@ -261,7 +261,7 @@ namespace MinecraftClient.Inventory
         /// </summary>
         public static void SetDynamicEnchantmentIdMap(Dictionary<int, string> idMap)
         {
-            dynamicEnchantmentIdMap = new Dictionary<int, Enchantments>();
+            dynamicEnchantmentIdMap = new();
             foreach (var kvp in idMap)
             {
                 var name = kvp.Value.StartsWith("minecraft:") ? kvp.Value.Substring("minecraft:".Length) : kvp.Value;
@@ -284,7 +284,7 @@ namespace MinecraftClient.Inventory
         {
             if (reverseEnchantmentMappings == null)
             {
-                reverseEnchantmentMappings = new Dictionary<Enchantments, short>();
+                reverseEnchantmentMappings = new();
                 if (dynamicEnchantmentIdMap != null)
                 {
                     foreach (var kvp in dynamicEnchantmentIdMap)

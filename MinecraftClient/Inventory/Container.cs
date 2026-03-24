@@ -50,8 +50,8 @@ namespace MinecraftClient.Inventory
             ID = id;
             Type = type;
             Title = title;
-            Items = new Dictionary<int, Item>();
-            Properties = new Dictionary<int, short>();
+            Items = new();
+            Properties = new();
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace MinecraftClient.Inventory
             Type = type;
             Title = title;
             Items = items;
-            Properties = new Dictionary<int, short>();
+            Properties = new();
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace MinecraftClient.Inventory
             ID = id;
             Title = title;
             Type = ConvertType.ToNew(type);
-            Items = new Dictionary<int, Item>();
-            Properties = new Dictionary<int, short>();
+            Items = new();
+            Properties = new();
         }
 
         /// <summary>
@@ -96,8 +96,8 @@ namespace MinecraftClient.Inventory
             ID = id;
             Type = GetContainerType(typeID);
             Title = title;
-            Items = new Dictionary<int, Item>();
-            Properties = new Dictionary<int, short>();
+            Items = new();
+            Properties = new();
         }
 
         /// <summary>
@@ -109,8 +109,8 @@ namespace MinecraftClient.Inventory
             ID = -1;
             Type = type;
             Title = null;
-            Items = new Dictionary<int, Item>();
-            Properties = new Dictionary<int, short>();
+            Items = new();
+            Properties = new();
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace MinecraftClient.Inventory
             Type = type;
             Title = null;
             Items = items;
-            Properties = new Dictionary<int, short>();
+            Properties = new();
         }
 
         /// <summary>
