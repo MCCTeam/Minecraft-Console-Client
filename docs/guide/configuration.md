@@ -67,17 +67,33 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Description:**
 
-    This setting is where you need to provide your in-game name (for offline accounts) or email for Microsoft accounts (Mojang accounts do not work anymore) and your password (if using an offline account, use `-` for the password).
+    This setting is where you provide your account login information.
+
+    For **Microsoft accounts**, set `Login` to your Microsoft email. You do not need to provide a password because MCC uses the OAuth 2.0 device code flow for authentication (you sign in through your browser, with full 2FA support).
+
+    For **offline accounts**, set `Login` to your desired in-game name and `Password` to `-`.
+
+    For **Yggdrasil accounts**, set `Login` and `Password` to the credentials for your authlib server.
 
 -   **Format:**
 
-    `Account = { Login = "<email>", Password = "<password>" }`
+    `Account = { Login = "<email>" }`
 
 -   **Type:** `inline table`
 
--   **Example:**
+-   **Examples:**
 
-    `Account = { Login = "some.random.player@gmail.com", Password = "myEpicPassword123" }`
+    Microsoft account (password not needed):
+
+    ```
+    Account = { Login = "player@example.com" }
+    ```
+
+    Offline account:
+
+    ```
+    Account = { Login = "Steve", Password = "-" }
+    ```
 
 #### `Server`
 
@@ -131,7 +147,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Description:**
 
-    This setting is where you define the way you will sign in with your Microsoft account, available options are `mcc` and `browser`.
+    This setting is where you define the way you will sign in with your Microsoft account, available options are `mcc` and `browser`. The `mcc` method uses the OAuth 2.0 device code flow: MCC will display a code and a URL, and you complete the sign-in (including 2FA) in your browser. The `browser` method opens a sign-in page in your browser and you paste the resulting code back into MCC.
 
 -   **Type:** `string`
 

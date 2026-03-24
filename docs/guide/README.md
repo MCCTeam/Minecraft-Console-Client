@@ -39,6 +39,7 @@ It was originally made by [ORelio](https://github.com/ORelio) in 2012 on the [Mi
     -   [Get alerted on certain keywords](chat-bots.md#alerts)
     -   [Auto Respond](chat-bots.md#auto-respond)
 
+-   Microsoft account authentication with 2FA support (OAuth 2.0 device code flow)
 -   [Anti AFK](chat-bots.md#anti-afk)
 -   [Auto Relog](chat-bots.md#auto-relog)
 -   [Script Scheduler](chat-bots.md#script-scheduler)

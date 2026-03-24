@@ -1922,7 +1922,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Microsoft Account sign-in method: &quot;mcc&quot; OR &quot;browser&quot;. If the login always fails, please try to use the &quot;browser&quot; once..
+        ///   Looks up a localized string similar to Microsoft Account sign-in method: &quot;mcc&quot; (device code, supports 2FA) OR &quot;browser&quot; (manual browser login)..
         /// </summary>
         internal static string Main_General_method {
             get {

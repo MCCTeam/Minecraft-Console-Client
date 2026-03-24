@@ -1851,6 +1851,12 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="mcc.connecting" xml:space="preserve">
     <value>Connecting to {0}...</value>
   </data>
+  <data name="mcc.device_code_prompt" xml:space="preserve">
+    <value>To sign in, open {0} in your browser and enter the code: §e{1}</value>
+  </data>
+  <data name="mcc.device_code_waiting" xml:space="preserve">
+    <value>Waiting for authentication to complete...</value>
+  </data>
   <data name="mcc.disconnect.login" xml:space="preserve">
     <value>Login failed :</value>
   </data>

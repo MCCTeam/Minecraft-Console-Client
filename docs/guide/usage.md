@@ -121,11 +121,20 @@ MinecraftClient.exe --section.setting=value [--other settings]
 MinecraftClient.exe <settings-file.ini> [--other settings]
 ```
 
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+**Microsoft accounts use the OAuth 2.0 device code flow and do not require a password on the command line. MCC will display a code and a URL for you to sign in through your browser (with full 2FA support). You can simply omit the password or use `""` as a placeholder.**
+
+</div>
+
 Examples:
 
 ```bash
-# Logging in as a user: notch, with a password: password123 onto a server with the ip: mc.someserver.com:25565
-MinecraftClient.exe notch password123 mc.someserver.com:25565
+# Microsoft account: connect to a server (you will sign in via device code in your browser)
+MinecraftClient.exe player@example.com "" mc.someserver.com:25565
+
+# Offline account: connect with a chosen username
+MinecraftClient.exe Steve - mc.someserver.com:25565
 
 # Overriding a setting from MinecraftClient.ini using a command-line parameter
 MinecraftClient.exe --debugmessages=false
@@ -150,7 +159,7 @@ MinecraftClient.exe <login> <password> <server>
 
 -   This will automatically connect you to the chosen server.
 -   You may omit password and/or server to specify e.g. only the login
--   To specify a server but ask password interactively, use `""` as password.
+-   For Microsoft accounts, password is not required (device code flow is used). Use `""` as a placeholder if you need to specify a server.
 -   To specify offline mode with no password, use `-` as password.
 
 ```bash
@@ -165,7 +174,8 @@ MinecraftClient.exe <myconfig.ini>
 ```
 
 -   This will load the specified configuration file
--   If the file contains login / password / server ip, it will automatically connect.
+-   If the file contains login / server ip, it will automatically connect.
+-   For Microsoft accounts, authentication happens through the device code flow (no password needed in the file).
 
 ```bash
 MinecraftClient.exe --setting=value [--other settings]
