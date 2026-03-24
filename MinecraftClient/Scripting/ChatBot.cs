@@ -1765,7 +1765,7 @@ namespace MinecraftClient.Scripting
                             string fullArgs = Arguments.GetString(r, "args");
                             string result = Runner(
                                 $"{_cmdName} {fullArgs}",
-                                fullArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                                fullArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
                             return r.Source.SetAndReturn(CmdResult.Status.Done, result);
                         }))
                     .Executes(r =>
