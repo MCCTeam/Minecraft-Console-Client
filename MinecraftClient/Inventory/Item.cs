@@ -82,20 +82,20 @@ namespace MinecraftClient.Inventory
         {
             get
             {
-                if (Components != null)
+                if (Components is not null)
                 {
                     var customName = Components.OfType<CustomNameComponent>().FirstOrDefault();
-                    if (customName != null && !string.IsNullOrEmpty(customName.CustomName))
+                    if (customName is not null && !string.IsNullOrEmpty(customName.CustomName))
                         return customName.CustomName;
 
                     var itemName = Components.OfType<ItemNameComponent>().FirstOrDefault();
-                    if (itemName != null && !string.IsNullOrEmpty(itemName.ItemName))
+                    if (itemName is not null && !string.IsNullOrEmpty(itemName.ItemName))
                         return itemName.ItemName;
 
                     return null;
                 }
 
-                if (NBT != null && NBT.ContainsKey("display"))
+                if (NBT is not null && NBT.ContainsKey("display"))
                 {
                     if (NBT["display"] is Dictionary<string, object> displayProperties &&
                         displayProperties.ContainsKey("Name"))
@@ -117,17 +117,17 @@ namespace MinecraftClient.Inventory
         {
             get
             {
-                if (Components != null)
+                if (Components is not null)
                 {
                     var loreComponent = Components.OfType<LoreNameComponent1206>().FirstOrDefault();
-                    if (loreComponent != null && loreComponent.Lines.Count > 0)
+                    if (loreComponent is not null && loreComponent.Lines.Count > 0)
                         return loreComponent.Lines.ToArray();
 
                     return null;
                 }
 
                 List<string> lores = new();
-                if (NBT != null && NBT.ContainsKey("display"))
+                if (NBT is not null && NBT.ContainsKey("display"))
                 {
                     if (NBT["display"] is Dictionary<string, object> displayProperties &&
                         displayProperties.ContainsKey("Lore"))
@@ -151,19 +151,19 @@ namespace MinecraftClient.Inventory
         {
             get
             {
-                if (Components != null)
+                if (Components is not null)
                 {
                     var damageComponent = Components.OfType<DamageComponent>().FirstOrDefault();
-                    if (damageComponent != null)
+                    if (damageComponent is not null)
                         return damageComponent.Damage;
 
                     return 0;
                 }
 
-                if (NBT != null && NBT.ContainsKey("Damage"))
+                if (NBT is not null && NBT.ContainsKey("Damage"))
                 {
                     object damage = NBT["Damage"];
-                    if (damage != null)
+                    if (damage is not null)
                     {
                         return int.Parse(damage.ToString() ?? string.Empty, NumberStyles.Any,
                             CultureInfo.CurrentCulture);
@@ -183,11 +183,11 @@ namespace MinecraftClient.Inventory
         {
             get
             {
-                if (Components == null)
+                if (Components is null)
                     return null;
 
                 var enchComp = Components.OfType<EnchantmentsComponent>().FirstOrDefault();
-                if (enchComp != null && enchComp.Enchantments.Count > 0)
+                if (enchComp is not null && enchComp.Enchantments.Count > 0)
                     return enchComp.Enchantments;
 
                 return null;
@@ -220,7 +220,7 @@ namespace MinecraftClient.Inventory
             try
             {
                 var enchList = EnchantmentList;
-                if (enchList != null)
+                if (enchList is not null)
                 {
                     foreach (var ench in enchList)
                     {
@@ -229,7 +229,7 @@ namespace MinecraftClient.Inventory
                         sb.AppendFormat(" | {0} {1}", name, level);
                     }
                 }
-                else if (NBT != null && (NBT.TryGetValue("Enchantments", out object? enchantments) ||
+                else if (NBT is not null && (NBT.TryGetValue("Enchantments", out object? enchantments) ||
                                          NBT.TryGetValue("StoredEnchantments", out enchantments)))
                 {
                     foreach (Dictionary<string, object> enchantment in (object[])enchantments)
@@ -242,7 +242,7 @@ namespace MinecraftClient.Inventory
                     }
                 }
 
-                if (Lores != null && Lores.Length > 0)
+                if (Lores is not null && Lores.Length > 0)
                 {
                     foreach (var lore in Lores)
                         sb.AppendFormat(" | {0}", lore);

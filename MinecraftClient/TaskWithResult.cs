@@ -113,7 +113,7 @@ namespace MinecraftClient
             }
 
             // Receive exception from task
-            if (exception != null)
+            if (exception is not null)
                 throw exception;
 
             return result!;

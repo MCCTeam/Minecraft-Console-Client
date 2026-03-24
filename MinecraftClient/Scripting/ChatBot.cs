@@ -49,9 +49,9 @@ namespace MinecraftClient.Scripting
         {
             get
             {
-                if (master != null)
+                if (master is not null)
                     return master.Handler;
-                if (_handler != null)
+                if (_handler is not null)
                     return _handler;
                 throw new InvalidOperationException(Translations.exception_chatbot_init);
             }
@@ -862,7 +862,7 @@ namespace MinecraftClient.Scripting
         protected void LogToConsole(object? text)
         {
             string botName = Translations.ResourceManager.GetString("botname." + GetType().Name) ?? GetType().Name;
-            if (_handler == null || master == null)
+            if (_handler is null || master is null)
                 ConsoleIO.WriteLogLine(string.Format("[{0}] {1}", botName, text));
             else
                 Handler.Log.Info(string.Format("[{0}] {1}", botName, text));

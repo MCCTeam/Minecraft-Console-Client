@@ -120,7 +120,7 @@ namespace MinecraftClient
             ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
 
             //Build information to facilitate processing of bug reports
-            if (BuildInfo != null)
+            if (BuildInfo is not null)
                 ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
 
             //Debug input ?
@@ -616,11 +616,11 @@ namespace MinecraftClient
                             ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_profile_key_valid, session.PlayerName));
                     }
 
-                    if (playerKeyPair == null || playerKeyPair.NeedRefresh())
+                    if (playerKeyPair is null || playerKeyPair.NeedRefresh())
                     {
                         ConsoleIO.WriteLineFormatted(Translations.mcc_fetching_key, acceptnewlines: true);
                         playerKeyPair = KeyUtils.GetNewProfileKeys(session.ID, Config.Main.General.AccountType == LoginType.yggdrasil);
-                        if (Config.Main.Advanced.ProfileKeyCache != CacheType.none && playerKeyPair != null)
+                        if (Config.Main.Advanced.ProfileKeyCache != CacheType.none && playerKeyPair is not null)
                         {
                             KeysCache.Store(loginLower, playerKeyPair);
                         }
@@ -628,7 +628,7 @@ namespace MinecraftClient
                 }
 
                 //Force-enable Forge support?
-                if (!isRealms && (Config.Main.Advanced.EnableForge == ForgeConfigType.force) && forgeInfo == null)
+                if (!isRealms && (Config.Main.Advanced.EnableForge == ForgeConfigType.force) && forgeInfo is null)
                 {
                     if (ProtocolHandler.ProtocolMayForceForge(protocolversion))
                     {
@@ -724,8 +724,8 @@ namespace MinecraftClient
             ConsoleInteractive.ConsoleReader.StopReadThread();
             new Thread(new ThreadStart(delegate
             {
-                if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
+                if (offlinePrompt is not null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (delaySeconds > 0)
                 {
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
@@ -743,8 +743,8 @@ namespace MinecraftClient
             ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
-            if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-            if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
+            if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
+            if (offlinePrompt is not null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
             if (Config.Main.Advanced.PlayerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
             Environment.Exit(exitcode);
         }
@@ -801,7 +801,7 @@ namespace MinecraftClient
                         return; //AutoRelog is triggering a restart of the client, don't turn on the offline prompt
                 }
                 
-                if (offlinePrompt == null)
+                if (offlinePrompt is null)
                 {
                     ConsoleInteractive.ConsoleReader.StopReadThread();
 
@@ -907,7 +907,7 @@ namespace MinecraftClient
         /// <returns></returns>
         public static Type[] GetTypesInNamespace(string nameSpace, Assembly? assembly = null)
         {
-            if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
+            if (assembly is null) { assembly = Assembly.GetExecutingAssembly(); }
             return assembly.GetTypes().Where(t => string.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
         }
 

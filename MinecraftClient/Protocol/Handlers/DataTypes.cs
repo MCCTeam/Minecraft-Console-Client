@@ -1350,7 +1350,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Byte array for this NBT tag</returns>
         private byte[] GetNbt(Dictionary<string, object>? nbt, bool root)
         {
-            if (nbt == null || nbt.Count == 0)
+            if (nbt is null || nbt.Count == 0)
                 return new byte[] { 0 }; // TAG_End
 
             List<byte> bytes = new();
@@ -1699,7 +1699,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             List<byte> slotData = new();
 
-            if (item == null || item.IsEmpty)
+            if (item is null || item.IsEmpty)
             {
                 slotData.AddRange(GetBool(false));
             }
@@ -1727,7 +1727,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
             {
-                if (item == null || item.IsEmpty)
+                if (item is null || item.IsEmpty)
                 {
                     slotData.AddRange(GetVarInt(0));
                 }
@@ -1736,7 +1736,7 @@ namespace MinecraftClient.Protocol.Handlers
                     slotData.AddRange(GetVarInt(item.Count));
                     slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
 
-                    if (item.Components != null && item.Components.Count > 0)
+                    if (item.Components is not null && item.Components.Count > 0)
                     {
                         slotData.AddRange(GetVarInt(item.Components.Count));
                         slotData.AddRange(GetVarInt(0)); // components to remove
@@ -1756,7 +1756,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {
-                if (item == null || item.IsEmpty)
+                if (item is null || item.IsEmpty)
                     slotData.AddRange(GetBool(false));
                 else
                 {
@@ -1768,7 +1768,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                if (item == null || item.IsEmpty)
+                if (item is null || item.IsEmpty)
                     slotData.AddRange(GetShort(-1));
                 else
                 {
@@ -1849,7 +1849,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>String representation</returns>
         public string ByteArrayToString(byte[]? bytes)
         {
-            if (bytes == null)
+            if (bytes is null)
                 return "null";
             else
                 return BitConverter.ToString(bytes).Replace("-", " ");
@@ -1890,7 +1890,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             List<byte> fields = new();
             fields.AddRange(GetLastSeenMessageList(ack.lastSeen, isOnlineMode));
-            if (!isOnlineMode || ack.lastReceived == null)
+            if (!isOnlineMode || ack.lastReceived is null)
                 fields.AddRange(GetBool(false)); // Has last received message
             else
             {

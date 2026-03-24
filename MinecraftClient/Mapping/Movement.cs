@@ -247,7 +247,7 @@ namespace MinecraftClient.Mapping
             }
 
             // Goal could not be reached. Set the path to the closest location if close enough
-            if (current != null && openSet.MinHScoreNode != null &&
+            if (current is not null && openSet.MinHScoreNode is not null &&
                 (maxOffset == int.MaxValue || openSet.MinHScoreNode.HScore <= maxOffset))
                 return ReconstructPath(cameFrom, openSet.MinHScoreNode.Location, start, goal);
 
@@ -362,7 +362,7 @@ namespace MinecraftClient.Mapping
                 locationList.Add(loc);
 
                 // Save node with the smallest H-Score => Distance to goal
-                if (MinHScoreNode == null || newNode.HScore < MinHScoreNode.HScore)
+                if (MinHScoreNode is null || newNode.HScore < MinHScoreNode.HScore)
                     MinHScoreNode = newNode;
 
                 if (i == 0)
@@ -491,7 +491,7 @@ namespace MinecraftClient.Mapping
         public static bool IsOnGround(World world, Location location)
         {
             ChunkColumn? chunkColumn = world.GetChunkColumn(location);
-            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+            if (chunkColumn is null || chunkColumn.FullyLoaded == false)
                 return true; // avoid moving downward in a not loaded chunk
 
             Location down = Move(location, Direction.Down);
@@ -721,11 +721,11 @@ namespace MinecraftClient.Mapping
         public static bool CheckChunkLoading(World world, Location start, Location dest)
         {
             var chunkColumn = world.GetChunkColumn(dest);
-            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+            if (chunkColumn is null || chunkColumn.FullyLoaded == false)
                 return false;
 
             chunkColumn = world.GetChunkColumn(start);
-            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+            if (chunkColumn is null || chunkColumn.FullyLoaded == false)
                 return false;
 
             return true;

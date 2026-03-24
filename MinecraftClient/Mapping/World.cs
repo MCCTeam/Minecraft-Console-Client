@@ -55,7 +55,7 @@ namespace MinecraftClient.Mapping
             set
             {
                 Tuple<int, int> chunkCoord = new(chunkX, chunkZ);
-                if (value == null)
+                if (value is null)
                     chunks.TryRemove(chunkCoord, out _);
                 else
                     chunks.AddOrUpdate(chunkCoord, value, (_, _) => value);
@@ -385,10 +385,10 @@ namespace MinecraftClient.Mapping
         public Block GetBlock(Location location)
         {
             ChunkColumn? column = GetChunkColumn(location);
-            if (column != null)
+            if (column is not null)
             {
                 Chunk? chunk = column.GetChunk(location);
-                if (chunk != null)
+                if (chunk is not null)
                     return chunk.GetBlock(location);
             }
             return Block.Air;
@@ -437,10 +437,10 @@ namespace MinecraftClient.Mapping
         public void SetBlock(Location location, Block block)
         {
             ChunkColumn? column = this[location.ChunkX, location.ChunkZ];
-            if (column != null && column.ColumnSize >= location.ChunkY)
+            if (column is not null && column.ColumnSize >= location.ChunkY)
             {
                 Chunk? chunk = column.GetChunk(location);
-                if (chunk == null)
+                if (chunk is null)
                     column[location.ChunkY] = chunk = new Chunk();
                 chunk[location.ChunkBlockX, location.ChunkBlockY, location.ChunkBlockZ] = block;
             }

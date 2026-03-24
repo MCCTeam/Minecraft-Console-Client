@@ -38,9 +38,9 @@ namespace MinecraftClient.Inventory
             // Condition: source has item and dest has no item
             if (ValidateSlots(source, dest, destContainer) &&
                 HasItem(source) &&
-                ((destContainer != null && !HasItem(dest, destContainer)) || (destContainer == null && !HasItem(dest))))
+                ((destContainer is not null && !HasItem(dest, destContainer)) || (destContainer is null && !HasItem(dest))))
                 return mc.DoWindowAction(c.ID, source, WindowActionType.LeftClick)
-                    && mc.DoWindowAction(destContainer == null ? c.ID : destContainer.ID, dest, WindowActionType.LeftClick);
+                    && mc.DoWindowAction(destContainer is null ? c.ID : destContainer.ID, dest, WindowActionType.LeftClick);
             else return false;
         }
 
@@ -56,9 +56,9 @@ namespace MinecraftClient.Inventory
             // Condition: Both slot1 and slot2 has item
             if (ValidateSlots(slot1, slot2, destContainer) &&
                 HasItem(slot1) &&
-                (destContainer != null && HasItem(slot2, destContainer) || (destContainer == null && HasItem(slot2))))
+                (destContainer is not null && HasItem(slot2, destContainer) || (destContainer is null && HasItem(slot2))))
                 return mc.DoWindowAction(c.ID, slot1, WindowActionType.LeftClick)
-                    && mc.DoWindowAction(destContainer == null ? c.ID : destContainer.ID, slot2, WindowActionType.LeftClick)
+                    && mc.DoWindowAction(destContainer is null ? c.ID : destContainer.ID, slot2, WindowActionType.LeftClick)
                     && mc.DoWindowAction(c.ID, slot1, WindowActionType.LeftClick);
             else return false;
         }
@@ -126,7 +126,7 @@ namespace MinecraftClient.Inventory
         /// <returns>The compare result</returns>
         private bool ValidateSlots(int s1, int s2, Container? s2Container = null)
         {
-            if (s2Container == null)
+            if (s2Container is null)
                 return (s1 != s2 && s1 < c.Type.SlotCount() && s2 < c.Type.SlotCount());
             else
                 return (s1 < c.Type.SlotCount() && s2 < s2Container.Type.SlotCount());
@@ -153,7 +153,7 @@ namespace MinecraftClient.Inventory
         /// <returns>True if they are equal</returns>
         private bool ItemTypeEqual(int slot1, int slot2, Container? s2Container = null)
         {
-            if (s2Container == null)
+            if (s2Container is null)
             {
                 if (HasItem(slot1) && HasItem(slot2))
                     return c.Items[slot1].Type == c.Items[slot2].Type;

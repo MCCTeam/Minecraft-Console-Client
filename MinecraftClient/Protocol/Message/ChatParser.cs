@@ -123,7 +123,7 @@ namespace MinecraftClient.Protocol.Message
         {
             string sender = message.isSenderJson ? ParseText(message.displayName!) : message.displayName!;
             string content;
-            if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
+            if (Config.Signature.ShowModifiedChat && message.unsignedContent is not null)
             {
                 content = ParseText(message.unsignedContent!);
                 if (string.IsNullOrEmpty(content))
@@ -315,7 +315,7 @@ namespace MinecraftClient.Protocol.Message
                     Task<Dictionary<string, string>?> fetckFileTask =
                         httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
                     fetckFileTask.Wait();
-                    if (fetckFileTask.Result != null && fetckFileTask.Result.Count > 0)
+                    if (fetckFileTask.Result is not null && fetckFileTask.Result.Count > 0)
                     {
                         TranslationRules = fetckFileTask.Result;
                         TranslationRules["Version"] = TranslationsFile_Version;
