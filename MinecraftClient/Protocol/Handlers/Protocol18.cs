@@ -3636,9 +3636,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// Get max length for chat messages
         /// </summary>
         /// <returns>Max length, in characters</returns>
-        public int GetMaxChatMessageLength() => protocolVersion > MC_1_10_Version
-            ? 256
-            : 100;
+        public int GetMaxChatMessageLength()
+        {
+            int configOverride = Settings.MainConfigHelper.Config.Advanced.MaxChatMessageLength;
+            if (configOverride > 0)
+                return configOverride;
+            return protocolVersion > MC_1_10_Version ? 256 : 100;
+        }
 
         /// <summary>
         /// Get the current protocol version.
