@@ -53,6 +53,7 @@ namespace MinecraftClient
         private static IDisposable? _sentrySdk = null;
         private static bool useMcVersionOnce = false;
         private static string settingsIniPath = "MinecraftClient.ini";
+        private static bool upgradeCommandUsed = false;
 
         // [SENTRY]
         // Setting this string to an empty string will disable Sentry
@@ -709,11 +710,20 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Prevents the settings file from being saved. Called when the /upgrade command is used.
+        /// </summary>
+        public static void SetUpgradeCommandUsed()
+        {
+            upgradeCommandUsed = true;
+        }
+
+        /// <summary>
         /// Write-back settings
         /// </summary>
         public static void WriteBackSettings(bool enableBackup = true)
         {
-            Settings.WriteToFile(settingsIniPath, enableBackup);
+            if (!upgradeCommandUsed)
+                Settings.WriteToFile(settingsIniPath, enableBackup);
         }
 
         /// <summary>
@@ -743,7 +753,8 @@ namespace MinecraftClient
         {
             WriteBackSettings();
             ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
-            ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
+            if (!upgradeCommandUsed)
+                ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
             if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
             if (offlinePrompt is not null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }

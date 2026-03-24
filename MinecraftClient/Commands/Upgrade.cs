@@ -57,6 +57,7 @@ namespace MinecraftClient.Commands
 
         private static int DownloadUpdate(CmdResult r, bool force)
         {
+            Program.SetUpgradeCommandUsed();
             if (UpgradeHelper.DownloadLatestBuild(force))
                 return r.SetAndReturn(CmdResult.Status.Done, Translations.mcc_update_start);
             else
