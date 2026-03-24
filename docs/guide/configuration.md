@@ -322,6 +322,26 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 -   **Default:** `1.0`
 
+#### `MaxChatMessageLength`
+
+-   **Description:**
+
+    Overrides the maximum chat message length. By default, MCC caps messages at 100 characters on Minecraft 1.10 and below, and 256 characters on 1.11 and above. Set to `0` to keep the default.
+
+    Some servers (like Hypixel on 1.8) accept messages longer than the vanilla protocol default for that version. This setting lets you match whatever limit the server actually allows.
+
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **Setting this to a value the server doesn't support may get you kicked. Only change it if you know the server accepts longer messages than the version default.**
+
+    </div>
+
+-   **Type:** `integer`
+
+-   **Default:** `0`
+
+-   **Range:** `0` - `32767`
+
 #### `BotOwners`
 
 -   **Description:**
