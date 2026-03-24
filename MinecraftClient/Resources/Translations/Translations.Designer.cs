@@ -5499,6 +5499,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to To sign in, open {0} in your browser and enter the code: {1}.
+        /// </summary>
+        internal static string mcc_device_code_prompt {
+            get {
+                return ResourceManager.GetString("mcc.device_code_prompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Waiting for authentication to complete....
+        /// </summary>
+        internal static string mcc_device_code_waiting {
+            get {
+                return ResourceManager.GetString("mcc.device_code_waiting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Login failed :.
         /// </summary>
         internal static string mcc_disconnect_login {

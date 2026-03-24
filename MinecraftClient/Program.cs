@@ -390,6 +390,8 @@ namespace MinecraftClient
 
             //Asking the user to type in missing data such as Username and Password
             bool useBrowser = Config.Main.General.AccountType == LoginType.microsoft && Config.Main.General.Method == LoginMethod.browser;
+            bool useDeviceCode = Config.Main.General.AccountType == LoginType.microsoft && Config.Main.General.Method == LoginMethod.mcc;
+            bool skipPassword = useBrowser || useDeviceCode;
             if (string.IsNullOrWhiteSpace(InternalConfig.Account.Login) && !useBrowser)
             {
                 ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.mcc_login_basic_io : Translations.mcc_login);
@@ -401,7 +403,7 @@ namespace MinecraftClient
                 }
             }
             InternalConfig.Username = InternalConfig.Account.Login;
-            if (string.IsNullOrWhiteSpace(InternalConfig.Account.Password) && !useBrowser &&
+            if (string.IsNullOrWhiteSpace(InternalConfig.Account.Password) && !skipPassword &&
                 (Config.Main.Advanced.SessionCache == CacheType.none || !SessionCache.Contains(ToLowerIfNeed(InternalConfig.Account.Login))))
             {
                 RequestPassword();
@@ -475,7 +477,7 @@ namespace MinecraftClient
 
                         if (result != ProtocolHandler.LoginResult.Success
                             && string.IsNullOrWhiteSpace(InternalConfig.Account.Password)
-                            && !(Config.Main.General.AccountType == LoginType.microsoft && Config.Main.General.Method == LoginMethod.browser))
+                            && !(Config.Main.General.AccountType == LoginType.microsoft))
                             RequestPassword();
                     }
                     else ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_session_valid, session.PlayerName));
@@ -594,7 +596,7 @@ namespace MinecraftClient
                 }
 
                 if ((Config.Main.General.AccountType == LoginType.microsoft || Config.Main.General.AccountType == LoginType.yggdrasil)
-                    && (InternalConfig.Account.Password != "-" || Config.Main.General.Method == LoginMethod.browser)
+                    && InternalConfig.Account.Password != "-"
                     && Config.Signature.LoginWithSecureProfile
                     && protocolversion >= 759 /* 1.19 and above */
                     && !string.IsNullOrWhiteSpace(session.ID))

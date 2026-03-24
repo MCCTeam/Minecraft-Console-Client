@@ -1,13 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using static MinecraftClient.Settings;
-using static MinecraftClient.Settings.MainConfigHelper.MainConfig.GeneralConfig;
+using System.Threading;
 
 namespace MinecraftClient.Protocol
 {
@@ -16,6 +14,7 @@ namespace MinecraftClient.Protocol
         private static readonly string clientId = "54473e32-df8f-42e9-a649-9419b0dab9d3";
         private static readonly string signinUrl = string.Format("https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id={0}&response_type=code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&scope=XboxLive.signin%20offline_access%20openid%20email&prompt=select_account&response_mode=fragment", clientId);
         private static readonly string tokenUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
+        private static readonly string deviceCodeUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode";
 
         public static string SignInUrl { get { return signinUrl; } }
 
@@ -54,6 +53,121 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
+        /// Initiate the OAuth 2.0 device code flow.
+        /// Returns a device code response containing the user code and verification URI.
+        /// </summary>
+        /// <returns>Device code response for user to complete authentication</returns>
+        public static DeviceCodeResponse RequestDeviceCode()
+        {
+            string postData = string.Format("client_id={0}&scope=XboxLive.signin%20offline_access%20openid%20email", clientId);
+
+            var request = new ProxiedWebRequest(deviceCodeUrl)
+            {
+                UserAgent = "MCC/" + Program.Version
+            };
+            var response = request.Post("application/x-www-form-urlencoded", postData);
+            var jsonData = Json.ParseJson(response.Body);
+
+            if (jsonData?["error"] is not null)
+            {
+                throw new Exception(jsonData["error_description"]!.GetStringValue());
+            }
+
+            return new DeviceCodeResponse()
+            {
+                DeviceCode = jsonData!["device_code"]!.GetStringValue(),
+                UserCode = jsonData["user_code"]!.GetStringValue(),
+                VerificationUri = jsonData["verification_uri"]!.GetStringValue(),
+                ExpiresIn = int.Parse(jsonData["expires_in"]!.GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture),
+                Interval = int.Parse(jsonData["interval"]!.GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture),
+                Message = jsonData["message"]!.GetStringValue()
+            };
+        }
+
+        /// <summary>
+        /// Poll the token endpoint until the user completes device code authentication.
+        /// Handles authorization_pending, slow_down, and expiration.
+        /// </summary>
+        /// <param name="deviceCode">Device code from <see cref="RequestDeviceCode"/></param>
+        /// <param name="expiresIn">Expiration time in seconds</param>
+        /// <param name="interval">Polling interval in seconds</param>
+        /// <returns>Login response with access token and refresh token</returns>
+        public static LoginResponse PollDeviceCodeToken(string deviceCode, int expiresIn, int interval)
+        {
+            // Per OAuth 2.0 device code spec, server may respond with "slow_down" requiring
+            // the client to increase its polling interval by this amount
+            const int SlowDownIncrementSeconds = 5;
+
+            string postData = string.Format(
+                "client_id={0}&grant_type=urn:ietf:params:oauth:grant-type:device_code&device_code={1}",
+                clientId, deviceCode);
+
+            var stopwatch = Stopwatch.StartNew();
+            int pollInterval = interval;
+
+            while (stopwatch.Elapsed.TotalSeconds < expiresIn)
+            {
+                Thread.Sleep(pollInterval * 1000);
+
+                var request = new ProxiedWebRequest(tokenUrl)
+                {
+                    UserAgent = "MCC/" + Program.Version
+                };
+                var response = request.Post("application/x-www-form-urlencoded", postData);
+                var jsonData = Json.ParseJson(response.Body);
+
+                if (jsonData?["error"] is not null)
+                {
+                    string error = jsonData["error"]!.GetStringValue();
+
+                    if (error == "authorization_pending")
+                    {
+                        // User hasn't completed auth yet, keep polling
+                        continue;
+                    }
+                    else if (error == "slow_down")
+                    {
+                        // Server asked us to slow down
+                        pollInterval += SlowDownIncrementSeconds;
+                        continue;
+                    }
+                    else if (error == "expired_token")
+                    {
+                        throw new Exception("Device code expired. Please try again.");
+                    }
+                    else if (error == "authorization_declined")
+                    {
+                        throw new Exception("Authorization was declined by the user.");
+                    }
+                    else
+                    {
+                        throw new Exception(jsonData["error_description"]!.GetStringValue());
+                    }
+                }
+
+                // Success - parse the token response
+                string accessToken = jsonData!["access_token"]!.GetStringValue();
+                string refreshToken = jsonData["refresh_token"]!.GetStringValue();
+                int tokenExpiresIn = int.Parse(jsonData["expires_in"]!.GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
+
+                // Extract email from JWT id_token
+                string payload = JwtPayloadDecode.GetPayload(jsonData["id_token"]!.GetStringValue());
+                var jsonPayload = Json.ParseJson(payload);
+                string email = jsonPayload!["email"]!.GetStringValue();
+
+                return new LoginResponse()
+                {
+                    Email = email,
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    ExpiresIn = tokenExpiresIn
+                };
+            }
+
+            throw new Exception("Device code authentication timed out.");
+        }
+
+        /// <summary>
         /// Perform request to obtain access token by code or by refresh token
         /// </summary>
         /// <param name="postData">Complete POST data for the request</param>
@@ -70,13 +184,13 @@ namespace MinecraftClient.Protocol
             // Error handling
             if (jsonData?["error"] is not null)
             {
-                throw new Exception(jsonData["error_description"].GetStringValue());
+                throw new Exception(jsonData["error_description"]!.GetStringValue());
             }
             else
             {
                 string accessToken = jsonData!["access_token"]!.GetStringValue();
                 string refreshToken = jsonData["refresh_token"]!.GetStringValue();
-                int expiresIn = int.Parse(jsonData["expires_in"].GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
+                int expiresIn = int.Parse(jsonData["expires_in"]!.GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
 
                 // Extract email from JWT
                 string payload = JwtPayloadDecode.GetPayload(jsonData["id_token"]!.GetStringValue());
@@ -132,131 +246,24 @@ namespace MinecraftClient.Protocol
             public string RefreshToken;
             public int ExpiresIn;
         }
+
+        public struct DeviceCodeResponse
+        {
+            public string DeviceCode;
+            public string UserCode;
+            public string VerificationUri;
+            public int ExpiresIn;
+            public int Interval;
+            public string Message;
+        }
     }
 
     static class XboxLive
     {
-        private static readonly string authorize = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
         private static readonly string xbl = "https://user.auth.xboxlive.com/user/authenticate";
         private static readonly string xsts = "https://xsts.auth.xboxlive.com/xsts/authorize";
 
         private static readonly string userAgent = "Mozilla/5.0 (XboxReplay; XboxLiveAuth/3.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
-
-        private static readonly Regex ppft = new("sFTTag:'.*value=\"(.*)\"\\/>'");
-        private static readonly Regex urlPost = new("urlPost:'(.+?(?=\'))");
-        private static readonly Regex confirm = new("identity\\/confirm");
-        private static readonly Regex invalidAccount = new("Sign in to", RegexOptions.IgnoreCase);
-        private static readonly Regex twoFA = new("Help us protect your account", RegexOptions.IgnoreCase);
-
-        public static string SignInUrl { get { return authorize; } }
-
-        /// <summary>
-        /// Pre-authentication
-        /// </summary>
-        /// <remarks>This step is to get the login page for later use</remarks>
-        /// <returns></returns>
-        public static PreAuthResponse PreAuth()
-        {
-            var request = new ProxiedWebRequest(authorize)
-            {
-                UserAgent = userAgent
-            };
-            var response = request.Get();
-
-            string html = response.Body;
-
-            string PPFT = ppft.Match(html).Groups[1].Value;
-            string urlPost = XboxLive.urlPost.Match(html).Groups[1].Value;
-
-            if (string.IsNullOrEmpty(PPFT) || string.IsNullOrEmpty(urlPost))
-            {
-                throw new Exception("Fail to extract PPFT or urlPost");
-            }
-            //Console.WriteLine("PPFT: {0}", PPFT);
-            //Console.WriteLine();
-            //Console.WriteLine("urlPost: {0}", urlPost);
-
-            return new PreAuthResponse()
-            {
-                UrlPost = urlPost,
-                PPFT = PPFT,
-                Cookie = response.Cookies
-            };
-        }
-
-        /// <summary>
-        /// Perform login request
-        /// </summary>
-        /// <remarks>This step is to send the login request by using the PreAuth response</remarks>
-        /// <param name="email">Microsoft account email</param>
-        /// <param name="password">Account password</param>
-        /// <param name="preAuth"></param>
-        /// <returns></returns>
-        public static Microsoft.LoginResponse UserLogin(string email, string password, PreAuthResponse preAuth)
-        {
-            var request = new ProxiedWebRequest(preAuth.UrlPost, preAuth.Cookie)
-            {
-                UserAgent = userAgent
-            };
-
-            string postData = "login=" + Uri.EscapeDataString(email)
-                 + "&loginfmt=" + Uri.EscapeDataString(email)
-                 + "&passwd=" + Uri.EscapeDataString(password)
-                 + "&PPFT=" + Uri.EscapeDataString(preAuth.PPFT);
-
-            var response = request.Post("application/x-www-form-urlencoded", postData);
-
-            if (Settings.Config.Logging.DebugMessages)
-            {
-                ConsoleIO.WriteLine(response.ToString());
-            }
-
-            if (response.StatusCode >= 300 && response.StatusCode <= 399)
-            {
-                string url = response.Headers.Get("Location")!;
-                string hash = url.Split('#')[1];
-
-                var request2 = new ProxiedWebRequest(url);
-                var response2 = request2.Get();
-
-                if (response2.StatusCode != 200)
-                {
-                    throw new Exception("Authentication failed");
-                }
-
-                if (string.IsNullOrEmpty(hash))
-                {
-                    throw new Exception("Cannot extract access token");
-                }
-                var dict = Request.ParseQueryString(hash);
-
-                //foreach (var pair in dict)
-                //{
-                //    Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
-                //}
-
-                return new Microsoft.LoginResponse()
-                {
-                    Email = email,
-                    AccessToken = dict["access_token"],
-                    RefreshToken = dict["refresh_token"],
-                    ExpiresIn = int.Parse(dict["expires_in"], NumberStyles.Any, CultureInfo.CurrentCulture)
-                };
-            }
-            else
-            {
-                if (twoFA.IsMatch(response.Body))
-                {
-                    // TODO: Handle 2FA
-                    throw new Exception("2FA enabled but not supported yet. Use browser sign-in method or try to disable 2FA in Microsoft account settings");
-                }
-                else if (invalidAccount.IsMatch(response.Body))
-                {
-                    throw new Exception("Invalid credentials. Check your credentials");
-                }
-                else throw new Exception("Unexpected response. Check your credentials. Response code: " + response.StatusCode);
-            }
-        }
 
         /// <summary>
         /// Xbox Live Authenticate
@@ -272,13 +279,8 @@ namespace MinecraftClient.Protocol
             };
             request.Headers.Add("x-xbl-contract-version", "0");
 
-            var accessToken = loginResponse.AccessToken;
-            if (Config.Main.General.Method == LoginMethod.browser)
-            {
-                // Our own client ID must have d= in front of the token or HTTP status 400
-                // "Stolen" client ID must not have d= in front of the token or HTTP status 400
-                accessToken = "d=" + accessToken;
-            }
+            // OAuth tokens from our own client ID require "d=" prefix for XBL authentication
+            var accessToken = "d=" + loginResponse.AccessToken;
 
             string payload = "{"
                 + "\"Properties\": {"
@@ -297,8 +299,6 @@ namespace MinecraftClient.Protocol
             if (response.StatusCode == 200)
             {
                 string jsonString = response.Body;
-                //Console.WriteLine(jsonString);
-
                 var json = Json.ParseJson(jsonString);
                 string token = json!["Token"]!.GetStringValue();
                 string userHash = json["DisplayClaims"]!["xui"]![0]!["uhs"]!.GetStringValue();
@@ -317,7 +317,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// XSTS Authenticate
         /// </summary>
-        /// <remarks>(Don't ask me what is XSTS, I DONT KNOW)</remarks>
+        /// <remarks>Xbox Secure Token Service - exchanges XBL token for a service-specific XSTS token</remarks>
         /// <param name="xblResponse"></param>
         /// <returns></returns>
         public static XSTSAuthenticateResponse XSTSAuthenticate(XblAuthenticateResponse xblResponse)
@@ -376,13 +376,6 @@ namespace MinecraftClient.Protocol
                     throw new Exception("XSTS Authentication failed");
                 }
             }
-        }
-
-        public struct PreAuthResponse
-        {
-            public string UrlPost;
-            public string PPFT;
-            public NameValueCollection Cookie;
         }
 
         public struct XblAuthenticateResponse
