@@ -691,7 +691,7 @@ namespace MinecraftClient.Protocol.Handlers
             var responseHeader =
                 protocolVersion < MC_1_10_Version // After 1.10, the MC does not include resource pack hash in responses
                     ? dataTypes.ConcatBytes(DataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash))
-                    : Array.Empty<byte>();
+                    : [];
 
             var basePacketData = protocolVersion >= MC_1_20_4_Version && uuid != Guid.Empty
                 ? dataTypes.ConcatBytes(responseHeader, DataTypes.GetUUID(uuid))
@@ -3486,9 +3486,9 @@ namespace MinecraftClient.Protocol.Handlers
                 return -1;
 
             var transactionId = DataTypes.GetVarInt(autocomplete_transaction_id);
-            var assumeCommand = new byte[] { 0x00 };
-            var hasPosition = new byte[] { 0x00 };
-            var tabCompletePacket = Array.Empty<byte>();
+            byte[] assumeCommand = [0x00];
+            byte[] hasPosition = [0x00];
+            byte[] tabCompletePacket = [];
 
             switch (protocolVersion)
             {
@@ -4009,7 +4009,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                SendPacket(PacketTypesOut.ClientStatus, new byte[] { 0 });
+                SendPacket(PacketTypesOut.ClientStatus, [0]);
                 return true;
             }
             catch (SocketException)
@@ -4064,7 +4064,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 fields.AddRange(protocolVersion >= MC_1_9_Version
                     ? DataTypes.GetVarInt(chatMode)
-                    : new byte[] { chatMode });
+                    : [chatMode]);
 
                 fields.Add(chatColors ? (byte)1 : (byte)0);
                 if (protocolVersion < MC_1_8_Version)
@@ -4163,7 +4163,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 dataTypes.GetFloat(yaw.Value),
                                 dataTypes.GetFloat(pitch.Value),
@@ -4181,7 +4181,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 new[] { flags });
                         }
@@ -4223,7 +4223,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 dataTypes.GetFloat(yaw.Value),
                                 dataTypes.GetFloat(pitch.Value),
@@ -4241,7 +4241,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.GetDouble(location.Y),
                                 protocolVersion < MC_1_8_Version
                                     ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : Array.Empty<byte>(),
+                                    : [],
                                 dataTypes.GetDouble(location.Z),
                                 new[] { flags });
                         }
@@ -4549,7 +4549,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (playerInventory?.Items is null)
                             return false;
 
-                        var slotWindowIds = new int[]{ 36, 37, 38, 39, 40, 41, 42, 43, 44 }; 
+                        int[] slotWindowIds = [36, 37, 38, 39, 40, 41, 42, 43, 44]; 
                         var currentSlot = ((McClient)handler).GetCurrentSlot();
                         
                         playerInventory.Items.TryGetValue(slotWindowIds[currentSlot], out var item);

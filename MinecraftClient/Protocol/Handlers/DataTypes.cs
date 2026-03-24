@@ -1351,7 +1351,7 @@ namespace MinecraftClient.Protocol.Handlers
         private byte[] GetNbt(Dictionary<string, object>? nbt, bool root)
         {
             if (nbt is null || nbt.Count == 0)
-                return new byte[] { 0 }; // TAG_End
+                return [0]; // TAG_End
 
             List<byte> bytes = new();
 

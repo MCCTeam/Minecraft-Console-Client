@@ -1010,9 +1010,9 @@ namespace MinecraftClient
             b.SetHandler(this);
             bots.Add(b);
             if (init)
-                DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
+                DispatchBotEvent(bot => bot.Initialize(), [b]);
             if (handler is not null)
-                DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
+                DispatchBotEvent(bot => bot.AfterGameJoined(), [b]);
         }
 
         /// <summary>
@@ -1205,7 +1205,7 @@ namespace MinecraftClient
         /// <returns></returns>
         public static char[] GetDisallowedChatCharacters()
         {
-            return new char[] { (char)167, (char)127 }; // Minecraft color code and ASCII code DEL
+            return [(char)167, (char)127]; // Minecraft color code and ASCII code DEL
         }
 
         /// <summary>
@@ -2381,23 +2381,18 @@ namespace MinecraftClient
 
             if (entities.ContainsKey(entityID))
             {
-                switch (type)
+                return type switch
                 {
-                    case InteractType.Interact:
-                        return handler.SendInteractEntity(entityID, (int)type, (int)hand);
-                    
-                    case InteractType.InteractAt:
-                        return handler.SendInteractEntity(
-                            EntityID: entityID, 
-                            type: (int)type, 
-                            X: (float)entities[entityID].Location.X, 
-                            Y: (float)entities[entityID].Location.Y, 
-                            Z: (float)entities[entityID].Location.Z, 
-                            hand: (int)hand);
-                    
-                    default:
-                        return handler.SendInteractEntity(entityID, (int)type);
-                }
+                    InteractType.Interact => handler.SendInteractEntity(entityID, (int)type, (int)hand),
+                    InteractType.InteractAt => handler.SendInteractEntity(
+                        EntityID: entityID,
+                        type: (int)type,
+                        X: (float)entities[entityID].Location.X,
+                        Y: (float)entities[entityID].Location.Y,
+                        Z: (float)entities[entityID].Location.Z,
+                        hand: (int)hand),
+                    _ => handler.SendInteractEntity(entityID, (int)type),
+                };
             }
             
             return false;

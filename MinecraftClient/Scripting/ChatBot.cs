@@ -785,7 +785,7 @@ namespace MinecraftClient.Scripting
                         string prefix = tmp[0];
                         string user = tmp[1];
                         string semicolon = tmp[2];
-                        if (prefix.All(c => char.IsLetterOrDigit(c) || new char[] { '*', '<', '>', '_' }.Contains(c))
+                        if (prefix.All(c => char.IsLetterOrDigit(c) || new[] { '*', '<', '>', '_' }.Contains(c))
                             && semicolon == ":")
                         {
                             message = text[(prefix.Length + user.Length + 4)..];
@@ -878,7 +878,7 @@ namespace MinecraftClient.Scripting
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, [GetTimestamp() + ' ' + text]);
             }
         }
 
@@ -898,7 +898,7 @@ namespace MinecraftClient.Scripting
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, [GetTimestamp() + ' ' + text]);
             }
         }
 
@@ -1218,7 +1218,7 @@ namespace MinecraftClient.Scripting
             else
             {
                 LogToConsole("File not found: " + Path.GetFullPath(file));
-                return Array.Empty<string>();
+                return [];
             }
         }
 
