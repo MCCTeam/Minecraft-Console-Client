@@ -43,8 +43,9 @@ Use `dotnet-counters` to watch GC and allocation rates in a running MCC session:
 # In one terminal, run MCC
 dotnet run --project MinecraftClient -c Release
 
-# In another terminal, attach counters
-dotnet-counters monitor --process-id $(pidof MinecraftClient) \
+# In another terminal, find the MCC process ID and attach counters
+dotnet-counters ps                     # lists managed processes; find the MinecraftClient PID
+dotnet-counters monitor --process-id <PID> \
   --counters System.Runtime[gen-0-gc-count,gen-1-gc-count,gen-2-gc-count,alloc-rate]
 ```
 
@@ -129,8 +130,10 @@ public static List<Aabb> CollectBlockColliders(World world, Aabb search)
 }
 ```
 
-Use `[ThreadStatic]` when the buffer is only accessed from one thread (physics tick).
-Use `ObjectPool<T>` or `ArrayPool<T>` when shared across threads.
+Use `[ThreadStatic]` when the buffer is only accessed from one thread (physics tick)
+and the method is not reentrant (callee does not call back into the same method).
+If reentrancy is possible, use `ObjectPool<T>` instead so each call gets its own buffer.
+Use `ArrayPool<T>` when shared across threads or when the buffer size varies.
 
 ### Recipe 2: stackalloc for small fixed-size buffers
 
@@ -217,10 +220,11 @@ Use it only when profiling shows that a specific call site is not being inlined 
 more inlining-friendly:
 
 ```csharp
-// Before: BitConverter + manual endian swap
+// Before: BitConverter + manual byte-by-byte endian swap
 Span<byte> buf = stackalloc byte[4];
 FillBytes(buf);
-if (BitConverter.IsLittleEndian) buf.Reverse();
+(buf[0], buf[3]) = (buf[3], buf[0]);
+(buf[1], buf[2]) = (buf[2], buf[1]);
 int val = BitConverter.ToInt32(buf);
 
 // After: BinaryPrimitives reads big-endian directly
