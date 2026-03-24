@@ -1730,7 +1730,7 @@ namespace MinecraftClient.Scripting
 
         /// <summary>
         /// Unregisters all commands that were registered via RegisterChatBotCommand.
-        /// Called automatically during bot unload.
+        /// Called automatically by McClient.BotUnLoad() during bot unload - do not call manually.
         /// </summary>
         internal void UnregisterChatBotCommands()
         {
