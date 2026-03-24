@@ -17,7 +17,7 @@ public class BundleContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
         for (var i = 0; i < count; i++)
         {
             var item = dataTypes.ReadNextItemSlot(data, itemPalette);
-            if (item != null)
+            if (item is not null)
                 Items.Add(item);
         }
     }

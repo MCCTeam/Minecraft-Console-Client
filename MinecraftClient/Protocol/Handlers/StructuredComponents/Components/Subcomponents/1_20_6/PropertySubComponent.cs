@@ -47,12 +47,12 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
         }
         else
         {
-            data.AddRange(DataTypes.GetBool(MinValue != null));
-            if (MinValue != null)
+            data.AddRange(DataTypes.GetBool(MinValue is not null));
+            if (MinValue is not null)
                 data.AddRange(DataTypes.GetString(MinValue));
             
-            data.AddRange(DataTypes.GetBool(MaxValue != null));
-            if (MaxValue != null)
+            data.AddRange(DataTypes.GetBool(MaxValue is not null));
+            if (MaxValue is not null)
                 data.AddRange(DataTypes.GetString(MaxValue));
         }
         

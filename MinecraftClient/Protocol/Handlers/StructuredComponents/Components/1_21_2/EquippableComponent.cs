@@ -61,25 +61,25 @@ public class EquippableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     {
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(Slot));
-        if (EquipSound != null) data.AddRange(EquipSound.Serialize());
+        if (EquipSound is not null) data.AddRange(EquipSound.Serialize());
 
         data.AddRange(DataTypes.GetBool(HasModel));
-        if (HasModel && Model != null)
+        if (HasModel && Model is not null)
             data.AddRange(DataTypes.GetString(Model));
 
         data.AddRange(DataTypes.GetBool(HasCameraOverlay));
-        if (HasCameraOverlay && CameraOverlay != null)
+        if (HasCameraOverlay && CameraOverlay is not null)
             data.AddRange(DataTypes.GetString(CameraOverlay));
 
         data.AddRange(DataTypes.GetBool(HasAllowedEntities));
         if (HasAllowedEntities)
         {
             data.AddRange(DataTypes.GetVarInt(AllowedEntitiesType));
-            if (AllowedEntitiesType == 0 && AllowedEntitiesTag != null)
+            if (AllowedEntitiesType == 0 && AllowedEntitiesTag is not null)
             {
                 data.AddRange(DataTypes.GetString(AllowedEntitiesTag));
             }
-            else if (AllowedEntitiesIds != null)
+            else if (AllowedEntitiesIds is not null)
             {
                 foreach (var id in AllowedEntitiesIds)
                     data.AddRange(DataTypes.GetVarInt(id));

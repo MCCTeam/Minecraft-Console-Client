@@ -235,7 +235,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 return false;
 
             List<Tuple<string, string>> currentArguments = signedArguments;
-            if (signedCapture != null)
+            if (signedCapture is not null)
             {
                 currentArguments = new List<Tuple<string, string>>(signedArguments.Count + 1);
                 currentArguments.AddRange(signedArguments);
@@ -317,7 +317,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 case CommandNodeKind.Literal:
                     return TryConsumeLiteral(command, position, node.Name!, out nextPosition);
                 case CommandNodeKind.Argument:
-                    if (node.Argument == null || !TryConsumeArgument(command, position, node.Argument.Value, out nextPosition))
+                    if (node.Argument is null || !TryConsumeArgument(command, position, node.Argument.Value, out nextPosition))
                         return false;
 
                     if (node.Argument.Value.IsSigned)
@@ -585,7 +585,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 };
             }
 
-            if (name == null)
+            if (name is null)
             {
                 layout = s_unknownLegacyArgumentType;
                 return true;

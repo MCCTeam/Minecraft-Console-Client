@@ -114,7 +114,7 @@ public class ConsumableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
         var data = new List<byte>();
         data.AddRange(DataTypes.GetFloat(ConsumeSeconds));
         data.AddRange(DataTypes.GetVarInt(Animation));
-        if (Sound != null) data.AddRange(Sound.Serialize());
+        if (Sound is not null) data.AddRange(Sound.Serialize());
         data.AddRange(DataTypes.GetBool(HasConsumeParticles));
         data.AddRange(DataTypes.GetVarInt(Effects.Count));
         foreach (var effect in Effects)

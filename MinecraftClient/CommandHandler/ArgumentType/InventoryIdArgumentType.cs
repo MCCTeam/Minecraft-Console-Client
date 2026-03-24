@@ -18,7 +18,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
             McClient? client = CmdResult.currentHandler;
-            if (client != null)
+            if (client is not null)
             {
                 var invList = client.GetInventories();
                 foreach (var inv in invList)

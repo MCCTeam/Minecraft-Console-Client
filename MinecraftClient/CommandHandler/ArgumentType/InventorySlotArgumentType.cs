@@ -19,7 +19,7 @@ namespace MinecraftClient.CommandHandler.ArgumentType
         public override Task<Suggestions> ListSuggestions<TSource>(CommandContext<TSource> context, SuggestionsBuilder builder)
         {
             McClient? client = CmdResult.currentHandler;
-            if (client != null && context.Nodes.Count >= 2)
+            if (client is not null && context.Nodes.Count >= 2)
             {
                 string invName = context.Nodes[1].Range.Get(builder.Input);
                 if (!int.TryParse(invName, out int invId))
@@ -33,11 +33,11 @@ namespace MinecraftClient.CommandHandler.ArgumentType
                     };
 
                 Inventory.Container? inventory = client.GetInventory(invId);
-                if (inventory != null)
+                if (inventory is not null)
                 {
                     foreach ((int slot, Inventory.Item item) in inventory.Items)
                     {
-                        if (item != null && item.Count > 0)
+                        if (item is not null && item.Count > 0)
                         {
                             string slotStr = slot.ToString();
                             if (slotStr.StartsWith(builder.RemainingLowerCase, StringComparison.InvariantCultureIgnoreCase))

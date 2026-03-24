@@ -30,11 +30,11 @@ public class RepairableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     {
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(Type));
-        if (Type == 0 && TagName != null)
+        if (Type == 0 && TagName is not null)
         {
             data.AddRange(DataTypes.GetString(TagName));
         }
-        else if (ItemIds != null)
+        else if (ItemIds is not null)
         {
             foreach (var id in ItemIds)
                 data.AddRange(DataTypes.GetVarInt(id));

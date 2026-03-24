@@ -24,7 +24,7 @@ public class UseCooldownComponent(DataTypes dataTypes, ItemPalette itemPalette, 
         var data = new List<byte>();
         data.AddRange(DataTypes.GetFloat(Seconds));
         data.AddRange(DataTypes.GetBool(HasCooldownGroup));
-        if (HasCooldownGroup && CooldownGroup != null)
+        if (HasCooldownGroup && CooldownGroup is not null)
             data.AddRange(DataTypes.GetString(CooldownGroup));
         return new Queue<byte>(data);
     }
