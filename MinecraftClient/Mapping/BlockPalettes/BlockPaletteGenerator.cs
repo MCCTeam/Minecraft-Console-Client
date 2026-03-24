@@ -137,7 +137,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
 
             File.WriteAllLines(outputPalettePath, outFile);
 
-            if (outputEnum != null)
+            if (outputEnum is not null)
             {
                 outFile = new List<string>();
                 outFile.AddRange(new[] {

@@ -11,7 +11,7 @@ public class EnchantableComponent(DataTypes dataTypes, ItemPalette itemPalette, 
 
     public override void Parse(Queue<byte> data)
     {
-        Value = dataTypes.ReadNextVarInt(data);
+        Value = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

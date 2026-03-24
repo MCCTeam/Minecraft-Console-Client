@@ -12,16 +12,16 @@ public class WritableBlookContentComponent(DataTypes dataTypes, ItemPalette item
     
     public override void Parse(Queue<byte> data)
     {
-        var count = dataTypes.ReadNextVarInt(data);
+        var count = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < count; i++)
         {
-            var rawContent = dataTypes.ReadNextString(data);
-            var hasFilteredContent = dataTypes.ReadNextBool(data);
+            var rawContent = DataTypes.ReadNextString(data);
+            var hasFilteredContent = DataTypes.ReadNextBool(data);
             var filteredContent = null as string;
             
             if(hasFilteredContent)
-                filteredContent = dataTypes.ReadNextString(data);
+                filteredContent = DataTypes.ReadNextString(data);
             
             Pages.Add(new BookPage(rawContent, hasFilteredContent, filteredContent));
         }

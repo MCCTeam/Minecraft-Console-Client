@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
@@ -175,7 +176,7 @@ namespace MinecraftClient.ChatBots
         private Entity fishItem = new(-1, EntityType.Item, Location.Zero);
 
         private int counter = 0;
-        private readonly object stateLock = new();
+        private readonly Lock stateLock = new();
         private FishingState state = FishingState.WaitJoinGame;
 
         private int curLocationIdx = 0, moveDir = 1;
@@ -473,7 +474,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityDespawn(Entity entity)
         {
-            if (entity != null && fishingBobber != null && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
+            if (entity is not null && fishingBobber is not null && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
             {
                 if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("FishingBobber despawn at {0}", entity.Location));
@@ -498,7 +499,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            if (isFishing && entity != null && fishingBobber!.ID == entity.ID &&
+            if (isFishing && entity is not null && fishingBobber!.ID == entity.ID &&
                 (state == FishingState.WaitingFishToBite || state == FishingState.WaitingFishingBobber))
             {
                 Location Pos = entity.Location;
@@ -602,12 +603,12 @@ namespace MinecraftClient.ChatBots
 
             LocationConfig curConfig = locationList[curLocationIdx];
 
-            if (curConfig.facing != null)
+            if (curConfig.facing is not null)
                 (nextYaw, nextPitch) = ((float)curConfig.facing.Value.yaw, (float)curConfig.facing.Value.pitch);
             else
                 (nextYaw, nextPitch) = (GetYaw(), GetPitch());
 
-            if (curConfig.XYZ != null)
+            if (curConfig.XYZ is not null)
             {
                 Location current = GetCurrentLocation();
                 Location goal = new(curConfig.XYZ.Value.x, curConfig.XYZ.Value.y, curConfig.XYZ.Value.z);

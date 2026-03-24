@@ -148,7 +148,7 @@ namespace MinecraftClient.ChatBots
 
         private void Disconnect()
         {
-            if (botClient != null)
+            if (botClient is not null)
             {
                 try
                 {
@@ -238,7 +238,7 @@ namespace MinecraftClient.ChatBots
 
         private bool CanSendMessages()
         {
-            return botClient != null && !string.IsNullOrEmpty(Config.ChannelId.Trim()) && bridgeDirection != BridgeDirection.Minecraft;
+            return botClient is not null && !string.IsNullOrEmpty(Config.ChannelId.Trim()) && bridgeDirection != BridgeDirection.Minecraft;
         }
 
         async Task MainAsync()

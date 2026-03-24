@@ -23,22 +23,22 @@ public class InstrumentComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     
     public override void Parse(Queue<byte> data)
     {
-        InstrumentHolderId = dataTypes.ReadNextVarInt(data);
+        InstrumentHolderId = DataTypes.ReadNextVarInt(data);
 
         if (InstrumentHolderId == 0)
         {
-            SoundEventHolderId = dataTypes.ReadNextVarInt(data);
+            SoundEventHolderId = DataTypes.ReadNextVarInt(data);
 
             if (SoundEventHolderId == 0)
             {
-                SoundLocation = dataTypes.ReadNextString(data);
-                HasFixedRange = dataTypes.ReadNextBool(data);
+                SoundLocation = DataTypes.ReadNextString(data);
+                HasFixedRange = DataTypes.ReadNextBool(data);
                 if (HasFixedRange)
-                    FixedRange = dataTypes.ReadNextFloat(data);
+                    FixedRange = DataTypes.ReadNextFloat(data);
             }
 
-            UseDuration = dataTypes.ReadNextVarInt(data);
-            Range = dataTypes.ReadNextFloat(data);
+            UseDuration = DataTypes.ReadNextVarInt(data);
+            Range = DataTypes.ReadNextFloat(data);
         }
     }
 

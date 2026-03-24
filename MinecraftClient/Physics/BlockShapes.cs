@@ -39,7 +39,7 @@ namespace MinecraftClient.Physics
         /// </summary>
         public static Aabb[] GetShapes(int blockStateId)
         {
-            if (stateToShape != null && stateToShape.TryGetValue(blockStateId, out var shapes))
+            if (stateToShape is not null && stateToShape.TryGetValue(blockStateId, out var shapes))
                 return shapes;
             return FallbackShape(blockStateId);
         }
@@ -76,7 +76,7 @@ namespace MinecraftClient.Physics
             {
                 var assembly = Assembly.GetExecutingAssembly();
                 using var stream = assembly.GetManifestResourceStream("BlockShapeData.json");
-                if (stream == null)
+                if (stream is null)
                 {
                     ConsoleInteractive.ConsoleWriter.WriteLineFormatted("§e[Physics] BlockShapeData.json not found as embedded resource");
                     return;
@@ -138,12 +138,12 @@ namespace MinecraftClient.Physics
         {
             stateToShape = new Dictionary<int, Aabb[]>();
 
-            if (prismarineBlocks == null || prismarineShapes == null)
+            if (prismarineBlocks is null || prismarineShapes is null)
                 return;
 
             var palette = Block.Palette;
             var dict = GetPaletteDict(palette);
-            if (dict == null) return;
+            if (dict is null) return;
 
             // Group consecutive state IDs by Material to find state ranges per block
             var materialRanges = new Dictionary<Material, List<(int start, int end)>>();

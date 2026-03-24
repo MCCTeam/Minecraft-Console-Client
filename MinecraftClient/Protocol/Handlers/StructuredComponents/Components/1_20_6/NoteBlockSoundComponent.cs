@@ -11,7 +11,7 @@ public class NoteBlockSoundComponent(DataTypes dataTypes, ItemPalette itemPalett
     
     public override void Parse(Queue<byte> data)
     {
-        Identifier = dataTypes.ReadNextString(data);
+        Identifier = DataTypes.ReadNextString(data);
     }
 
     public override Queue<byte> Serialize()

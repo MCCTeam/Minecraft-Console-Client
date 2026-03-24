@@ -11,7 +11,7 @@ public class ProvidesBannerPatternsComponent(DataTypes dataTypes, ItemPalette it
 
     public override void Parse(Queue<byte> data)
     {
-        TagKey = dataTypes.ReadNextString(data); // ResourceLocation
+        TagKey = DataTypes.ReadNextString(data); // ResourceLocation
     }
 
     public override Queue<byte> Serialize()

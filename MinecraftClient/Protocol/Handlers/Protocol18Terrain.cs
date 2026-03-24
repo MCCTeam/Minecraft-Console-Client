@@ -12,23 +12,11 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Terrain Decoding handler for Protocol18
     /// </summary>
-    class Protocol18Terrain
+    class Protocol18Terrain(int protocolVersion, DataTypes dataTypes, IMinecraftComHandler handler)
     {
-        private readonly int protocolversion;
-        private readonly DataTypes dataTypes;
-        private readonly IMinecraftComHandler handler;
-
-        /// <summary>
-        /// Initialize a new Terrain Decoder
-        /// </summary>
-        /// <param name="protocolVersion">Minecraft Protocol Version</param>
-        /// <param name="dataTypes">Minecraft Protocol Data Types</param>
-        public Protocol18Terrain(int protocolVersion, DataTypes dataTypes, IMinecraftComHandler handler)
-        {
-            protocolversion = protocolVersion;
-            this.dataTypes = dataTypes;
-            this.handler = handler;
-        }
+        private readonly int protocolversion = protocolVersion;
+        private readonly DataTypes dataTypes = dataTypes;
+        private readonly IMinecraftComHandler handler = handler;
 
         /// <summary>
         /// Reading the "Block states" field: consists of 4096 entries, representing all the blocks in the chunk section.

@@ -12,31 +12,16 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Handler for the Minecraft Forge protocol
     /// </summary>
-    class Protocol18Forge
+    class Protocol18Forge(ForgeInfo? forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
     {
-        private readonly int protocolversion;
-        private readonly DataTypes dataTypes;
-        private readonly Protocol18Handler protocol18;
-        private readonly IMinecraftComHandler mcHandler;
+        private readonly int protocolversion = protocolVersion;
+        private readonly DataTypes dataTypes = dataTypes;
+        private readonly Protocol18Handler protocol18 = protocol18;
+        private readonly IMinecraftComHandler mcHandler = mcHandler;
 
-        private readonly ForgeInfo? forgeInfo;
+        private readonly ForgeInfo? forgeInfo = forgeInfo;
         private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
-        private bool ForgeEnabled() { return forgeInfo != null; }
-
-        /// <summary>
-        /// Initialize a new Forge protocol handler
-        /// </summary>
-        /// <param name="forgeInfo">Forge Server Information</param>
-        /// <param name="protocolVersion">Minecraft protocol version</param>
-        /// <param name="dataTypes">Minecraft data types handler</param>
-        public Protocol18Forge(ForgeInfo? forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
-        {
-            this.forgeInfo = forgeInfo;
-            protocolversion = protocolVersion;
-            this.dataTypes = dataTypes;
-            this.protocol18 = protocol18;
-            this.mcHandler = mcHandler;
-        }
+        private bool ForgeEnabled() { return forgeInfo is not null; }
 
         /// <summary>
         /// Get Forge-Tagged server address

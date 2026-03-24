@@ -153,11 +153,11 @@ namespace MinecraftClient.ChatBots
 
         private void Disconnect()
         {
-            if (discordBotClient != null)
+            if (discordBotClient is not null)
             {
                 try
                 {
-                    if (discordChannel != null)
+                    if (discordChannel is not null)
                         discordBotClient.SendMessageAsync(discordChannel, new DiscordEmbedBuilder
                         {
                             Description = Translations.bot_DiscordBridge_disconnected,
@@ -284,7 +284,7 @@ namespace MinecraftClient.ChatBots
                     filePath = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
                     var messageBuilder = new DiscordMessageBuilder();
 
-                    if (text != null)
+                    if (text is not null)
                         messageBuilder.WithContent(text);
 
                     messageBuilder.AddFiles(new Dictionary<string, Stream>() { { filePath, fs } });
@@ -309,7 +309,7 @@ namespace MinecraftClient.ChatBots
 
         private bool CanSendMessages()
         {
-            return discordBotClient != null && discordChannel != null && bridgeDirection != BridgeDirection.Minecraft;
+            return discordBotClient is not null && discordChannel is not null && bridgeDirection != BridgeDirection.Minecraft;
         }
 
         async Task MainAsync()

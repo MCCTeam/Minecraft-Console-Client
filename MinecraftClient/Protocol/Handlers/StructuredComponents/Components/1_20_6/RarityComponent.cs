@@ -12,7 +12,7 @@ public class RarityComponent(DataTypes dataTypes, ItemPalette itemPalette, SubCo
     
     public override void Parse(Queue<byte> data)
     {
-        Rarity = (ItemRarity)dataTypes.ReadNextVarInt(data);
+        Rarity = (ItemRarity)DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

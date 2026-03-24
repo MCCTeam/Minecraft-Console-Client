@@ -25,61 +25,61 @@ public class EquippableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
 
     public override void Parse(Queue<byte> data)
     {
-        Slot = dataTypes.ReadNextVarInt(data);
-        EquipSound = (SoundEventSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
+        Slot = DataTypes.ReadNextVarInt(data);
+        EquipSound = (SoundEventSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
         
-        HasModel = dataTypes.ReadNextBool(data);
+        HasModel = DataTypes.ReadNextBool(data);
         if (HasModel)
-            Model = dataTypes.ReadNextString(data);
+            Model = DataTypes.ReadNextString(data);
 
-        HasCameraOverlay = dataTypes.ReadNextBool(data);
+        HasCameraOverlay = DataTypes.ReadNextBool(data);
         if (HasCameraOverlay)
-            CameraOverlay = dataTypes.ReadNextString(data);
+            CameraOverlay = DataTypes.ReadNextString(data);
 
-        HasAllowedEntities = dataTypes.ReadNextBool(data);
+        HasAllowedEntities = DataTypes.ReadNextBool(data);
         if (HasAllowedEntities)
         {
-            AllowedEntitiesType = dataTypes.ReadNextVarInt(data);
+            AllowedEntitiesType = DataTypes.ReadNextVarInt(data);
             if (AllowedEntitiesType == 0)
             {
-                AllowedEntitiesTag = dataTypes.ReadNextString(data);
+                AllowedEntitiesTag = DataTypes.ReadNextString(data);
             }
             else
             {
                 AllowedEntitiesIds = new List<int>();
                 for (var i = 0; i < AllowedEntitiesType - 1; i++)
-                    AllowedEntitiesIds.Add(dataTypes.ReadNextVarInt(data));
+                    AllowedEntitiesIds.Add(DataTypes.ReadNextVarInt(data));
             }
         }
 
-        Dispensable = dataTypes.ReadNextBool(data);
-        Swappable = dataTypes.ReadNextBool(data);
-        DamageOnHurt = dataTypes.ReadNextBool(data);
+        Dispensable = DataTypes.ReadNextBool(data);
+        Swappable = DataTypes.ReadNextBool(data);
+        DamageOnHurt = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(Slot));
-        if (EquipSound != null) data.AddRange(EquipSound.Serialize());
+        if (EquipSound is not null) data.AddRange(EquipSound.Serialize());
 
         data.AddRange(DataTypes.GetBool(HasModel));
-        if (HasModel && Model != null)
+        if (HasModel && Model is not null)
             data.AddRange(DataTypes.GetString(Model));
 
         data.AddRange(DataTypes.GetBool(HasCameraOverlay));
-        if (HasCameraOverlay && CameraOverlay != null)
+        if (HasCameraOverlay && CameraOverlay is not null)
             data.AddRange(DataTypes.GetString(CameraOverlay));
 
         data.AddRange(DataTypes.GetBool(HasAllowedEntities));
         if (HasAllowedEntities)
         {
             data.AddRange(DataTypes.GetVarInt(AllowedEntitiesType));
-            if (AllowedEntitiesType == 0 && AllowedEntitiesTag != null)
+            if (AllowedEntitiesType == 0 && AllowedEntitiesTag is not null)
             {
                 data.AddRange(DataTypes.GetString(AllowedEntitiesTag));
             }
-            else if (AllowedEntitiesIds != null)
+            else if (AllowedEntitiesIds is not null)
             {
                 foreach (var id in AllowedEntitiesIds)
                     data.AddRange(DataTypes.GetVarInt(id));

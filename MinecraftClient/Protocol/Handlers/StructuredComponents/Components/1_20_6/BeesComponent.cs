@@ -14,10 +14,10 @@ public class BeesComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
     
     public override void Parse(Queue<byte> data)
     {
-        NumberOfBees = dataTypes.ReadNextVarInt(data);
+        NumberOfBees = DataTypes.ReadNextVarInt(data);
         for (var i = 0; i < NumberOfBees; i++)
         {
-            Bees.Add(new Bee(dataTypes.ReadNextNbt(data), dataTypes.ReadNextVarInt(data), dataTypes.ReadNextVarInt(data)));
+            Bees.Add(new Bee(DataTypes.ReadNextNbt(data), DataTypes.ReadNextVarInt(data), DataTypes.ReadNextVarInt(data)));
         }
     }
 

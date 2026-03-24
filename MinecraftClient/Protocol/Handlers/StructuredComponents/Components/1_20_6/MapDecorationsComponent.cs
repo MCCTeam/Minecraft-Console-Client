@@ -11,7 +11,7 @@ public class MapDecorationsComponent(DataTypes dataTypes, ItemPalette itemPalett
     
     public override void Parse(Queue<byte> data)
     {
-        Nbt = dataTypes.ReadNextNbt(data);
+        Nbt = DataTypes.ReadNextNbt(data);
     }
 
     public override Queue<byte> Serialize()

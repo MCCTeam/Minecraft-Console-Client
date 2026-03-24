@@ -11,7 +11,7 @@ public class MapPostProcessingComponent(DataTypes dataTypes, ItemPalette itemPal
     
     public override void Parse(Queue<byte> data)
     {
-        Type = dataTypes.ReadNextVarInt(data);
+        Type = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

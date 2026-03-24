@@ -15,7 +15,7 @@ public class FireworkExplosionComponent(DataTypes dataTypes, ItemPalette itemPal
     
     public override void Parse(Queue<byte> data)
     {
-        FireworkExplosionSubComponent = (FireworkExplosionSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.FireworkExplosion, data);
+        FireworkExplosionSubComponent = (FireworkExplosionSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.FireworkExplosion, data);
     }
 
     public override Queue<byte> Serialize()

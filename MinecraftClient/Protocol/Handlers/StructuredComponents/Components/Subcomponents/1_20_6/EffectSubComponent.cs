@@ -6,13 +6,13 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subc
 
 public class EffectSubComponent(DataTypes dataTypes, SubComponentRegistry subComponentRegistry) : SubComponent(dataTypes, subComponentRegistry)
 {
-    public PotionEffectSubComponent TypeId { get; set; }
+    public PotionEffectSubComponent TypeId { get; set; } = null!;
     public float Probability { get; set; }
     
     protected override void Parse(Queue<byte> data)
     {
-        TypeId = (PotionEffectSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.PotionEffect, data);
-        Probability = dataTypes.ReadNextFloat(data);
+        TypeId = (PotionEffectSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.PotionEffect, data);
+        Probability = DataTypes.ReadNextFloat(data);
     }
 
     public override Queue<byte> Serialize()

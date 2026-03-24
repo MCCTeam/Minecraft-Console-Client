@@ -13,10 +13,10 @@ public class EitherHolderComponent(DataTypes dataTypes, ItemPalette itemPalette,
 
     public override void Parse(Queue<byte> data)
     {
-        IsHolder = dataTypes.ReadNextBool(data);
+        IsHolder = DataTypes.ReadNextBool(data);
         if (IsHolder)
         {
-            HolderId = dataTypes.ReadNextVarInt(data);
+            HolderId = DataTypes.ReadNextVarInt(data);
             // For simple entity variants, holderId > 0 means registry ref (id = holderId - 1)
             // holderId == 0 means inline data; for most variants the inline is just the variant fields
             // We skip inline data since MCC doesn't use variant details
@@ -30,7 +30,7 @@ public class EitherHolderComponent(DataTypes dataTypes, ItemPalette itemPalette,
         }
         else
         {
-            ResourceKey = dataTypes.ReadNextString(data);
+            ResourceKey = DataTypes.ReadNextString(data);
         }
     }
 

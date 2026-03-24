@@ -154,7 +154,7 @@ namespace MinecraftClient.ChatBots
             if (csharp) //C# compiled script
             {
                 //Initialize thread on first update
-                if (thread == null)
+                if (thread is null)
                 {
                     thread = new Thread(() =>
                     {
@@ -166,7 +166,7 @@ namespace MinecraftClient.ChatBots
                         {
                             string errorMessage = string.Format(Translations.bot_script_fail, file, e.ExceptionType);
                             LogToConsole(errorMessage);
-                            if (owner != null)
+                            if (owner is not null)
                                 SendPrivateMessage(owner, errorMessage);
                             LogToConsole(e.InnerException);
                         }
@@ -178,7 +178,7 @@ namespace MinecraftClient.ChatBots
                 }
 
                 //Unload bot once the thread has finished running
-                if (thread != null && !thread.IsAlive)
+                if (thread is not null && !thread.IsAlive)
                 {
                     UnloadBot();
                 }

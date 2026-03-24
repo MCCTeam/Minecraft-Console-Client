@@ -11,17 +11,8 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// <summary>
         /// Represents an individual forge mod.
         /// </summary>
-        public class ForgeMod
+        public record ForgeMod(string ModID, string Version)
         {
-            public ForgeMod(String ModID, String Version)
-            {
-                this.ModID = ModID;
-                this.Version = Version;
-            }
-
-            public readonly String ModID;
-            public readonly String Version;
-
             public override string ToString()
             {
                 return ModID + " v" + Version;

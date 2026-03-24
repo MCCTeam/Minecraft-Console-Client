@@ -23,7 +23,7 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
     {
         ResetState();
 
-        if (dataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_9_Version)
+        if (DataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_9_Version)
         {
             ParseResolvableProfile(data);
             return;
@@ -34,7 +34,7 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
 
     public override Queue<byte> Serialize()
     {
-        return dataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_9_Version
+        return DataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_9_Version
             ? SerializeResolvableProfile()
             : SerializeLegacyProfile();
     }
@@ -56,44 +56,44 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
 
     private void ParseLegacyProfile(Queue<byte> data)
     {
-        HasName = dataTypes.ReadNextBool(data);
+        HasName = DataTypes.ReadNextBool(data);
 
         if (HasName)
-            Name = dataTypes.ReadNextString(data);
+            Name = DataTypes.ReadNextString(data);
 
-        HasUniqueId = dataTypes.ReadNextBool(data);
+        HasUniqueId = DataTypes.ReadNextBool(data);
 
         if (HasUniqueId)
-            Uuid = dataTypes.ReadNextUUID(data);
+            Uuid = DataTypes.ReadNextUUID(data);
 
-        NumberOfProperties = dataTypes.ReadNextVarInt(data);
+        NumberOfProperties = DataTypes.ReadNextVarInt(data);
         ProfileProperties = ReadProfileProperties(data, NumberOfProperties);
     }
 
     private void ParseResolvableProfile(Queue<byte> data)
     {
-        IsFullProfile = dataTypes.ReadNextBool(data);
+        IsFullProfile = DataTypes.ReadNextBool(data);
 
         if (IsFullProfile)
         {
             HasUniqueId = true;
-            Uuid = dataTypes.ReadNextUUID(data);
+            Uuid = DataTypes.ReadNextUUID(data);
             HasName = true;
-            Name = dataTypes.ReadNextString(data);
-            NumberOfProperties = dataTypes.ReadNextVarInt(data);
+            Name = DataTypes.ReadNextString(data);
+            NumberOfProperties = DataTypes.ReadNextVarInt(data);
             ProfileProperties = ReadProfileProperties(data, NumberOfProperties);
         }
         else
         {
-            HasName = dataTypes.ReadNextBool(data);
+            HasName = DataTypes.ReadNextBool(data);
             if (HasName)
-                Name = dataTypes.ReadNextString(data);
+                Name = DataTypes.ReadNextString(data);
 
-            HasUniqueId = dataTypes.ReadNextBool(data);
+            HasUniqueId = DataTypes.ReadNextBool(data);
             if (HasUniqueId)
-                Uuid = dataTypes.ReadNextUUID(data);
+                Uuid = DataTypes.ReadNextUUID(data);
 
-            NumberOfProperties = dataTypes.ReadNextVarInt(data);
+            NumberOfProperties = DataTypes.ReadNextVarInt(data);
             ProfileProperties = ReadProfileProperties(data, NumberOfProperties);
         }
 
@@ -101,8 +101,8 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
         CapeAssetId = ReadOptionalResourceLocation(data);
         ElytraAssetId = ReadOptionalResourceLocation(data);
 
-        if (dataTypes.ReadNextBool(data))
-            Model = dataTypes.ReadNextBool(data) ? ProfileSkinModel.Slim : ProfileSkinModel.Wide;
+        if (DataTypes.ReadNextBool(data))
+            Model = DataTypes.ReadNextBool(data) ? ProfileSkinModel.Slim : ProfileSkinModel.Wide;
     }
 
     private Queue<byte> SerializeLegacyProfile()
@@ -171,7 +171,7 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
 
         data.AddRange(DataTypes.GetBool(Model.HasValue));
         if (Model.HasValue)
-            data.AddRange(dataTypes.GetBool(Model.Value == ProfileSkinModel.Slim));
+            data.AddRange(DataTypes.GetBool(Model.Value == ProfileSkinModel.Slim));
 
         return new Queue<byte>(data);
     }
@@ -181,10 +181,10 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
         var properties = new List<ProfileProperty>(count);
         for (var i = 0; i < count; i++)
         {
-            var propertyName = dataTypes.ReadNextString(data);
-            var propertyValue = dataTypes.ReadNextString(data);
-            var hasSignature = dataTypes.ReadNextBool(data);
-            var signature = hasSignature ? dataTypes.ReadNextString(data) : null;
+            var propertyName = DataTypes.ReadNextString(data);
+            var propertyValue = DataTypes.ReadNextString(data);
+            var hasSignature = DataTypes.ReadNextBool(data);
+            var signature = hasSignature ? DataTypes.ReadNextString(data) : null;
 
             properties.Add(new ProfileProperty(propertyName, propertyValue, hasSignature, signature));
         }
@@ -211,7 +211,7 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
 
     private string? ReadOptionalResourceLocation(Queue<byte> data)
     {
-        return dataTypes.ReadNextBool(data) ? dataTypes.ReadNextString(data) : null;
+        return DataTypes.ReadNextBool(data) ? DataTypes.ReadNextString(data) : null;
     }
 
     private void SerializeOptionalResourceLocation(List<byte> data, string? resourceLocation)

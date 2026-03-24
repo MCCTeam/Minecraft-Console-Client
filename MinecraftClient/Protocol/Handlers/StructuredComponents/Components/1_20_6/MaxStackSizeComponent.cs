@@ -11,7 +11,7 @@ public class MaxStackSizeComponent(DataTypes dataTypes, ItemPalette itemPalette,
     
     public override void Parse(Queue<byte> data)
     {
-        MaxStackSize = dataTypes.ReadNextVarInt(data);
+        MaxStackSize = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

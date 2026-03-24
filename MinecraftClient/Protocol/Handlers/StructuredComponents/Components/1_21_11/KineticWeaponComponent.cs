@@ -9,34 +9,34 @@ public class KineticWeaponComponent(DataTypes dataTypes, ItemPalette itemPalette
 {
     public override void Parse(Queue<byte> data)
     {
-        dataTypes.ReadNextVarInt(data); // contactCooldownTicks
-        dataTypes.ReadNextVarInt(data); // delayTicks
+        DataTypes.ReadNextVarInt(data); // contactCooldownTicks
+        DataTypes.ReadNextVarInt(data); // delayTicks
         ReadOptionalCondition(data);    // dismountConditions
         ReadOptionalCondition(data);    // knockbackConditions
         ReadOptionalCondition(data);    // damageConditions
-        dataTypes.ReadNextFloat(data);  // forwardMovement
-        dataTypes.ReadNextFloat(data);  // damageMultiplier
+        DataTypes.ReadNextFloat(data);  // forwardMovement
+        DataTypes.ReadNextFloat(data);  // damageMultiplier
         ReadOptionalSoundEventHolder(data); // sound
         ReadOptionalSoundEventHolder(data); // hitSound
     }
 
     private void ReadOptionalCondition(Queue<byte> data)
     {
-        if (!dataTypes.ReadNextBool(data)) return;
-        dataTypes.ReadNextVarInt(data); // maxDurationTicks
-        dataTypes.ReadNextFloat(data);  // minSpeed
-        dataTypes.ReadNextFloat(data);  // minRelativeSpeed
+        if (!DataTypes.ReadNextBool(data)) return;
+        DataTypes.ReadNextVarInt(data); // maxDurationTicks
+        DataTypes.ReadNextFloat(data);  // minSpeed
+        DataTypes.ReadNextFloat(data);  // minRelativeSpeed
     }
 
     private void ReadOptionalSoundEventHolder(Queue<byte> data)
     {
-        if (!dataTypes.ReadNextBool(data)) return;
-        var holderId = dataTypes.ReadNextVarInt(data);
+        if (!DataTypes.ReadNextBool(data)) return;
+        var holderId = DataTypes.ReadNextVarInt(data);
         if (holderId == 0)
         {
-            dataTypes.ReadNextString(data);
-            if (dataTypes.ReadNextBool(data))
-                dataTypes.ReadNextFloat(data);
+            DataTypes.ReadNextString(data);
+            if (DataTypes.ReadNextBool(data))
+                DataTypes.ReadNextFloat(data);
         }
     }
 

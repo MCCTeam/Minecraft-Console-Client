@@ -932,7 +932,7 @@ namespace MinecraftClient.Protocol
                 int code = DoHTTPSPost("authserver.mojang.com", 443, "/refresh", json_request, ref result);
                 if (code == 200)
                 {
-                    if (result == null)
+                    if (result is null)
                     {
                         return LoginResult.NullError;
                     }
@@ -983,7 +983,7 @@ namespace MinecraftClient.Protocol
                     Config.Main.General.AuthServer.UseHttps, ref result);
                 if (code == 200)
                 {
-                    if (result == null)
+                    if (result is null)
                     {
                         return LoginResult.NullError;
                     }
@@ -1258,7 +1258,7 @@ namespace MinecraftClient.Protocol
                             contentType = header.Value;
                     }
 
-                    if (body != null)
+                    if (body is not null)
                         request.Content = new StringContent(body, Encoding.UTF8, contentType);
 
                     if (Settings.Config.Logging.DebugMessages)
@@ -1286,9 +1286,9 @@ namespace MinecraftClient.Protocol
                     }
                 }
             }, TimeSpan.FromSeconds(30));
-            if (postResult != null)
+            if (postResult is not null)
                 result = postResult;
-            if (exception != null)
+            if (exception is not null)
                 throw exception;
             return statusCode;
         }

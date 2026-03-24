@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
@@ -102,7 +103,7 @@ namespace MinecraftClient.ChatBots
         private bool inventoryEnabled;
 
         private int counter = 0;
-        private readonly object stateLock = new();
+        private readonly Lock stateLock = new();
         private State state = State.WaitJoinGame;
 
         bool AlreadyWaitting = false;

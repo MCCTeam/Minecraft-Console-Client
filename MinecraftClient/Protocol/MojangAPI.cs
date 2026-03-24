@@ -19,19 +19,7 @@ namespace MinecraftClient.Protocol
     /// Information about a players Skin.
     /// Empty string if not available.
     /// </summary>
-    public class SkinInfo
-    {
-        public readonly string SkinUrl;
-        public readonly string CapeUrl;
-        public readonly string SkinModel;
-
-        public SkinInfo(string skinUrl = "", string capeUrl = "", string skinModel = "")
-        {
-            SkinUrl = skinUrl;
-            CapeUrl = capeUrl;
-            SkinModel = skinModel;
-        }
-    }
+    public record SkinInfo(string SkinUrl = "", string CapeUrl = "", string SkinModel = "");
 
     /// <summary>
     /// Status of the single Mojang services
@@ -254,14 +242,14 @@ namespace MinecraftClient.Protocol
             // Can apparently be missing, if no custom skin is set.
             if (textureObj.ContainsKey("SKIN"))
             {
-                return new SkinInfo(skinUrl: textureObj["SKIN"]!["url"] is not null ? textureObj["SKIN"]!["url"]!.GetStringValue() : string.Empty,
-                    capeUrl: textureObj.ContainsKey("CAPE") ? textureObj["CAPE"]!["url"]!.GetStringValue() : string.Empty,
-                    skinModel: textureObj["SKIN"]!["metadata"] is not null ? "Alex" : "Steve");
+                return new SkinInfo(SkinUrl: textureObj["SKIN"]!["url"] is not null ? textureObj["SKIN"]!["url"]!.GetStringValue() : string.Empty,
+                    CapeUrl: textureObj.ContainsKey("CAPE") ? textureObj["CAPE"]!["url"]!.GetStringValue() : string.Empty,
+                    SkinModel: textureObj["SKIN"]!["metadata"] is not null ? "Alex" : "Steve");
             }
             else
             {
-                return new SkinInfo(capeUrl: textureObj.ContainsKey("CAPE") ? textureObj["CAPE"]!["url"]!.GetStringValue() : string.Empty,
-                    skinModel: DefaultModelAlex(uuid) ? "Alex" : "Steve");
+                return new SkinInfo(CapeUrl: textureObj.ContainsKey("CAPE") ? textureObj["CAPE"]!["url"]!.GetStringValue() : string.Empty,
+                    SkinModel: DefaultModelAlex(uuid) ? "Alex" : "Steve");
             }
         }
 

@@ -31,7 +31,7 @@ namespace MinecraftClient.Logger
                         regexToUse = new(debug);
                     break;
             }
-            if (regexToUse != null)
+            if (regexToUse is not null)
             {
                 // IsMatch and white/blacklist result can be represented using XOR
                 // e.g.  matched(true) ^ blacklist(true) => shouldn't log(false)

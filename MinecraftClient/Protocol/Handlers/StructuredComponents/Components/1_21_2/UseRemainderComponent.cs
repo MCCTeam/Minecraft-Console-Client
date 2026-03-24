@@ -12,13 +12,13 @@ public class UseRemainderComponent(DataTypes dataTypes, ItemPalette itemPalette,
 
     public override void Parse(Queue<byte> data)
     {
-        ConvertInto = dataTypes.ReadNextItemSlot(data, ItemPalette);
+        ConvertInto = DataTypes.ReadNextItemSlot(data, ItemPalette);
     }
 
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        data.AddRange(dataTypes.GetItemSlot(ConvertInto, ItemPalette));
+        data.AddRange(DataTypes.GetItemSlot(ConvertInto, ItemPalette));
         return new Queue<byte>(data);
     }
 }

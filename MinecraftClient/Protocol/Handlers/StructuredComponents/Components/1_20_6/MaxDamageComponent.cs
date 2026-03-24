@@ -11,7 +11,7 @@ public class MaxDamageComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
     
     public override void Parse(Queue<byte> data)
     {
-        MaxDamage = dataTypes.ReadNextVarInt(data);
+        MaxDamage = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

@@ -13,9 +13,9 @@ public class UseEffectsComponent(DataTypes dataTypes, ItemPalette itemPalette, S
 
     public override void Parse(Queue<byte> data)
     {
-        CanSprint = dataTypes.ReadNextBool(data);
-        InteractVibrations = dataTypes.ReadNextBool(data);
-        SpeedMultiplier = dataTypes.ReadNextFloat(data);
+        CanSprint = DataTypes.ReadNextBool(data);
+        InteractVibrations = DataTypes.ReadNextBool(data);
+        SpeedMultiplier = DataTypes.ReadNextFloat(data);
     }
 
     public override Queue<byte> Serialize()

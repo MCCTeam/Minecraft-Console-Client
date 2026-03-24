@@ -10,7 +10,7 @@ public class CustomModelDataComponent(DataTypes dataTypes, ItemPalette itemPalet
     
     public override void Parse(Queue<byte> data)
     {
-        Value = dataTypes.ReadNextVarInt(data);
+        Value = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

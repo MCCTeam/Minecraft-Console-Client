@@ -123,7 +123,7 @@ namespace MinecraftClient.Protocol.Message
         {
             string sender = message.isSenderJson ? ParseText(message.displayName!) : message.displayName!;
             string content;
-            if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
+            if (Config.Signature.ShowModifiedChat && message.unsignedContent is not null)
             {
                 content = ParseText(message.unsignedContent!);
                 if (string.IsNullOrEmpty(content))
@@ -315,7 +315,7 @@ namespace MinecraftClient.Protocol.Message
                     Task<Dictionary<string, string>?> fetckFileTask =
                         httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
                     fetckFileTask.Wait();
-                    if (fetckFileTask.Result != null && fetckFileTask.Result.Count > 0)
+                    if (fetckFileTask.Result is not null && fetckFileTask.Result.Count > 0)
                     {
                         TranslationRules = fetckFileTask.Result;
                         TranslationRules["Version"] = TranslationsFile_Version;
@@ -511,7 +511,7 @@ namespace MinecraftClient.Protocol.Message
 
             string message = string.Empty;
             string colorCode = string.Empty;
-            StringBuilder extraBuilder = new StringBuilder();
+            StringBuilder extraBuilder = new();
             foreach (var kvp in nbt)
             {
                 string key = kvp.Key;
@@ -545,11 +545,11 @@ namespace MinecraftClient.Protocol.Message
                         break;
                     case "translate":
                     {
-                        if (nbt.TryGetValue("translate", out object translate))
+                        if (nbt.TryGetValue("translate", out object? translate))
                         {
                             var translateKey = (string)translate;
                             List<string> translateString = new();
-                            if (nbt.TryGetValue("with", out object withComponent))
+                            if (nbt.TryGetValue("with", out object? withComponent))
                             {
                                 var withs = (object[])withComponent;
                                 for (var i = 0; i < withs.Length; i++)
@@ -574,7 +574,7 @@ namespace MinecraftClient.Protocol.Message
                         break;
                     case "color":
                     {
-                        if (nbt.TryGetValue("color", out object color))
+                        if (nbt.TryGetValue("color", out object? color))
                         {
                             colorCode = Color2tag((string)color);
                         }

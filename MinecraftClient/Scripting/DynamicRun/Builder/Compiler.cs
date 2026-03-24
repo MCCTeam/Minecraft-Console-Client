@@ -82,6 +82,8 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
             {
                 // Create a temporary file to copy the executable to.
                 var executablePath = Environment.ProcessPath;
+                if (executablePath is null)
+                    throw new InvalidOperationException("Cannot determine the process path for self-contained scripting extraction.");
                 var tempPath = Path.Combine(Path.GetTempPath(), "mcc-scripting");
                 Directory.CreateDirectory(tempPath);
                 
@@ -142,7 +144,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                                 "[Script Error] Too many references to the same assembly. Assembly name: " + refs.Name);
                         }
 
-                        if (reference == null) {
+                        if (reference is null) {
                             throw new InvalidOperationException(
                                 "[Script Error] The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
                         }

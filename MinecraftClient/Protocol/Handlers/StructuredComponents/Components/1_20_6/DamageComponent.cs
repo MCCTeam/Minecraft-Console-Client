@@ -11,7 +11,7 @@ public class DamageComponent(DataTypes dataTypes, ItemPalette itemPalette, SubCo
     
     public override void Parse(Queue<byte> data)
     {
-        Damage = dataTypes.ReadNextVarInt(data);
+        Damage = DataTypes.ReadNextVarInt(data);
     }
 
     public override Queue<byte> Serialize()

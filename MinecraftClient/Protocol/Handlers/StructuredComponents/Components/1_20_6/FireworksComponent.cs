@@ -19,14 +19,14 @@ public class FireworksComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
     
     public override void Parse(Queue<byte> data)
     {
-        FlightDuration = dataTypes.ReadNextVarInt(data);
-        NumberOfExplosions = dataTypes.ReadNextVarInt(data);
+        FlightDuration = DataTypes.ReadNextVarInt(data);
+        NumberOfExplosions = DataTypes.ReadNextVarInt(data);
 
         if (NumberOfExplosions > 0)
         {
             for(var i = 0; i < NumberOfExplosions; i++)
                 Explosions.Add(
-                    (FireworkExplosionSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.FireworkExplosion,
+                    (FireworkExplosionSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.FireworkExplosion,
                         data));
         }
     }

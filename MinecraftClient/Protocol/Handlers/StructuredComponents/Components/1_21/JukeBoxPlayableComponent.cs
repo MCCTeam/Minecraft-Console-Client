@@ -21,26 +21,26 @@ public class JukeBoxPlayableComponent(DataTypes dataTypes, ItemPalette itemPalet
     
     public override void Parse(Queue<byte> data)
     {
-        DirectMode = dataTypes.ReadNextBool(data);
+        DirectMode = DataTypes.ReadNextBool(data);
 
         if (!DirectMode)
-            SongName = dataTypes.ReadNextString(data);
+            SongName = DataTypes.ReadNextString(data);
 
         if (DirectMode)
         {
-            SongType = dataTypes.ReadNextVarInt(data);
+            SongType = DataTypes.ReadNextVarInt(data);
 
             if (SongType == 0)
             {
                 SoundEvent =
-                    (SoundEventSubComponent)subComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
-                Description = dataTypes.ReadNextString(data);
-                Duration = dataTypes.ReadNextFloat(data);
-                Output = dataTypes.ReadNextVarInt(data);
+                    (SoundEventSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
+                Description = DataTypes.ReadNextString(data);
+                Duration = DataTypes.ReadNextFloat(data);
+                Output = DataTypes.ReadNextVarInt(data);
             }
         }
 
-        ShowTooltip = dataTypes.ReadNextBool(data);
+        ShowTooltip = DataTypes.ReadNextBool(data);
     }
 
     public override Queue<byte> Serialize()

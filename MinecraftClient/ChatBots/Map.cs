@@ -284,13 +284,13 @@ namespace MinecraftClient.ChatBots
 
             if (Config.Send_Rendered_To_Discord)
             {
-                if (discordBridge == null || (discordBridge != null && !discordBridge.IsConnected))
+                if (discordBridge is null || (discordBridge is not null && !discordBridge.IsConnected))
                     return;
             }
 
             if (Config.Send_Rendered_To_Telegram)
             {
-                if (telegramBridge == null || (telegramBridge != null && !telegramBridge.IsConnected))
+                if (telegramBridge is null || (telegramBridge is not null && !telegramBridge.IsConnected))
                     return;
             }
 

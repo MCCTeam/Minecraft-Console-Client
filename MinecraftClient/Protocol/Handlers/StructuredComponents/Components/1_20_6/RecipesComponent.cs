@@ -11,7 +11,7 @@ public class RecipesComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
     
     public override void Parse(Queue<byte> data)
     {
-        Nbt = dataTypes.ReadNextNbt(data);
+        Nbt = DataTypes.ReadNextNbt(data);
     }
 
     public override Queue<byte> Serialize()
