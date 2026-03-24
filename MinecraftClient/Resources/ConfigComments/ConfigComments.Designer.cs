@@ -1704,6 +1704,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Override the maximum chat message length. Set to 0 to use the default (100 for 1.10 and below, 256 for 1.11+). WARNING: Setting this incorrectly may cause you to be kicked from the server..
+        /// </summary>
+        internal static string Main_Advanced_max_chat_message_length {
+            get {
+                return ResourceManager.GetString("Main.Advanced.max_chat_message_length", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enable support for joining Minecraft Realms worlds..
         /// </summary>
         internal static string Main_Advanced_minecraft_realms {

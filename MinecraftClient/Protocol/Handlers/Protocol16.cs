@@ -696,7 +696,8 @@ namespace MinecraftClient.Protocol.Handlers
 
         public int GetMaxChatMessageLength()
         {
-            return 100;
+            int configOverride = Settings.MainConfigHelper.Config.Advanced.MaxChatMessageLength;
+            return configOverride > 0 ? configOverride : 100;
         }
 
         public int GetProtocolVersion()

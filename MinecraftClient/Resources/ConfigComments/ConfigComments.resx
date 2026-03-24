@@ -655,6 +655,9 @@ Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; P
   <data name="Main.Advanced.message_cooldown" xml:space="preserve">
     <value>Controls the minimum interval (in seconds) between sending each message to the server.</value>
   </data>
+  <data name="Main.Advanced.max_chat_message_length" xml:space="preserve">
+    <value>Override the maximum chat message length. Set to 0 to use the default (100 for 1.10 and below, 256 for 1.11+). WARNING: Setting this incorrectly may cause you to be kicked from the server.</value>
+  </data>
   <data name="Main.Advanced.minecraft_realms" xml:space="preserve">
     <value>Enable support for joining Minecraft Realms worlds.</value>
   </data>

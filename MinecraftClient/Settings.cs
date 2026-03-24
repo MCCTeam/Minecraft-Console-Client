@@ -422,6 +422,14 @@ namespace MinecraftClient
                     if (Advanced.MessageCooldown < 0)
                         Advanced.MessageCooldown = 0;
 
+                    if (Advanced.MaxChatMessageLength < 0)
+                        Advanced.MaxChatMessageLength = 0;
+                    else if (Advanced.MaxChatMessageLength > 32767)
+                        Advanced.MaxChatMessageLength = 32767;
+
+                    if (Advanced.MaxChatMessageLength > 0)
+                        ConsoleIO.WriteLineFormatted("§e[Settings] MaxChatMessageLength is set to " + Advanced.MaxChatMessageLength + ". Setting this incorrectly may cause you to be kicked from the server.");
+
                     if (Advanced.TcpTimeout < 1)
                         Advanced.TcpTimeout = 1;
 
@@ -528,6 +536,9 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Main.Advanced.message_cooldown$")]
                     public double MessageCooldown = 1.0;
+
+                    [TomlInlineComment("$Main.Advanced.max_chat_message_length$")]
+                    public int MaxChatMessageLength = 0;
 
                     [TomlInlineComment("$Main.Advanced.bot_owners$")]
                     public List<string> BotOwners = new() { "Player1", "Player2" };
