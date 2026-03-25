@@ -19,6 +19,7 @@ EOF
 SERVER_DIR="${1:-}"
 MC_VERSION="${2:-}"
 PROFILE="${3:-}"
+SERVER_PORT=""
 
 if [[ -z "$SERVER_DIR" || -z "$MC_VERSION" || -z "$PROFILE" ]]; then
     usage >&2
@@ -75,6 +76,22 @@ wait_for_server_ready() {
     return 1
 }
 
+wait_for_rcon_port_free() {
+    local timeout="${1:-30}"
+    local elapsed=0
+
+    while (( elapsed < timeout )); do
+        if ! ss -ltn '( sport = :25575 )' 2>/dev/null | grep -Fq ':25575'; then
+            return 0
+        fi
+        sleep 1
+        ((elapsed += 1))
+    done
+
+    echo "Timed out waiting for RCON port 25575 to become free" >&2
+    return 1
+}
+
 kill_other_servers() {
     local sessions
     sessions="$(tmux list-sessions 2>/dev/null | awk -F: '/^mc-/{print $1}' || true)"
@@ -100,16 +117,18 @@ cleanup() {
     fi
 
     tmux kill-session -t "$SESSION_NAME" 2>/dev/null || true
+    wait_for_rcon_port_free 30 || true
 }
 
 trap cleanup EXIT
 
 prepare_config() {
-    cp "$REPO_ROOT/MinecraftClient.ini" "$CFG"
+    MCC_TEST_ACCOUNT_TYPE=mojang MCC_TEST_PASSWORD=- \
+        bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh" \
+        "$REPO_ROOT/MinecraftClient.ini" "$CFG" "$MC_VERSION" CursorBot >/dev/null
 
     sed -i \
-        -e 's/Account = { Login = "test", Password = "-" }/Account = { Login = "CursorBot", Password = "-" }/' \
-        -e "s/MinecraftVersion = \"auto\"/MinecraftVersion = \"$MC_VERSION\"/" \
+        -e "s#^Server = .*#Server = { Host = \"localhost\", Port = $SERVER_PORT }#" \
         -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
         -e 's/InventoryHandling = false/InventoryHandling = true/' \
         -e 's/EntityHandling = false/EntityHandling = true/' \
@@ -195,8 +214,8 @@ modern_mob_and_effects() {
     run_server_command "effect give CursorBot minecraft:regeneration 10 1 true"
 }
 
-prepare_config
 kill_other_servers
+wait_for_rcon_port_free 30 || true
 rm -f "$MCC_LOG" "$INPUT_FILE"
 
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/ensure_offline_server.sh" "$SERVER_DIR" >/dev/null
@@ -206,12 +225,15 @@ fi
 
 mc-start "$SERVER_DIR" >/dev/null
 wait_for_server_ready || exit 1
+SERVER_PORT="$(bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/get_server_port.sh" "$SERVER_DIR")"
+prepare_config
 
 : > "$INPUT_FILE"
 
 (
     cd "$REPO_ROOT"
-    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "$CFG" > "$MCC_LOG" 2>&1
+    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- \
+        "$CFG" CursorBot - "localhost:$SERVER_PORT" > "$MCC_LOG" 2>&1
 ) &
 MCC_PID=$!
 
