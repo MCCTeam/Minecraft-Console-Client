@@ -501,7 +501,17 @@ namespace MinecraftClient
                 converted = Convert.ChangeType(input, effectiveType, CultureInfo.InvariantCulture);
                 return true;
             }
-            catch
+            catch (InvalidCastException)
+            {
+                converted = null;
+                return false;
+            }
+            catch (FormatException)
+            {
+                converted = null;
+                return false;
+            }
+            catch (OverflowException)
             {
                 converted = null;
                 return false;
