@@ -5,6 +5,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_2;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_8;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_9;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_11;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
@@ -90,7 +91,7 @@ public class StructuredComponentsRegistry12111 : StructuredComponentRegistry
         RegisterComponent<PotDecorationsComponent>(72, "minecraft:pot_decorations");
         RegisterComponent<ContainerComponent>(73, "minecraft:container");
         RegisterComponent<BlockStateComponent>(74, "minecraft:block_state");
-        RegisterComponent<BeesComponent>(75, "minecraft:bees");
+        RegisterComponent<BeesComponent1219>(75, "minecraft:bees");
         RegisterComponent<LockComponent>(76, "minecraft:lock");
         RegisterComponent<ContainerLootComponent>(77, "minecraft:container_loot");
 
