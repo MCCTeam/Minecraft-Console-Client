@@ -1089,7 +1089,21 @@ public class WebSocketBot : ChatBot
     private void HandleAuthenticate(string sessionId, WebSocketSession session, string requestId,
         List<object?> parameters)
     {
-        if (parameters.Count == 0 || GetParam<string>(parameters, 0) != _password)
+        if (parameters.Count == 0)
+        {
+            SendCommandResponse(sessionId, requestId, false, "Invalid password");
+            return;
+        }
+
+        var provided = GetParam<string>(parameters, 0);
+        var expected = _password;
+
+        // Fixed-time comparison to prevent timing attacks
+        var diff = provided.Length ^ expected.Length;
+        for (int i = 0; i < expected.Length; i++)
+            diff |= expected[i] ^ (i < provided.Length ? provided[i] : 0xFF);
+
+        if (diff != 0)
         {
             SendCommandResponse(sessionId, requestId, false, "Invalid password");
             return;
