@@ -4,6 +4,8 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_2;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_8;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_9;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_11;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
@@ -30,7 +32,7 @@ public class StructuredComponentsRegistry12111 : StructuredComponentRegistry
         RegisterComponent<EnchantmentsComponent1215>(13, "minecraft:enchantments");
         RegisterComponent<CanPlaceOnComponent>(14, "minecraft:can_place_on");
         RegisterComponent<CanBreakComponent>(15, "minecraft:can_break");
-        RegisterComponent<AttributeModifiersComponent>(16, "minecraft:attribute_modifiers");
+        RegisterComponent<AttributeModifiersComponent1218>(16, "minecraft:attribute_modifiers");
         RegisterComponent<CustomModelDataComponent>(17, "minecraft:custom_model_data");
         RegisterComponent<TooltipDisplayComponent>(18, "minecraft:tooltip_display");
         RegisterComponent<RepairCostComponent>(19, "minecraft:repair_cost");
@@ -42,11 +44,11 @@ public class StructuredComponentsRegistry12111 : StructuredComponentRegistry
         RegisterComponent<UseRemainderComponent>(25, "minecraft:use_remainder");
         RegisterComponent<UseCooldownComponent>(26, "minecraft:use_cooldown");
         RegisterComponent<DamageResistantComponent>(27, "minecraft:damage_resistant");
-        RegisterComponent<ToolComponent>(28, "minecraft:tool");
+        RegisterComponent<ToolComponent1215>(28, "minecraft:tool");
         RegisterComponent<WeaponComponent>(29, "minecraft:weapon");
         RegisterComponent<AttackRangeComponent>(30, "minecraft:attack_range");
         RegisterComponent<EnchantableComponent>(31, "minecraft:enchantable");
-        RegisterComponent<EquippableComponent>(32, "minecraft:equippable");
+        RegisterComponent<EquippableComponent1218>(32, "minecraft:equippable");
         RegisterComponent<RepairableComponent>(33, "minecraft:repairable");
         RegisterComponent<GliderComponent>(34, "minecraft:glider");
         RegisterComponent<TooltipStyleComponent>(35, "minecraft:tooltip_style");
@@ -63,7 +65,7 @@ public class StructuredComponentsRegistry12111 : StructuredComponentRegistry
         RegisterComponent<MapPostProcessingComponent>(46, "minecraft:map_post_processing");
         RegisterComponent<ChargedProjectilesComponent>(47, "minecraft:charged_projectiles");
         RegisterComponent<BundleContentsComponent>(48, "minecraft:bundle_contents");
-        RegisterComponent<PotionContentsComponent>(49, "minecraft:potion_contents");
+        RegisterComponent<PotionContentsComponent1212>(49, "minecraft:potion_contents");
         RegisterComponent<PotionDurationScaleComponent>(50, "minecraft:potion_duration_scale");
         RegisterComponent<SuspiciousStewEffectsComponent>(51, "minecraft:suspicious_stew_effects");
         RegisterComponent<WritableBlookContentComponent>(52, "minecraft:writable_book_content");
@@ -76,7 +78,7 @@ public class StructuredComponentsRegistry12111 : StructuredComponentRegistry
         RegisterComponent<InstrumentComponent1215>(59, "minecraft:instrument");
         RegisterComponent<ProvidesTrimMaterialComponent>(60, "minecraft:provides_trim_material");
         RegisterComponent<OmniousBottleAmplifierComponent>(61, "minecraft:ominous_bottle_amplifier");
-        RegisterComponent<JukeBoxPlayableComponent>(62, "minecraft:jukebox_playable");
+        RegisterComponent<JukeBoxPlayableComponent1215>(62, "minecraft:jukebox_playable");
         RegisterComponent<ProvidesBannerPatternsComponent>(63, "minecraft:provides_banner_patterns");
         RegisterComponent<RecipesComponent>(64, "minecraft:recipes");
         RegisterComponent<LodestoneTrackerComponent>(65, "minecraft:lodestone_tracker");
@@ -89,7 +91,7 @@ public class StructuredComponentsRegistry12111 : StructuredComponentRegistry
         RegisterComponent<PotDecorationsComponent>(72, "minecraft:pot_decorations");
         RegisterComponent<ContainerComponent>(73, "minecraft:container");
         RegisterComponent<BlockStateComponent>(74, "minecraft:block_state");
-        RegisterComponent<BeesComponent>(75, "minecraft:bees");
+        RegisterComponent<BeesComponent1219>(75, "minecraft:bees");
         RegisterComponent<LockComponent>(76, "minecraft:lock");
         RegisterComponent<ContainerLootComponent>(77, "minecraft:container_loot");
 

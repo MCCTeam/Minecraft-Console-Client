@@ -20,11 +20,11 @@ public class PaintingVariantHolderComponent(DataTypes dataTypes, ItemPalette ite
 
             // Optional<Component> title
             if (DataTypes.ReadNextBool(data))
-                DataTypes.ReadNextString(data);
+                DataTypes.ReadNextNbt(data);
 
             // Optional<Component> author
             if (DataTypes.ReadNextBool(data))
-                DataTypes.ReadNextString(data);
+                DataTypes.ReadNextNbt(data);
         }
     }
 

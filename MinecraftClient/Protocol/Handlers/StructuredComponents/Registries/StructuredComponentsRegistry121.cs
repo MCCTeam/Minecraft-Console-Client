@@ -23,7 +23,7 @@ public class StructuredComponentsRegistry121 : StructuredComponentRegistry
         RegisterComponent<CanPlaceOnComponent>(10, "minecraft:can_place_on");
         RegisterComponent<CanBreakComponent>(11, "minecraft:can_break");
         RegisterComponent<AttributeModifiersComponent>(12, "minecraft:attribute_modifiers");
-        RegisterComponent<CustomModelDataComponent>(13, "minecraft:custom_model_data");
+        RegisterComponent<CustomModelDataComponent1206>(13, "minecraft:custom_model_data");
         RegisterComponent<HideAdditionalTooltipComponent>(14, "minecraft:hide_additional_tooltip");
         RegisterComponent<HideTooltipComponent>(15, "minecraft:hide_tooltip");
         RegisterComponent<RepairCostComponent>(16, "minecraft:repair_cost");
@@ -52,7 +52,7 @@ public class StructuredComponentsRegistry121 : StructuredComponentRegistry
         RegisterComponent<BlockEntityDataComponent>(39, "minecraft:block_entity_data");
         RegisterComponent<InstrumentComponent>(40, "minecraft:instrument");
         RegisterComponent<OmniousBottleAmplifierComponent>(41, "minecraft:ominous_bottle_amplifier");
-        RegisterComponent<JukeBoxPlayableComponent>(42, "minecraft:jukebox_playable");
+        RegisterComponent<JukeBoxPlayableComponent121>(42, "minecraft:jukebox_playable");
         RegisterComponent<RecipesComponent>(43, "minecraft:recipes");
         RegisterComponent<LodestoneTrackerComponent>(44, "minecraft:lodestone_tracker");
         RegisterComponent<FireworkExplosionComponent>(45, "minecraft:firework_explosion");

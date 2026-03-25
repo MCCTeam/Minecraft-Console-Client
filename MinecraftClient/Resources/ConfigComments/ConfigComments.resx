@@ -119,7 +119,7 @@
   </resheader>
   <data name="AppVars.Variables" xml:space="preserve">
     <value>can be used in some other fields as %yourvar%
-%username% and %serverip% are reserved variables.</value>
+%username%, %login%, %serverip%, %serverport%, %datetime% and %players% are reserved read-only variables.</value>
   </data>
   <data name="ChatBot" xml:space="preserve">
     <value>=============================== #

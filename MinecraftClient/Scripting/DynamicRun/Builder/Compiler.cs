@@ -132,6 +132,8 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 // Facade assemblies needed for compiling scripts that reference netstandard libraries (e.g. Brigadier.NET)
                 assemblyrefs.Add(new("netstandard"));
                 assemblyrefs.Add(new("System.Runtime"));
+                assemblyrefs.Add(new("System.Private.Uri"));
+                assemblyrefs.Add(new("System.Net.Requests"));
 
                 foreach (var refs in assemblyrefs) {
                     Assembly? loadedAssembly;
@@ -180,7 +182,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 // Add facade assemblies needed for Roslyn compilation when referencing
                 // libraries that target netstandard (e.g. Brigadier.NET).
                 var runtimeDir = Path.GetDirectoryName(SystemPrivateCoreLib)!;
-                foreach (var facadeName in new[] { "netstandard.dll", "System.Runtime.dll" })
+                foreach (var facadeName in new[] { "netstandard.dll", "System.Runtime.dll", "System.Private.Uri.dll", "System.Net.Requests.dll" })
                 {
                     var facadePath = Path.Combine(runtimeDir, facadeName);
                     if (File.Exists(facadePath))

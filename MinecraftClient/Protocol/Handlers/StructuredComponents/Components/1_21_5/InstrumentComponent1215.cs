@@ -16,7 +16,7 @@ public class InstrumentComponent1215(DataTypes dataTypes, ItemPalette itemPalett
             var holderId = DataTypes.ReadNextVarInt(data);
             if (holderId == 0)
             {
-                // Inline Instrument: SoundEvent holder + VarInt useDuration + Float range + Component description
+                // Inline Instrument: SoundEvent holder + Float useDuration + Float range + Component description
                 var soundHolderId = DataTypes.ReadNextVarInt(data);
                 if (soundHolderId == 0)
                 {
@@ -25,9 +25,10 @@ public class InstrumentComponent1215(DataTypes dataTypes, ItemPalette itemPalett
                     if (hasFixedRange)
                         DataTypes.ReadNextFloat(data);
                 }
-                DataTypes.ReadNextVarInt(data); // useDuration
+                DataTypes.ReadNextFloat(data); // useDuration
                 DataTypes.ReadNextFloat(data); // range
-                DataTypes.ReadNextString(data); // description (Component as JSON string)
+                // ComponentSerialization.STREAM_CODEC is NBT-backed, not a plain string.
+                DataTypes.ReadNextNbt(data);
             }
         }
         else

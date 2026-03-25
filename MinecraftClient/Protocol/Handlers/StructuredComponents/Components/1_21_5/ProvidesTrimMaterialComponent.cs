@@ -25,8 +25,8 @@ public class ProvidesTrimMaterialComponent(DataTypes dataTypes, ItemPalette item
                     DataTypes.ReadNextString(data); // ResourceKey<EquipmentAsset>
                     DataTypes.ReadNextString(data); // override suffix
                 }
-                // description Component
-                DataTypes.ReadNextString(data);
+                // ComponentSerialization.STREAM_CODEC is NBT-backed, not a plain string.
+                DataTypes.ReadNextNbt(data);
             }
         }
         else
