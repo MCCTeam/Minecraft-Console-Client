@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Brigadier.NET.Builder;
 using DSharpPlus;
@@ -222,7 +223,22 @@ namespace MinecraftClient.ChatBots
                 SendMessage(messageBuilder);
                 return;
             }
-            else SendMessage(message);
+            else SendMessage(GetDiscordText(message));
+        }
+
+        /// <summary>
+        /// Converts Minecraft § formatting codes to Discord Markdown equivalents
+        /// and strips remaining § codes.
+        /// Handles both properly closed formatting (§l...§r) and unclosed formatting (§l... end).
+        /// </summary>
+        private static string GetDiscordText(string text)
+        {
+            text = Regex.Replace(text, @"§l(.*?)(?:§r|$)", "**$1**");
+            text = Regex.Replace(text, @"§m(.*?)(?:§r|$)", "~~$1~~");
+            text = Regex.Replace(text, @"§n(.*?)(?:§r|$)", "__$1__");
+            text = Regex.Replace(text, @"§o(.*?)(?:§r|$)", "*$1*");
+            text = Regex.Replace(text, @"§.", "");
+            return text;
         }
 
         public void SendMessage(string message)
