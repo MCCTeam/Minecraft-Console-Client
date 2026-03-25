@@ -313,19 +313,23 @@ namespace MinecraftClient
             } 
             else
             {
-                // The AutoRelog ChatBot will handle reconnection at this point.
-                // This is important, or else we'll have multiple instances of the client running at the same time.
+                // AutoRelog is enabled - invoke its static handler to trigger reconnection.
+                // Use the same "Connection has been lost" message that OnConnectionLost uses
+                // for ConnectionLost, so it matches the default Kick_Messages.
+                if (AutoRelog.OnDisconnectStatic(ChatBot.DisconnectReason.ConnectionLost, Translations.mcc_disconnect_lost))
+                    return; // AutoRelog is triggering a restart
 
-                if (ReconnectionAttemptsLeft == 0)
+                // AutoRelog chose not to reconnect (e.g., message didn't match
+                // kick messages and Ignore_Kick_Message is false, or retry limit reached)
+                if (InternalConfig.InteractiveMode)
                 {
-                    if (InternalConfig.InteractiveMode)
-                    {
-                        ConsoleInteractive.ConsoleReader.StopReadThread();
-                        ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                        ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
-                        Program.HandleFailure();
-                    }
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    Program.HandleFailure();
                 }
+
+                throw new Exception("Initialization failed.");
             }
         }
         
