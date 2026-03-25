@@ -82,7 +82,7 @@ namespace MinecraftClient.Tui
                 MinHeight = 1,
             };
 
-            _commandInput.KeyDown += OnCommandKeyDown;
+            _commandInput.AddHandler(KeyDownEvent, OnCommandKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             _commandInput.TextChanged += OnCommandTextChanged;
 
             var promptLabel = new TextBlock
@@ -217,9 +217,53 @@ namespace MinecraftClient.Tui
 
         private void OnCommandKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.C && (e.KeyModifiers & KeyModifiers.Control) != 0)
+            bool ctrl = (e.KeyModifiers & KeyModifiers.Control) != 0;
+
+            if (e.Key == Key.C && ctrl)
             {
                 HandleCtrlC();
+                e.Handled = true;
+                return;
+            }
+
+            if ((e.Key == Key.Back || e.Key == Key.W) && ctrl)
+            {
+                DeleteWordBackward();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Left && ctrl)
+            {
+                MoveCaretWordLeft();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Right && ctrl)
+            {
+                MoveCaretWordRight();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.A && ctrl)
+            {
+                _commandInput.CaretIndex = 0;
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.E && ctrl)
+            {
+                _commandInput.CaretIndex = _commandInput.Text?.Length ?? 0;
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.U && ctrl)
+            {
+                _commandInput.Text = string.Empty;
                 e.Handled = true;
                 return;
             }
@@ -253,11 +297,59 @@ namespace MinecraftClient.Tui
             }
         }
 
+        private void DeleteWordBackward()
+        {
+            string text = _commandInput.Text ?? "";
+            int caret = _commandInput.CaretIndex;
+            if (caret == 0 || text.Length == 0) return;
+
+            int pos = caret - 1;
+            while (pos > 0 && text[pos - 1] == ' ') pos--;
+            while (pos > 0 && text[pos - 1] != ' ') pos--;
+
+            _commandInput.Text = text[..pos] + text[caret..];
+            _commandInput.CaretIndex = pos;
+        }
+
+        private void MoveCaretWordLeft()
+        {
+            string text = _commandInput.Text ?? "";
+            int pos = _commandInput.CaretIndex;
+            if (pos == 0) return;
+
+            pos--;
+            while (pos > 0 && text[pos - 1] == ' ') pos--;
+            while (pos > 0 && text[pos - 1] != ' ') pos--;
+
+            _commandInput.CaretIndex = pos;
+        }
+
+        private void MoveCaretWordRight()
+        {
+            string text = _commandInput.Text ?? "";
+            int pos = _commandInput.CaretIndex;
+            if (pos >= text.Length) return;
+
+            while (pos < text.Length && text[pos] != ' ') pos++;
+            while (pos < text.Length && text[pos] == ' ') pos++;
+
+            _commandInput.CaretIndex = pos;
+        }
+
         private void OnCommandTextChanged(object? sender, TextChangedEventArgs e)
         {
+            string text = _commandInput.Text ?? string.Empty;
+
+            if (text.Contains('\n') || text.Contains('\r'))
+            {
+                string cleaned = text.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ');
+                _commandInput.Text = cleaned;
+                _commandInput.CaretIndex = cleaned.Length;
+                return;
+            }
+
             var backend = TuiConsoleBackend.Instance;
             if (backend == null) return;
-            string text = _commandInput.Text ?? string.Empty;
             int cursor = _commandInput.CaretIndex;
             backend.OnInputChanged(text, cursor);
         }
@@ -301,7 +393,7 @@ namespace MinecraftClient.Tui
 
         #region Ctrl+C
 
-        private void HandleCtrlC()
+        internal void HandleCtrlC()
         {
             long now = Environment.TickCount64;
             long elapsed = now - _lastCtrlCTicks;
@@ -403,25 +495,30 @@ namespace MinecraftClient.Tui
             float health = client.GetHealth();
             int food = client.GetSaturation();
 
-            string hearts = RenderBar(health, 20f, "\u2764", "\u2661");
-            string drumsticks = RenderBar(food, 20f, "\u2689", "\u25cb");
+            int heartsFilled = (int)Math.Ceiling(health / 20f * 10);
+            heartsFilled = Math.Clamp(heartsFilled, 0, 10);
+            int foodFilled = (int)Math.Ceiling(food / 20f * 10);
+            foodFilled = Math.Clamp(foodFilled, 0, 10);
 
             _statusBar.Inlines?.Clear();
             _statusBar.Inlines ??= new Avalonia.Controls.Documents.InlineCollection();
 
-            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(hearts + " ")
+            var healthText = BuildBarText(heartsFilled, 10, "\u2764\ufe0f", " \u2661 ");
+            var foodText = BuildBarText(foodFilled, 10, "\ud83c\udf56", " \u25cb ");
+
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(healthText)
             {
                 Foreground = new SolidColorBrush(Color.FromRgb(255, 85, 85)),
             });
-            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run($"{health:F1}")
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run($" {health:F1}  ")
             {
-                Foreground = new SolidColorBrush(Color.FromRgb(255, 120, 120)),
+                Foreground = new SolidColorBrush(Color.FromRgb(255, 150, 150)),
             });
-            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run("  " + drumsticks + " ")
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(foodText)
             {
-                Foreground = new SolidColorBrush(Color.FromRgb(200, 170, 80)),
+                Foreground = new SolidColorBrush(Color.FromRgb(200, 160, 80)),
             });
-            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run($"{food}")
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run($" {food}")
             {
                 Foreground = new SolidColorBrush(Color.FromRgb(220, 190, 100)),
             });
@@ -429,13 +526,19 @@ namespace MinecraftClient.Tui
             _statusBar.IsVisible = true;
         }
 
-        private static string RenderBar(float value, float max, string filledChar, string emptyChar)
+        private static string BuildBarText(int filled, int total, string filledChar, string emptyChar)
         {
-            int total = 10;
-            int filled = (int)Math.Ceiling(value / max * total);
-            filled = Math.Clamp(filled, 0, total);
-            return new string('x', filled).Replace("x", filledChar)
-                 + new string('x', total - filled).Replace("x", emptyChar);
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < filled; i++)
+            {
+                if (i > 0) sb.Append(' ');
+                sb.Append(filledChar);
+            }
+            for (int i = filled; i < total; i++)
+            {
+                sb.Append(emptyChar);
+            }
+            return sb.ToString();
         }
 
         #endregion

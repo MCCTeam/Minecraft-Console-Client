@@ -36,6 +36,14 @@ namespace MinecraftClient.Tui
 
             AppDomain.CurrentDomain.ProcessExit += (_, _) => RestoreTerminalState();
 
+            System.Console.CancelKeyPress += (_, e) =>
+            {
+                e.Cancel = true;
+                var view = _view;
+                if (view != null)
+                    Dispatcher.UIThread.Post(() => view.HandleCtrlC());
+            };
+
             new Thread(() =>
             {
                 Thread.Sleep(500);
