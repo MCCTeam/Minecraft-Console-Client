@@ -11,18 +11,18 @@ You load it as a standalone script with `/script ChatBots/WebSocketBot.cs`.
 ## Quick Start
 
 1. Copy `config/ChatBots/WebSocketBot.cs` into your MCC `config/ChatBots/` folder (it ships in the repo under that path).
-2. Open the file and edit the line near the top:
+1. Open the file and edit the line near the top:
    ```csharp
    MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "CHANGE_THIS_PASSWORD"));
    ```
    - Replace `127.0.0.1` with the IP to bind (use `+` or `*` for all interfaces).
    - Replace `8043` with your preferred port.
    - Replace `CHANGE_THIS_PASSWORD` with a strong, unique password.
-3. Optionally enable debug logging:
+1. Optionally enable debug logging:
    ```csharp
    MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "mypassword", debugMode: true));
    ```
-4. In MCC, run: `/script ChatBots/WebSocketBot.cs`
+1. In MCC, run: `/script ChatBots/WebSocketBot.cs`
 
 The bot starts a WebSocket server. Connect to `ws://127.0.0.1:8043/` with any WebSocket client.
 
@@ -66,6 +66,7 @@ Every command produces an `OnWsCommandResponse` event with `success`, `requestId
 ### Sending Plain Text
 
 You can also send plain text directly:
+
 - Text starting with `/` is forwarded to MCC as an internal command (e.g., `/move north`).
 - Other text is sent as chat.
 
@@ -87,20 +88,25 @@ The `data` field is a JSON string that you parse separately to get the event pay
 All enum values (ItemType, EntityType, Direction, Hand, etc.) are serialized as **string names**, not numeric IDs.
 
 For example, an entity of type `Zombie` appears as:
+
 ```json
 { "type": "Zombie", "location": { "x": 10, "y": 64, "z": -20 } }
 ```
 
 When sending commands that accept enum parameters, you can pass **either** a string name or a numeric value:
+
 ```json
 { "command": "InteractEntity", "requestId": "abc", "parameters": [42, "Interact", "MainHand"] }
 ```
+
 or:
+
 ```json
 { "command": "InteractEntity", "requestId": "abc", "parameters": [42, 0, 0] }
 ```
 
 Two dedicated commands let you query the full mapping tables:
+
 - `GetItemTypeMappings` returns `{ "DiamondSword": 798, "Stone": 1, ... }`
 - `GetEntityTypeMappings` returns `{ "Player": 128, "Zombie": 119, ... }`
 

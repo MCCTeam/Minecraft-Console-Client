@@ -28,31 +28,31 @@ If you develop on Windows, use WSL2. This workflow is built around Unix-style sh
 
 ## Index
 
--   [What This Workflow Covers](#what-this-workflow-covers)
--   [Setup](#setup)
--   [How The Harness Works](#how-the-harness-works)
--   [Repository Tools](#repository-tools)
--   [Skills](#skills)
--   [Standard Development Loop](#standard-development-loop)
--   [Testing And Validation](#testing-and-validation)
--   [Version Adaptation Notes](#version-adaptation-notes)
--   [Example Workflows](#example-workflows)
+- [What This Workflow Covers](#what-this-workflow-covers)
+- [Setup](#setup)
+- [How The Harness Works](#how-the-harness-works)
+- [Repository Tools](#repository-tools)
+- [Skills](#skills)
+- [Standard Development Loop](#standard-development-loop)
+- [Testing And Validation](#testing-and-validation)
+- [Version Adaptation Notes](#version-adaptation-notes)
+- [Example Workflows](#example-workflows)
 
 ## What This Workflow Covers
 
 This is the workflow for:
 
--   local MCC development
--   local offline server testing
--   AI-assisted debugging
--   bot authoring
--   protocol and version adaptation work
--   documentation work that should still follow the same disciplined loop
+- local MCC development
+- local offline server testing
+- AI-assisted debugging
+- bot authoring
+- protocol and version adaptation work
+- documentation work that should still follow the same disciplined loop
 
 It is built around two layers:
 
--   repo tools in `tools/`, which do the actual work
--   AI skills in `.skills/`, which tell the agent when and how to use those tools
+- repo tools in `tools/`, which do the actual work
+- AI skills in `.skills/`, which tell the agent when and how to use those tools
 
 ## Setup
 
@@ -100,9 +100,9 @@ echo $SHELL
 
 Notes:
 
--   Bash is the normal baseline on Linux.
--   Zsh is the default interactive shell on modern macOS.
--   The helper script `tools/mcc-env.sh` can be sourced from either `~/.bashrc` or `~/.zshrc`.
+- Bash is the normal baseline on Linux.
+- Zsh is the default interactive shell on modern macOS.
+- The helper script `tools/mcc-env.sh` can be sourced from either `~/.bashrc` or `~/.zshrc`.
 
 </details>
 
@@ -187,9 +187,9 @@ dotnet --version
 
 References:
 
--   [Install .NET on Ubuntu](https://learn.microsoft.com/dotnet/core/install/linux-ubuntu)
--   [Install .NET on Debian](https://learn.microsoft.com/dotnet/core/install/linux-debian)
--   [Homebrew `dotnet-sdk` cask](https://formulae.brew.sh/cask/dotnet-sdk)
+- [Install .NET on Ubuntu](https://learn.microsoft.com/dotnet/core/install/linux-ubuntu)
+- [Install .NET on Debian](https://learn.microsoft.com/dotnet/core/install/linux-debian)
+- [Homebrew `dotnet-sdk` cask](https://formulae.brew.sh/cask/dotnet-sdk)
 
 </details>
 
@@ -232,9 +232,9 @@ java -version
 
 References:
 
--   [Ubuntu `openjdk-21-jdk` package](https://packages.ubuntu.com/noble/openjdk-21-jdk)
--   [Arch `jdk21-openjdk` package](https://archlinux.org/packages/extra/x86_64/jdk21-openjdk/)
--   [Homebrew `openjdk@21` formula](https://formulae.brew.sh/formula/openjdk@21)
+- [Ubuntu `openjdk-21-jdk` package](https://packages.ubuntu.com/noble/openjdk-21-jdk)
+- [Arch `jdk21-openjdk` package](https://archlinux.org/packages/extra/x86_64/jdk21-openjdk/)
+- [Homebrew `openjdk@21` formula](https://formulae.brew.sh/formula/openjdk@21)
 
 </details>
 
@@ -272,9 +272,9 @@ python3 --version
 
 References:
 
--   [Ubuntu `python3` package](https://packages.ubuntu.com/noble/python/python3)
--   [Arch `python` package](https://archlinux.org/packages/core/x86_64/python/)
--   [Homebrew Python formula](https://formulae.brew.sh/formula/python@3.14)
+- [Ubuntu `python3` package](https://packages.ubuntu.com/noble/python/python3)
+- [Arch `python` package](https://archlinux.org/packages/core/x86_64/python/)
+- [Homebrew Python formula](https://formulae.brew.sh/formula/python@3.14)
 
 </details>
 
@@ -338,8 +338,8 @@ tools/decompile.sh --version 1.20.6
 
 That creates the paths used by the harness and the version-adaptation workflow:
 
--   `$MCC_SERVERS/1.20.6/server.jar`
--   `MinecraftOfficial/1.20.6-decompiled/`
+- `$MCC_SERVERS/1.20.6/server.jar`
+- `MinecraftOfficial/1.20.6-decompiled/`
 
 If you are doing protocol work, this step is not optional.
 
@@ -362,16 +362,16 @@ source ~/.bashrc
 
 This gives you the helper functions used by the workflow:
 
--   `mc-start`
--   `mc-stop`
--   `mc-cmd`
--   `mc-log`
--   `mc-rcon`
--   `mcc-build`
--   `mcc-run`
--   `mcc-cmd`
--   `mcc-kill`
--   `mcc-reload`
+- `mc-start`
+- `mc-stop`
+- `mc-cmd`
+- `mc-log`
+- `mc-rcon`
+- `mcc-build`
+- `mcc-run`
+- `mcc-cmd`
+- `mcc-kill`
+- `mcc-reload`
 
 </details>
 
@@ -423,11 +423,11 @@ AI agents do not get a rich interactive terminal in the same way a human does. T
 
 The moving parts are:
 
--   a local Minecraft server running in `tmux`
--   `mc-rcon` for server-side commands such as `/op`, `/give`, `/summon`, or gamerule setup
--   MCC started with `MCC_FILE_INPUT=1`
--   `FileInputBot`, which watches `mcc_input.txt` and turns file lines into MCC commands or server chat
--   logs from MCC and the local server, which the agent can inspect between runs
+- a local Minecraft server running in `tmux`
+- `mc-rcon` for server-side commands such as `/op`, `/give`, `/summon`, or gamerule setup
+- MCC started with `MCC_FILE_INPUT=1`
+- `FileInputBot`, which watches `mcc_input.txt` and turns file lines into MCC commands or server chat
+- logs from MCC and the local server, which the agent can inspect between runs
 
 The result is simple: the agent can change code, rebuild, start the app, inject commands, and read the result without waiting for a human to sit in the terminal.
 
@@ -435,51 +435,51 @@ The result is simple: the agent can change code, rebuild, start the app, inject 
 
 These are the repo-level tools that make the workflow practical.
 
-| Path | Purpose |
-| --- | --- |
-| `tools/mcc-env.sh` | Loads the shell helper functions used for the normal loop. |
-| `tools/start-server.sh` | Starts a local Minecraft server in a named `tmux` session with a FIFO for stdin. |
-| `tools/mc-rcon.sh` | Sends RCON commands to the local server using `python3`. |
-| `tools/decompile.sh` | Downloads `MinecraftDecompiler.jar` if needed, decompiles the requested Minecraft version, and fetches `server.jar` for server-side work. |
-| `tools/diff_registries.py` | Compares registries between two Minecraft versions to show which palettes need updates. |
-| `tools/gen_item_palette.py` | Generates item palette source from decompiled or reported registry data. |
-| `tools/gen_block_palette.py` | Generates block palette source from authoritative block reports. |
-| `tools/gen_entity_palette.py` | Generates entity palette source from registry reports. |
-| `tools/gen_entity_metadata_palette.py` | Generates entity metadata palette source from serializer registration order. |
-| `tools/gen_command_argument_registry.py` | Helps update modern declare-commands registry order. |
-| `tools/gen_block_shapes.py` | Downloads and compacts collision shape data for physics support. |
+| Path                                     | Purpose                                                                                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `tools/mcc-env.sh`                       | Loads the shell helper functions used for the normal loop.                                                                                |
+| `tools/start-server.sh`                  | Starts a local Minecraft server in a named `tmux` session with a FIFO for stdin.                                                          |
+| `tools/mc-rcon.sh`                       | Sends RCON commands to the local server using `python3`.                                                                                  |
+| `tools/decompile.sh`                     | Downloads `MinecraftDecompiler.jar` if needed, decompiles the requested Minecraft version, and fetches `server.jar` for server-side work. |
+| `tools/diff_registries.py`               | Compares registries between two Minecraft versions to show which palettes need updates.                                                   |
+| `tools/gen_item_palette.py`              | Generates item palette source from decompiled or reported registry data.                                                                  |
+| `tools/gen_block_palette.py`             | Generates block palette source from authoritative block reports.                                                                          |
+| `tools/gen_entity_palette.py`            | Generates entity palette source from registry reports.                                                                                    |
+| `tools/gen_entity_metadata_palette.py`   | Generates entity metadata palette source from serializer registration order.                                                              |
+| `tools/gen_command_argument_registry.py` | Helps update modern declare-commands registry order.                                                                                      |
+| `tools/gen_block_shapes.py`              | Downloads and compacts collision shape data for physics support.                                                                          |
 
 There is one more piece worth calling out:
 
--   `MinecraftClient/ChatBots/FileInputBot.cs` is what makes file-driven command injection possible.
--   It is loaded when `MCC_FILE_INPUT=1` is set.
--   `mcc-run` in `tools/mcc-env.sh` already sets that flag for you.
+- `MinecraftClient/ChatBots/FileInputBot.cs` is what makes file-driven command injection possible.
+- It is loaded when `MCC_FILE_INPUT=1` is set.
+- `mcc-run` in `tools/mcc-env.sh` already sets that flag for you.
 
 ## Skills
 
 The tools above do the work. The skills in `.skills/` tell the AI when to use them and what good output looks like.
 
-| Skill | What it is for | Notes |
-| --- | --- | --- |
-| `mcc-dev-workflow` | The default build, run, debug, and local server loop. | This is the skill to use for most day-to-day MCC debugging. It assumes WSL, `tmux`, Java, and the local harness. |
-| `mcc-integration-testing` | Repeatable end-to-end testing against a local offline server. | This skill bundles its own scripts under `.skills/mcc-integration-testing/scripts/`. Those are skill resources, not top-level repo scripts. |
-| `mcc-version-adaptation` | Protocol and palette updates for new Minecraft versions. | Use this when routing, registries, metadata, palettes, or structured components change. |
-| `mcc-chatbot-authoring` | Authoring or repairing built-in bots and standalone `/script` bots. | This skill bundles references and templates under `.skills/mcc-chatbot-authoring/`. It defaults to standalone `/script` bots unless built-in wiring is requested. |
-| `csharp-best-practices` | C# 14 / .NET 10 coding guidance for this repo. | Use it whenever the change touches MCC runtime code. |
-| `humanizer` | Documentation and prose cleanup. | Use it for docs, guides, release notes, and anything that starts sounding machine-written. |
-| `mcc-prompt-engineer` | Generating structured prompts for MCC development tasks. | Manually triggered. Interviews the user, explores the codebase, and produces a self-contained prompt with reasoning framework, skill references, and sub-agent directives. |
-| `skill-creator` | Creating or evolving skills themselves. | This is for improving the AI workflow, not for normal MCC feature work. |
+| Skill                     | What it is for                                                      | Notes                                                                                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mcc-dev-workflow`        | The default build, run, debug, and local server loop.               | This is the skill to use for most day-to-day MCC debugging. It assumes WSL, `tmux`, Java, and the local harness.                                                           |
+| `mcc-integration-testing` | Repeatable end-to-end testing against a local offline server.       | This skill bundles its own scripts under `.skills/mcc-integration-testing/scripts/`. Those are skill resources, not top-level repo scripts.                                |
+| `mcc-version-adaptation`  | Protocol and palette updates for new Minecraft versions.            | Use this when routing, registries, metadata, palettes, or structured components change.                                                                                    |
+| `mcc-chatbot-authoring`   | Authoring or repairing built-in bots and standalone `/script` bots. | This skill bundles references and templates under `.skills/mcc-chatbot-authoring/`. It defaults to standalone `/script` bots unless built-in wiring is requested.          |
+| `csharp-best-practices`   | C# 14 / .NET 10 coding guidance for this repo.                      | Use it whenever the change touches MCC runtime code.                                                                                                                       |
+| `humanizer`               | Documentation and prose cleanup.                                    | Use it for docs, guides, release notes, and anything that starts sounding machine-written.                                                                                 |
+| `mcc-prompt-engineer`     | Generating structured prompts for MCC development tasks.            | Manually triggered. Interviews the user, explores the codebase, and produces a self-contained prompt with reasoning framework, skill references, and sub-agent directives. |
+| `skill-creator`           | Creating or evolving skills themselves.                             | This is for improving the AI workflow, not for normal MCC feature work.                                                                                                    |
 
 The important distinction is this:
 
--   repo tools are executable scripts and source files
--   skills are instructions, references, templates, and workflow constraints for the AI
+- repo tools are executable scripts and source files
+- skills are instructions, references, templates, and workflow constraints for the AI
 
 Some skills also carry their own bundled resources:
 
--   `mcc-integration-testing` bundles scripts and a command matrix reference
--   `mcc-chatbot-authoring` bundles references and bot templates
--   `skill-creator` bundles scripts, eval tooling, and reviewer assets
+- `mcc-integration-testing` bundles scripts and a command matrix reference
+- `mcc-chatbot-authoring` bundles references and bot templates
+- `skill-creator` bundles scripts, eval tooling, and reviewer assets
 
 ## Standard Development Loop
 
@@ -538,9 +538,9 @@ mcc-cmd "/gamemode creative"
 
 Behavior:
 
--   lines starting with `/` are sent as server commands or chat
--   lines without `/` are treated as MCC internal commands first
--   if a line is not an MCC internal command, it falls back to normal chat sending
+- lines starting with `/` are sent as server commands or chat
+- lines without `/` are treated as MCC internal commands first
+- if a line is not an MCC internal command, it falls back to normal chat sending
 
 ### 6. Inspect the result
 
@@ -562,19 +562,19 @@ There are two main testing styles in this workflow.
 
 This is enough for smaller changes:
 
--   join the local server
--   grant operator privileges with `mc-rcon`
--   run internal MCC commands through `mcc-cmd`
--   trigger gameplay or server state changes through `mc-rcon`
--   inspect logs for parsing errors, disconnects, or wrong output
+- join the local server
+- grant operator privileges with `mc-rcon`
+- run internal MCC commands through `mcc-cmd`
+- trigger gameplay or server state changes through `mc-rcon`
+- inspect logs for parsing errors, disconnects, or wrong output
 
 Typical manual checks:
 
--   inventory listing and creative item injection
--   entity tracking after `summon`
--   terrain and chunk handling after join
--   chat and command flow
--   explosion, particle, and sound events
+- inventory listing and creative item injection
+- entity tracking after `summon`
+- terrain and chunk handling after join
+- chat and command flow
+- explosion, particle, and sound events
 
 ### Scripted full-spectrum testing
 
@@ -584,21 +584,21 @@ Treat those scripts as skill-owned resources. Read the skill before running them
 
 That skill is designed for repeatable offline validation of:
 
--   chat
--   slash commands
--   MCC internal commands
--   inventory handling
--   entity handling
--   particles and sounds
--   TNT and explosion handling
+- chat
+- slash commands
+- MCC internal commands
+- inventory handling
+- entity handling
+- particles and sounds
+- TNT and explosion handling
 
 Server settings that matter for AI-driven offline testing:
 
--   `eula=true`
--   `online-mode=false`
--   `enforce-secure-profile=false`
--   `enable-rcon=true`
--   `rcon.password=test123`
+- `eula=true`
+- `online-mode=false`
+- `enforce-secure-profile=false`
+- `enable-rcon=true`
+- `rcon.password=test123`
 
 If those are wrong, the loop gets noisy fast.
 
@@ -608,19 +608,19 @@ Version work needs a stricter process than normal bug fixing.
 
 The important rule is simple:
 
--   for newer versions, especially `1.21.9+`, use server data reports as the authority for items and blocks
--   use decompiled source for implementation details, field order, codecs, and serializer logic
--   do not stop at a palette diff; finish with a build and a live server test
+- for newer versions, especially `1.21.9+`, use server data reports as the authority for items and blocks
+- use decompiled source for implementation details, field order, codecs, and serializer logic
+- do not stop at a palette diff; finish with a build and a live server test
 
 The usual order is:
 
 1. `tools/decompile.sh --version <ver>`
-2. generate server reports from `server.jar`
-3. run `tools/diff_registries.py`
-4. regenerate the palettes that actually changed
-5. update version routing and packet handling
-6. build MCC
-7. test against the real target version
+1. generate server reports from `server.jar`
+1. run `tools/diff_registries.py`
+1. regenerate the palettes that actually changed
+1. update version routing and packet handling
+1. build MCC
+1. test against the real target version
 
 That is exactly the sort of work `mcc-version-adaptation` is meant to guide.
 
@@ -632,8 +632,8 @@ These are four common patterns this guide is meant to support.
 
 Use skills:
 
--   `mcc-dev-workflow`
--   `csharp-best-practices`
+- `mcc-dev-workflow`
+- `csharp-best-practices`
 
 Typical loop:
 
@@ -656,18 +656,18 @@ mcc-reload
 
 Use skills:
 
--   `mcc-chatbot-authoring`
--   `csharp-best-practices`
--   `mcc-dev-workflow`
+- `mcc-chatbot-authoring`
+- `csharp-best-practices`
+- `mcc-dev-workflow`
 
 Typical flow:
 
 1. Decide whether this should be a standalone `/script` bot or a built-in bot.
-2. Use the authoring skill's references and templates.
-3. Build MCC.
-4. Start a local server and join it.
-5. Test the bot behavior through live commands, chat, or event-driven actions.
-6. Make sure cleanup paths such as `OnUnload()` are correct.
+1. Use the authoring skill's references and templates.
+1. Build MCC.
+1. Start a local server and join it.
+1. Test the bot behavior through live commands, chat, or event-driven actions.
+1. Make sure cleanup paths such as `OnUnload()` are correct.
 
 For standalone script work, the skill defaults to `/script` unless built-in repo wiring is explicitly needed.
 
@@ -675,9 +675,9 @@ For standalone script work, the skill defaults to `/script` unless built-in repo
 
 Use skills:
 
--   `mcc-version-adaptation`
--   `mcc-dev-workflow`
--   `mcc-integration-testing`
+- `mcc-version-adaptation`
+- `mcc-dev-workflow`
+- `mcc-integration-testing`
 
 Typical flow:
 
@@ -706,12 +706,12 @@ Then regenerate the palettes that changed, update routing, build MCC, start a lo
 
 Use skills:
 
--   `humanizer`
--   `skill-creator`, if you are changing the skills rather than just the docs
+- `humanizer`
+- `skill-creator`, if you are changing the skills rather than just the docs
 
 Typical flow:
 
 1. Re-read the relevant skill files and repo tools.
-2. Update the guide so the written process matches the real process.
-3. Keep the instructions concrete enough that another contributor can follow them without guessing.
-4. If the workflow itself changed, update the relevant skill too instead of leaving the docs ahead of the automation.
+1. Update the guide so the written process matches the real process.
+1. Keep the instructions concrete enough that another contributor can follow them without guessing.
+1. If the workflow itself changed, update the relevant skill too instead of leaving the docs ahead of the automation.

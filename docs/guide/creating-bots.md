@@ -4,12 +4,12 @@ title: Creating Chat Bots
 
 # Creating Chat Bots
 
--   [Notes](#notes)
--   [Requirements](#requirements)
--   [Quick Introduction](#quick-introduction)
--   [Examples](#examples)
--   [AI-Assisted Bot Authoring](#ai-assisted-bot-authoring)
--   [C# API](#c#-api)
+- [Notes](#notes)
+- [Requirements](#requirements)
+- [Quick Introduction](#quick-introduction)
+- [Examples](#examples)
+- [AI-Assisted Bot Authoring](#ai-assisted-bot-authoring)
+- [C# API](#c#-api)
 
 ## Notes
 
@@ -23,19 +23,19 @@ title: Creating Chat Bots
 
 ## Requirements
 
--   A basic knowledge of C# programming language
--   A text editor
+- A basic knowledge of C# programming language
+- A text editor
 
 If you're not familiar with the C# programming language, we suggest taking a look at the following resources:
 
 Crash courses:
 
--   [C# Crash Course playlist by Teddy Smit](https://www.youtube.com/watch?v=67oWw9TanOk&list=PL82C6-O4XrHfoN_Y4MwGvJz5BntiL0z0D)
+- [C# Crash Course playlist by Teddy Smit](https://www.youtube.com/watch?v=67oWw9TanOk&list=PL82C6-O4XrHfoN_Y4MwGvJz5BntiL0z0D)
 
 More in-depth:
 
--   [Learn C# YouTube Playlist by Microsoft](https://www.youtube.com/playlist?list=PLdo4fOcmZ0oVxKLQCHpiUWun7vlJJvUiN)
--   [Getting started with C# (an index of tutorials and documentation) by Microsoft](https://learn.microsoft.com/en-us/dotnet/csharp/)
+- [Learn C# YouTube Playlist by Microsoft](https://www.youtube.com/playlist?list=PLdo4fOcmZ0oVxKLQCHpiUWun7vlJJvUiN)
+- [Getting started with C# (an index of tutorials and documentation) by Microsoft](https://learn.microsoft.com/en-us/dotnet/csharp/)
 
 ## Quick Introduction
 
@@ -192,24 +192,24 @@ If you are using an AI coding agent on this repository, use the `mcc-chatbot-aut
 
 Skill links:
 
--   [Browse the skill on GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/.skills/mcc-chatbot-authoring)
--   [Download the skill directory](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FMCCTeam%2FMinecraft-Console-Client%2Ftree%2Fmaster%2F.skills%2Fmcc-chatbot-authoring)
+- [Browse the skill on GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/.skills/mcc-chatbot-authoring)
+- [Download the skill directory](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FMCCTeam%2FMinecraft-Console-Client%2Ftree%2Fmaster%2F.skills%2Fmcc-chatbot-authoring)
 
 This skill is meant for:
 
--   standalone `/script` bots
--   built-in MCC chat bots
--   bot repairs and ports
--   event handlers, movement logic, inventory logic, and plugin-channel work
+- standalone `/script` bots
+- built-in MCC chat bots
+- bot repairs and ports
+- event handlers, movement logic, inventory logic, and plugin-channel work
 
 Its default behavior is important: if you ask for "a bot" without saying otherwise, it should prefer a standalone `//MCCScript` bot loaded with `/script`. It should only choose a built-in bot when you explicitly ask for repo wiring, automatic config loading, or a compiled MCC bot.
 
 The skill also follows MCC-specific rules, for example:
 
--   do not send chat from `Initialize()`
--   use `AfterGameJoined()` for chat or commands after login
--   normalize chat with `GetVerbatim(text)` before `IsChatMessage(...)` or `IsPrivateMessage(...)`
--   fully clean up commands, timers, plugin channels, and movement locks
+- do not send chat from `Initialize()`
+- use `AfterGameJoined()` for chat or commands after login
+- normalize chat with `GetVerbatim(text)` before `IsChatMessage(...)` or `IsPrivateMessage(...)`
+- fully clean up commands, timers, plugin channels, and movement locks
 
 ### Example prompts
 

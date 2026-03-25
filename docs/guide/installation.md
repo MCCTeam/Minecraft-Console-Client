@@ -4,19 +4,19 @@ title: Installation
 
 # Installation
 
--   [YouTube Tutorials](#youtube-tutorials)
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
--   [Run using Docker](#using-docker)
--   [Run on Android](#run-on-android)
--   [Run MCC 24/7 on a VPS](#run-on-a-vps)
+- [YouTube Tutorials](#youtube-tutorials)
+- [Download a compiled binary](#download-a-compiled-binary)
+- [Building from the source code](#building-from-the-source-code)
+- [Run using Docker](#using-docker)
+- [Run on Android](#run-on-android)
+- [Run MCC 24/7 on a VPS](#run-on-a-vps)
 
 ## YouTube Tutorials
 
 If you're not the kind of person that likes textual tutorials, our community has made video tutorials available on YouTube.
 
--   [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
--   [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
+- [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
+- [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
 
 ## Download a compiled binary
 
@@ -24,7 +24,7 @@ You can download a compiled binary of the latest build from the [GitHub Releases
 
 ## Building from the source code
 
-We recommend you to download our precompiled binary file from [GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/releases). 
+We recommend you to download our precompiled binary file from [GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/releases).
 
 However, if you want to build the program from source code, please follow the guide.
 
@@ -35,8 +35,8 @@ However, if you want to build the program from source code, please follow the gu
 
 Requirements:
 
--   [Git](https://www.git-scm.com/)
--   [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
+- [Git](https://www.git-scm.com/)
+- [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
 
 ::: tip
 If you want to modify the code and you are new to C# or programming in general, the tutorials listed in [Creating Bots](creating-bots.md#requirements) are a good starting point.
@@ -47,9 +47,9 @@ If you want to modify the code and you are new to C# or programming in general, 
 Install [Git](https://www.git-scm.com/)
 
 1. Make a new folder where you want to keep the source code
-2. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
-3. Click on `Git Bash Here` in the context menu
-4. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
+1. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
+1. Click on `Git Bash Here` in the context menu
+1. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
@@ -62,41 +62,41 @@ git submodule update --init --recursive
 ```
 
 5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
-6. Open up the new cloned folder
+1. Open up the new cloned folder
 
 #### Download translation resources (optional)
 
 1. Visit [MCC project's homepage on Crowdin](https://crowdin.com/project/minecraft-console-client).
-2. You will need to log in to your Crowdin account in order to download.
-3. Click on the language you want to download the translation for.
-4. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
-5. Click the button `•••` at the end of the line.
-6. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
-7. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
-8. Click the button `•••` at the end of the line.
-9. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
-10. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
-11. Click the button `•••` at the end of the line.
-12. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
-13. If you need to download a translation in another language, go to step 3 to continue.
+1. You will need to log in to your Crowdin account in order to download.
+1. Click on the language you want to download the translation for.
+1. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
+1. Click the button `•••` at the end of the line.
+1. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
+1. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
+1. Click the button `•••` at the end of the line.
+1. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
+1. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
+1. Click the button `•••` at the end of the line.
+1. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
+1. If you need to download a translation in another language, go to step 3 to continue.
 
 #### Building using the Visual Studio
 
 1. Open up the `MinecraftClient.sln` via Visual Studio
-2. Right click on `MinecraftClient` solution in the `Solution Explorer`
-3. Click on `Properties`
-4. Open up the `Build` tab and select configuration `Release`
-5. Press `CTRL + S` and close the file
-6. Right click on `MinecraftClient` solution in the `Solution Explorer`
-7. Click `Build`
+1. Right click on `MinecraftClient` solution in the `Solution Explorer`
+1. Click on `Properties`
+1. Open up the `Build` tab and select configuration `Release`
+1. Press `CTRL + S` and close the file
+1. Right click on `MinecraftClient` solution in the `Solution Explorer`
+1. Click `Build`
 
 If the build succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
 
 #### Building using .NET manually without Visual Studio
 
 1. Open the `Minecraft-Console-Client` folder you've cloned or downloaded
-2. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
-3. Install the .NET 10 SDK if you do not already have it. The easiest current option on Windows is:
+1. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
+1. Install the .NET 10 SDK if you do not already have it. The easiest current option on Windows is:
 
 ```powershell
 winget install Microsoft.DotNet.SDK.10
@@ -131,82 +131,84 @@ If the publish step succeeds, the published binary `MinecraftClient.exe` will be
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-**If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
+**If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)**
 
 </div>
 
 Requirements:
 
--   Git
+- Git
 
-    -   Linux:
+  - Linux:
 
-    -   [Install Git on macOS](https://git-scm.com/download/mac)
+  - [Install Git on macOS](https://git-scm.com/download/mac)
 
--   .NET 10 SDK
+- .NET 10 SDK
 
-    -   [Install .NET on Linux](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
-    -   [Install .NET on Ubuntu](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install)
-    -   [Install .NET on macOS](https://learn.microsoft.com/en-us/dotnet/core/install/macos)
+  - [Install .NET on Linux](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
+  - [Install .NET on Ubuntu](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install)
+  - [Install .NET on macOS](https://learn.microsoft.com/en-us/dotnet/core/install/macos)
 
 #### Cloning using Git
 
 1. Open up a terminal emulator and navigate to the folder where you will store the MCC
-2. Recursively clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
+1. Recursively clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
-4. Install the .NET 10 SDK.
 
-    - On Ubuntu 24.04 LTS, use the built-in Ubuntu package feeds:
+1. Install the .NET 10 SDK.
 
-        ```bash
-        sudo apt-get update && \
-          sudo apt-get install -y dotnet-sdk-10.0
-        ```
+   - On Ubuntu 24.04 LTS, use the built-in Ubuntu package feeds:
 
-    - On macOS, the normal path is to use the official installer from the [.NET download page](https://dotnet.microsoft.com/en-us/download). Pick `Arm64` for Apple Silicon and `x64` for Intel Macs.
+     ```bash
+     sudo apt-get update && \
+       sudo apt-get install -y dotnet-sdk-10.0
+     ```
 
-5. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
-6. Run the following command for a normal local build:
+   - On macOS, the normal path is to use the official installer from the [.NET download page](https://dotnet.microsoft.com/en-us/download). Pick `Arm64` for Apple Silicon and `x64` for Intel Macs.
 
-    ```bash
-    dotnet build MinecraftClient.sln -c Release
-    ```
+1. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
 
-7. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
+1. Run the following command for a normal local build:
 
-    - On Linux:
+   ```bash
+   dotnet build MinecraftClient.sln -c Release
+   ```
 
-        ```bash
-        dotnet publish MinecraftClient.sln -f net10.0 -r linux-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
-        ```
+1. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+   - On Linux:
 
-        **If you are using Linux on ARM, 32-bit, RHEL-based distributions, or Musl, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace `-r linux-x64` with it, for example `-r linux-arm64`.**
+     ```bash
+     dotnet publish MinecraftClient.sln -f net10.0 -r linux-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
+     ```
 
-        </div>
+     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    - On macOS:
+     **If you are using Linux on ARM, 32-bit, RHEL-based distributions, or Musl, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace `-r linux-x64` with it, for example `-r linux-arm64`.**
 
-        ```bash
-        dotnet publish MinecraftClient.sln -f net10.0 -r osx-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
-        ```
+     </div>
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+   - On macOS:
 
-        **If you are not using an Intel Mac, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) for your processor and replace `-r osx-x64` with it, for example `-r osx-arm64`.**
+     ```bash
+     dotnet publish MinecraftClient.sln -f net10.0 -r osx-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
+     ```
 
-        </div>
+     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+     **If you are not using an Intel Mac, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) for your processor and replace `-r osx-x64` with it, for example `-r osx-arm64`.**
+
+     </div>
 
 If the build has succeeded, the compiled binary `MinecraftClient` will be in:
 
--   Linux: `MinecraftClient/bin/Release/net10.0/linux-x64/publish/`
--   macOS: `MinecraftClient/bin/Release/net10.0/osx-x64/publish/`
+- Linux: `MinecraftClient/bin/Release/net10.0/linux-x64/publish/`
+- macOS: `MinecraftClient/bin/Release/net10.0/osx-x64/publish/`
 
 You can verify the SDK installation with:
 
@@ -223,8 +225,8 @@ dotnet --info
 
 Requirements:
 
--   Git
--   Docker
+- Git
+- Docker
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -245,7 +247,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 2. Navigate to `Minecraft-Console-Client/Docker`
-3. Build the image using the following command
+1. Build the image using the following command
 
 ```bash
 docker build -t minecraft-console-client:latest .
@@ -368,8 +370,8 @@ We use `proot-distro`, an official Termux utility, to install Ubuntu. It will in
 Open Termux and run the following commands one at a time, in order:
 
 1. `pkg update`
-2. `pkg upgrade`
-3. `pkg install proot-distro`
+1. `pkg upgrade`
+1. `pkg install proot-distro`
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -506,10 +508,10 @@ For downloading files, you can use the `wget` file we have installed, simply run
 
 Also, here are some linux tutorials for people who are new to it:
 
--   [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
--   [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
--   [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
--   [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
+- [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
+- [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
+- [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
+- [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
 
 </details>
 
@@ -523,14 +525,14 @@ Also, here are some linux tutorials for people who are new to it:
 
 The **Minecraft Console Client** can be run on a VPS 24 hours, 7 days a week.
 
--   [What is a VPS?](#what-is-a-vps)
--   [Prerequisites](#prerequisites)
--   [Where to get a VPS](#where-to-get-a-vps)
--   [Initial Amazon VPS setup](#initial-amazon-vps-setup)
--   [Initial VPS setup](#initial-vps-setup)
--   [Creating a new user account](#creating-a-new-user)
--   [Installing .NET Core 6](#installing-net-core-6)
--   [Installing the Minecraft Console Client](#installing-mcc-on-a-vps)
+- [What is a VPS?](#what-is-a-vps)
+- [Prerequisites](#prerequisites)
+- [Where to get a VPS](#where-to-get-a-vps)
+- [Initial Amazon VPS setup](#initial-amazon-vps-setup)
+- [Initial VPS setup](#initial-vps-setup)
+- [Creating a new user account](#creating-a-new-user)
+- [Installing .NET Core 6](#installing-net-core-6)
+- [Installing the Minecraft Console Client](#installing-mcc-on-a-vps)
 
 ### What is a VPS?
 
@@ -544,29 +546,29 @@ Here is a [YouTube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
 1. Git Bash (if you are on Windows)
 
-    Download and install [Git Bash](https://git-scm.com/downloads).
+   Download and install [Git Bash](https://git-scm.com/downloads).
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+   <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Make sure to allow the installation to add it to the context menu**
+   **Make sure to allow the installation to add it to the context menu**
 
-    </div>
+   </div>
 
-2. `ssh` and `ssh-keygen` commands (on Windows they are available with Git Bash; on macOS and Linux they should be available by default. If not, install them first.)
+1. `ssh` and `ssh-keygen` commands (on Windows they are available with Git Bash; on macOS and Linux they should be available by default. If not, install them first.)
 
-3. Basic knowledge of Linux shell commands, terminal emulator usage, SSH and Nano editor.
+1. Basic knowledge of Linux shell commands, terminal emulator usage, SSH and Nano editor.
 
-    If you already know this, feel free to skip.
+   If you already know this, feel free to skip.
 
-    if you get stuck, watch those tutorials.
+   if you get stuck, watch those tutorials.
 
-    If you're new to this, you can learn about it here:
+   If you're new to this, you can learn about it here:
 
-    - [What is Linux? by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
-    - [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
-    - [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
-    - [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
-    - [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
+   - [What is Linux? by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
+   - [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
+   - [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
+   - [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
+   - [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
 
 ### Where to get a VPS
 
@@ -575,8 +577,8 @@ Here is a [YouTube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
 You have 2 options:
 
--   [Buying a VPS](#buying-a-vps)
--   [Getting an AWS EC2 VPS for free (12 months free trial)](#aws-ec2-vps)
+- [Buying a VPS](#buying-a-vps)
+- [Getting an AWS EC2 VPS for free (12 months free trial)](#aws-ec2-vps)
 
 #### Buying a VPS
 
@@ -596,33 +598,33 @@ The MCC is not expensive to run, so it can run on basically any hardware, you do
 
 Some of the reliable and cheap hosting providers (sorted for price/performance):
 
--   [E-Trail](https://e-trail.net/vps)
+- [E-Trail](https://e-trail.net/vps)
 
-    **Minimum price**: `2.50 EUR / month`
+  **Minimum price**: `2.50 EUR / month`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **If Ubuntu 24.04 LTS is not in the dropdown when ordering, you may need to reinstall later or ask support to do it.**
+  **If Ubuntu 24.04 LTS is not in the dropdown when ordering, you may need to reinstall later or ask support to do it.**
 
-    </div>
+  </div>
 
--   [OVH Cloud](https://www.ovhcloud.com/de/vps/)
+- [OVH Cloud](https://www.ovhcloud.com/de/vps/)
 
-    **Minimum price**: `3.57 EUR / month`
+  **Minimum price**: `3.57 EUR / month`
 
--   [Hetzner Cloud](https://www.hetzner.com/cloud)
+- [Hetzner Cloud](https://www.hetzner.com/cloud)
 
-    **Minimum price**: `4.51 EUR / month`
+  **Minimum price**: `4.51 EUR / month`
 
--   [Digital Ocean](https://www.digitalocean.com/pricing/droplets)
+- [Digital Ocean](https://www.digitalocean.com/pricing/droplets)
 
-    **Minimum price**: `4 EUR / month`
+  **Minimum price**: `4 EUR / month`
 
--   [Contabo](https://contabo.com/en/vps/)
+- [Contabo](https://contabo.com/en/vps/)
 
-    **Minimum price**: `7 EUR / month`
+  **Minimum price**: `7 EUR / month`
 
-    **More serious VPS able to host multiple applications, 4 CPU cores and 8 GB of RAM, 200 GB SSD**
+  **More serious VPS able to host multiple applications, 4 CPU cores and 8 GB of RAM, 200 GB SSD**
 
 You also may want to search for better deals.
 
@@ -707,9 +709,9 @@ For the **Key pair (login)** click on **Create new key pair** and name it `VpsRo
 
 For the **Network settings** check the following checkboxes on:
 
--   `Allow SSH traffic from` (Anywhere)
--   `Allow HTTPs traffic from the internet`
--   `Allow HTTP traffic from the internet`
+- `Allow SSH traffic from` (Anywhere)
+- `Allow HTTPs traffic from the internet`
+- `Allow HTTP traffic from the internet`
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -951,9 +953,9 @@ Then find the `#AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2` l
 
 Additionally for better security you can do the following:
 
--   Set `PermitRootLogin` to `yes`
--   Change the `Port` to some number of your choice (22-65000) (Make sure it's at least 2 digits and avoid common ports used by other apps like: 21, 80, 35, 8080, 3000, etc...)
--   Uncomment `#PasswordAuthentication yes` by removing the `#` in front and set it to `yes` (This will disable password login, you will be able to login with SSH keys only!)
+- Set `PermitRootLogin` to `yes`
+- Change the `Port` to some number of your choice (22-65000) (Make sure it's at least 2 digits and avoid common ports used by other apps like: 21, 80, 35, 8080, 3000, etc...)
+- Uncomment `#PasswordAuthentication yes` by removing the `#` in front and set it to `yes` (This will disable password login, you will be able to login with SSH keys only!)
 
 Save the file with `CTRL + O`, hit Enter, close it with `CTRL + X`.
 
@@ -1087,9 +1089,9 @@ sudo apt install screen -y
 
 Now you can install the MCC:
 
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
--   [Run using Docker](#using-docker) (Doesn't require the `screen` command)
+- [Download a compiled binary](#download-a-compiled-binary)
+- [Building from the source code](#building-from-the-source-code)
+- [Run using Docker](#using-docker) (Doesn't require the `screen` command)
 
 How to use the `screen` command?
 

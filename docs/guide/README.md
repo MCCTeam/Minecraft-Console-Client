@@ -32,46 +32,63 @@ It was originally made by [ORelio](https://github.com/ORelio) in 2012 on the [Mi
 
 ## Features
 
--   Chat
+- Chat
 
-    -   Send and receive chat messages
-    -   [Log chat history](chat-bots.md#chat-log)
-    -   [Get alerted on certain keywords](chat-bots.md#alerts)
-    -   [Auto Respond](chat-bots.md#auto-respond)
+  - Send and receive chat messages
+  - [Log chat history](chat-bots.md#chat-log)
+  - [Get alerted on certain keywords](chat-bots.md#alerts)
+  - [Auto Respond](chat-bots.md#auto-respond)
 
--   Microsoft account authentication with 2FA support (OAuth 2.0 device code flow)
--   [Anti AFK](chat-bots.md#anti-afk)
--   [Auto Relog](chat-bots.md#auto-relog)
--   [Script Scheduler](chat-bots.md#script-scheduler)
--   [Remote Control](chat-bots.md#remote-control)
--   [Auto Respond](chat-bots.md#auto-respond)
--   [Auto Attack](chat-bots.md#auto-attack)
--   [Auto Fishing](chat-bots.md#auto-fishing)
--   [Auto Eat](chat-bots.md#auto-eat)
--   [Auto Craft](chat-bots.md#auto-craft)
--   [Mailer Bot](chat-bots.md#mailer)
--   [Auto Drop](chat-bots.md#auto-drop)
--   [Replay Mod](chat-bots.md#replay-mod)
--   [API for creating Bots in C#](creating-bots.md#creating-chat-bots)
--   [Docker Support](installation.md#using-docker)
--   [Inventory Handling](usage.md#inventory)
--   [Terrain Traversing](usage.md#move)
--   Entity Handling
+- Microsoft account authentication with 2FA support (OAuth 2.0 device code flow)
+
+- [Anti AFK](chat-bots.md#anti-afk)
+
+- [Auto Relog](chat-bots.md#auto-relog)
+
+- [Script Scheduler](chat-bots.md#script-scheduler)
+
+- [Remote Control](chat-bots.md#remote-control)
+
+- [Auto Respond](chat-bots.md#auto-respond)
+
+- [Auto Attack](chat-bots.md#auto-attack)
+
+- [Auto Fishing](chat-bots.md#auto-fishing)
+
+- [Auto Eat](chat-bots.md#auto-eat)
+
+- [Auto Craft](chat-bots.md#auto-craft)
+
+- [Mailer Bot](chat-bots.md#mailer)
+
+- [Auto Drop](chat-bots.md#auto-drop)
+
+- [Replay Mod](chat-bots.md#replay-mod)
+
+- [API for creating Bots in C#](creating-bots.md#creating-chat-bots)
+
+- [Docker Support](installation.md#using-docker)
+
+- [Inventory Handling](usage.md#inventory)
+
+- [Terrain Traversing](usage.md#move)
+
+- Entity Handling
 
 _Note: Some of these features are disabled by default. You need to enable them in the configuration file, and some also require additional setup._
 
 ## Why Minecraft Console Client?
 
--   Easy to use
--   Helpful community
--   Open-Source
--   Fast performance
--   Easy Scripting/Automation
--   Cross-Platform
--   Docker Support
--   10 years of continuous development
--   Active contributors
--   Widely used
+- Easy to use
+- Helpful community
+- Open-Source
+- Fast performance
+- Easy Scripting/Automation
+- Cross-Platform
+- Docker Support
+- 10 years of continuous development
+- Active contributors
+- Widely used
 
 ## Quick Intro
 
@@ -81,13 +98,13 @@ If you do not want to read through the documentation right away, the community h
 
 Installation:
 
--   [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
--   [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
+- [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
+- [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
 
 Using Commands, Scripts and other features:
 
--   [Minecraft Console Client | Tutorial | Commands, Scripts, AppVars, Matches, Tasks and C# Scripts by Daenges](https://youtu.be/JbDpwwETEnU)
--   [Console Client Tutorial - Scripting by Zixxter](https://www.youtube.com/watch?v=XE7rYBFJxn0)
+- [Minecraft Console Client | Tutorial | Commands, Scripts, AppVars, Matches, Tasks and C# Scripts by Daenges](https://youtu.be/JbDpwwETEnU)
+- [Console Client Tutorial - Scripting by Zixxter](https://www.youtube.com/watch?v=XE7rYBFJxn0)
 
 ## Getting Help
 
@@ -97,8 +114,8 @@ Click [here](https://github.com/MCCTeam/Minecraft-Console-Client/discussions) to
 
 ### Before getting help
 
--   **Please use the search option here or in the discussion section and read the documentation so we avoid duplicate questions. Thank you!**
--   **Please be kind and patient, respect others as they're the ones using their time to help you**
+- **Please use the search option here or in the discussion section and read the documentation so we avoid duplicate questions. Thank you!**
+- **Please be kind and patient, respect others as they're the ones using their time to help you**
 
 ## Bugs, Ideas, Feature Requests
 
@@ -112,8 +129,8 @@ If you are reporting a bug, be as specific as possible. Explain how to reproduce
 
 ### Before submitting
 
--   **Please use the search option here or in the `Issues` section and read the documentation so we avoid duplicate questions/ideas/reports. Thank you!**
--   **Please be kind, patient and respect others. Thank you!**
+- **Please use the search option here or in the `Issues` section and read the documentation so we avoid duplicate questions/ideas/reports. Thank you!**
+- **Please be kind, patient and respect others. Thank you!**
 
 ## AI-Assisted Development
 
@@ -137,10 +154,11 @@ If there was a major game update, and the MCC hasn't been updated to support the
 
 ### Path-Finding and Physics
 
-MCC now uses A* path-finding together with a physics-based movement system for movement and collision handling.
+MCC now uses A\* path-finding together with a physics-based movement system for movement and collision handling.
 
 What is supported and works:
-- Terrain navigation with A* path-finding and physics-driven movement
+
+- Terrain navigation with A\* path-finding and physics-driven movement
 - Collision-aware movement using real block shapes
 - Automatic jumping when the path requires moving up
 - Step-up movement for slabs and similar low obstacles
@@ -150,6 +168,7 @@ What is supported and works:
 - Gravity, friction, and block speed modifiers such as ice, soul sand, soul soil, and honey blocks
 
 Current limitations:
+
 - Path-finding is still block-based, so very complex terrain can still fail
 - Automatic route planning still avoids underwater routes by default, so this is not a full swimming path-finder yet
 - Knockback and other external velocity effects are not simulated yet

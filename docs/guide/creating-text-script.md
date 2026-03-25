@@ -11,6 +11,7 @@ Application variables defined with the `set` command or in the `[AppVars]` confi
 ## Example
 
 `sample-script.txt`: Send a hello message, wait 60 seconds and disconnect from server.
+
 ```
 # This is a sample script for Minecraft Console Client
 # Any line beginning with "#" is ignored and treated as a comment.

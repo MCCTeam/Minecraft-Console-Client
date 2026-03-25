@@ -21,6 +21,7 @@ All enum values are serialized as **string names** (e.g., `"Zombie"` instead of 
 Sent after every command execution.
 
 **Payload:**
+
 ```json
 {
   "success": true,
@@ -36,6 +37,7 @@ Match the `requestId` to track which command produced this response.
 Sent when a plain-text MCC command (starting with `/`) is executed.
 
 **Payload:**
+
 ```json
 {
   "command": "move north",
@@ -66,6 +68,7 @@ Payload: `"N/A"`
 Sent for every incoming chat message, including the raw JSON.
 
 **Payload:**
+
 ```json
 {
   "text": "Formatted text content",
@@ -78,6 +81,7 @@ Sent for every incoming chat message, including the raw JSON.
 Sent when a public chat message is detected.
 
 **Payload:**
+
 ```json
 {
   "sender": "PlayerName",
@@ -91,6 +95,7 @@ Sent when a public chat message is detected.
 Sent when a private message is detected.
 
 **Payload:**
+
 ```json
 {
   "sender": "PlayerName",
@@ -104,6 +109,7 @@ Sent when a private message is detected.
 Sent when a teleport request is detected.
 
 **Payload:**
+
 ```json
 {
   "sender": "PlayerName",
@@ -118,6 +124,7 @@ Sent when a teleport request is detected.
 Sent when MCC disconnects from the server.
 
 **Payload:**
+
 ```json
 {
   "reason": "ConnectionLost",
@@ -154,6 +161,7 @@ Sent when an entity moves.
 Sent when an entity plays an animation.
 
 **Payload:**
+
 ```json
 {
   "entity": { ... },
@@ -166,6 +174,7 @@ Sent when an entity plays an animation.
 Sent when an entity's health changes.
 
 **Payload:**
+
 ```json
 {
   "entity": { ... },
@@ -178,6 +187,7 @@ Sent when an entity's health changes.
 Sent when entity metadata updates.
 
 **Payload:**
+
 ```json
 {
   "entity": { ... },
@@ -190,6 +200,7 @@ Sent when entity metadata updates.
 Sent when an entity's equipment changes.
 
 **Payload:**
+
 ```json
 {
   "entity": { ... },
@@ -205,6 +216,7 @@ Item types are string names (e.g., `"DiamondSword"`).
 Sent when an entity gets an effect.
 
 **Payload:**
+
 ```json
 {
   "entity": { ... },
@@ -220,6 +232,7 @@ Sent when an entity gets an effect.
 Sent when a block break animation plays.
 
 **Payload:**
+
 ```json
 {
   "entity": { ... },
@@ -235,6 +248,7 @@ Sent when a block break animation plays.
 Sent when a player joins the server.
 
 **Payload:**
+
 ```json
 {
   "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
@@ -247,6 +261,7 @@ Sent when a player joins the server.
 Sent when a player leaves the server.
 
 **Payload:**
+
 ```json
 {
   "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
@@ -265,6 +280,7 @@ Sent when player properties update (e.g., speed, attack damage).
 Sent when the player's status changes.
 
 **Payload:**
+
 ```json
 {
   "statusId": 0
@@ -288,6 +304,7 @@ Payload: `"N/A"`
 Sent when the player's health or food level changes.
 
 **Payload:**
+
 ```json
 {
   "health": 20.0,
@@ -300,6 +317,7 @@ Sent when the player's health or food level changes.
 Sent when experience updates.
 
 **Payload:**
+
 ```json
 {
   "experienceBar": 0.5,
@@ -315,6 +333,7 @@ Sent when experience updates.
 Sent when a player's gamemode changes.
 
 **Payload:**
+
 ```json
 {
   "playerName": "Steve",
@@ -328,6 +347,7 @@ Sent when a player's gamemode changes.
 Sent when a player's latency changes.
 
 **Payload:**
+
 ```json
 {
   "playerName": "Steve",
@@ -341,6 +361,7 @@ Sent when a player's latency changes.
 Sent when the held item slot changes.
 
 **Payload:**
+
 ```json
 {
   "slot": 0
@@ -352,6 +373,7 @@ Sent when the held item slot changes.
 Sent when an explosion occurs.
 
 **Payload:**
+
 ```json
 {
   "location": { "x": 10, "y": 64, "z": -20 },
@@ -365,6 +387,7 @@ Sent when an explosion occurs.
 Sent when a title, subtitle, or action bar message is displayed.
 
 **Payload:**
+
 ```json
 {
   "action": 0,
@@ -385,6 +408,7 @@ Sent when a title, subtitle, or action bar message is displayed.
 Sent when the server TPS updates.
 
 **Payload:**
+
 ```json
 {
   "tps": 20.0
@@ -396,6 +420,7 @@ Sent when the server TPS updates.
 Sent when the world time updates.
 
 **Payload:**
+
 ```json
 {
   "worldAge": 1000000,
@@ -408,6 +433,7 @@ Sent when the world time updates.
 Sent when an MCC internal command is executed.
 
 **Payload:**
+
 ```json
 {
   "commandName": "move",
@@ -426,6 +452,7 @@ Sent when an MCC internal command is executed.
 Sent when an inventory's contents change.
 
 **Payload:**
+
 ```json
 {
   "inventoryId": 0
@@ -437,6 +464,7 @@ Sent when an inventory's contents change.
 Sent when an inventory window opens.
 
 **Payload:**
+
 ```json
 {
   "inventoryId": 1
@@ -448,6 +476,7 @@ Sent when an inventory window opens.
 Sent when an inventory window closes.
 
 **Payload:**
+
 ```json
 {
   "inventoryId": 1
@@ -461,6 +490,7 @@ Sent when an inventory window closes.
 Sent when a scoreboard objective updates.
 
 **Payload:**
+
 ```json
 {
   "objectiveName": "health",
@@ -477,6 +507,7 @@ Sent when a scoreboard objective updates.
 Sent when a scoreboard score updates.
 
 **Payload:**
+
 ```json
 {
   "entityName": "Steve",
@@ -495,6 +526,7 @@ Sent when a scoreboard score updates.
 Sent when map data updates.
 
 **Payload:**
+
 ```json
 {
   "mapId": 0,
@@ -517,6 +549,7 @@ Note: `colors` is base64-encoded when present, `null` otherwise.
 Sent when a villager trade list is received.
 
 **Payload:**
+
 ```json
 {
   "windowId": 1,
@@ -532,6 +565,7 @@ Sent when a villager trade list is received.
 Sent for every network packet (when subscribed).
 
 **Payload:**
+
 ```json
 {
   "packetID": 42,
