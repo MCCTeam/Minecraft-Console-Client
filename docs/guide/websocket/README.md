@@ -66,6 +66,7 @@ Every command produces an `OnWsCommandResponse` event with `success`, `requestId
 ### Sending Plain Text
 
 You can also send plain text directly:
+
 - Text starting with `/` is forwarded to MCC as an internal command (e.g., `/move north`).
 - Other text is sent as chat.
 
@@ -87,20 +88,25 @@ The `data` field is a JSON string that you parse separately to get the event pay
 All enum values (ItemType, EntityType, Direction, Hand, etc.) are serialized as **string names**, not numeric IDs.
 
 For example, an entity of type `Zombie` appears as:
+
 ```json
 { "type": "Zombie", "location": { "x": 10, "y": 64, "z": -20 } }
 ```
 
 When sending commands that accept enum parameters, you can pass **either** a string name or a numeric value:
+
 ```json
 { "command": "InteractEntity", "requestId": "abc", "parameters": [42, "Interact", "MainHand"] }
 ```
+
 or:
+
 ```json
 { "command": "InteractEntity", "requestId": "abc", "parameters": [42, 0, 0] }
 ```
 
 Two dedicated commands let you query the full mapping tables:
+
 - `GetItemTypeMappings` returns `{ "DiamondSword": 798, "Stone": 1, ... }`
 - `GetEntityTypeMappings` returns `{ "Player": 128, "Zombie": 119, ... }`
 

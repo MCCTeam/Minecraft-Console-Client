@@ -12,9 +12,9 @@ You can also use the guide in the [GitHub repository wiki](https://github.com/MC
 
 For now, the project has three main contribution paths:
 
--   code and bot work in the main MCC client
--   documentation updates in `docs/`
--   translations through Crowdin
+- code and bot work in the main MCC client
+- documentation updates in `docs/`
+- translations through Crowdin
 
 ## Translations
 

@@ -1,24 +1,19 @@
 ---
 title: Chat Bots
 redirectFrom:
-    - "/g/bots/index.html"
-    - "/g/bots.html"
+  - /g/bots/index.html
+  - /g/bots.html
 ---
 
 # Chat Bots
 
--   [About](#about)
--   [List of built-in Chat Bots](#list-of-built-in-chat-bots)
--   [Creating your own](creating-bots.md)
+- [About](#about)
+- [List of built-in Chat Bots](#list-of-built-in-chat-bots)
+- [Creating your own](creating-bots.md)
 
 ## About
 
 **Minecraft Console Client** has a number of default built in Chat Bots (Scripts/Plugins) which allow for various types of automation.
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-
-</div>
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -58,241 +53,239 @@ redirectFrom:
 
 ## Alerts
 
--   **Description:**
+- **Description:**
 
-    Get alerted when specified words are detected in the chat
+  Get alerted when specified words are detected in the chat
 
-    Useful for moderating your server or detecting when someone is talking to you.
+  Useful for moderating your server or detecting when someone is talking to you.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.Alerts`**
+  **Section:** **`ChatBot.Alerts`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Alerts Chat Bot is enabled.
+    This setting specifies if the Alerts Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Beep_Enabled`
+  #### `Beep_Enabled`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This might not work depending on your system or a console (terminal emulator).**
+  **This might not work depending on your system or a console (terminal emulator).**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if you want to hear a beep when you get an alert.
+    This setting specifies if you want to hear a beep when you get an alert.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Trigger_By_Words`
+  #### `Trigger_By_Words`
 
-    -   **Description:**
+  - **Description:**
 
-        Triggers an alert after receiving a specified keyword.
+    Triggers an alert after receiving a specified keyword.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Trigger_By_Rain`
+  #### `Trigger_By_Rain`
 
-    -   **Description:**
+  - **Description:**
 
-        Trigger alerts when it rains and when it stops.
+    Trigger alerts when it rains and when it stops.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Trigger_By_Thunderstorm`
+  #### `Trigger_By_Thunderstorm`
 
-    -   **Description:**
+  - **Description:**
 
-        Triggers alerts at the beginning and end of thunderstorms.
+    Triggers alerts at the beginning and end of thunderstorms.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Log_To_File`
+  #### `Log_To_File`
 
-    -   **Description:**
+  - **Description:**
 
-        Should the Alerts Chat Bot log alerts into a file.
+    Should the Alerts Chat Bot log alerts into a file.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Log_File`
+  #### `Log_File`
 
-    -   **Description:**
+  - **Description:**
 
-        A path to the file where alerts will be logged if `Log_To_File` is set to `true`.
+    A path to the file where alerts will be logged if `Log_To_File` is set to `true`.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `"alerts-log.txt"`
+  - **Default:** `"alerts-log.txt"`
 
-    #### `Matches`
+  #### `Matches`
 
-    -   **Description:**
+  - **Description:**
 
-        List of words/strings to alert you on.
+    List of words/strings to alert you on.
 
-    -   **Type:** `array of strings`
+  - **Type:** `array of strings`
 
-    -   **Example**:
+  - **Example**:
 
-        ```toml
-        Matches = [ "Yourname", " whispers ", "-> me", "admin", ".com", ]
-        ```
+    ```toml
+    Matches = [ "Yourname", " whispers ", "-> me", "admin", ".com", ]
+    ```
 
-    #### `Excludes`
+  #### `Excludes`
 
-    -   **Description:**
+  - **Description:**
 
-        List of words/strings to NOT alert you on.
+    List of words/strings to NOT alert you on.
 
-    -   **Type:** `array of strings`
+  - **Type:** `array of strings`
 
-    -   **Example**:
+  - **Example**:
 
-        ```toml
-        Excludes = [ "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is", ]
-        ```
+    ```toml
+    Excludes = [ "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is", ]
+    ```
 
-
-    </details>
+  </details>
 
 ## Anti AFK
 
--   **Description:**
+- **Description:**
 
-    Send a command and sneak on a regular or random basis or make the bot walk around randomly to avoid automatic AFK disconnection.
+  Send a command and sneak on a regular or random basis or make the bot walk around randomly to avoid automatic AFK disconnection.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AntiAFK`**
+  **Section:** **`ChatBot.AntiAFK`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Anti AFK Chat Bot is enabled.
+    This setting specifies if the Anti AFK Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Delay`
+  #### `Delay`
 
-    -   **Description:**
+  - **Description:**
 
-        The time interval for execution in seconds.
+    The time interval for execution in seconds.
 
-        If the `min` and `max` are the same, the time interval will be consistent. However if they are not the same, the plugin will choose a random number between `min` and `max`, this is useful if you want to have a random interval to trick anti afk plugins.
+    If the `min` and `max` are the same, the time interval will be consistent. However if they are not the same, the plugin will choose a random number between `min` and `max`, this is useful if you want to have a random interval to trick anti afk plugins.
 
-    -   **Format:** `{ min = <seconds>, max = <seconds> }`
+  - **Format:** `{ min = <seconds>, max = <seconds> }`
 
-    -   **Type:** `inline table with min and max fields which have type of double`
+  - **Type:** `inline table with min and max fields which have type of double`
 
-    -   **Default:** `{ min = 60.0, max = 60.0 }`
+  - **Default:** `{ min = 60.0, max = 60.0 }`
 
-    #### `Command`
+  #### `Command`
 
-    -   **Description:**
+  - **Description:**
 
-        Command to be sent.
+    Command to be sent.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `/ping`
+  - **Default:** `/ping`
 
-    #### `Use_Sneak`
+  #### `Use_Sneak`
 
-    -   **Description:**
+  - **Description:**
 
-        Sometimes you can trick plugins with sneaking or command might not be enough, enable it if you need it.
+    Sometimes you can trick plugins with sneaking or command might not be enough, enable it if you need it.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Use_Terrain_Handling`
+  #### `Use_Terrain_Handling`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
+  **You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        Should the bot use [Terrain Handling](configuration.md#terrainandmovements) instead of the command method.
+    Should the bot use [Terrain Handling](configuration.md#terrainandmovements) instead of the command method.
 
-        This will enable your bot to randomly move about, thus a better anti afk effect.
+    This will enable your bot to randomly move about, thus a better anti afk effect.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Walk_Range`
+  #### `Walk_Range`
 
-    -   **Description:**
+  - **Description:**
 
-        The range which bot will use to walk around (-X to +X and -Z to +Z, Y is not used).
+    The range which bot will use to walk around (-X to +X and -Z to +Z, Y is not used).
 
-        The bigger the slower the bot might be at calculating the path, recommended 2-5.
+    The bigger the slower the bot might be at calculating the path, recommended 2-5.
 
-    -   **Default:** `5`
+  - **Default:** `5`
 
-    #### `Walk_Retries`
+  #### `Walk_Retries`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This happens on each trigger of the task, so it does not permanently switch to alternative method.**
+  **This happens on each trigger of the task, so it does not permanently switch to alternative method.**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This is the number of times the bot will try to pathfind, if he can't find a valid path for 20 times, he will use the command method.
+    This is the number of times the bot will try to pathfind, if he can't find a valid path for 20 times, he will use the command method.
 
-    -   **Default:** `20`
+  - **Default:** `20`
 
-
-    </details>
+  </details>
 
 ## Auto Attack
 
@@ -302,154 +295,153 @@ redirectFrom:
 
 </div>
 
--   **Description:**
+- **Description:**
 
-    Automatically attacks mobs around you, you can configure it to attack both hostile and passive mobs and only certain mobs or all mobs.
+  Automatically attacks mobs around you, you can configure it to attack both hostile and passive mobs and only certain mobs or all mobs.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoAttack`**
+  **Section:** **`ChatBot.AutoAttack`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Attack Chat Bot is enabled.
+    This setting specifies if the Auto Attack Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Mode`
+  #### `Mode`
 
-    -   **Description:**
+  - **Description:**
 
-        Available values:
+    Available values:
 
-        -   `single`
+    - `single`
 
-            Target one mob per attack.
+      Target one mob per attack.
 
-        -   `multi`
+    - `multi`
 
-            Target all mobs in range per attack.
+      Target all mobs in range per attack.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `single`
+  - **Default:** `single`
 
-    #### `Priority`
+  #### `Priority`
 
-    -   **Description:**
+  - **Description:**
 
-        Available values:
+    Available values:
 
-        -   `health` (prioritize targeting mobs with lower health)
-        -   `distance` (prioritize targeting mobs closer to you)
+    - `health` (prioritize targeting mobs with lower health)
+    - `distance` (prioritize targeting mobs closer to you)
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `distance`
+  - **Default:** `distance`
 
-    #### `Cooldown_Time`
+  #### `Cooldown_Time`
 
-    -   **Description:**
+  - **Description:**
 
-        How long to wait between each attack in seconds.
+    How long to wait between each attack in seconds.
 
-        To enable it, set `Custom` (boolean) to `true` and change `value` (double) to your preferred value (eg. `1.5`).
+    To enable it, set `Custom` (boolean) to `true` and change `value` (double) to your preferred value (eg. `1.5`).
 
-        By default, this is disabled and MCC calculates it based on the server TPS.
+    By default, this is disabled and MCC calculates it based on the server TPS.
 
-    -   **Format:** `Cooldown_Time = { Custom = <is enabled (true|false)>, value = <seconds (double)> }`
+  - **Format:** `Cooldown_Time = { Custom = <is enabled (true|false)>, value = <seconds (double)> }`
 
-    -   **Type:** `inline table`
+  - **Type:** `inline table`
 
-    -   **Example:** `Cooldown_Time = { Custom = true, value = 1.5 }`
+  - **Example:** `Cooldown_Time = { Custom = true, value = 1.5 }`
 
-    -   **Default:** `{ Custom = false, value = 1.0 }`
+  - **Default:** `{ Custom = false, value = 1.0 }`
 
-    #### `Interaction`
+  #### `Interaction`
 
-    -   **Description:**
+  - **Description:**
 
-        Available values:
+    Available values:
 
-        -   `Attack`
+    - `Attack`
 
-            Just attack a mob. (Default)
+      Just attack a mob. (Default)
 
-        -   `Interact`
+    - `Interact`
 
-            Just interact with a mob.
+      Just interact with a mob.
 
-        -   `InteractAt`
+    - `InteractAt`
 
-            Interact with and attack a mob.
+      Interact with and attack a mob.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `Attack`
+  - **Default:** `Attack`
 
-    #### `Attack_Hostile`
+  #### `Attack_Hostile`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Attack Chat Bot should attack hostile mobs.
+    This setting specifies if the Auto Attack Chat Bot should attack hostile mobs.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Attack_Passive`
+  #### `Attack_Passive`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Attack Chat Bot should attack passive mobs.
+    This setting specifies if the Auto Attack Chat Bot should attack passive mobs.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `List_Mode`
+  #### `List_Mode`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies which mode of the list should Auto Attack Chat Bot use for `Entites_List` setting.
+    This setting specifies which mode of the list should Auto Attack Chat Bot use for `Entites_List` setting.
 
-    -   **Available values:** `whitelist` (only attack specified mobs) and `blacklist` (do not attack specified mobs).
+  - **Available values:** `whitelist` (only attack specified mobs) and `blacklist` (do not attack specified mobs).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `whitelist`
+  - **Default:** `whitelist`
 
-    #### `Entites_List`
+  #### `Entites_List`
 
-    -   **Description:**
+  - **Description:**
 
-        A list of mobs which are either whitelisted or blacklisted, the mode is set in `List_Mode` setting.
+    A list of mobs which are either whitelisted or blacklisted, the mode is set in `List_Mode` setting.
 
-        You can find the full list of mobs [here](https://mccteam.github.io/r/entity/#L15).
+    You can find the full list of mobs [here](https://mccteam.github.io/r/entity/#L15).
 
-    -   **Format:** `["<entity type>", "<entity type>", ...]`
+  - **Format:** `["<entity type>", "<entity type>", ...]`
 
-    -   **Type:** `array of strings`
+  - **Type:** `array of strings`
 
-    -   **Example:** `[ "Spider", "Skeleton", "Pig", ]`
+  - **Example:** `[ "Spider", "Skeleton", "Pig", ]`
 
-    -   **Default:** `[ "Zombie", "Cow", ]`
+  - **Default:** `[ "Zombie", "Cow", ]`
 
-
-    </details>
+  </details>
 
 ## Auto Craft
 
@@ -459,1409 +451,1399 @@ redirectFrom:
 
 </div>
 
--   **Description:**
+- **Description:**
 
-    Automatically craft items in your inventory or in a crafting table.
+  Automatically craft items in your inventory or in a crafting table.
 
--   **Commands:**
+- **Commands:**
 
-    -   `/autocraft list`
+  - `/autocraft list`
 
-        List all loaded recipes.
+    List all loaded recipes.
 
-    -   `/autocraft start <name>`
+  - `/autocraft start <name>`
 
-        Start the crafting process with the given recipe name you had defined.
+    Start the crafting process with the given recipe name you had defined.
 
-    -   `/autocraft stop`
+  - `/autocraft stop`
 
-        Stop the crafting process.
+    Stop the crafting process.
 
-    -   `/autocraft help`
+  - `/autocraft help`
 
-        In-game help command.
+    In-game help command.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoCraft`**
+  **Section:** **`ChatBot.AutoCraft`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Craft Chat Bot is enabled.
+    This setting specifies if the Auto Craft Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `CraftingTable`
+  #### `CraftingTable`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the location of the crafting table.
+    This setting specifies the location of the crafting table.
 
-    -   **Type/Format:**
+  - **Type/Format:**
 
-        This setting is an of an `inline table` type that has the following sub-options/settings;
+    This setting is an of an `inline table` type that has the following sub-options/settings;
 
-        -   `x` - X coordinate, the type is `double` (eg. `123.0`)
+    - `x` - X coordinate, the type is `double` (eg. `123.0`)
 
-        -   `y` - Y coordinate, the type is `double` (eg. `64.0`)
+    - `y` - Y coordinate, the type is `double` (eg. `64.0`)
 
-        -   `z` - Z coordinate, the type is `double` (eg. `456.0`)
+    - `z` - Z coordinate, the type is `double` (eg. `456.0`)
 
-    -   **Example:**
-
-        ```toml
-        CraftingTable = { X = 123.0, Y = 65.0, Z = 456.0 }
-        ```
-
-    #### `OnFailure`
-
-    -   **Description:**
-
-        This setting specifies what the Auto Craft Chat Bot should do on failure.
-
-        Failure can happen when there are no materials available or when a crafting table can't be reached.
-
-    -   **Available values:** `abort` and `wait`.
-
-    -   **Type:** `string`
-
-    -   **Default:** `abort`
-
-    ### Defining a recipe
-    
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **If you're using `table` you need to set the `CraftingTable` setting.**
-
-    </div>
-
-    The recipes are defines as a separate new sub-section `[[ChatBot.AutoCraft.Recipes]]` of the `[ChatBot.AutoCraft]` section.
-
-    The `[[ChatBot.AutoCraft.Recipes]]` section needs to contain the following settings:
-
-    -   `Name`
-
-        The name of your recipe, can be whatever you like.
-
-        **Type**: `string`
-
-    -   `Type`
-
-        **Available values:** `player` and `table`
-
-    -   `Result`
-
-        This is the type of resulting item.
-
-        **Type:** `string`
-
-        **Example:** `"StoneBricks"`
-
-    -   `Slots`
-
-        This setting is an array/list of material names (strings) that go into an each slot (max 9 elements). Empty slots should be marked with `"Null"`
-
-        **Type:** `array of strings`
-
-        **Format:**
-
-        ```toml
-        Slots = [ "<material/item type>", "<material/item type>", ... ]
-        ```
-
-
-        **Slots are indexed as following:**
-
-        **`2x2` (Player)**
-
-        ```cs
-        ╔═══╦═══╗
-        ║ 1 ║ 2 ║
-        ╠═══╬═══╣
-        ║ 3 ║ 4 ║
-        ╚═══╩═══╝
-        ```
-
-        **`3x3` (Crafting Table)**
-
-        ```cs
-        ╔═══╦═══╦═══╗
-        ║ 1 ║ 2 ║ 3 ║
-        ╠═══╬═══╬═══╣
-        ║ 4 ║ 5 ║ 6 ║
-        ╠═══╬═══╬═══╣
-        ║ 7 ║ 8 ║ 9 ║
-        ╚═══╩═══╩═══╝
-        ```
-
-    **Full Examples:**
+  - **Example:**
 
     ```toml
-    # Stone Bricks using the player inventory
-    [[ChatBot.AutoCraft.Recipes]]
-    Name = "Recipe-Name-1"
-    Type = "player"
-    Result = "StoneBricks"
-    Slots = [ "Stone", "Stone", "Stone", "Stone", ]
-
-    # Stone Bricks using a crafting table
-    [[ChatBot.AutoCraft.Recipes]]
-    Name = "Recipe-Name-2"
-    Type = "table"
-    Result = "StoneBricks"
-    Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]
+    CraftingTable = { X = 123.0, Y = 65.0, Z = 456.0 }
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  #### `OnFailure`
 
-    **If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
+  - **Description:**
 
-    **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
+    This setting specifies what the Auto Craft Chat Bot should do on failure.
 
-    **Make sure to provide materials for your bot by placing them in inventory first.**
+    Failure can happen when there are no materials available or when a crafting table can't be reached.
 
-    </div>
+  - **Available values:** `abort` and `wait`.
 
+  - **Type:** `string`
 
-    </details>
+  - **Default:** `abort`
+
+  ### Defining a recipe
+
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+  **If you're using `table` you need to set the `CraftingTable` setting.**
+
+  </div>
+
+  The recipes are defines as a separate new sub-section `[[ChatBot.AutoCraft.Recipes]]` of the `[ChatBot.AutoCraft]` section.
+
+  The `[[ChatBot.AutoCraft.Recipes]]` section needs to contain the following settings:
+
+  - `Name`
+
+    The name of your recipe, can be whatever you like.
+
+    **Type**: `string`
+
+  - `Type`
+
+    **Available values:** `player` and `table`
+
+  - `Result`
+
+    This is the type of resulting item.
+
+    **Type:** `string`
+
+    **Example:** `"StoneBricks"`
+
+  - `Slots`
+
+    This setting is an array/list of material names (strings) that go into an each slot (max 9 elements). Empty slots should be marked with `"Null"`
+
+    **Type:** `array of strings`
+
+    **Format:**
+
+    ```toml
+    Slots = [ "<material/item type>", "<material/item type>", ... ]
+    ```
+
+    **Slots are indexed as following:**
+
+    **`2x2` (Player)**
+
+    ```cs
+    ╔═══╦═══╗
+    ║ 1 ║ 2 ║
+    ╠═══╬═══╣
+    ║ 3 ║ 4 ║
+    ╚═══╩═══╝
+    ```
+
+    **`3x3` (Crafting Table)**
+
+    ```cs
+    ╔═══╦═══╦═══╗
+    ║ 1 ║ 2 ║ 3 ║
+    ╠═══╬═══╬═══╣
+    ║ 4 ║ 5 ║ 6 ║
+    ╠═══╬═══╬═══╣
+    ║ 7 ║ 8 ║ 9 ║
+    ╚═══╩═══╩═══╝
+    ```
+
+  **Full Examples:**
+
+  ```toml
+  # Stone Bricks using the player inventory
+  [[ChatBot.AutoCraft.Recipes]]
+  Name = "Recipe-Name-1"
+  Type = "player"
+  Result = "StoneBricks"
+  Slots = [ "Stone", "Stone", "Stone", "Stone", ]
+
+  # Stone Bricks using a crafting table
+  [[ChatBot.AutoCraft.Recipes]]
+  Name = "Recipe-Name-2"
+  Type = "table"
+  Result = "StoneBricks"
+  Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]
+  ```
+
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+  **If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
+
+  **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
+
+  **Make sure to provide materials for your bot by placing them in inventory first.**
+
+  </div>
+
+  </details>
 
 ## Auto Dig
 
--   **Description:**
+- **Description:**
 
-    Automatically digs block on specified locations.
+  Automatically digs block on specified locations.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to have [inventoryhandling](configuration.md#inventoryhandling) and [terrainandmovements](configuration.md#terrainandmovements) enabled in order for this bot to work.**
+  **You need to have [inventoryhandling](configuration.md#inventoryhandling) and [terrainandmovements](configuration.md#terrainandmovements) enabled in order for this bot to work.**
 
-    </div>
+  </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.**
+  **Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.**
 
-    </div>
+  </div>
 
--   **Commands:**
+- **Commands:**
 
-    -   `/digbot start` - Starts the digging
+  - `/digbot start` - Starts the digging
 
-    -   `/digbot stop` - Stops the digging
+  - `/digbot stop` - Stops the digging
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoDig`**
+  **Section:** **`ChatBot.AutoDig`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Dig Chat Bot is enabled.
+    This setting specifies if the Auto Dig Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Mode`
+  #### `Mode`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies in which mode the Auto Dig Chat Bot will operate.
+    This setting specifies in which mode the Auto Dig Chat Bot will operate.
 
-    -   **Available values:**
+  - **Available values:**
 
-    -   `lookat`
+  - `lookat`
 
-        Digs the block that the bot is looking at.
+    Digs the block that the bot is looking at.
 
-    -   `fixedpos`
+  - `fixedpos`
 
-        Digs the block in a fixed location/position/coordinate.
+    Digs the block in a fixed location/position/coordinate.
 
-    -   `both`
+  - `both`
 
-        Dig only when the block you are looking at is in the "Locations" list.
+    Dig only when the block you are looking at is in the "Locations" list.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `lookat`
+  - **Default:** `lookat`
 
-    #### `Locations`
+  #### `Locations`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies an array/list of locations which the bot will dig out.
+    This setting specifies an array/list of locations which the bot will dig out.
 
-    -   **Type/Format:**
+  - **Type/Format:**
 
-        The type of this setting is an array of inline table which has the following sub-options/settings:
+    The type of this setting is an array of inline table which has the following sub-options/settings:
 
-        -   `x` - X coordinate, the type is `double` (eg. `123.45`)
+    - `x` - X coordinate, the type is `double` (eg. `123.45`)
 
-        -   `y` - Y coordinate, the type is `double` (eg. `64.0`)
+    - `y` - Y coordinate, the type is `double` (eg. `64.0`)
 
-        -   `z` - Z coordinate, the type is `double` (eg. `234.5`)
+    - `z` - Z coordinate, the type is `double` (eg. `234.5`)
 
-    -   **Full example:**
+  - **Full example:**
 
-        ```toml
-        Locations = [
-           { x = 123.5, y = 64.0, z = 234.5 },
-           { x = 124.5, y = 63.0, z = 235.5 },
-        ]
-        ```
+    ```toml
+    Locations = [
+       { x = 123.5, y = 64.0, z = 234.5 },
+       { x = 124.5, y = 63.0, z = 235.5 },
+    ]
+    ```
 
-    #### `Location_Order`
+  #### `Location_Order`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies in which order the Auto Dig Chat Bot will dig blocks.
+    This setting specifies in which order the Auto Dig Chat Bot will dig blocks.
 
-    -   **Available values:**
+  - **Available values:**
 
-        -   `distance`
+    - `distance`
 
-            Digs the block closest to the bot.
+      Digs the block closest to the bot.
 
-        -   `index`
+    - `index`
 
-            Digs blocks in the list order.
+      Digs blocks in the list order.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `distance`
+  - **Default:** `distance`
 
-    #### `Auto_Start_Delay`
+  #### `Auto_Start_Delay`
 
-    -   **Description:**
+  - **Description:**
 
-        How many seconds to wait after entering the game to start digging automatically.
+    How many seconds to wait after entering the game to start digging automatically.
 
-        Set to `-1` to disable the automatic start.
+    Set to `-1` to disable the automatic start.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `3.0`
+  - **Default:** `3.0`
 
-    #### `Dig_Timeout`
+  #### `Dig_Timeout`
 
-    -   **Description:**
+  - **Description:**
 
-        If mining a block takes longer than this value, a new attempt will be made to find a block to mine.
+    If mining a block takes longer than this value, a new attempt will be made to find a block to mine.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `60.0`
+  - **Default:** `60.0`
 
-    #### `Log_Block_Dig`
+  #### `Log_Block_Dig`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies whether to output logs in to the console when digging blocks.
+    This setting specifies whether to output logs in to the console when digging blocks.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `List_Type`
+  #### `List_Type`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the mode at which the `Blocks` setting is operating.
+    This setting specifies the mode at which the `Blocks` setting is operating.
 
-    -   **Available values:** `whitelist` (only dig specified blocks) and `blacklist` (do not dig specified blocks).
+  - **Available values:** `whitelist` (only dig specified blocks) and `blacklist` (do not dig specified blocks).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `whitelist`
+  - **Default:** `whitelist`
 
-    #### `Blocks`
+  #### `Blocks`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the list of blocks which either should not should not be dug out.
+    This setting specifies the list of blocks which either should not should not be dug out.
 
-        **The list of block types can be found [here](https://mccteam.github.io/r/block/#L15).**
+    **The list of block types can be found [here](https://mccteam.github.io/r/block/#L15).**
 
-    -   **Format:** `[ "<block type>", "<block type>", ...]`
+  - **Format:** `[ "<block type>", "<block type>", ...]`
 
-    -   **Type:** `array of strings`
+  - **Type:** `array of strings`
 
-    -   **Example:** `Blocks = [ "DiamondOre", "RedstoneOre", "EmeraldOre", "RedstoneBlock" ]`
+  - **Example:** `Blocks = [ "DiamondOre", "RedstoneOre", "EmeraldOre", "RedstoneBlock" ]`
 
-    -   **Default:** `[ "Cobblestone", "Stone", ]`
+  - **Default:** `[ "Cobblestone", "Stone", ]`
 
-
-    </details>
+  </details>
 
 ## Auto Drop
 
--   **Description:**
+- **Description:**
 
-    Automatically drop items you don't need from the inventory.
+  Automatically drop items you don't need from the inventory.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
+  **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoDrop`**
+  **Section:** **`ChatBot.AutoDrop`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Drop Chat Bot is enabled.
+    This setting specifies if the Auto Drop Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Mode`
+  #### `Mode`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the mode of the auto dropping.
+    This setting specifies the mode of the auto dropping.
 
-        Available values:
+    Available values:
 
-        -   `include`
+    - `include`
 
-            This mode will drop any items specified in the list in the `Items` setting.
+      This mode will drop any items specified in the list in the `Items` setting.
 
-        -   `exclude`
+    - `exclude`
 
-            This mode will drop any other items than specified in the list in the `Items` setting.
+      This mode will drop any other items than specified in the list in the `Items` setting.
 
-            So it would keep the items specified in the list.
+      So it would keep the items specified in the list.
 
-        -   `everything`
+    - `everything`
 
-            Drop any item regardless of the items listed in the `Items` setting.
+      Drop any item regardless of the items listed in the `Items` setting.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `include`
+  - **Default:** `include`
 
-    #### `Items`
+  #### `Items`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
+  **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting is where you can specify the list of items which you want to drop, or keep.
+    This setting is where you can specify the list of items which you want to drop, or keep.
 
+  - **Format:** `[ "<item type>", "<item type>", ...]`
 
-    -   **Format:** `[ "<item type>", "<item type>", ...]`
+  - **Type:** `array of strings`
 
-    -   **Type:** `array of strings`
+  - **Example:** `[ "Totem", "GlassBottle", ]`
 
-    -   **Example:** `[ "Totem", "GlassBottle", ]`
+  - **Default:** `[ "Cobblestone", "Dirt", ]`
 
-    -   **Default:** `[ "Cobblestone", "Dirt", ]`
-
-
-    </details>
+  </details>
 
 ## Auto Eat
 
--   **Description:**
+- **Description:**
 
-    Automatically eat food when your Hunger value is low.
+  Automatically eat food when your Hunger value is low.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
+  **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoEat`**
+  **Section:** **`ChatBot.AutoEat`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Eat Chat Bot is enabled.
+    This setting specifies if the Auto Eat Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Threshold`
+  #### `Threshold`
 
-    -   **Description:**
+  - **Description:**
 
-        Threshold bellow which the bot will auto eat.
+    Threshold bellow which the bot will auto eat.
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** `6`
+  - **Default:** `6`
 
-
-    </details>
+  </details>
 
 ## Auto Fishing
 
--   **Description:**
+- **Description:**
 
-    Automatically catch fish using a fishing rod.
+  Automatically catch fish using a fishing rod.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to have [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
+  **You need to have [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
 
-    </div>
+  </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **To use the automatic rod switching and durability check feature, you need to enable [inventoryhandling](configuration.md#inventoryhandling).**
+  **To use the automatic rod switching and durability check feature, you need to enable [inventoryhandling](configuration.md#inventoryhandling).**
 
-    </div>
+  </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Note: To adjust the position or angle after catching a fish, you need to enable [terrainandmovements](configuration.md#terrainandmovements).**
+  **Note: To adjust the position or angle after catching a fish, you need to enable [terrainandmovements](configuration.md#terrainandmovements).**
 
-    </div>
+  </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **A fishing rod with **Mending enchantment** is strongly recommended.**
+  **A fishing rod with **Mending enchantment** is strongly recommended.**
 
-    </div>
+  </div>
 
-    **Steps for using this bot (with the default setting)**
+  **Steps for using this bot (with the default setting)**
 
-    1. Hold a fishing rod and aim towards the sea before login with MCC
-    2. Make sure `AutoFish` is `enabled` in config file
-    3. Login with MCC
-    4. You will be able to see the log "Fishing will start in 3.0 second(s).".
+  1. Hold a fishing rod and aim towards the sea before login with MCC
+  2. Make sure `AutoFish` is `enabled` in config file
+  3. Login with MCC
+  4. You will be able to see the log "Fishing will start in 3.0 second(s).".
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoFishing`**
+  **Section:** **`ChatBot.AutoFishing`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Fishing Chat Bot is enabled.
+    This setting specifies if the Auto Fishing Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Antidespawn`
+  #### `Antidespawn`
 
-    -   **Description:**
+  - **Description:**
 
-        This option may be used in some special cases, so if it has not been modified before, leave the default value.
+    This option may be used in some special cases, so if it has not been modified before, leave the default value.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Mainhand`
+  #### `Mainhand`
 
-    -   **Description:**
+  - **Description:**
 
-        Whether to use the main hand or off hand to hold the rod.
+    Whether to use the main hand or off hand to hold the rod.
 
-    -   **Available values:**
+  - **Available values:**
 
-        -   `true` (Main Hand)
-        -   `false` (Off Hand)
+    - `true` (Main Hand)
+    - `false` (Off Hand)
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Auto_Start`
+  #### `Auto_Start`
 
-    -   **Description:**
+  - **Description:**
 
-        Whether to start fishing automatically after joining the game or switching worlds.
+    Whether to start fishing automatically after joining the game or switching worlds.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Cast_Delay`
+  #### `Cast_Delay`
 
-    -   **Description:**
+  - **Description:**
 
-        Wait how many seconds after successfully catching a fish before recasting the rod.
+    Wait how many seconds after successfully catching a fish before recasting the rod.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `0.4`
+  - **Default:** `0.4`
 
-    #### `Fishing_Delay`
+  #### `Fishing_Delay`
 
-    -   **Description:**
+  - **Description:**
 
-        Effective only when `auto_start = true`.
+    Effective only when `auto_start = true`.
 
-        After joining the game or switching worlds, wait how many seconds before starting to fish automatically.
+    After joining the game or switching worlds, wait how many seconds before starting to fish automatically.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `3.0`
+  - **Default:** `3.0`
 
-    #### `Fishing_Timeout`
+  #### `Fishing_Timeout`
 
-    -   **Description:**
+  - **Description:**
 
-        How long the fish bite is not detected is considered a timeout. It will re-cast after the timeout.
+    How long the fish bite is not detected is considered a timeout. It will re-cast after the timeout.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `300.0`
+  - **Default:** `300.0`
 
-    #### `Durability_Limit`
+  #### `Durability_Limit`
 
-    -   **Description:**
+  - **Description:**
 
-        Will not use rods with less durability than this (full durability is 64).
+    Will not use rods with less durability than this (full durability is 64).
 
-        Set to zero to disable this feature.
+    Set to zero to disable this feature.
 
-        **Type/Available values:** An integer number from `0` to `64`.
+    **Type/Available values:** An integer number from `0` to `64`.
 
-    -   **Default:** `2`
+  - **Default:** `2`
 
-    #### `Auto_Rod_Switch`
+  #### `Auto_Rod_Switch`
 
-    -   **Description:**
+  - **Description:**
 
-        Switch to a new rod from inventory after the current rod is unavailable.
+    Switch to a new rod from inventory after the current rod is unavailable.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Stationary_Threshold`
+  #### `Stationary_Threshold`
 
-    -   **Description:**
+  - **Description:**
 
-        For each movement of the fishhook entity (entity movement packet), if the distance on both X and Z axes is below this threshold it will be considered as stationary.
+    For each movement of the fishhook entity (entity movement packet), if the distance on both X and Z axes is below this threshold it will be considered as stationary.
 
-        This is to avoid being detected as a bite during the casting of the hook.
+    This is to avoid being detected as a bite during the casting of the hook.
 
-        **If set too high, it will cause the rod to be reeled in while casting.**
+    **If set too high, it will cause the rod to be reeled in while casting.**
 
-        **If set too low, it will result in not detecting a bite.**
+    **If set too low, it will result in not detecting a bite.**
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `0.001`
+  - **Default:** `0.001`
 
-    #### `Hook_Threshold`
+  #### `Hook_Threshold`
 
-    -   **Description:**
+  - **Description:**
 
-        For each movement of the fishhook entity (entity movement packet), if it is stationary (check `stationary_threshold`) and its movement on the Y-axis is greater than this threshold, it will be considered to have caught a fish.
+    For each movement of the fishhook entity (entity movement packet), if it is stationary (check `stationary_threshold`) and its movement on the Y-axis is greater than this threshold, it will be considered to have caught a fish.
 
-        If it is set too high, it will cause normal bites to be ignored.
+    If it is set too high, it will cause normal bites to be ignored.
 
-        If set too low, it can cause small fluctuations in the hook to be recognized as bites.
+    If set too low, it can cause small fluctuations in the hook to be recognized as bites.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `0.2`
+  - **Default:** `0.2`
 
-    #### `Log_Fish_Bobber`
+  #### `Log_Fish_Bobber`
 
-    -   **Description:**
+  - **Description:**
 
-        When turned on it will be print a log every time a fishhook entity movement packet is received.
+    When turned on it will be print a log every time a fishhook entity movement packet is received.
 
-        If auto-fishing does not work as expected, turn this option on to adjust `stationary_threshold` and `hook_threshold`, or create an issue and attach these logs.
+    If auto-fishing does not work as expected, turn this option on to adjust `stationary_threshold` and `hook_threshold`, or create an issue and attach these logs.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Enable_Move`
+  #### `Enable_Move`
 
-    -   **Description:**
+  - **Description:**
 
-        Some plugins do not allow the player to fish in one place for a long time. This setting allows the player to change position/angle after each catch.
+    Some plugins do not allow the player to fish in one place for a long time. This setting allows the player to change position/angle after each catch.
 
-        Each position is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection, more on that bellow.
+    Each position is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection, more on that bellow.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    ### Adding a position/movement
+  ### Adding a position/movement
 
-    Each position/movement is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection of `[ChatBot.AutoFishing]`.
+  Each position/movement is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection of `[ChatBot.AutoFishing]`.
 
-    **Available settings/options:**
+  **Available settings/options:**
 
-    -   `XYZ`
+  - `XYZ`
 
-        This setting specifies at location the bot should move to.
+    This setting specifies at location the bot should move to.
 
-        The type of this setting is `inline table`, that has the following sub-settings/options:
+    The type of this setting is `inline table`, that has the following sub-settings/options:
 
-        -   `x` - X coordinate, the type is `double` (eg. `123.0`)
+    - `x` - X coordinate, the type is `double` (eg. `123.0`)
 
-        -   `y` - Y coordinate, the type is `double` (eg. `64.0`)
+    - `y` - Y coordinate, the type is `double` (eg. `64.0`)
 
-        -   `z` - Z coordinate, the type is `double` (eg. `-654.0`)
+    - `z` - Z coordinate, the type is `double` (eg. `-654.0`)
 
-        **Example**:
-
-        ```toml
-        XYZ = { x = 123.0, y = 64.0, z = -654.0 }
-        ```
-
-    -   `facing`
-
-        This setting specifies at which angle the bot will look at when he arrives to this position/location.
-
-        The type of this setting is `inline table`, that has the following sub-settings/options:
-
-        -   `yaw` - The type is `double` (eg. `12.34`)
-
-        -   `pitch` - The type is `double` (eg. `-23.45`)
-
-        **Example**:
-
-        ```toml
-        facing = { yaw = 12.34, pitch = -23.45 }
-        ```
-
-    #### Full example
+    **Example**:
 
     ```toml
-    [[ChatBot.AutoFishing.Movements]]
-    facing = { yaw = 12.34, pitch = -23.45 }
-
-    [[ChatBot.AutoFishing.Movements]]
-    XYZ = { x = 123.45, y = 64.0, z = -654.32 }
-    facing = { yaw = -25.14, pitch = 36.25 }
+    XYZ = { x = 123.0, y = 64.0, z = -654.0 }
     ```
 
+  - `facing`
 
-    </details>
+    This setting specifies at which angle the bot will look at when he arrives to this position/location.
+
+    The type of this setting is `inline table`, that has the following sub-settings/options:
+
+    - `yaw` - The type is `double` (eg. `12.34`)
+
+    - `pitch` - The type is `double` (eg. `-23.45`)
+
+    **Example**:
+
+    ```toml
+    facing = { yaw = 12.34, pitch = -23.45 }
+    ```
+
+  #### Full example
+
+  ```toml
+  [[ChatBot.AutoFishing.Movements]]
+  facing = { yaw = 12.34, pitch = -23.45 }
+
+  [[ChatBot.AutoFishing.Movements]]
+  XYZ = { x = 123.45, y = 64.0, z = -654.32 }
+  facing = { yaw = -25.14, pitch = 36.25 }
+  ```
+
+  </details>
 
 ## Auto Relog
 
--   **Description:**
+- **Description:**
 
-    Make MCC automatically relog when disconnected by the server, for example because the server is restating.
+  Make MCC automatically relog when disconnected by the server, for example because the server is restating.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoRelog`**
+  **Section:** **`ChatBot.AutoRelog`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Relog Chat Bot is enabled.
+    This setting specifies if the Auto Relog Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Delay`
+  #### `Delay`
 
-    -   **Description:**
+  - **Description:**
 
-        The delay time before joining the server.
+    The delay time before joining the server.
 
-        If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`)
+    If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`)
 
-    -   **Format:** `{ min = <seconds (double)>, max = <seconds (double)> }`
+  - **Format:** `{ min = <seconds (double)>, max = <seconds (double)> }`
 
-    -   **Type:** `inline table`
+  - **Type:** `inline table`
 
-    -   **Example:** `{ min = 8.0, max = 60.0 }`
+  - **Example:** `{ min = 8.0, max = 60.0 }`
 
-    -   **Default:** `{ min = 3.0, max = 3.0 }`
+  - **Default:** `{ min = 3.0, max = 3.0 }`
 
-    #### `Retries`
+  #### `Retries`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This might get you banned by the server owners.**
+  **This might get you banned by the server owners.**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        Number of retries.
+    Number of retries.
 
-        Use `-1` for infinite retries.
+    Use `-1` for infinite retries.
 
-    -   **Default:** `-1`
+  - **Default:** `-1`
 
-    #### `Ignore_Kick_Message`
+  #### `Ignore_Kick_Message`
 
-    -   **Description:**
+  - **Description:**
 
-        This settings specifies if the `Kick_Messages` setting will be ignored, if set to `true` it will auto relog regardless of the kick messages.
+    This settings specifies if the `Kick_Messages` setting will be ignored, if set to `true` it will auto relog regardless of the kick messages.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Kick_Messages`
+  #### `Kick_Messages`
 
-    -   **Description:**
+  - **Description:**
 
-        A list of words which should trigger the Auto Reconnect Chat Bot.
+    A list of words which should trigger the Auto Reconnect Chat Bot.
 
-    -   **Format:** `[ "<keyword>", "<keyword>", ... ]`
+  - **Format:** `[ "<keyword>", "<keyword>", ... ]`
 
-    -   **Type:** `array of strings`
+  - **Type:** `array of strings`
 
-    -   **Default:** `[ "Connection has been lost", "Server is restarting", "Server is full", "Too Many people", ]`
+  - **Default:** `[ "Connection has been lost", "Server is restarting", "Server is full", "Too Many people", ]`
 
-
-    </details>
+  </details>
 
 ## Auto Respond
 
--   **Description:**
+- **Description:**
 
-    Run commands or send messages automatically when a specified pattern is detected in the chat.
+  Run commands or send messages automatically when a specified pattern is detected in the chat.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `AutoRespond` only if you trust server admins.**
+  **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `AutoRespond` only if you trust server admins.**
 
-    </div>
+  </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **This bot may get spammy depending on your rules, although the global [messagecooldown](configuration.md#messagecooldown) setting can help you avoiding accidental spam.**
+  **This bot may get spammy depending on your rules, although the global [messagecooldown](configuration.md#messagecooldown) setting can help you avoiding accidental spam.**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.AutoRespond`**
+  **Section:** **`ChatBot.AutoRespond`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Respond Chat Bot is enabled.
+    This setting specifies if the Auto Respond Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Matches_File`
+  #### `Matches_File`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This file is not created by default, we recommend making a clone of the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) and changing it according to your needs.**
+  **This file is not created by default, we recommend making a clone of the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) and changing it according to your needs.**
 
-    </div>
+  </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **If you want to use variables from this chat bot in scripts, currently that does not work. You will have to use a C# script in that case. We are working on getting this functionality back.**
+  **If you want to use variables from this chat bot in scripts, currently that does not work. You will have to use a C# script in that case. We are working on getting this functionality back.**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the path to the file which contains the list of rules for detecting of keywords and responding on them.
+    This setting specifies the path to the file which contains the list of rules for detecting of keywords and responding on them.
 
-        To find out how to configure the rules, take a look at the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) which has very detailed examples and a lot of comments.
+    To find out how to configure the rules, take a look at the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) which has very detailed examples and a lot of comments.
 
-        _PS: In the future we will document the rules here with examples too._
+    _PS: In the future we will document the rules here with examples too._
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `matches.ini`
+  - **Default:** `matches.ini`
 
-    #### `Match_Colors`
+  #### `Match_Colors`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This feature uses the `§` symbol for color matching**
+  **This feature uses the `§` symbol for color matching**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Auto Respond Chat Bot should keep the color formatting send by the server.
+    This setting specifies if the Auto Respond Chat Bot should keep the color formatting send by the server.
 
-        You can use this when you need to match text by colors.
+    You can use this when you need to match text by colors.
 
-        List of all color codes: [here](https://minecraft.tools/en/color-code.php)
+    List of all color codes: [here](https://minecraft.tools/en/color-code.php)
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-
-    </details>
+  </details>
 
 ## Chat Log
 
--   **Description:**
+- **Description:**
 
-    Make MCC log chat messages into a file.
+  Make MCC log chat messages into a file.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.ChatLog`**
+  **Section:** **`ChatBot.ChatLog`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Chat Log Chat Bot is enabled.
+    This setting specifies if the Chat Log Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Add_DateTime`
+  #### `Add_DateTime`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Chat Log should prepend timestamps to the logged messages.
+    This setting specifies if the Chat Log should prepend timestamps to the logged messages.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Log_File`
+  #### `Log_File`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the name of the Chat Log file that will be created.
+    This setting specifies the name of the Chat Log file that will be created.
 
-    -   **Default:** `chatlog-%username%-%serverip%.txt`
+  - **Default:** `chatlog-%username%-%serverip%.txt`
 
-    #### `Filter`
+  #### `Filter`
 
-    -   **Description:**
+  - **Description:**
 
-        Type of messages to be logged into the file.
+    Type of messages to be logged into the file.
 
-        Available values:
+    Available values:
 
-        -   `all`
+    - `all`
 
-            All text from the console
+      All text from the console
 
-        -   `messages`
+    - `messages`
 
-            All messages, including system, plugin channel, player and server.
+      All messages, including system, plugin channel, player and server.
 
-        -   `chat`
+    - `chat`
 
-            Only chat messages.
+      Only chat messages.
 
-        -   `private`
+    - `private`
 
-            Only private messages.
+      Only private messages.
 
-        -   `internal`
+    - `internal`
 
-            Only internal messages and commands.
+      Only internal messages and commands.
 
-    -   **Default:** `messages`
+  - **Default:** `messages`
 
-
-    </details>
+  </details>
 
 ## Discord Bridge
 
--   **Description:**
+- **Description:**
 
-    This Chat Bot allows you to send and receive messages and MCC commands via a Discord channel.
+  This Chat Bot allows you to send and receive messages and MCC commands via a Discord channel.
 
--   **Setup:**
+- **Setup:**
 
-    In order for this to work you must create a Discord bot on the [Discord Developers portal](https://discord.com/developers/applications/).
+  In order for this to work you must create a Discord bot on the [Discord Developers portal](https://discord.com/developers/applications/).
 
-    First go to [Discord Developers portal](https://discord.com/developers/applications/), click on **New Application**, fill out the name of your bot and confirm the terms of service and click **Create**.
+  First go to [Discord Developers portal](https://discord.com/developers/applications/), click on **New Application**, fill out the name of your bot and confirm the terms of service and click **Create**.
 
-    ![Image](/images/guide/Discord_Create_Application.png)
+  ![Image](/images/guide/Discord_Create_Application.png)
 
-    Copy the **Application ID** and save it somewhere.
+  Copy the **Application ID** and save it somewhere.
 
-    Click on the **Bot** tab in the left menu.
+  Click on the **Bot** tab in the left menu.
 
-    Click on **Add Bot**
+  Click on **Add Bot**
 
-    ![Image](/images/guide/Discord_Add_Bot.png)
+  ![Image](/images/guide/Discord_Add_Bot.png)
 
-    Click on the **Reset Token** button and copy the generated token, then paste it in the `Token` field in the MCC configuration.
+  Click on the **Reset Token** button and copy the generated token, then paste it in the `Token` field in the MCC configuration.
 
-    Enable `Message Content Intent`, `Server Members Intent` and `Presence Intent`.
+  Enable `Message Content Intent`, `Server Members Intent` and `Presence Intent`.
 
-    ![Image](/images/guide/Discord_Reset_Token.png)
-    ![Image](https://i.pics.rs/AAhyx.png)
+  ![Image](/images/guide/Discord_Reset_Token.png)
+  ![Image](https://i.pics.rs/AAhyx.png)
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **Token is what gives you access to the Bot, do not share it with anyone and keep it safe!**
+  **Token is what gives you access to the Bot, do not share it with anyone and keep it safe!**
 
-    </div>
+  </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **You must Enable `Message Content Intent`, `Server Members Intent` and `Presence Intent` for the bot to work!**
+  **You must Enable `Message Content Intent`, `Server Members Intent` and `Presence Intent` for the bot to work!**
 
-    </div>
+  </div>
 
-    Then go to [Discord Permissions Calculator](https://discordapi.com/permissions.html).
-    Paste the **Application Id** that you've copied into the **Client ID** field, then Check/Enable the **Administrator** field in General Permissions section.
-    Finally click on the **Link** down bellow and invite the Bot on to a server you want to interact with the MCC on.
+  Then go to [Discord Permissions Calculator](https://discordapi.com/permissions.html).
+  Paste the **Application Id** that you've copied into the **Client ID** field, then Check/Enable the **Administrator** field in General Permissions section.
+  Finally click on the **Link** down bellow and invite the Bot on to a server you want to interact with the MCC on.
 
-    ![Image](/images/guide/Discord_Permissions.png)
+  ![Image](/images/guide/Discord_Permissions.png)
 
-    Go to your Discord Client and go to **Settings -> Advanced**, Enable **Developer Mode**.
+  Go to your Discord Client and go to **Settings -> Advanced**, Enable **Developer Mode**.
 
-    Then **right click** on a server where you invited the bot to in the server list and click on **Copy ID**, paste the copied id in `GuildId` in your MCC configuration.
+  Then **right click** on a server where you invited the bot to in the server list and click on **Copy ID**, paste the copied id in `GuildId` in your MCC configuration.
 
-    Then **right click** on a channel where you want to interact with the bot and click on **Copy ID**, paste the copied id in `ChannelId` in your MCC configuration.
+  Then **right click** on a channel where you want to interact with the bot and click on **Copy ID**, paste the copied id in `ChannelId` in your MCC configuration.
 
-    Send a message in that channel and **right click** on your nick and click **Copy ID** and paste the copied id in `OwnersIds` list setting in your MCC configuration.
+  Send a message in that channel and **right click** on your nick and click **Copy ID** and paste the copied id in `OwnersIds` list setting in your MCC configuration.
 
-    Enable the bot by setting `Enabled` to `true` in your MCC configuration and start the MCC.
+  Enable the bot by setting `Enabled` to `true` in your MCC configuration and start the MCC.
 
--   **Usage:**
+- **Usage:**
 
-    To send a message simply type it out in the Discord channel and press enter.
+  To send a message simply type it out in the Discord channel and press enter.
 
-    To execute a MCC command, you must prefix it with a dot (`.`).
-    Example: `.move 145 64 832`
+  To execute a MCC command, you must prefix it with a dot (`.`).
+  Example: `.move 145 64 832`
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.DiscordBridge`**
+  **Section:** **`ChatBot.DiscordBridge`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Discord Bridge Chat Bot is enabled.
+    This setting specifies if the Discord Bridge Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Token`
+  #### `Token`
 
-    -   **Description:**
+  - **Description:**
 
-        This is the token of your Discord bot.
+    This is the token of your Discord bot.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    #### `GuildId`
+  #### `GuildId`
 
-    -   **Description:**
+  - **Description:**
 
-        This is the ID of your server/guild where you have invited the bot to.
+    This is the ID of your server/guild where you have invited the bot to.
 
-    -   **Type:** `unsigned long`
+  - **Type:** `unsigned long`
 
-    #### `ChannelId`
+  #### `ChannelId`
 
-    -   **Description:**
+  - **Description:**
 
-        This is the ID of a channel on your server/guild where you want to interact with the bot.
+    This is the ID of a channel on your server/guild where you want to interact with the bot.
 
-    -   **Type:** `unsigned long`
+  - **Type:** `unsigned long`
 
-    #### `OwnersIds`
+  #### `OwnersIds`
 
-    -   **Description:**
+  - **Description:**
 
-        This is a list of Discord user IDs which can interact with the bot.
+    This is a list of Discord user IDs which can interact with the bot.
 
-    -   **Type:** `list/array of: unsigned long`
+  - **Type:** `list/array of: unsigned long`
 
-    #### `Message_Send_Timeout`
+  #### `Message_Send_Timeout`
 
-    -   **Description:**
+  - **Description:**
 
-        How long (in seconds) to wait for a message to be sent to Discord before giving up.
+    How long (in seconds) to wait for a message to be sent to Discord before giving up.
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** `3`
+  - **Default:** `3`
 
-    #### `Allow_Other_Bot_Messages`
+  #### `Allow_Other_Bot_Messages`
 
-    -   **Description:**
+  - **Description:**
 
-        When enabled, messages from other Discord bots in the channel are relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.
+    When enabled, messages from other Discord bots in the channel are relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `PrivateMessageFormat`
+  #### `PrivateMessageFormat`
 
-    -   **Description:**
+  - **Description:**
 
-        The format used when someone sends you a private message on the server.
+    The format used when someone sends you a private message on the server.
 
-        Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
+    Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
 
-        `{message}` is replaced with the message text, `{username}` with the sender's name, and `{timestamp}` with the current date and time.
+    `{message}` is replaced with the message text, `{username}` with the sender's name, and `{timestamp}` with the current date and time.
 
-        For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+    For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `**[Private Message]** {username}: {message}`
+  - **Default:** `**[Private Message]** {username}: {message}`
 
-    #### `PublicMessageFormat`
+  #### `PublicMessageFormat`
 
-    -   **Description:**
+  - **Description:**
 
-        The format used when sending a public message to the Discord channel.
+    The format used when sending a public message to the Discord channel.
 
-        Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
+    Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
 
-        `{message}` is replaced with the message text, `{username}` with the sender's name, and `{timestamp}` with the current date and time.
+    `{message}` is replaced with the message text, `{username}` with the sender's name, and `{timestamp}` with the current date and time.
 
-        For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+    For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `{username}: {message}`
+  - **Default:** `{username}: {message}`
 
-    #### `TeleportRequestMessageFormat`
+  #### `TeleportRequestMessageFormat`
 
-    -   **Description:**
+  - **Description:**
 
-        The format used when someone sends you a teleport request.
+    The format used when someone sends you a teleport request.
 
-        Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
+    Parts of the message between `{` and `}` are replaced by the Chat Bot at runtime; do not change them.
 
-        `{username}` is replaced with the requester's name.
+    `{username}` is replaced with the requester's name.
 
-        For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
+    For Discord message formatting, refer to [this guide](https://www.writebots.com/discord-text-formatting/).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `A new Teleport Request from **{username}**!`
+  - **Default:** `A new Teleport Request from **{username}**!`
 
-    </details>
+  </details>
 
 ## Discord RPC
 
--   **Description:**
+- **Description:**
 
-    This Chat Bot shows your current Minecraft session as a Discord Rich Presence status. It displays information like the server address, your health, current dimension, coordinates, gamemode, and how long you have been connected.
+  This Chat Bot shows your current Minecraft session as a Discord Rich Presence status. It displays information like the server address, your health, current dimension, coordinates, gamemode, and how long you have been connected.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **Discord RPC uses a local IPC socket to communicate with the Discord client. MCC and Discord must be running on the same machine for this to work.**
+  **Discord RPC uses a local IPC socket to communicate with the Discord client. MCC and Discord must be running on the same machine for this to work.**
 
-    </div>
+  </div>
 
--   **Setup:**
+- **Setup:**
 
-    You need a Discord Application ID to use this bot. Here is how to get one:
+  You need a Discord Application ID to use this bot. Here is how to get one:
 
-    1. Go to the [Discord Developer Portal](https://discord.com/developers/applications/) and click **New Application**.
+  1. Go to the [Discord Developer Portal](https://discord.com/developers/applications/) and click **New Application**.
 
-    2. Give it a name (this is what shows up in your Discord status, e.g. "Minecraft Console Client"), accept the terms, and click **Create**.
+  2. Give it a name (this is what shows up in your Discord status, e.g. "Minecraft Console Client"), accept the terms, and click **Create**.
 
-    3. On the **General Information** page, copy the **Application ID** and paste it into the `ApplicationId` field in your MCC configuration.
+  3. On the **General Information** page, copy the **Application ID** and paste it into the `ApplicationId` field in your MCC configuration.
 
-    4. *(Optional)* If you want a custom image in your status, go to the **Rich Presence** tab and click **Art Assets**. Upload an image and give it a name (the **key**). Use that key in the `LargeImageKey` or `SmallImageKey` settings. The default value `mcc_icon` references a built-in MCC icon already registered on the application -- no upload needed if you are happy with that.
+  4. *(Optional)* If you want a custom image in your status, go to the **Rich Presence** tab and click **Art Assets**. Upload an image and give it a name (the **key**). Use that key in the `LargeImageKey` or `SmallImageKey` settings. The default value `mcc_icon` references a built-in MCC icon already registered on the application -- no upload needed if you are happy with that.
 
-    5. Enable the bot by setting `Enabled` to `true` in your MCC configuration and start MCC with Discord already running.
+  5. Enable the bot by setting `Enabled` to `true` in your MCC configuration and start MCC with Discord already running.
 
-    Discord updates Rich Presence at most once every 15 seconds regardless of how often MCC sends updates, so you may notice a short delay before your status reflects changes.
+  Discord updates Rich Presence at most once every 15 seconds regardless of how often MCC sends updates, so you may notice a short delay before your status reflects changes.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.DiscordRpc`**
+  **Section:** **`ChatBot.DiscordRpc`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Discord RPC Chat Bot is enabled.
+    This setting specifies if the Discord RPC Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `ApplicationId`
+  #### `ApplicationId`
 
-    -   **Description:**
+  - **Description:**
 
-        Your Discord Application ID. Create one at [discord.com/developers/applications](https://discord.com/developers/applications/).
+    Your Discord Application ID. Create one at [discord.com/developers/applications](https://discord.com/developers/applications/).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    #### `PresenceDetails`
+  #### `PresenceDetails`
 
-    -   **Description:**
+  - **Description:**
 
-        The top line of the Rich Presence display. Supports placeholders (see below).
+    The top line of the Rich Presence display. Supports placeholders (see below).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `Playing on {server_host}:{server_port}`
+  - **Default:** `Playing on {server_host}:{server_port}`
 
-    #### `PresenceState`
+  #### `PresenceState`
 
-    -   **Description:**
+  - **Description:**
 
-        The second line of the Rich Presence display. Supports placeholders (see below).
+    The second line of the Rich Presence display. Supports placeholders (see below).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `{dimension} - HP: {health}/{max_health}`
+  - **Default:** `{dimension} - HP: {health}/{max_health}`
 
-    #### `LargeImageKey`
+  #### `LargeImageKey`
 
-    -   **Description:**
+  - **Description:**
 
-        The key of the large image asset uploaded to your Discord application. Leave empty to show no image.
+    The key of the large image asset uploaded to your Discord application. Leave empty to show no image.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `mcc_icon`
+  - **Default:** `mcc_icon`
 
-    #### `LargeImageText`
+  #### `LargeImageText`
 
-    -   **Description:**
+  - **Description:**
 
-        Tooltip text shown when hovering over the large image. Supports placeholders (see below).
+    Tooltip text shown when hovering over the large image. Supports placeholders (see below).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `Minecraft Console Client`
+  - **Default:** `Minecraft Console Client`
 
-    #### `SmallImageKey`
+  #### `SmallImageKey`
 
-    -   **Description:**
+  - **Description:**
 
-        The key of the small image asset uploaded to your Discord application. Leave empty to hide the small image.
+    The key of the small image asset uploaded to your Discord application. Leave empty to hide the small image.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** *(empty)*
+  - **Default:** *(empty)*
 
-    #### `SmallImageText`
+  #### `SmallImageText`
 
-    -   **Description:**
+  - **Description:**
 
-        Tooltip text shown when hovering over the small image. Supports placeholders (see below).
+    Tooltip text shown when hovering over the small image. Supports placeholders (see below).
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** *(empty)*
+  - **Default:** *(empty)*
 
-    #### `ShowServerAddress`
+  #### `ShowServerAddress`
 
-    -   **Description:**
+  - **Description:**
 
-        Show the server address in the Discord presence. When set to `false`, `{server_host}` and `{server_port}` are replaced with `Hidden` and `****`.
+    Show the server address in the Discord presence. When set to `false`, `{server_host}` and `{server_port}` are replaced with `Hidden` and `****`.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `ShowCoordinates`
+  #### `ShowCoordinates`
 
-    -   **Description:**
+  - **Description:**
 
-        Show your coordinates in the Discord presence. When set to `false`, `{x}`, `{y}`, and `{z}` are replaced with `?`.
+    Show your coordinates in the Discord presence. When set to `false`, `{x}`, `{y}`, and `{z}` are replaced with `?`.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `ShowHealth`
+  #### `ShowHealth`
 
-    -   **Description:**
+  - **Description:**
 
-        Show health and food level in the Discord presence. When set to `false`, `{health}`, `{max_health}`, and `{food}` are replaced with `?`.
+    Show health and food level in the Discord presence. When set to `false`, `{health}`, `{max_health}`, and `{food}` are replaced with `?`.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `ShowDimension`
+  #### `ShowDimension`
 
-    -   **Description:**
+  - **Description:**
 
-        Show the current dimension in the Discord presence. When set to `false`, `{dimension}` is replaced with `Hidden`.
+    Show the current dimension in the Discord presence. When set to `false`, `{dimension}` is replaced with `Hidden`.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `ShowGamemode`
+  #### `ShowGamemode`
 
-    -   **Description:**
+  - **Description:**
 
-        Show the current gamemode in the Discord presence. When set to `false`, `{gamemode}` is replaced with `Hidden`.
+    Show the current gamemode in the Discord presence. When set to `false`, `{gamemode}` is replaced with `Hidden`.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `ShowElapsedTime`
+  #### `ShowElapsedTime`
 
-    -   **Description:**
+  - **Description:**
 
-        Show how long you have been connected to the server as an elapsed time in the Discord presence.
+    Show how long you have been connected to the server as an elapsed time in the Discord presence.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `ShowPlayerCount`
+  #### `ShowPlayerCount`
 
-    -   **Description:**
+  - **Description:**
 
-        Show the number of online players as a party size in the Discord presence.
+    Show the number of online players as a party size in the Discord presence.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `UpdateIntervalSeconds`
+  #### `UpdateIntervalSeconds`
 
-    -   **Description:**
+  - **Description:**
 
-        How often (in seconds) to refresh the Discord presence. Minimum value is `1`.
+    How often (in seconds) to refresh the Discord presence. Minimum value is `1`.
 
-        Note: Discord itself only accepts presence updates once every 15 seconds, so setting this lower than `15` has no visible effect on the Discord side.
+    Note: Discord itself only accepts presence updates once every 15 seconds, so setting this lower than `15` has no visible effect on the Discord side.
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** `10`
+  - **Default:** `10`
 
-    ---
+  ______________________________________________________________________
 
-    #### Placeholders
+  #### Placeholders
 
-    The following placeholders can be used in `PresenceDetails`, `PresenceState`, `LargeImageText`, and `SmallImageText`:
+  The following placeholders can be used in `PresenceDetails`, `PresenceState`, `LargeImageText`, and `SmallImageText`:
 
-    | Placeholder | Description |
-    |---|---|
-    | `{server_host}` | Server hostname (masked if `ShowServerAddress` is `false`) |
-    | `{server_port}` | Server port (masked if `ShowServerAddress` is `false`) |
-    | `{username}` | Your Minecraft username |
-    | `{health}` | Current health (masked if `ShowHealth` is `false`) |
-    | `{max_health}` | Maximum health, always `20` (masked if `ShowHealth` is `false`) |
-    | `{food}` | Current food level (masked if `ShowHealth` is `false`) |
-    | `{dimension}` | Current dimension name, e.g. `Overworld` (masked if `ShowDimension` is `false`) |
-    | `{gamemode}` | Current gamemode, e.g. `Survival` (masked if `ShowGamemode` is `false`) |
-    | `{x}` | X coordinate (masked if `ShowCoordinates` is `false`) |
-    | `{y}` | Y coordinate (masked if `ShowCoordinates` is `false`) |
-    | `{z}` | Z coordinate (masked if `ShowCoordinates` is `false`) |
-    | `{player_count}` | Number of players currently online |
-    | `{protocol}` | Minecraft protocol version number |
+  | Placeholder      | Description                                                                     |
+  | ---------------- | ------------------------------------------------------------------------------- |
+  | `{server_host}`  | Server hostname (masked if `ShowServerAddress` is `false`)                      |
+  | `{server_port}`  | Server port (masked if `ShowServerAddress` is `false`)                          |
+  | `{username}`     | Your Minecraft username                                                         |
+  | `{health}`       | Current health (masked if `ShowHealth` is `false`)                              |
+  | `{max_health}`   | Maximum health, always `20` (masked if `ShowHealth` is `false`)                 |
+  | `{food}`         | Current food level (masked if `ShowHealth` is `false`)                          |
+  | `{dimension}`    | Current dimension name, e.g. `Overworld` (masked if `ShowDimension` is `false`) |
+  | `{gamemode}`     | Current gamemode, e.g. `Survival` (masked if `ShowGamemode` is `false`)         |
+  | `{x}`            | X coordinate (masked if `ShowCoordinates` is `false`)                           |
+  | `{y}`            | Y coordinate (masked if `ShowCoordinates` is `false`)                           |
+  | `{z}`            | Z coordinate (masked if `ShowCoordinates` is `false`)                           |
+  | `{player_count}` | Number of players currently online                                              |
+  | `{protocol}`     | Minecraft protocol version number                                               |
 
-    </details>
+  </details>
 
 ## Farmer
 
@@ -1877,1092 +1859,1080 @@ redirectFrom:
 
 </div>
 
--   **Description:**
+- **Description:**
 
-    This bot can farm crops for you.
-    When you start it it will plant, break and bonemeal crops in order.
+  This bot can farm crops for you.
+  When you start it it will plant, break and bonemeal crops in order.
 
-    Supported crops:
+  Supported crops:
 
-    -   Beetroot
-    -   Carrot
-    -   Melon
-    -   Netherwart
-    -   Pumpkin
-    -   Potato
-    -   Wheat
+  - Beetroot
+  - Carrot
+  - Melon
+  - Netherwart
+  - Pumpkin
+  - Potato
+  - Wheat
 
-    **Current list of issues:**
+  **Current list of issues:**
 
-    -   Sometimes the bot will not bone meal carrots/potatoes or melon/pumpkin stems (you will see it in a pattern of crops that have not been bonemealed)
-    -   Sometimes the bot can jump on to the crops and break the farmland when coming form a different height, it's advised to keep the farming area flat and fenced off so the items to not fly out of the farming area
-    -   If you have a farming platform that is 1 block thick and has air bellow, make it a few blocks thick because the bot can fall through sometimes when logging in and standing on farmland
-    -   Sometimes the bot can be kicked for "invalid movement" packets when farming netherwart on soul sand, we haven't been able to figure why this happens in some parts of the world, while on other it's completely fine, it's advised to keep the farming area small and flat.
+  - Sometimes the bot will not bone meal carrots/potatoes or melon/pumpkin stems (you will see it in a pattern of crops that have not been bonemealed)
+  - Sometimes the bot can jump on to the crops and break the farmland when coming form a different height, it's advised to keep the farming area flat and fenced off so the items to not fly out of the farming area
+  - If you have a farming platform that is 1 block thick and has air bellow, make it a few blocks thick because the bot can fall through sometimes when logging in and standing on farmland
+  - Sometimes the bot can be kicked for "invalid movement" packets when farming netherwart on soul sand, we haven't been able to figure why this happens in some parts of the world, while on other it's completely fine, it's advised to keep the farming area small and flat.
 
-    _We're working on solving these issues._
+  _We're working on solving these issues._
 
-    **What the bot does not do as of the time of writing, but are planned features:**
+  **What the bot does not do as of the time of writing, but are planned features:**
 
-    -   Does not collect items which fly off to the side, (it's advised to fence off the farming area with 2 high wall)
-    -   Does not put items to the chest once the inventory is full
-    -   Does not warn you when the inventory is full
-    -   Does not refill inventory with seeds or bonemeal from chests by it self.
+  - Does not collect items which fly off to the side, (it's advised to fence off the farming area with 2 high wall)
+  - Does not put items to the chest once the inventory is full
+  - Does not warn you when the inventory is full
+  - Does not refill inventory with seeds or bonemeal from chests by it self.
 
-    > **ℹ️ NOTE: The default radius of scanning is `30` blocks, we suggest that you do not use radius too big because it might slow down the bot. The bigger the radius, the slower the scanning and processing is.**
+  > **ℹ️ NOTE: The default radius of scanning is `30` blocks, we suggest that you do not use radius too big because it might slow down the bot. The bigger the radius, the slower the scanning and processing is.**
 
--   **Commands:**
+- **Commands:**
 
-    When enabled will add the `/farmer` command.
+  When enabled will add the `/farmer` command.
 
-    **Usage**:
+  **Usage**:
 
-    ```
-    /farmer <start <crop type> [radius:<radius = 30>] [unsafe:<true/false>] [teleport:<true/false>] [debug:<true/false>]|stop>
-    ```
+  ```
+  /farmer <start <crop type> [radius:<radius = 30>] [unsafe:<true/false>] [teleport:<true/false>] [debug:<true/false>]|stop>
+  ```
 
-    _Options marked with `[` and `]` are optional and in case of this command can have whatever order you prefer after the `<crop type>` field._
+  _Options marked with `[` and `]` are optional and in case of this command can have whatever order you prefer after the `<crop type>` field._
 
-    _Options that have `=` means that the value after the `=` is a default value, in case of this command the default radius is 30 blocks._
+  _Options that have `=` means that the value after the `=` is a default value, in case of this command the default radius is 30 blocks._
 
-    **Examples:**
+  **Examples:**
 
-    Farming `wheat` in a radius of `40` blocks.
+  Farming `wheat` in a radius of `40` blocks.
 
-    ```
-    /farmer start wheat radius:40
-    ```
+  ```
+  /farmer start wheat radius:40
+  ```
 
-    Farming `melon` with debug output and direct teleporting:
+  Farming `melon` with debug output and direct teleporting:
 
-    ```
-    /farmer start melon debug:true teleport:true
-    ```
+  ```
+  /farmer start melon debug:true teleport:true
+  ```
 
-    Stopping the bot:
+  Stopping the bot:
 
-    ```
-    /farmer stop
-    ```
+  ```
+  /farmer stop
+  ```
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.Farmer`**
+  **Section:** **`ChatBot.Farmer`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Farmer Chat Bot is enabled.
+    This setting specifies if the Farmer Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Delay_Between_Tasks`
+  #### `Delay_Between_Tasks`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the delay in seconds between each task performed by the bot.
+    This setting specifies the delay in seconds between each task performed by the bot.
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** `1`
+  - **Default:** `1`
 
-    -   **Minimum:** `1`
+  - **Minimum:** `1`
 
-
-    </details>
+  </details>
 
 ## Follow player
 
--   **Description:**
+- **Description:**
 
-    This bot enables you to make a bot follow a specific player.
+  This bot enables you to make a bot follow a specific player.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
+  **The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
 
-    </div>
+  </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **You need to have [terrainandmovements](configuration.md#terrainandmovements) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
+  **You need to have [terrainandmovements](configuration.md#terrainandmovements) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.FollowPlayer`**
+  **Section:** **`ChatBot.FollowPlayer`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Follow Player Chat Bot is enabled.
+    This setting specifies if the Follow Player Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Update_Limit`
+  #### `Update_Limit`
 
-    -   **Description:**
+  - **Description:**
 
-        The rate at which the bot does calculations (second).
+    The rate at which the bot does calculations (second).
 
-        You can tweak this if you feel the bot is too slow.
+    You can tweak this if you feel the bot is too slow.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `1.5`
+  - **Default:** `1.5`
 
-    #### `Stop_At_Distance`
+  #### `Stop_At_Distance`
 
-    -   **Description:**
+  - **Description:**
 
-        Do not follow the player if he is in the range of `X` blocks (prevents the bot from pushing a player in an infinite loop).
+    Do not follow the player if he is in the range of `X` blocks (prevents the bot from pushing a player in an infinite loop).
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `3.0`
+  - **Default:** `3.0`
 
-
-    </details>
+  </details>
 
 ## Hangman
 
--   **Description:**
+- **Description:**
 
-    Hangman game is one of the first bots ever written for MCC, to demonstrate ChatBot capabilities.
+  Hangman game is one of the first bots ever written for MCC, to demonstrate ChatBot capabilities.
 
-    Create a file with words to guess (examples: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt), [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)) and set it in config inside the `[Hangman]` section.
+  Create a file with words to guess (examples: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt), [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)) and set it in config inside the `[Hangman]` section.
 
-    Also set `enabled` to `true`, then, add your username in the `botowners` INI setting, and finally, connect to the server and use `/tell <bot username> start` to start the game.
+  Also set `enabled` to `true`, then, add your username in the `botowners` INI setting, and finally, connect to the server and use `/tell <bot username> start` to start the game.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **If the bot does not respond to bot owners, see the [Detecting chat messages](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#detecting-chat-messages) section.**
+  **If the bot does not respond to bot owners, see the [Detecting chat messages](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#detecting-chat-messages) section.**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.HangmanGame`**
+  **Section:** **`ChatBot.HangmanGame`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Hangman Chat Bot is enabled.
+    This setting specifies if the Hangman Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `English`
+  #### `English`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Hangman Chat Bot should use English.
+    This setting specifies if the Hangman Chat Bot should use English.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `FileWords_EN`
+  #### `FileWords_EN`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **This settings file is for English and is not created by the default**
+  **This settings file is for English and is not created by the default**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the path to the file which Hangman will use for the list of words, each word is added on a separate line.
+    This setting specifies the path to the file which Hangman will use for the list of words, each word is added on a separate line.
 
-    -   **Default:** `hangman-en.txt`
-    -   **Example**: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt)
+  - **Default:** `hangman-en.txt`
 
-    #### `FileWords_FR`
+  - **Example**: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt)
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  #### `FileWords_FR`
 
-    **This settings file is for French and is not created by the default**
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    </div>
+  **This settings file is for French and is not created by the default**
 
-    -   **Description:**
+  </div>
 
-        This setting is same as the above but for French.
+  - **Description:**
 
-    -   **Default:** `hangman-fr.txt`
-    -   **Example**: [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)
+    This setting is same as the above but for French.
 
+  - **Default:** `hangman-fr.txt`
 
-    </details>
+  - **Example**: [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)
+
+  </details>
 
 ## Mailer
 
--   **Description:**
+- **Description:**
 
-    Relay messages between players and servers, like a mail plugin.
+  Relay messages between players and servers, like a mail plugin.
 
-    This bot can store messages when the recipients are offline, and send them when they join the server.
+  This bot can store messages when the recipients are offline, and send them when they join the server.
 
-    The Mailer bot can store and relay mails much like Essential's `/mail` command.
+  The Mailer bot can store and relay mails much like Essential's `/mail` command.
 
-    -   `/tell <Bot> mail [RECIPIENT] [MESSAGE]`: Save your message for future delivery
-    -   `/tell <Bot> tellonym [RECIPIENT] [MESSAGE]`: Same, but the recipient will receive an anonymous mail
+  - `/tell <Bot> mail [RECIPIENT] [MESSAGE]`: Save your message for future delivery
+  - `/tell <Bot> tellonym [RECIPIENT] [MESSAGE]`: Same, but the recipient will receive an anonymous mail
 
-    The bot will automatically deliver the mail when the recipient is online. The bot also offers a /mailer command from the MCC command prompt:
+  The bot will automatically deliver the mail when the recipient is online. The bot also offers a /mailer command from the MCC command prompt:
 
-    -   `/mailer getmails`
+  - `/mailer getmails`
 
-        Show all mails in the console.
+    Show all mails in the console.
 
-    -   `/mailer addignored [NAME]`
+  - `/mailer addignored [NAME]`
 
-        Prevent a specific player from sending mails.
+    Prevent a specific player from sending mails.
 
-    -   `/mailer removeignored [NAME]`
+  - `/mailer removeignored [NAME]`
 
-        Lift the mailer restriction for this player.
+    Lift the mailer restriction for this player.
 
-    -   `/mailer getignored`
+  - `/mailer getignored`
 
-        Show all ignored players.
+    Show all ignored players.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
+  **The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
 
-    </div>
+  </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
+  **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
 
-    </div>
+  </div>
 
-    **Mailer Network:**
+  **Mailer Network:**
 
-    -   The Mailer bot can relay messages between servers.
+  - The Mailer bot can relay messages between servers.
 
-    -   To set up a network of two or more bots, launch several instances with the bot activated and the same database.
+  - To set up a network of two or more bots, launch several instances with the bot activated and the same database.
 
-    -   If you launch two instances from one .exe they should synchronize automatically to the same file.
+  - If you launch two instances from one .exe they should synchronize automatically to the same file.
 
-*   **Settings:**
+* **Settings:**
 
-    **Section:** **`ChatBot.Mailer`**
+  **Section:** **`ChatBot.Mailer`**
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Mailer Chat Bot is enabled.
+    This setting specifies if the Mailer Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `DatabaseFile`
+  #### `DatabaseFile`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the path to the file where the Mailer Chat Bot will store the mails.
+    This setting specifies the path to the file where the Mailer Chat Bot will store the mails.
 
-        This file will be auto created by the Mailer Chat Bot.
+    This file will be auto created by the Mailer Chat Bot.
 
-    -   **Default:** `MailerDatabase.ini`
+  - **Default:** `MailerDatabase.ini`
 
-    #### `IgnoreListFile`
+  #### `IgnoreListFile`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
+    This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
 
-        This file will be auto created by the Mailer Chat Bot.
+    This file will be auto created by the Mailer Chat Bot.
 
-    -   **Default:** `MailerIgnoreList.ini`
+  - **Default:** `MailerIgnoreList.ini`
 
-    #### `PublicInteractions`
+  #### `PublicInteractions`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Mailer Chat Bot should be interacted with in the public chat (in addition to private messages).
+    This setting specifies if the Mailer Chat Bot should be interacted with in the public chat (in addition to private messages).
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `MaxMailsPerPlayer`
+  #### `MaxMailsPerPlayer`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies how many mails the Mailer Chat Bot should store per player at maximum.
+    This setting specifies how many mails the Mailer Chat Bot should store per player at maximum.
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** `10`
+  - **Default:** `10`
 
-    #### `MaxDatabaseSize`
+  #### `MaxDatabaseSize`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the maximum database file size of Mailer Chat Bot in Kilobytes.
+    This setting specifies the maximum database file size of Mailer Chat Bot in Kilobytes.
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** `10000` (10 MB)
+  - **Default:** `10000` (10 MB)
 
-    #### `MailRetentionDays`
+  #### `MailRetentionDays`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies how long should the Mailer Chat Bot save/store messages for (in days).
+    This setting specifies how long should the Mailer Chat Bot save/store messages for (in days).
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** `30`
+  - **Default:** `30`
 
 ## Map
 
--   **Description:**
+- **Description:**
 
-    This Chat Bot allows you to render items maps in the console, to `.bmp` images and to relay them to Discord using the [Discord Bridge](#discord-bridge) Chat Bot.
+  This Chat Bot allows you to render items maps in the console, to `.bmp` images and to relay them to Discord using the [Discord Bridge](#discord-bridge) Chat Bot.
 
-    This is useful for solving captchas on servers which require it, or saving the map art into an image.
+  This is useful for solving captchas on servers which require it, or saving the map art into an image.
 
-    The maps are **rendered** into `Rendered_Maps` folder which will be auto created in the same folder where the client executable is located.
+  The maps are **rendered** into `Rendered_Maps` folder which will be auto created in the same folder where the client executable is located.
 
--   **Commands:**
+- **Commands:**
 
-    When enabled will add the `/maps` command.
+  When enabled will add the `/maps` command.
 
-    **Usage**:
+  **Usage**:
 
-    ```
-    /maps <list/render <id>> | maps <l/r <id>>
-    ```
+  ```
+  /maps <list/render <id>> | maps <l/r <id>>
+  ```
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.Map`**
+  **Section:** **`ChatBot.Map`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Map Chat Bot is enabled.
+    This setting specifies if the Map Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Render_In_Console`
+  #### `Render_In_Console`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Map Chat Bot should render the map in the console.
+    This setting specifies if the Map Chat Bot should render the map in the console.
 
-        It is recommended to use something like Power Shell for the best map quality (at least for Windows users).
+    It is recommended to use something like Power Shell for the best map quality (at least for Windows users).
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Save_To_File`
+  #### `Save_To_File`
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **If you want the Discord relay feature, you must enable this setting!**
+  **If you want the Discord relay feature, you must enable this setting!**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Map Chat Bot should render the map and save it into a file (`.bmp` format)
+    This setting specifies if the Map Chat Bot should render the map and save it into a file (`.bmp` format)
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Auto_Render_On_Update`
+  #### `Auto_Render_On_Update`
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **On some versions older than 1.17 this could cause some performance issue on older hardware if there a lot of maps being rendered, since map updates are sent multiple times a second. Be careful.**
+  **On some versions older than 1.17 this could cause some performance issue on older hardware if there a lot of maps being rendered, since map updates are sent multiple times a second. Be careful.**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Map Chat Bot should automatically render maps as they're received from the servers.
+    This setting specifies if the Map Chat Bot should automatically render maps as they're received from the servers.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Delete_All_On_Unload`
+  #### `Delete_All_On_Unload`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Map Chat Bot should automatically delete rendered maps when un-loaded or reloaded.
+    This setting specifies if the Map Chat Bot should automatically delete rendered maps when un-loaded or reloaded.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `Notify_On_First_Update`
+  #### `Notify_On_First_Update`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Map Chat Bot should notify you when it got a map from the server for the first time.
+    This setting specifies if the Map Chat Bot should notify you when it got a map from the server for the first time.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Rasize_Rendered_Image`
+  #### `Rasize_Rendered_Image`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **The bigger the size, the less is the quality.**
+  **The bigger the size, the less is the quality.**
 
-    </div>
+  </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **For upscaling your maps you could use (getting a bit better quality): https://deepai.org/machine-learning-model/torch-srgan**
+  **For upscaling your maps you could use (getting a bit better quality): https://deepai.org/machine-learning-model/torch-srgan**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Map Chat Bot should resize the rendered image (the one that is saved to a file).
+    This setting specifies if the Map Chat Bot should resize the rendered image (the one that is saved to a file).
 
-        This is useful if you're relying map images to Discord via the [Discord Bridge](#discord-bridge) Chat Bot.
+    This is useful if you're relying map images to Discord via the [Discord Bridge](#discord-bridge) Chat Bot.
 
-        The default map size is `128x128`.
+    The default map size is `128x128`.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Resize_To`
+  #### `Resize_To`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Might be a bit slow on less powerful systems when rendering a lot of maps. Lower down the resolution if you have any performance issues. If your system is not that powerful and can't handle it, use external tools for upscaling and resizing.**
+  **Might be a bit slow on less powerful systems when rendering a lot of maps. Lower down the resolution if you have any performance issues. If your system is not that powerful and can't handle it, use external tools for upscaling and resizing.**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        Which size the map should be resized to if `Rasize_Rendered_Image` is `true`.
+    Which size the map should be resized to if `Rasize_Rendered_Image` is `true`.
 
+  - **Type:** `integer`
 
-    -   **Type:** `integer`
+  - **Default:** `512`
 
-    -   **Default:** `512`
+  #### `Send_Rendered_To_Discord`
 
-    #### `Send_Rendered_To_Discord`
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  **The [Discord Bridge](#discord-bridge) Chat Bot must be enabled and configured!**
 
-    **The [Discord Bridge](#discord-bridge) Chat Bot must be enabled and configured!**
+  </div>
 
-    </div>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  **You need to enable `Save_To_File` in order for this to work.**
 
-    **You need to enable `Save_To_File` in order for this to work.**
+  </div>
 
-    </div>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  **Sometimes when the client connects, the [Discord Bridge](#discord-bridge) will be loaded a tiny bit after. Rendered map images are queued up and sent in order as soon as the [Discord Bridge](#discord-bridge) is ready and connected.**
 
-    **Sometimes when the client connects, the [Discord Bridge](#discord-bridge) will be loaded a tiny bit after. Rendered map images are queued up and sent in order as soon as the [Discord Bridge](#discord-bridge) is ready and connected.**
+  </div>
 
-    </div>
+  - **Description:**
 
-    -   **Description:**
+    Send a rendered map (saved to a file) to a Discord channel via the [Discord Bridge](#discord-bridge) Chat Bot.
 
-        Send a rendered map (saved to a file) to a Discord channel via the [Discord Bridge](#discord-bridge) Chat Bot.
+  - **Type:** `boolean`
 
+  - **Default:** `false`
 
-    -   **Type:** `boolean`
-
-    -   **Default:** `false`
-
-
-    </details>
+  </details>
 
 ## PlayerList Logger
--   **Description:**
 
-    Log the list of players periodically into a textual file.
+- **Description:**
 
--   **Settings:**
+  Log the list of players periodically into a textual file.
 
-    **Section:** **`ChatBot.PlayerListLogger`**
+- **Settings:**
 
-    <details>
-    <summary>All settings</summary>
+  **Section:** **`ChatBot.PlayerListLogger`**
 
-    #### `Enabled`
+  <details>
+  <summary>All settings</summary>
 
-    -   **Description:**
+  #### `Enabled`
 
-        This setting specifies if the PlayerList Logger Chat Bot is enabled.
+  - **Description:**
 
-    -   **Available values:** `true` and `false`.
+    This setting specifies if the PlayerList Logger Chat Bot is enabled.
 
-    -   **Default:** `false`
+  - **Available values:** `true` and `false`.
 
-    #### `File`
+  - **Default:** `false`
 
-    -   **Description:**
+  #### `File`
 
-        This setting specifies the name of the player list Log file that will be created.
+  - **Description:**
 
-    -   **Default:** `playerlog.txt`
+    This setting specifies the name of the player list Log file that will be created.
 
-    #### `Delay`
+  - **Default:** `playerlog.txt`
 
-    -   **Description:**
+  #### `Delay`
 
-        Save the list of players every how many seconds.
+  - **Description:**
 
-    -   **Type:** `float`
+    Save the list of players every how many seconds.
 
-    -   **Default:** `60.0`
+  - **Type:** `float`
 
+  - **Default:** `60.0`
 
-    </details>
+  </details>
 
 ## Remote Control
 
--   **Description:**
+- **Description:**
 
-    Send MCC console commands to your bot through server PMs (`/tell`).
+  Send MCC console commands to your bot through server PMs (`/tell`).
 
-    You need to have [ChatFormat](configuration.md#chat-format) working correctly and add yourself in [botowners](configuration.md#botowners) to use the bot.
+  You need to have [ChatFormat](configuration.md#chat-format) working correctly and add yourself in [botowners](configuration.md#botowners) to use the bot.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
+  **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.RemoteControl`**
+  **Section:** **`ChatBot.RemoteControl`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Remote Control Chat Bot is enabled.
+    This setting specifies if the Remote Control Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `AutoTpaccept`
+  #### `AutoTpaccept`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Remote Control Chat Bot should automatically accept teleport requests.
+    This setting specifies if the Remote Control Chat Bot should automatically accept teleport requests.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `true`
+  - **Default:** `true`
 
-    #### `AutoTpaccept_Everyone`
+  #### `AutoTpaccept_Everyone`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Remote Control Chat Bot should automatically accept teleport requests from everyone.
+    This setting specifies if the Remote Control Chat Bot should automatically accept teleport requests from everyone.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-
-    </details>
+  </details>
 
 ## Replay Capture
 
--   **Description:**
+- **Description:**
 
-    Enable recording of the game (`/replay start`) and replay it later using the Replay Mod (https://www.replaymod.com/).
+  Enable recording of the game (`/replay start`) and replay it later using the Replay Mod (https://www.replaymod.com/).
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **This bot does not work for 1.19, we need maintainers for it.**
+  **This bot does not work for 1.19, we need maintainers for it.**
 
-    </div>
+  </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **Please note that due to technical limitations, the client player (you) will not be shown in the replay file**
+  **Please note that due to technical limitations, the client player (you) will not be shown in the replay file**
 
-    </div>
+  </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **You SHOULD use `/replay stop` or exit the program gracefully with `/quit` OR THE REPLAY FILE MAY GET CORRUPT!**
+  **You SHOULD use `/replay stop` or exit the program gracefully with `/quit` OR THE REPLAY FILE MAY GET CORRUPT!**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.ReplayCapture`**
+  **Section:** **`ChatBot.ReplayCapture`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Replay Mod Chat Bot is enabled.
+    This setting specifies if the Replay Mod Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Backup_Interval`
+  #### `Backup_Interval`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies the time interval in seconds when the replay file should be auto-saved.
+    This setting specifies the time interval in seconds when the replay file should be auto-saved.
 
-        Use `-1` to disable.
+    Use `-1` to disable.
 
-    -   **Type:** `float`
+  - **Type:** `float`
 
-    -   **Default:** `300.0`
+  - **Default:** `300.0`
 
-
-    </details>
+  </details>
 
 ## Script Scheduler
 
--   **Description:**
+- **Description:**
 
-    Schedule commands and scripts to launch on various events such as server join, date/time or time interval.
+  Schedule commands and scripts to launch on various events such as server join, date/time or time interval.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.ScriptScheduler`**
+  **Section:** **`ChatBot.ScriptScheduler`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Script Scheduler Chat Bot is enabled.
+    This setting specifies if the Script Scheduler Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    ### Defining a task
+  ### Defining a task
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **It is recommended that you align subsections to the right by one tab or 4 spaces for better readability.**
+  **It is recommended that you align subsections to the right by one tab or 4 spaces for better readability.**
 
-    </div>
+  </div>
 
-    -   **Description:**
+  - **Description:**
 
-        Each task is defined as a new subsection `[[ChatBot.ScriptScheduler.TaskList]]` of the section: `[ChatBot.ScriptScheduler]`.
+    Each task is defined as a new subsection `[[ChatBot.ScriptScheduler.TaskList]]` of the section: `[ChatBot.ScriptScheduler]`.
 
-        **Subsection format:**
-
-        ```toml
-        [[ChatBot.ScriptScheduler.TaskList]]
-        <setting> = <value>
-        <setting> = <value>
-        ```
-
-        **Available settings/options:**
-
-        -   `Trigger_On_First_Login`
-
-            Will trigger the task when you login the first time.
-
-            **Available values**: `true` and `false`
-
-            **Type**: `boolean`
-
-        -   `Trigger_On_Login`
-
-            Will trigger the task each time you login.
-
-            **Available values**: `true` and `false`
-
-            **Type**: `boolean`
-
-        -   `Trigger_On_Times`
-
-            This will enable the task to trigger at exact time(s) you want.
-
-            The type of this setting is `inline table`, that has the following sub-settings/options:
-
-            -   `Enable` - Enables/Disables the setting (Boolean, so either `true` or `false`)
-
-            -   `Times` - An array/list of times on which the task should run/trigger (each element is of the [Local Time](https://toml.io/en/v1.0.0#local-time) type, eg. `14:00:00`, so: `hours:minutes:seconds`)
-
-            **Example**:
-
-            ```toml
-            Trigger_On_Times = { Enable = true, Times = [ 14:00:00, 22:35:8] }
-            ```
-
-        -   `Trigger_On_Interval`
-
-            This will enable the task to trigger at certain interval which you've defined.
-
-            The type of this setting is `inline table`, that has the following sub-settings/options:
-
-            -   `Enable` - Enables/Disables the setting (Boolean, so either `true` or `false`)
-
-            -   `MinTime` - Time in seconds (the type is `double`, eg. `3.14`)
-
-            -   `MaxTime` - Time in seconds (the type is `double`, eg. `3.14`)
-
-            **If `MinTime` and `MaxTime` are the same, the interval will be consistent, however if they are not, the ChatBot will generate a random interval in between those two numbers provided, each time the task is run.**
-
-            **Example**:
-
-            ```toml
-            Trigger_On_Interval = { Enable = true, MinTime = 30.0, MaxTime = 160.0 }
-            ```
-
-    ### Full example
+    **Subsection format:**
 
     ```toml
-    [ChatBot.ScriptScheduler]
-    Enabled = true
-
-        [[ChatBot.ScriptScheduler.TaskList]]
-        Task_Name = "Task Name 1"
-        Trigger_On_First_Login = false
-        Trigger_On_Login = false
-        Trigger_On_Times = { Enable = true, Times = [ 14:00:00, ] }
-        Trigger_On_Interval = { Enable = true, MinTime = 3.6, MaxTime = 4.8 }
-        Action = "send /hello"
-
-        [[ChatBot.ScriptScheduler.TaskList]]
-        Task_Name = "Task Name 2"
-        Trigger_On_First_Login = false
-        Trigger_On_Login = true
-        Trigger_On_Times = { Enable = false, Times = [ ] }
-        Trigger_On_Interval = { Enable = false, MinTime = 1.0, MaxTime = 10.0 }
-        Action = "send /login pass"
+    [[ChatBot.ScriptScheduler.TaskList]]
+    <setting> = <value>
+    <setting> = <value>
     ```
 
+    **Available settings/options:**
 
-    </details>
+    - `Trigger_On_First_Login`
+
+      Will trigger the task when you login the first time.
+
+      **Available values**: `true` and `false`
+
+      **Type**: `boolean`
+
+    - `Trigger_On_Login`
+
+      Will trigger the task each time you login.
+
+      **Available values**: `true` and `false`
+
+      **Type**: `boolean`
+
+    - `Trigger_On_Times`
+
+      This will enable the task to trigger at exact time(s) you want.
+
+      The type of this setting is `inline table`, that has the following sub-settings/options:
+
+      - `Enable` - Enables/Disables the setting (Boolean, so either `true` or `false`)
+
+      - `Times` - An array/list of times on which the task should run/trigger (each element is of the [Local Time](https://toml.io/en/v1.0.0#local-time) type, eg. `14:00:00`, so: `hours:minutes:seconds`)
+
+      **Example**:
+
+      ```toml
+      Trigger_On_Times = { Enable = true, Times = [ 14:00:00, 22:35:8] }
+      ```
+
+    - `Trigger_On_Interval`
+
+      This will enable the task to trigger at certain interval which you've defined.
+
+      The type of this setting is `inline table`, that has the following sub-settings/options:
+
+      - `Enable` - Enables/Disables the setting (Boolean, so either `true` or `false`)
+
+      - `MinTime` - Time in seconds (the type is `double`, eg. `3.14`)
+
+      - `MaxTime` - Time in seconds (the type is `double`, eg. `3.14`)
+
+      **If `MinTime` and `MaxTime` are the same, the interval will be consistent, however if they are not, the ChatBot will generate a random interval in between those two numbers provided, each time the task is run.**
+
+      **Example**:
+
+      ```toml
+      Trigger_On_Interval = { Enable = true, MinTime = 30.0, MaxTime = 160.0 }
+      ```
+
+  ### Full example
+
+  ```toml
+  [ChatBot.ScriptScheduler]
+  Enabled = true
+
+      [[ChatBot.ScriptScheduler.TaskList]]
+      Task_Name = "Task Name 1"
+      Trigger_On_First_Login = false
+      Trigger_On_Login = false
+      Trigger_On_Times = { Enable = true, Times = [ 14:00:00, ] }
+      Trigger_On_Interval = { Enable = true, MinTime = 3.6, MaxTime = 4.8 }
+      Action = "send /hello"
+
+      [[ChatBot.ScriptScheduler.TaskList]]
+      Task_Name = "Task Name 2"
+      Trigger_On_First_Login = false
+      Trigger_On_Login = true
+      Trigger_On_Times = { Enable = false, Times = [ ] }
+      Trigger_On_Interval = { Enable = false, MinTime = 1.0, MaxTime = 10.0 }
+      Action = "send /login pass"
+  ```
+
+  </details>
 
 ## Telegram Bridge
 
--   **Description:**
+- **Description:**
 
-    This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
+  This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.**
+  **You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.**
 
-    </div>
+  </div>
 
--   **Setup:**
+- **Setup:**
 
-    1. First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
-    2. Click on `Start` button and read the bot reply, then type `/newbot`, the Botfather will guide you through the bot creation.
-    3. Once you create the bot, copy the **API key** that you have gotten, and put it into the `Token` field of `ChatBot.TelegramBridge` section (this section).
-    4. Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
-    5. Click on `Start` button and type and send the following command `.chatid` to obtain the chat id. 
-    6. Copy the chat id number (eg. `2627844670`) and paste it in the `ChannelId` field and add it to the `Authorized_Chat_Ids` field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
-    Now you can use the bot using it's DM.
+  1. First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
+  2. Click on `Start` button and read the bot reply, then type `/newbot`, the Botfather will guide you through the bot creation.
+  3. Once you create the bot, copy the **API key** that you have gotten, and put it into the `Token` field of `ChatBot.TelegramBridge` section (this section).
+  4. Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
+  5. Click on `Start` button and type and send the following command `.chatid` to obtain the chat id.
+  6. Copy the chat id number (eg. `2627844670`) and paste it in the `ChannelId` field and add it to the `Authorized_Chat_Ids` field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
+     Now you can use the bot using it's DM.
 
-    <div class="custom-container danger"><p class="custom-container-title">Danger</p>
+  <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-    **Do not share your API key with anyone else as it will give them the control over your bot. Save it securely.**
+  **Do not share your API key with anyone else as it will give them the control over your bot. Save it securely.**
 
-    </div>
+  </div>
 
-    <div class="custom-container danger"><p class="custom-container-title">Danger</p>
+  <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-    **If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!**
+  **If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!**
 
-    </div>
+  </div>
 
-    <div class="custom-container danger"><p class="custom-container-title">Danger</p>
+  <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-    **An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!**
+  **An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!**
 
-    </div>
+  </div>
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.TelegramBridge`**
+  **Section:** **`ChatBot.TelegramBridge`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
+  - **Description:**
 
-        This setting specifies if the Telegram Bridge Chat Bot is enabled.
+    This setting specifies if the Telegram Bridge Chat Bot is enabled.
 
-    -   **Available values:** `true` and `false`.
+  - **Available values:** `true` and `false`.
 
-    -   **Type:** `boolean`
+  - **Type:** `boolean`
 
-    -   **Default:** `false`
+  - **Default:** `false`
 
-    #### `Token`
+  #### `Token`
 
-    -   **Description:**
+  - **Description:**
 
-        Your Telegram Bot token.
+    Your Telegram Bot token.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** empty
+  - **Default:** empty
 
-    #### `ChannelId`
+  #### `ChannelId`
 
-    -   **Description:**
+  - **Description:**
 
-        An ID of a channel where you want to interact with the MCC using the bot.
+    An ID of a channel where you want to interact with the MCC using the bot.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** empty
+  - **Default:** empty
 
-    #### `Authorized_Chat_Ids`
+  #### `Authorized_Chat_Ids`
 
-    -   **Description:**
+  - **Description:**
 
-        A list of Chat IDs that are allowed to send messages and execute commands. 
-        To get an id of your chat DM with the bot use `.chatid` bot command in Telegram.
+    A list of Chat IDs that are allowed to send messages and execute commands.
+    To get an id of your chat DM with the bot use `.chatid` bot command in Telegram.
 
-    -   **Type:** `array of strings`
+  - **Type:** `array of strings`
 
-    -   **Default:** empty
+  - **Default:** empty
 
-    #### `Message_Send_Timeout`
+  #### `Message_Send_Timeout`
 
-    -   **Description:**
+  - **Description:**
 
-        How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).
+    How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).
 
-    -   **Type:** `integer`
+  - **Type:** `integer`
 
-    -   **Default:** 3
+  - **Default:** 3
 
-    **Message Formats**
+  **Message Formats**
 
-    Words wrapped with `{` and `}` are going to be replaced during the code execution, do not change them!
-    For example, `{message}` is going to be replace with an actual message, `{username}` will be replaced with an username, `{timestamp}` with the current time.
-    For Telegram message formatting, check the [following](https://mccteam.github.io/r/tg-fmt.html).
+  Words wrapped with `{` and `}` are going to be replaced during the code execution, do not change them!
+  For example, `{message}` is going to be replace with an actual message, `{username}` will be replaced with an username, `{timestamp}` with the current time.
+  For Telegram message formatting, check the [following](https://mccteam.github.io/r/tg-fmt.html).
 
-    #### `PrivateMessageFormat`
+  #### `PrivateMessageFormat`
 
-    -   **Description:**
+  - **Description:**
 
-        A format that is used to display a private chat message on the minecraft server, in a Telegram channel.
+    A format that is used to display a private chat message on the minecraft server, in a Telegram channel.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `*(Private Message)* {username}: {message}`
+  - **Default:** `*(Private Message)* {username}: {message}`
 
-    #### `PublicMessageFormat`
+  #### `PublicMessageFormat`
 
-    -   **Description:**
+  - **Description:**
 
-        A format that is used to display a public chat message on the minecraft server, in a Telegram channel.
+    A format that is used to display a public chat message on the minecraft server, in a Telegram channel.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `{username}: {message}`
+  - **Default:** `{username}: {message}`
 
-    #### `TeleportRequestMessageFormat`
+  #### `TeleportRequestMessageFormat`
 
-    -   **Description:**
+  - **Description:**
 
-        A format that is used to display a teleport request on the minecraft server, in a Telegram channel.
+    A format that is used to display a teleport request on the minecraft server, in a Telegram channel.
 
-    -   **Type:** `string`
+  - **Type:** `string`
 
-    -   **Default:** `A new Teleport Request from **{username}**!`
+  - **Default:** `A new Teleport Request from **{username}**!`
 
-
-    </details>
-
+  </details>
 
 ## Items Collector
 
--   **Description:**
+- **Description:**
 
-    Collect items on the ground using this Chat Bot.
+  Collect items on the ground using this Chat Bot.
 
--   **Settings:**
+- **Settings:**
 
-    **Section:** **`ChatBot.ItemsCollector`**
+  **Section:** **`ChatBot.ItemsCollector`**
 
-    <details>
-    <summary>All settings</summary>
+  <details>
+  <summary>All settings</summary>
 
-    #### `Enabled`
+  #### `Enabled`
 
-    -   **Description:**
-  
-        This setting specifies if the Items Collector chat bot is enabled.
+  - **Description:**
 
-    -   **Available values:** `true` and `false`.
+    This setting specifies if the Items Collector chat bot is enabled.
 
-    -   **Type:** `boolean`
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `false`
+  - **Type:** `boolean`
 
-    #### `Collect_All_Item_Types`
+  - **Default:** `false`
 
-    -   **Description:**
+  #### `Collect_All_Item_Types`
 
-        Specifies if the bot will collect all items, regardless of their type. 
-        If you want to use the whitelisted item types, disable this by setting it to `false`.
+  - **Description:**
 
-    -   **Available values:** `true` and `false`.
+    Specifies if the bot will collect all items, regardless of their type.
+    If you want to use the whitelisted item types, disable this by setting it to `false`.
 
-    -   **Type:** `boolean`
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `false`
+  - **Type:** `boolean`
 
-    #### `Items_Whitelist`
+  - **Default:** `false`
 
-    -   **Description:**
+  #### `Items_Whitelist`
 
-        In this list you can specify which items the bot will collect. 
-        To enable this, set the `Collect_All_Item_Types` to false. 
+  - **Description:**
 
-    <div class="custom-container warning"><p class="custom-container-title">Note</p>
+    In this list you can specify which items the bot will collect.
+    To enable this, set the `Collect_All_Item_Types` to false.
 
-    **This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items**
+  <div class="custom-container warning"><p class="custom-container-title">Note</p>
 
-    </div>
+  **This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items**
 
-    -   **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
+  </div>
 
-    -   **Type:** `array of strings with item names`
+  - **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
 
-    -   **Default:** `[ "Diamond", "NetheriteIngot" ]`
+  - **Type:** `array of strings with item names`
 
-    #### `Delay_Between_Tasks`
+  - **Default:** `[ "Diamond", "NetheriteIngot" ]`
 
-    -   **Description:**
+  #### `Delay_Between_Tasks`
 
-        Delay in milliseconds between bot scanning items (Recommended: 300-500)
+  - **Description:**
 
-    -   **Type:** `integer`
+    Delay in milliseconds between bot scanning items (Recommended: 300-500)
 
-    -   **Default:** `300`
+  - **Type:** `integer`
 
-    #### `Collection_Radius`
+  - **Default:** `300`
 
-    -   **Description:**
+  #### `Collection_Radius`
 
-        The radius of blocks in which bot will look for items to collect.
+  - **Description:**
 
-    -   **Type:** `double`
+    The radius of blocks in which bot will look for items to collect.
 
-    -   **Default:** `30.0`
+  - **Type:** `double`
 
-    #### `Always_Return_To_Start`
+  - **Default:** `30.0`
 
-    -   **Description:**
+  #### `Always_Return_To_Start`
 
-        Specifies if the bot will return to it's starting position after there are no items to collect.
+  - **Description:**
 
-    -   **Available values:** `true` and `false`.
+    Specifies if the bot will return to it's starting position after there are no items to collect.
 
-    -   **Type:** `boolean`
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `true`
+  - **Type:** `boolean`
 
-    #### `Prioritize_Clusters`
+  - **Default:** `true`
 
-    -   **Description:**
+  #### `Prioritize_Clusters`
 
-        Specifies if the bot will go after clustered items instead for the closest ones.
+  - **Description:**
 
-    -   **Available values:** `true` and `false`.
+    Specifies if the bot will go after clustered items instead for the closest ones.
 
-    -   **Type:** `boolean`
+  - **Available values:** `true` and `false`.
 
-    -   **Default:** `true`
+  - **Type:** `boolean`
 
+  - **Default:** `true`
 
-    </details>
-
-
+  </details>

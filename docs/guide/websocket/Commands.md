@@ -23,10 +23,11 @@ Must be called before any other command (except `ChangeSessionId`).
 **Parameters:**
 
 | Index | Type   | Description |
-|-------|--------|-------------|
+| ----- | ------ | ----------- |
 | 0     | string | Password    |
 
 **Example:**
+
 ```json
 {
   "command": "Authenticate",
@@ -43,10 +44,11 @@ The new ID must be 1-32 characters and not already taken.
 **Parameters:**
 
 | Index | Type   | Description    |
-|-------|--------|----------------|
+| ----- | ------ | -------------- |
 | 0     | string | New session ID |
 
 **Example:**
+
 ```json
 {
   "command": "ChangeSessionId",
@@ -64,7 +66,7 @@ Log a message to the MCC console.
 **Parameters:**
 
 | Index | Type   | Description |
-|-------|--------|-------------|
+| ----- | ------ | ----------- |
 | 0     | string | Message     |
 
 ### `LogDebugToConsole`
@@ -74,7 +76,7 @@ Log a debug message to the MCC console (only visible in debug mode).
 **Parameters:**
 
 | Index | Type   | Description |
-|-------|--------|-------------|
+| ----- | ------ | ----------- |
 | 0     | string | Message     |
 
 ### `LogToConsoleTranslated`
@@ -83,9 +85,9 @@ Log a translated message using an MCC translation key.
 
 **Parameters:**
 
-| Index | Type   | Description      |
-|-------|--------|------------------|
-| 0     | string | Translation key  |
+| Index | Type   | Description     |
+| ----- | ------ | --------------- |
+| 0     | string | Translation key |
 
 ### `LogDebugToConsoleTranslated`
 
@@ -93,9 +95,9 @@ Log a translated debug message.
 
 **Parameters:**
 
-| Index | Type   | Description      |
-|-------|--------|------------------|
-| 0     | string | Translation key  |
+| Index | Type   | Description     |
+| ----- | ------ | --------------- |
+| 0     | string | Translation key |
 
 ## Session Commands
 
@@ -105,10 +107,10 @@ Reconnect to the Minecraft server.
 
 **Parameters:**
 
-| Index | Type | Description                         |
-|-------|------|-------------------------------------|
-| 0     | int  | Extra reconnect attempts (default 3)|
-| 1     | int  | Delay in seconds (default 0)        |
+| Index | Type | Description                          |
+| ----- | ---- | ------------------------------------ |
+| 0     | int  | Extra reconnect attempts (default 3) |
+| 1     | int  | Delay in seconds (default 0)         |
 
 ### `DisconnectAndExit`
 
@@ -123,10 +125,10 @@ Send a private message to a player.
 
 **Parameters:**
 
-| Index | Type   | Description   |
-|-------|--------|---------------|
-| 0     | string | Player name   |
-| 1     | string | Message       |
+| Index | Type   | Description |
+| ----- | ------ | ----------- |
+| 0     | string | Player name |
+| 1     | string | Message     |
 
 ## Script Commands
 
@@ -137,7 +139,7 @@ Run an MCC script file.
 **Parameters:**
 
 | Index | Type   | Description |
-|-------|--------|-------------|
+| ----- | ------ | ----------- |
 | 0     | string | File name   |
 
 ## World and Terrain Commands
@@ -154,7 +156,7 @@ Enable or disable terrain handling.
 **Parameters:**
 
 | Index | Type | Description |
-|-------|------|-------------|
+| ----- | ---- | ----------- |
 | 0     | bool | Enabled     |
 
 ### `GetWorld`
@@ -169,12 +171,12 @@ Validates the block is within 6 blocks and is not air.
 
 **Parameters:**
 
-| Index | Type    | Description                    |
-|-------|---------|--------------------------------|
-| 0     | double  | X coordinate                   |
-| 1     | double  | Y coordinate                   |
-| 2     | double  | Z coordinate                   |
-| 3     | string  | Direction (optional, e.g. "Down") |
+| Index | Type   | Description                       |
+| ----- | ------ | --------------------------------- |
+| 0     | double | X coordinate                      |
+| 1     | double | Y coordinate                      |
+| 2     | double | Z coordinate                      |
+| 3     | string | Direction (optional, e.g. "Down") |
 
 The `Direction` parameter accepts string names: `Down`, `Up`, `North`, `South`, `West`, `East`.
 
@@ -198,11 +200,11 @@ Interact with an entity.
 
 **Parameters:**
 
-| Index | Type   | Description                          |
-|-------|--------|--------------------------------------|
-| 0     | int    | Entity ID                            |
+| Index | Type   | Description                                           |
+| ----- | ------ | ----------------------------------------------------- |
+| 0     | int    | Entity ID                                             |
 | 1     | string | Interaction type (`Interact`, `Attack`, `InteractAt`) |
-| 2     | string | Hand (optional, `MainHand` or `OffHand`) |
+| 2     | string | Hand (optional, `MainHand` or `OffHand`)              |
 
 ### `SendEntityAction`
 
@@ -210,8 +212,8 @@ Send an entity action.
 
 **Parameters:**
 
-| Index | Type   | Description                  |
-|-------|--------|------------------------------|
+| Index | Type   | Description                                        |
+| ----- | ------ | -------------------------------------------------- |
 | 0     | string | Action type (e.g. `StartSneaking`, `StopSneaking`) |
 
 ### `Sneak`
@@ -220,8 +222,8 @@ Toggle sneaking.
 
 **Parameters:**
 
-| Index | Type | Description      |
-|-------|------|------------------|
+| Index | Type | Description                  |
+| ----- | ---- | ---------------------------- |
 | 0     | bool | true to sneak, false to stop |
 
 ## Movement Commands
@@ -238,7 +240,7 @@ Move the player to a location using pathfinding.
 **Parameters:**
 
 | Index | Type   | Description                      |
-|-------|--------|----------------------------------|
+| ----- | ------ | -------------------------------- |
 | 0     | double | X coordinate                     |
 | 1     | double | Y coordinate                     |
 | 2     | double | Z coordinate                     |
@@ -259,7 +261,7 @@ Make the player look at coordinates.
 **Parameters:**
 
 | Index | Type   | Description |
-|-------|--------|-------------|
+| ----- | ------ | ----------- |
 | 0     | double | X           |
 | 1     | double | Y           |
 | 2     | double | Z           |
@@ -363,10 +365,10 @@ Perform a window/inventory action.
 
 **Parameters:**
 
-| Index | Type   | Description                                       |
-|-------|--------|---------------------------------------------------|
-| 0     | int    | Inventory ID                                      |
-| 1     | int    | Slot ID                                           |
+| Index | Type   | Description                                                   |
+| ----- | ------ | ------------------------------------------------------------- |
+| 0     | int    | Inventory ID                                                  |
+| 1     | int    | Slot ID                                                       |
 | 2     | string | Action type (e.g. `LeftClick`, `RightClick`, `DropItemStack`) |
 
 ### `ChangeSlot`
@@ -376,7 +378,7 @@ Change the active hotbar slot.
 **Parameters:**
 
 | Index | Type  | Description       |
-|-------|-------|-------------------|
+| ----- | ----- | ----------------- |
 | 0     | short | Slot number (0-8) |
 
 ### `GetCurrentSlot`
@@ -391,7 +393,7 @@ Set the active slot (legacy command).
 **Parameters:**
 
 | Index | Type | Description |
-|-------|------|-------------|
+| ----- | ---- | ----------- |
 | 0     | int  | Slot number |
 
 ### `ClearInventories`
@@ -406,7 +408,7 @@ Close an inventory window.
 **Parameters:**
 
 | Index | Type | Description  |
-|-------|------|--------------|
+| ----- | ---- | ------------ |
 | 0     | int  | Inventory ID |
 
 ## Creative Mode Commands
@@ -418,7 +420,7 @@ Give an item in creative mode.
 **Parameters:**
 
 | Index | Type   | Description                                |
-|-------|--------|--------------------------------------------|
+| ----- | ------ | ------------------------------------------ |
 | 0     | int    | Slot ID                                    |
 | 1     | string | Item type (e.g. `"DiamondSword"` or `798`) |
 | 2     | int    | Count                                      |
@@ -430,7 +432,7 @@ Delete an item from a slot in creative mode.
 **Parameters:**
 
 | Index | Type | Description |
-|-------|------|-------------|
+| ----- | ---- | ----------- |
 | 0     | int  | Slot ID     |
 
 ## Block Interaction Commands
@@ -441,12 +443,12 @@ Place a block.
 
 **Parameters:**
 
-| Index | Type   | Description              |
-|-------|--------|--------------------------|
-| 0     | double | X coordinate             |
-| 1     | double | Y coordinate             |
-| 2     | double | Z coordinate             |
-| 3     | string | Direction (e.g. `"Up"`)  |
+| Index | Type   | Description                                  |
+| ----- | ------ | -------------------------------------------- |
+| 0     | double | X coordinate                                 |
+| 1     | double | Y coordinate                                 |
+| 2     | double | Z coordinate                                 |
+| 3     | string | Direction (e.g. `"Up"`)                      |
 | 4     | string | Hand (optional, `"MainHand"` or `"OffHand"`) |
 
 ### `SendAnimation`
@@ -455,8 +457,8 @@ Play arm swing animation.
 
 **Parameters:**
 
-| Index | Type   | Description                        |
-|-------|--------|------------------------------------|
+| Index | Type   | Description                           |
+| ----- | ------ | ------------------------------------- |
 | 0     | string | Hand (optional, default `"MainHand"`) |
 
 ### `UseItemInHand`
@@ -471,7 +473,7 @@ Update text on a sign.
 **Parameters:**
 
 | Index | Type   | Description  |
-|-------|--------|--------------|
+| ----- | ------ | ------------ |
 | 0     | double | X coordinate |
 | 1     | double | Y coordinate |
 | 2     | double | Z coordinate |
@@ -486,14 +488,14 @@ Update a command block.
 
 **Parameters:**
 
-| Index | Type   | Description             |
-|-------|--------|-------------------------|
-| 0     | double | X coordinate            |
-| 1     | double | Y coordinate            |
-| 2     | double | Z coordinate            |
-| 3     | string | Command                 |
+| Index | Type   | Description                                      |
+| ----- | ------ | ------------------------------------------------ |
+| 0     | double | X coordinate                                     |
+| 1     | double | Y coordinate                                     |
+| 2     | double | Z coordinate                                     |
+| 3     | string | Command                                          |
 | 4     | string | Mode (e.g. `"Sequence"`, `"Auto"`, `"Redstone"`) |
-| 5     | string | Flags                   |
+| 5     | string | Flags                                            |
 
 ## Trading Commands
 
@@ -504,7 +506,7 @@ Select a villager trade.
 **Parameters:**
 
 | Index | Type | Description |
-|-------|------|-------------|
+| ----- | ---- | ----------- |
 | 0     | int  | Trade index |
 
 ### `Respawn`
