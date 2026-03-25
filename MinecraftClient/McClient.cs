@@ -75,8 +75,8 @@ namespace MinecraftClient
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
         private bool CanSendMessage = false;
 
-        private readonly string host;
-        private readonly int port;
+        private string host;
+        private int port;
         private readonly int protocolversion;
         private readonly string username;
         private Guid uuid;
@@ -159,6 +159,7 @@ namespace MinecraftClient
         SessionToken _sessionToken;
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
+        private int transferInProgress = 0;
 
         public ILogger Log;
         
@@ -335,16 +336,34 @@ namespace MinecraftClient
         
         public void Transfer(string newHost, int newPort)
         {
+            // Do not block here: a new handler can start processing packets before the
+            // previous transfer call fully unwinds, and waiting can deadlock main-thread work.
+            if (Interlocked.CompareExchange(ref transferInProgress, 1, 0) != 0)
+            {
+                Log.Warn($"Ignoring overlapping transfer to {newHost}:{newPort} because another transfer is still in progress.");
+                return;
+            }
+
+            IMinecraftCom oldHandler = handler;
+            TcpClient oldClient = client;
+
             try
             {
-                Log.Info($"Initiating a transfer to: {host}:{port}");
+                Log.Info($"Initiating a transfer to: {newHost}:{newPort}");
                 
                 // Unload bots
                 UnloadAllBots();
                 bots.Clear();
+
+                ResetStateForTransfer();
                 
-                // Close existing connection
-                client.Close();
+                // Retire the old handler so its updater exits without reporting a stale disconnect.
+                oldHandler.Dispose();
+                oldClient.Close();
+
+                host = newHost;
+                port = newPort;
+                UpdateKeepAlive();
 
                 // Establish new connection
                 client = ProxyHandler.NewTcpClient(newHost, newPort);
@@ -353,20 +372,17 @@ namespace MinecraftClient
 
                 // Reinitialize the protocol handler
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, null, this);
-                Log.Info($"Connected to {host}:{port}");
+                Log.Info($"Connected to {newHost}:{newPort}");
 
                 // Retry login process
-                if (handler.Login(playerKeyPair, _sessionToken))
+                if (handler.Login(playerKeyPair, _sessionToken, isTransfer: true))
                 {
                     foreach (var bot in botsOnHold)
                         BotLoad(bot, false);
                     botsOnHold.Clear();
 
-                    Log.Info("Successfully transferred connection and logged in.");
-                    cmdprompt = new CancellationTokenSource();
-                    ConsoleInteractive.ConsoleReader.BeginReadThread();
-                    ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
-                    ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+                    UpdateKeepAlive();
+                    Log.Info($"Successfully transferred connection and logged in to {newHost}:{newPort}.");
                 }
                 else
                 {
@@ -377,6 +393,22 @@ namespace MinecraftClient
             catch (Exception ex)
             {
                 Log.Error($"Transfer to {newHost}:{newPort} failed: {ex.Message}");
+
+                try
+                {
+                    handler.Dispose();
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    client.Close();
+                }
+                catch
+                {
+                }
 
                 // Handle reconnection attempts
                 if (timeoutdetector is not null)
@@ -400,8 +432,35 @@ namespace MinecraftClient
                     Program.HandleFailure();
                 }
 
-                throw new Exception("Transfer failed and reconnection attempts exhausted.");
+                throw new Exception("Transfer failed and reconnection attempts exhausted.", ex);
             }
+            finally
+            {
+                Interlocked.Exchange(ref transferInProgress, 0);
+            }
+        }
+
+        private void ResetStateForTransfer()
+        {
+            ClearTasks();
+            ConsoleIO.CancelAutocomplete();
+            SetCanSendMessage(false);
+
+            locationReceived = false;
+            physicsInitialized = false;
+            isUnderSlab = false;
+            path = null;
+            pathTarget = null;
+            _yaw = null;
+            _pitch = null;
+            LastDigPosition = null;
+            RemainingDiggingTime = 0;
+            nextSneakingUpdate = DateTime.Now;
+
+            physicsInput.Reset();
+            world.Clear();
+            entities.Clear();
+            ClearInventories();
         }
 
         /// <summary>
