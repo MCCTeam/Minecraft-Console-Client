@@ -31,7 +31,7 @@ Must be called before any other command (except `ChangeSessionId`).
 {
   "command": "Authenticate",
   "requestId": "auth-001",
-  "parameters": ["wspass12345"]
+  "parameters": ["your-password-here"]
 }
 ```
 
@@ -514,7 +514,7 @@ No parameters.
 
 ## Mapping Commands (New)
 
-These commands address [issue #2805](https://github.com/MCCTeam/Minecraft-Console-Client/issues/2805), allowing clients to query enum mappings dynamically instead of maintaining hardcoded ID tables.
+These commands let clients query enum mappings dynamically at runtime, so they do not need to maintain hardcoded numeric ID tables that break across MCC versions. For background, see [issue #2805](https://github.com/MCCTeam/Minecraft-Console-Client/issues/2805).
 
 ### `GetItemTypeMappings`
 

@@ -18,7 +18,8 @@
 //using MinecraftClient.Scripting
 //using MinecraftClient
 
-MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "wspass12345"));
+// IMPORTANT: Change the password below before use!
+MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "CHANGE_THIS_PASSWORD"));
 
 //MCCScript Extensions
 
@@ -207,7 +208,7 @@ public class WebSocketBot : ChatBot
     private bool _gameJoined;
 
     private static readonly Regex Ipv4Regex = new(
-        @"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$",
+        @"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.){3}(25[0-5]|(2[0-4]|1\d|[1-9]|)\d)$",
         RegexOptions.Compiled);
 
     public WebSocketBot(string ip, int port, string password, bool debugMode = false)
