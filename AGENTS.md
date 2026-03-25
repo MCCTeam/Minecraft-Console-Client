@@ -108,6 +108,7 @@ Read `docs/guide/ai-assisted-development.md` before starting development work on
 - Prefer nullable-aware code, pattern matching, `ArgumentNullException.ThrowIfNull`, `Try*` APIs for expected failures, and `InvokeOnMainThread()` for cross-thread state changes.
 - Use modern C# 14 features.
 - Use provided skills proactively depending on the context, read their descriptions to determine when to use them.
+- All user-facing text (log messages, command output, TUI labels, notifications, help text, error messages) **must** go through the translation system: add entries to `Translations.resx` + `Translations.Designer.cs`, then reference `Translations.key_name` in code. Never hardcode user-visible strings directly in `.cs` files. Use `string.Format(Translations.key, ...)` for parameterized messages. Translation keys follow dot-delimited naming: `<module>.<scope>.<detail>` (e.g. `cmd.inventory.tui_opened`, `tui.inventory.controls`). Pure technical identifiers (class names, protocol constants, color codes) are exempt.
 
 ### DON'T
 - Don't update only `MCVer2ProtocolVersion()` or only one palette file when adding a new Minecraft version.
@@ -118,4 +119,5 @@ Read `docs/guide/ai-assisted-development.md` before starting development work on
 - Don't start background workers when `Update()` or delayed tasks are sufficient; if you must, stop them on unload/disconnect.
 - Don't leave movement locks, plugin channels, or dispatcher registrations behind.
 - Don't trust older docs over current code for supported versions or feature gates. When AGENTS.md, skills, and older docs disagree, prefer current code and current tool behavior, then update the stale source.
+- Don't hardcode user-facing strings (messages, labels, help text) directly in source code; always use `Translations.*` resources so the text can be localized.
 - Never use "—" ("em dash"), unless specifically being instructed to do so!
