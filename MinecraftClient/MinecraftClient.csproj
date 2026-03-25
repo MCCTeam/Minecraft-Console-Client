@@ -62,6 +62,7 @@
     <Compile Remove="config\ChatBots\SugarCaneMiner.cs" />
     <Compile Remove="config\ChatBots\TreeFarmer.cs" />
     <Compile Remove="config\ChatBots\VkMessager.cs" />
+    <Compile Remove="config\ChatBots\WebSocketBot.cs" />
     <Compile Remove="config\sample-script-extended.cs" />
     <Compile Remove="config\sample-script-packet-capture.cs" />
     <Compile Remove="config\sample-script-pm-forwarder.cs" />
