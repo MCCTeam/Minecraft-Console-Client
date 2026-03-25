@@ -6333,6 +6333,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to TUI viewer does not support this container type (Inventory #{0}). Use '/inventory {0} list' to view its contents..
+        /// </summary>
+        internal static string cmd_inventory_tui_unsupported_container {
+            get {
+                return ResourceManager.GetString("cmd.inventory.tui_unsupported_container", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hold Shift + Left-click to select and copy text..
         /// </summary>
         internal static string tui_select_copy_hint {

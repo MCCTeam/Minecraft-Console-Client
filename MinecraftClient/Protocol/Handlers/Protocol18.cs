@@ -4587,7 +4587,10 @@ namespace MinecraftClient.Protocol.Handlers
                 
                 if(protocolVersion >= MC_1_14_Version)
                     packet.Add(0); // insideBlock = false
-                
+
+                if (protocolVersion >= MC_1_21_2_Version)
+                    packet.Add(0); // worldBorderHit = false
+
                 if (protocolVersion >= MC_1_19_Version)
                     packet.AddRange(DataTypes.GetVarInt(sequenceId));
                 
