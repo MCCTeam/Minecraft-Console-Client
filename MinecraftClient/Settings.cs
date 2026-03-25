@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -267,7 +268,17 @@ namespace MinecraftClient
                     //Load settings as --setting=value and --section.setting=value
                     if (!argument.Contains('='))
                         throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
-                    throw new NotImplementedException();
+
+                    string argumentBody = argument[2..];
+                    int separatorIndex = argumentBody.IndexOf('=');
+                    if (separatorIndex < 1)
+                        throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
+
+                    string settingName = argumentBody[..separatorIndex].Trim();
+                    string settingValue = argumentBody[(separatorIndex + 1)..].Trim();
+
+                    if (!TryApplyArgumentSetting(settingName, settingValue))
+                        throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
                 }
                 else if (argument.StartsWith("-") && argument.Length > 1)
                 {
@@ -304,6 +315,211 @@ namespace MinecraftClient
                     }
                     positionalIndex++;
                 }
+            }
+        }
+
+        private static readonly string[][] s_argumentSettingSearchPrefixes =
+        [
+            [],
+            ["Main", "Advanced"],
+            ["Main", "General"],
+            ["Main"],
+            ["Logging"],
+            ["Console", "General"],
+            ["Console", "CommandSuggestion"],
+            ["Console"],
+            ["MCSettings"],
+            ["ChatFormat"],
+            ["ChatBot"],
+            ["Signature"],
+            ["Proxy"],
+            ["AppVar"]
+        ];
+
+        private static bool TryApplyArgumentSetting(string settingPath, string settingValue)
+        {
+            if (string.IsNullOrWhiteSpace(settingPath))
+                return false;
+
+            string[] settingParts = settingPath
+                .Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (settingParts.Length == 0)
+                return false;
+
+            HashSet<string> triedPaths = new(StringComparer.Ordinal);
+            foreach (string[] prefix in s_argumentSettingSearchPrefixes)
+            {
+                string[] fullPath = [.. prefix, .. settingParts];
+                string pathKey = string.Join('.', fullPath.Select(NormalizeArgumentToken));
+                if (!triedPaths.Add(pathKey))
+                    continue;
+
+                if (!TryResolveArgumentSettingPath(fullPath, out object owner, out MemberInfo member, out List<object> objectPath))
+                    continue;
+
+                if (!TryConvertArgumentValue(settingValue, GetMemberType(member), out object? convertedValue))
+                    return false;
+
+                if (!TrySetMemberValue(owner, member, convertedValue))
+                    return false;
+
+                ApplyOnSettingUpdate(objectPath);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryResolveArgumentSettingPath(string[] fullPath, out object owner, out MemberInfo member, out List<object> objectPath)
+        {
+            owner = Config;
+            objectPath = [owner];
+            member = null!;
+
+            for (int i = 0; i < fullPath.Length; i++)
+            {
+                if (!TryGetArgumentMember(owner.GetType(), fullPath[i], out MemberInfo currentMember))
+                    return false;
+
+                if (i == fullPath.Length - 1)
+                {
+                    member = currentMember;
+                    return true;
+                }
+
+                object? nextObject = GetMemberValue(owner, currentMember);
+                if (nextObject is null)
+                    return false;
+
+                owner = nextObject;
+                objectPath.Add(owner);
+            }
+
+            return false;
+        }
+
+        private static bool TryGetArgumentMember(Type ownerType, string token, out MemberInfo member)
+        {
+            ArgumentNullException.ThrowIfNull(ownerType);
+
+            string normalizedToken = NormalizeArgumentToken(token);
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.Public;
+
+            foreach (PropertyInfo property in ownerType.GetProperties(flags))
+            {
+                if (!property.CanRead || !property.CanWrite || property.GetIndexParameters().Length > 0)
+                    continue;
+
+                if (NormalizeArgumentToken(property.Name) == normalizedToken)
+                {
+                    member = property;
+                    return true;
+                }
+            }
+
+            foreach (FieldInfo field in ownerType.GetFields(flags))
+            {
+                if (NormalizeArgumentToken(field.Name) == normalizedToken)
+                {
+                    member = field;
+                    return true;
+                }
+            }
+
+            member = null!;
+            return false;
+        }
+
+        private static string NormalizeArgumentToken(string token)
+        {
+            return ToLowerIfNeed(token.Replace("_", string.Empty, StringComparison.Ordinal)
+                                       .Replace("-", string.Empty, StringComparison.Ordinal));
+        }
+
+        private static Type GetMemberType(MemberInfo member)
+        {
+            return member switch
+            {
+                PropertyInfo property => property.PropertyType,
+                FieldInfo field => field.FieldType,
+                _ => throw new ArgumentException($"Unsupported member type: {member.MemberType}", nameof(member))
+            };
+        }
+
+        private static object? GetMemberValue(object owner, MemberInfo member)
+        {
+            return member switch
+            {
+                PropertyInfo property => property.GetValue(owner),
+                FieldInfo field => field.GetValue(owner),
+                _ => null
+            };
+        }
+
+        private static bool TrySetMemberValue(object owner, MemberInfo member, object? value)
+        {
+            switch (member)
+            {
+                case PropertyInfo property:
+                    property.SetValue(owner, value);
+                    return true;
+                case FieldInfo field:
+                    field.SetValue(owner, value);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool TryConvertArgumentValue(string input, Type targetType, out object? converted)
+        {
+            Type effectiveType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+            if (effectiveType == typeof(string))
+            {
+                converted = input;
+                return true;
+            }
+
+            if (effectiveType == typeof(bool))
+            {
+                bool success = bool.TryParse(input, out bool value);
+                converted = value;
+                return success;
+            }
+
+            if (effectiveType.IsEnum)
+            {
+                bool success = Enum.TryParse(effectiveType, input, true, out object? value);
+                converted = value;
+                return success;
+            }
+
+            try
+            {
+                converted = Convert.ChangeType(input, effectiveType, CultureInfo.InvariantCulture);
+                return true;
+            }
+            catch
+            {
+                converted = null;
+                return false;
+            }
+        }
+
+        private static void ApplyOnSettingUpdate(List<object> objectPath)
+        {
+            HashSet<object> calledObjects = new(ReferenceEqualityComparer.Instance);
+
+            for (int i = objectPath.Count - 1; i >= 0; i--)
+            {
+                object target = objectPath[i];
+                if (!calledObjects.Add(target))
+                    continue;
+
+                MethodInfo? onSettingUpdate = target.GetType().GetMethod(nameof(MainConfig.OnSettingUpdate), BindingFlags.Instance | BindingFlags.Public, []);
+                onSettingUpdate?.Invoke(target, null);
             }
         }
 
