@@ -68,34 +68,34 @@ namespace MinecraftClient.Commands
             McClient handler = CmdResult.currentHandler!;
             var sb = new StringBuilder();
 
-            sb.AppendLine("§e=== MCC Debug State ===");
-            sb.AppendLine($"§7Server:    §f{handler.GetServerHost()}:{handler.GetServerPort()}");
-            sb.AppendLine($"§7Username:  §f{handler.GetUsername()}");
-            sb.AppendLine($"§7Protocol:  §f{handler.GetProtocolVersion()}");
-            sb.AppendLine($"§7GameMode:  §f{handler.GetGamemode()}");
-            sb.AppendLine($"§7Health:    §f{handler.GetHealth():F1}");
-            sb.AppendLine($"§7Food:      §f{handler.GetSaturation()}");
+            sb.AppendLine($"§e=== {Translations.cmd_debug_state_header} ===");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_server,-10}§f{handler.GetServerHost()}:{handler.GetServerPort()}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_username,-10}§f{handler.GetUsername()}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_protocol,-10}§f{handler.GetProtocolVersion()}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_gamemode,-10}§f{handler.GetGamemode()}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_health,-10}§f{handler.GetHealth():F1}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_food,-10}§f{handler.GetSaturation()}");
 
             var loc = handler.GetCurrentLocation();
-            sb.AppendLine($"§7Location:  §f{loc.X:F2}, {loc.Y:F2}, {loc.Z:F2}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_location,-10}§f{loc.X:F2}, {loc.Y:F2}, {loc.Z:F2}");
 
-            sb.AppendLine($"§7TPS:       §f{handler.GetServerTPS():F1}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_tps,-10}§f{handler.GetServerTPS():F1}");
 
-            sb.AppendLine($"§7Console:   §f{(ConsoleIO.Backend?.GetType().Name ?? "null")}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_console,-10}§f{(ConsoleIO.Backend?.GetType().Name ?? "null")}");
 
             var features = new StringBuilder();
             features.Append(handler.GetTerrainEnabled() ? "§aTerrain " : "§8Terrain ");
             features.Append(handler.GetInventoryEnabled() ? "§aInventory " : "§8Inventory ");
             features.Append(handler.GetEntityHandlingEnabled() ? "§aEntity " : "§8Entity ");
-            sb.AppendLine($"§7Features:  {features}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_features,-10}{features}");
 
-            sb.AppendLine($"§7Debug:     §f{(Settings.Config.Logging.DebugMessages ? "§aON" : "§cOFF")}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_debug,-10}§f{(Settings.Config.Logging.DebugMessages ? "§aON" : "§cOFF")}");
 
             var bots = handler.GetLoadedChatBots();
-            sb.AppendLine($"§7Bots ({bots.Count}): §f{string.Join(", ", bots.Select(b => b.GetType().Name))}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_bots} ({bots.Count}): §f{string.Join(", ", bots.Select(b => b.GetType().Name))}");
 
             var players = handler.GetOnlinePlayers();
-            sb.AppendLine($"§7Players:   §f{players.Length} online");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_players,-10}§f{string.Format(Translations.cmd_debug_state_online, players.Length)}");
 
             handler.Log.Info(sb.ToString());
             return r.SetAndReturn(CmdResult.Status.Done);

@@ -1177,7 +1177,7 @@ namespace MinecraftClient
                 [TomlDoNotInlineObject]
                 public class MainConfig
                 {
-                    [TomlInlineComment("Console mode: \"classic\" (ConsoleInteractive), \"tui\" (Avalonia/Consolonia full-screen)")]
+                    [TomlInlineComment("$Console.General.ConsoleMode$")]
                     public ConsoleModeType ConsoleMode = ConsoleModeType.classic;
 
                     [TomlInlineComment("$Console.General.ConsoleColorMode$")]

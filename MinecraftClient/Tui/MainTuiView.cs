@@ -254,7 +254,7 @@ namespace MinecraftClient.Tui
 
             if (elapsed < DoubleClickMsec)
             {
-                ShowNotification("Hold Shift + Left-click to select and copy text.", 3000);
+                ShowNotification(Translations.tui_select_copy_hint, 3000);
                 _lastLogClickTicks = 0;
             }
 
@@ -743,11 +743,11 @@ namespace MinecraftClient.Tui
             if (inputText.Length > 0)
             {
                 _commandInput.Text = string.Empty;
-                ShowNotification("Input cleared. Press Ctrl+C again to quit.", CtrlCDoublePressMsec);
+                ShowNotification(Translations.tui_ctrlc_input_cleared, CtrlCDoublePressMsec);
             }
             else
             {
-                ShowNotification("Press Ctrl+C again to quit MCC.", CtrlCDoublePressMsec);
+                ShowNotification(Translations.tui_ctrlc_quit_hint, CtrlCDoublePressMsec);
             }
         }
 

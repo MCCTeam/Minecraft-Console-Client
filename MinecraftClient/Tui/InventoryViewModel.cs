@@ -73,14 +73,14 @@ namespace MinecraftClient.Tui
             get
             {
                 if (_hoveredSlot == null)
-                    return "Hover over a slot to\nsee item details.";
+                    return Translations.tui_inventory_hover_hint;
 
                 if (_hoveredSlot.IsEmpty)
-                    return $"Slot #{_hoveredSlot.SlotId}\n(Empty)";
+                    return $"Slot #{_hoveredSlot.SlotId}\n{Translations.tui_inventory_slot_empty}";
 
                 var sb = new StringBuilder();
                 sb.AppendLine(_hoveredSlot.ItemTypeName);
-                sb.AppendLine($"Slot #{_hoveredSlot.SlotId}  Count: {_hoveredSlot.ItemCount}");
+                sb.AppendLine(string.Format(Translations.tui_inventory_slot_detail, _hoveredSlot.SlotId, _hoveredSlot.ItemCount));
 
                 string fullInfo = _hoveredSlot.FullInfo;
                 if (!string.IsNullOrEmpty(fullInfo))
@@ -165,11 +165,11 @@ namespace MinecraftClient.Tui
             Inventory.Container? container = Handler.GetInventory(WindowId);
             if (container == null)
             {
-                StatusText = "Container not found";
+                StatusText = Translations.tui_inventory_container_not_found;
                 return;
             }
 
-            Title = $"Inventory #{WindowId} - {container.Title}";
+            Title = string.Format(Translations.tui_inventory_title, WindowId, container.Title);
 
             foreach (var kvp in _slotMap)
             {
@@ -184,7 +184,7 @@ namespace MinecraftClient.Tui
                 if (kvp.Key >= 0 && !kvp.Value.IsEmpty)
                     itemCount++;
             }
-            StatusText = $"{itemCount} items";
+            StatusText = string.Format(Translations.tui_inventory_item_count, itemCount);
 
             OnPropertyChanged(nameof(HoveredSlotDetailText));
         }

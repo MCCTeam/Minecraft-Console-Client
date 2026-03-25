@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -553,6 +553,9 @@ Custom colors are only available when using "vt100_24bit" color mode.</value>
   </data>
   <data name="Console.CommandSuggestion.Use_Basic_Arrow" xml:space="preserve">
     <value>Enable this option if the arrows in the command suggestions are not displayed properly in your terminal.</value>
+  </data>
+  <data name="Console.General.ConsoleMode" xml:space="preserve">
+    <value>Console mode: "classic" for the standard terminal, "tui" for a pseudo-graphical full-screen interface.</value>
   </data>
   <data name="Console.General.ConsoleColorMode" xml:space="preserve">
     <value>Use "disable", "legacy_4bit", "vt100_4bit", "vt100_8bit" or "vt100_24bit". If a garbled code like "←[0m" appears on the terminal, you can try switching to "legacy_4bit" mode, or just disable it.</value>

@@ -133,14 +133,7 @@ namespace MinecraftClient.Tui
             {
                 TextWrapping = TextWrapping.Wrap,
                 Foreground = new SolidColorBrush(Color.FromRgb(140, 140, 140)),
-                Text =
-                    "LClick  Pick/Place\n" +
-                    "RClick  Half/Place1\n" +
-                    "Shift+C QuickMove\n" +
-                    "Q       Drop x1\n" +
-                    "Ctrl+Q  Drop Stack\n" +
-                    "R       Refresh\n" +
-                    "E/ESC   Exit",
+                Text = Translations.tui_inventory_controls_help,
             };
 
             _heldItemFloaterName = new TextBlock
@@ -273,11 +266,11 @@ namespace MinecraftClient.Tui
                 {
                     Children =
                     {
-                        new TextBlock { Text = "[ Item Info ]", FontWeight = FontWeight.Bold, Foreground = Brushes.Cyan },
+                        new TextBlock { Text = Translations.tui_inventory_item_info, FontWeight = FontWeight.Bold, Foreground = Brushes.Cyan },
                         _infoDetailBorder,
-                        new TextBlock { Text = "[ Held Item ]", FontWeight = FontWeight.Bold, Foreground = Brushes.Yellow, Margin = new Thickness(0, 1, 0, 0) },
+                        new TextBlock { Text = Translations.tui_inventory_held_item, FontWeight = FontWeight.Bold, Foreground = Brushes.Yellow, Margin = new Thickness(0, 1, 0, 0) },
                         _cursorItemText,
-                        new TextBlock { Text = "[ Controls ]", FontWeight = FontWeight.Bold, Foreground = Brushes.Green, Margin = new Thickness(0, 1, 0, 0) },
+                        new TextBlock { Text = Translations.tui_inventory_controls, FontWeight = FontWeight.Bold, Foreground = Brushes.Green, Margin = new Thickness(0, 1, 0, 0) },
                         _helpText,
                     }
                 }
@@ -320,7 +313,7 @@ namespace MinecraftClient.Tui
             };
             offPanel.Children.Add(new TextBlock
             {
-                Text = "Off",
+                Text = Translations.tui_inventory_offhand,
                 Foreground = BrEquipLbl,
                 FontWeight = FontWeight.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -344,10 +337,10 @@ namespace MinecraftClient.Tui
                 equipGrid.Children.Add(btn);
             }
 
-            AddEquipSlot(0, 0, "Hd", 0);
-            AddEquipSlot(0, 2, "Bd", 1);
-            AddEquipSlot(1, 0, "Lg", 2);
-            AddEquipSlot(1, 2, "Ft", 3);
+            AddEquipSlot(0, 0, Translations.tui_inventory_equip_head, 0);
+            AddEquipSlot(0, 2, Translations.tui_inventory_equip_body, 1);
+            AddEquipSlot(1, 0, Translations.tui_inventory_equip_legs, 2);
+            AddEquipSlot(1, 2, Translations.tui_inventory_equip_feet, 3);
 
             row.Children.Add(equipGrid);
             row.Children.Add(new Border { Width = _topGap });
@@ -384,7 +377,7 @@ namespace MinecraftClient.Tui
             };
             craftOutPanel.Children.Add(new TextBlock
             {
-                Text = "Out",
+                Text = Translations.tui_inventory_output,
                 Foreground = BrEquipLbl,
                 FontWeight = FontWeight.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -641,7 +634,7 @@ namespace MinecraftClient.Tui
             }
             else
             {
-                _cursorItemText.Text = "(empty)";
+                _cursorItemText.Text = Translations.tui_inventory_cursor_empty;
                 _cursorItemText.Foreground = BrDim;
                 _heldItemFloater.IsVisible = false;
             }

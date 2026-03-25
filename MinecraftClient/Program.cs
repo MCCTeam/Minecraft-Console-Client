@@ -182,7 +182,7 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(string.Empty);
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_invaild_config, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                         if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
-                            ConsoleIO.WriteLineFormatted($"Use '{Config.Main.Advanced.InternalCmdChar.ToLogString()}quit' to exit Minecraft Console Client.");
+                            ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_quit_to_exit, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                         else
                             ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
                         command = ConsoleIO.ReadLine().Trim();
@@ -855,7 +855,7 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(string.Empty);
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_disconnected, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                         if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
-                            ConsoleIO.WriteLineFormatted($"Use '{Config.Main.Advanced.InternalCmdChar.ToLogString()}quit' to exit Minecraft Console Client.");
+                            ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_quit_to_exit, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                         else
                             ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
 

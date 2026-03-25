@@ -119,7 +119,7 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(cmd switch
             {
 #pragma warning disable format // @formatter:off
-                "open"           => "Open interactive TUI inventory viewer (TUI mode only)" + usageStr + "/inventory <id> open",
+                "open"           => Translations.cmd_inventory_help_open           + usageStr + "/inventory <id> open",
                 "list"           => Translations.cmd_inventory_help_list           + usageStr + "/inventory <player|container|<id>> list",
                 "close"          => Translations.cmd_inventory_help_close          + usageStr + "/inventory <player|container|<id>> close",
                 "click"          => Translations.cmd_inventory_help_click          + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle|shift|shiftright]\nDefault is left click",
@@ -417,34 +417,35 @@ namespace MinecraftClient.Commands
 
             if (ConsoleIO.Backend is not TuiConsoleBackend)
             {
-                handler.Log.Warn("Interactive TUI is only available in TUI console mode. Use '/inventory <id> list' instead.");
+                handler.Log.Warn(Translations.cmd_inventory_tui_only);
                 return r.SetAndReturn(CmdResult.Status.Fail);
             }
 
             if (InventoryTuiHost.IsRunning)
             {
-                handler.Log.Warn("TUI is already running.");
+                handler.Log.Warn(Translations.cmd_inventory_tui_already_running);
                 return r.SetAndReturn(CmdResult.Status.Fail);
             }
 
             var container = handler.GetInventory(inventoryId);
             if (container == null)
             {
-                handler.Log.Warn($"Inventory #{inventoryId} not found.");
-                return r.SetAndReturn(CmdResult.Status.Fail, $"Inventory #{inventoryId} not found");
+                string msg = string.Format(Translations.cmd_inventory_not_exist, inventoryId);
+                handler.Log.Warn(msg);
+                return r.SetAndReturn(CmdResult.Status.Fail, msg);
             }
 
-            handler.Log.Info($"Opening TUI for Inventory #{inventoryId}...");
+            handler.Log.Info(string.Format(Translations.cmd_inventory_tui_opening, inventoryId));
 
             bool success = InventoryTuiHost.Launch(handler, inventoryId);
             if (success)
             {
-                handler.Log.Info("Inventory dialog opened.");
+                handler.Log.Info(Translations.cmd_inventory_tui_opened);
                 return r.SetAndReturn(CmdResult.Status.Done);
             }
             else
             {
-                handler.Log.Warn("Failed to launch TUI.");
+                handler.Log.Warn(Translations.cmd_inventory_tui_launch_failed);
                 return r.SetAndReturn(CmdResult.Status.Fail);
             }
         }
