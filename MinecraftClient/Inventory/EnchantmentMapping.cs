@@ -239,7 +239,7 @@ namespace MinecraftClient.Inventory
         public static Enchantments GetEnchantmentById(int protocolVersion, short id)
         {
             if (protocolVersion < Protocol18Handler.MC_1_14_Version)
-                throw new Exception("Enchantments mappings are not implemented bellow 1.14");
+                throw new Exception("Enchantments mappings are not implemented below 1.14");
 
             var map = GetMapForProtocolVersion(protocolVersion);
 
@@ -391,7 +391,7 @@ namespace MinecraftClient.Inventory
                 >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => enchantmentMappings119,
                 >= Protocol18Handler.MC_1_20_6_Version and < Protocol18Handler.MC_1_21_11_Version => enchantmentMappings1206,
                 >= Protocol18Handler.MC_1_21_11_Version => enchantmentMappings12111,
-                _ => enchantmentMappings119
+                _ => throw new Exception("Enchantments mappings are not implemented below 1.14")
             };
         }
 
@@ -404,7 +404,7 @@ namespace MinecraftClient.Inventory
                 >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => reverseEnchantmentMappings119,
                 >= Protocol18Handler.MC_1_20_6_Version and < Protocol18Handler.MC_1_21_11_Version => reverseEnchantmentMappings1206,
                 >= Protocol18Handler.MC_1_21_11_Version => reverseEnchantmentMappings12111,
-                _ => reverseEnchantmentMappings119
+                _ => throw new Exception("Enchantments mappings are not implemented below 1.14")
             };
         }
 
