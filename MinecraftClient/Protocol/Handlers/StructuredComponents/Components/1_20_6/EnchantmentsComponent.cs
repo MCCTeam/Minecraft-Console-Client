@@ -20,7 +20,7 @@ public class EnchantmentsComponent(DataTypes dataTypes, ItemPalette itemPalette,
         {
             var registryId = DataTypes.ReadNextVarInt(data);
             var level = DataTypes.ReadNextVarInt(data);
-            Enchantments.Add(new Enchantment(EnchantmentMapping.GetEnchantmentByRegistryId1206(registryId), level));
+            Enchantments.Add(new Enchantment(EnchantmentMapping.GetEnchantmentByRegistryId1206(DataTypes.ProtocolVersion, registryId), level));
         }
 
         ShowTooltip = DataTypes.ReadNextBool(data);
@@ -32,7 +32,7 @@ public class EnchantmentsComponent(DataTypes dataTypes, ItemPalette itemPalette,
         data.AddRange(DataTypes.GetVarInt(Enchantments.Count));
         foreach (var enchantment in Enchantments)
         {
-            data.AddRange(DataTypes.GetVarInt(EnchantmentMapping.GetRegistryId1206ByEnchantment(enchantment.Type)));
+            data.AddRange(DataTypes.GetVarInt(EnchantmentMapping.GetRegistryId1206ByEnchantment(DataTypes.ProtocolVersion, enchantment.Type)));
             data.AddRange(DataTypes.GetVarInt(enchantment.Level));
         }
         data.AddRange(DataTypes.GetBool(ShowTooltip));

@@ -138,8 +138,8 @@ namespace MinecraftClient.Inventory
             { 38,   Enchantments.VanishingCurse }
         };
         
-        // 1.20.6+
-        private static Dictionary<short, Enchantments> enchantmentMappings = new()
+        // 1.20.6 - 1.21.10
+        private static Dictionary<short, Enchantments> enchantmentMappings1206 = new()
         {
             //id    type 
             { 0,    Enchantments.Protection },
@@ -185,6 +185,55 @@ namespace MinecraftClient.Inventory
             { 40,   Enchantments.Mending },
             { 41,   Enchantments.VanishingCurse }
         };
+
+        // 1.21.11+
+        private static Dictionary<short, Enchantments> enchantmentMappings12111 = new()
+        {
+            //id    type 
+            { 0,    Enchantments.Protection },
+            { 1,    Enchantments.FireProtection },
+            { 2,    Enchantments.FeatherFalling },
+            { 3,    Enchantments.BlastProtection },
+            { 4,    Enchantments.ProjectileProtection },
+            { 5,    Enchantments.Respiration },
+            { 6,    Enchantments.AquaAffinity },
+            { 7,    Enchantments.Thorns },
+            { 8,    Enchantments.DepthStrider },
+            { 9,    Enchantments.FrostWalker },
+            { 10,   Enchantments.BindingCurse },
+            { 11,   Enchantments.SoulSpeed },
+            { 12,   Enchantments.SwiftSneak },
+            { 13,   Enchantments.Sharpness },
+            { 14,   Enchantments.Smite },
+            { 15,   Enchantments.BaneOfArthropods },
+            { 16,   Enchantments.Knockback },
+            { 17,   Enchantments.FireAspect },
+            { 18,   Enchantments.Looting },
+            { 19,   Enchantments.Sweeping },
+            { 20,   Enchantments.Efficiency },
+            { 21,   Enchantments.SilkTouch },
+            { 22,   Enchantments.Unbreaking },
+            { 23,   Enchantments.Fortune },
+            { 24,   Enchantments.Power },
+            { 25,   Enchantments.Punch },
+            { 26,   Enchantments.Flame },
+            { 27,   Enchantments.Infinity },
+            { 28,   Enchantments.LuckOfTheSea },
+            { 29,   Enchantments.Lure },
+            { 30,   Enchantments.Loyalty },
+            { 31,   Enchantments.Impaling },
+            { 32,   Enchantments.Riptide },
+            { 33,   Enchantments.Channeling },
+            { 34,   Enchantments.Multishot },
+            { 35,   Enchantments.QuickCharge },
+            { 36,   Enchantments.Piercing },
+            { 37,   Enchantments.Density },
+            { 38,   Enchantments.Breach },
+            { 39,   Enchantments.WindBurst },
+            { 40,   Enchantments.Lunge },
+            { 41,   Enchantments.Mending },
+            { 42,   Enchantments.VanishingCurse }
+        };
 #pragma warning restore format // @formatter:on
 
         public static Enchantments GetEnchantmentById(int protocolVersion, short id)
@@ -192,13 +241,7 @@ namespace MinecraftClient.Inventory
             if (protocolVersion < Protocol18Handler.MC_1_14_Version)
                 throw new Exception("Enchantments mappings are not implemented bellow 1.14");
 
-            var map = protocolVersion switch
-            {
-                >= Protocol18Handler.MC_1_14_Version and < Protocol18Handler.MC_1_16_Version => enchantmentMappings114,
-                >= Protocol18Handler.MC_1_16_Version and < Protocol18Handler.MC_1_19_Version => enchantmentMappings116,
-                >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_21_Version => enchantmentMappings119,
-                _ => enchantmentMappings
-            };
+            var map = GetMapForProtocolVersion(protocolVersion);
 
             if (!map.TryGetValue(id, out var value))
                 throw new Exception($"Got an Unknown Enchantment ID {id}, please update the Mappings!");
@@ -206,7 +249,8 @@ namespace MinecraftClient.Inventory
             return value;
         }
 
-        private static Dictionary<Enchantments, short>? reverseEnchantmentMappings;
+        private static Dictionary<Enchantments, short>? reverseDynamicEnchantmentMappings;
+        private static readonly Dictionary<int, Dictionary<Enchantments, short>> reverseFallbackEnchantmentMappings = new();
         private static Dictionary<int, Enchantments>? dynamicEnchantmentIdMap;
 
         private static readonly Dictionary<string, Enchantments> nameToEnchantment = new()
@@ -242,6 +286,7 @@ namespace MinecraftClient.Inventory
             { "luck_of_the_sea", Enchantments.LuckOfTheSea },
             { "lure", Enchantments.Lure },
             { "loyalty", Enchantments.Loyalty },
+            { "lunge", Enchantments.Lunge },
             { "impaling", Enchantments.Impaling },
             { "riptide", Enchantments.Riptide },
             { "channeling", Enchantments.Channeling },
@@ -268,35 +313,34 @@ namespace MinecraftClient.Inventory
                 if (nameToEnchantment.TryGetValue(name, out var enchantment))
                     dynamicEnchantmentIdMap[kvp.Key] = enchantment;
             }
-            reverseEnchantmentMappings = null;
+            reverseDynamicEnchantmentMappings = null;
         }
 
-        public static Enchantments GetEnchantmentByRegistryId1206(int id)
+        public static Enchantments GetEnchantmentByRegistryId1206(int protocolVersion, int id)
         {
             if (dynamicEnchantmentIdMap is not null && dynamicEnchantmentIdMap.TryGetValue(id, out var dynValue))
                 return dynValue;
-            if (enchantmentMappings.TryGetValue((short)id, out var value))
+            if (GetMapForProtocolVersion(protocolVersion).TryGetValue((short)id, out var value))
                 return value;
             return (Enchantments)(-1);
         }
 
-        public static int GetRegistryId1206ByEnchantment(Enchantments enchantment)
+        public static int GetRegistryId1206ByEnchantment(int protocolVersion, Enchantments enchantment)
         {
-            if (reverseEnchantmentMappings is null)
+            if (dynamicEnchantmentIdMap is not null)
             {
-                reverseEnchantmentMappings = new();
-                if (dynamicEnchantmentIdMap is not null)
+                if (reverseDynamicEnchantmentMappings is null)
                 {
+                    reverseDynamicEnchantmentMappings = new();
                     foreach (var kvp in dynamicEnchantmentIdMap)
-                        reverseEnchantmentMappings[kvp.Value] = (short)kvp.Key;
+                        reverseDynamicEnchantmentMappings[kvp.Value] = (short)kvp.Key;
                 }
-                else
-                {
-                    foreach (var kvp in enchantmentMappings)
-                        reverseEnchantmentMappings[kvp.Value] = kvp.Key;
-                }
+
+                return reverseDynamicEnchantmentMappings.TryGetValue(enchantment, out var dynamicId) ? dynamicId : -1;
             }
-            return reverseEnchantmentMappings.TryGetValue(enchantment, out var id) ? id : -1;
+
+            var reverseMap = GetReverseFallbackMapForProtocolVersion(protocolVersion);
+            return reverseMap.TryGetValue(enchantment, out var id) ? id : -1;
         }
 
         public static string GetEnchantmentName(Enchantments enchantment)
@@ -332,6 +376,31 @@ namespace MinecraftClient.Inventory
             }
 
             return result;
+        }
+
+        private static Dictionary<short, Enchantments> GetMapForProtocolVersion(int protocolVersion)
+        {
+            return protocolVersion switch
+            {
+                >= Protocol18Handler.MC_1_14_Version and < Protocol18Handler.MC_1_16_Version => enchantmentMappings114,
+                >= Protocol18Handler.MC_1_16_Version and < Protocol18Handler.MC_1_19_Version => enchantmentMappings116,
+                >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => enchantmentMappings119,
+                >= Protocol18Handler.MC_1_21_11_Version => enchantmentMappings12111,
+                _ => enchantmentMappings1206
+            };
+        }
+
+        private static Dictionary<Enchantments, short> GetReverseFallbackMapForProtocolVersion(int protocolVersion)
+        {
+            if (reverseFallbackEnchantmentMappings.TryGetValue(protocolVersion, out var reverseMap))
+                return reverseMap;
+
+            reverseMap = new();
+            foreach (var kvp in GetMapForProtocolVersion(protocolVersion))
+                reverseMap[kvp.Value] = kvp.Key;
+
+            reverseFallbackEnchantmentMappings[protocolVersion] = reverseMap;
+            return reverseMap;
         }
     }
 }

@@ -24,6 +24,7 @@ namespace MinecraftClient.Inventory
         Looting,
         LuckOfTheSea,
         Loyalty,
+        Lunge,
         Lure,
         Mending,
         Multishot,
