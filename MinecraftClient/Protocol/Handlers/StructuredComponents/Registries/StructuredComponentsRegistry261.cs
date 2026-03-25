@@ -28,8 +28,8 @@ public class StructuredComponentsRegistry261 : StructuredComponentRegistry
         RegisterComponent<LoreNameComponent1206>(11, "minecraft:lore");
         RegisterComponent<RarityComponent>(12, "minecraft:rarity");
         RegisterComponent<EnchantmentsComponent1215>(13, "minecraft:enchantments");
-        RegisterComponent<CanPlaceOnComponent>(14, "minecraft:can_place_on");
-        RegisterComponent<CanBreakComponent>(15, "minecraft:can_break");
+        RegisterComponent<CanPlaceOnComponent1215>(14, "minecraft:can_place_on");
+        RegisterComponent<CanBreakComponent1215>(15, "minecraft:can_break");
         RegisterComponent<AttributeModifiersComponent>(16, "minecraft:attribute_modifiers");
         RegisterComponent<CustomModelDataComponent>(17, "minecraft:custom_model_data");
         RegisterComponent<TooltipDisplayComponent>(18, "minecraft:tooltip_display");
@@ -58,7 +58,7 @@ public class StructuredComponentsRegistry261 : StructuredComponentRegistry
         RegisterComponent<VarIntComponent>(41, "minecraft:additional_trade_cost");     // New in 26.1
         RegisterComponent<StoredEnchantmentsComponent1215>(42, "minecraft:stored_enchantments");
         RegisterComponent<VarIntComponent>(43, "minecraft:dye");                       // New in 26.1
-        RegisterComponent<DyeColorComponent>(44, "minecraft:dyed_color");
+        RegisterComponent<DyeColorComponent1215>(44, "minecraft:dyed_color");
         RegisterComponent<MapColorComponent>(45, "minecraft:map_color");
         RegisterComponent<MapIdComponent>(46, "minecraft:map_id");
         RegisterComponent<MapDecorationsComponent>(47, "minecraft:map_decorations");
@@ -70,7 +70,7 @@ public class StructuredComponentsRegistry261 : StructuredComponentRegistry
         RegisterComponent<SuspiciousStewEffectsComponent>(53, "minecraft:suspicious_stew_effects");
         RegisterComponent<WritableBlookContentComponent>(54, "minecraft:writable_book_content");
         RegisterComponent<WrittenBlookContentComponent>(55, "minecraft:written_book_content");
-        RegisterComponent<TrimComponent>(56, "minecraft:trim");
+        RegisterComponent<TrimComponent1215>(56, "minecraft:trim");
         RegisterComponent<DebugStickStateComponent>(57, "minecraft:debug_stick_state");
         RegisterComponent<EntityDataComponent>(58, "minecraft:entity_data");
         RegisterComponent<BucketEntityDataComponent>(59, "minecraft:bucket_entity_data");

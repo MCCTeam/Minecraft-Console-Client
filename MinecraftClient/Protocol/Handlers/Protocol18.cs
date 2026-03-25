@@ -2454,7 +2454,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 var bitsData = dataTypes.ReadNextByte(packetData);
                                 //  Top bit set if another entry follows, and otherwise unset if this is the last item in the array
                                 hasNext = bitsData >> 7 == 1;
-                                var slot2 = bitsData >> 1;
+                                var slot2 = bitsData & 0x7F;
                                 var item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                 handler.OnEntityEquipment(entityId, slot2, item);
                             } while (hasNext);
