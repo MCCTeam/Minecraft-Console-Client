@@ -250,7 +250,11 @@ namespace MinecraftClient.Inventory
         }
 
         private static Dictionary<Enchantments, short>? reverseDynamicEnchantmentMappings;
-        private static readonly Dictionary<int, Dictionary<Enchantments, short>> reverseFallbackEnchantmentMappings = new();
+        private static readonly Dictionary<Enchantments, short> reverseEnchantmentMappings114 = CreateReverseMap(enchantmentMappings114);
+        private static readonly Dictionary<Enchantments, short> reverseEnchantmentMappings116 = CreateReverseMap(enchantmentMappings116);
+        private static readonly Dictionary<Enchantments, short> reverseEnchantmentMappings119 = CreateReverseMap(enchantmentMappings119);
+        private static readonly Dictionary<Enchantments, short> reverseEnchantmentMappings1206 = CreateReverseMap(enchantmentMappings1206);
+        private static readonly Dictionary<Enchantments, short> reverseEnchantmentMappings12111 = CreateReverseMap(enchantmentMappings12111);
         private static Dictionary<int, Enchantments>? dynamicEnchantmentIdMap;
 
         private static readonly Dictionary<string, Enchantments> nameToEnchantment = new()
@@ -339,7 +343,7 @@ namespace MinecraftClient.Inventory
                 return reverseDynamicEnchantmentMappings.TryGetValue(enchantment, out var dynamicId) ? dynamicId : -1;
             }
 
-            var reverseMap = GetReverseFallbackMapForProtocolVersion(protocolVersion);
+            var reverseMap = GetReverseMapForProtocolVersion(protocolVersion);
             return reverseMap.TryGetValue(enchantment, out var id) ? id : -1;
         }
 
@@ -390,16 +394,24 @@ namespace MinecraftClient.Inventory
             };
         }
 
-        private static Dictionary<Enchantments, short> GetReverseFallbackMapForProtocolVersion(int protocolVersion)
+        private static Dictionary<Enchantments, short> GetReverseMapForProtocolVersion(int protocolVersion)
         {
-            if (reverseFallbackEnchantmentMappings.TryGetValue(protocolVersion, out var reverseMap))
-                return reverseMap;
+            return protocolVersion switch
+            {
+                >= Protocol18Handler.MC_1_14_Version and < Protocol18Handler.MC_1_16_Version => reverseEnchantmentMappings114,
+                >= Protocol18Handler.MC_1_16_Version and < Protocol18Handler.MC_1_19_Version => reverseEnchantmentMappings116,
+                >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => reverseEnchantmentMappings119,
+                >= Protocol18Handler.MC_1_21_11_Version => reverseEnchantmentMappings12111,
+                _ => reverseEnchantmentMappings1206
+            };
+        }
 
-            reverseMap = new();
-            foreach (var kvp in GetMapForProtocolVersion(protocolVersion))
+        private static Dictionary<Enchantments, short> CreateReverseMap(Dictionary<short, Enchantments> map)
+        {
+            Dictionary<Enchantments, short> reverseMap = new();
+            foreach (var kvp in map)
                 reverseMap[kvp.Value] = kvp.Key;
 
-            reverseFallbackEnchantmentMappings[protocolVersion] = reverseMap;
             return reverseMap;
         }
     }
