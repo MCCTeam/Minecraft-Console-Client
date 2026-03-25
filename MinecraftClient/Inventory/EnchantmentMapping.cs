@@ -389,8 +389,9 @@ namespace MinecraftClient.Inventory
                 >= Protocol18Handler.MC_1_14_Version and < Protocol18Handler.MC_1_16_Version => enchantmentMappings114,
                 >= Protocol18Handler.MC_1_16_Version and < Protocol18Handler.MC_1_19_Version => enchantmentMappings116,
                 >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => enchantmentMappings119,
+                >= Protocol18Handler.MC_1_20_6_Version and < Protocol18Handler.MC_1_21_11_Version => enchantmentMappings1206,
                 >= Protocol18Handler.MC_1_21_11_Version => enchantmentMappings12111,
-                _ => enchantmentMappings1206
+                _ => enchantmentMappings119
             };
         }
 
@@ -401,8 +402,9 @@ namespace MinecraftClient.Inventory
                 >= Protocol18Handler.MC_1_14_Version and < Protocol18Handler.MC_1_16_Version => reverseEnchantmentMappings114,
                 >= Protocol18Handler.MC_1_16_Version and < Protocol18Handler.MC_1_19_Version => reverseEnchantmentMappings116,
                 >= Protocol18Handler.MC_1_19_Version and < Protocol18Handler.MC_1_20_6_Version => reverseEnchantmentMappings119,
+                >= Protocol18Handler.MC_1_20_6_Version and < Protocol18Handler.MC_1_21_11_Version => reverseEnchantmentMappings1206,
                 >= Protocol18Handler.MC_1_21_11_Version => reverseEnchantmentMappings12111,
-                _ => reverseEnchantmentMappings1206
+                _ => reverseEnchantmentMappings119
             };
         }
 
