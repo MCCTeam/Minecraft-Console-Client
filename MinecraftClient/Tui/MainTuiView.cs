@@ -7,18 +7,22 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace MinecraftClient.Tui
 {
     public class MainTuiView : UserControl
     {
         private const int MaxLogLines = 5000;
+        private const int CtrlCDoublePressMsec = 1500;
 
         private readonly ObservableCollection<string> _logLines = new();
+        private readonly ObservableCollection<Control> _logControls = new();
         private readonly ItemsControl _logItemsControl;
         private readonly ScrollViewer _logScrollViewer;
         private readonly TextBox _commandInput;
         private bool _autoScroll = true;
+        private bool _programmaticScroll;
         private readonly ObservableCollection<string> _commandHistory = new();
         private int _historyIndex = -1;
 
@@ -27,23 +31,28 @@ namespace MinecraftClient.Tui
         private Control? _overlayContent;
         private Action? _overlayCloseCallback;
 
+        private readonly TextBlock _statusBar;
+        private readonly Border _notificationBorder;
+        private readonly TextBlock _notificationText;
+        private long _lastCtrlCTicks;
+
         public MainTuiView()
         {
             Background = Brushes.Black;
 
+            _statusBar = new TextBlock
+            {
+                Foreground = Brushes.Gray,
+                Background = Brushes.Black,
+                Padding = new Thickness(0),
+                Margin = new Thickness(0),
+                IsVisible = false,
+            };
+
             _logItemsControl = new ItemsControl
             {
-                ItemsSource = _logLines,
+                ItemsSource = _logControls,
                 Focusable = false,
-                ItemTemplate = new FuncDataTemplate<string>((s, _) =>
-                    new TextBlock
-                    {
-                        Text = s,
-                        Foreground = Brushes.White,
-                        Padding = new Thickness(0),
-                        Margin = new Thickness(0),
-                        TextWrapping = TextWrapping.NoWrap,
-                    }),
             };
 
             _logScrollViewer = new ScrollViewer
@@ -59,7 +68,7 @@ namespace MinecraftClient.Tui
             _logScrollViewer.ScrollChanged += OnLogScrollChanged;
             _logScrollViewer.PointerPressed += (_, _) =>
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => _commandInput.Focus());
+                Dispatcher.UIThread.Post(() => _commandInput.Focus());
             };
 
             _commandInput = new TextBox
@@ -94,11 +103,28 @@ namespace MinecraftClient.Tui
                 }
             };
 
+            _notificationText = new TextBlock
+            {
+                Foreground = Brushes.Yellow,
+                Padding = new Thickness(1, 0),
+            };
+            _notificationBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(60, 50, 20)),
+                BorderBrush = Brushes.Yellow,
+                BorderThickness = new Thickness(1),
+                Child = _notificationText,
+                IsVisible = false,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
             _mainContent = new DockPanel
             {
                 Background = Brushes.Black,
                 Children =
                 {
+                    SetDock(_statusBar, Dock.Top),
                     SetDock(inputRow, Dock.Bottom),
                     _logScrollViewer
                 }
@@ -107,10 +133,12 @@ namespace MinecraftClient.Tui
             _rootPanel = new Panel
             {
                 Background = Brushes.Black,
-                Children = { _mainContent }
+                Children = { _mainContent, _notificationBorder }
             };
 
             Content = _rootPanel;
+
+            StartStatusBarTimer();
         }
 
         private static Control SetDock(Control control, Dock dock)
@@ -119,28 +147,68 @@ namespace MinecraftClient.Tui
             return control;
         }
 
+        #region Log output
+
         public void AppendLogLine(string text)
         {
             _logLines.Add(text);
 
-            while (_logLines.Count > MaxLogLines)
-                _logLines.RemoveAt(0);
+            var tb = new TextBlock
+            {
+                Text = text,
+                Foreground = Brushes.White,
+                Padding = new Thickness(0),
+                Margin = new Thickness(0),
+                TextWrapping = TextWrapping.Wrap,
+            };
+            _logControls.Add(tb);
+
+            TrimLog();
 
             if (_autoScroll)
-                ScrollToEnd();
+                ScheduleScrollToEnd();
         }
 
-        private void ScrollToEnd()
+        public void AppendFormattedLogLine(string text)
         {
-            _logScrollViewer.Offset = new Vector(0, _logScrollViewer.Extent.Height);
+            _logLines.Add(text);
+
+            var tb = McColorParser.CreateColoredTextBlock(text, TextWrapping.Wrap);
+            _logControls.Add(tb);
+
+            TrimLog();
+
+            if (_autoScroll)
+                ScheduleScrollToEnd();
+        }
+
+        private void TrimLog()
+        {
+            while (_logLines.Count > MaxLogLines)
+            {
+                _logLines.RemoveAt(0);
+                _logControls.RemoveAt(0);
+            }
+        }
+
+        private void ScheduleScrollToEnd()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _programmaticScroll = true;
+                var sv = _logScrollViewer;
+                sv.Offset = new Vector(0, sv.Extent.Height);
+                _programmaticScroll = false;
+            }, DispatcherPriority.Background);
         }
 
         public string LatestLogLine => _logLines.Count > 0 ? _logLines[^1] : "";
 
-        /// <summary>
-        /// Returns the backing log collection so overlays can show live chat.
-        /// </summary>
         public ObservableCollection<string> GetRecentLogLines(int _) => _logLines;
+
+        #endregion
+
+        #region Input
 
         public void ClearInput()
         {
@@ -149,6 +217,13 @@ namespace MinecraftClient.Tui
 
         private void OnCommandKeyDown(object? sender, KeyEventArgs e)
         {
+            if (e.Key == Key.C && (e.KeyModifiers & KeyModifiers.Control) != 0)
+            {
+                HandleCtrlC();
+                e.Handled = true;
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.Enter:
@@ -197,9 +272,9 @@ namespace MinecraftClient.Tui
             _historyIndex = _commandHistory.Count;
             _commandInput.Text = string.Empty;
 
-            AppendLogLine($"> {command}");
-
             _autoScroll = true;
+
+            AppendLogLine($"> {command}");
 
             TuiConsoleBackend.Instance?.OnCommandSubmitted(command);
         }
@@ -222,6 +297,62 @@ namespace MinecraftClient.Tui
             _commandInput.CaretIndex = _commandInput.Text?.Length ?? 0;
         }
 
+        #endregion
+
+        #region Ctrl+C
+
+        private void HandleCtrlC()
+        {
+            long now = Environment.TickCount64;
+            long elapsed = now - _lastCtrlCTicks;
+
+            if (_lastCtrlCTicks > 0 && elapsed < CtrlCDoublePressMsec)
+            {
+                HideNotification();
+                TuiConsoleBackend.Instance?.Shutdown();
+                return;
+            }
+
+            _lastCtrlCTicks = now;
+
+            string inputText = _commandInput.Text?.Trim() ?? "";
+            if (inputText.Length > 0)
+            {
+                _commandInput.Text = string.Empty;
+                ShowNotification("Input cleared. Press Ctrl+C again to quit.", CtrlCDoublePressMsec);
+            }
+            else
+            {
+                ShowNotification("Press Ctrl+C again to quit MCC.", CtrlCDoublePressMsec);
+            }
+        }
+
+        private void ShowNotification(string message, int autoHideMs)
+        {
+            _notificationText.Text = message;
+            _notificationBorder.IsVisible = true;
+
+            var timer = new Avalonia.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(autoHideMs),
+            };
+            timer.Tick += (_, _) =>
+            {
+                timer.Stop();
+                HideNotification();
+            };
+            timer.Start();
+        }
+
+        private void HideNotification()
+        {
+            _notificationBorder.IsVisible = false;
+        }
+
+        #endregion
+
+        #region Scrolling
+
         private void ScrollLog(int delta)
         {
             var sv = _logScrollViewer;
@@ -234,9 +365,82 @@ namespace MinecraftClient.Tui
 
         private void OnLogScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
+            if (_programmaticScroll) return;
+
             var sv = _logScrollViewer;
             _autoScroll = sv.Offset.Y >= sv.Extent.Height - sv.Viewport.Height - 2;
         }
+
+        #endregion
+
+        #region Status Bar (Health / Food)
+
+        private void StartStatusBarTimer()
+        {
+            var timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1),
+            };
+            timer.Tick += (_, _) => UpdateStatusBar();
+            timer.Start();
+        }
+
+        private void UpdateStatusBar()
+        {
+            if (McClient.Instance is not McClient client)
+            {
+                _statusBar.IsVisible = false;
+                return;
+            }
+
+            int gamemode = client.GetGamemode();
+            if (gamemode != 0 && gamemode != 2)
+            {
+                _statusBar.IsVisible = false;
+                return;
+            }
+
+            float health = client.GetHealth();
+            int food = client.GetSaturation();
+
+            string hearts = RenderBar(health, 20f, "\u2764", "\u2661");
+            string drumsticks = RenderBar(food, 20f, "\u2689", "\u25cb");
+
+            _statusBar.Inlines?.Clear();
+            _statusBar.Inlines ??= new Avalonia.Controls.Documents.InlineCollection();
+
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(hearts + " ")
+            {
+                Foreground = new SolidColorBrush(Color.FromRgb(255, 85, 85)),
+            });
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run($"{health:F1}")
+            {
+                Foreground = new SolidColorBrush(Color.FromRgb(255, 120, 120)),
+            });
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run("  " + drumsticks + " ")
+            {
+                Foreground = new SolidColorBrush(Color.FromRgb(200, 170, 80)),
+            });
+            _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run($"{food}")
+            {
+                Foreground = new SolidColorBrush(Color.FromRgb(220, 190, 100)),
+            });
+
+            _statusBar.IsVisible = true;
+        }
+
+        private static string RenderBar(float value, float max, string filledChar, string emptyChar)
+        {
+            int total = 10;
+            int filled = (int)Math.Ceiling(value / max * total);
+            filled = Math.Clamp(filled, 0, total);
+            return new string('x', filled).Replace("x", filledChar)
+                 + new string('x', total - filled).Replace("x", emptyChar);
+        }
+
+        #endregion
+
+        #region Overlay
 
         public void ShowOverlay(Control content, Action? onClose = null)
         {
@@ -279,13 +483,15 @@ namespace MinecraftClient.Tui
             base.OnKeyDown(e);
         }
 
+        #endregion
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 _commandInput.Focus();
-            }, Avalonia.Threading.DispatcherPriority.Loaded);
+            }, DispatcherPriority.Loaded);
         }
     }
 }

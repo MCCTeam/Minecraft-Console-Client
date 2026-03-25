@@ -27,31 +27,34 @@ namespace MinecraftClient.Tui
         private static readonly IBrush BrHeldItemBg = new SolidColorBrush(Color.FromRgb(60, 50, 80));
         private static readonly IBrush BrHeldItemBorder = Brushes.Yellow;
 
-        private readonly int _slotW;
-        private readonly int _slotH;
-        private readonly int _nameMaxLen;
-        private readonly int _nameLines;
-        private readonly int _topGap;
-        private readonly int _termW;
+        private int _slotW;
+        private int _slotH;
+        private int _nameMaxLen;
+        private int _nameLines;
+        private int _topGap;
+        private int _termW;
 
         private readonly InventoryViewModel _vm;
-        private readonly TextBlock _titleText;
-        private readonly Border _infoDetailBorder;
-        private readonly TextBlock _infoDetailText;
-        private readonly TextBlock _cursorItemText;
-        private readonly TextBlock _helpText;
+        private TextBlock _titleText = null!;
+        private Border _infoDetailBorder = null!;
+        private TextBlock _infoDetailText = null!;
+        private TextBlock _cursorItemText = null!;
+        private TextBlock _helpText = null!;
 
-        private readonly TextBlock[] _hotbarIndicators = new TextBlock[9];
+        private TextBlock[] _hotbarIndicators = new TextBlock[9];
         private int _currentHotbarSlot = -1;
 
         private Border? _lastHoveredSlotBorder;
 
-        private readonly Canvas _overlayCanvas;
-        private readonly Border _heldItemFloater;
-        private readonly TextBlock _heldItemFloaterName;
-        private readonly TextBlock _heldItemFloaterCount;
+        private Canvas _overlayCanvas = null!;
+        private Border _heldItemFloater = null!;
+        private TextBlock _heldItemFloaterName = null!;
+        private TextBlock _heldItemFloaterCount = null!;
 
-        private readonly ScrollViewer _chatScrollViewer;
+        private ScrollViewer _chatScrollViewer = null!;
+        private ObservableCollection<string>? _chatLines;
+        private int _lastTermW;
+        private int _lastTermH;
 
         public InventoryMainView()
         {
@@ -62,6 +65,14 @@ namespace MinecraftClient.Tui
             _vm = new InventoryViewModel(handler, windowId);
             _currentHotbarSlot = handler.GetCurrentSlot();
 
+            _chatLines = TuiConsoleBackend.Instance?.GetView()?.GetRecentLogLines(50)
+                ?? new ObservableCollection<string>();
+
+            RebuildUi();
+        }
+
+        private void RebuildUi()
+        {
             int termH;
             try
             {
@@ -74,6 +85,9 @@ namespace MinecraftClient.Tui
                 termH = 40;
             }
 
+            _lastTermW = _termW;
+            _lastTermH = termH;
+
             int availW = _termW - 26;
             _slotW = Math.Clamp(availW / 9, 8, 18);
             _nameMaxLen = _slotW;
@@ -81,10 +95,12 @@ namespace MinecraftClient.Tui
             int topUsedW = _slotW * 4 + 8 + _slotW * 2 + 4 + _slotW;
             _topGap = Math.Max(2, (_slotW * 9 - topUsedW) / 2);
 
-            _slotH = Math.Max(2, (termH - 8) / 6);
+            _slotH = Math.Clamp((termH - 8) / 6, 2, 5);
             _nameLines = _slotH;
 
             _vm.SetSlotDisplayParams(_nameMaxLen, _nameLines);
+
+            _lastHoveredSlotBorder = null;
 
             _titleText = new TextBlock
             {
@@ -155,13 +171,15 @@ namespace MinecraftClient.Tui
             _overlayCanvas = new Canvas { IsHitTestVisible = false };
             _overlayCanvas.Children.Add(_heldItemFloater);
 
-            var chatLines = TuiConsoleBackend.Instance?.GetView()?.GetRecentLogLines(50)
-                ?? new ObservableCollection<string>();
+            var chatLines = _chatLines!;
             chatLines.CollectionChanged += (_, _) =>
             {
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    _chatScrollViewer.Offset = new Vector(0, _chatScrollViewer.Extent.Height),
-                    Avalonia.Threading.DispatcherPriority.Background);
+                {
+                    var sv = _chatScrollViewer;
+                    if (sv.Extent.Height > sv.Viewport.Height)
+                        sv.Offset = new Vector(0, sv.Extent.Height - sv.Viewport.Height);
+                }, Avalonia.Threading.DispatcherPriority.Background);
             };
             var chatItemsControl = new ItemsControl
             {
@@ -174,7 +192,7 @@ namespace MinecraftClient.Tui
                         Foreground = Brushes.Gray,
                         Padding = new Thickness(0),
                         Margin = new Thickness(0),
-                        TextWrapping = TextWrapping.NoWrap,
+                        TextWrapping = TextWrapping.Wrap,
                     }),
             };
             _chatScrollViewer = new ScrollViewer
@@ -182,22 +200,31 @@ namespace MinecraftClient.Tui
                 Content = chatItemsControl,
                 Background = Brushes.Black,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Focusable = false,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 Padding = new Thickness(0),
             };
+
+            _hotbarIndicators = new TextBlock[9];
 
             Content = BuildRootLayout();
             UpdateTitle();
             UpdateInfoPanel();
 
-            _chatScrollViewer.LayoutUpdated += OnChatLayoutUpdatedOnce;
+            _chatScrollToBottom = true;
+            _chatScrollViewer.ScrollChanged += OnChatScrollChanged;
         }
 
-        private void OnChatLayoutUpdatedOnce(object? sender, EventArgs e)
+        private bool _chatScrollToBottom = true;
+
+        private void OnChatScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
-            _chatScrollViewer.LayoutUpdated -= OnChatLayoutUpdatedOnce;
-            _chatScrollViewer.Offset = new Vector(0, _chatScrollViewer.Extent.Height);
+            if (!_chatScrollToBottom) return;
+            var sv = _chatScrollViewer;
+            if (sv.Extent.Height > sv.Viewport.Height)
+            {
+                sv.Offset = new Vector(0, sv.Extent.Height - sv.Viewport.Height);
+                _chatScrollToBottom = false;
+            }
         }
 
         private Control BuildRootLayout()
@@ -345,11 +372,10 @@ namespace MinecraftClient.Tui
                 Text = "=>",
                 Foreground = Brushes.White,
                 FontWeight = FontWeight.Bold,
-                VerticalAlignment = VerticalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
                 Padding = new Thickness(1, 0),
             };
-            Grid.SetRow(arrowTb, 0); Grid.SetColumn(arrowTb, 2);
-            Grid.SetRowSpan(arrowTb, 2);
+            Grid.SetRow(arrowTb, 1); Grid.SetColumn(arrowTb, 2);
             craftGrid.Children.Add(arrowTb);
 
             var craftOutPanel = new StackPanel
@@ -692,6 +718,35 @@ namespace MinecraftClient.Tui
         {
             base.OnAttachedToVisualTree(e);
             Focusable = true;
+            Focus();
+            AddHandler(KeyDownEvent, OnTunnelKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+            SizeChanged += OnViewSizeChanged;
+        }
+
+        private void OnTunnelKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                CloseInventory();
+                e.Handled = true;
+            }
+        }
+
+        private void OnViewSizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            int newW, newH;
+            try
+            {
+                newW = System.Console.WindowWidth;
+                newH = System.Console.WindowHeight;
+            }
+            catch { return; }
+
+            if (newW == _lastTermW && newH == _lastTermH) return;
+
+            _vm.RefreshFromContainer();
+            _currentHotbarSlot = _vm.Handler.GetCurrentSlot();
+            RebuildUi();
             Focus();
         }
 

@@ -34,6 +34,8 @@ namespace MinecraftClient.Tui
         {
             Instance = this;
 
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => RestoreTerminalState();
+
             new Thread(() =>
             {
                 Thread.Sleep(500);
@@ -56,8 +58,13 @@ namespace MinecraftClient.Tui
             }
         }
 
+        private static volatile bool _terminalRestored;
+
         private static void RestoreTerminalState()
         {
+            if (_terminalRestored) return;
+            _terminalRestored = true;
+
             try
             {
                 System.Console.Write("\x1b[?1000l"); // disable X11 mouse
@@ -72,6 +79,7 @@ namespace MinecraftClient.Tui
                 System.Console.Write("\x1b[?25h");   // show cursor
                 System.Console.Write("\x1b[?7h");    // re-enable line wrap
                 System.Console.Write("\x1b[0m");     // reset attributes
+                System.Console.Write("\x1b[2J");     // clear entire screen
                 System.Console.Write("\x1b[H");      // cursor to home
                 System.Console.Out.Flush();
             }
@@ -87,7 +95,7 @@ namespace MinecraftClient.Tui
                         Arguments = "sane",
                         UseShellExecute = false,
                     });
-                    proc?.WaitForExit(2000);
+                    proc?.WaitForExit(500);
                 }
                 catch { }
             }
@@ -133,7 +141,17 @@ namespace MinecraftClient.Tui
 
         public void WriteLineFormatted(string text)
         {
-            WriteLine(Scripting.ChatBot.GetVerbatim(text));
+            var view = _view;
+            if (view == null)
+            {
+                System.Console.WriteLine(Scripting.ChatBot.GetVerbatim(text));
+                return;
+            }
+
+            if (Dispatcher.UIThread.CheckAccess())
+                view.AppendFormattedLogLine(text);
+            else
+                Dispatcher.UIThread.Post(() => view.AppendFormattedLogLine(text));
         }
 
         public void BeginReadThread()
@@ -168,6 +186,12 @@ namespace MinecraftClient.Tui
 
         public string RequestImmediateInput()
         {
+            if (_shutdownRequested)
+            {
+                Thread.Sleep(Timeout.Infinite);
+                return string.Empty;
+            }
+
             var mre = new ManualResetEventSlim(false);
             string? result = null;
 
@@ -208,13 +232,28 @@ namespace MinecraftClient.Tui
 
         public void Shutdown()
         {
+            _shutdownRequested = true;
+            RestoreTerminalState();
+
             var lifetime = Application.Current?.ApplicationLifetime
                 as Avalonia.Controls.ApplicationLifetimes.IControlledApplicationLifetime;
-            if (Dispatcher.UIThread.CheckAccess())
-                lifetime?.Shutdown();
-            else
-                Dispatcher.UIThread.Post(() => lifetime?.Shutdown());
+
+            if (lifetime != null)
+            {
+                if (Dispatcher.UIThread.CheckAccess())
+                    lifetime.Shutdown();
+                else
+                    Dispatcher.UIThread.Post(() => lifetime.Shutdown());
+            }
+
+            new Thread(() =>
+            {
+                Thread.Sleep(500);
+                Environment.Exit(0);
+            }) { Name = "TUI-Exit-Guard", IsBackground = true }.Start();
         }
+
+        private volatile bool _shutdownRequested;
 
         /// <summary>
         /// Called from the TUI view when user presses Enter in the command input.
