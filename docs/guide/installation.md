@@ -47,9 +47,9 @@ If you want to modify the code and you are new to C# or programming in general, 
 Install [Git](https://www.git-scm.com/)
 
 1. Make a new folder where you want to keep the source code
-1. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
-1. Click on `Git Bash Here` in the context menu
-1. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
+2. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
+3. Click on `Git Bash Here` in the context menu
+4. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
@@ -62,41 +62,41 @@ git submodule update --init --recursive
 ```
 
 5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
-1. Open up the new cloned folder
+6. Open up the new cloned folder
 
 #### Download translation resources (optional)
 
-1. Visit [MCC project's homepage on Crowdin](https://crowdin.com/project/minecraft-console-client).
-1. You will need to log in to your Crowdin account in order to download.
-1. Click on the language you want to download the translation for.
-1. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
-1. Click the button `•••` at the end of the line.
-1. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
-1. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
-1. Click the button `•••` at the end of the line.
-1. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
-1. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
-1. Click the button `•••` at the end of the line.
-1. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
-1. If you need to download a translation in another language, go to step 3 to continue.
+01. Visit [MCC project's homepage on Crowdin](https://crowdin.com/project/minecraft-console-client).
+02. You will need to log in to your Crowdin account in order to download.
+03. Click on the language you want to download the translation for.
+04. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
+05. Click the button `•••` at the end of the line.
+06. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
+07. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
+08. Click the button `•••` at the end of the line.
+09. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
+10. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
+11. Click the button `•••` at the end of the line.
+12. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
+13. If you need to download a translation in another language, go to step 3 to continue.
 
 #### Building using the Visual Studio
 
 1. Open up the `MinecraftClient.sln` via Visual Studio
-1. Right click on `MinecraftClient` solution in the `Solution Explorer`
-1. Click on `Properties`
-1. Open up the `Build` tab and select configuration `Release`
-1. Press `CTRL + S` and close the file
-1. Right click on `MinecraftClient` solution in the `Solution Explorer`
-1. Click `Build`
+2. Right click on `MinecraftClient` solution in the `Solution Explorer`
+3. Click on `Properties`
+4. Open up the `Build` tab and select configuration `Release`
+5. Press `CTRL + S` and close the file
+6. Right click on `MinecraftClient` solution in the `Solution Explorer`
+7. Click `Build`
 
 If the build succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
 
 #### Building using .NET manually without Visual Studio
 
 1. Open the `Minecraft-Console-Client` folder you've cloned or downloaded
-1. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
-1. Install the .NET 10 SDK if you do not already have it. The easiest current option on Windows is:
+2. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
+3. Install the .NET 10 SDK if you do not already have it. The easiest current option on Windows is:
 
 ```powershell
 winget install Microsoft.DotNet.SDK.10
@@ -152,7 +152,7 @@ Requirements:
 #### Cloning using Git
 
 1. Open up a terminal emulator and navigate to the folder where you will store the MCC
-1. Recursively clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
+2. Recursively clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
@@ -160,7 +160,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 
 3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
 
-1. Install the .NET 10 SDK.
+4. Install the .NET 10 SDK.
 
    - On Ubuntu 24.04 LTS, use the built-in Ubuntu package feeds:
 
@@ -171,15 +171,15 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 
    - On macOS, the normal path is to use the official installer from the [.NET download page](https://dotnet.microsoft.com/en-us/download). Pick `Arm64` for Apple Silicon and `x64` for Intel Macs.
 
-1. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
+5. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
 
-1. Run the following command for a normal local build:
+6. Run the following command for a normal local build:
 
    ```bash
    dotnet build MinecraftClient.sln -c Release
    ```
 
-1. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
+7. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
 
    - On Linux:
 
@@ -247,7 +247,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 2. Navigate to `Minecraft-Console-Client/Docker`
-1. Build the image using the following command
+3. Build the image using the following command
 
 ```bash
 docker build -t minecraft-console-client:latest .
@@ -370,8 +370,8 @@ We use `proot-distro`, an official Termux utility, to install Ubuntu. It will in
 Open Termux and run the following commands one at a time, in order:
 
 1. `pkg update`
-1. `pkg upgrade`
-1. `pkg install proot-distro`
+2. `pkg upgrade`
+3. `pkg install proot-distro`
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
@@ -554,9 +554,9 @@ Here is a [YouTube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
    </div>
 
-1. `ssh` and `ssh-keygen` commands (on Windows they are available with Git Bash; on macOS and Linux they should be available by default. If not, install them first.)
+2. `ssh` and `ssh-keygen` commands (on Windows they are available with Git Bash; on macOS and Linux they should be available by default. If not, install them first.)
 
-1. Basic knowledge of Linux shell commands, terminal emulator usage, SSH and Nano editor.
+3. Basic knowledge of Linux shell commands, terminal emulator usage, SSH and Nano editor.
 
    If you already know this, feel free to skip.
 

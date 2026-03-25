@@ -615,12 +615,12 @@ The important rule is simple:
 The usual order is:
 
 1. `tools/decompile.sh --version <ver>`
-1. generate server reports from `server.jar`
-1. run `tools/diff_registries.py`
-1. regenerate the palettes that actually changed
-1. update version routing and packet handling
-1. build MCC
-1. test against the real target version
+2. generate server reports from `server.jar`
+3. run `tools/diff_registries.py`
+4. regenerate the palettes that actually changed
+5. update version routing and packet handling
+6. build MCC
+7. test against the real target version
 
 That is exactly the sort of work `mcc-version-adaptation` is meant to guide.
 
@@ -663,11 +663,11 @@ Use skills:
 Typical flow:
 
 1. Decide whether this should be a standalone `/script` bot or a built-in bot.
-1. Use the authoring skill's references and templates.
-1. Build MCC.
-1. Start a local server and join it.
-1. Test the bot behavior through live commands, chat, or event-driven actions.
-1. Make sure cleanup paths such as `OnUnload()` are correct.
+2. Use the authoring skill's references and templates.
+3. Build MCC.
+4. Start a local server and join it.
+5. Test the bot behavior through live commands, chat, or event-driven actions.
+6. Make sure cleanup paths such as `OnUnload()` are correct.
 
 For standalone script work, the skill defaults to `/script` unless built-in repo wiring is explicitly needed.
 
@@ -712,6 +712,6 @@ Use skills:
 Typical flow:
 
 1. Re-read the relevant skill files and repo tools.
-1. Update the guide so the written process matches the real process.
-1. Keep the instructions concrete enough that another contributor can follow them without guessing.
-1. If the workflow itself changed, update the relevant skill too instead of leaving the docs ahead of the automation.
+2. Update the guide so the written process matches the real process.
+3. Keep the instructions concrete enough that another contributor can follow them without guessing.
+4. If the workflow itself changed, update the relevant skill too instead of leaving the docs ahead of the automation.

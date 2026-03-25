@@ -11,18 +11,18 @@ You load it as a standalone script with `/script ChatBots/WebSocketBot.cs`.
 ## Quick Start
 
 1. Copy `config/ChatBots/WebSocketBot.cs` into your MCC `config/ChatBots/` folder (it ships in the repo under that path).
-1. Open the file and edit the line near the top:
+2. Open the file and edit the line near the top:
    ```csharp
    MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "CHANGE_THIS_PASSWORD"));
    ```
    - Replace `127.0.0.1` with the IP to bind (use `+` or `*` for all interfaces).
    - Replace `8043` with your preferred port.
    - Replace `CHANGE_THIS_PASSWORD` with a strong, unique password.
-1. Optionally enable debug logging:
+3. Optionally enable debug logging:
    ```csharp
    MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "mypassword", debugMode: true));
    ```
-1. In MCC, run: `/script ChatBots/WebSocketBot.cs`
+4. In MCC, run: `/script ChatBots/WebSocketBot.cs`
 
 The bot starts a WebSocket server. Connect to `ws://127.0.0.1:8043/` with any WebSocket client.
 

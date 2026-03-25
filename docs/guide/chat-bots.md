@@ -955,9 +955,9 @@ redirectFrom:
   **Steps for using this bot (with the default setting)**
 
   1. Hold a fishing rod and aim towards the sea before login with MCC
-  1. Make sure `AutoFish` is `enabled` in config file
-  1. Login with MCC
-  1. You will be able to see the log "Fishing will start in 3.0 second(s).".
+  2. Make sure `AutoFish` is `enabled` in config file
+  3. Login with MCC
+  4. You will be able to see the log "Fishing will start in 3.0 second(s).".
 
 - **Settings:**
 
@@ -1628,13 +1628,13 @@ redirectFrom:
 
   1. Go to the [Discord Developer Portal](https://discord.com/developers/applications/) and click **New Application**.
 
-  1. Give it a name (this is what shows up in your Discord status, e.g. "Minecraft Console Client"), accept the terms, and click **Create**.
+  2. Give it a name (this is what shows up in your Discord status, e.g. "Minecraft Console Client"), accept the terms, and click **Create**.
 
-  1. On the **General Information** page, copy the **Application ID** and paste it into the `ApplicationId` field in your MCC configuration.
+  3. On the **General Information** page, copy the **Application ID** and paste it into the `ApplicationId` field in your MCC configuration.
 
-  1. *(Optional)* If you want a custom image in your status, go to the **Rich Presence** tab and click **Art Assets**. Upload an image and give it a name (the **key**). Use that key in the `LargeImageKey` or `SmallImageKey` settings. The default value `mcc_icon` references a built-in MCC icon already registered on the application -- no upload needed if you are happy with that.
+  4. *(Optional)* If you want a custom image in your status, go to the **Rich Presence** tab and click **Art Assets**. Upload an image and give it a name (the **key**). Use that key in the `LargeImageKey` or `SmallImageKey` settings. The default value `mcc_icon` references a built-in MCC icon already registered on the application -- no upload needed if you are happy with that.
 
-  1. Enable the bot by setting `Enabled` to `true` in your MCC configuration and start MCC with Discord already running.
+  5. Enable the bot by setting `Enabled` to `true` in your MCC configuration and start MCC with Discord already running.
 
   Discord updates Rich Presence at most once every 15 seconds regardless of how often MCC sends updates, so you may notice a short delay before your status reflects changes.
 
@@ -2711,11 +2711,11 @@ redirectFrom:
 - **Setup:**
 
   1. First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
-  1. Click on `Start` button and read the bot reply, then type `/newbot`, the Botfather will guide you through the bot creation.
-  1. Once you create the bot, copy the **API key** that you have gotten, and put it into the `Token` field of `ChatBot.TelegramBridge` section (this section).
-  1. Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
-  1. Click on `Start` button and type and send the following command `.chatid` to obtain the chat id.
-  1. Copy the chat id number (eg. `2627844670`) and paste it in the `ChannelId` field and add it to the `Authorized_Chat_Ids` field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
+  2. Click on `Start` button and read the bot reply, then type `/newbot`, the Botfather will guide you through the bot creation.
+  3. Once you create the bot, copy the **API key** that you have gotten, and put it into the `Token` field of `ChatBot.TelegramBridge` section (this section).
+  4. Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
+  5. Click on `Start` button and type and send the following command `.chatid` to obtain the chat id.
+  6. Copy the chat id number (eg. `2627844670`) and paste it in the `ChannelId` field and add it to the `Authorized_Chat_Ids` field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
      Now you can use the bot using it's DM.
 
   <div class="custom-container danger"><p class="custom-container-title">Danger</p>
