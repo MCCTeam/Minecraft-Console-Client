@@ -48,4 +48,16 @@ public class StructuredComponentsHandler
     {
         return ComponentRegistry.ParseComponent(componentId, data);
     }
+
+    public string GetComponentName(int componentId)
+    {
+        try
+        {
+            return ComponentRegistry.GetComponentNameById(componentId);
+        }
+        catch
+        {
+            return "<unknown>";
+        }
+    }
 }
