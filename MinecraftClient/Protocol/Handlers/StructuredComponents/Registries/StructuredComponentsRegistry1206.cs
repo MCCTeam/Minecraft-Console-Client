@@ -22,7 +22,7 @@ public class StructuredComponentsRegistry1206 : StructuredComponentRegistry
         RegisterComponent<CanPlaceOnComponent>(10, "minecraft:can_place_on");
         RegisterComponent<CanBreakComponent>(11, "minecraft:can_break");
         RegisterComponent<AttributeModifiersComponent>(12, "minecraft:attribute_modifiers");
-        RegisterComponent<CustomModelDataComponent>(13, "minecraft:custom_model_data");
+        RegisterComponent<CustomModelDataComponent1206>(13, "minecraft:custom_model_data");
         RegisterComponent<HideAdditionalTooltipComponent>(14, "minecraft:hide_additional_tooltip");
         RegisterComponent<HideTooltipComponent>(15, "minecraft:hide_tooltip");
         RegisterComponent<RepairCostComponent>(16, "minecraft:repair_cost");

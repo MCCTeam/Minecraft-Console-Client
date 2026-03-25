@@ -436,13 +436,29 @@ namespace MinecraftClient.Protocol.Handlers
                         
                     var numberOfComponentsToAdd = ReadNextVarInt(cache);
                     var numberofComponentsToRemove = ReadNextVarInt(cache);
+                    var structuredComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
+                    var parsedComponents = new List<string>(numberOfComponentsToAdd);
 
                     for (var i = 0; i < numberOfComponentsToAdd; i++)
                     {
                         var componentTypeId = ReadNextVarInt(cache);
+                        var componentName = structuredComponentHandler.GetComponentName(componentTypeId);
+                        parsedComponents.Add($"{i}:{componentTypeId}:{componentName}:next={GetQueuePreview(cache, 24)}");
 
-                        var strcuturedComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
-                        strcturedComponentsToAdd.Add(strcuturedComponentHandler.Parse(componentTypeId, cache));
+                        try
+                        {
+                            strcturedComponentsToAdd.Add(structuredComponentHandler.Parse(componentTypeId, cache));
+                        }
+                        catch (Exception ex)
+                        {
+                            var preview = GetQueuePreview(cache, 48);
+                            throw new System.IO.InvalidDataException(
+                                $"Failed to decode item component {componentTypeId} ({componentName}) for itemId {itemId}, " +
+                                $"itemCount {itemCount}, addCount {numberOfComponentsToAdd}, removeCount {numberofComponentsToRemove}, " +
+                                $"componentIndex {i}, remainingBytes {cache.Count}, nextBytes {preview}, " +
+                                $"componentTrace [{string.Join(" | ", parsedComponents)}].",
+                                ex);
+                        }
                     }
 
                     for (var i = 0; i < numberofComponentsToRemove; i++)
@@ -514,6 +530,29 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 ReadNextDetail(cache);
             }
+        }
+
+        private static string GetQueuePreview(Queue<byte> cache, int maxBytes)
+        {
+            if (cache.Count == 0)
+                return "<empty>";
+
+            var bytes = cache.ToArray();
+            var length = Math.Min(bytes.Length, maxBytes);
+            var preview = new StringBuilder(length * 3);
+
+            for (var i = 0; i < length; i++)
+            {
+                if (i > 0)
+                    preview.Append(' ');
+
+                preview.Append(bytes[i].ToString("X2"));
+            }
+
+            if (bytes.Length > maxBytes)
+                preview.Append(" ...");
+
+            return preview.ToString();
         }
 
         /// <summary>
