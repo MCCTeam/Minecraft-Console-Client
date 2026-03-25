@@ -99,15 +99,15 @@ public class WebSocketServer
                 {
                     var message = Encoding.UTF8.GetString(messageBuffer.ToArray());
                     messageBuffer.Clear();
-                    MessageReceived?.Invoke(sessionId, message);
+                    MessageReceived?.Invoke(session.SessionId, message);
                 }
             }
         }
         catch { /* connection dropped */ }
         finally
         {
-            _sessions.TryRemove(sessionId, out _);
-            SessionDropped?.Invoke(sessionId);
+            _sessions.TryRemove(session.SessionId, out _);
+            SessionDropped?.Invoke(session.SessionId);
 
             if (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived)
             {
