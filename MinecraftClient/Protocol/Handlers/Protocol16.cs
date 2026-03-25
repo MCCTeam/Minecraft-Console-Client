@@ -618,7 +618,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session)
+        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
         {
             if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
             {

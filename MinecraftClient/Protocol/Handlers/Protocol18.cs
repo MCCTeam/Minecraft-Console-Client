@@ -3188,8 +3188,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// Do the Minecraft login.
         /// </summary>
         /// <returns>True if login successful</returns>
-        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session)
+        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
         {
+            int nextState = isTransfer && protocolVersion >= MC_1_20_6_Version ? 3 : 2;
+
+            if (nextState == 3)
+                log.Debug("Using transfer handshake intent for transferred login.");
+
             // 1. Send the handshake packet
             SendPacket(0x00, dataTypes.ConcatBytes(
                     // Protocol Version (use raw version for snapshot/RC servers)
@@ -3202,7 +3207,7 @@ namespace MinecraftClient.Protocol.Handlers
                     dataTypes.GetUShort((ushort)handler.GetServerPort()),
 
                     // Next State
-                    DataTypes.GetVarInt(2)) // 2 is for the Login state
+                    DataTypes.GetVarInt(nextState)) // 2 is Login, 3 is Transfer
             );
 
             // 2. Send the Login Start packet
