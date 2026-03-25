@@ -18,6 +18,23 @@ namespace MinecraftClient
     }
 
     /// <summary>
+    /// Backend-independent suggestion item used by the TUI autocomplete popup.
+    /// Mirrors the shape of ConsoleInteractive.ConsoleSuggestion.Suggestion
+    /// without requiring a dependency on the ConsoleInteractive assembly.
+    /// </summary>
+    public readonly struct CommandSuggestion
+    {
+        public string Text { get; }
+        public string Tooltip { get; }
+
+        public CommandSuggestion(string text, string tooltip = "")
+        {
+            Text = text;
+            Tooltip = tooltip;
+        }
+    }
+
+    /// <summary>
     /// Abstraction over the console I/O backend.
     /// Implementations: ClassicConsoleBackend (ConsoleInteractive), TuiConsoleBackend (Avalonia/Consolonia), BasicConsoleBackend (stdio).
     /// </summary>

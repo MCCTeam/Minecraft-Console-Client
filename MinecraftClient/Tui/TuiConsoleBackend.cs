@@ -281,5 +281,27 @@ namespace MinecraftClient.Tui
         {
             OnInputChange?.Invoke(this, new ConsoleInputBuffer(text, cursorPos));
         }
+
+        internal void UpdateSuggestions(CommandSuggestion[] suggestions, (int Start, int End) range)
+        {
+            var view = _view;
+            if (view == null) return;
+
+            if (Dispatcher.UIThread.CheckAccess())
+                view.UpdateSuggestions(suggestions, range);
+            else
+                Dispatcher.UIThread.Post(() => view.UpdateSuggestions(suggestions, range));
+        }
+
+        internal void ClearSuggestions()
+        {
+            var view = _view;
+            if (view == null) return;
+
+            if (Dispatcher.UIThread.CheckAccess())
+                view.ClearSuggestions();
+            else
+                Dispatcher.UIThread.Post(() => view.ClearSuggestions());
+        }
     }
 }

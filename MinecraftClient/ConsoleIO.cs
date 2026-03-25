@@ -8,6 +8,7 @@ using Brigadier.NET;
 using FuzzySharp;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Scripting;
+using MinecraftClient.Tui;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient
@@ -189,13 +190,37 @@ namespace MinecraftClient
         private static Task _latestTask = Task.CompletedTask;
         private static CancellationTokenSource? _cancellationTokenSource;
 
+        private static void SendSuggestions(
+            ConsoleInteractive.ConsoleSuggestion.Suggestion[] classicSugs,
+            Tuple<int, int> range)
+        {
+            if (Backend is ClassicConsoleBackend classic)
+            {
+                classic.UpdateSuggestions(classicSugs, range);
+            }
+            else if (Backend is TuiConsoleBackend tui)
+            {
+                var tuiSugs = new CommandSuggestion[classicSugs.Length];
+                for (int i = 0; i < classicSugs.Length; i++)
+                    tuiSugs[i] = new CommandSuggestion(classicSugs[i].Text, classicSugs[i].Tooltip);
+                tui.UpdateSuggestions(tuiSugs, (range.Item1, range.Item2));
+            }
+        }
+
+        private static void DoClearSuggestions()
+        {
+            if (Backend is ClassicConsoleBackend classic)
+                classic.ClearSuggestions();
+            else if (Backend is TuiConsoleBackend tui)
+                tui.ClearSuggestions();
+        }
+
         private static void MccAutocompleteHandler(ConsoleInputBuffer buffer)
         {
             string fullCommand = buffer.Text;
             if (string.IsNullOrEmpty(fullCommand))
             {
-                if (Backend is ClassicConsoleBackend classic)
-                    classic.ClearSuggestions();
+                DoClearSuggestions();
                 return;
             }
 
@@ -205,8 +230,7 @@ namespace MinecraftClient
                 int offset = InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none ? 0 : 1;
                 if (buffer.CursorPosition - offset < 0)
                 {
-                    if (Backend is ClassicConsoleBackend classic)
-                        classic.ClearSuggestions();
+                    DoClearSuggestions();
                     return;
                 }
                 _cancellationTokenSource?.Cancel();
@@ -230,8 +254,7 @@ namespace MinecraftClient
                         foreach (var cmd in Commands)
                             sugList.Add(new(cmd));
 
-                        if (Backend is ClassicConsoleBackend classicBackend)
-                            classicBackend.UpdateSuggestions(sugList.ToArray(), new(offset, offset));
+                        SendSuggestions(sugList.ToArray(), new(offset, offset));
                     }
                     else if (command.Length > 0 && command[0] == '/' && !command.Contains(' '))
                     {
@@ -241,8 +264,7 @@ namespace MinecraftClient
                         int index = 0;
                         foreach (var sug in sorted)
                             sugList[index++] = new(sug.Value);
-                        if (Backend is ClassicConsoleBackend classicBackend)
-                            classicBackend.UpdateSuggestions(sugList, new(offset, offset + command.Length));
+                        SendSuggestions(sugList, new(offset, offset + command.Length));
                     }
                     else
                     {
@@ -257,8 +279,7 @@ namespace MinecraftClient
                         int sugLen = suggestions.List.Count;
                         if (sugLen == 0)
                         {
-                            if (Backend is ClassicConsoleBackend classicBackend)
-                                classicBackend.ClearSuggestions();
+                            DoClearSuggestions();
                             return;
                         }
 
@@ -279,8 +300,7 @@ namespace MinecraftClient
                         foreach (var sug in sorted)
                             sugList[index++] = new(sug.Value, dictionary[sug.Value] ?? string.Empty);
 
-                        if (Backend is ClassicConsoleBackend classicBackend2)
-                            classicBackend2.UpdateSuggestions(sugList, range);
+                        SendSuggestions(sugList, range);
                     }
                 }, cts.Token);
                 _latestTask = newTask;
@@ -289,8 +309,7 @@ namespace MinecraftClient
             }
             else
             {
-                if (Backend is ClassicConsoleBackend classic)
-                    classic.ClearSuggestions();
+                DoClearSuggestions();
                 return;
             }
         }
@@ -305,8 +324,7 @@ namespace MinecraftClient
         {
             _cancellationTokenSource?.Cancel();
             _latestTask = Task.CompletedTask;
-            if (Backend is ClassicConsoleBackend classic)
-                classic.ClearSuggestions();
+            DoClearSuggestions();
 
             AutoCompleteDone = false;
             AutoCompleteResult = Array.Empty<string>();

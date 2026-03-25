@@ -1203,7 +1203,7 @@ namespace MinecraftClient
 
                     public int Max_Suggestion_Width = 30;
 
-                    public int Max_Displayed_Suggestions = 6;
+                    public int Max_Displayed_Suggestions = 10;
 
                     public string Text_Color = "#f8fafc";
 

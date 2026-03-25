@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
@@ -35,6 +36,19 @@ namespace MinecraftClient.Tui
         private readonly Border _notificationBorder;
         private readonly TextBlock _notificationText;
         private long _lastCtrlCTicks;
+        private long _lastLogClickTicks;
+        private const int DoubleClickMsec = 500;
+
+        private readonly Border _suggestionBorder;
+        private readonly StackPanel _suggestionPanel;
+        private CommandSuggestion[] _suggestions = Array.Empty<CommandSuggestion>();
+        private (int Start, int End) _suggestionRange;
+        private int _selectedSuggestionIndex = -1;
+        private int _suggestionViewTop;
+        private bool _acceptingSuggestion;
+
+        private int MaxVisibleSuggestions =>
+            Math.Max(1, Settings.Config.Console.CommandSuggestion.Max_Displayed_Suggestions);
 
         public MainTuiView()
         {
@@ -66,10 +80,7 @@ namespace MinecraftClient.Tui
             };
 
             _logScrollViewer.ScrollChanged += OnLogScrollChanged;
-            _logScrollViewer.PointerPressed += (_, _) =>
-            {
-                Dispatcher.UIThread.Post(() => _commandInput.Focus());
-            };
+            _logScrollViewer.PointerPressed += OnLogAreaPointerPressed;
 
             _commandInput = new TextBox
             {
@@ -119,6 +130,23 @@ namespace MinecraftClient.Tui
                 VerticalAlignment = VerticalAlignment.Top,
             };
 
+            _suggestionPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Vertical,
+            };
+            _suggestionPanel.PointerWheelChanged += OnSuggestionWheelChanged;
+            _suggestionBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(30, 30, 30)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(80, 80, 80)),
+                BorderThickness = new Thickness(1),
+                Child = _suggestionPanel,
+                IsVisible = false,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Margin = new Thickness(0, 0, 0, 1),
+            };
+
             _mainContent = new DockPanel
             {
                 Background = Brushes.Black,
@@ -133,7 +161,7 @@ namespace MinecraftClient.Tui
             _rootPanel = new Panel
             {
                 Background = Brushes.Black,
-                Children = { _mainContent, _notificationBorder }
+                Children = { _mainContent, _notificationBorder, _suggestionBorder }
             };
 
             Content = _rootPanel;
@@ -206,6 +234,32 @@ namespace MinecraftClient.Tui
 
         public ObservableCollection<string> GetRecentLogLines(int _) => _logLines;
 
+        private void OnLogAreaPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            var props = e.GetCurrentPoint(null).Properties;
+            if (!props.IsLeftButtonPressed)
+            {
+                Dispatcher.UIThread.Post(() => _commandInput.Focus());
+                return;
+            }
+
+            bool shift = (e.KeyModifiers & KeyModifiers.Shift) != 0;
+            if (shift)
+                return;
+
+            long now = Environment.TickCount64;
+            long elapsed = now - _lastLogClickTicks;
+            _lastLogClickTicks = now;
+
+            if (elapsed < DoubleClickMsec)
+            {
+                ShowNotification("Hold Shift + Left-click to select and copy text.", 3000);
+                _lastLogClickTicks = 0;
+            }
+
+            Dispatcher.UIThread.Post(() => _commandInput.Focus());
+        }
+
         #endregion
 
         #region Input
@@ -268,20 +322,52 @@ namespace MinecraftClient.Tui
                 return;
             }
 
+            if (e.Key == Key.Escape && SuggestionsVisible)
+            {
+                ClearSuggestions();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Tab && SuggestionsVisible)
+            {
+                AcceptSuggestion(_selectedSuggestionIndex);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Tab)
+            {
+                e.Handled = true;
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.Enter:
+                    if (SuggestionsVisible)
+                    {
+                        AcceptSuggestion(_selectedSuggestionIndex);
+                        e.Handled = true;
+                        break;
+                    }
                     SubmitCommand();
                     e.Handled = true;
                     break;
 
                 case Key.Up:
-                    NavigateHistory(-1);
+                    if (SuggestionsVisible)
+                        MoveSuggestionSelection(-1);
+                    else
+                        NavigateHistory(-1);
                     e.Handled = true;
                     break;
 
                 case Key.Down:
-                    NavigateHistory(1);
+                    if (SuggestionsVisible)
+                        MoveSuggestionSelection(1);
+                    else
+                        NavigateHistory(1);
                     e.Handled = true;
                     break;
 
@@ -348,6 +434,9 @@ namespace MinecraftClient.Tui
                 return;
             }
 
+            if (_acceptingSuggestion)
+                return;
+
             var backend = TuiConsoleBackend.Instance;
             if (backend == null) return;
             int cursor = _commandInput.CaretIndex;
@@ -359,6 +448,8 @@ namespace MinecraftClient.Tui
             string command = _commandInput.Text?.Trim() ?? string.Empty;
             if (string.IsNullOrEmpty(command))
                 return;
+
+            ClearSuggestions();
 
             _commandHistory.Add(command);
             _historyIndex = _commandHistory.Count;
@@ -387,6 +478,213 @@ namespace MinecraftClient.Tui
 
             _commandInput.Text = _commandHistory[_historyIndex];
             _commandInput.CaretIndex = _commandInput.Text?.Length ?? 0;
+        }
+
+        #endregion
+
+        #region Suggestions
+
+        private const int PromptWidth = 2; // "> "
+        private const int BorderAndPadding = 2; // 1 border + 1 padding on each side
+
+        internal void UpdateSuggestions(CommandSuggestion[] suggestions, (int Start, int End) range)
+        {
+            if (suggestions.Length == 0)
+            {
+                ClearSuggestions();
+                return;
+            }
+
+            _suggestions = suggestions;
+            _suggestionRange = range;
+            _selectedSuggestionIndex = 0;
+            _suggestionViewTop = 0;
+
+            int leftOffset = PromptWidth + range.Start - BorderAndPadding;
+            double screenWidth = Bounds.Width;
+            if (screenWidth < 1)
+                screenWidth = 80;
+
+            if (leftOffset < 0)
+                leftOffset = 0;
+
+            _suggestionBorder.Margin = new Thickness(leftOffset, 0, 0, 1);
+            _suggestionBorder.MaxWidth = Math.Max(10, screenWidth - leftOffset);
+
+            RebuildSuggestionItems();
+            _suggestionBorder.IsVisible = true;
+        }
+
+        internal void ClearSuggestions()
+        {
+            if (!_suggestionBorder.IsVisible && _suggestions.Length == 0)
+                return;
+
+            _suggestions = Array.Empty<CommandSuggestion>();
+            _selectedSuggestionIndex = -1;
+            _suggestionBorder.IsVisible = false;
+            _suggestionPanel.Children.Clear();
+        }
+
+        private bool SuggestionsVisible => _suggestionBorder.IsVisible && _suggestions.Length > 0;
+
+        private void RebuildSuggestionItems()
+        {
+            _suggestionPanel.Children.Clear();
+
+            int visibleCount = Math.Min(_suggestions.Length, MaxVisibleSuggestions);
+            int viewBottom = _suggestionViewTop + visibleCount;
+
+            for (int i = _suggestionViewTop; i < viewBottom && i < _suggestions.Length; i++)
+            {
+                var sug = _suggestions[i];
+                int index = i;
+
+                string label = sug.Text;
+                if (!string.IsNullOrEmpty(sug.Tooltip))
+                    label += "  " + sug.Tooltip;
+
+                var tb = new TextBlock
+                {
+                    Text = label,
+                    Padding = new Thickness(1, 0),
+                    Foreground = Brushes.White,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    Background = i == _selectedSuggestionIndex
+                        ? new SolidColorBrush(Color.FromRgb(0, 90, 160))
+                        : Brushes.Transparent,
+                };
+
+                var row = new Border
+                {
+                    Child = tb,
+                    Background = Brushes.Transparent,
+                };
+
+                row.PointerPressed += (_, _) => AcceptSuggestion(index);
+                row.PointerEntered += (_, _) =>
+                {
+                    if (_selectedSuggestionIndex != index)
+                    {
+                        _selectedSuggestionIndex = index;
+                        UpdateSuggestionHighlight();
+                    }
+                };
+
+                _suggestionPanel.Children.Add(row);
+            }
+
+            if (_suggestions.Length > MaxVisibleSuggestions)
+            {
+                string scrollHint = $" [{_suggestionViewTop + 1}-{viewBottom}/{_suggestions.Length}]";
+                var hintTb = new TextBlock
+                {
+                    Text = scrollHint,
+                    Foreground = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
+                    Padding = new Thickness(1, 0),
+                };
+                _suggestionPanel.Children.Add(hintTb);
+            }
+        }
+
+        private void UpdateSuggestionHighlight()
+        {
+            int visibleCount = Math.Min(_suggestions.Length, MaxVisibleSuggestions);
+            for (int i = 0; i < visibleCount && i < _suggestionPanel.Children.Count; i++)
+            {
+                if (_suggestionPanel.Children[i] is Border border && border.Child is TextBlock tb)
+                {
+                    int dataIndex = _suggestionViewTop + i;
+                    tb.Background = dataIndex == _selectedSuggestionIndex
+                        ? new SolidColorBrush(Color.FromRgb(0, 90, 160))
+                        : Brushes.Transparent;
+                }
+            }
+        }
+
+        private void MoveSuggestionSelection(int direction)
+        {
+            if (_suggestions.Length == 0) return;
+
+            _selectedSuggestionIndex += direction;
+            if (_selectedSuggestionIndex < 0)
+                _selectedSuggestionIndex = _suggestions.Length - 1;
+            else if (_selectedSuggestionIndex >= _suggestions.Length)
+                _selectedSuggestionIndex = 0;
+
+            int visibleCount = Math.Min(_suggestions.Length, MaxVisibleSuggestions);
+            if (_selectedSuggestionIndex < _suggestionViewTop)
+            {
+                _suggestionViewTop = _selectedSuggestionIndex;
+                RebuildSuggestionItems();
+            }
+            else if (_selectedSuggestionIndex >= _suggestionViewTop + visibleCount)
+            {
+                _suggestionViewTop = _selectedSuggestionIndex - visibleCount + 1;
+                RebuildSuggestionItems();
+            }
+            else
+            {
+                UpdateSuggestionHighlight();
+            }
+        }
+
+        private void OnSuggestionWheelChanged(object? sender, PointerWheelEventArgs e)
+        {
+            if (!SuggestionsVisible) return;
+
+            int direction = e.Delta.Y > 0 ? -1 : 1;
+            ScrollSuggestionViewport(direction);
+            e.Handled = true;
+        }
+
+        private void ScrollSuggestionViewport(int direction)
+        {
+            if (_suggestions.Length <= MaxVisibleSuggestions) return;
+
+            int newTop = _suggestionViewTop + direction;
+            int maxTop = _suggestions.Length - MaxVisibleSuggestions;
+            newTop = Math.Clamp(newTop, 0, maxTop);
+
+            if (newTop == _suggestionViewTop) return;
+            _suggestionViewTop = newTop;
+
+            int viewBottom = _suggestionViewTop + MaxVisibleSuggestions;
+            if (_selectedSuggestionIndex < _suggestionViewTop)
+                _selectedSuggestionIndex = _suggestionViewTop;
+            else if (_selectedSuggestionIndex >= viewBottom)
+                _selectedSuggestionIndex = viewBottom - 1;
+
+            RebuildSuggestionItems();
+        }
+
+        private void AcceptSuggestion(int index)
+        {
+            if (index < 0 || index >= _suggestions.Length) return;
+
+            _acceptingSuggestion = true;
+            try
+            {
+                string text = _commandInput.Text ?? "";
+                string selected = _suggestions[index].Text;
+
+                int start = Math.Min(_suggestionRange.Start, text.Length);
+                int end = Math.Min(_suggestionRange.End, text.Length);
+
+                string before = text[..start];
+                string after = text[end..];
+                string newText = before + selected + after;
+
+                _commandInput.Text = newText;
+                _commandInput.CaretIndex = before.Length + selected.Length;
+            }
+            finally
+            {
+                _acceptingSuggestion = false;
+            }
+
+            ClearSuggestions();
+            _commandInput.Focus();
         }
 
         #endregion
