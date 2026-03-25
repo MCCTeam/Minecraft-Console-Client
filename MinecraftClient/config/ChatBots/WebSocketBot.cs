@@ -1,22 +1,11 @@
 //MCCScript 1.0
-//using System.Collections.Concurrent
-//using System.Collections.Generic
-//using System.IO
-//using System.Linq
-//using System.Net
-//using System.Net.Sockets
-//using System.Net.WebSockets
-//using System.Text
-//using System.Text.Json
-//using System.Text.Json.Serialization
-//using System.Text.RegularExpressions
-//using System.Threading
-//using System.Threading.Tasks
-//using MinecraftClient.CommandHandler
-//using MinecraftClient.Inventory
-//using MinecraftClient.Mapping
-//using MinecraftClient.Scripting
-//using MinecraftClient
+//using System.Collections.Concurrent;
+//using System.Net.Sockets;
+//using System.Net.WebSockets;
+//using System.Text.Json;
+//using System.Text.Json.Serialization;
+//using System.Threading.Tasks;
+//using MinecraftClient.CommandHandler;
 
 // IMPORTANT: Change the password below before use!
 MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "CHANGE_THIS_PASSWORD"));

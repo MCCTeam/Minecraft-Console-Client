@@ -134,6 +134,12 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 assemblyrefs.Add(new("System.Runtime"));
                 assemblyrefs.Add(new("System.Private.Uri"));
                 assemblyrefs.Add(new("System.Net.Requests"));
+                assemblyrefs.Add(new("System.Net.WebSockets"));
+                assemblyrefs.Add(new("System.Net.HttpListener"));
+                assemblyrefs.Add(new("System.Net.Primitives"));
+                assemblyrefs.Add(new("System.Net.Sockets"));
+                assemblyrefs.Add(new("Microsoft.Win32.Primitives"));
+                assemblyrefs.Add(new("System.Collections.Concurrent"));
 
                 foreach (var refs in assemblyrefs) {
                     Assembly? loadedAssembly;
@@ -182,7 +188,9 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 // Add facade assemblies needed for Roslyn compilation when referencing
                 // libraries that target netstandard (e.g. Brigadier.NET).
                 var runtimeDir = Path.GetDirectoryName(SystemPrivateCoreLib)!;
-                foreach (var facadeName in new[] { "netstandard.dll", "System.Runtime.dll", "System.Private.Uri.dll", "System.Net.Requests.dll" })
+                foreach (var facadeName in new[] { "netstandard.dll", "System.Runtime.dll", "System.Private.Uri.dll", "System.Net.Requests.dll",
+                    "System.Net.WebSockets.dll", "System.Net.HttpListener.dll", "System.Net.Primitives.dll", "System.Net.Sockets.dll",
+                    "Microsoft.Win32.Primitives.dll", "System.Collections.Concurrent.dll" })
                 {
                     var facadePath = Path.Combine(runtimeDir, facadeName);
                     if (File.Exists(facadePath))
