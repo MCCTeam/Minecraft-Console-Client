@@ -78,7 +78,7 @@ namespace MinecraftClient.Physics
                 using var stream = assembly.GetManifestResourceStream("BlockShapeData.json");
                 if (stream is null)
                 {
-                    ConsoleInteractive.ConsoleWriter.WriteLineFormatted("§e[Physics] BlockShapeData.json not found as embedded resource");
+                    ConsoleIO.WriteLineFormatted("§e[Physics] BlockShapeData.json not found as embedded resource");
                     return;
                 }
                 using var doc = JsonDocument.Parse(stream);
@@ -130,7 +130,7 @@ namespace MinecraftClient.Physics
             }
             catch (Exception ex)
             {
-                ConsoleInteractive.ConsoleWriter.WriteLineFormatted($"§e[Physics] Failed to load BlockShapeData.json: {ex.Message}");
+                ConsoleIO.WriteLineFormatted($"§e[Physics] Failed to load BlockShapeData.json: {ex.Message}");
             }
         }
 

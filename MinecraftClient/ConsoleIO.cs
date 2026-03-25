@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +8,7 @@ using Brigadier.NET;
 using FuzzySharp;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Scripting;
+using MinecraftClient.Tui;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient
@@ -16,18 +17,23 @@ namespace MinecraftClient
     /// Allows simultaneous console input and output without breaking user input
     /// (Without having this annoying behaviour : User inp[Some Console output]ut)
     /// Provide some fancy features such as formatted output, text pasting and tab-completion.
-    /// By ORelio - (c) 2012-2018 - Available under the CDDL-1.0 license
+    /// By ORelio - (c) 2012-2018 - Available under the CDDL-1.0 License
     /// </summary>
     public static class ConsoleIO
     {
         private static IAutoComplete? autocomplete_engine;
 
         /// <summary>
+        /// The active console backend. Set once during startup.
+        /// </summary>
+        public static IConsoleBackend Backend { get; set; } = null!;
+
+        /// <summary>
         /// Reset the IO mechanism and clear all buffers
         /// </summary>
         public static void Reset()
         {
-            ClearLineAndBuffer();
+            Backend?.ClearInputBuffer();
         }
 
         /// <summary>
@@ -40,9 +46,8 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Determines whether to use interactive IO or basic IO.
-        /// Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
-        /// Color codes are printed as is when BasicIO is enabled.
+        /// Determines whether to use basic IO (legacy flag, kept for compatibility).
+        /// In the new architecture this is true when Backend is BasicConsoleBackend.
         /// </summary>
         public static bool BasicIO = false;
 
@@ -59,7 +64,7 @@ namespace MinecraftClient
         /// <summary>
         /// Specify a generic log line prefix for WriteLogLine()
         /// </summary>
-        public static string LogPrefix = "§8[Log] ";
+        public static string LogPrefix = "§8[MCC] ";
 
         /// <summary>
         /// Read a password from the standard input
@@ -68,13 +73,7 @@ namespace MinecraftClient
         {
             if (BasicIO)
                 return Console.ReadLine();
-            else
-            {
-                ConsoleInteractive.ConsoleReader.SetInputVisible(false);
-                var input = ConsoleInteractive.ConsoleReader.RequestImmediateInput();
-                ConsoleInteractive.ConsoleReader.SetInputVisible(true);
-                return input;
-            }
+            return Backend.ReadPassword();
         }
 
         /// <summary>
@@ -84,8 +83,7 @@ namespace MinecraftClient
         {
             if (BasicIO)
                 return Console.ReadLine() ?? String.Empty;
-            else
-                return ConsoleInteractive.ConsoleReader.RequestImmediateInput();
+            return Backend.RequestImmediateInput();
         }
 
         /// <summary>
@@ -109,7 +107,7 @@ namespace MinecraftClient
             if (BasicIO)
                 Console.WriteLine(line);
             else
-                ConsoleInteractive.ConsoleWriter.WriteLine(line);
+                Backend.WriteLine(line);
         }
 
         /// <summary>
@@ -153,7 +151,7 @@ namespace MinecraftClient
                     return;
                 }
                 output.Append(str);
-                ConsoleInteractive.ConsoleWriter.WriteLineFormatted(output.ToString());
+                Backend.WriteLineFormatted(output.ToString());
             }
         }
 
@@ -177,9 +175,8 @@ namespace MinecraftClient
         private static void ClearLineAndBuffer()
         {
             if (BasicIO) return;
-            ConsoleInteractive.ConsoleReader.ClearBuffer();
+            Backend.ClearInputBuffer();
         }
-
 
         #endregion
 
@@ -193,12 +190,37 @@ namespace MinecraftClient
         private static Task _latestTask = Task.CompletedTask;
         private static CancellationTokenSource? _cancellationTokenSource;
 
-        private static void MccAutocompleteHandler(ConsoleInteractive.ConsoleReader.Buffer buffer)
+        private static void SendSuggestions(
+            ConsoleInteractive.ConsoleSuggestion.Suggestion[] classicSugs,
+            Tuple<int, int> range)
+        {
+            if (Backend is ClassicConsoleBackend classic)
+            {
+                classic.UpdateSuggestions(classicSugs, range);
+            }
+            else if (Backend is TuiConsoleBackend tui)
+            {
+                var tuiSugs = new CommandSuggestion[classicSugs.Length];
+                for (int i = 0; i < classicSugs.Length; i++)
+                    tuiSugs[i] = new CommandSuggestion(classicSugs[i].Text, classicSugs[i].Tooltip);
+                tui.UpdateSuggestions(tuiSugs, (range.Item1, range.Item2));
+            }
+        }
+
+        private static void DoClearSuggestions()
+        {
+            if (Backend is ClassicConsoleBackend classic)
+                classic.ClearSuggestions();
+            else if (Backend is TuiConsoleBackend tui)
+                tui.ClearSuggestions();
+        }
+
+        private static void MccAutocompleteHandler(ConsoleInputBuffer buffer)
         {
             string fullCommand = buffer.Text;
             if (string.IsNullOrEmpty(fullCommand))
             {
-                ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+                DoClearSuggestions();
                 return;
             }
 
@@ -208,7 +230,7 @@ namespace MinecraftClient
                 int offset = InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none ? 0 : 1;
                 if (buffer.CursorPosition - offset < 0)
                 {
-                    ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+                    DoClearSuggestions();
                     return;
                 }
                 _cancellationTokenSource?.Cancel();
@@ -232,7 +254,7 @@ namespace MinecraftClient
                         foreach (var cmd in Commands)
                             sugList.Add(new(cmd));
 
-                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList.ToArray(), new(offset, offset));
+                        SendSuggestions(sugList.ToArray(), new(offset, offset));
                     }
                     else if (command.Length > 0 && command[0] == '/' && !command.Contains(' '))
                     {
@@ -242,7 +264,7 @@ namespace MinecraftClient
                         int index = 0;
                         foreach (var sug in sorted)
                             sugList[index++] = new(sug.Value);
-                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList, new(offset, offset + command.Length));
+                        SendSuggestions(sugList, new(offset, offset + command.Length));
                     }
                     else
                     {
@@ -257,7 +279,7 @@ namespace MinecraftClient
                         int sugLen = suggestions.List.Count;
                         if (sugLen == 0)
                         {
-                            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+                            DoClearSuggestions();
                             return;
                         }
 
@@ -278,7 +300,7 @@ namespace MinecraftClient
                         foreach (var sug in sorted)
                             sugList[index++] = new(sug.Value, dictionary[sug.Value] ?? string.Empty);
 
-                        ConsoleInteractive.ConsoleSuggestion.UpdateSuggestions(sugList, range);
+                        SendSuggestions(sugList, range);
                     }
                 }, cts.Token);
                 _latestTask = newTask;
@@ -287,22 +309,68 @@ namespace MinecraftClient
             }
             else
             {
-                ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+                DoClearSuggestions();
                 return;
             }
         }
 
-        public static void AutocompleteHandler(object? sender, ConsoleInteractive.ConsoleReader.Buffer buffer)
+        public static void AutocompleteHandler(object? sender, ConsoleInputBuffer buffer)
         {
             if (Settings.Config.Console.CommandSuggestion.Enable)
                 MccAutocompleteHandler(buffer);
+        }
+
+        private static readonly string[] OfflineCommands = ["quit", "exit", "connect", "reco", "help"];
+
+        public static void OfflineAutocompleteHandler(object? sender, ConsoleInputBuffer buffer)
+        {
+            if (!Settings.Config.Console.CommandSuggestion.Enable)
+                return;
+
+            string fullCommand = buffer.Text;
+            if (string.IsNullOrEmpty(fullCommand))
+            {
+                DoClearSuggestions();
+                return;
+            }
+
+            var InternalCmdChar = Config.Main.Advanced.InternalCmdChar;
+            int offset = 0;
+            if (InternalCmdChar != MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none)
+            {
+                if (fullCommand[0] != InternalCmdChar.ToChar())
+                {
+                    DoClearSuggestions();
+                    return;
+                }
+                offset = 1;
+            }
+
+            string command = fullCommand[offset..];
+            if (command.Contains(' '))
+            {
+                DoClearSuggestions();
+                return;
+            }
+
+            var sugList = new List<ConsoleInteractive.ConsoleSuggestion.Suggestion>();
+            foreach (string cmd in OfflineCommands)
+            {
+                if (command.Length == 0 || cmd.StartsWith(command, StringComparison.OrdinalIgnoreCase))
+                    sugList.Add(new(cmd));
+            }
+
+            if (sugList.Count > 0)
+                SendSuggestions(sugList.ToArray(), new(offset, offset + command.Length));
+            else
+                DoClearSuggestions();
         }
 
         public static void CancelAutocomplete()
         {
             _cancellationTokenSource?.Cancel();
             _latestTask = Task.CompletedTask;
-            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+            DoClearSuggestions();
 
             AutoCompleteDone = false;
             AutoCompleteResult = Array.Empty<string>();

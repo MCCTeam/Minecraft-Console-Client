@@ -260,9 +260,9 @@ namespace MinecraftClient
                         Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
                         cmdprompt = new CancellationTokenSource();
-                        ConsoleInteractive.ConsoleReader.BeginReadThread();
-                        ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
-                        ConsoleInteractive.ConsoleReader.OnInputChange += ConsoleIO.AutocompleteHandler;
+                        ConsoleIO.Backend.BeginReadThread();
+                        ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
+                        ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
                     }
                     else
                     {
@@ -304,9 +304,9 @@ namespace MinecraftClient
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleInteractive.ConsoleReader.StopReadThread();
-                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    ConsoleIO.Backend.StopReadThread();
+                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
                     Program.HandleFailure();
                 }
 
@@ -324,9 +324,9 @@ namespace MinecraftClient
                 // kick messages and Ignore_Kick_Message is false, or retry limit reached)
                 if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleInteractive.ConsoleReader.StopReadThread();
-                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    ConsoleIO.Backend.StopReadThread();
+                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
                     Program.HandleFailure();
                 }
 
@@ -383,6 +383,11 @@ namespace MinecraftClient
 
                     UpdateKeepAlive();
                     Log.Info($"Successfully transferred connection and logged in to {newHost}:{newPort}.");
+
+                    cmdprompt = new CancellationTokenSource();
+                    ConsoleIO.Backend.BeginReadThread();
+                    ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
+                    ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
                 }
                 else
                 {
@@ -426,9 +431,9 @@ namespace MinecraftClient
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleInteractive.ConsoleReader.StopReadThread();
-                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    ConsoleIO.Backend.StopReadThread();
+                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
                     Program.HandleFailure();
                 }
 
@@ -683,6 +688,8 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
+            instance = null;
+
             DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
 
             botsOnHold.Clear();
@@ -715,6 +722,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            instance = null;
+
             ConsoleIO.CancelAutocomplete();
 
             handler.Dispose();
@@ -775,9 +784,9 @@ namespace MinecraftClient
             
             if (!will_restart)
             {
-                ConsoleInteractive.ConsoleReader.StopReadThread();
-                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleInteractive.ConsoleReader.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                ConsoleIO.Backend.StopReadThread();
+                ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
+                ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
                 Program.HandleFailure(null, false, reason);
             }
         }
@@ -801,6 +810,14 @@ namespace MinecraftClient
             }
             else
                 return;
+        }
+
+        /// <summary>
+        /// Get the console message handler delegate for re-attaching after TUI mode.
+        /// </summary>
+        public EventHandler<string> GetConsoleMessageHandler()
+        {
+            return ConsoleReaderOnMessageReceived;
         }
 
         /// <summary>

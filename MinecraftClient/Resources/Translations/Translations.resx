@@ -2163,4 +2163,137 @@ Logging in...</value>
   <data name="mcc.sentry_logging" xml:space="preserve">
     <value>MCC uses Sentry to log errors. You can opt-out by setting the EnableSentry option in the configuration file to false.</value>
   </data>
+  <data name="mcc.use_quit_to_exit" xml:space="preserve">
+    <value>Use '{0}quit' to exit Minecraft Console Client.</value>
+  </data>
+  <data name="cmd.debug.state_header" xml:space="preserve">
+    <value>MCC Debug State</value>
+  </data>
+  <data name="cmd.debug.state_server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="cmd.debug.state_username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="cmd.debug.state_protocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="cmd.debug.state_gamemode" xml:space="preserve">
+    <value>GameMode</value>
+  </data>
+  <data name="cmd.debug.state_health" xml:space="preserve">
+    <value>Health</value>
+  </data>
+  <data name="cmd.debug.state_food" xml:space="preserve">
+    <value>Food</value>
+  </data>
+  <data name="cmd.debug.state_location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="cmd.debug.state_tps" xml:space="preserve">
+    <value>TPS</value>
+  </data>
+  <data name="cmd.debug.state_console" xml:space="preserve">
+    <value>Console</value>
+  </data>
+  <data name="cmd.debug.state_features" xml:space="preserve">
+    <value>Features</value>
+  </data>
+  <data name="cmd.debug.state_debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="cmd.debug.state_bots" xml:space="preserve">
+    <value>Bots</value>
+  </data>
+  <data name="cmd.debug.state_players" xml:space="preserve">
+    <value>Players</value>
+  </data>
+  <data name="cmd.debug.state_online" xml:space="preserve">
+    <value>{0} online</value>
+  </data>
+  <data name="cmd.inventory.help.open" xml:space="preserve">
+    <value>Open interactive TUI inventory viewer (TUI mode only).</value>
+  </data>
+  <data name="cmd.inventory.tui_only" xml:space="preserve">
+    <value>Interactive TUI is only available in TUI console mode. Use '/inventory &lt;id&gt; list' instead.</value>
+  </data>
+  <data name="cmd.inventory.tui_already_running" xml:space="preserve">
+    <value>TUI inventory viewer is already running.</value>
+  </data>
+  <data name="cmd.inventory.tui_opening" xml:space="preserve">
+    <value>Opening TUI for Inventory #{0}...</value>
+  </data>
+  <data name="cmd.inventory.tui_opened" xml:space="preserve">
+    <value>Inventory dialog opened.</value>
+  </data>
+  <data name="cmd.inventory.tui_launch_failed" xml:space="preserve">
+    <value>Failed to launch TUI inventory viewer.</value>
+  </data>
+  <data name="tui.select_copy_hint" xml:space="preserve">
+    <value>Hold Shift + Left-click to select and copy text.</value>
+  </data>
+  <data name="tui.ctrlc_input_cleared" xml:space="preserve">
+    <value>Input cleared. Press Ctrl+C again to quit.</value>
+  </data>
+  <data name="tui.ctrlc_quit_hint" xml:space="preserve">
+    <value>Press Ctrl+C again to quit MCC.</value>
+  </data>
+  <data name="tui.inventory.item_info" xml:space="preserve">
+    <value>[ Item Info ]</value>
+  </data>
+  <data name="tui.inventory.held_item" xml:space="preserve">
+    <value>[ Held Item ]</value>
+  </data>
+  <data name="tui.inventory.controls" xml:space="preserve">
+    <value>[ Controls ]</value>
+  </data>
+  <data name="tui.inventory.controls_help" xml:space="preserve">
+    <value>LClick  Pick/Place
+RClick  Half/Place1
+Shift+C QuickMove
+Q       Drop x1
+Ctrl+Q  Drop Stack
+R       Refresh
+E/ESC   Exit</value>
+  </data>
+  <data name="tui.inventory.cursor_empty" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="tui.inventory.offhand" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="tui.inventory.output" xml:space="preserve">
+    <value>Out</value>
+  </data>
+  <data name="tui.inventory.equip_head" xml:space="preserve">
+    <value>Hd</value>
+  </data>
+  <data name="tui.inventory.equip_body" xml:space="preserve">
+    <value>Bd</value>
+  </data>
+  <data name="tui.inventory.equip_legs" xml:space="preserve">
+    <value>Lg</value>
+  </data>
+  <data name="tui.inventory.equip_feet" xml:space="preserve">
+    <value>Ft</value>
+  </data>
+  <data name="tui.inventory.hover_hint" xml:space="preserve">
+    <value>Hover over a slot to
+see item details.</value>
+  </data>
+  <data name="tui.inventory.slot_empty" xml:space="preserve">
+    <value>(Empty)</value>
+  </data>
+  <data name="tui.inventory.slot_detail" xml:space="preserve">
+    <value>Slot #{0}  Count: {1}</value>
+  </data>
+  <data name="tui.inventory.container_not_found" xml:space="preserve">
+    <value>Container not found</value>
+  </data>
+  <data name="tui.inventory.title" xml:space="preserve">
+    <value>Inventory #{0} - {1}</value>
+  </data>
+  <data name="tui.inventory.item_count" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
 </root>
