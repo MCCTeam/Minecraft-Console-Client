@@ -270,7 +270,6 @@ namespace MinecraftClient.Tui
         /// </summary>
         internal void OnCommandSubmitted(string command)
         {
-            OnInputChange?.Invoke(this, new ConsoleInputBuffer(command, command.Length));
             MessageReceived?.Invoke(this, command);
         }
 

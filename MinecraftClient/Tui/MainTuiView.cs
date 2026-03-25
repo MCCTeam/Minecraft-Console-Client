@@ -46,6 +46,7 @@ namespace MinecraftClient.Tui
         private int _selectedSuggestionIndex = -1;
         private int _suggestionViewTop;
         private bool _acceptingSuggestion;
+        private bool _tabCycling;
 
         private int MaxVisibleSuggestions =>
             Math.Max(1, Settings.Config.Console.CommandSuggestion.Max_Displayed_Suggestions);
@@ -271,6 +272,9 @@ namespace MinecraftClient.Tui
 
         private void OnCommandKeyDown(object? sender, KeyEventArgs e)
         {
+            if (_tabCycling && e.Key is not (Key.Tab or Key.Up or Key.Down or Key.Escape))
+                _tabCycling = false;
+
             bool ctrl = (e.KeyModifiers & KeyModifiers.Control) != 0;
 
             if (e.Key == Key.C && ctrl)
@@ -331,7 +335,16 @@ namespace MinecraftClient.Tui
 
             if (e.Key == Key.Tab && SuggestionsVisible)
             {
-                AcceptSuggestion(_selectedSuggestionIndex);
+                if (_tabCycling)
+                {
+                    MoveSuggestionSelection(1);
+                    ApplySuggestionInPlace(_selectedSuggestionIndex);
+                }
+                else
+                {
+                    ApplySuggestionInPlace(_selectedSuggestionIndex);
+                    _tabCycling = true;
+                }
                 e.Handled = true;
                 return;
             }
@@ -345,12 +358,6 @@ namespace MinecraftClient.Tui
             switch (e.Key)
             {
                 case Key.Enter:
-                    if (SuggestionsVisible)
-                    {
-                        AcceptSuggestion(_selectedSuggestionIndex);
-                        e.Handled = true;
-                        break;
-                    }
                     SubmitCommand();
                     e.Handled = true;
                     break;
@@ -434,8 +441,14 @@ namespace MinecraftClient.Tui
                 return;
             }
 
-            if (_acceptingSuggestion)
+            if (_acceptingSuggestion || _tabCycling)
                 return;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                ClearSuggestions();
+                return;
+            }
 
             var backend = TuiConsoleBackend.Instance;
             if (backend == null) return;
@@ -450,10 +463,14 @@ namespace MinecraftClient.Tui
                 return;
 
             ClearSuggestions();
+            _tabCycling = false;
 
             _commandHistory.Add(command);
             _historyIndex = _commandHistory.Count;
-            _commandInput.Text = string.Empty;
+
+            _acceptingSuggestion = true;
+            try { _commandInput.Text = string.Empty; }
+            finally { _acceptingSuggestion = false; }
 
             _autoScroll = true;
 
@@ -476,8 +493,11 @@ namespace MinecraftClient.Tui
                 return;
             }
 
-            _commandInput.Text = _commandHistory[_historyIndex];
-            _commandInput.CaretIndex = _commandInput.Text?.Length ?? 0;
+            string historyText = _commandHistory[_historyIndex];
+            _commandInput.Text = historyText;
+            _commandInput.CaretIndex = historyText.Length;
+            Dispatcher.UIThread.Post(() => _commandInput.CaretIndex = historyText.Length,
+                DispatcherPriority.Input);
         }
 
         #endregion
@@ -561,7 +581,12 @@ namespace MinecraftClient.Tui
                     Background = Brushes.Transparent,
                 };
 
-                row.PointerPressed += (_, _) => AcceptSuggestion(index);
+                row.PointerPressed += (_, _) =>
+                {
+                    _selectedSuggestionIndex = index;
+                    ApplySuggestionInPlace(index);
+                    _tabCycling = true;
+                };
                 row.PointerEntered += (_, _) =>
                 {
                     if (_selectedSuggestionIndex != index)
@@ -576,12 +601,14 @@ namespace MinecraftClient.Tui
 
             if (_suggestions.Length > MaxVisibleSuggestions)
             {
-                string scrollHint = $" [{_suggestionViewTop + 1}-{viewBottom}/{_suggestions.Length}]";
+                string scrollHint = $"[{_suggestionViewTop + 1}-{viewBottom}/{_suggestions.Length}]";
                 var hintTb = new TextBlock
                 {
                     Text = scrollHint,
                     Foreground = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
                     Padding = new Thickness(1, 0),
+                    TextAlignment = TextAlignment.Right,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                 };
                 _suggestionPanel.Children.Add(hintTb);
             }
@@ -658,33 +685,40 @@ namespace MinecraftClient.Tui
             RebuildSuggestionItems();
         }
 
-        private void AcceptSuggestion(int index)
+        private void ApplySuggestionText(int index)
+        {
+            if (index < 0 || index >= _suggestions.Length) return;
+
+            string text = _commandInput.Text ?? "";
+            string selected = _suggestions[index].Text;
+
+            int start = Math.Min(_suggestionRange.Start, text.Length);
+            int end = Math.Min(_suggestionRange.End, text.Length);
+
+            string before = text[..start];
+            string after = text[end..];
+            string newText = before + selected + after;
+
+            _commandInput.Text = newText;
+            _commandInput.CaretIndex = before.Length + selected.Length;
+
+            _suggestionRange = (start, start + selected.Length);
+        }
+
+        private void ApplySuggestionInPlace(int index)
         {
             if (index < 0 || index >= _suggestions.Length) return;
 
             _acceptingSuggestion = true;
             try
             {
-                string text = _commandInput.Text ?? "";
-                string selected = _suggestions[index].Text;
-
-                int start = Math.Min(_suggestionRange.Start, text.Length);
-                int end = Math.Min(_suggestionRange.End, text.Length);
-
-                string before = text[..start];
-                string after = text[end..];
-                string newText = before + selected + after;
-
-                _commandInput.Text = newText;
-                _commandInput.CaretIndex = before.Length + selected.Length;
+                ApplySuggestionText(index);
             }
             finally
             {
                 _acceptingSuggestion = false;
             }
-
-            ClearSuggestions();
-            _commandInput.Focus();
+            UpdateSuggestionHighlight();
         }
 
         #endregion

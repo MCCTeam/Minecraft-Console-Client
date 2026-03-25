@@ -320,6 +320,52 @@ namespace MinecraftClient
                 MccAutocompleteHandler(buffer);
         }
 
+        private static readonly string[] OfflineCommands = ["quit", "exit", "connect", "reco", "help"];
+
+        public static void OfflineAutocompleteHandler(object? sender, ConsoleInputBuffer buffer)
+        {
+            if (!Settings.Config.Console.CommandSuggestion.Enable)
+                return;
+
+            string fullCommand = buffer.Text;
+            if (string.IsNullOrEmpty(fullCommand))
+            {
+                DoClearSuggestions();
+                return;
+            }
+
+            var InternalCmdChar = Config.Main.Advanced.InternalCmdChar;
+            int offset = 0;
+            if (InternalCmdChar != MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none)
+            {
+                if (fullCommand[0] != InternalCmdChar.ToChar())
+                {
+                    DoClearSuggestions();
+                    return;
+                }
+                offset = 1;
+            }
+
+            string command = fullCommand[offset..];
+            if (command.Contains(' '))
+            {
+                DoClearSuggestions();
+                return;
+            }
+
+            var sugList = new List<ConsoleInteractive.ConsoleSuggestion.Suggestion>();
+            foreach (string cmd in OfflineCommands)
+            {
+                if (command.Length == 0 || cmd.StartsWith(command, StringComparison.OrdinalIgnoreCase))
+                    sugList.Add(new(cmd));
+            }
+
+            if (sugList.Count > 0)
+                SendSuggestions(sugList.ToArray(), new(offset, offset + command.Length));
+            else
+                DoClearSuggestions();
+        }
+
         public static void CancelAutocomplete()
         {
             _cancellationTokenSource?.Cancel();

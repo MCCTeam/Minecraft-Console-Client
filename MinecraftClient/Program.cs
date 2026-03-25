@@ -64,7 +64,8 @@ namespace MinecraftClient
         static void Main(string[] args)
         {
             // [SENTRY] Initialize Sentry SDK only if the DSN is not empty
-            if (SentryDSN != string.Empty) {
+            if (SentryDSN != string.Empty)
+            {
                 _sentrySdk = SentrySdk.Init(options =>
                 {
                     options.Dsn = SentryDSN;
@@ -73,7 +74,7 @@ namespace MinecraftClient
                     options.TracesSampleRate = 1.0;
                     options.SendDefaultPii = false;
                 });
-                
+
                 AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
                 {
                     SentrySdk.CaptureException((Exception)eventArgs.ExceptionObject);
@@ -167,7 +168,8 @@ namespace MinecraftClient
 
                     // Only show the Sentry message if the DSN is not empty
                     // as Sentry will not be initialized if the DSN is empty
-                    if (SentryDSN != string.Empty) {
+                    if (SentryDSN != string.Empty)
+                    {
                         ConsoleIO.WriteLine(Translations.mcc_sentry_logging);
                     }
                 }
@@ -179,7 +181,10 @@ namespace MinecraftClient
                     {
                         ConsoleIO.WriteLine(string.Empty);
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_invaild_config, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-                        ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
+                        if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
+                            ConsoleIO.WriteLineFormatted($"Use '{Config.Main.Advanced.InternalCmdChar.ToLogString()}quit' to exit Minecraft Console Client.");
+                        else
+                            ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
                         command = ConsoleIO.ReadLine().Trim();
                         if (command.Length > 0)
                         {
@@ -213,7 +218,7 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(string.Format(Translations.mcc_help_us_translate, Settings.TranslationProjectUrl));
                     WriteBackSettings(true); // format
                 }
-                
+
                 if (!Config.Main.Advanced.EnableSentry)
                     _sentrySdk?.Dispose();
             }
@@ -691,7 +696,7 @@ namespace MinecraftClient
                     {
                         // [SENTRY]
                         SentrySdk.CaptureException(e);
-                        
+
                         ConsoleIO.WriteLine(e.Message);
                         ConsoleIO.WriteLine(e.StackTrace ?? "");
                         HandleFailure(); // Other error
@@ -750,7 +755,11 @@ namespace MinecraftClient
             new Thread(new ThreadStart(delegate
             {
                 if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt is not null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt is not null)
+                {
+                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                    offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
+                }
                 if (delaySeconds > 0)
                 {
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
@@ -769,7 +778,11 @@ namespace MinecraftClient
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
             if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
-            if (offlinePrompt is not null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
+            if (offlinePrompt is not null)
+            {
+                ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
+            }
             if (Config.Main.Advanced.PlayerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
             Environment.Exit(exitcode);
         }
@@ -794,10 +807,12 @@ namespace MinecraftClient
             if (!String.IsNullOrEmpty(errorMessage))
             {
                 ConsoleIO.Reset();
-                try {
+                try
+                {
                     while (Console.KeyAvailable)
                         Console.ReadKey(true);
-                } catch { }
+                }
+                catch { }
                 ConsoleIO.WriteLine(errorMessage);
 
                 if (disconnectReason.HasValue)
@@ -821,14 +836,16 @@ namespace MinecraftClient
                     }
                 }
 
-                if (disconnectReason.HasValue) {
+                if (disconnectReason.HasValue)
+                {
                     if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage!))
                         return; //AutoRelog is triggering a restart of the client, don't turn on the offline prompt
                 }
-                
+
                 if (offlinePrompt is null)
                 {
                     ConsoleIO.Backend.StopReadThread();
+                    ConsoleIO.Backend.OnInputChange += ConsoleIO.OfflineAutocompleteHandler;
 
                     var cancellationTokenSource = new CancellationTokenSource();
                     offlinePrompt = new(new Thread(new ThreadStart(delegate
@@ -837,7 +854,10 @@ namespace MinecraftClient
                         string command = " ";
                         ConsoleIO.WriteLine(string.Empty);
                         ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_disconnected, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-                        ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
+                        if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
+                            ConsoleIO.WriteLineFormatted($"Use '{Config.Main.Advanced.InternalCmdChar.ToLogString()}quit' to exit Minecraft Console Client.");
+                        else
+                            ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
 
                         while (!cancellationTokenSource.IsCancellationRequested)
                         {

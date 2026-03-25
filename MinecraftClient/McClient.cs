@@ -688,6 +688,8 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
+            instance = null;
+
             DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
 
             botsOnHold.Clear();
@@ -720,6 +722,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            instance = null;
+
             ConsoleIO.CancelAutocomplete();
 
             handler.Dispose();
