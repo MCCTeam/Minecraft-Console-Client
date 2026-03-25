@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Sockets;
 using MinecraftClient.Crypto;
 
@@ -90,6 +90,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="buffer">data to send</param>
         public void SendDataRAW(byte[] buffer)
         {
+            if (!IsConnected())
+                throw new SocketException((int)SocketError.NotConnected);
+
             if (encrypted)
                 s!.Write(buffer, 0, buffer.Length);
             else
