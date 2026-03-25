@@ -62,6 +62,15 @@ export const defaultThemeConfig_en: DefaultThemeLocaleData = {
         "/guide/creating-text-script.md",
         "/guide/chat-bots.md", 
         "/guide/creating-bots.md", 
+        {
+            text: "WebSocket Bot",
+            collapsible: true,
+            children: [
+                "/guide/websocket/README.md",
+                "/guide/websocket/Commands.md",
+                "/guide/websocket/Events.md",
+            ],
+        },
         "/guide/ai-assisted-development.md",
         "/guide/contibuting.md"
     ],
