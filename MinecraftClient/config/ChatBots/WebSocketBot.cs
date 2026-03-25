@@ -285,8 +285,6 @@ public class WebSocketBot : ChatBot
         text = GetVerbatim(text);
         string message = "", username = "";
 
-        BroadcastEvent("OnChatRaw", SerializeData(new { text }));
-
         if (IsPrivateMessage(text, ref message, ref username))
             BroadcastEvent("OnChatPrivate", SerializeData(new { sender = username, message, rawText = text }));
         else if (IsChatMessage(text, ref message, ref username))
@@ -295,6 +293,11 @@ public class WebSocketBot : ChatBot
         string tpSender = "";
         if (IsTeleportRequest(text, ref tpSender))
             BroadcastEvent("OnTeleportRequest", SerializeData(new { sender = tpSender, rawText = text }));
+    }
+
+    public override void GetText(string text, string? json)
+    {
+        BroadcastEvent("OnChatRaw", SerializeData(new { text, json }));
     }
 
     public override bool OnDisconnect(DisconnectReason reason, string message)
