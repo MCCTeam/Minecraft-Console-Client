@@ -2229,6 +2229,9 @@ Logging in...</value>
   <data name="cmd.inventory.tui_launch_failed" xml:space="preserve">
     <value>Failed to launch TUI inventory viewer.</value>
   </data>
+  <data name="cmd.inventory.tui_unsupported_container" xml:space="preserve">
+    <value>TUI viewer does not support this container type (Inventory #{0}). Use '/inventory {0} list' to view its contents.</value>
+  </data>
   <data name="tui.select_copy_hint" xml:space="preserve">
     <value>Hold Shift + Left-click to select and copy text.</value>
   </data>

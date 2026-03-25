@@ -435,6 +435,12 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(CmdResult.Status.Fail, msg);
             }
 
+            if (container.Type != ContainerType.PlayerInventory)
+            {
+                handler.Log.Warn(string.Format(Translations.cmd_inventory_tui_unsupported_container, inventoryId));
+                return r.SetAndReturn(CmdResult.Status.Fail);
+            }
+
             handler.Log.Info(string.Format(Translations.cmd_inventory_tui_opening, inventoryId));
 
             bool success = InventoryTuiHost.Launch(handler, inventoryId);
