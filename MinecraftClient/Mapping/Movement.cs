@@ -232,8 +232,8 @@ namespace MinecraftClient.Mapping
                     int tentativeGScore = current.GScore + (int)current.Location.DistanceSquared(neighbor);
 
                     // If the neighbor is not in the GScoreDict OR its current tentativeGScore is lower than the previously saved one: 
-                    if (!gScoreDict.ContainsKey(neighbor) ||
-                        (gScoreDict.ContainsKey(neighbor) && tentativeGScore < gScoreDict[neighbor]))
+                    if (!gScoreDict.TryGetValue(neighbor, out int existingGScore) ||
+                        tentativeGScore < existingGScore)
                     {
                         // Save the new relation between the neighbored block and the current one
                         cameFrom[neighbor] = current.Location;

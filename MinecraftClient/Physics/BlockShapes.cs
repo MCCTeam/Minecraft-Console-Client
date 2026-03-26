@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace MinecraftClient.Physics
         private static readonly Aabb[] FullBlockArray = { FullBlock };
         private static readonly Aabb[] EmptyArray = Array.Empty<Aabb>();
 
-        private static Dictionary<int, Aabb[]>? stateToShape;
+        private static FrozenDictionary<int, Aabb[]>? stateToShape;
         private static Dictionary<string, object>? prismarineBlocks;
         private static Dictionary<int, Aabb[]>? prismarineShapes;
 
@@ -136,14 +137,21 @@ namespace MinecraftClient.Physics
 
         private static void BuildStateMap()
         {
-            stateToShape = new Dictionary<int, Aabb[]>();
+            var builder = new Dictionary<int, Aabb[]>();
 
             if (prismarineBlocks is null || prismarineShapes is null)
+            {
+                stateToShape = builder.ToFrozenDictionary();
                 return;
+            }
 
             var palette = Block.Palette;
             var dict = GetPaletteDict(palette);
-            if (dict is null) return;
+            if (dict is null)
+            {
+                stateToShape = builder.ToFrozenDictionary();
+                return;
+            }
 
             // Group consecutive state IDs by Material to find state ranges per block
             var materialRanges = new Dictionary<Material, List<(int start, int end)>>();
@@ -182,20 +190,20 @@ namespace MinecraftClient.Physics
                     {
                         var shapes = prismarineShapes.GetValueOrDefault(singleShapeId, EmptyArray);
                         for (int sid = start; sid <= end; sid++)
-                            stateToShape[sid] = shapes;
+                            builder[sid] = shapes;
                     }
                     else if (blockShapeData is List<int> shapeIdList)
                     {
                         for (int i = 0; i < stateCount && (globalStateOffset + i) < shapeIdList.Count; i++)
                         {
                             int shapeId = shapeIdList[globalStateOffset + i];
-                            stateToShape[start + i] = prismarineShapes.GetValueOrDefault(shapeId, EmptyArray);
+                            builder[start + i] = prismarineShapes.GetValueOrDefault(shapeId, EmptyArray);
                         }
                     }
                     globalStateOffset += stateCount;
                 }
             }
-
+            stateToShape = builder.ToFrozenDictionary();
         }
 
         /// <summary>
