@@ -47,6 +47,8 @@ namespace MinecraftClient.Tui
                 return tb;
             }
 
+            tb.Background = Brushes.Black;
+
             IBrush currentColor = Brushes.White;
             bool bold = false;
             bool italic = false;

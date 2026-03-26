@@ -774,16 +774,20 @@ namespace MinecraftClient
         public static void DoExit(int exitcode = 0)
         {
             WriteBackSettings();
-            ConsoleIO.Backend?.Shutdown();
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
             if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
             if (offlinePrompt is not null)
             {
                 ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
-                offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
+                offlinePrompt.Item2.Cancel();
+                if (Thread.CurrentThread != offlinePrompt.Item1)
+                    offlinePrompt.Item1.Join(1000);
+                offlinePrompt = null;
+                ConsoleIO.Reset();
             }
             if (Config.Main.Advanced.PlayerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
+            ConsoleIO.Backend?.Shutdown();
             Environment.Exit(exitcode);
         }
 
@@ -804,15 +808,18 @@ namespace MinecraftClient
         /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
         public static void HandleFailure(string? errorMessage = null, bool versionError = false, ChatBot.DisconnectReason? disconnectReason = null)
         {
-            if (!String.IsNullOrEmpty(errorMessage))
+            if (!string.IsNullOrEmpty(errorMessage))
             {
                 ConsoleIO.Reset();
-                try
+                if (ConsoleIO.Backend is not Tui.TuiConsoleBackend)
                 {
-                    while (Console.KeyAvailable)
-                        Console.ReadKey(true);
+                    try
+                    {
+                        while (Console.KeyAvailable)
+                            Console.ReadKey(true);
+                    }
+                    catch { }
                 }
-                catch { }
                 ConsoleIO.WriteLine(errorMessage);
 
                 if (disconnectReason.HasValue)
@@ -864,65 +871,57 @@ namespace MinecraftClient
                             if (exitThread)
                                 return;
 
-                            while (command.Length > 0)
+                            command = ConsoleIO.ReadLine().Trim();
+
+                            if (command.Length == 0)
                             {
-                                if (cancellationTokenSource.IsCancellationRequested)
-                                    return;
-
-                                command = ConsoleIO.ReadLine().Trim();
-                                if (command.Length > 0)
-                                {
-                                    string message = "";
-
-                                    if (Config.Main.Advanced.InternalCmdChar.ToChar() != ' '
-                                        && command[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
-                                        command = command[1..];
-
-                                    if (command.StartsWith("reco"))
-                                    {
-                                        message = Commands.Reco.DoReconnect(Config.AppVar.ExpandVars(command));
-                                        if (message == "")
-                                        {
-                                            exitThread = true;
-                                            break;
-                                        }
-                                    }
-                                    else if (command.StartsWith("connect"))
-                                    {
-                                        message = Commands.Connect.DoConnect(Config.AppVar.ExpandVars(command));
-                                        if (message == "")
-                                        {
-                                            exitThread = true;
-                                            break;
-                                        }
-                                    }
-                                    else if (command.StartsWith("exit") || command.StartsWith("quit"))
-                                    {
-                                        message = Commands.Exit.DoExit(Config.AppVar.ExpandVars(command));
-                                    }
-                                    else if (command.StartsWith("help"))
-                                    {
-                                        ConsoleIO.WriteLineFormatted("§8MCC: " +
-                                                                     Config.Main.Advanced.InternalCmdChar.ToLogString() +
-                                                                     new Commands.Reco().GetCmdDescTranslated());
-                                        ConsoleIO.WriteLineFormatted("§8MCC: " +
-                                                                     Config.Main.Advanced.InternalCmdChar.ToLogString() +
-                                                                     new Commands.Connect().GetCmdDescTranslated());
-                                    }
-                                    else
-                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.icmd_unknown, command.Split(' ')[0]));
-
-                                    if (message != "")
-                                        ConsoleIO.WriteLineFormatted("§8MCC: " + message);
-                                }
-                                else
-                                {
+                                if (ConsoleIO.Backend is not Tui.TuiConsoleBackend)
                                     Commands.Exit.DoExit(Config.AppVar.ExpandVars(command));
-                                }
+                                continue;
                             }
 
-                            if (exitThread)
-                                return;
+                            string message = "";
+
+                            if (Config.Main.Advanced.InternalCmdChar.ToChar() != ' '
+                                && command[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
+                                command = command[1..];
+
+                            if (command.StartsWith("reco"))
+                            {
+                                message = Commands.Reco.DoReconnect(Config.AppVar.ExpandVars(command));
+                                if (message == "")
+                                {
+                                    exitThread = true;
+                                    continue;
+                                }
+                            }
+                            else if (command.StartsWith("connect"))
+                            {
+                                message = Commands.Connect.DoConnect(Config.AppVar.ExpandVars(command));
+                                if (message == "")
+                                {
+                                    exitThread = true;
+                                    continue;
+                                }
+                            }
+                            else if (command.StartsWith("exit") || command.StartsWith("quit"))
+                            {
+                                message = Commands.Exit.DoExit(Config.AppVar.ExpandVars(command));
+                            }
+                            else if (command.StartsWith("help"))
+                            {
+                                ConsoleIO.WriteLineFormatted("§8MCC: " +
+                                                             Config.Main.Advanced.InternalCmdChar.ToLogString() +
+                                                             new Commands.Reco().GetCmdDescTranslated());
+                                ConsoleIO.WriteLineFormatted("§8MCC: " +
+                                                             Config.Main.Advanced.InternalCmdChar.ToLogString() +
+                                                             new Commands.Connect().GetCmdDescTranslated());
+                            }
+                            else
+                                ConsoleIO.WriteLineFormatted(string.Format(Translations.icmd_unknown, command.Split(' ')[0]));
+
+                            if (message != "")
+                                ConsoleIO.WriteLineFormatted("§8MCC: " + message);
                         }
                     })), cancellationTokenSource);
                     offlinePrompt.Item1.Start();

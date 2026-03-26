@@ -494,10 +494,21 @@ namespace MinecraftClient.Tui
             }
 
             string historyText = _commandHistory[_historyIndex];
-            _commandInput.Text = historyText;
-            _commandInput.CaretIndex = historyText.Length;
-            Dispatcher.UIThread.Post(() => _commandInput.CaretIndex = historyText.Length,
-                DispatcherPriority.Input);
+            SetCommandText(historyText);
+        }
+
+        private void SetCommandText(string text)
+        {
+            _commandInput.TextChanged -= OnCommandTextChanged;
+            try
+            {
+                _commandInput.Text = text;
+                _commandInput.CaretIndex = text.Length;
+            }
+            finally
+            {
+                _commandInput.TextChanged += OnCommandTextChanged;
+            }
         }
 
         #endregion

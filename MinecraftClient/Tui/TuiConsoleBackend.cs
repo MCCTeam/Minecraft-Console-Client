@@ -256,7 +256,7 @@ namespace MinecraftClient.Tui
 
             new Thread(() =>
             {
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 Environment.Exit(0);
             }) { Name = "TUI-Exit-Guard", IsBackground = true }.Start();
         }
