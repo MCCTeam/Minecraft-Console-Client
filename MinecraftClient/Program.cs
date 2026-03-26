@@ -59,6 +59,17 @@ namespace MinecraftClient
         private const string SentryDSN = "";
 
         /// <summary>
+        /// Snapshot of all state collected before the console backend is initialized.
+        /// Passed to <see cref="ProcessStartupState"/> once the backend is ready.
+        /// </summary>
+        internal sealed class StartupState
+        {
+            public Settings.ConfigLoadResult ConfigResult { get; init; }
+            public bool NewlyGenerated { get; init; }
+            public bool SentryEnabled { get; init; }
+        }
+
+        /// <summary>
         /// The main entry point of Minecraft Console Client
         /// </summary>
         static void Main(string[] args)
@@ -103,7 +114,6 @@ namespace MinecraftClient
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             });
 
-            //Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";
             if (args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {
@@ -115,133 +125,178 @@ namespace MinecraftClient
                 args = args.Where(o => !Object.ReferenceEquals(o, args[^1])).ToArray();
             }
 
+            //Debug input ?
+            if (args.Length == 1 && args[0] == "--keyboard-debug")
+            {
+                if (!ConsoleIO.BasicIO)
+                {
+                    ConsoleIO.Backend = new ClassicConsoleBackend();
+                    ConsoleIO.Backend.Init();
+                }
+                ConsoleIO.WriteLine("Keyboard debug mode: Press any key to display info");
+                ConsoleIO.DebugReadInput();
+            }
+
+            // --- Load config as early as possible (no printing yet) ---
+            Settings.ConfigLoadResult configResult;
+            bool newlyGenerated = false;
+
+            if (args.Length >= 1 && File.Exists(args[0]) && Settings.ToLowerIfNeed(Path.GetExtension(args[0])) == ".ini")
+            {
+                configResult = Settings.LoadFromFile(args[0]);
+                settingsIniPath = args[0];
+
+                List<string> args_tmp = args.ToList<string>();
+                args_tmp.RemoveAt(0);
+                args = args_tmp.ToArray();
+            }
+            else if (File.Exists("MinecraftClient.ini"))
+            {
+                configResult = Settings.LoadFromFile("MinecraftClient.ini");
+            }
+            else
+            {
+                configResult = new Settings.ConfigLoadResult { Success = true, NeedWriteDefault = true };
+                newlyGenerated = true;
+            }
+
+            if (configResult.NeedWriteDefault)
+            {
+                Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
+                WriteBackSettings(false);
+            }
+            else if (configResult.Success)
+            {
+                WriteBackSettings(true);
+            }
+
+            if (!Config.Main.Advanced.EnableSentry)
+                _sentrySdk?.Dispose();
+
+            var startupState = new StartupState
+            {
+                ConfigResult = configResult,
+                NewlyGenerated = newlyGenerated,
+                SentryEnabled = SentryDSN != string.Empty,
+            };
+
+            // --- Determine console mode and initialize backend ---
+            if (!ConsoleIO.BasicIO && Config.Console.General.ConsoleMode == ConsoleModeType.tui)
+            {
+                ConsoleIO.Backend?.Shutdown();
+                var tuiBackend = new Tui.TuiConsoleBackend();
+                ConsoleIO.Backend = tuiBackend;
+                tuiBackend.RunTuiMainLoop(args, startupState);
+                return;
+            }
+
+            // Classic mode: init backend, then print and process startup state.
             if (!ConsoleIO.BasicIO)
             {
                 ConsoleIO.Backend = new ClassicConsoleBackend();
                 ConsoleIO.Backend.Init();
             }
 
-            ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
-
-            //Build information to facilitate processing of bug reports
-            if (BuildInfo is not null)
-                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
-
-            //Debug input ?
-            if (args.Length == 1 && args[0] == "--keyboard-debug")
-            {
-                ConsoleIO.WriteLine("Keyboard debug mode: Press any key to display info");
-                ConsoleIO.DebugReadInput();
-            }
-
-            //Process ini configuration file
-            {
-                bool loadSucceed, needWriteDefaultSetting, newlyGenerated = false;
-                if (args.Length >= 1 && File.Exists(args[0]) && Settings.ToLowerIfNeed(Path.GetExtension(args[0])) == ".ini")
-                {
-                    (loadSucceed, needWriteDefaultSetting) = Settings.LoadFromFile(args[0]);
-                    settingsIniPath = args[0];
-
-                    //remove ini configuration file from arguments array
-                    List<string> args_tmp = args.ToList<string>();
-                    args_tmp.RemoveAt(0);
-                    args = args_tmp.ToArray();
-                }
-                else if (File.Exists("MinecraftClient.ini"))
-                {
-                    (loadSucceed, needWriteDefaultSetting) = Settings.LoadFromFile("MinecraftClient.ini");
-                }
-                else
-                {
-                    loadSucceed = true;
-                    needWriteDefaultSetting = true;
-                    newlyGenerated = true;
-                }
-
-                if (needWriteDefaultSetting)
-                {
-                    Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
-                    WriteBackSettings(false);
-                    if (newlyGenerated)
-                        ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_settings_generated);
-                    ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
-
-                    // Only show the Sentry message if the DSN is not empty
-                    // as Sentry will not be initialized if the DSN is empty
-                    if (SentryDSN != string.Empty)
-                    {
-                        ConsoleIO.WriteLine(Translations.mcc_sentry_logging);
-                    }
-                }
-                else if (!loadSucceed)
-                {
-                    ConsoleIO.Backend?.StopReadThread();
-                    string command = " ";
-                    while (command.Length > 0)
-                    {
-                        ConsoleIO.WriteLine(string.Empty);
-                        ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_invaild_config, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-                        if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
-                            ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_quit_to_exit, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-                        else
-                            ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
-                        command = ConsoleIO.ReadLine().Trim();
-                        if (command.Length > 0)
-                        {
-                            if (Config.Main.Advanced.InternalCmdChar.ToChar() != ' '
-                                && command[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
-                                command = command[1..];
-
-                            if (command.StartsWith("exit") || command.StartsWith("quit"))
-                            {
-                                return;
-                            }
-                            else if (command.StartsWith("new"))
-                            {
-                                Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
-                                WriteBackSettings(true);
-                                ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_gen_new_config, settingsIniPath));
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                    return;
-                }
-                else
-                {
-                    //Load external translation file. Should be called AFTER settings loaded
-                    if (!Config.Main.Advanced.Language.StartsWith("en"))
-                        ConsoleIO.WriteLine(string.Format(Translations.mcc_help_us_translate, Settings.TranslationProjectUrl));
-                    WriteBackSettings(true); // format
-                }
-
-                if (!Config.Main.Advanced.EnableSentry)
-                    _sentrySdk?.Dispose();
-            }
-
-            // Switch to TUI mode if configured (must happen after config load)
-            if (!ConsoleIO.BasicIO && Config.Console.General.ConsoleMode == ConsoleModeType.tui)
-            {
-                ConsoleIO.Backend?.Shutdown();
-                var tuiBackend = new Tui.TuiConsoleBackend();
-                ConsoleIO.Backend = tuiBackend;
-                tuiBackend.RunTuiMainLoop(args);
+            if (!ProcessStartupState(startupState))
                 return;
-            }
 
-            ContinueAfterTuiInit(args);
+            RunStartupSequence(args);
         }
 
         /// <summary>
-        /// Continues MCC startup after console mode has been determined.
-        /// Called directly from Main for classic/basic mode, or from a background
-        /// thread for TUI mode (after the Avalonia UI loop has started).
+        /// Prints the application banner and processes the startup state collected before
+        /// the console backend was ready. Called once from classic mode or from TUI after
+        /// the view is initialized.
         /// </summary>
-        internal static void ContinueAfterTuiInit(string[] args)
+        /// <returns>True if startup can continue; false if config load failed and user chose to exit.</returns>
+        internal static bool ProcessStartupState(StartupState state)
+        {
+            ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
+            if (BuildInfo is not null)
+                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+
+            var cfg = state.ConfigResult;
+
+            if (cfg.NeedWriteDefault)
+            {
+                if (cfg.IsLegacyUpgrade)
+                {
+                    ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
+                    ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.mcc_backup_old_config, cfg.LegacyBackupPath));
+                }
+
+                if (state.NewlyGenerated)
+                    ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_settings_generated);
+
+                ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
+
+                if (state.SentryEnabled)
+                    ConsoleIO.WriteLine(Translations.mcc_sentry_logging);
+            }
+            else if (!cfg.Success)
+            {
+                ConsoleIO.WriteLineFormatted("§c" + Translations.config_load_fail);
+                if (cfg.ErrorMessage is not null)
+                    ConsoleIO.WriteLine(cfg.ErrorMessage);
+                HandleConfigLoadFailure();
+                return false;
+            }
+            else
+            {
+                if (!Config.Main.Advanced.Language.StartsWith("en"))
+                    ConsoleIO.WriteLine(string.Format(Translations.mcc_help_us_translate, Settings.TranslationProjectUrl));
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Handles a failed config load by prompting the user to fix or regenerate the config file.
+        /// </summary>
+        internal static void HandleConfigLoadFailure()
+        {
+            ConsoleIO.Backend?.StopReadThread();
+            string command = " ";
+            while (command.Length > 0)
+            {
+                ConsoleIO.WriteLine(string.Empty);
+                ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_invaild_config, Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_quit_to_exit, Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                else
+                    ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
+                command = ConsoleIO.ReadLine().Trim();
+                if (command.Length > 0)
+                {
+                    if (Config.Main.Advanced.InternalCmdChar.ToChar() != ' '
+                        && command[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
+                        command = command[1..];
+
+                    if (command.StartsWith("exit") || command.StartsWith("quit"))
+                    {
+                        return;
+                    }
+                    else if (command.StartsWith("new"))
+                    {
+                        Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
+                        WriteBackSettings(true);
+                        ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_gen_new_config, settingsIniPath));
+                        return;
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Runs the main startup sequence: CLI argument processing, auth, and connection.
+        /// Called from Main() for classic/basic mode, or from TuiConsoleBackend on a
+        /// background thread after the Avalonia UI loop has started.
+        /// </summary>
+        internal static void RunStartupSequence(string[] args)
         {
             //Other command-line arguments
             if (args.Length >= 1)
@@ -732,7 +787,8 @@ namespace MinecraftClient
         /// </summary>
         public static void ReloadSettings(bool keepAccountAndServerSettings = false)
         {
-            if (Settings.LoadFromFile(settingsIniPath, keepAccountAndServerSettings).Item1)
+            var result = Settings.LoadFromFile(settingsIniPath, keepAccountAndServerSettings);
+            if (result.Success)
                 ConsoleIO.WriteLine(string.Format(Translations.config_load, settingsIniPath));
         }
 
