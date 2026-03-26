@@ -136,7 +136,22 @@ namespace MinecraftClient
 
         }
 
-        public static Tuple<bool, bool> LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
+        /// <summary>
+        /// Structured result returned by <see cref="LoadFromFile(string, bool)"/>.
+        /// </summary>
+        public readonly struct ConfigLoadResult
+        {
+            public bool Success { get; init; }
+            public bool NeedWriteDefault { get; init; }
+            /// <summary>True when a pre-TOML legacy config was detected, backed up, and a fresh default is needed.</summary>
+            public bool IsLegacyUpgrade { get; init; }
+            /// <summary>Non-null when the load failed due to a parse/IO error (not a legacy upgrade).</summary>
+            public string? ErrorMessage { get; init; }
+            /// <summary>Path where the old config was backed up (legacy upgrade case).</summary>
+            public string? LegacyBackupPath { get; init; }
+        }
+
+        public static ConfigLoadResult LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
         {
             bool keepAccountSettings = InternalConfig.KeepAccountSettings;
             bool keepServerSettings = InternalConfig.KeepServerSettings;
@@ -157,21 +172,27 @@ namespace MinecraftClient
                 Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
                 try
                 {
-                    // The old configuration file has been backed up as A.
                     string configString = File.ReadAllText(filepath);
                     if (configString.Contains("Some settings missing here after an upgrade?"))
                     {
                         string newFilePath = Path.ChangeExtension(filepath, ".old.ini");
                         File.Copy(filepath, newFilePath, true);
-                        ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
-                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.mcc_backup_old_config, newFilePath));
-                        return new(false, true);
+                        return new ConfigLoadResult
+                        {
+                            Success = false,
+                            NeedWriteDefault = true,
+                            IsLegacyUpgrade = true,
+                            LegacyBackupPath = newFilePath
+                        };
                     }
                 }
                 catch { }
-                ConsoleIO.WriteLineFormatted("§c" + Translations.config_load_fail);
-                ConsoleIO.WriteLine(ex.GetFullMessage());
-                return new(false, false);
+                return new ConfigLoadResult
+                {
+                    Success = false,
+                    NeedWriteDefault = false,
+                    ErrorMessage = ex.GetFullMessage()
+                };
             }
             finally
             {
@@ -180,7 +201,7 @@ namespace MinecraftClient
                 if (!keepServerSettings)
                     InternalConfig.KeepServerSettings = false;
             }
-            return new(true, false);
+            return new ConfigLoadResult { Success = true, NeedWriteDefault = false };
         }
 
         public static void WriteToFile(string filepath, bool backupOldFile)
