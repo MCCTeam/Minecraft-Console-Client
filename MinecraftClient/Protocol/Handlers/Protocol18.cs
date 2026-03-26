@@ -3162,26 +3162,42 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(int packetId, IEnumerable<byte> packetData)
         {
+            byte[] payload = packetData as byte[] ?? packetData.ToArray();
+
             if (handler.GetNetworkPacketCaptureEnabled())
             {
-                var clone = packetData.ToList();
-                handler.OnNetworkPacket(packetId, clone, currentState == CurrentState.Login, false);
+                handler.OnNetworkPacket(packetId, payload.ToList(), currentState == CurrentState.Login, false);
             }
 
             //log.Info($"[C -> S] Sending packet {packetId:X} > {dataTypes.ByteArrayToString(packetData.ToArray())}");
 
             //The inner packet
-            var thePacket = dataTypes.ConcatBytes(DataTypes.GetVarInt(packetId), packetData.ToArray());
+            byte[] packetIdBytes = DataTypes.GetVarInt(packetId);
+            byte[] thePacket = new byte[packetIdBytes.Length + payload.Length];
+            Buffer.BlockCopy(packetIdBytes, 0, thePacket, 0, packetIdBytes.Length);
+            Buffer.BlockCopy(payload, 0, thePacket, packetIdBytes.Length, payload.Length);
 
             if (compression_treshold >= 0) //Compression enabled?
             {
-                thePacket = thePacket.Length >= compression_treshold
-                    ? dataTypes.ConcatBytes(DataTypes.GetVarInt(thePacket.Length), ZlibUtils.Compress(thePacket))
-                    : dataTypes.ConcatBytes(DataTypes.GetVarInt(0), thePacket);
+                byte[] compressedHeader = thePacket.Length >= compression_treshold
+                    ? DataTypes.GetVarInt(thePacket.Length)
+                    : DataTypes.GetVarInt(0);
+                byte[] compressedPayload = thePacket.Length >= compression_treshold
+                    ? ZlibUtils.Compress(thePacket)
+                    : thePacket;
+
+                byte[] compressedPacket = new byte[compressedHeader.Length + compressedPayload.Length];
+                Buffer.BlockCopy(compressedHeader, 0, compressedPacket, 0, compressedHeader.Length);
+                Buffer.BlockCopy(compressedPayload, 0, compressedPacket, compressedHeader.Length, compressedPayload.Length);
+                thePacket = compressedPacket;
             }
 
             //log.Debug("[C -> S] Sending packet " + packetId + " > " + dataTypes.ByteArrayToString(dataTypes.ConcatBytes(dataTypes.GetVarInt(thePacket.Length), thePacket)));
-            socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(thePacket.Length), thePacket));
+            byte[] packetLengthBytes = DataTypes.GetVarInt(thePacket.Length);
+            byte[] fullPacket = new byte[packetLengthBytes.Length + thePacket.Length];
+            Buffer.BlockCopy(packetLengthBytes, 0, fullPacket, 0, packetLengthBytes.Length);
+            Buffer.BlockCopy(thePacket, 0, fullPacket, packetLengthBytes.Length, thePacket.Length);
+            socketWrapper.SendDataRAW(fullPacket);
         }
 
         /// <summary>
