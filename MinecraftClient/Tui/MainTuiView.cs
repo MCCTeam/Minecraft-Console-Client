@@ -272,7 +272,7 @@ namespace MinecraftClient.Tui
 
         private void OnCommandKeyDown(object? sender, KeyEventArgs e)
         {
-            if (_tabCycling && e.Key is not (Key.Tab or Key.Up or Key.Down or Key.Escape))
+            if (_tabCycling && e.Key is not Key.Tab)
                 _tabCycling = false;
 
             bool ctrl = (e.KeyModifiers & KeyModifiers.Control) != 0;
