@@ -38,7 +38,7 @@ Requirements:
 - [Git](https://www.git-scm.com/)
 - [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
 
-::: tip
+::: note
 If you want to modify the code and you are new to C# or programming in general, the tutorials listed in [Creating Bots](creating-bots.md#requirements) are a good starting point.
 :::
 
@@ -129,7 +129,7 @@ If the publish step succeeds, the published binary `MinecraftClient.exe` will be
 <details>
 <summary>Linux and macOS build instructions</summary>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)**
 
@@ -187,7 +187,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
      dotnet publish MinecraftClient.sln -f net10.0 -r linux-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
      ```
 
-     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+     <div class="custom-container note"><p class="custom-container-title">Note</p>
 
      **If you are using Linux on ARM, 32-bit, RHEL-based distributions, or Musl, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace `-r linux-x64` with it, for example `-r linux-arm64`.**
 
@@ -199,7 +199,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
      dotnet publish MinecraftClient.sln -f net10.0 -r osx-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
      ```
 
-     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+     <div class="custom-container note"><p class="custom-container-title">Note</p>
 
      **If you are not using an Intel Mac, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) for your processor and replace `-r osx-x64` with it, for example `-r osx-arm64`.**
 
@@ -228,7 +228,7 @@ Requirements:
 - Git
 - Docker
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **This section is for more advanced users, if you do not know how to install git or docker, you can take a look at other sections for Git, and search on how to install Docker on your system.**
 
@@ -316,19 +316,19 @@ docker-compose down
 
 It is possible to run Minecraft Console Client on Android through Termux and Ubuntu, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **This section gets a bit technical. If you run into issues, open a discussion on our GitHub repository page.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
 
@@ -351,7 +351,7 @@ It is possible to run Minecraft Console Client on Android through Termux and Ubu
 
 **GitHub releases:** Go to [the latest Termux GitHub release](https://github.com/termux/termux-app/releases/latest/), download the APK file whose name contains `universal` (e.g. `termux-app_v...-debug_universal.apk`), and install it.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If your file manager does not let you install APK files, install and use `File Manager +` and grant it permission to install third-party applications when asked.**
 
@@ -373,7 +373,7 @@ Open Termux and run the following commands one at a time, in order:
 2. `pkg upgrade`
 3. `pkg install proot-distro`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you are asked to press Y/N during the update or upgrade step, enter Y and press Enter.**
 
@@ -391,7 +391,7 @@ Once the installation finishes, start Ubuntu with:
 proot-distro login ubuntu
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Every time you open Termux after it has been closed, run this command to get back into Ubuntu.**
 
@@ -470,7 +470,7 @@ wget -O MinecraftClient \
     | cut -d '"' -f 4)"
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you have a 32-bit ARM device, replace `linux-arm64` with `linux-arm` in the command above.**
 
@@ -517,7 +517,7 @@ Also, here are some linux tutorials for people who are new to it:
 
 ## Run on a VPS
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **This is a newer section. If you spot a mistake, please report it by opening an issue in our [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client).**
 
@@ -548,7 +548,7 @@ Here is a [YouTube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
    Download and install [Git Bash](https://git-scm.com/downloads).
 
-   <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+   <div class="custom-container note"><p class="custom-container-title">Note</p>
 
    **Make sure to allow the installation to add it to the context menu**
 
@@ -602,7 +602,7 @@ Some of the reliable and cheap hosting providers (sorted for price/performance):
 
   **Minimum price**: `2.50 EUR / month`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **If Ubuntu 24.04 LTS is not in the dropdown when ordering, you may need to reinstall later or ask support to do it.**
 
@@ -648,7 +648,7 @@ You also may want to search for better deals.
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you're not banned, sometimes fetching the keys can take some time, try giving it a minute or two, if it still hangs, hit some keys to refresh the screen, or try restarting and running again. If it still happens, use tmux instead of screen.**
 
@@ -665,7 +665,7 @@ Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an
 <details>
 <summary>AWS EC2 setup steps</summary>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Skip this section if you're not using AWS. Go to [Initial VPS setup](#initial-vps-setup)**
 
@@ -673,7 +673,7 @@ Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an
 
 When you register and open the `AWS Console`, click on the Search field on the top of the page and search for: `EC2`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Make sure to select the region closest to you for the minimal latency**
 
@@ -713,7 +713,7 @@ For the **Network settings** check the following checkboxes on:
 - `Allow HTTPs traffic from the internet`
 - `Allow HTTP traffic from the internet`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **The SSH traffic from Anywhere is not the best thing for security, you might want to enter IP addresses of your devices from which you want to access the VPS manually.**
 
@@ -737,13 +737,13 @@ In order to login with SSH, you are going to use the following command:
 ssh -i <name of your private root key here> ubuntu@<your public dns v4 ip here>
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **`<` and `>` are not typed, that is just a notation for a placeholder!**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **`ubuntu` is a default root account username for Ubuntu on AWS!**
 
@@ -766,7 +766,7 @@ Now you can continue to [Creating a new user](#creating-a-new-user)
 <details>
 <summary>Non-AWS VPS login steps</summary>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **This section if for those who do not use AWS, if you use AWS skip it**
 
@@ -784,7 +784,7 @@ If you're on Windows open `Git Bash`, on mac OS and Linux open a `Terminal` and 
 ssh <username>@<ip>
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you're given a custom port other than `22` by your host, you should add `-p <port here>` before the username (eg. `ssh -p <port here> <username>@<ip>`) or `:<port>` after the ip (eg. `ssh <username>@<ip>:<port>`)**
 
@@ -815,7 +815,7 @@ Once you've logged in to your VPS you need to create a new user and give it SSH 
 
 In this tutorial we will be using `mcc` as a name for the user account that will be running the MCC.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You may be wondering why we're creating a separate user account and making it be accessible over SSH only. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful.**
 
@@ -833,13 +833,13 @@ Now we need to give it a password, execute the following command, type the passw
 sudo passwd mcc
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **When you're typing a password it will not be displayed on the screen, but you're typing it for real.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Make sure you have a strong password!**
 
@@ -993,7 +993,7 @@ Example:
 ssh -i MCC_Key mcc@3.71.108.69
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you've changed the `Port`, make sure you add a `-p <your port here>` option after the `-i <key>` option (eg. `ssh -i MCC_Key -p 8973 mcc@3.71.108.69`)!**
 
@@ -1012,7 +1012,7 @@ Now you can install the .NET 10 SDK and MCC.
 <details>
 <summary>.NET SDK installation on VPS</summary>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If your VPS has an ARM CPU, follow [this](#installing-net-on-arm) part of the documentation and then return to section after this one.**
 
@@ -1073,7 +1073,7 @@ If it was successful, you can now install MCC.
 
 Now that you have the .NET SDK and a user account, install the `screen` utility. You will need it if you want MCC to keep running after you close the SSH session.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **There is also a Docker method, if you're using Docker, you do not need the `screen` program.**
 
@@ -1107,13 +1107,13 @@ To start a screen, type:
 screen -S mcc
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **`mcc` here is the name of the screen, you can use whatever you like, but if you've used a different name, make sure you use that one instead of the `mcc` in the following commands.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You need to make a screen only once, however if you reboot your VPS, you need to start it on each reboot.**
 
