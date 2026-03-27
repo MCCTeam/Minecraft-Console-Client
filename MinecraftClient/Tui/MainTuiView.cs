@@ -511,6 +511,17 @@ namespace MinecraftClient.Tui
             {
                 _commandInput.TextChanged += OnCommandTextChanged;
             }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                var endKeyEvent = new KeyEventArgs
+                {
+                    RoutedEvent = KeyDownEvent,
+                    Key = Key.End,
+                    Source = _commandInput,
+                };
+                _commandInput.RaiseEvent(endKeyEvent);
+            }, DispatcherPriority.Input);
         }
 
         #endregion

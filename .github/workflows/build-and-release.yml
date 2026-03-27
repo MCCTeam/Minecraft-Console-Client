@@ -34,11 +34,12 @@ jobs:
       fail-fast: true
     runs-on: ubuntu-latest
     needs: determine-build
-    # Translations will only be fetched in the MCCTeam repository, since it needs crowdin secrets.
-    if: ${{ needs.determine-build.outputs.skip != 'true' && github.repository == 'MCCTeam/Minecraft-Console-Client' }}
+
+    if: ${{ needs.determine-build.outputs.skip != 'true' }}
+
     timeout-minutes: 15
-  
-    steps:   
+
+    steps:
     - name: Check cache
       uses: actions/cache/restore@v3
       id: cache-check
@@ -52,12 +53,24 @@ jobs:
       if: steps.cache-check.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
       with:
-          fetch-depth: 0
-          submodules: 'true'
+        fetch-depth: 0
+        submodules: 'true'
+
+    - name: Check Crowdin secrets
+      id: crowdin-check
+      run: |
+        if [ -z "$CROWDIN_PROJECT_ID" ] || [ -z "$CROWDIN_PERSONAL_TOKEN" ]; then
+          echo "available=false" >> $GITHUB_OUTPUT
+        else
+          echo "available=true" >> $GITHUB_OUTPUT
+        fi
+      env:
+        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
 
     - name: Download translations from crowdin
-      uses: crowdin/github-action@v1.6.0
-      if: steps.cache-check.outputs.cache-hit != 'true'
+      uses: crowdin/github-action@v2.4.0
+      if: steps.cache-check.outputs.cache-hit != 'true' && steps.crowdin-check.outputs.available == 'true'
       with:
         upload_sources: false
         upload_translations: false
@@ -170,7 +183,7 @@ jobs:
     - name: Set Version Info
       run: |
         echo '' >> ${{ env.assembly-info }}
-        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env._dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
+        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env.date_dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
         
     - name: Inject Sentry DSN (if applicable)
       if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
