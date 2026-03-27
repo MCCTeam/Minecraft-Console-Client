@@ -56,10 +56,21 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
+    - name: Check Crowdin secrets
+      id: crowdin-check
+      run: |
+        if [ -z "$CROWDIN_PROJECT_ID" ] || [ -z "$CROWDIN_PERSONAL_TOKEN" ]; then
+          echo "available=false" >> $GITHUB_OUTPUT
+        else
+          echo "available=true" >> $GITHUB_OUTPUT
+        fi
+      env:
+        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+
     - name: Download translations from crowdin
       uses: crowdin/github-action@v1.6.0
-      # Translations will only be fetched when Crowdin tokens are available.
-      if: ${{ steps.cache-check.outputs.cache-hit != 'true' && secrets.CROWDIN_PROJECT_ID && secrets.CROWDIN_TOKEN }}
+      if: steps.cache-check.outputs.cache-hit != 'true' && steps.crowdin-check.outputs.available == 'true'
       with:
         upload_sources: false
         upload_translations: false
@@ -172,7 +183,7 @@ jobs:
     - name: Set Version Info
       run: |
         echo '' >> ${{ env.assembly-info }}
-        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env._dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
+        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env.date_dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
         
     - name: Inject Sentry DSN (if applicable)
       if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
