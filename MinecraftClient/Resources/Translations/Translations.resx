@@ -1518,7 +1518,7 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
     <value>Useblock at ({0:0.0}, {1:0.0}, {2:0.0}) {3}.</value>
   </data>
   <data name="cmd.useitem.desc" xml:space="preserve">
-    <value>Use (left click) an item on the hand</value>
+    <value>Use the item in your hand, optionally on a specific block</value>
   </data>
   <data name="cmd.useitem.use" xml:space="preserve">
     <value>Used an item</value>

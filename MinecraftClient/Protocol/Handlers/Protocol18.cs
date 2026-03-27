@@ -4563,6 +4563,7 @@ namespace MinecraftClient.Protocol.Handlers
             try
             {
                 var packet = new List<byte>();
+                var (cursorX, cursorY, cursorZ) = GetFaceHitCursor(face);
 
                 switch (protocolVersion)
                 {
@@ -4598,9 +4599,9 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                 }
                 
-                packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorX
-                packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorY
-                packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorZ
+                packet.AddRange(dataTypes.GetFloat(cursorX)); // cursorX
+                packet.AddRange(dataTypes.GetFloat(cursorY)); // cursorY
+                packet.AddRange(dataTypes.GetFloat(cursorZ)); // cursorZ
                 
                 if(protocolVersion >= MC_1_14_Version)
                     packet.Add(0); // insideBlock = false
@@ -4627,6 +4628,17 @@ namespace MinecraftClient.Protocol.Handlers
                 return false;
             }
         }
+
+        private static (float x, float y, float z) GetFaceHitCursor(Direction face) => face switch
+        {
+            Direction.Up => (0.5f, 1.0f, 0.5f),
+            Direction.Down => (0.5f, 0.0f, 0.5f),
+            Direction.North => (0.5f, 0.5f, 0.0f),
+            Direction.South => (0.5f, 0.5f, 1.0f),
+            Direction.West => (0.0f, 0.5f, 0.5f),
+            Direction.East => (1.0f, 0.5f, 0.5f),
+            _ => (0.5f, 0.5f, 0.5f),
+        };
 
         public bool SendHeldItemChange(short slot)
         {

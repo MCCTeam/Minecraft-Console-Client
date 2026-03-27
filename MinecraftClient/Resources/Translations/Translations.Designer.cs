@@ -4481,7 +4481,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use (left click) an item on the hand.
+        ///   Looks up a localized string similar to Use the item in your hand, optionally on a specific block.
         /// </summary>
         internal static string cmd_useitem_desc {
             get {

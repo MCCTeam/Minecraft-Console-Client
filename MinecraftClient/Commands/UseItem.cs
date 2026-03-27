@@ -1,6 +1,8 @@
 ﻿using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
@@ -8,7 +10,7 @@ namespace MinecraftClient.Commands
     class UseItem : Command
     {
         public override string CmdName { get { return "useitem"; } }
-        public override string CmdUsage { get { return "useitem"; } }
+        public override string CmdUsage { get { return "useitem [x] [y] [z]"; } }
         public override string CmdDesc { get { return Translations.cmd_useitem_desc; } }
 
         public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
@@ -21,6 +23,8 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Executes(r => DoUseItem(r.Source))
+                .Then(l => l.Argument("Location", MccArguments.Location())
+                    .Executes(r => DoUseItemAtLocation(r.Source, MccArguments.GetLocation(r, "Location"))))
                 .Then(l => l.Literal("_help")
                     .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
@@ -43,8 +47,34 @@ namespace MinecraftClient.Commands
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(Status.FailNeedInventory);
 
+            if (handler.GetTerrainEnabled())
+            {
+                const double maxDistance = 4.5;
+                var raycast = RaycastHelper.RaycastBlock(handler, maxDistance, false);
+                if (raycast.Item1 && raycast.Item3.Type != Material.Air)
+                {
+                    handler.PlaceBlock(raycast.Item2, Direction.Up, lookAtBlock: true);
+                    handler.DoAnimation((int)Hand.MainHand);
+                    return r.SetAndReturn(Status.Done, Translations.cmd_useitem_use);
+                }
+            }
+
             handler.UseItemOnHand();
             return r.SetAndReturn(Status.Done, Translations.cmd_useitem_use);
         }
+
+        private int DoUseItemAtLocation(CmdResult r, Location block)
+        {
+            McClient handler = CmdResult.currentHandler!;
+            if (!handler.GetTerrainEnabled())
+                return r.SetAndReturn(Status.FailNeedTerrain);
+
+            Location current = handler.GetCurrentLocation();
+            block = block.ToAbsolute(current).ToFloor();
+            handler.PlaceBlock(block, Direction.Up, lookAtBlock: true);
+            handler.DoAnimation((int)Hand.MainHand);
+            return r.SetAndReturn(Status.Done, Translations.cmd_useitem_use);
+        }
+
     }
 }

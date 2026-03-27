@@ -837,7 +837,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 - **Description:**
 
-  Use item in the hand, this can be used to do a right click on items which open menus on servers.
+  Use the item in your hand, including use-on-block actions like shovel flattening.
 
   <div class="custom-container note"><p class="custom-container-title">Note</p>
 
@@ -855,6 +855,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
   ```
   /useitem
+  ```
+
+  Use the item on a specific block:
+
+  ```
+  /useitem <x> <y> <z>
   ```
 
 </details>
