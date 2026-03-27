@@ -435,7 +435,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(CmdResult.Status.Fail, msg);
             }
 
-            if (container.Type != ContainerType.PlayerInventory)
+            if (!Tui.ContainerViewBase.HasTuiSupport(container.Type))
             {
                 handler.Log.Warn(string.Format(Translations.cmd_inventory_tui_unsupported_container, inventoryId));
                 return r.SetAndReturn(CmdResult.Status.Fail);

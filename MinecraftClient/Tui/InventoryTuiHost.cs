@@ -23,6 +23,30 @@ namespace MinecraftClient.Tui
         public static bool IsRunning => _isRunning;
 
         /// <summary>
+        /// Called by McClient.OnInventoryClose when the server closes a container.
+        /// If the closed window matches the active TUI window, auto-close the TUI.
+        /// </summary>
+        public static void NotifyInventoryClosed(int windowId)
+        {
+            if (!_isRunning || windowId != ActiveWindowId)
+                return;
+
+            if (ConsoleIO.Backend is TuiConsoleBackend)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    var view = TuiConsoleBackend.Instance?.GetView();
+                    view?.HideOverlay();
+                });
+            }
+            else
+            {
+                (Avalonia.Application.Current?.ApplicationLifetime
+                    as Avalonia.Controls.ApplicationLifetimes.IControlledApplicationLifetime)?.Shutdown();
+            }
+        }
+
+        /// <summary>
         /// Whether the TUI can be launched (classic mode has a one-shot limit).
         /// </summary>
         public static bool CanLaunch
@@ -89,7 +113,10 @@ namespace MinecraftClient.Tui
                     var view = TuiConsoleBackend.Instance?.GetView();
                     if (view != null)
                     {
-                        var content = new InventoryMainView();
+                        var container = ActiveHandler!.GetInventory(ActiveWindowId);
+                        var content = ContainerViewBase.CreateView(
+                            container?.Type ?? ContainerType.PlayerInventory,
+                            ActiveHandler, ActiveWindowId);
                         view.ShowOverlay(content, () =>
                         {
                             ActiveHandler = null;

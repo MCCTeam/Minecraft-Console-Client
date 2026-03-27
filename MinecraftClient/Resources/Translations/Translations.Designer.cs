@@ -6531,6 +6531,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Durability.
+        /// </summary>
+        internal static string tui_inventory_durability {
+            get {
+                return ResourceManager.GetString("tui.inventory.durability", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Container not found.
         /// </summary>
         internal static string tui_inventory_container_not_found {
@@ -6662,6 +6671,132 @@ namespace MinecraftClient {
         internal static string effect_name_with_amplifier {
             get {
                 return ResourceManager.GetString("effect.name.with_amplifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Container.
+        /// </summary>
+        internal static string tui_container_label {
+            get {
+                return ResourceManager.GetString("tui.container.label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input.
+        /// </summary>
+        internal static string tui_furnace_input {
+            get {
+                return ResourceManager.GetString("tui.furnace.input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fuel.
+        /// </summary>
+        internal static string tui_furnace_fuel {
+            get {
+                return ResourceManager.GetString("tui.furnace.fuel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Output.
+        /// </summary>
+        internal static string tui_furnace_output {
+            get {
+                return ResourceManager.GetString("tui.furnace.output", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item.
+        /// </summary>
+        internal static string tui_enchanting_item {
+            get {
+                return ResourceManager.GetString("tui.enchanting.item", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lapis.
+        /// </summary>
+        internal static string tui_enchanting_lapis {
+            get {
+                return ResourceManager.GetString("tui.enchanting.lapis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enchant Options.
+        /// </summary>
+        internal static string tui_enchanting_options {
+            get {
+                return ResourceManager.GetString("tui.enchanting.options", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Option {0}.
+        /// </summary>
+        internal static string tui_enchanting_option_slot {
+            get {
+                return ResourceManager.GetString("tui.enchanting.option_slot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fuel.
+        /// </summary>
+        internal static string tui_brewing_fuel {
+            get {
+                return ResourceManager.GetString("tui.brewing.fuel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ingredient.
+        /// </summary>
+        internal static string tui_brewing_ingredient {
+            get {
+                return ResourceManager.GetString("tui.brewing.ingredient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bottle {0}.
+        /// </summary>
+        internal static string tui_brewing_bottle {
+            get {
+                return ResourceManager.GetString("tui.brewing.bottle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input 1.
+        /// </summary>
+        internal static string tui_grindstone_input1 {
+            get {
+                return ResourceManager.GetString("tui.grindstone.input1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input 2.
+        /// </summary>
+        internal static string tui_grindstone_input2 {
+            get {
+                return ResourceManager.GetString("tui.grindstone.input2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Crafting.
+        /// </summary>
+        internal static string tui_crafting_grid {
+            get {
+                return ResourceManager.GetString("tui.crafting.grid", resourceCulture);
             }
         }
     }

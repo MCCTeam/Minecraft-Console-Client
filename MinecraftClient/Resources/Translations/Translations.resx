@@ -2302,6 +2302,9 @@ see item details.</value>
   <data name="tui.inventory.slot_detail" xml:space="preserve">
     <value>Slot #{0}  Count: {1}</value>
   </data>
+  <data name="tui.inventory.durability" xml:space="preserve">
+    <value>Durability</value>
+  </data>
   <data name="tui.inventory.container_not_found" xml:space="preserve">
     <value>Container not found</value>
   </data>
@@ -2346,5 +2349,47 @@ see item details.</value>
   </data>
   <data name="effect.name.with_amplifier" xml:space="preserve">
     <value>{0} {1}</value>
+  </data>
+  <data name="tui.container.label" xml:space="preserve">
+    <value>Container</value>
+  </data>
+  <data name="tui.furnace.input" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="tui.furnace.fuel" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="tui.furnace.output" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="tui.enchanting.item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="tui.enchanting.lapis" xml:space="preserve">
+    <value>Lapis</value>
+  </data>
+  <data name="tui.enchanting.options" xml:space="preserve">
+    <value>Enchant Options</value>
+  </data>
+  <data name="tui.enchanting.option_slot" xml:space="preserve">
+    <value>Option {0}</value>
+  </data>
+  <data name="tui.brewing.fuel" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="tui.brewing.ingredient" xml:space="preserve">
+    <value>Ingredient</value>
+  </data>
+  <data name="tui.brewing.bottle" xml:space="preserve">
+    <value>Bottle {0}</value>
+  </data>
+  <data name="tui.grindstone.input1" xml:space="preserve">
+    <value>Input 1</value>
+  </data>
+  <data name="tui.grindstone.input2" xml:space="preserve">
+    <value>Input 2</value>
+  </data>
+  <data name="tui.crafting.grid" xml:space="preserve">
+    <value>Crafting</value>
   </data>
 </root>

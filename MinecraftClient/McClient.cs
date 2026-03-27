@@ -3124,6 +3124,13 @@ namespace MinecraftClient
                 Log.Info(string.Format(Translations.extra_inventory_open, inventoryID, inventory.Title));
                 Log.Info(Translations.extra_inventory_interact);
                 DispatchBotEvent(bot => bot.OnInventoryOpen(inventoryID));
+
+                if (ConsoleIO.Backend is Tui.TuiConsoleBackend
+                    && Tui.ContainerViewBase.HasTuiSupport(inventory.Type)
+                    && Tui.InventoryTuiHost.CanLaunch)
+                {
+                    Tui.InventoryTuiHost.Launch(this, inventoryID);
+                }
             }
         }
 
@@ -3146,6 +3153,8 @@ namespace MinecraftClient
                 Log.Info(string.Format(Translations.extra_inventory_close, inventoryID));
                 DispatchBotEvent(bot => bot.OnInventoryClose(inventoryID));
             }
+
+            Tui.InventoryTuiHost.NotifyInventoryClosed(inventoryID);
         }
 
         /// <summary>
