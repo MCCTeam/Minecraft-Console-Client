@@ -15,7 +15,7 @@ redirectFrom:
 
 **Minecraft Console Client** has a number of default built in Chat Bots (Scripts/Plugins) which allow for various types of automation.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Settings refer to settings in the [configuration file](configuration.md)**
 
@@ -80,7 +80,7 @@ redirectFrom:
 
   #### `Beep_Enabled`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **This might not work depending on your system or a console (terminal emulator).**
 
@@ -243,7 +243,7 @@ redirectFrom:
 
   #### `Use_Terrain_Handling`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
 
@@ -273,7 +273,7 @@ redirectFrom:
 
   #### `Walk_Retries`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **This happens on each trigger of the task, so it does not permanently switch to alternative method.**
 
@@ -289,7 +289,7 @@ redirectFrom:
 
 ## Auto Attack
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You need to have [inventoryhandling](configuration.md#inventoryhandling) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
 
@@ -445,7 +445,7 @@ redirectFrom:
 
 ## Auto Craft
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for basic crafting in the inventory to work, in addition if you want to use a crafting table, you need to enable [terrainandmovements](configuration.md#terrainandmovements) in order for bot to be able to reach the crafting table.**
 
@@ -530,7 +530,7 @@ redirectFrom:
 
   ### Defining a recipe
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **If you're using `table` you need to set the `CraftingTable` setting.**
 
@@ -630,13 +630,13 @@ redirectFrom:
 
   Automatically digs block on specified locations.
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **You need to have [inventoryhandling](configuration.md#inventoryhandling) and [terrainandmovements](configuration.md#terrainandmovements) enabled in order for this bot to work.**
 
   </div>
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.**
 
@@ -806,7 +806,7 @@ redirectFrom:
 
   Automatically drop items you don't need from the inventory.
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
 
@@ -859,7 +859,7 @@ redirectFrom:
 
   #### `Items`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
 
@@ -885,7 +885,7 @@ redirectFrom:
 
   Automatically eat food when your Hunger value is low.
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
 
@@ -928,19 +928,19 @@ redirectFrom:
 
   Automatically catch fish using a fishing rod.
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **You need to have [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
 
   </div>
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **To use the automatic rod switching and durability check feature, you need to enable [inventoryhandling](configuration.md#inventoryhandling).**
 
   </div>
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Note: To adjust the position or angle after catching a fish, you need to enable [terrainandmovements](configuration.md#terrainandmovements).**
 
@@ -1227,7 +1227,7 @@ redirectFrom:
 
   #### `Retries`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **This might get you banned by the server owners.**
 
@@ -1304,7 +1304,7 @@ redirectFrom:
 
   #### `Matches_File`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **This file is not created by default, we recommend making a clone of the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) and changing it according to your needs.**
 
@@ -1330,7 +1330,7 @@ redirectFrom:
 
   #### `Match_Colors`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **This feature uses the `§` symbol for color matching**
 
@@ -1847,7 +1847,7 @@ redirectFrom:
 
 ## Farmer
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You need to have [Terrain And Movements](configuration.md#terrainandmovements) and [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this bot to work.**
 
@@ -1965,13 +1965,13 @@ redirectFrom:
 
   This bot enables you to make a bot follow a specific player.
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
 
   </div>
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **You need to have [terrainandmovements](configuration.md#terrainandmovements) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
 
@@ -2030,7 +2030,7 @@ redirectFrom:
 
   Also set `enabled` to `true`, then, add your username in the `botowners` INI setting, and finally, connect to the server and use `/tell <bot username> start` to start the game.
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **If the bot does not respond to bot owners, see the [Detecting chat messages](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#detecting-chat-messages) section.**
 
@@ -2065,7 +2065,7 @@ redirectFrom:
 
   #### `FileWords_EN`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **This settings file is for English and is not created by the default**
 
@@ -2081,7 +2081,7 @@ redirectFrom:
 
   #### `FileWords_FR`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **This settings file is for French and is not created by the default**
 
@@ -2339,9 +2339,9 @@ redirectFrom:
 
   - **Default:** `false`
 
-  #### `Rasize_Rendered_Image`
+  #### `Resize_Rendered_Image`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **The bigger the size, the less is the quality.**
 
@@ -2369,7 +2369,7 @@ redirectFrom:
 
   #### `Resize_To`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Might be a bit slow on less powerful systems when rendering a lot of maps. Lower down the resolution if you have any performance issues. If your system is not that powerful and can't handle it, use external tools for upscaling and resizing.**
 
@@ -2397,7 +2397,7 @@ redirectFrom:
 
   </div>
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Sometimes when the client connects, the [Discord Bridge](#discord-bridge) will be loaded a tiny bit after. Rendered map images are queued up and sent in order as soon as the [Discord Bridge](#discord-bridge) is ready and connected.**
 
@@ -2527,7 +2527,7 @@ redirectFrom:
 
   </div>
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Please note that due to technical limitations, the client player (you) will not be shown in the replay file**
 

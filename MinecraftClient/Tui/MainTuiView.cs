@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -9,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Tui
 {
@@ -866,6 +868,45 @@ namespace MinecraftClient.Tui
                 Foreground = new SolidColorBrush(Color.FromRgb(220, 190, 100)),
             });
 
+            // Add effects display
+            var effects = client.GetPlayerEffects().Values
+                .Where(effectData => !effectData.IsExpired)
+                .OrderBy(effectData => effectData.Effect)
+                .ToArray();
+            if (effects.Length > 0)
+            {
+                bool showEffectNamesInTui = Settings.Config.Main.Advanced.ShowEffectNamesInTUI;
+
+                _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run("  |  ")
+                {
+                    Foreground = Brushes.Gray,
+                });
+
+                bool first = true;
+                foreach (var effectData in effects)
+                {
+                    if (!first)
+                    {
+                        _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(", ")
+                        {
+                            Foreground = Brushes.Gray,
+                        });
+                    }
+                    first = false;
+
+                    var color = GetEffectIconAndColor(effectData.Effect).Color;
+                    var displayText = showEffectNamesInTui
+                        ? effectData.GetDisplayName()
+                        : GetCompactEffectLabel(effectData);
+                    displayText = $"{displayText} ({effectData.GetRemainingDurationText()})";
+
+                    _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(displayText)
+                    {
+                        Foreground = color,
+                    });
+                }
+            }
+
             _statusBar.IsVisible = true;
         }
 
@@ -882,6 +923,54 @@ namespace MinecraftClient.Tui
                 sb.Append(emptyChar);
             }
             return sb.ToString();
+        }
+
+        private static string GetCompactEffectLabel(EffectData effectData)
+        {
+            var icon = GetEffectIconAndColor(effectData.Effect).Icon;
+            return effectData.Amplifier > 0
+                ? $"{icon}{effectData.Amplifier + 1}"
+                : icon;
+        }
+
+        private static (string Icon, IBrush Color) GetEffectIconAndColor(Effects effect)
+        {
+            return effect switch
+            {
+                Effects.Speed => ("⚡", new SolidColorBrush(Color.FromRgb(135, 206, 235))),
+                Effects.Slowness => ("🐢", new SolidColorBrush(Color.FromRgb(139, 139, 139))),
+                Effects.Haste => ("⛏", new SolidColorBrush(Color.FromRgb(255, 215, 0))),
+                Effects.MiningFatigue => ("🔨", new SolidColorBrush(Color.FromRgb(64, 64, 64))),
+                Effects.Strength => ("⚔", new SolidColorBrush(Color.FromRgb(255, 99, 71))),
+                Effects.InstantHealth => ("❤", new SolidColorBrush(Color.FromRgb(255, 182, 193))),
+                Effects.InstantDamage => ("💀", new SolidColorBrush(Color.FromRgb(139, 0, 0))),
+                Effects.JumpBoost => ("🦘", new SolidColorBrush(Color.FromRgb(50, 205, 50))),
+                Effects.Nausea => ("💫", new SolidColorBrush(Color.FromRgb(85, 107, 47))),
+                Effects.Regeneration => ("✨", new SolidColorBrush(Color.FromRgb(255, 105, 180))),
+                Effects.Resistance => ("🛡", new SolidColorBrush(Color.FromRgb(112, 128, 144))),
+                Effects.FireResistance => ("🔥", new SolidColorBrush(Color.FromRgb(255, 140, 0))),
+                Effects.WaterBreathing => ("🐟", new SolidColorBrush(Color.FromRgb(0, 191, 255))),
+                Effects.Invisibility => ("👻", new SolidColorBrush(Color.FromRgb(200, 200, 200))),
+                Effects.Blindness => ("🕶", new SolidColorBrush(Color.FromRgb(50, 50, 50))),
+                Effects.NightVision => ("👁", new SolidColorBrush(Color.FromRgb(0, 255, 127))),
+                Effects.Hunger => ("🍔", new SolidColorBrush(Color.FromRgb(139, 69, 19))),
+                Effects.Weakness => ("💪", new SolidColorBrush(Color.FromRgb(128, 128, 128))),
+                Effects.Poison => ("☠", new SolidColorBrush(Color.FromRgb(75, 0, 130))),
+                Effects.Wither => ("🥀", new SolidColorBrush(Color.FromRgb(0, 0, 0))),
+                Effects.HealthBoost => ("💖", new SolidColorBrush(Color.FromRgb(255, 20, 147))),
+                Effects.Absorption => ("💛", new SolidColorBrush(Color.FromRgb(255, 215, 0))),
+                Effects.Saturation => ("🍖", new SolidColorBrush(Color.FromRgb(255, 165, 0))),
+                Effects.Glowing => ("💡", new SolidColorBrush(Color.FromRgb(255, 255, 150))),
+                Effects.Levitation => ("🎈", new SolidColorBrush(Color.FromRgb(147, 112, 219))),
+                Effects.Luck => ("🍀", new SolidColorBrush(Color.FromRgb(50, 205, 50))),
+                Effects.BadLuck => ("🐈‍⬛", new SolidColorBrush(Color.FromRgb(128, 0, 0))),
+                Effects.SlowFalling => ("🪶", new SolidColorBrush(Color.FromRgb(255, 182, 193))),
+                Effects.ConduitPower => ("🐡", new SolidColorBrush(Color.FromRgb(0, 255, 255))),
+                Effects.DolphinsGrace => ("🐬", new SolidColorBrush(Color.FromRgb(135, 206, 235))),
+                Effects.BadOmen => ("🏴", new SolidColorBrush(Color.FromRgb(0, 100, 0))),
+                Effects.HerooftheVillage => ("🎉", new SolidColorBrush(Color.FromRgb(255, 215, 0))),
+                _ => ("✦", new SolidColorBrush(Color.FromRgb(200, 200, 200))),
+            };
         }
 
         #endregion

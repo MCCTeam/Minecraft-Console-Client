@@ -1237,6 +1237,18 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.follow.usage" xml:space="preserve">
     <value>follow &lt;player name|stop&gt; [-f] (Use -f to enable un-safe walking)</value>
   </data>
+  <data name="cmd.effects.desc" xml:space="preserve">
+    <value>list your currently active effects.</value>
+  </data>
+  <data name="cmd.effects.entry" xml:space="preserve">
+    <value>- {0} ({1})</value>
+  </data>
+  <data name="cmd.effects.header" xml:space="preserve">
+    <value>Active effects:</value>
+  </data>
+  <data name="cmd.effects.none" xml:space="preserve">
+    <value>No active effects.</value>
+  </data>
   <data name="cmd.health.desc" xml:space="preserve">
     <value>Display Health and Food saturation.</value>
   </data>
@@ -2298,5 +2310,41 @@ see item details.</value>
   </data>
   <data name="tui.inventory.item_count" xml:space="preserve">
     <value>{0} items</value>
+  </data>
+  <data name="bot.effect.gained" xml:space="preserve">
+    <value>You're now under {0} effect (Duration: {1}).</value>
+  </data>
+  <data name="bot.effect.expired" xml:space="preserve">
+    <value>Effect {0} has expired</value>
+  </data>
+  <data name="effect.duration.unlimited" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+  <data name="effect.article.a" xml:space="preserve">
+    <value>a</value>
+  </data>
+  <data name="effect.article.an" xml:space="preserve">
+    <value>an</value>
+  </data>
+  <data name="effect.duration.short.hours" xml:space="preserve">
+    <value>{0}h</value>
+  </data>
+  <data name="effect.duration.short.hours_minutes" xml:space="preserve">
+    <value>{0}h {1}m</value>
+  </data>
+  <data name="effect.duration.short.minutes" xml:space="preserve">
+    <value>{0}m</value>
+  </data>
+  <data name="effect.duration.short.minutes_seconds" xml:space="preserve">
+    <value>{0}m {1}s</value>
+  </data>
+  <data name="effect.duration.short.seconds" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+  <data name="effect.duration.short.unlimited" xml:space="preserve">
+    <value>∞</value>
+  </data>
+  <data name="effect.name.with_amplifier" xml:space="preserve">
+    <value>{0} {1}</value>
   </data>
 </root>

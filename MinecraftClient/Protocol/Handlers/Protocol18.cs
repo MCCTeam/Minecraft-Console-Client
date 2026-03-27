@@ -2513,11 +2513,12 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         var entityId = dataTypes.ReadNextVarInt(packetData);
                         var effectId = protocolVersion >= MC_1_18_2_Version
-                            ? dataTypes.ReadNextVarInt(packetData)
+                            ? dataTypes.ReadNextVarInt(packetData) + 1
                             : dataTypes.ReadNextByte(packetData);
 
-                        if (Enum.TryParse(effectId.ToString(), out Effects effect))
+                        if (Enum.IsDefined(typeof(Effects), effectId))
                         {
+                            var effect = (Effects)effectId;
                             var amplifier = dataTypes.ReadNextByte(packetData);
                             var duration = dataTypes.ReadNextVarInt(packetData);
                             var flags = dataTypes.ReadNextByte(packetData);
@@ -2533,6 +2534,22 @@ namespace MinecraftClient.Protocol.Handlers
 
                             handler.OnEntityEffect(entityId, effect, amplifier, duration, flags, hasFactorData,
                                 factorCodec);
+                        }
+                    }
+
+                    break;
+                case PacketTypesIn.RemoveEntityEffect:
+                    if (handler.GetEntityHandlingEnabled())
+                    {
+                        var entityId = dataTypes.ReadNextVarInt(packetData);
+                        var effectId = protocolVersion >= MC_1_18_2_Version
+                            ? dataTypes.ReadNextVarInt(packetData) + 1
+                            : dataTypes.ReadNextByte(packetData);
+
+                        if (Enum.IsDefined(typeof(Effects), effectId))
+                        {
+                            var effect = (Effects)effectId;
+                            handler.OnRemoveEntityEffect(entityId, effect);
                         }
                     }
 

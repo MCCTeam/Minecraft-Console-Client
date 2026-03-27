@@ -705,6 +705,9 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
   <data name="Main.Advanced.show_inventory_layout" xml:space="preserve">
     <value>Show inventory layout as ASCII art in inventory command.</value>
   </data>
+  <data name="Main.Advanced.show_effect_names_in_tui" xml:space="preserve">
+    <value>Show full effect names and levels in the TUI status bar instead of compact effect icons only.</value>
+  </data>
   <data name="Main.Advanced.show_system_messages" xml:space="preserve">
     <value>System messages for server ops.</value>
   </data>

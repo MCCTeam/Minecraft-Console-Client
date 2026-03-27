@@ -435,6 +435,19 @@ namespace MinecraftClient.Protocol
         void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<String, object>? factorCodec);
 
         /// <summary>
+        /// Called when an entity has an effect removed
+        /// </summary>
+        /// <param name="entityid">Entity ID</param>
+        /// <param name="effect">Effect that was removed</param>
+        void OnRemoveEntityEffect(int entityid, Effects effect);
+
+        /// <summary>
+        /// Get the player's active effects
+        /// </summary>
+        /// <returns>Dictionary of active effects</returns>
+        Dictionary<Effects, EffectData> GetPlayerEffects();
+
+        /// <summary>
         /// Called when Soreboard Objective
         /// </summary>
         /// <param name="objectiveName">objective name</param>

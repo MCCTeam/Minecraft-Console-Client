@@ -102,6 +102,9 @@ namespace MinecraftClient
         private int playerLevel;
         private int playerTotalExperience;
         private byte CurrentSlot = 0;
+
+        // player effects
+        private readonly Dictionary<Effects, EffectData> playerEffects = new();
         
         // Sneaking
         public bool IsSneaking { get; set; } = false;
@@ -141,6 +144,16 @@ namespace MinecraftClient
         public bool GetIsSupportPreviewsChat() { return isSupportPreviewsChat; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
+
+        /// <summary>
+        /// Get the player's active effects
+        /// </summary>
+        /// <returns>Dictionary of active effects</returns>
+        public Dictionary<Effects, EffectData> GetPlayerEffects()
+        {
+            return new Dictionary<Effects, EffectData>(playerEffects);
+        }
+
         public int GetLevel() { return playerLevel; }
         public int GetTotalExperience() { return playerTotalExperience; }
         public byte GetCurrentSlot() { return CurrentSlot; }
@@ -614,6 +627,26 @@ namespace MinecraftClient
                 respawnTicks--;
                 if (respawnTicks == 0)
                     SendRespawnPacket();
+            }
+
+            // Check for expired effects
+            if (playerEffects.Count > 0)
+            {
+                var expiredEffects = playerEffects
+                    .Where(e => e.Value.IsExpired)
+                    .Select(e => e.Key)
+                    .ToList();
+
+                foreach (var effect in expiredEffects)
+                {
+                    if (!playerEffects.Remove(effect, out var effectData))
+                        continue;
+
+                    ConsoleIO.WriteLine(string.Format(Translations.bot_effect_expired, effectData.GetDisplayName()));
+
+                    if (entities.TryGetValue(playerEntityID, out var playerEntity))
+                        playerEntity.ActiveEffects.Remove(effect);
+                }
             }
 
             lock (threadTasksLock)
@@ -3394,8 +3427,61 @@ namespace MinecraftClient
         /// </summary>
         public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<string, object>? factorCodec)
         {
-            if (entities.ContainsKey(entityid))
-                DispatchBotEvent(bot => bot.OnEntityEffect(entities[entityid], effect, amplifier, duration, flags));
+            Entity? entity = null;
+            if (entities.TryGetValue(entityid, out var trackedEntity))
+            {
+                entity = trackedEntity;
+            }
+
+            var effectData = new EffectData(effect, amplifier, duration, flags);
+            entity?.ActiveEffects[effect] = effectData;
+
+            if (entityid == playerEntityID)
+            {
+                playerEffects.TryGetValue(effect, out var previousPlayerEffect);
+                playerEffects[effect] = effectData;
+
+                bool shouldAnnounceEffectGain = previousPlayerEffect is null
+                    || previousPlayerEffect.Amplifier != amplifier
+                    || (effectData.IsInfinite && !previousPlayerEffect.IsInfinite)
+                    || (!effectData.IsInfinite && duration > previousPlayerEffect.RemainingTicks + 20);
+
+                if (shouldAnnounceEffectGain)
+                {
+                    ConsoleIO.WriteLine(string.Format(Translations.bot_effect_gained,
+                        effectData.GetDisplayNameWithArticle(), effectData.GetInitialDurationText()));
+                }
+            }
+
+            if (entity is not null)
+                DispatchBotEvent(bot => bot.OnEntityEffect(entity, effect, amplifier, duration, flags));
+        }
+
+        /// <summary>
+        /// Called when an entity has an effect removed
+        /// </summary>
+        /// <param name="entityid">Entity ID</param>
+        /// <param name="effect">Effect that was removed</param>
+        public void OnRemoveEntityEffect(int entityid, Effects effect)
+        {
+            Entity? entity = null;
+            EffectData? removedEffectData = null;
+
+            if (entities.TryGetValue(entityid, out var trackedEntity))
+            {
+                entity = trackedEntity;
+                if (entity.ActiveEffects.Remove(effect, out var entityEffectData))
+                    removedEffectData = entityEffectData;
+            }
+
+            if (entityid == playerEntityID && playerEffects.Remove(effect, out var playerEffectData))
+                removedEffectData ??= playerEffectData;
+
+            if (entityid == playerEntityID && removedEffectData is not null)
+                ConsoleIO.WriteLine(string.Format(Translations.bot_effect_expired, removedEffectData.GetDisplayName()));
+
+            if (entity is not null)
+                DispatchBotEvent(bot => bot.OnRemoveEntityEffect(entity, effect));
         }
 
         /// <summary>

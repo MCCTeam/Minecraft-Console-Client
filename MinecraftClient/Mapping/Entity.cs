@@ -100,6 +100,11 @@ namespace MinecraftClient.Mapping
         public Dictionary<int, Item> Equipment;
 
         /// <summary>
+        /// Active status effects on this entity
+        /// </summary>
+        public Dictionary<Effects, EffectData> ActiveEffects { get; private set; }
+
+        /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
         /// <param name="ID">Entity ID</param>
@@ -112,6 +117,7 @@ namespace MinecraftClient.Mapping
             Location = location;
             Health = 1.0f;
             Equipment = new Dictionary<int, Item>();
+            ActiveEffects = new Dictionary<Effects, EffectData>();
             Item = new Item(ItemType.Air, 0, null);
         }
 
@@ -128,6 +134,7 @@ namespace MinecraftClient.Mapping
             Location = location;
             Health = 1.0f;
             Equipment = new Dictionary<int, Item>();
+            ActiveEffects = new Dictionary<Effects, EffectData>();
             Item = new Item(ItemType.Air, 0, null);
             Yaw = yaw * (1F / 256) * 360; // to angle in 360 degree
             Pitch = pitch * (1F / 256) * 360;
@@ -151,6 +158,7 @@ namespace MinecraftClient.Mapping
             Name = name;
             Health = 1.0f;
             Equipment = new Dictionary<int, Item>();
+            ActiveEffects = new Dictionary<Effects, EffectData>();
             Item = new Item(ItemType.Air, 0, null);
             Yaw = yaw * (1F / 256) * 360; // to angle in 360 degree
             Pitch = pitch * (1F / 256) * 360;
