@@ -117,6 +117,14 @@ These are useful if your client needs a name-to-ID lookup for the current MCC ve
 - [Commands](Commands.md) - full list of available commands
 - [Events](Events.md) - full list of emitted events
 
+<div class="custom-container tip"><p class="custom-container-title">⭐ Reference Implementation: MCC.js</p>
+
+[MCC.js](https://github.com/milutinke/MCC.js) is a Node.js/TypeScript library built for this bot. It handles authentication, JSON serialization, event subscriptions, and typed command wrappers out of the box.
+
+If you're writing a client in JavaScript or TypeScript, start there.
+
+</div>
+
 ## Compatibility
 
 - Requires any MCC version that supports `/script` (standalone MCCScript 1.0 bots).

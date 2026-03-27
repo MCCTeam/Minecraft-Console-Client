@@ -11,10 +11,6 @@ redirectFrom:
 
 By default, MCC stores its settings in `MinecraftClient.ini`, which is created the first time you run the program. You can also pass a custom configuration file path as the first argument when starting MCC. See [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-</div>
-
 ## Notes
 
 - Some less common settings are not repeated here. The generated config file contains inline descriptions for every setting.
@@ -126,7 +122,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
   This setting defines the account type: `mojang`, `microsoft`, or `yggdrasil`.
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Use `microsoft` for normal Microsoft accounts. `yggdrasil` is for custom authlib/Yggdrasil servers.**
 
@@ -391,7 +387,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
   MinecraftVersion = "1.18.2"
   ```
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Current code support is `1.4.6` through `26.1`.**
 
@@ -413,7 +409,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `no`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Force-enabling only works for MC 1.13 +**
 
@@ -429,7 +425,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `mcc`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **For playing on Hypixel you need to use `vanilla`**
 
@@ -533,7 +529,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `false`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
 
@@ -571,7 +567,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `false`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
 
@@ -625,7 +621,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `true`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Only works on Windows XP-8 or Windows 10 with old console**
 
@@ -671,7 +667,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `false`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Make sure the spawn point is safe**
 
@@ -976,7 +972,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `.*`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Not filtering anything by default**
 
@@ -994,7 +990,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `.*`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **Not filtering anything by default**
 
@@ -1032,7 +1028,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `console-log.txt`
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **%username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
 
@@ -1072,7 +1068,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
   To define a variable/setting, simply make a new line with the following format under the `[AppVar.VarStirng]` section:
 
-  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
   **`%username%`, `%login%`, `%serverip%`, `%serverport%`, `%datetime%`, `%players%` are reserved read-only variables**
 
