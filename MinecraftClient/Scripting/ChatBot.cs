@@ -334,6 +334,13 @@ namespace MinecraftClient.Scripting
         public virtual void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags) { }
 
         /// <summary>
+        /// Called when an entity has an effect removed (expired or cleared)
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        /// <param name="effect">Effect that was removed</param>
+        public virtual void OnRemoveEntityEffect(Entity entity, Effects effect) { }
+
+        /// <summary>
         /// Called when a scoreboard objective updated
         /// </summary>
         /// <param name="objectiveName">objective name</param>

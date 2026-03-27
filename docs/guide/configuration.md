@@ -507,6 +507,16 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `true`
 
+#### `ShowEffectNamesInTUI`
+
+- **Description:**
+
+  This setting lets you show full effect names and levels in the TUI status bar instead of the compact icon-only effect display.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
+
 #### `TerrainAndMovements`
 
 - **Description:**

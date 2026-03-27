@@ -1850,6 +1850,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show full effect names and levels in the TUI status bar instead of compact effect icons only..
+        /// </summary>
+        internal static string Main_Advanced_show_effect_names_in_tui {
+            get {
+                return ResourceManager.GetString("Main.Advanced.show_effect_names_in_tui", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to System messages for server ops..
         /// </summary>
         internal static string Main_Advanced_show_system_messages {
