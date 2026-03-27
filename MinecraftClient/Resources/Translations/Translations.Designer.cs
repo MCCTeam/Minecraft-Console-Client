@@ -3523,6 +3523,42 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to list your currently active effects..
+        /// </summary>
+        internal static string cmd_effects_desc {
+            get {
+                return ResourceManager.GetString("cmd.effects.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to - {0} ({1}).
+        /// </summary>
+        internal static string cmd_effects_entry {
+            get {
+                return ResourceManager.GetString("cmd.effects.entry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Active effects:.
+        /// </summary>
+        internal static string cmd_effects_header {
+            get {
+                return ResourceManager.GetString("cmd.effects.header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No active effects..
+        /// </summary>
+        internal static string cmd_effects_none {
+            get {
+                return ResourceManager.GetString("cmd.effects.none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Display Health and Food saturation..
         /// </summary>
         internal static string cmd_health_desc {
@@ -6518,6 +6554,114 @@ namespace MinecraftClient {
         internal static string tui_inventory_item_count {
             get {
                 return ResourceManager.GetString("tui.inventory.item_count", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re now under {0} effect (Duration: {1})..
+        /// </summary>
+        internal static string bot_effect_gained {
+            get {
+                return ResourceManager.GetString("bot.effect.gained", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Effect {0} has expired.
+        /// </summary>
+        internal static string bot_effect_expired {
+            get {
+                return ResourceManager.GetString("bot.effect.expired", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unlimited.
+        /// </summary>
+        internal static string effect_duration_unlimited {
+            get {
+                return ResourceManager.GetString("effect.duration.unlimited", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to a.
+        /// </summary>
+        internal static string effect_article_a {
+            get {
+                return ResourceManager.GetString("effect.article.a", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to an.
+        /// </summary>
+        internal static string effect_article_an {
+            get {
+                return ResourceManager.GetString("effect.article.an", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0}h.
+        /// </summary>
+        internal static string effect_duration_short_hours {
+            get {
+                return ResourceManager.GetString("effect.duration.short.hours", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0}h {1}m.
+        /// </summary>
+        internal static string effect_duration_short_hours_minutes {
+            get {
+                return ResourceManager.GetString("effect.duration.short.hours_minutes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0}m.
+        /// </summary>
+        internal static string effect_duration_short_minutes {
+            get {
+                return ResourceManager.GetString("effect.duration.short.minutes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0}m {1}s.
+        /// </summary>
+        internal static string effect_duration_short_minutes_seconds {
+            get {
+                return ResourceManager.GetString("effect.duration.short.minutes_seconds", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0}s.
+        /// </summary>
+        internal static string effect_duration_short_seconds {
+            get {
+                return ResourceManager.GetString("effect.duration.short.seconds", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to ∞.
+        /// </summary>
+        internal static string effect_duration_short_unlimited {
+            get {
+                return ResourceManager.GetString("effect.duration.short.unlimited", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1}.
+        /// </summary>
+        internal static string effect_name_with_amplifier {
+            get {
+                return ResourceManager.GetString("effect.name.with_amplifier", resourceCulture);
             }
         }
     }

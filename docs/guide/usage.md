@@ -454,6 +454,21 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>effects</code></summary>
+
+- **Description:**
+
+  Lists the status effects currently applied to your player.
+
+- **Usage:**
+
+  ```
+  /effects
+  ```
+
+</details>
+
+<details>
 <summary><code>entity</code></summary>
 
 - **Description:**
