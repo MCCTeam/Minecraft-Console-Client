@@ -2319,7 +2319,7 @@ namespace MinecraftClient.Protocol.Handlers
                             var windowId = dataTypes.ReadNextVarInt(packetData);
                             var windowType = dataTypes.ReadNextVarInt(packetData);
                             var title = dataTypes.ReadNextChat(packetData);
-                            Container inventory = new(windowId, windowType, ChatParser.ParseText(title));
+                            Container inventory = new(windowId, windowType, ChatParser.ParseText(title), protocolVersion);
                             handler.OnInventoryOpen(windowId, inventory);
                         }
                     }

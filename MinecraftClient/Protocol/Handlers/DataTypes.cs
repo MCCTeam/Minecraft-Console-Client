@@ -1715,16 +1715,15 @@ namespace MinecraftClient.Protocol.Handlers
         public byte[] GetLocation(Location location)
         {
             byte[] locationBytes;
+            ulong x = (ulong)(int)Math.Floor(location.X) & 0x3FFFFFF;
+            ulong y = (ulong)(int)Math.Floor(location.Y) & 0xFFF;
+            ulong z = (ulong)(int)Math.Floor(location.Z) & 0x3FFFFFF;
             if (protocolversion >= Protocol18Handler.MC_1_14_Version)
             {
-                locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) |
-                                                      ((((ulong)location.Z) & 0x3FFFFFF) << 12) |
-                                                      (((ulong)location.Y) & 0xFFF));
+                locationBytes = BitConverter.GetBytes((x << 38) | (z << 12) | y);
             }
             else
-                locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) |
-                                                      ((((ulong)location.Y) & 0xFFF) << 26) |
-                                                      (((ulong)location.Z) & 0x3FFFFFF));
+                locationBytes = BitConverter.GetBytes((x << 38) | (y << 26) | z);
 
             Array.Reverse(locationBytes); //Endianness
             return locationBytes;
