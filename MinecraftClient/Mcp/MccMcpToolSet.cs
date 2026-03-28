@@ -49,6 +49,24 @@ public sealed class MccMcpToolSet
         return capabilities.GetInternalCommands();
     }
 
+    [McpServerTool(Name = "mcc_materials_list"), Description("List known MCC material names with optional filtering.")]
+    public object MaterialsList(string? filter = null, int maxCount = 500)
+    {
+        return capabilities.GetMaterialsList(filter, maxCount);
+    }
+
+    [McpServerTool(Name = "mcc_block_types_list"), Description("List known MCC block type names with optional filtering.")]
+    public object BlockTypesList(string? filter = null, int maxCount = 500)
+    {
+        return capabilities.GetBlockTypesList(filter, maxCount);
+    }
+
+    [McpServerTool(Name = "mcc_entity_types_list"), Description("List known MCC entity type names with optional filtering.")]
+    public object EntityTypesList(string? filter = null, int maxCount = 500)
+    {
+        return capabilities.GetEntityTypesList(filter, maxCount);
+    }
+
     [McpServerTool(Name = "mcc_send_chat"), Description("Send chat text or slash-command to the connected Minecraft server.")]
     public object SendChat([Description("Text to send to server chat.")] string text)
     {
@@ -127,6 +145,12 @@ public sealed class MccMcpToolSet
         return capabilities.LocatePlayer(playerName, includeSelf);
     }
 
+    [McpServerTool(Name = "mcc_can_reach_position"), Description("Check whether MCC can currently path to a world coordinate without moving there.")]
+    public object CanReachPosition(double x, double y, double z, bool allowUnsafe = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
+    {
+        return capabilities.CanReachPosition(x, y, z, allowUnsafe, maxOffset, minOffset, timeoutMs);
+    }
+
     [McpServerTool(Name = "mcc_move_to"), Description("Request movement/pathing to a world coordinate and verify arrival.")]
     public object MoveTo(double x, double y, double z, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
     {
@@ -183,6 +207,24 @@ public sealed class MccMcpToolSet
     public object EntityInfo(int entityId, bool includeMetadata = false, bool includeEquipment = true, bool includeEffects = true)
     {
         return capabilities.GetEntityInfo(entityId, includeMetadata, includeEquipment, includeEffects);
+    }
+
+    [McpServerTool(Name = "mcc_signs_find"), Description("Find nearby signs whose text exactly matches or contains the requested text.")]
+    public object SignsFind(string text, bool exactMatch = false, int radius = 16, int maxCount = 50, bool includeBackText = true)
+    {
+        return capabilities.FindSigns(text, exactMatch, radius, maxCount, includeBackText);
+    }
+
+    [McpServerTool(Name = "mcc_items_list"), Description("List nearby dropped item entities with optional item type filtering.")]
+    public object ItemsList(string? itemType = null, double radius = 32, int maxCount = 100)
+    {
+        return capabilities.ListItemEntities(itemType, radius, maxCount);
+    }
+
+    [McpServerTool(Name = "mcc_items_pickup"), Description("Move to and pick up nearby dropped items of a given item type.")]
+    public object ItemsPickup(string itemType, double radius = 32, int maxItems = 20, bool allowUnsafe = false, int timeoutMs = 0)
+    {
+        return capabilities.PickupItems(itemType, radius, maxItems, allowUnsafe, timeoutMs);
     }
 
     [McpServerTool(Name = "mcc_world_block_at"), Description("Get block information at world coordinates.")]

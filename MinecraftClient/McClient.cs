@@ -113,6 +113,8 @@ namespace MinecraftClient
 
         // Entity handling
         private readonly Dictionary<int, Entity> entities = new();
+        private readonly Lock signDataLock = new();
+        private readonly Dictionary<(int x, int y, int z), (string material, string typeLabel, string[] frontText, string[] backText, bool isWaxed)> knownSigns = new();
 
         // server TPS
         private long lastAge = 0;
@@ -166,6 +168,21 @@ namespace MinecraftClient
         public void GetCookie(string key, out byte[]? data) => Cookies.TryGetValue(key, out data);
         public void SetCookie(string key, byte[] data) => Cookies[key] = data;
         public void DeleteCookie(string key) => Cookies.Remove(key, out var data);
+        public (Location location, string material, string typeLabel, string[] frontText, string[] backText, bool isWaxed)[] GetKnownSigns()
+        {
+            lock (signDataLock)
+            {
+                return knownSigns
+                    .Select(pair => (
+                        location: new Location(pair.Key.x, pair.Key.y, pair.Key.z),
+                        material: pair.Value.material,
+                        typeLabel: pair.Value.typeLabel,
+                        frontText: (string[])pair.Value.frontText.Clone(),
+                        backText: (string[])pair.Value.backText.Clone(),
+                        isWaxed: pair.Value.isWaxed))
+                    .ToArray();
+            }
+        }
 
         TcpClient client = null!;
         IMinecraftCom handler = null!;
@@ -478,6 +495,7 @@ namespace MinecraftClient
             physicsInput.Reset();
             world.Clear();
             entities.Clear();
+            ClearKnownSigns();
             ClearInventories();
         }
 
@@ -763,6 +781,7 @@ namespace MinecraftClient
             handler.Dispose();
 
             world.Clear();
+            ClearKnownSigns();
 
             if (timeoutdetector is not null)
             {
@@ -2804,6 +2823,7 @@ namespace MinecraftClient
             }
 
             entities.Clear();
+            ClearKnownSigns();
             ClearInventories();
             DispatchBotEvent(bot => bot.OnRespawn());
         }
@@ -4036,7 +4056,14 @@ namespace MinecraftClient
         public void OnBlockChange(Location location, Block block)
         {
             world.SetBlock(location, block);
+            if (!IsSignMaterial(block.Type))
+                RemoveKnownSign(location);
             DispatchBotEvent(bot => bot.OnBlockChange(location, block));
+        }
+
+        public void OnBlockEntityData(Location location, Dictionary<string, object>? nbt)
+        {
+            UpdateKnownSign(location, nbt);
         }
 
         /// <summary>
@@ -4066,6 +4093,137 @@ namespace MinecraftClient
         public bool ClickContainerButton(int windowId, int buttonId)
         {
             return handler.ClickContainerButton(windowId, buttonId);
+        }
+
+        private void ClearKnownSigns()
+        {
+            lock (signDataLock)
+            {
+                knownSigns.Clear();
+            }
+        }
+
+        private void RemoveKnownSign(Location location)
+        {
+            var key = ToBlockKey(location);
+            lock (signDataLock)
+            {
+                knownSigns.Remove(key);
+            }
+        }
+
+        private void UpdateKnownSign(Location location, Dictionary<string, object>? nbt)
+        {
+            var key = ToBlockKey(location);
+            var block = world.GetBlock(new Location(key.x, key.y, key.z));
+            if (!IsSignMaterial(block.Type) || !TryExtractSignText(nbt, out string[] frontText, out string[] backText, out bool isWaxed))
+            {
+                lock (signDataLock)
+                {
+                    knownSigns.Remove(key);
+                }
+
+                return;
+            }
+
+            lock (signDataLock)
+            {
+                knownSigns[key] = (block.Type.ToString(), block.GetTypeString(), frontText, backText, isWaxed);
+            }
+        }
+
+        private static bool TryExtractSignText(Dictionary<string, object>? nbt, out string[] frontText, out string[] backText, out bool isWaxed)
+        {
+            frontText = ExtractSignLines(nbt, "front_text");
+            backText = ExtractSignLines(nbt, "back_text");
+            if (frontText.Length == 0 && backText.Length == 0)
+                frontText = ExtractLegacySignLines(nbt);
+
+            isWaxed = nbt is not null
+                && nbt.TryGetValue("is_waxed", out object? waxedValue)
+                && waxedValue is bool waxed
+                && waxed;
+            return frontText.Length > 0 || backText.Length > 0;
+        }
+
+        private static string[] ExtractSignLines(Dictionary<string, object>? nbt, string sideKey)
+        {
+            if (nbt is null
+                || !nbt.TryGetValue(sideKey, out object? sideValue)
+                || sideValue is not Dictionary<string, object> sideData
+                || !sideData.TryGetValue("messages", out object? messagesValue)
+                || messagesValue is not object[] messages)
+            {
+                return [];
+            }
+
+            return messages
+                .Take(4)
+                .Select(ConvertSignMessage)
+                .ToArray();
+        }
+
+        private static string[] ExtractLegacySignLines(Dictionary<string, object>? nbt)
+        {
+            if (nbt is null)
+                return [];
+
+            List<string> lines = new(4);
+            for (int i = 1; i <= 4; i++)
+            {
+                if (nbt.TryGetValue($"Text{i}", out object? value))
+                    lines.Add(ConvertSignMessage(value));
+            }
+
+            return lines.ToArray();
+        }
+
+        private static string ConvertSignMessage(object? value)
+        {
+            try
+            {
+                return value switch
+                {
+                    null => string.Empty,
+                    string text => ParseMaybeJsonText(text),
+                    Dictionary<string, object> nbt => ChatParser.ParseText(nbt),
+                    object[] items => string.Concat(items.Select(ConvertSignMessage)),
+                    _ => value.ToString() ?? string.Empty
+                };
+            }
+            catch
+            {
+                return value?.ToString() ?? string.Empty;
+            }
+        }
+
+        private static string ParseMaybeJsonText(string text)
+        {
+            string trimmed = text.Trim();
+            if ((trimmed.StartsWith("{", StringComparison.Ordinal) && trimmed.EndsWith("}", StringComparison.Ordinal))
+                || (trimmed.StartsWith("[", StringComparison.Ordinal) && trimmed.EndsWith("]", StringComparison.Ordinal)))
+            {
+                try
+                {
+                    return ChatParser.ParseText(trimmed);
+                }
+                catch
+                {
+                }
+            }
+
+            return text;
+        }
+
+        private static bool IsSignMaterial(Material material)
+        {
+            return material.ToString().Contains("Sign", StringComparison.Ordinal);
+        }
+
+        private static (int x, int y, int z) ToBlockKey(Location location)
+        {
+            Location blockLocation = location.ToFloor();
+            return ((int)blockLocation.X, (int)blockLocation.Y, (int)blockLocation.Z);
         }
 
         #endregion

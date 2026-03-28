@@ -1569,6 +1569,7 @@ namespace MinecraftClient.Protocol.Handlers
                             var dataSize = dataTypes.ReadNextVarInt(packetData); // Size
 
                             pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData);
+                            ProcessChunkBlockEntityData(chunkX, chunkZ, packetData);
                             Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
 
                             // Block Entity data: ignored
@@ -2957,17 +2958,16 @@ namespace MinecraftClient.Protocol.Handlers
 
                     // TODO: Use
                     break;
+                case PacketTypesIn.BlockEntityData:
+                    if (handler.GetTerrainEnabled() && protocolVersion >= MC_1_17_Version)
+                    {
+                        var location_ = dataTypes.ReadNextLocation(packetData);
+                        dataTypes.ReadNextVarInt(packetData); // Block entity type registry id
+                        var nbt = dataTypes.ReadNextNbt(packetData);
+                        handler.OnBlockEntityData(location_, nbt);
+                    }
 
-                // Temporarily disabled until I find a fix
-                /*case PacketTypesIn.BlockEntityData:
-                    var location_ = dataTypes.ReadNextLocation(packetData);
-                    var type_ = dataTypes.ReadNextInt(packetData);
-                    var nbt = dataTypes.ReadNextNbt(packetData);
-                    var nbtJson = JsonConvert.SerializeObject(nbt["messages"]);
-
-                    //log.Info($"BLOCK ENTITY DATA -> {location_.ToString()} [{type_}] -> NBT: {nbtJson}");
-
-                    break;*/
+                    break;
 
                 case PacketTypesIn.SetTickingState:
                     dataTypes.ReadNextFloat(packetData);
@@ -3160,6 +3160,24 @@ namespace MinecraftClient.Protocol.Handlers
         private void SendPacket(PacketTypesOut packet, IEnumerable<byte> packetData)
         {
             SendPacket(packetPalette.GetOutgoingIdByType(packet), packetData);
+        }
+
+        private void ProcessChunkBlockEntityData(int chunkX, int chunkZ, Queue<byte> packetData)
+        {
+            if (protocolVersion < MC_1_17_Version || packetData.Count == 0)
+                return;
+
+            int blockEntityCount = dataTypes.ReadNextVarInt(packetData);
+            for (int i = 0; i < blockEntityCount; i++)
+            {
+                int packedXZ = dataTypes.ReadNextByte(packetData);
+                int y = dataTypes.ReadNextShort(packetData);
+                dataTypes.ReadNextVarInt(packetData); // Block entity type registry id
+                Dictionary<string, object>? nbt = dataTypes.ReadNextNbt(packetData);
+                int blockX = chunkX * Chunk.SizeX + ((packedXZ >> 4) & 0x0F);
+                int blockZ = chunkZ * Chunk.SizeZ + (packedXZ & 0x0F);
+                handler.OnBlockEntityData(new Location(blockX, y, blockZ), nbt);
+            }
         }
 
         /// <summary>

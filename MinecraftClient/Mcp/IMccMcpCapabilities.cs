@@ -8,6 +8,9 @@ public interface IMccMcpCapabilities
     MccMcpResult GetPlayersList();
     MccMcpResult GetChatHistory(int maxCount, bool includeJson);
     MccMcpResult GetInternalCommands();
+    MccMcpResult GetMaterialsList(string? filter, int maxCount);
+    MccMcpResult GetBlockTypesList(string? filter, int maxCount);
+    MccMcpResult GetEntityTypesList(string? filter, int maxCount);
     MccMcpResult SendChat(string text);
     MccMcpResult QuitClient();
     MccMcpResult RunInternalCommand(string command);
@@ -21,6 +24,7 @@ public interface IMccMcpCapabilities
     MccMcpResult FindBlocks(string? query, int radius, int maxCount, bool exactMatch);
     MccMcpResult IsPlayerNearby(string? playerName, double radius, bool includeSelf);
     MccMcpResult LocatePlayer(string playerName, bool includeSelf);
+    MccMcpResult CanReachPosition(double x, double y, double z, bool allowUnsafe, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult MoveTo(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult MoveToPlayer(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult LookAt(double x, double y, double z);
@@ -30,5 +34,8 @@ public interface IMccMcpCapabilities
     MccMcpResult QueryEntities(int maxCount);
     MccMcpResult ListEntities(int maxCount, string? typeFilter, double radius);
     MccMcpResult GetEntityInfo(int entityId, bool includeMetadata, bool includeEquipment, bool includeEffects);
+    MccMcpResult FindSigns(string text, bool exactMatch, int radius, int maxCount, bool includeBackText);
+    MccMcpResult ListItemEntities(string? itemType, double radius, int maxCount);
+    MccMcpResult PickupItems(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs);
     MccMcpResult GetWorldBlockAt(int x, int y, int z);
 }

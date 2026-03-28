@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCC MCP Live Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ─── TOKENS ──────────────────────────────────────────────── */
+    :root {
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg:           #050810;
+      --bg-mid:       #080d1a;
+      --panel:        #0c1220;
+      --panel-hover:  #101828;
+      --border:       #1a2540;
+      --border-light: #2a3a60;
+      --text:         #d4deff;
+      --text-dim:     #7080a8;
+      --text-faint:   #3a4a70;
+      --accent:       #3de8ff;
+      --accent-glow:  rgba(61, 232, 255, 0.15);
+      --accent-dim:   rgba(61, 232, 255, 0.06);
+      --tool-color:   #39ffa0;
+      --tool-bg:      rgba(57, 255, 160, 0.05);
+      --tool-border:  rgba(57, 255, 160, 0.2);
+      --user-bg:      rgba(30, 70, 140, 0.3);
+      --user-border:  rgba(60, 120, 220, 0.35);
+      --error-color:  #ff4d6a;
+      --error-bg:     rgba(255, 77, 106, 0.08);
+      --error-border: rgba(255, 77, 106, 0.3);
+      --overlay:      rgba(5, 8, 16, 0.85);
+      --scrollbar:    #1a2540;
+      --canvas-dot:   rgba(61, 232, 255, 0.06);
+      --shadow:       0 4px 24px rgba(0, 0, 0, 0.6);
+      --shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="light"] {
+      --bg:           #f0f4ff;
+      --bg-mid:       #e8eeff;
+      --panel:        #ffffff;
+      --panel-hover:  #f8f9ff;
+      --border:       #d4daf0;
+      --border-light: #b8c4e8;
+      --text:         #1a2050;
+      --text-dim:     #5a6a9a;
+      --text-faint:   #b0bcd8;
+      --accent:       #0077cc;
+      --accent-glow:  rgba(0, 119, 204, 0.12);
+      --accent-dim:   rgba(0, 119, 204, 0.05);
+      --tool-color:   #008855;
+      --tool-bg:      rgba(0, 136, 85, 0.05);
+      --tool-border:  rgba(0, 136, 85, 0.2);
+      --user-bg:      rgba(200, 220, 255, 0.5);
+      --user-border:  rgba(100, 150, 240, 0.4);
+      --error-color:  #cc2244;
+      --error-bg:     rgba(204, 34, 68, 0.06);
+      --error-border: rgba(204, 34, 68, 0.25);
+      --overlay:      rgba(240, 244, 255, 0.9);
+      --scrollbar:    #c0cbea;
+      --canvas-dot:   rgba(0, 100, 200, 0.07);
+      --shadow:       0 4px 24px rgba(80, 100, 160, 0.15);
+      --shadow-sm:    0 2px 8px rgba(80, 100, 160, 0.1);
+    }
+
+    /* ─── RESET ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 99px; }
+
+    /* ─── BASE ────────────────────────────────────────────────── */
+    html { height: 100%; }
+
+    body {
+      font-family: "Space Mono", "Courier New", monospace;
+      color: var(--text);
+      background: var(--bg);
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+      transition: background 0.35s, color 0.35s;
+      position: relative;
+    }
+
+    #canvas-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.9;
+    }
+
+    /* ─── HEADER ──────────────────────────────────────────────── */
+    header {
+      position: relative;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      background: var(--overlay);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 56px;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .brand-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse-dot 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    header h1 {
+      font-family: "Syne", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    header h1 span {
+      color: var(--accent);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #status {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      background: var(--accent-dim);
+      white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    #status.busy {
+      color: var(--accent);
+      border-color: rgba(61, 232, 255, 0.35);
+      animation: status-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes status-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--accent-dim);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+      color: var(--text);
+    }
+    .theme-toggle:hover {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      transform: rotate(15deg);
+    }
+    .theme-toggle svg { width: 16px; height: 16px; }
+
+    /* ─── MAIN LAYOUT ─────────────────────────────────────────── */
+    main {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    /* ─── PANELS ──────────────────────────────────────────────── */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 0 16px;
+      height: 42px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      background: var(--panel);
+    }
+
+    .panel-title {
+      font-family: "Syne", sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .icon-btn:hover {
+      background: var(--accent-dim);
+      border-color: var(--border-light);
+      color: var(--accent);
+    }
+    .icon-btn svg { width: 13px; height: 13px; }
+
+    /* ─── CHAT PANEL ──────────────────────────────────────────── */
+    #chat-panel {
+      flex: 1 1 0;
+      min-width: 0;
+      background: var(--bg-mid);
+      border-right: 1px solid var(--border);
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* messages */
+    .msg {
+      border-radius: 12px;
+      padding: 12px 14px;
+      animation: msg-in 0.35s var(--ease-out-expo) both;
+      max-width: 100%;
+      word-break: break-word;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      font-size: 0.83rem;
+    }
+
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-meta {
+      font-family: "Syne", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .msg.user {
+      background: var(--user-bg);
+      border: 1px solid var(--user-border);
+    }
+    .msg.user .msg-meta { color: #7ab0ff; }
+
+    .msg.assistant {
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+    .msg.assistant .msg-meta { color: var(--accent); }
+
+    .msg.error {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+    }
+    .msg.error .msg-meta { color: var(--error-color); }
+    .msg.error .msg-body { color: var(--error-color); }
+
+    /* Typing indicator */
+    #typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      animation: msg-in 0.35s var(--ease-out-expo) both;
+      width: fit-content;
+    }
+
+    #typing-indicator.visible {
+      display: flex;
+    }
+
+    .typing-label {
+      font-family: "Syne", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .typing-dots span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: block;
+      animation: typing-bounce 1.1s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes typing-bounce {
+      0%, 80%, 100% { opacity: 0.3; transform: scale(0.75); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ─── TOOLS PANEL ─────────────────────────────────────────── */
+    #tools-panel {
+      flex: 0 0 340px;
+      width: 340px;
+      min-width: 0;
+      background: var(--bg-mid);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: flex-basis 0.38s cubic-bezier(0.16,1,0.3,1),
+                  width 0.38s cubic-bezier(0.16,1,0.3,1),
+                  opacity 0.28s ease,
+                  border-color 0.38s ease;
+    }
+
+    #tools-panel.collapsed {
+      flex: 0 0 0;
+      width: 0;
+      opacity: 0;
+      border-color: transparent;
+      pointer-events: none;
+    }
+
+    #tools {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .tool-event {
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.76rem;
+      line-height: 1.55;
+      background: var(--tool-bg);
+      border: 1px solid var(--tool-border);
+      color: var(--tool-color);
+      white-space: pre-wrap;
+      word-break: break-word;
+      animation: msg-in 0.3s var(--ease-out-expo) both;
+    }
+
+    .tool-event-title {
+      font-family: "Syne", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      opacity: 0.7;
+    }
+
+    /* Tools toggle FAB (visible when panel is collapsed) */
+    #tools-toggle-fab {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 20;
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      cursor: pointer;
+      display: none;
+      align-items: center; justify-content: center;
+      color: var(--text-dim);
+      box-shadow: var(--shadow-sm);
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    #tools-toggle-fab:hover {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    #tools-panel.collapsed ~ #tools-toggle-fab {
+      display: flex;
+    }
+    #tools-toggle-fab svg { width: 15px; height: 15px; }
+
+    /* ─── FOOTER / INPUT AREA ─────────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 10;
+      border-top: 1px solid var(--border);
+      background: var(--overlay);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: padding 0.2s;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    textarea#prompt {
+      width: 100%;
+      resize: none;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      padding: 12px 44px 12px 14px;
+      font: 0.83rem/1.5 "Space Mono", monospace;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, height 0.25s var(--ease-out-expo), background 0.2s;
+      height: 48px;
+      min-height: 48px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    textarea#prompt.expanded {
+      height: 140px;
+    }
+
+    textarea#prompt:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow), inset 0 0 0 1px var(--accent);
+    }
+
+    textarea#prompt::placeholder {
+      color: var(--text-faint);
+    }
+
+    textarea#prompt:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* expand toggle button inside textarea */
+    #expand-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: 26px; height: 26px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.2s;
+      flex-shrink: 0;
+    }
+    #expand-btn:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    #expand-btn.expanded {
+      transform: rotate(180deg);
+    }
+    #expand-btn svg { width: 12px; height: 12px; }
+
+    /* footer action row */
+    .footer-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .footer-hint {
+      font-size: 0.68rem;
+      color: var(--text-faint);
+      letter-spacing: 0.03em;
+      line-height: 1.4;
+    }
+
+    .footer-hint kbd {
+      display: inline-block;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0 4px;
+      font: inherit;
+      font-size: 0.65rem;
+    }
+
+    .footer-buttons {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font: 0.78rem/1 "Syne", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--panel-hover);
+      border-color: var(--border-light);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-dim);
+    }
+    .btn-ghost:hover {
+      background: var(--accent-dim);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #050810;
+      font-weight: 700;
+      box-shadow: 0 0 14px rgba(61, 232, 255, 0.25);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #6ef0ff;
+      border-color: #6ef0ff;
+      box-shadow: 0 0 20px rgba(61, 232, 255, 0.45);
+    }
+
+    [data-theme="light"] .btn-primary {
+      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 2px 12px rgba(0, 119, 204, 0.3);
+    }
+
+    .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ─── EMPTY STATE ─────────────────────────────────────────── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--text-faint);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .empty-state svg {
+      width: 32px; height: 32px;
+      opacity: 0.3;
+      margin-bottom: 4px;
+    }
+
+    .empty-state p {
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    /* ─── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 880px) {
+      #tools-panel { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated canvas background -->
+  <canvas id="canvas-bg"></canvas>
+
+  <!-- Header -->
+  <header>
+    <div class="header-brand">
+      <div class="brand-dot"></div>
+      <h1><span>MCC</span> MCP Playground</h1>
+    </div>
+    <div class="header-right">
+      <div id="status">Booting…</div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+        <!-- Moon icon (dark mode shown, click = go light) -->
+        <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main id="main">
+    <!-- Chat panel -->
+    <section class="panel" id="chat-panel">
+      <div class="panel-header">
+        <span class="panel-title">Chat</span>
+        <div class="panel-actions">
+          <button class="icon-btn" id="clear-chat-btn" title="Clear chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="chat">
+        <div class="empty-state" id="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <p>No messages yet.<br>Ask the LLM to control MCC via MCP.</p>
+        </div>
+        <div id="typing-indicator">
+          <span class="typing-label">Thinking</span>
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tools panel -->
+    <section class="panel" id="tools-panel">
+      <div class="panel-header">
+        <span class="panel-title" style="display:flex;align-items:center;gap:7px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--tool-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.8">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          <span style="color:var(--tool-color);">Tool Events</span>
+        </span>
+        <div class="panel-actions">
+          <button class="icon-btn" id="clear-tools-btn" title="Clear tool events">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="collapse-tools-btn" title="Collapse panel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 21 12 15 6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="tools">
+        <div class="empty-state" id="tools-empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          <p>No tool events yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAB to re-open collapsed tools panel -->
+    <button id="tools-toggle-fab" title="Show Tool Events">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 3 12 9 6"/>
+      </svg>
+    </button>
+  </main>
+
+  <!-- Footer / Input -->
+  <footer>
+    <div class="input-wrapper">
+      <textarea id="prompt" placeholder="Ask the LLM to control MCC via MCP…" rows="1"></textarea>
+      <button id="expand-btn" title="Expand input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      </button>
+    </div>
+    <div class="footer-actions">
+      <div class="footer-hint">
+        <kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line
+      </div>
+      <div class="footer-buttons">
+        <button class="btn btn-ghost" id="stop">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          Stop
+        </button>
+        <button class="btn btn-ghost" id="clear">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.29"/></svg>
+          Clear
+        </button>
+        <button class="btn btn-primary" id="send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* ─── CANVAS BACKGROUND ─────────────────────────────────── */
+    (function () {
+      const canvas = document.getElementById("canvas-bg");
+      const ctx = canvas.getContext("2d");
+      let W, H, cols, rows, dots = [], raf;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        const spacing = 38;
+        cols = Math.ceil(W / spacing) + 1;
+        rows = Math.ceil(H / spacing) + 1;
+        dots = [];
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            dots.push({
+              x: c * spacing,
+              y: r * spacing,
+              phase: Math.random() * Math.PI * 2,
+              speed: 0.004 + Math.random() * 0.006,
+            });
+          }
+        }
+      }
+
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+        const isDark = document.documentElement.getAttribute("data-theme") !== "light";
+        const baseAlpha = isDark ? 0.065 : 0.09;
+        const color = isDark ? "61, 232, 255" : "0, 100, 200";
+        for (const d of dots) {
+          const a = baseAlpha * (0.4 + 0.6 * (0.5 + 0.5 * Math.sin(t * d.speed + d.phase)));
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${color}, ${a})`;
+          ctx.fill();
+        }
+        raf = requestAnimationFrame(draw);
+      }
+
+      window.addEventListener("resize", resize);
+      resize();
+      raf = requestAnimationFrame(draw);
+    })();
+
+    /* ─── THEME TOGGLE ──────────────────────────────────────── */
+    const html = document.documentElement;
+    const themeToggle = document.getElementById("theme-toggle");
+    const iconMoon = document.getElementById("icon-moon");
+    const iconSun = document.getElementById("icon-sun");
+
+    function setTheme(theme) {
+      html.setAttribute("data-theme", theme);
+      if (theme === "dark") {
+        iconMoon.style.display = "";
+        iconSun.style.display = "none";
+      } else {
+        iconMoon.style.display = "none";
+        iconSun.style.display = "";
+      }
+      localStorage.setItem("mcc-theme", theme);
+    }
+
+    themeToggle.addEventListener("click", () => {
+      setTheme(html.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    });
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem("mcc-theme");
+    if (savedTheme) setTheme(savedTheme);
+
+    /* ─── COLLAPSIBLE TOOLS PANEL ───────────────────────────── */
+    const mainEl = document.getElementById("main");
+    const toolsPanelEl = document.getElementById("tools-panel");
+    const collapseToolsBtn = document.getElementById("collapse-tools-btn");
+    const toolsToggleFab = document.getElementById("tools-toggle-fab");
+
+    function setToolsOpen(open) {
+      toolsPanelEl.classList.toggle("collapsed", !open);
+    }
+
+    collapseToolsBtn.addEventListener("click", () => setToolsOpen(false));
+    toolsToggleFab.addEventListener("click", () => setToolsOpen(true));
+
+    /* ─── EXPANDABLE TEXTAREA ───────────────────────────────── */
+    const promptEl = document.getElementById("prompt");
+    const expandBtn = document.getElementById("expand-btn");
+    let isExpanded = false;
+
+    expandBtn.addEventListener("click", () => {
+      isExpanded = !isExpanded;
+      promptEl.classList.toggle("expanded", isExpanded);
+      expandBtn.classList.toggle("expanded", isExpanded);
+    });
+
+    /* ─── CORE CHAT LOGIC ───────────────────────────────────── */
+    const chatEl = document.getElementById("chat");
+    const toolsEl = document.getElementById("tools");
+    const statusEl = document.getElementById("status");
+    const sendBtn = document.getElementById("send");
+    const stopBtn = document.getElementById("stop");
+    const clearBtn = document.getElementById("clear");
+    const clearChatBtn = document.getElementById("clear-chat-btn");
+    const clearToolsBtn = document.getElementById("clear-tools-btn");
+    const emptyState = document.getElementById("empty-state");
+    const toolsEmptyState = document.getElementById("tools-empty-state");
+    const typingIndicator = document.getElementById("typing-indicator");
+
+    let history = [];
+    let activeAssistant = null;
+    let abortController = null;
+
+    stopBtn.disabled = true;
+
+    function updateEmptyStates() {
+      // Check messages (excluding typing indicator and empty state)
+      const realMessages = chatEl.querySelectorAll(".msg");
+      emptyState.style.display = realMessages.length === 0 ? "" : "none";
+
+      const toolEvents = toolsEl.querySelectorAll(".tool-event");
+      toolsEmptyState.style.display = toolEvents.length === 0 ? "" : "none";
+    }
+
+    function addMessage(role, content, extraClass = "") {
+      const wrap = document.createElement("div");
+      wrap.className = `msg ${role} ${extraClass}`.trim();
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      meta.textContent = role;
+
+      const body = document.createElement("div");
+      body.className = "msg-body";
+      body.textContent = content;
+
+      wrap.append(meta, body);
+
+      // Insert before the typing indicator
+      chatEl.insertBefore(wrap, typingIndicator);
+      chatEl.scrollTop = chatEl.scrollHeight;
+      updateEmptyStates();
+      return body;
+    }
+
+    function addToolEvent(title, payload) {
+      const el = document.createElement("div");
+      el.className = "tool-event";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "tool-event-title";
+      titleEl.textContent = title;
+
+      const body = document.createElement("pre");
+      body.style.margin = "0";
+      body.style.fontFamily = "inherit";
+      body.style.fontSize = "inherit";
+      body.textContent = JSON.stringify(payload, null, 2);
+
+      el.append(titleEl, body);
+      toolsEl.appendChild(el);
+      toolsEl.scrollTop = toolsEl.scrollHeight;
+
+      // Auto-open if collapsed
+      if (toolsPanelEl.classList.contains("collapsed")) {
+        setToolsOpen(true);
+      }
+
+      updateEmptyStates();
+    }
+
+    function setTyping(on) {
+      typingIndicator.classList.toggle("visible", on);
+      if (on) chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function setBusy(busy) {
+      sendBtn.disabled = busy;
+      stopBtn.disabled = !busy;
+      promptEl.disabled = busy;
+      statusEl.textContent = busy ? "Streaming…" : "Ready";
+      statusEl.classList.toggle("busy", busy);
+      setTyping(busy && !activeAssistant?.textContent);
+    }
+
+    async function loadConfig() {
+      try {
+        const res = await fetch("/api/config");
+        if (!res.ok) throw new Error("Failed to load config.");
+        const config = await res.json();
+        statusEl.textContent = config.hasApiKey
+          ? `Model: ${config.model}`
+          : "Missing OPENROUTER_API_KEY";
+      } catch (err) {
+        statusEl.textContent = `Config error: ${err.message}`;
+      }
+    }
+
+    function parseSseChunk(buffer, onEvent) {
+      let idx;
+      while ((idx = buffer.indexOf("\n\n")) >= 0) {
+        const eventBlock = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+        const lines = eventBlock.split("\n");
+        let eventName = "message";
+        let data = "";
+        for (const line of lines) {
+          if (line.startsWith("event:")) eventName = line.slice(6).trim();
+          if (line.startsWith("data:")) data += line.slice(5).trim();
+        }
+        if (data.length > 0) {
+          try {
+            onEvent(eventName, JSON.parse(data));
+          } catch {
+            onEvent("error", { message: "Failed to parse SSE payload.", raw: data });
+          }
+        }
+      }
+      return buffer;
+    }
+
+    async function sendPrompt() {
+      const prompt = promptEl.value.trim();
+      if (!prompt) return;
+
+      history.push({ role: "user", content: prompt });
+      addMessage("user", prompt);
+      promptEl.value = "";
+      activeAssistant = addMessage("assistant", "");
+      setBusy(true);
+
+      abortController = new AbortController();
+      try {
+        const res = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: history }),
+          signal: abortController.signal
+        });
+
+        if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let assistantText = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          buffer = parseSseChunk(buffer, (eventName, payload) => {
+            if (eventName === "token") {
+              setTyping(false);
+              assistantText += payload.text ?? "";
+              activeAssistant.textContent = assistantText;
+              chatEl.scrollTop = chatEl.scrollHeight;
+            } else if (eventName === "tool_call") {
+              addToolEvent("Tool Call", payload);
+            } else if (eventName === "tool_result") {
+              addToolEvent("Tool Result", payload);
+            } else if (eventName === "final") {
+              assistantText = payload.text ?? assistantText;
+              activeAssistant.textContent = assistantText;
+            } else if (eventName === "error") {
+              addMessage("error", payload.message ?? "Unknown error", "error");
+              if (payload.detail) addToolEvent("Error Detail", payload);
+            }
+          });
+        }
+
+        if (assistantText.trim().length > 0) {
+          history.push({ role: "assistant", content: assistantText });
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          addMessage("error", `Request failed: ${err.message}`, "error");
+        }
+      } finally {
+        abortController = null;
+        activeAssistant = null;
+        setBusy(false);
+      }
+    }
+
+    /* ─── EVENT LISTENERS ───────────────────────────────────── */
+    sendBtn.addEventListener("click", sendPrompt);
+
+    stopBtn.addEventListener("click", () => abortController?.abort());
+
+    clearBtn.addEventListener("click", () => {
+      history = [];
+      chatEl.querySelectorAll(".msg").forEach(el => el.remove());
+      toolsEl.querySelectorAll(".tool-event").forEach(el => el.remove());
+      promptEl.value = "";
+      updateEmptyStates();
+    });
+
+    clearChatBtn.addEventListener("click", () => {
+      history = [];
+      chatEl.querySelectorAll(".msg").forEach(el => el.remove());
+      promptEl.value = "";
+      updateEmptyStates();
+    });
+
+    clearToolsBtn.addEventListener("click", () => {
+      toolsEl.querySelectorAll(".tool-event").forEach(el => el.remove());
+      updateEmptyStates();
+    });
+
+    promptEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) sendPrompt();
+      }
+    });
+
+    // Initialise
+    updateEmptyStates();
+    loadConfig();
+  </script>
+</body>
+</html>
