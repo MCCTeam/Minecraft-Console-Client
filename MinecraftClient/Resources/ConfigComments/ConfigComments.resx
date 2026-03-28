@@ -936,4 +936,46 @@ Note: This does NOT require a Bot Token, only an Application ID. Discord must be
   <data name="Main.General.AuthlibUser" xml:space="preserve">
     <value>Yggdrasil authlib multi-user selection.</value>
   </data>
+  <data name="ChatBot.McpServer" xml:space="preserve">
+    <value>Host an embedded MCP server while connected to Minecraft. Disabled by default.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport" xml:space="preserve">
+    <value>Embedded MCP HTTP transport settings.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities" xml:space="preserve">
+    <value>Enable or disable MCP tool categories.</value>
+  </data>
+  <data name="ChatBot.McpServer.Enabled" xml:space="preserve">
+    <value>Enable the built-in embedded MCP server bot. Server starts only after game join and stops on disconnect.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.BindHost" xml:space="preserve">
+    <value>IP/host to bind the embedded MCP HTTP listener to. Default is loopback only.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.Port" xml:space="preserve">
+    <value>TCP port for the embedded MCP HTTP listener.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.Route" xml:space="preserve">
+    <value>Route prefix where MCP endpoints are exposed.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.RequireAuthToken" xml:space="preserve">
+    <value>Require Bearer token authentication for MCP endpoint requests.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.AuthTokenEnvVar" xml:space="preserve">
+    <value>Environment variable name containing the MCP auth token when auth is required.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.SessionStatus" xml:space="preserve">
+    <value>Allow session and status inspection tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.ChatAndCommands" xml:space="preserve">
+    <value>Allow chat and internal command tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.Movement" xml:space="preserve">
+    <value>Allow movement and view-control tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.Inventory" xml:space="preserve">
+    <value>Allow inventory read and action tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.EntityWorld" xml:space="preserve">
+    <value>Allow entity and world inspection tools.</value>
+  </data>
 </root>

@@ -6799,5 +6799,59 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("tui.crafting.grid", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Starting embedded MCP server....
+        /// </summary>
+        internal static string bot_mcpserver_starting {
+            get {
+                return ResourceManager.GetString("bot.mcpserver.starting", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Embedded MCP server started on {0}.
+        /// </summary>
+        internal static string bot_mcpserver_started {
+            get {
+                return ResourceManager.GetString("bot.mcpserver.started", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to start embedded MCP server: {0}.
+        /// </summary>
+        internal static string bot_mcpserver_start_failed {
+            get {
+                return ResourceManager.GetString("bot.mcpserver.start_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Embedded MCP auth token is required but environment variable {0} is empty..
+        /// </summary>
+        internal static string bot_mcpserver_missing_auth_token {
+            get {
+                return ResourceManager.GetString("bot.mcpserver.missing_auth_token", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Embedded MCP server stopped..
+        /// </summary>
+        internal static string bot_mcpserver_stopped {
+            get {
+                return ResourceManager.GetString("bot.mcpserver.stopped", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to stop embedded MCP server cleanly: {0}.
+        /// </summary>
+        internal static string bot_mcpserver_stop_failed {
+            get {
+                return ResourceManager.GetString("bot.mcpserver.stop_failed", resourceCulture);
+            }
+        }
     }
 }

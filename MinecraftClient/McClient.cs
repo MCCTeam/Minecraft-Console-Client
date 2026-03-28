@@ -510,6 +510,7 @@ namespace MinecraftClient
             if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.ItemsCollector.Enabled) { BotLoad(new ItemsCollector()); }
             if (Config.ChatBot.DiscordRpc.Enabled) { BotLoad(new DiscordRpc()); }
+            if (Config.ChatBot.McpServer.Enabled) { BotLoad(new McpServer()); }
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MCC_FILE_INPUT")))
                 BotLoad(new FileInputBot());
         }

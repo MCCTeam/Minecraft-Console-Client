@@ -2392,4 +2392,25 @@ see item details.</value>
   <data name="tui.crafting.grid" xml:space="preserve">
     <value>Crafting</value>
   </data>
+  <data name="botname.McpServer" xml:space="preserve">
+    <value>McpServer</value>
+  </data>
+  <data name="bot.mcpserver.starting" xml:space="preserve">
+    <value>Starting embedded MCP server...</value>
+  </data>
+  <data name="bot.mcpserver.started" xml:space="preserve">
+    <value>Embedded MCP server started on {0}</value>
+  </data>
+  <data name="bot.mcpserver.start_failed" xml:space="preserve">
+    <value>Failed to start embedded MCP server: {0}</value>
+  </data>
+  <data name="bot.mcpserver.missing_auth_token" xml:space="preserve">
+    <value>Embedded MCP auth token is required but environment variable {0} is empty.</value>
+  </data>
+  <data name="bot.mcpserver.stopped" xml:space="preserve">
+    <value>Embedded MCP server stopped.</value>
+  </data>
+  <data name="bot.mcpserver.stop_failed" xml:space="preserve">
+    <value>Failed to stop embedded MCP server cleanly: {0}</value>
+  </data>
 </root>
