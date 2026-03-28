@@ -161,14 +161,7 @@ namespace MinecraftClient
             }
 
             if (configResult.NeedWriteDefault)
-            {
                 Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
-                WriteBackSettings(false);
-            }
-            else if (configResult.Success)
-            {
-                WriteBackSettings(true);
-            }
 
             if (!Config.Main.Advanced.EnableSentry)
                 _sentrySdk?.Dispose();
@@ -219,6 +212,8 @@ namespace MinecraftClient
 
             if (cfg.NeedWriteDefault)
             {
+                WriteBackSettings(false);
+
                 if (cfg.IsLegacyUpgrade)
                 {
                     ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
@@ -243,6 +238,8 @@ namespace MinecraftClient
             }
             else
             {
+                WriteBackSettings(true);
+
                 if (!Config.Main.Advanced.Language.StartsWith("en"))
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_help_us_translate, Settings.TranslationProjectUrl));
             }
