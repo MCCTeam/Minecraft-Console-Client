@@ -177,9 +177,16 @@ namespace MinecraftClient
             if (!ConsoleIO.BasicIO && Config.Console.General.ConsoleMode == ConsoleModeType.tui)
             {
                 ConsoleIO.Backend?.Shutdown();
-                var tuiBackend = new Tui.TuiConsoleBackend();
-                ConsoleIO.Backend = tuiBackend;
-                tuiBackend.RunTuiMainLoop(args, startupState);
+                try
+                {
+                    var tuiBackend = new Tui.TuiConsoleBackend();
+                    ConsoleIO.Backend = tuiBackend;
+                    tuiBackend.RunTuiMainLoop(args, startupState);
+                }
+                catch (Exception ex)
+                {
+                    HandleTuiStartupFailure(ex);
+                }
                 return;
             }
 
@@ -197,6 +204,20 @@ namespace MinecraftClient
             // MaybePrintClassicModeTuiRecommendation();
 
             RunStartupSequence(args);
+        }
+
+        private static void HandleTuiStartupFailure(Exception exception)
+        {
+            Config.Console.General.ConsoleMode = ConsoleModeType.classic;
+            WriteBackSettings(enableBackup: false);
+
+            ConsoleIO.Backend = new ClassicConsoleBackend();
+            ConsoleIO.Backend.Init();
+
+            ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_tui_startup_failed);
+            ConsoleIO.WriteLine(exception.ToString());
+            ConsoleIO.WriteLineFormatted("§e" + Translations.mcc_report_issue);
+            ConsoleIO.WriteLineFormatted("§e" + Translations.mcc_tui_startup_fallback_classic);
         }
 
         /// <summary>

@@ -1881,6 +1881,15 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="mcc.console_mode_tui_recommendation" xml:space="preserve">
     <value>Tip: try TUI mode for a cleaner interface, mouse-friendly inventory actions, and a nicer layout. Run {0}tryout tui§8 to switch [Console.General] ConsoleMode to "tui" for the next restart.</value>
   </data>
+  <data name="mcc.tui_startup_failed" xml:space="preserve">
+    <value>MCC encountered a problem while starting TUI mode.</value>
+  </data>
+  <data name="mcc.tui_startup_fallback_classic" xml:space="preserve">
+    <value>As a fallback, MCC has automatically switched [Console.General] ConsoleMode to "classic". This will take effect after you restart MCC.</value>
+  </data>
+  <data name="mcc.report_issue" xml:space="preserve">
+    <value>Please report this issue to the MCC Team.</value>
+  </data>
   <data name="mcc.device_code_prompt" xml:space="preserve">
     <value>To sign in, open {0} in your browser and enter the code: §e{1}</value>
   </data>

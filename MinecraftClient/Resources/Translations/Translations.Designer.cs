@@ -5587,6 +5587,33 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("mcc.console_mode_tui_recommendation", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to MCC encountered a problem while starting TUI mode..
+        /// </summary>
+        internal static string mcc_tui_startup_failed {
+            get {
+                return ResourceManager.GetString("mcc.tui_startup_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to As a fallback, MCC has automatically switched [Console.General] ConsoleMode to &quot;classic&quot;. This will take effect after you restart MCC..
+        /// </summary>
+        internal static string mcc_tui_startup_fallback_classic {
+            get {
+                return ResourceManager.GetString("mcc.tui_startup_fallback_classic", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Please report this issue to the MCC Team..
+        /// </summary>
+        internal static string mcc_report_issue {
+            get {
+                return ResourceManager.GetString("mcc.report_issue", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to To sign in, open {0} in your browser and enter the code: {1}.
