@@ -3559,6 +3559,51 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to quickly enable recommended features..
+        /// </summary>
+        internal static string cmd_tryout_desc {
+            get {
+                return ResourceManager.GetString("cmd.tryout.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Available quick actions:.
+        /// </summary>
+        internal static string cmd_tryout_list_header {
+            get {
+                return ResourceManager.GetString("cmd.tryout.list.header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to tui: set [Console.General] ConsoleMode = &quot;tui&quot; for the next restart..
+        /// </summary>
+        internal static string cmd_tryout_list_tui {
+            get {
+                return ResourceManager.GetString("cmd.tryout.list.tui", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [Console.General] ConsoleMode is already &quot;tui&quot; in the config. To switch back, set [Console.General] ConsoleMode = &quot;classic&quot;. Restart MCC after changing it for the new mode to take effect..
+        /// </summary>
+        internal static string cmd_tryout_tui_already_enabled {
+            get {
+                return ResourceManager.GetString("cmd.tryout.tui.already_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated [Console.General] ConsoleMode from &quot;{0}&quot; to &quot;{1}&quot; in the config. To switch back, set [Console.General] ConsoleMode = &quot;classic&quot;. Restart MCC to apply the change..
+        /// </summary>
+        internal static string cmd_tryout_tui_enabled {
+            get {
+                return ResourceManager.GetString("cmd.tryout.tui.enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Display Health and Food saturation..
         /// </summary>
         internal static string cmd_health_desc {
@@ -5531,6 +5576,15 @@ namespace MinecraftClient {
         internal static string mcc_connecting {
             get {
                 return ResourceManager.GetString("mcc.connecting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tip: try TUI mode for a cleaner interface, mouse-friendly container actions, and a nicer layout. Run {0}feature tui§8 to switch [Console.General] ConsoleMode to &quot;tui&quot; for the next restart..
+        /// </summary>
+        internal static string mcc_console_mode_tui_recommendation {
+            get {
+                return ResourceManager.GetString("mcc.console_mode_tui_recommendation", resourceCulture);
             }
         }
         

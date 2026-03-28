@@ -193,6 +193,7 @@ namespace MinecraftClient
             if (!ProcessStartupState(startupState))
                 return;
 
+            MaybePrintClassicModeTuiRecommendation();
             RunStartupSequence(args);
         }
 
@@ -245,6 +246,19 @@ namespace MinecraftClient
             }
 
             return true;
+        }
+
+        private static void MaybePrintClassicModeTuiRecommendation()
+        {
+            if (ConsoleIO.BasicIO
+                || Config.Console.General.ConsoleMode != ConsoleModeType.classic
+                || Console.IsInputRedirected)
+            {
+                return;
+            }
+
+            char cmdChar = Config.Main.Advanced.InternalCmdChar.ToChar();
+            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_console_mode_tui_recommendation, cmdChar));
         }
 
         /// <summary>
