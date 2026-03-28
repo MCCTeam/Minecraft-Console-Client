@@ -193,7 +193,9 @@ namespace MinecraftClient
             if (!ProcessStartupState(startupState))
                 return;
 
-            MaybePrintClassicModeTuiRecommendation();
+            // Wait for this issue to be fixed before enabling it: https://github.com/Consolonia/Consolonia/issues/602
+            // MaybePrintClassicModeTuiRecommendation();
+
             RunStartupSequence(args);
         }
 
