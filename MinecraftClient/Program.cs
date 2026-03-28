@@ -193,6 +193,9 @@ namespace MinecraftClient
             if (!ProcessStartupState(startupState))
                 return;
 
+            // Wait for this issue to be fixed before enabling it: https://github.com/Consolonia/Consolonia/issues/602
+            // MaybePrintClassicModeTuiRecommendation();
+
             RunStartupSequence(args);
         }
 
@@ -245,6 +248,19 @@ namespace MinecraftClient
             }
 
             return true;
+        }
+
+        private static void MaybePrintClassicModeTuiRecommendation()
+        {
+            if (ConsoleIO.BasicIO
+                || Config.Console.General.ConsoleMode != ConsoleModeType.classic
+                || Console.IsInputRedirected)
+            {
+                return;
+            }
+
+            char cmdChar = Config.Main.Advanced.InternalCmdChar.ToChar();
+            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_console_mode_tui_recommendation, cmdChar));
         }
 
         /// <summary>
