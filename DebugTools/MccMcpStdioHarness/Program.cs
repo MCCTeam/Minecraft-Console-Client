@@ -295,14 +295,51 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
     public MccMcpResult LookAt(double x, double y, double z) =>
         MccMcpResult.Ok(new { looked = true, x = C(x), y = C(y), z = C(z) });
 
+    public MccMcpResult ListInventories() =>
+        MccMcpResult.Ok(new
+        {
+            count = 2,
+            inventories = new object[]
+            {
+                new { id = 0, type = "PlayerInventory", title = "Player Inventory", slotCount = 46, nonEmptySlots = 1, active = false },
+                new { id = 1, type = "Generic_9x3", title = "Chest", slotCount = 63, nonEmptySlots = 2, active = true }
+            }
+        });
+
     public MccMcpResult GetInventorySnapshot(int inventoryId) =>
         MccMcpResult.Ok(new
         {
             id = inventoryId,
+            type = inventoryId == 0 ? "PlayerInventory" : "Generic_9x3",
+            title = inventoryId == 0 ? "Player Inventory" : "Chest",
+            slotCount = inventoryId == 0 ? 46 : 63,
             slots = new[]
             {
                 new { slot = 0, type = "Stone", count = 64 }
             }
+        });
+
+    public MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent) =>
+        MccMcpResult.Ok(new
+        {
+            success = true,
+            openAccepted = true,
+            opened = true,
+            timeoutMs = timeoutMs <= 0 ? 5000 : timeoutMs,
+            x,
+            y,
+            z,
+            block = new { material = "Chest", typeLabel = "Chest", blockId = 0, blockMeta = 0 },
+            inventory = new { id = 1, type = "Generic_9x3", title = "Chest", slotCount = 63, nonEmptySlots = 2 }
+        });
+
+    public MccMcpResult CloseContainer(int inventoryId, int timeoutMs) =>
+        MccMcpResult.Ok(new
+        {
+            success = true,
+            closed = true,
+            inventoryId = inventoryId <= 0 ? 1 : inventoryId,
+            timeoutMs = timeoutMs <= 0 ? 5000 : timeoutMs
         });
 
     public MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType) =>
@@ -320,6 +357,42 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             inventoryId,
             touchedSlots = new[] { 36 },
             preferStack
+        });
+
+    public MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack) =>
+        MccMcpResult.Ok(new
+        {
+            success = true,
+            direction = "deposit",
+            itemType,
+            requestedCount = count,
+            movedCount = count,
+            beforePlayerCount = 64,
+            afterPlayerCount = Math.Max(0, 64 - count),
+            beforeContainerCount = 0,
+            afterContainerCount = count,
+            inventoryId = inventoryId <= 0 ? 1 : inventoryId,
+            containerType = "Generic_9x3",
+            touchedSourceSlots = new[] { 36 },
+            touchedTargetSlots = new[] { 0 }
+        });
+
+    public MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack) =>
+        MccMcpResult.Ok(new
+        {
+            success = true,
+            direction = "withdraw",
+            itemType,
+            requestedCount = count,
+            movedCount = count,
+            beforePlayerCount = 0,
+            afterPlayerCount = count,
+            beforeContainerCount = 64,
+            afterContainerCount = Math.Max(0, 64 - count),
+            inventoryId = inventoryId <= 0 ? 1 : inventoryId,
+            containerType = "Generic_9x3",
+            touchedSourceSlots = new[] { 0 },
+            touchedTargetSlots = new[] { 36 }
         });
 
     public MccMcpResult QueryEntities(int maxCount) =>

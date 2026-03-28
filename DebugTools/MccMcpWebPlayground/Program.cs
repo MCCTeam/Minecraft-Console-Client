@@ -8,7 +8,10 @@ using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddHttpClient("openrouter");
+builder.Services.AddHttpClient("openrouter", client =>
+{
+    client.Timeout = TimeSpan.FromMinutes(15);
+});
 
 var app = builder.Build();
 app.UseDefaultFiles();
@@ -46,6 +49,7 @@ Todo policy
 Tool-use policy
 - Use MCP tools for MCC/game-state questions and actions.
 - Prefer the most direct high-signal tool first.
+- Prefer structured inventory/container tools over raw window-click tools for chest or container management.
 - If a tool result says success=false or includes an errorCode, treat that as a failed observation even if the transport call itself succeeded.
 - Do not guess tool arguments repeatedly. If a tool returns invalid_args:
   - simplify to the minimum required arguments,
@@ -73,6 +77,12 @@ Action-specific guidance
   - dig in a sensible order,
   - re-check remaining blocks,
   - re-check inventory or nearby item entities before finishing.
+- Container inventory:
+  - locate the target container block,
+  - open the container first,
+  - inspect player and container inventory state,
+  - use structured deposit or withdraw tools instead of raw window clicks,
+  - verify both player and container counts changed before finishing.
 - Search:
   - start with the most direct search tool,
   - use the user's requested radius when supported,
@@ -97,6 +107,13 @@ Good examples
    Good:
    - finish with a short greeting
    - no MCP tools
+4) User: "Put 5 diamonds in the chest."
+   Good:
+   - open the chest
+   - inspect inventory state
+   - deposit exactly 5 diamonds
+   - verify the chest count increased and player count decreased by 5
+   - then finish
 
 Wrong examples
 1) Wrong:
@@ -165,9 +182,9 @@ app.MapPost("/api/chat/stream", async (ChatStreamRequest request, IHttpClientFac
         }
 
         string model = GetModel();
-        int maxIterations = GetBoundedInt("MCC_WEB_MAX_ITERATIONS", 24, 4, 80);
-        int maxToolCalls = GetBoundedInt("MCC_WEB_MAX_TOOL_CALLS", 80, 4, 256);
-        TimeSpan maxWallTime = TimeSpan.FromSeconds(GetBoundedInt("MCC_WEB_MAX_SECONDS", 120, 10, 300));
+        int maxIterations = GetBoundedInt("MCC_WEB_MAX_ITERATIONS", 96, 4, 256);
+        int maxToolCalls = GetBoundedInt("MCC_WEB_MAX_TOOL_CALLS", 320, 4, 1024);
+        TimeSpan maxWallTime = TimeSpan.FromSeconds(GetBoundedInt("MCC_WEB_MAX_SECONDS", 900, 10, 3600));
 
         await using McpClient mcp = await CreateMcpClientAsync(cancellationToken);
         IList<McpClientTool> mcpTools = await mcp.ListToolsAsync(cancellationToken: cancellationToken);
@@ -1005,9 +1022,9 @@ Answer:
 
 static bool ShouldInjectReminder(int iteration, int maxIterations, int toolCallCount, int maxToolCalls, TimeSpan elapsed, TimeSpan maxWallTime)
 {
-    return iteration >= maxIterations - 2
-        || toolCallCount >= maxToolCalls - 4
-        || elapsed >= maxWallTime - TimeSpan.FromSeconds(10);
+    return iteration >= maxIterations - 6
+        || toolCallCount >= maxToolCalls - 12
+        || elapsed >= maxWallTime - TimeSpan.FromSeconds(45);
 }
 
 static string BuildForcedFinalAnswer(

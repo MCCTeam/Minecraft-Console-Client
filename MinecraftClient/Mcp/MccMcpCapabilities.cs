@@ -31,6 +31,10 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
     private const double DefaultArrivalTolerance = 1.5;
     private const int ArrivalPollIntervalMs = 125;
     private const int MaxBlockVerifyWaitMs = 12000;
+    private const int DefaultContainerWaitMs = 5000;
+    private const int MinContainerWaitMs = 250;
+    private const int MaxContainerWaitMs = 20000;
+    private const int DefaultInventoryActionWaitMs = 3500;
 
     private sealed class InternalCommandInfo
     {
@@ -62,6 +66,12 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         public required double Y { get; init; }
         public required double Z { get; init; }
         public required double Distance { get; init; }
+    }
+
+    private enum InventoryTransferDirection
+    {
+        Deposit,
+        Withdraw
     }
 
     private readonly Func<MccMcpCapabilityToggles> togglesProvider;
@@ -1122,6 +1132,120 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         });
     }
 
+    public MccMcpResult ListInventories()
+    {
+        if (!IsCategoryEnabled(t => t.Inventory))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetInventoryEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        return client.InvokeOnMainThread(() =>
+        {
+            var inventories = client.GetInventories()
+                .OrderBy(entry => entry.Key)
+                .Select(entry => new
+                {
+                    id = entry.Key,
+                    type = entry.Value.Type.ToString(),
+                    title = entry.Value.Title,
+                    slotCount = entry.Value.Type.SlotCount(),
+                    nonEmptySlots = entry.Value.Items.Count,
+                    active = entry.Key > 0 && entry.Key == GetActiveContainerId(client)
+                })
+                .ToArray();
+
+            return MccMcpResult.Ok(new
+            {
+                count = inventories.Length,
+                inventories
+            });
+        });
+    }
+
+    public MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent)
+    {
+        if (!IsCategoryEnabled(t => t.Inventory))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetInventoryEnabled() || !client.GetTerrainEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        Location location = new(x, y, z);
+        int waitMs = GetContainerWaitMs(timeoutMs);
+        (Block block, int activeContainerId) state = client.InvokeOnMainThread(() =>
+        {
+            Block block = client.GetWorld().GetBlock(location);
+            return (block, GetActiveContainerId(client));
+        });
+
+        if (!IsInteractableContainerMaterial(state.block.Type))
+        {
+            return MccMcpResult.Fail("invalid_state", data: new
+            {
+                x,
+                y,
+                z,
+                block = ToBlockState(state.block),
+                activeContainerId = state.activeContainerId
+            });
+        }
+
+        return OpenContainerCore(client, location, state.block, state.activeContainerId, waitMs, closeCurrent);
+    }
+
+    public MccMcpResult CloseContainer(int inventoryId, int timeoutMs)
+    {
+        if (!IsCategoryEnabled(t => t.Inventory))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetInventoryEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        int waitMs = GetContainerWaitMs(timeoutMs);
+        int resolvedInventoryId = client.InvokeOnMainThread(() => ResolveContainerInventoryId(client, inventoryId));
+        if (resolvedInventoryId <= 0)
+        {
+            if (inventoryId < 0)
+            {
+                return MccMcpResult.Ok(new
+                {
+                    success = true,
+                    closed = false
+                });
+            }
+
+            return MccMcpResult.Fail("invalid_state", data: new { inventoryId });
+        }
+
+        bool closeAccepted = client.CloseInventory(resolvedInventoryId);
+        bool closed = closeAccepted && WaitForContainerClose(client, resolvedInventoryId, waitMs);
+        var resultData = new
+        {
+            success = closeAccepted && closed,
+            closeAccepted,
+            closed,
+            inventoryId = resolvedInventoryId,
+            timeoutMs = waitMs
+        };
+
+        return closeAccepted && closed
+            ? MccMcpResult.Ok(resultData)
+            : MccMcpResult.Fail("action_incomplete", data: resultData);
+    }
+
     public MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType)
     {
         if (!IsCategoryEnabled(t => t.Inventory))
@@ -1272,6 +1396,16 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 touchedSlots = touchedSlots.ToArray()
             });
         });
+    }
+
+    public MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack)
+    {
+        return TransferContainerItem(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
+    }
+
+    public MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack)
+    {
+        return TransferContainerItem(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Withdraw);
     }
 
     public MccMcpResult QueryEntities(int maxCount)
@@ -1729,6 +1863,312 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         });
     }
 
+    private static MccMcpResult OpenContainerCore(McClient client, Location location, Block block, int activeContainerId, int waitMs, bool closeCurrent)
+    {
+        if (activeContainerId > 0)
+        {
+            if (!closeCurrent)
+            {
+                return MccMcpResult.Fail("invalid_state", data: new
+                {
+                    reason = "container_already_open",
+                    activeContainerId,
+                    x = location.X,
+                    y = location.Y,
+                    z = location.Z,
+                    block = ToBlockState(block)
+                });
+            }
+
+            bool closeAccepted = client.CloseInventory(activeContainerId);
+            bool closed = closeAccepted && WaitForContainerClose(client, activeContainerId, waitMs);
+            if (!closeAccepted || !closed)
+            {
+                return MccMcpResult.Fail("action_incomplete", data: new
+                {
+                    action = "close_previous_container",
+                    activeContainerId,
+                    closeAccepted,
+                    closed,
+                    timeoutMs = waitMs
+                });
+            }
+        }
+
+        HashSet<int> beforeIds = client.InvokeOnMainThread(() => client.GetInventories().Keys.Where(id => id > 0).ToHashSet());
+        int openedInventoryId = 0;
+        Container? openedInventory = null;
+        bool openAccepted = client.InvokeOnMainThread(() => client.PlaceBlock(location, Direction.Down, Hand.MainHand, lookAtBlock: true));
+        bool opened = openAccepted && WaitForContainerOpen(client, beforeIds, waitMs, out openedInventoryId, out openedInventory);
+        var resultData = new
+        {
+            success = openAccepted && opened && openedInventory is not null,
+            openAccepted,
+            opened,
+            timeoutMs = waitMs,
+            x = location.X,
+            y = location.Y,
+            z = location.Z,
+            block = ToBlockState(block),
+            inventory = openedInventory is null
+                ? null
+                : new
+                {
+                    id = openedInventoryId,
+                    type = openedInventory.Type.ToString(),
+                    title = openedInventory.Title,
+                    slotCount = openedInventory.Type.SlotCount(),
+                    nonEmptySlots = openedInventory.Items.Count
+                }
+        };
+
+        return openAccepted && opened && openedInventory is not null
+            ? MccMcpResult.Ok(resultData)
+            : MccMcpResult.Fail("action_incomplete", data: resultData);
+    }
+
+    private MccMcpResult TransferContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack, InventoryTransferDirection direction)
+    {
+        if (!IsCategoryEnabled(t => t.Inventory))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (string.IsNullOrWhiteSpace(itemType) || count <= 0)
+            return MccMcpResult.Fail("invalid_args");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetInventoryEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        if (!TryParseItemType(itemType, out ItemType parsedItemType))
+        {
+            return MccMcpResult.Fail("invalid_args", data: new
+            {
+                itemType = itemType.Trim()
+            });
+        }
+
+        if (TryGetCursorItem(client, out Item? cursorItem))
+        {
+            return MccMcpResult.Fail("invalid_state", data: new
+            {
+                reason = "cursor_item_present",
+                cursor = new { type = cursorItem!.Type.ToString(), count = cursorItem.Count }
+            });
+        }
+
+        int resolvedInventoryId = client.InvokeOnMainThread(() => ResolveContainerInventoryId(client, inventoryId));
+        if (resolvedInventoryId <= 0)
+        {
+            return MccMcpResult.Fail("invalid_state", data: new
+            {
+                inventoryId
+            });
+        }
+
+        Container? initialInventory = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
+        if (initialInventory is null)
+            return MccMcpResult.Fail("invalid_state", data: new { inventoryId = resolvedInventoryId });
+
+        if (!TryGetContainerSlotRanges(initialInventory.Type, out int containerStart, out int containerEnd, out int playerStart, out int playerEnd))
+        {
+            return MccMcpResult.Fail("invalid_state", data: new
+            {
+                reason = "unsupported_container_type",
+                inventoryId = resolvedInventoryId,
+                type = initialInventory.Type.ToString()
+            });
+        }
+
+        int sourceStart = direction == InventoryTransferDirection.Deposit ? playerStart : containerStart;
+        int sourceEnd = direction == InventoryTransferDirection.Deposit ? playerEnd : containerEnd;
+        int targetStart = direction == InventoryTransferDirection.Deposit ? containerStart : playerStart;
+        int targetEnd = direction == InventoryTransferDirection.Deposit ? containerEnd : playerEnd;
+
+        int beforePlayerCount = CountItemInRange(initialInventory, parsedItemType, playerStart, playerEnd);
+        int beforeContainerCount = CountItemInRange(initialInventory, parsedItemType, containerStart, containerEnd);
+        int availableCount = CountItemInRange(initialInventory, parsedItemType, sourceStart, sourceEnd);
+        if (availableCount < count)
+        {
+            return MccMcpResult.Fail("invalid_state", data: new
+            {
+                itemType = parsedItemType.ToString(),
+                requestedCount = count,
+                availableCount,
+                inventoryId = resolvedInventoryId,
+                direction = direction.ToString()
+            });
+        }
+
+        int remaining = count;
+        List<int> touchedSourceSlots = new();
+        List<int> touchedTargetSlots = new();
+
+        while (remaining > 0)
+        {
+            Container? inventory = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
+            if (inventory is null)
+                return MccMcpResult.Fail("invalid_state", data: new { inventoryId = resolvedInventoryId });
+
+            if (TryGetCursorItem(client, out cursorItem))
+            {
+                return MccMcpResult.Fail("invalid_state", data: new
+                {
+                    reason = "cursor_item_present_mid_transfer",
+                    cursor = new { type = cursorItem!.Type.ToString(), count = cursorItem.Count }
+                });
+            }
+
+            var sourceSlots = GetOrderedItemSlots(inventory, parsedItemType, sourceStart, sourceEnd, preferLargestStack);
+            if (sourceSlots.Length == 0)
+                break;
+
+            int beforeSourceCount = CountItemInRange(inventory, parsedItemType, sourceStart, sourceEnd);
+            int beforeTargetCount = CountItemInRange(inventory, parsedItemType, targetStart, targetEnd);
+            (int slot, int sourceCount) = sourceSlots[0];
+            touchedSourceSlots.Add(slot);
+
+            int movedCount;
+            List<int> usedTargetSlots = new();
+            if (sourceCount <= remaining || direction == InventoryTransferDirection.Withdraw)
+            {
+                if (!client.DoWindowAction(resolvedInventoryId, slot, WindowActionType.ShiftClick))
+                {
+                    return MccMcpResult.Fail("action_failed", data: new
+                    {
+                        itemType = parsedItemType.ToString(),
+                        requestedCount = count,
+                        remainingCount = remaining,
+                        inventoryId = resolvedInventoryId,
+                        sourceSlot = slot,
+                        direction = direction.ToString()
+                    });
+                }
+
+                if (direction == InventoryTransferDirection.Withdraw)
+                {
+                    if (!WaitForRangeCount(client, resolvedInventoryId, parsedItemType, sourceStart, sourceEnd, countAfterShift => countAfterShift < beforeSourceCount, DefaultInventoryActionWaitMs, out Container? afterShift, out int afterSourceCount))
+                    {
+                        afterShift = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
+                        afterSourceCount = afterShift is null ? beforeSourceCount : CountItemInRange(afterShift, parsedItemType, sourceStart, sourceEnd);
+                    }
+
+                    movedCount = beforeSourceCount - afterSourceCount;
+                }
+                else
+                {
+                    if (!WaitForRangeCount(client, resolvedInventoryId, parsedItemType, targetStart, targetEnd, countAfterShift => countAfterShift > beforeTargetCount, DefaultInventoryActionWaitMs, out Container? afterShift, out int afterTargetCount))
+                    {
+                        afterShift = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
+                        afterTargetCount = afterShift is null ? beforeTargetCount : CountItemInRange(afterShift, parsedItemType, targetStart, targetEnd);
+                    }
+
+                    movedCount = afterTargetCount - beforeTargetCount;
+                }
+
+                if (direction == InventoryTransferDirection.Withdraw && movedCount > remaining)
+                {
+                    int excessCount = movedCount - remaining;
+                    MccMcpResult returnExcess = TransferContainerItem(parsedItemType.ToString(), excessCount, resolvedInventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
+                    if (!returnExcess.Success)
+                    {
+                        return MccMcpResult.Fail("action_incomplete", data: new
+                        {
+                            itemType = parsedItemType.ToString(),
+                            requestedCount = count,
+                            remainingCount = remaining,
+                            inventoryId = resolvedInventoryId,
+                            sourceSlot = slot,
+                            direction = direction.ToString(),
+                            excessCount,
+                            returnExcess
+                        });
+                    }
+
+                    movedCount -= excessCount;
+                }
+            }
+            else
+            {
+                movedCount = TransferPartialFromSlot(
+                    client,
+                    resolvedInventoryId,
+                    slot,
+                    parsedItemType,
+                    remaining,
+                    sourceStart,
+                    sourceEnd,
+                    targetStart,
+                    targetEnd,
+                    usedTargetSlots);
+            }
+
+            if (movedCount <= 0)
+            {
+                Container? afterFailure = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
+                return MccMcpResult.Fail("action_incomplete", data: new
+                {
+                    itemType = parsedItemType.ToString(),
+                    requestedCount = count,
+                    remainingCount = remaining,
+                    inventoryId = resolvedInventoryId,
+                    sourceSlot = slot,
+                    direction = direction.ToString(),
+                    playerCount = afterFailure is null ? 0 : CountItemInRange(afterFailure, parsedItemType, playerStart, playerEnd),
+                    containerCount = afterFailure is null ? 0 : CountItemInRange(afterFailure, parsedItemType, containerStart, containerEnd)
+                });
+            }
+
+            remaining -= movedCount;
+            touchedTargetSlots.AddRange(usedTargetSlots);
+        }
+
+        Container? finalInventory = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
+        if (finalInventory is null)
+            return MccMcpResult.Fail("invalid_state", data: new { inventoryId = resolvedInventoryId });
+
+        int afterPlayerCount = CountItemInRange(finalInventory, parsedItemType, playerStart, playerEnd);
+        int afterContainerCount = CountItemInRange(finalInventory, parsedItemType, containerStart, containerEnd);
+        int playerDelta = afterPlayerCount - beforePlayerCount;
+        int containerDelta = afterContainerCount - beforeContainerCount;
+        int movedTotal = direction == InventoryTransferDirection.Deposit
+            ? afterContainerCount - beforeContainerCount
+            : beforeContainerCount - afterContainerCount;
+        bool countsVerified = direction == InventoryTransferDirection.Deposit
+            ? containerDelta == count
+            : containerDelta == -count;
+        bool playerCountsMatchExpected = direction == InventoryTransferDirection.Deposit
+            ? playerDelta == -count
+            : playerDelta == count;
+        bool succeeded = remaining == 0 && countsVerified;
+        var resultData = new
+        {
+            success = succeeded,
+            direction = direction.ToString().ToLowerInvariant(),
+            itemType = parsedItemType.ToString(),
+            requestedCount = count,
+            movedCount = movedTotal,
+            beforePlayerCount,
+            afterPlayerCount,
+            beforeContainerCount,
+            afterContainerCount,
+            playerDelta,
+            containerDelta,
+            playerCountsMatchExpected,
+            verificationBasis = "container_delta",
+            inventoryId = resolvedInventoryId,
+            containerType = finalInventory.Type.ToString(),
+            touchedSourceSlots = touchedSourceSlots.Distinct().OrderBy(slot => slot).ToArray(),
+            touchedTargetSlots = touchedTargetSlots.Distinct().OrderBy(slot => slot).ToArray()
+        };
+
+        return succeeded
+            ? MccMcpResult.Ok(resultData)
+            : MccMcpResult.Fail("action_incomplete", data: resultData);
+    }
+
     private static MccMcpResult ExecuteInternalCommand(McClient client, string command)
     {
         return client.InvokeOnMainThread(() =>
@@ -1742,6 +2182,359 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 output = result.ToString()
             });
         });
+    }
+
+    private static bool TryGetCursorItem(McClient client, out Item? cursorItem)
+    {
+        cursorItem = client.InvokeOnMainThread(() =>
+        {
+            Container? playerInventory = client.GetInventory(0);
+            return playerInventory is not null && playerInventory.Items.TryGetValue(-1, out Item? item) ? item : null;
+        });
+        return cursorItem is not null;
+    }
+
+    private static int ResolveContainerInventoryId(McClient client, int inventoryId)
+    {
+        if (inventoryId > 0)
+        {
+            Container? inventory = client.GetInventory(inventoryId);
+            return inventory is not null && inventoryId != 0 ? inventoryId : 0;
+        }
+
+        return GetActiveContainerId(client);
+    }
+
+    private static int GetActiveContainerId(McClient client)
+    {
+        return client.GetInventories().Keys.Where(id => id > 0).DefaultIfEmpty(0).Max();
+    }
+
+    private static bool WaitForContainerOpen(McClient client, ISet<int> beforeIds, int waitMs, out int inventoryId, out Container? inventory)
+    {
+        inventoryId = 0;
+        inventory = null;
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            (int activeId, Container? activeInventory) state = client.InvokeOnMainThread(() =>
+            {
+                int activeId = GetActiveContainerId(client);
+                Container? activeInventory = activeId > 0 ? client.GetInventory(activeId) : null;
+                return (activeId, activeInventory);
+            });
+
+            if (state.activeId > 0 && (!beforeIds.Contains(state.activeId) || beforeIds.Count == 0) && state.activeInventory is not null)
+            {
+                inventoryId = state.activeId;
+                inventory = state.activeInventory;
+                return true;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static bool WaitForContainerClose(McClient client, int inventoryId, int waitMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            bool stillOpen = client.InvokeOnMainThread(() => client.GetInventories().ContainsKey(inventoryId));
+            if (!stillOpen)
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static int GetContainerWaitMs(int timeoutMs)
+    {
+        if (timeoutMs <= 0)
+            return DefaultContainerWaitMs;
+        return Math.Clamp(timeoutMs, MinContainerWaitMs, MaxContainerWaitMs);
+    }
+
+    private static bool TryGetContainerSlotRanges(ContainerType type, out int containerStart, out int containerEnd, out int playerStart, out int playerEnd)
+    {
+        containerStart = 0;
+        containerEnd = -1;
+        playerStart = 0;
+        playerEnd = -1;
+
+        int containerSlots = type switch
+        {
+            ContainerType.Generic_9x1 => 9,
+            ContainerType.Generic_9x2 => 18,
+            ContainerType.Generic_9x3 => 27,
+            ContainerType.Generic_9x4 => 36,
+            ContainerType.Generic_9x5 => 45,
+            ContainerType.Generic_9x6 => 54,
+            ContainerType.Generic_3x3 => 9,
+            ContainerType.Hopper => 5,
+            ContainerType.ShulkerBox => 27,
+            ContainerType.Furnace or ContainerType.BlastFurnace or ContainerType.Smoker => 3,
+            ContainerType.Crafter => 9,
+            _ => -1
+        };
+
+        if (containerSlots <= 0)
+            return false;
+
+        int slotCount = type.SlotCount();
+        if (slotCount <= containerSlots)
+            return false;
+
+        containerEnd = containerSlots - 1;
+        playerStart = containerSlots;
+        playerEnd = slotCount - 1;
+        return true;
+    }
+
+    private static int CountItemInRange(Container inventory, ItemType itemType, int startSlot, int endSlot)
+    {
+        return inventory.Items
+            .Where(entry => entry.Key >= startSlot && entry.Key <= endSlot)
+            .Where(entry => entry.Value.Type == itemType)
+            .Sum(entry => entry.Value.Count);
+    }
+
+    private static (int slot, int count)[] GetOrderedItemSlots(Container inventory, ItemType itemType, int startSlot, int endSlot, bool preferLargestStack)
+    {
+        var query = inventory.Items
+            .Where(entry => entry.Key >= startSlot && entry.Key <= endSlot)
+            .Where(entry => entry.Value.Type == itemType && entry.Value.Count > 0)
+            .Select(entry => (slot: entry.Key, count: entry.Value.Count));
+
+        return (preferLargestStack
+                ? query.OrderByDescending(entry => entry.count).ThenBy(entry => entry.slot)
+                : query.OrderBy(entry => entry.count).ThenBy(entry => entry.slot))
+            .ToArray();
+    }
+
+    private static int TransferPartialFromSlot(McClient client, int inventoryId, int sourceSlot, ItemType itemType, int requestedCount, int sourceStart, int sourceEnd, int targetStart, int targetEnd, List<int> touchedTargetSlots)
+    {
+        Container? inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
+        if (inventory is null || !inventory.Items.TryGetValue(sourceSlot, out Item? sourceItem) || sourceItem.Count <= 0)
+            return 0;
+
+        int amountToMove = Math.Min(requestedCount, sourceItem.Count);
+        if (!client.DoWindowAction(inventoryId, sourceSlot, WindowActionType.LeftClick))
+            return 0;
+
+        if (!WaitForCursorItem(client, itemType, DefaultInventoryActionWaitMs, out _))
+            return 0;
+
+        int moved = 0;
+        while (moved < amountToMove)
+        {
+            inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
+            if (inventory is null || !TryGetCursorItem(client, out Item? cursorItem) || cursorItem is null || cursorItem.Type != itemType)
+                break;
+
+            if (!TryFindTransferTargetSlot(inventory, itemType, targetStart, targetEnd, out int targetSlot, out int capacity))
+                break;
+
+            int step = Math.Min(amountToMove - moved, Math.Min(capacity, cursorItem.Count));
+            int beforeTargetCount = GetSlotItemCount(inventory, targetSlot, itemType);
+            int beforeCursorCount = cursorItem.Count;
+            if (step <= 0 || !PlaceItemsFromCursor(client, inventoryId, targetSlot, step))
+                break;
+
+            if (!WaitForPlacement(client, inventoryId, targetSlot, itemType, beforeTargetCount, beforeCursorCount, step))
+                break;
+
+            touchedTargetSlots.Add(targetSlot);
+            moved += step;
+        }
+
+        if (TryGetCursorItem(client, out Item? remainingCursor) && remainingCursor is not null && remainingCursor.Count > 0)
+        {
+            inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
+            if (inventory is null)
+                return 0;
+
+            int returnSlot = GetReturnSlot(inventory, itemType, sourceStart, sourceEnd, sourceSlot);
+            if (!client.DoWindowAction(inventoryId, returnSlot, WindowActionType.LeftClick))
+                return 0;
+
+            if (!WaitForCursorClear(client, DefaultInventoryActionWaitMs))
+                return 0;
+        }
+
+        return TryGetCursorItem(client, out _)
+            ? 0
+            : moved;
+    }
+
+    private static bool TryFindTransferTargetSlot(Container inventory, ItemType itemType, int startSlot, int endSlot, out int targetSlot, out int capacity)
+    {
+        int maxStack = itemType.StackCount();
+        for (int slot = startSlot; slot <= endSlot; slot++)
+        {
+            if (inventory.Items.TryGetValue(slot, out Item? item) && item.Type == itemType && item.Count < maxStack)
+            {
+                targetSlot = slot;
+                capacity = maxStack - item.Count;
+                return true;
+            }
+        }
+
+        for (int slot = startSlot; slot <= endSlot; slot++)
+        {
+            if (!inventory.Items.ContainsKey(slot))
+            {
+                targetSlot = slot;
+                capacity = maxStack;
+                return true;
+            }
+        }
+
+        targetSlot = -1;
+        capacity = 0;
+        return false;
+    }
+
+    private static bool PlaceItemsFromCursor(McClient client, int inventoryId, int targetSlot, int count)
+    {
+        if (count <= 0 || !TryGetCursorItem(client, out Item? cursorItem) || cursorItem is null)
+            return false;
+
+        if (count == cursorItem.Count)
+            return client.DoWindowAction(inventoryId, targetSlot, WindowActionType.LeftClick);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (!client.DoWindowAction(inventoryId, targetSlot, WindowActionType.RightClick))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static int GetReturnSlot(Container inventory, ItemType itemType, int startSlot, int endSlot, int originalSourceSlot)
+    {
+        if (originalSourceSlot != 0)
+            return originalSourceSlot;
+
+        int maxStack = itemType.StackCount();
+        for (int slot = startSlot; slot <= endSlot; slot++)
+        {
+            if (slot == 0)
+                continue;
+
+            if (inventory.Items.TryGetValue(slot, out Item? item) && item.Type == itemType && item.Count < maxStack)
+                return slot;
+        }
+
+        for (int slot = startSlot; slot <= endSlot; slot++)
+        {
+            if (slot == 0)
+                continue;
+
+            if (!inventory.Items.ContainsKey(slot))
+                return slot;
+        }
+
+        return originalSourceSlot;
+    }
+
+    private static int GetSlotItemCount(Container inventory, int slot, ItemType itemType)
+    {
+        return inventory.Items.TryGetValue(slot, out Item? item) && item.Type == itemType ? item.Count : 0;
+    }
+
+    private static bool WaitForCursorItem(McClient client, ItemType itemType, int waitMs, out Item? cursorItem)
+    {
+        cursorItem = null;
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            if (TryGetCursorItem(client, out cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static bool WaitForCursorClear(McClient client, int waitMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            if (!TryGetCursorItem(client, out _))
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static bool WaitForPlacement(McClient client, int inventoryId, int targetSlot, ItemType itemType, int beforeTargetCount, int beforeCursorCount, int placedCount)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(DefaultInventoryActionWaitMs);
+        while (true)
+        {
+            bool targetUpdated = false;
+            bool cursorUpdated = false;
+
+            Container? inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
+            if (inventory is not null)
+            {
+                int currentTargetCount = GetSlotItemCount(inventory, targetSlot, itemType);
+                targetUpdated = currentTargetCount >= beforeTargetCount + placedCount;
+            }
+
+            if (placedCount >= beforeCursorCount)
+            {
+                cursorUpdated = !TryGetCursorItem(client, out _);
+            }
+            else if (TryGetCursorItem(client, out Item? cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
+            {
+                cursorUpdated = cursorItem.Count <= beforeCursorCount - placedCount;
+            }
+
+            if (targetUpdated && cursorUpdated)
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static bool WaitForRangeCount(McClient client, int inventoryId, ItemType itemType, int startSlot, int endSlot, Func<int, bool> predicate, int waitMs, out Container? inventory, out int itemCount)
+    {
+        inventory = null;
+        itemCount = 0;
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
+            if (inventory is not null)
+            {
+                itemCount = CountItemInRange(inventory, itemType, startSlot, endSlot);
+                if (predicate(itemCount))
+                    return true;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            Thread.Sleep(ArrivalPollIntervalMs);
+        }
     }
 
     private static List<NearbyPlayerSnapshot> BuildTrackedPlayerSnapshots(McClient client, bool includeSelf)
@@ -2138,6 +2931,21 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
     private static bool IsSignMaterial(Material material)
     {
         return material.ToString().Contains("Sign", StringComparison.Ordinal);
+    }
+
+    private static bool IsInteractableContainerMaterial(Material material)
+    {
+        string name = material.ToString();
+        return name.Contains("Chest", StringComparison.Ordinal)
+            || name.Contains("Barrel", StringComparison.Ordinal)
+            || name.Contains("ShulkerBox", StringComparison.Ordinal)
+            || name.Contains("Hopper", StringComparison.Ordinal)
+            || name.Contains("Dispenser", StringComparison.Ordinal)
+            || name.Contains("Dropper", StringComparison.Ordinal)
+            || name.Contains("Furnace", StringComparison.Ordinal)
+            || name.Contains("Smoker", StringComparison.Ordinal)
+            || name.Contains("BlastFurnace", StringComparison.Ordinal)
+            || name.Contains("Crafter", StringComparison.Ordinal);
     }
 
     private static string? ResolvePlayerEntityName(Entity entity, IReadOnlyDictionary<string, string> uuidToName)

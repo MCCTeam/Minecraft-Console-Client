@@ -28,9 +28,14 @@ public interface IMccMcpCapabilities
     MccMcpResult MoveTo(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult MoveToPlayer(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult LookAt(double x, double y, double z);
+    MccMcpResult ListInventories();
     MccMcpResult GetInventorySnapshot(int inventoryId);
+    MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent);
+    MccMcpResult CloseContainer(int inventoryId, int timeoutMs);
     MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType);
     MccMcpResult DropInventoryItem(string itemType, int count, int inventoryId, bool preferStack);
+    MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack);
+    MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack);
     MccMcpResult QueryEntities(int maxCount);
     MccMcpResult ListEntities(int maxCount, string? typeFilter, double radius);
     MccMcpResult GetEntityInfo(int entityId, bool includeMetadata, bool includeEquipment, bool includeEffects);
