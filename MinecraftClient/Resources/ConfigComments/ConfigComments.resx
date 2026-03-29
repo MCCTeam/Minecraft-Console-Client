@@ -933,6 +933,39 @@ Note: This does NOT require a Bot Token, only an Application ID. Discord must be
   <data name="Main.Advanced.enable_sentry" xml:space="preserve">
     <value>Set to false to opt-out of Sentry error logging.</value>
   </data>
+  <data name="Console.Minimap" xml:space="preserve">
+    <value>Settings for the TUI minimap overlay that shows terrain and entities.</value>
+  </data>
+  <data name="Console.Minimap.Enabled" xml:space="preserve">
+    <value>Whether the minimap is visible on startup in TUI mode.</value>
+  </data>
+  <data name="Console.Minimap.Zoom" xml:space="preserve">
+    <value>Blocks per pixel, 1-16. 1 = closest (1:1), 16 = farthest (16 blocks per pixel).</value>
+  </data>
+  <data name="Console.Minimap.Width" xml:space="preserve">
+    <value>Map width in pixels (characters). Range 10-120, default 40.</value>
+  </data>
+  <data name="Console.Minimap.Height" xml:space="preserve">
+    <value>Map height in pixels (must be even, uses half-block chars). Range 4-80, default 40.</value>
+  </data>
+  <data name="Console.Minimap.Position" xml:space="preserve">
+    <value>Minimap position: "top_left", "top_right", "center", "bottom_left", or "bottom_right".</value>
+  </data>
+  <data name="Console.Minimap.ShowPlayerNames" xml:space="preserve">
+    <value>Show player names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowHostileNames" xml:space="preserve">
+    <value>Show hostile mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowNeutralNames" xml:space="preserve">
+    <value>Show neutral mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowPassiveNames" xml:space="preserve">
+    <value>Show passive mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.RefreshInterval" xml:space="preserve">
+    <value>Minimap refresh interval in milliseconds (200-5000, default 1000).</value>
+  </data>
   <data name="Main.General.AuthlibUser" xml:space="preserve">
     <value>Yggdrasil authlib multi-user selection.</value>
   </data>

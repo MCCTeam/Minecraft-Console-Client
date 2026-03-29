@@ -215,7 +215,42 @@ The JSON maps block names (snake_case) → collision shape IDs → AABB coordina
 
 **Data source**: PrismarineJS `minecraft-data` repo, path: `data/pc/<version>/blockCollisionShapes.json`. Version availability can be checked via `data/dataPaths.json`.
 
-## Step 9: Compile and Verify
+## Step 9: Update Minimap Block Color Map
+
+Regenerate the block-to-MapColor mapping used by the TUI minimap. This maps each block's `Material` enum to the RGB color from Minecraft's official `MapColor` table.
+
+```bash
+python3 $MCC_REPO/tools/gen_block_color_map.py $MCC_REPO/MinecraftOfficial/<version>-decompiled
+# e.g. python3 tools/gen_block_color_map.py MinecraftOfficial/26.1-rc-2-decompiled
+```
+
+Output: `MinecraftClient/Tui/MinimapBlockColors.json` (embedded as a resource via `.csproj`).
+
+The script parses `MapColor.java`, `DyeColor.java`, and `Blocks.java` from the decompiled source to extract each block's assigned map color. Blocks not matched to a known `Material` enum value are skipped.
+
+**When to update**: Whenever new blocks are added or existing blocks change their `mapColor()` assignment. If only items or entities changed, this step can be skipped.
+
+## Step 10: Update Minimap Entity Categories
+
+Regenerate the entity-to-MobCategory mapping used by the TUI minimap for classifying entities as hostile, passive, neutral, or non-living.
+
+```bash
+python3 $MCC_REPO/tools/gen_entity_category_map.py $MCC_REPO/MinecraftOfficial/<version>-decompiled
+# e.g. python3 tools/gen_entity_category_map.py MinecraftOfficial/26.1-rc-2-decompiled
+```
+
+Output: `MinecraftClient/Tui/MinimapEntityCategories.json` (embedded as a resource via `.csproj`).
+
+The script parses `EntityType.java` to extract each entity's `MobCategory` assignment, then maps Minecraft's categories to MCC minimap categories:
+- `MONSTER` -> hostile (with neutral overrides for conditionally hostile mobs like Enderman, Spider, Wolf)
+- `CREATURE`/`AMBIENT`/`AXOLOTLS`/`WATER_*` -> passive
+- `MISC` -> non_living (with passive overrides for Villager, WanderingTrader, ZombieHorse)
+
+The script maintains manual override lists for "neutral" mobs (attack only when provoked) since Minecraft has no machine-readable flag for this behavior. Review and update the `NEUTRAL_OVERRIDES` and `PASSIVE_OVERRIDES` sets in the script when new conditionally-hostile or misclassified mobs are added.
+
+**When to update**: Whenever new entity types are added. If only blocks or items changed, this step can be skipped.
+
+## Step 11: Compile and Verify
 
 ```bash
 dotnet build $MCC_REPO/MinecraftClient.sln -c Release
@@ -274,3 +309,5 @@ All scripts are in `$MCC_REPO/tools/`. See `tools/README.md` for detailed usage.
 | `gen_entity_palette.py` | Generate EntityPalette C# | registries.json |
 | `gen_entity_metadata_palette.py` | Generate EntityMetadataPalette C# | Decompiled source |
 | `gen_block_shapes.py` | Download & compact block collision shapes | PrismarineJS minecraft-data |
+| `gen_block_color_map.py` | Generate minimap block color JSON | Decompiled source (MapColor/DyeColor/Blocks) |
+| `gen_entity_category_map.py` | Generate minimap entity category JSON | Decompiled source (EntityType.java) |

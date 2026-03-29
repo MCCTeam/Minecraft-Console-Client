@@ -664,8 +664,10 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
+            var entity = new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
                 data);
+            entity.UUID = entityUUID;
+            return entity;
         }
 
         /// <summary>

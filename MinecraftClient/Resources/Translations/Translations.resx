@@ -2419,4 +2419,55 @@ see item details.</value>
   <data name="tui.crafting.grid" xml:space="preserve">
     <value>Crafting</value>
   </data>
+  <data name="cmd.minimap.desc" xml:space="preserve">
+    <value>Toggle the TUI minimap overlay, or adjust its zoom level.</value>
+  </data>
+  <data name="cmd.minimap.enabled" xml:space="preserve">
+    <value>Minimap enabled.</value>
+  </data>
+  <data name="cmd.minimap.disabled" xml:space="preserve">
+    <value>Minimap disabled.</value>
+  </data>
+  <data name="cmd.minimap.zoom_set" xml:space="preserve">
+    <value>Minimap zoom set to {0}:1 (blocks per pixel).</value>
+  </data>
+  <data name="cmd.minimap.zoom_current" xml:space="preserve">
+    <value>Current minimap zoom: {0}:1 blocks/px (range 1-{1}).</value>
+  </data>
+  <data name="cmd.minimap.tui_only" xml:space="preserve">
+    <value>The minimap command is only available in TUI mode.</value>
+  </data>
+  <data name="tui.minimap.legend.hostile" xml:space="preserve">
+    <value>Hostile</value>
+  </data>
+  <data name="tui.minimap.legend.passive" xml:space="preserve">
+    <value>Passive</value>
+  </data>
+  <data name="tui.minimap.legend.neutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="tui.minimap.legend.player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="cmd.minimap.names_status" xml:space="preserve">
+    <value>Name display -- Players: {0}, Hostile: {1}, Neutral: {2}, Passive: {3}</value>
+  </data>
+  <data name="cmd.minimap.names_all_on" xml:space="preserve">
+    <value>All entity name labels enabled.</value>
+  </data>
+  <data name="cmd.minimap.names_all_off" xml:space="preserve">
+    <value>All entity name labels disabled.</value>
+  </data>
+  <data name="cmd.minimap.names_cat" xml:space="preserve">
+    <value>{0} name display: {1}</value>
+  </data>
+  <data name="cmd.minimap.names_cat_set" xml:space="preserve">
+    <value>{0} name display set to {1}.</value>
+  </data>
+  <data name="cmd.minimap.position_current" xml:space="preserve">
+    <value>Current minimap position: {0}</value>
+  </data>
+  <data name="cmd.minimap.position_set" xml:space="preserve">
+    <value>Minimap position set to: {0}</value>
+  </data>
 </root>

@@ -6880,5 +6880,158 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("tui.crafting.grid", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle the TUI minimap overlay, or adjust its zoom level..
+        /// </summary>
+        internal static string cmd_minimap_desc {
+            get {
+                return ResourceManager.GetString("cmd.minimap.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap enabled..
+        /// </summary>
+        internal static string cmd_minimap_enabled {
+            get {
+                return ResourceManager.GetString("cmd.minimap.enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap disabled..
+        /// </summary>
+        internal static string cmd_minimap_disabled {
+            get {
+                return ResourceManager.GetString("cmd.minimap.disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap zoom set to {0}:1 (blocks per pixel)..
+        /// </summary>
+        internal static string cmd_minimap_zoom_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.zoom_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current minimap zoom: {0}:1 blocks/px (range 1-{1})..
+        /// </summary>
+        internal static string cmd_minimap_zoom_current {
+            get {
+                return ResourceManager.GetString("cmd.minimap.zoom_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The minimap command is only available in TUI mode..
+        /// </summary>
+        internal static string cmd_minimap_tui_only {
+            get {
+                return ResourceManager.GetString("cmd.minimap.tui_only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hostile.
+        /// </summary>
+        internal static string tui_minimap_legend_hostile {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.hostile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Passive.
+        /// </summary>
+        internal static string tui_minimap_legend_passive {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.passive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Neutral.
+        /// </summary>
+        internal static string tui_minimap_legend_neutral {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.neutral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player.
+        /// </summary>
+        internal static string tui_minimap_legend_player {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.player", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name display -- Players: {0}, Hostile: {1}, Neutral: {2}, Passive: {3}.
+        /// </summary>
+        internal static string cmd_minimap_names_status {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All entity name labels enabled..
+        /// </summary>
+        internal static string cmd_minimap_names_all_on {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_all_on", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All entity name labels disabled..
+        /// </summary>
+        internal static string cmd_minimap_names_all_off {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_all_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} name display: {1}.
+        /// </summary>
+        internal static string cmd_minimap_names_cat {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_cat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} name display set to {1}..
+        /// </summary>
+        internal static string cmd_minimap_names_cat_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_cat_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current minimap position: {0}.
+        /// </summary>
+        internal static string cmd_minimap_position_current {
+            get {
+                return ResourceManager.GetString("cmd.minimap.position_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap position set to: {0}.
+        /// </summary>
+        internal static string cmd_minimap_position_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.position_set", resourceCulture);
+            }
+        }
     }
 }

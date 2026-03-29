@@ -1,0 +1,3552 @@
+{
+  "version": "26.1-rc-2",
+  "colors": {
+    "AcaciaDoor": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaFence": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaFenceGate": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaHangingSign": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaPlanks": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaPressurePlate": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaSapling": [
+      0,
+      124,
+      0
+    ],
+    "AcaciaShelf": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaSign": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaSlab": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaTrapdoor": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaWallHangingSign": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaWallSign": [
+      216,
+      127,
+      51
+    ],
+    "AcaciaWood": [
+      76,
+      76,
+      76
+    ],
+    "Allium": [
+      0,
+      124,
+      0
+    ],
+    "AmethystBlock": [
+      127,
+      63,
+      178
+    ],
+    "AmethystCluster": [
+      127,
+      63,
+      178
+    ],
+    "AncientDebris": [
+      25,
+      25,
+      25
+    ],
+    "Andesite": [
+      112,
+      112,
+      112
+    ],
+    "Anvil": [
+      167,
+      167,
+      167
+    ],
+    "AttachedMelonStem": [
+      0,
+      124,
+      0
+    ],
+    "AttachedPumpkinStem": [
+      0,
+      124,
+      0
+    ],
+    "Azalea": [
+      0,
+      124,
+      0
+    ],
+    "AzureBluet": [
+      0,
+      124,
+      0
+    ],
+    "Bamboo": [
+      0,
+      124,
+      0
+    ],
+    "BambooDoor": [
+      229,
+      229,
+      51
+    ],
+    "BambooFence": [
+      229,
+      229,
+      51
+    ],
+    "BambooFenceGate": [
+      229,
+      229,
+      51
+    ],
+    "BambooHangingSign": [
+      229,
+      229,
+      51
+    ],
+    "BambooMosaic": [
+      229,
+      229,
+      51
+    ],
+    "BambooMosaicSlab": [
+      229,
+      229,
+      51
+    ],
+    "BambooPlanks": [
+      229,
+      229,
+      51
+    ],
+    "BambooPressurePlate": [
+      229,
+      229,
+      51
+    ],
+    "BambooSapling": [
+      143,
+      119,
+      72
+    ],
+    "BambooShelf": [
+      229,
+      229,
+      51
+    ],
+    "BambooSign": [
+      229,
+      229,
+      51
+    ],
+    "BambooSlab": [
+      229,
+      229,
+      51
+    ],
+    "BambooTrapdoor": [
+      229,
+      229,
+      51
+    ],
+    "BambooWallHangingSign": [
+      229,
+      229,
+      51
+    ],
+    "BambooWallSign": [
+      229,
+      229,
+      51
+    ],
+    "Barrel": [
+      143,
+      119,
+      72
+    ],
+    "Barrier": [
+      0,
+      0,
+      0
+    ],
+    "Basalt": [
+      25,
+      25,
+      25
+    ],
+    "Beacon": [
+      92,
+      219,
+      213
+    ],
+    "Bedrock": [
+      112,
+      112,
+      112
+    ],
+    "BeeNest": [
+      229,
+      229,
+      51
+    ],
+    "Beehive": [
+      143,
+      119,
+      72
+    ],
+    "Beetroots": [
+      0,
+      124,
+      0
+    ],
+    "Bell": [
+      250,
+      238,
+      77
+    ],
+    "BigDripleaf": [
+      0,
+      124,
+      0
+    ],
+    "BigDripleafStem": [
+      0,
+      124,
+      0
+    ],
+    "BirchDoor": [
+      247,
+      233,
+      163
+    ],
+    "BirchFence": [
+      247,
+      233,
+      163
+    ],
+    "BirchFenceGate": [
+      247,
+      233,
+      163
+    ],
+    "BirchHangingSign": [
+      247,
+      233,
+      163
+    ],
+    "BirchPlanks": [
+      247,
+      233,
+      163
+    ],
+    "BirchPressurePlate": [
+      247,
+      233,
+      163
+    ],
+    "BirchSapling": [
+      0,
+      124,
+      0
+    ],
+    "BirchShelf": [
+      247,
+      233,
+      163
+    ],
+    "BirchSign": [
+      247,
+      233,
+      163
+    ],
+    "BirchSlab": [
+      247,
+      233,
+      163
+    ],
+    "BirchTrapdoor": [
+      247,
+      233,
+      163
+    ],
+    "BirchWallHangingSign": [
+      247,
+      233,
+      163
+    ],
+    "BirchWallSign": [
+      247,
+      233,
+      163
+    ],
+    "BirchWood": [
+      247,
+      233,
+      163
+    ],
+    "BlackBanner": [
+      143,
+      119,
+      72
+    ],
+    "BlackCarpet": [
+      25,
+      25,
+      25
+    ],
+    "BlackConcrete": [
+      25,
+      25,
+      25
+    ],
+    "BlackConcretePowder": [
+      25,
+      25,
+      25
+    ],
+    "BlackGlazedTerracotta": [
+      25,
+      25,
+      25
+    ],
+    "BlackTerracotta": [
+      37,
+      22,
+      16
+    ],
+    "BlackWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "BlackWool": [
+      25,
+      25,
+      25
+    ],
+    "Blackstone": [
+      25,
+      25,
+      25
+    ],
+    "BlastFurnace": [
+      112,
+      112,
+      112
+    ],
+    "BlueBanner": [
+      143,
+      119,
+      72
+    ],
+    "BlueCarpet": [
+      51,
+      76,
+      178
+    ],
+    "BlueConcrete": [
+      51,
+      76,
+      178
+    ],
+    "BlueConcretePowder": [
+      51,
+      76,
+      178
+    ],
+    "BlueGlazedTerracotta": [
+      51,
+      76,
+      178
+    ],
+    "BlueIce": [
+      160,
+      160,
+      255
+    ],
+    "BlueOrchid": [
+      0,
+      124,
+      0
+    ],
+    "BlueTerracotta": [
+      76,
+      62,
+      92
+    ],
+    "BlueWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "BlueWool": [
+      51,
+      76,
+      178
+    ],
+    "BoneBlock": [
+      247,
+      233,
+      163
+    ],
+    "Bookshelf": [
+      143,
+      119,
+      72
+    ],
+    "BrainCoral": [
+      242,
+      127,
+      165
+    ],
+    "BrainCoralBlock": [
+      242,
+      127,
+      165
+    ],
+    "BrainCoralFan": [
+      242,
+      127,
+      165
+    ],
+    "BrainCoralWallFan": [
+      242,
+      127,
+      165
+    ],
+    "BrewingStand": [
+      167,
+      167,
+      167
+    ],
+    "BrickSlab": [
+      153,
+      51,
+      51
+    ],
+    "Bricks": [
+      153,
+      51,
+      51
+    ],
+    "BrownBanner": [
+      143,
+      119,
+      72
+    ],
+    "BrownCarpet": [
+      102,
+      76,
+      51
+    ],
+    "BrownConcrete": [
+      102,
+      76,
+      51
+    ],
+    "BrownConcretePowder": [
+      102,
+      76,
+      51
+    ],
+    "BrownGlazedTerracotta": [
+      102,
+      76,
+      51
+    ],
+    "BrownMushroom": [
+      102,
+      76,
+      51
+    ],
+    "BrownMushroomBlock": [
+      151,
+      109,
+      77
+    ],
+    "BrownTerracotta": [
+      76,
+      50,
+      35
+    ],
+    "BrownWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "BrownWool": [
+      102,
+      76,
+      51
+    ],
+    "BubbleColumn": [
+      64,
+      64,
+      255
+    ],
+    "BubbleCoral": [
+      127,
+      63,
+      178
+    ],
+    "BubbleCoralBlock": [
+      127,
+      63,
+      178
+    ],
+    "BubbleCoralFan": [
+      127,
+      63,
+      178
+    ],
+    "BubbleCoralWallFan": [
+      127,
+      63,
+      178
+    ],
+    "BuddingAmethyst": [
+      127,
+      63,
+      178
+    ],
+    "Bush": [
+      0,
+      124,
+      0
+    ],
+    "Cactus": [
+      0,
+      124,
+      0
+    ],
+    "CactusFlower": [
+      242,
+      127,
+      165
+    ],
+    "Calcite": [
+      209,
+      177,
+      161
+    ],
+    "Campfire": [
+      129,
+      86,
+      49
+    ],
+    "Carrots": [
+      0,
+      124,
+      0
+    ],
+    "CartographyTable": [
+      143,
+      119,
+      72
+    ],
+    "CarvedPumpkin": [
+      216,
+      127,
+      51
+    ],
+    "Cauldron": [
+      112,
+      112,
+      112
+    ],
+    "CaveVines": [
+      0,
+      124,
+      0
+    ],
+    "CaveVinesPlant": [
+      0,
+      124,
+      0
+    ],
+    "ChainCommandBlock": [
+      102,
+      127,
+      51
+    ],
+    "CherryDoor": [
+      209,
+      177,
+      161
+    ],
+    "CherryFence": [
+      209,
+      177,
+      161
+    ],
+    "CherryFenceGate": [
+      209,
+      177,
+      161
+    ],
+    "CherryHangingSign": [
+      160,
+      77,
+      78
+    ],
+    "CherryLeaves": [
+      242,
+      127,
+      165
+    ],
+    "CherryPlanks": [
+      209,
+      177,
+      161
+    ],
+    "CherryPressurePlate": [
+      209,
+      177,
+      161
+    ],
+    "CherrySapling": [
+      242,
+      127,
+      165
+    ],
+    "CherryShelf": [
+      209,
+      177,
+      161
+    ],
+    "CherrySign": [
+      209,
+      177,
+      161
+    ],
+    "CherrySlab": [
+      209,
+      177,
+      161
+    ],
+    "CherryTrapdoor": [
+      209,
+      177,
+      161
+    ],
+    "CherryWallHangingSign": [
+      160,
+      77,
+      78
+    ],
+    "CherryWood": [
+      57,
+      41,
+      35
+    ],
+    "Chest": [
+      143,
+      119,
+      72
+    ],
+    "ChippedAnvil": [
+      167,
+      167,
+      167
+    ],
+    "ChiseledBookshelf": [
+      143,
+      119,
+      72
+    ],
+    "ChiseledNetherBricks": [
+      112,
+      2,
+      0
+    ],
+    "ChiseledQuartzBlock": [
+      255,
+      252,
+      245
+    ],
+    "ChiseledRedSandstone": [
+      216,
+      127,
+      51
+    ],
+    "ChiseledResinBricks": [
+      159,
+      82,
+      36
+    ],
+    "ChiseledSandstone": [
+      247,
+      233,
+      163
+    ],
+    "ChiseledStoneBricks": [
+      112,
+      112,
+      112
+    ],
+    "ChorusFlower": [
+      127,
+      63,
+      178
+    ],
+    "ChorusPlant": [
+      127,
+      63,
+      178
+    ],
+    "Clay": [
+      164,
+      168,
+      184
+    ],
+    "ClosedEyeblossom": [
+      167,
+      167,
+      167
+    ],
+    "CoalBlock": [
+      25,
+      25,
+      25
+    ],
+    "CoalOre": [
+      112,
+      112,
+      112
+    ],
+    "CoarseDirt": [
+      151,
+      109,
+      77
+    ],
+    "Cobblestone": [
+      112,
+      112,
+      112
+    ],
+    "CobblestoneSlab": [
+      112,
+      112,
+      112
+    ],
+    "Cobweb": [
+      199,
+      199,
+      199
+    ],
+    "Cocoa": [
+      0,
+      124,
+      0
+    ],
+    "CommandBlock": [
+      102,
+      76,
+      51
+    ],
+    "Composter": [
+      143,
+      119,
+      72
+    ],
+    "Conduit": [
+      92,
+      219,
+      213
+    ],
+    "CopperBlock": [
+      216,
+      127,
+      51
+    ],
+    "CopperBulb": [
+      216,
+      127,
+      51
+    ],
+    "CopperChest": [
+      216,
+      127,
+      51
+    ],
+    "CopperDoor": [
+      216,
+      127,
+      51
+    ],
+    "CopperGolemStatue": [
+      216,
+      127,
+      51
+    ],
+    "CopperGrate": [
+      216,
+      127,
+      51
+    ],
+    "CopperTrapdoor": [
+      216,
+      127,
+      51
+    ],
+    "Cornflower": [
+      0,
+      124,
+      0
+    ],
+    "CrackedNetherBricks": [
+      112,
+      2,
+      0
+    ],
+    "CrackedStoneBricks": [
+      112,
+      112,
+      112
+    ],
+    "Crafter": [
+      112,
+      112,
+      112
+    ],
+    "CraftingTable": [
+      143,
+      119,
+      72
+    ],
+    "CreakingHeart": [
+      216,
+      127,
+      51
+    ],
+    "CrimsonDoor": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonFence": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonFenceGate": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonFungus": [
+      112,
+      2,
+      0
+    ],
+    "CrimsonHangingSign": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonHyphae": [
+      92,
+      25,
+      29
+    ],
+    "CrimsonNylium": [
+      189,
+      48,
+      49
+    ],
+    "CrimsonPlanks": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonPressurePlate": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonRoots": [
+      112,
+      2,
+      0
+    ],
+    "CrimsonShelf": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonSign": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonSlab": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonTrapdoor": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonWallHangingSign": [
+      148,
+      63,
+      97
+    ],
+    "CrimsonWallSign": [
+      148,
+      63,
+      97
+    ],
+    "CryingObsidian": [
+      25,
+      25,
+      25
+    ],
+    "CutRedSandstone": [
+      216,
+      127,
+      51
+    ],
+    "CutRedSandstoneSlab": [
+      216,
+      127,
+      51
+    ],
+    "CutSandstone": [
+      247,
+      233,
+      163
+    ],
+    "CutSandstoneSlab": [
+      247,
+      233,
+      163
+    ],
+    "CyanBanner": [
+      143,
+      119,
+      72
+    ],
+    "CyanCarpet": [
+      76,
+      127,
+      153
+    ],
+    "CyanConcrete": [
+      76,
+      127,
+      153
+    ],
+    "CyanConcretePowder": [
+      76,
+      127,
+      153
+    ],
+    "CyanGlazedTerracotta": [
+      76,
+      127,
+      153
+    ],
+    "CyanTerracotta": [
+      87,
+      92,
+      92
+    ],
+    "CyanWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "CyanWool": [
+      76,
+      127,
+      153
+    ],
+    "DamagedAnvil": [
+      167,
+      167,
+      167
+    ],
+    "Dandelion": [
+      0,
+      124,
+      0
+    ],
+    "DarkOakDoor": [
+      102,
+      76,
+      51
+    ],
+    "DarkOakFence": [
+      102,
+      76,
+      51
+    ],
+    "DarkOakFenceGate": [
+      102,
+      76,
+      51
+    ],
+    "DarkOakPlanks": [
+      102,
+      76,
+      51
+    ],
+    "DarkOakPressurePlate": [
+      102,
+      76,
+      51
+    ],
+    "DarkOakSapling": [
+      0,
+      124,
+      0
+    ],
+    "DarkOakSlab": [
+      102,
+      76,
+      51
+    ],
+    "DarkOakTrapdoor": [
+      102,
+      76,
+      51
+    ],
+    "DarkOakWood": [
+      102,
+      76,
+      51
+    ],
+    "DarkPrismarine": [
+      92,
+      219,
+      213
+    ],
+    "DarkPrismarineSlab": [
+      92,
+      219,
+      213
+    ],
+    "DaylightDetector": [
+      143,
+      119,
+      72
+    ],
+    "DeadBrainCoral": [
+      76,
+      76,
+      76
+    ],
+    "DeadBrainCoralBlock": [
+      76,
+      76,
+      76
+    ],
+    "DeadBrainCoralFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadBrainCoralWallFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadBubbleCoral": [
+      76,
+      76,
+      76
+    ],
+    "DeadBubbleCoralBlock": [
+      76,
+      76,
+      76
+    ],
+    "DeadBubbleCoralFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadBubbleCoralWallFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadBush": [
+      143,
+      119,
+      72
+    ],
+    "DeadFireCoral": [
+      76,
+      76,
+      76
+    ],
+    "DeadFireCoralBlock": [
+      76,
+      76,
+      76
+    ],
+    "DeadFireCoralFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadFireCoralWallFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadHornCoral": [
+      76,
+      76,
+      76
+    ],
+    "DeadHornCoralBlock": [
+      76,
+      76,
+      76
+    ],
+    "DeadHornCoralFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadHornCoralWallFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadTubeCoral": [
+      76,
+      76,
+      76
+    ],
+    "DeadTubeCoralBlock": [
+      76,
+      76,
+      76
+    ],
+    "DeadTubeCoralFan": [
+      76,
+      76,
+      76
+    ],
+    "DeadTubeCoralWallFan": [
+      76,
+      76,
+      76
+    ],
+    "DecoratedPot": [
+      142,
+      60,
+      46
+    ],
+    "Deepslate": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateCoalOre": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateCopperOre": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateDiamondOre": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateEmeraldOre": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateGoldOre": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateIronOre": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateLapisOre": [
+      100,
+      100,
+      100
+    ],
+    "DeepslateRedstoneOre": [
+      100,
+      100,
+      100
+    ],
+    "DiamondBlock": [
+      92,
+      219,
+      213
+    ],
+    "DiamondOre": [
+      112,
+      112,
+      112
+    ],
+    "Diorite": [
+      255,
+      252,
+      245
+    ],
+    "Dirt": [
+      151,
+      109,
+      77
+    ],
+    "DirtPath": [
+      151,
+      109,
+      77
+    ],
+    "Dispenser": [
+      112,
+      112,
+      112
+    ],
+    "DragonEgg": [
+      25,
+      25,
+      25
+    ],
+    "DriedGhast": [
+      76,
+      76,
+      76
+    ],
+    "DriedKelpBlock": [
+      102,
+      127,
+      51
+    ],
+    "DripstoneBlock": [
+      76,
+      50,
+      35
+    ],
+    "Dropper": [
+      112,
+      112,
+      112
+    ],
+    "EmeraldBlock": [
+      0,
+      217,
+      58
+    ],
+    "EmeraldOre": [
+      112,
+      112,
+      112
+    ],
+    "EnchantingTable": [
+      153,
+      51,
+      51
+    ],
+    "EndGateway": [
+      25,
+      25,
+      25
+    ],
+    "EndPortal": [
+      25,
+      25,
+      25
+    ],
+    "EndPortalFrame": [
+      102,
+      127,
+      51
+    ],
+    "EndStone": [
+      247,
+      233,
+      163
+    ],
+    "EndStoneBricks": [
+      247,
+      233,
+      163
+    ],
+    "EnderChest": [
+      112,
+      112,
+      112
+    ],
+    "ExposedCopper": [
+      135,
+      107,
+      98
+    ],
+    "ExposedCopperBulb": [
+      135,
+      107,
+      98
+    ],
+    "ExposedCopperChest": [
+      135,
+      107,
+      98
+    ],
+    "ExposedCopperDoor": [
+      135,
+      107,
+      98
+    ],
+    "ExposedCopperGolemStatue": [
+      135,
+      107,
+      98
+    ],
+    "ExposedCopperGrate": [
+      135,
+      107,
+      98
+    ],
+    "ExposedCopperTrapdoor": [
+      135,
+      107,
+      98
+    ],
+    "ExposedLightningRod": [
+      135,
+      107,
+      98
+    ],
+    "Farmland": [
+      151,
+      109,
+      77
+    ],
+    "Fern": [
+      0,
+      124,
+      0
+    ],
+    "Fire": [
+      255,
+      0,
+      0
+    ],
+    "FireCoral": [
+      153,
+      51,
+      51
+    ],
+    "FireCoralBlock": [
+      153,
+      51,
+      51
+    ],
+    "FireCoralFan": [
+      153,
+      51,
+      51
+    ],
+    "FireCoralWallFan": [
+      153,
+      51,
+      51
+    ],
+    "FireflyBush": [
+      0,
+      124,
+      0
+    ],
+    "FletchingTable": [
+      143,
+      119,
+      72
+    ],
+    "FloweringAzalea": [
+      0,
+      124,
+      0
+    ],
+    "Frogspawn": [
+      64,
+      64,
+      255
+    ],
+    "FrostedIce": [
+      160,
+      160,
+      255
+    ],
+    "Furnace": [
+      112,
+      112,
+      112
+    ],
+    "GlowLichen": [
+      127,
+      167,
+      150
+    ],
+    "Glowstone": [
+      247,
+      233,
+      163
+    ],
+    "GoldBlock": [
+      250,
+      238,
+      77
+    ],
+    "GoldOre": [
+      112,
+      112,
+      112
+    ],
+    "GoldenDandelion": [
+      0,
+      124,
+      0
+    ],
+    "Granite": [
+      151,
+      109,
+      77
+    ],
+    "GrassBlock": [
+      127,
+      178,
+      56
+    ],
+    "Gravel": [
+      112,
+      112,
+      112
+    ],
+    "GrayBanner": [
+      143,
+      119,
+      72
+    ],
+    "GrayCarpet": [
+      76,
+      76,
+      76
+    ],
+    "GrayConcrete": [
+      76,
+      76,
+      76
+    ],
+    "GrayConcretePowder": [
+      76,
+      76,
+      76
+    ],
+    "GrayGlazedTerracotta": [
+      76,
+      76,
+      76
+    ],
+    "GrayTerracotta": [
+      57,
+      41,
+      35
+    ],
+    "GrayWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "GrayWool": [
+      76,
+      76,
+      76
+    ],
+    "GreenBanner": [
+      143,
+      119,
+      72
+    ],
+    "GreenCarpet": [
+      102,
+      127,
+      51
+    ],
+    "GreenConcrete": [
+      102,
+      127,
+      51
+    ],
+    "GreenConcretePowder": [
+      102,
+      127,
+      51
+    ],
+    "GreenGlazedTerracotta": [
+      102,
+      127,
+      51
+    ],
+    "GreenTerracotta": [
+      76,
+      82,
+      42
+    ],
+    "GreenWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "GreenWool": [
+      102,
+      127,
+      51
+    ],
+    "Grindstone": [
+      167,
+      167,
+      167
+    ],
+    "HangingRoots": [
+      151,
+      109,
+      77
+    ],
+    "HayBlock": [
+      229,
+      229,
+      51
+    ],
+    "HeavyCore": [
+      167,
+      167,
+      167
+    ],
+    "HeavyWeightedPressurePlate": [
+      167,
+      167,
+      167
+    ],
+    "HoneyBlock": [
+      216,
+      127,
+      51
+    ],
+    "HoneycombBlock": [
+      216,
+      127,
+      51
+    ],
+    "Hopper": [
+      112,
+      112,
+      112
+    ],
+    "HornCoral": [
+      229,
+      229,
+      51
+    ],
+    "HornCoralBlock": [
+      229,
+      229,
+      51
+    ],
+    "HornCoralFan": [
+      229,
+      229,
+      51
+    ],
+    "HornCoralWallFan": [
+      229,
+      229,
+      51
+    ],
+    "Ice": [
+      160,
+      160,
+      255
+    ],
+    "InfestedChiseledStoneBricks": [
+      164,
+      168,
+      184
+    ],
+    "InfestedCobblestone": [
+      164,
+      168,
+      184
+    ],
+    "InfestedCrackedStoneBricks": [
+      164,
+      168,
+      184
+    ],
+    "InfestedDeepslate": [
+      100,
+      100,
+      100
+    ],
+    "InfestedMossyStoneBricks": [
+      164,
+      168,
+      184
+    ],
+    "InfestedStone": [
+      164,
+      168,
+      184
+    ],
+    "InfestedStoneBricks": [
+      164,
+      168,
+      184
+    ],
+    "IronBlock": [
+      167,
+      167,
+      167
+    ],
+    "IronDoor": [
+      167,
+      167,
+      167
+    ],
+    "IronOre": [
+      112,
+      112,
+      112
+    ],
+    "IronTrapdoor": [
+      167,
+      167,
+      167
+    ],
+    "JackOLantern": [
+      216,
+      127,
+      51
+    ],
+    "Jigsaw": [
+      153,
+      153,
+      153
+    ],
+    "Jukebox": [
+      151,
+      109,
+      77
+    ],
+    "JungleDoor": [
+      151,
+      109,
+      77
+    ],
+    "JungleFence": [
+      151,
+      109,
+      77
+    ],
+    "JungleFenceGate": [
+      151,
+      109,
+      77
+    ],
+    "JunglePlanks": [
+      151,
+      109,
+      77
+    ],
+    "JunglePressurePlate": [
+      151,
+      109,
+      77
+    ],
+    "JungleSapling": [
+      0,
+      124,
+      0
+    ],
+    "JungleSlab": [
+      151,
+      109,
+      77
+    ],
+    "JungleTrapdoor": [
+      151,
+      109,
+      77
+    ],
+    "JungleWood": [
+      151,
+      109,
+      77
+    ],
+    "Kelp": [
+      64,
+      64,
+      255
+    ],
+    "KelpPlant": [
+      64,
+      64,
+      255
+    ],
+    "Lantern": [
+      167,
+      167,
+      167
+    ],
+    "LapisBlock": [
+      74,
+      128,
+      255
+    ],
+    "LapisOre": [
+      112,
+      112,
+      112
+    ],
+    "LargeFern": [
+      0,
+      124,
+      0
+    ],
+    "Lava": [
+      255,
+      0,
+      0
+    ],
+    "LeafLitter": [
+      102,
+      76,
+      51
+    ],
+    "Lectern": [
+      143,
+      119,
+      72
+    ],
+    "Light": [
+      0,
+      0,
+      0
+    ],
+    "LightBlueBanner": [
+      143,
+      119,
+      72
+    ],
+    "LightBlueCarpet": [
+      102,
+      153,
+      216
+    ],
+    "LightBlueConcrete": [
+      102,
+      153,
+      216
+    ],
+    "LightBlueConcretePowder": [
+      102,
+      153,
+      216
+    ],
+    "LightBlueGlazedTerracotta": [
+      102,
+      153,
+      216
+    ],
+    "LightBlueTerracotta": [
+      112,
+      108,
+      138
+    ],
+    "LightBlueWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "LightBlueWool": [
+      102,
+      153,
+      216
+    ],
+    "LightGrayBanner": [
+      143,
+      119,
+      72
+    ],
+    "LightGrayCarpet": [
+      153,
+      153,
+      153
+    ],
+    "LightGrayConcrete": [
+      153,
+      153,
+      153
+    ],
+    "LightGrayConcretePowder": [
+      153,
+      153,
+      153
+    ],
+    "LightGrayGlazedTerracotta": [
+      153,
+      153,
+      153
+    ],
+    "LightGrayTerracotta": [
+      135,
+      107,
+      98
+    ],
+    "LightGrayWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "LightGrayWool": [
+      153,
+      153,
+      153
+    ],
+    "LightWeightedPressurePlate": [
+      250,
+      238,
+      77
+    ],
+    "LightningRod": [
+      216,
+      127,
+      51
+    ],
+    "Lilac": [
+      0,
+      124,
+      0
+    ],
+    "LilyOfTheValley": [
+      0,
+      124,
+      0
+    ],
+    "LilyPad": [
+      0,
+      124,
+      0
+    ],
+    "LimeBanner": [
+      143,
+      119,
+      72
+    ],
+    "LimeCarpet": [
+      127,
+      204,
+      25
+    ],
+    "LimeConcrete": [
+      127,
+      204,
+      25
+    ],
+    "LimeConcretePowder": [
+      127,
+      204,
+      25
+    ],
+    "LimeGlazedTerracotta": [
+      127,
+      204,
+      25
+    ],
+    "LimeTerracotta": [
+      103,
+      117,
+      53
+    ],
+    "LimeWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "LimeWool": [
+      127,
+      204,
+      25
+    ],
+    "Lodestone": [
+      167,
+      167,
+      167
+    ],
+    "Loom": [
+      143,
+      119,
+      72
+    ],
+    "MagentaBanner": [
+      143,
+      119,
+      72
+    ],
+    "MagentaCarpet": [
+      178,
+      76,
+      216
+    ],
+    "MagentaConcrete": [
+      178,
+      76,
+      216
+    ],
+    "MagentaConcretePowder": [
+      178,
+      76,
+      216
+    ],
+    "MagentaGlazedTerracotta": [
+      178,
+      76,
+      216
+    ],
+    "MagentaTerracotta": [
+      149,
+      87,
+      108
+    ],
+    "MagentaWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "MagentaWool": [
+      178,
+      76,
+      216
+    ],
+    "MagmaBlock": [
+      112,
+      2,
+      0
+    ],
+    "MangroveDoor": [
+      153,
+      51,
+      51
+    ],
+    "MangroveFence": [
+      153,
+      51,
+      51
+    ],
+    "MangroveFenceGate": [
+      153,
+      51,
+      51
+    ],
+    "MangrovePlanks": [
+      153,
+      51,
+      51
+    ],
+    "MangrovePressurePlate": [
+      153,
+      51,
+      51
+    ],
+    "MangrovePropagule": [
+      0,
+      124,
+      0
+    ],
+    "MangroveRoots": [
+      129,
+      86,
+      49
+    ],
+    "MangroveSlab": [
+      153,
+      51,
+      51
+    ],
+    "MangroveTrapdoor": [
+      153,
+      51,
+      51
+    ],
+    "MangroveWood": [
+      153,
+      51,
+      51
+    ],
+    "Melon": [
+      127,
+      204,
+      25
+    ],
+    "MelonStem": [
+      0,
+      124,
+      0
+    ],
+    "MossBlock": [
+      102,
+      127,
+      51
+    ],
+    "MossCarpet": [
+      102,
+      127,
+      51
+    ],
+    "MossyCobblestone": [
+      112,
+      112,
+      112
+    ],
+    "MossyStoneBricks": [
+      112,
+      112,
+      112
+    ],
+    "MovingPiston": [
+      112,
+      112,
+      112
+    ],
+    "Mud": [
+      87,
+      92,
+      92
+    ],
+    "MudBrickSlab": [
+      135,
+      107,
+      98
+    ],
+    "MudBricks": [
+      135,
+      107,
+      98
+    ],
+    "MuddyMangroveRoots": [
+      129,
+      86,
+      49
+    ],
+    "MushroomStem": [
+      199,
+      199,
+      199
+    ],
+    "Mycelium": [
+      127,
+      63,
+      178
+    ],
+    "NetherBrickFence": [
+      112,
+      2,
+      0
+    ],
+    "NetherBrickSlab": [
+      112,
+      2,
+      0
+    ],
+    "NetherBricks": [
+      112,
+      2,
+      0
+    ],
+    "NetherGoldOre": [
+      112,
+      2,
+      0
+    ],
+    "NetherQuartzOre": [
+      112,
+      2,
+      0
+    ],
+    "NetherSprouts": [
+      76,
+      127,
+      153
+    ],
+    "NetherWart": [
+      153,
+      51,
+      51
+    ],
+    "NetherWartBlock": [
+      153,
+      51,
+      51
+    ],
+    "NetheriteBlock": [
+      25,
+      25,
+      25
+    ],
+    "Netherrack": [
+      112,
+      2,
+      0
+    ],
+    "NoteBlock": [
+      143,
+      119,
+      72
+    ],
+    "OakDoor": [
+      143,
+      119,
+      72
+    ],
+    "OakFence": [
+      143,
+      119,
+      72
+    ],
+    "OakFenceGate": [
+      143,
+      119,
+      72
+    ],
+    "OakPlanks": [
+      143,
+      119,
+      72
+    ],
+    "OakPressurePlate": [
+      143,
+      119,
+      72
+    ],
+    "OakSapling": [
+      0,
+      124,
+      0
+    ],
+    "OakShelf": [
+      143,
+      119,
+      72
+    ],
+    "OakSign": [
+      143,
+      119,
+      72
+    ],
+    "OakSlab": [
+      143,
+      119,
+      72
+    ],
+    "OakTrapdoor": [
+      143,
+      119,
+      72
+    ],
+    "OakWallSign": [
+      143,
+      119,
+      72
+    ],
+    "OakWood": [
+      143,
+      119,
+      72
+    ],
+    "Observer": [
+      112,
+      112,
+      112
+    ],
+    "Obsidian": [
+      25,
+      25,
+      25
+    ],
+    "OchreFroglight": [
+      247,
+      233,
+      163
+    ],
+    "OpenEyeblossom": [
+      216,
+      127,
+      51
+    ],
+    "OrangeBanner": [
+      143,
+      119,
+      72
+    ],
+    "OrangeCarpet": [
+      216,
+      127,
+      51
+    ],
+    "OrangeConcrete": [
+      216,
+      127,
+      51
+    ],
+    "OrangeConcretePowder": [
+      216,
+      127,
+      51
+    ],
+    "OrangeGlazedTerracotta": [
+      216,
+      127,
+      51
+    ],
+    "OrangeTerracotta": [
+      159,
+      82,
+      36
+    ],
+    "OrangeTulip": [
+      0,
+      124,
+      0
+    ],
+    "OrangeWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "OrangeWool": [
+      216,
+      127,
+      51
+    ],
+    "OxeyeDaisy": [
+      0,
+      124,
+      0
+    ],
+    "OxidizedCopper": [
+      22,
+      126,
+      134
+    ],
+    "OxidizedCopperBulb": [
+      22,
+      126,
+      134
+    ],
+    "OxidizedCopperChest": [
+      22,
+      126,
+      134
+    ],
+    "OxidizedCopperDoor": [
+      22,
+      126,
+      134
+    ],
+    "OxidizedCopperGolemStatue": [
+      22,
+      126,
+      134
+    ],
+    "OxidizedCopperGrate": [
+      22,
+      126,
+      134
+    ],
+    "OxidizedCopperTrapdoor": [
+      22,
+      126,
+      134
+    ],
+    "OxidizedLightningRod": [
+      22,
+      126,
+      134
+    ],
+    "PackedIce": [
+      160,
+      160,
+      255
+    ],
+    "PaleHangingMoss": [
+      153,
+      153,
+      153
+    ],
+    "PaleMossBlock": [
+      153,
+      153,
+      153
+    ],
+    "PaleMossCarpet": [
+      153,
+      153,
+      153
+    ],
+    "PaleOakDoor": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakFence": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakFenceGate": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakHangingSign": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakLeaves": [
+      167,
+      167,
+      167
+    ],
+    "PaleOakPlanks": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakPressurePlate": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakSapling": [
+      167,
+      167,
+      167
+    ],
+    "PaleOakShelf": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakSign": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakSlab": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakTrapdoor": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakWallHangingSign": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakWallSign": [
+      255,
+      252,
+      245
+    ],
+    "PaleOakWood": [
+      112,
+      112,
+      112
+    ],
+    "PearlescentFroglight": [
+      242,
+      127,
+      165
+    ],
+    "Peony": [
+      0,
+      124,
+      0
+    ],
+    "PetrifiedOakSlab": [
+      143,
+      119,
+      72
+    ],
+    "PinkBanner": [
+      143,
+      119,
+      72
+    ],
+    "PinkCarpet": [
+      242,
+      127,
+      165
+    ],
+    "PinkConcrete": [
+      242,
+      127,
+      165
+    ],
+    "PinkConcretePowder": [
+      242,
+      127,
+      165
+    ],
+    "PinkGlazedTerracotta": [
+      242,
+      127,
+      165
+    ],
+    "PinkPetals": [
+      0,
+      124,
+      0
+    ],
+    "PinkTerracotta": [
+      160,
+      77,
+      78
+    ],
+    "PinkTulip": [
+      0,
+      124,
+      0
+    ],
+    "PinkWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "PinkWool": [
+      242,
+      127,
+      165
+    ],
+    "PistonHead": [
+      112,
+      112,
+      112
+    ],
+    "PitcherCrop": [
+      0,
+      124,
+      0
+    ],
+    "PitcherPlant": [
+      0,
+      124,
+      0
+    ],
+    "Podzol": [
+      129,
+      86,
+      49
+    ],
+    "PointedDripstone": [
+      76,
+      50,
+      35
+    ],
+    "PolishedAndesite": [
+      112,
+      112,
+      112
+    ],
+    "PolishedBasalt": [
+      25,
+      25,
+      25
+    ],
+    "PolishedBlackstonePressurePlate": [
+      25,
+      25,
+      25
+    ],
+    "PolishedDiorite": [
+      255,
+      252,
+      245
+    ],
+    "PolishedGranite": [
+      151,
+      109,
+      77
+    ],
+    "Poppy": [
+      0,
+      124,
+      0
+    ],
+    "Potatoes": [
+      0,
+      124,
+      0
+    ],
+    "PowderSnow": [
+      255,
+      255,
+      255
+    ],
+    "Prismarine": [
+      76,
+      127,
+      153
+    ],
+    "PrismarineBrickSlab": [
+      92,
+      219,
+      213
+    ],
+    "PrismarineBricks": [
+      92,
+      219,
+      213
+    ],
+    "PrismarineSlab": [
+      76,
+      127,
+      153
+    ],
+    "Pumpkin": [
+      216,
+      127,
+      51
+    ],
+    "PumpkinStem": [
+      0,
+      124,
+      0
+    ],
+    "PurpleBanner": [
+      143,
+      119,
+      72
+    ],
+    "PurpleCarpet": [
+      127,
+      63,
+      178
+    ],
+    "PurpleConcrete": [
+      127,
+      63,
+      178
+    ],
+    "PurpleConcretePowder": [
+      127,
+      63,
+      178
+    ],
+    "PurpleGlazedTerracotta": [
+      127,
+      63,
+      178
+    ],
+    "PurpleTerracotta": [
+      122,
+      73,
+      88
+    ],
+    "PurpleWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "PurpleWool": [
+      127,
+      63,
+      178
+    ],
+    "PurpurBlock": [
+      178,
+      76,
+      216
+    ],
+    "PurpurPillar": [
+      178,
+      76,
+      216
+    ],
+    "PurpurSlab": [
+      178,
+      76,
+      216
+    ],
+    "QuartzBlock": [
+      255,
+      252,
+      245
+    ],
+    "QuartzPillar": [
+      255,
+      252,
+      245
+    ],
+    "QuartzSlab": [
+      255,
+      252,
+      245
+    ],
+    "RawCopperBlock": [
+      216,
+      127,
+      51
+    ],
+    "RawGoldBlock": [
+      250,
+      238,
+      77
+    ],
+    "RawIronBlock": [
+      216,
+      175,
+      147
+    ],
+    "RedBanner": [
+      143,
+      119,
+      72
+    ],
+    "RedCarpet": [
+      153,
+      51,
+      51
+    ],
+    "RedConcrete": [
+      153,
+      51,
+      51
+    ],
+    "RedConcretePowder": [
+      153,
+      51,
+      51
+    ],
+    "RedGlazedTerracotta": [
+      153,
+      51,
+      51
+    ],
+    "RedMushroom": [
+      153,
+      51,
+      51
+    ],
+    "RedMushroomBlock": [
+      153,
+      51,
+      51
+    ],
+    "RedNetherBricks": [
+      112,
+      2,
+      0
+    ],
+    "RedSand": [
+      216,
+      127,
+      51
+    ],
+    "RedSandstone": [
+      216,
+      127,
+      51
+    ],
+    "RedSandstoneSlab": [
+      216,
+      127,
+      51
+    ],
+    "RedTerracotta": [
+      142,
+      60,
+      46
+    ],
+    "RedTulip": [
+      0,
+      124,
+      0
+    ],
+    "RedWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "RedWool": [
+      153,
+      51,
+      51
+    ],
+    "RedstoneBlock": [
+      255,
+      0,
+      0
+    ],
+    "RedstoneLamp": [
+      159,
+      82,
+      36
+    ],
+    "RedstoneOre": [
+      112,
+      112,
+      112
+    ],
+    "ReinforcedDeepslate": [
+      100,
+      100,
+      100
+    ],
+    "RepeatingCommandBlock": [
+      127,
+      63,
+      178
+    ],
+    "ResinBlock": [
+      159,
+      82,
+      36
+    ],
+    "ResinBrickSlab": [
+      159,
+      82,
+      36
+    ],
+    "ResinBrickWall": [
+      159,
+      82,
+      36
+    ],
+    "ResinBricks": [
+      159,
+      82,
+      36
+    ],
+    "ResinClump": [
+      159,
+      82,
+      36
+    ],
+    "RespawnAnchor": [
+      25,
+      25,
+      25
+    ],
+    "RootedDirt": [
+      151,
+      109,
+      77
+    ],
+    "RoseBush": [
+      0,
+      124,
+      0
+    ],
+    "Sand": [
+      247,
+      233,
+      163
+    ],
+    "Sandstone": [
+      247,
+      233,
+      163
+    ],
+    "SandstoneSlab": [
+      247,
+      233,
+      163
+    ],
+    "Scaffolding": [
+      247,
+      233,
+      163
+    ],
+    "Sculk": [
+      25,
+      25,
+      25
+    ],
+    "SculkCatalyst": [
+      25,
+      25,
+      25
+    ],
+    "SculkSensor": [
+      76,
+      127,
+      153
+    ],
+    "SculkShrieker": [
+      25,
+      25,
+      25
+    ],
+    "SculkVein": [
+      25,
+      25,
+      25
+    ],
+    "SeaLantern": [
+      255,
+      252,
+      245
+    ],
+    "SeaPickle": [
+      102,
+      127,
+      51
+    ],
+    "Seagrass": [
+      64,
+      64,
+      255
+    ],
+    "ShortDryGrass": [
+      229,
+      229,
+      51
+    ],
+    "ShortGrass": [
+      0,
+      124,
+      0
+    ],
+    "Shroomlight": [
+      153,
+      51,
+      51
+    ],
+    "SlimeBlock": [
+      127,
+      178,
+      56
+    ],
+    "SmallDripleaf": [
+      0,
+      124,
+      0
+    ],
+    "SmithingTable": [
+      143,
+      119,
+      72
+    ],
+    "Smoker": [
+      112,
+      112,
+      112
+    ],
+    "SmoothQuartz": [
+      255,
+      252,
+      245
+    ],
+    "SmoothRedSandstone": [
+      216,
+      127,
+      51
+    ],
+    "SmoothSandstone": [
+      247,
+      233,
+      163
+    ],
+    "SmoothStone": [
+      112,
+      112,
+      112
+    ],
+    "SmoothStoneSlab": [
+      112,
+      112,
+      112
+    ],
+    "SnifferEgg": [
+      153,
+      51,
+      51
+    ],
+    "Snow": [
+      255,
+      255,
+      255
+    ],
+    "SnowBlock": [
+      255,
+      255,
+      255
+    ],
+    "SoulCampfire": [
+      129,
+      86,
+      49
+    ],
+    "SoulFire": [
+      102,
+      153,
+      216
+    ],
+    "SoulLantern": [
+      167,
+      167,
+      167
+    ],
+    "SoulSand": [
+      102,
+      76,
+      51
+    ],
+    "SoulSoil": [
+      102,
+      76,
+      51
+    ],
+    "Spawner": [
+      112,
+      112,
+      112
+    ],
+    "Sponge": [
+      229,
+      229,
+      51
+    ],
+    "SporeBlossom": [
+      0,
+      124,
+      0
+    ],
+    "SpruceDoor": [
+      129,
+      86,
+      49
+    ],
+    "SpruceFence": [
+      129,
+      86,
+      49
+    ],
+    "SpruceFenceGate": [
+      129,
+      86,
+      49
+    ],
+    "SprucePlanks": [
+      129,
+      86,
+      49
+    ],
+    "SprucePressurePlate": [
+      129,
+      86,
+      49
+    ],
+    "SpruceSapling": [
+      0,
+      124,
+      0
+    ],
+    "SpruceSlab": [
+      129,
+      86,
+      49
+    ],
+    "SpruceTrapdoor": [
+      129,
+      86,
+      49
+    ],
+    "SpruceWallHangingSign": [
+      143,
+      119,
+      72
+    ],
+    "SpruceWood": [
+      129,
+      86,
+      49
+    ],
+    "Stone": [
+      112,
+      112,
+      112
+    ],
+    "StoneBrickSlab": [
+      112,
+      112,
+      112
+    ],
+    "StoneBricks": [
+      112,
+      112,
+      112
+    ],
+    "StonePressurePlate": [
+      112,
+      112,
+      112
+    ],
+    "StoneSlab": [
+      112,
+      112,
+      112
+    ],
+    "Stonecutter": [
+      112,
+      112,
+      112
+    ],
+    "StrippedAcaciaWood": [
+      216,
+      127,
+      51
+    ],
+    "StrippedBirchWood": [
+      247,
+      233,
+      163
+    ],
+    "StrippedCherryWood": [
+      160,
+      77,
+      78
+    ],
+    "StrippedCrimsonHyphae": [
+      92,
+      25,
+      29
+    ],
+    "StrippedDarkOakWood": [
+      102,
+      76,
+      51
+    ],
+    "StrippedJungleWood": [
+      151,
+      109,
+      77
+    ],
+    "StrippedOakWood": [
+      143,
+      119,
+      72
+    ],
+    "StrippedPaleOakWood": [
+      255,
+      252,
+      245
+    ],
+    "StrippedSpruceWood": [
+      129,
+      86,
+      49
+    ],
+    "StrippedWarpedHyphae": [
+      86,
+      44,
+      62
+    ],
+    "StructureBlock": [
+      153,
+      153,
+      153
+    ],
+    "SugarCane": [
+      0,
+      124,
+      0
+    ],
+    "Sunflower": [
+      0,
+      124,
+      0
+    ],
+    "SuspiciousGravel": [
+      112,
+      112,
+      112
+    ],
+    "SuspiciousSand": [
+      247,
+      233,
+      163
+    ],
+    "SweetBerryBush": [
+      0,
+      124,
+      0
+    ],
+    "TallDryGrass": [
+      229,
+      229,
+      51
+    ],
+    "TallGrass": [
+      0,
+      124,
+      0
+    ],
+    "TallSeagrass": [
+      64,
+      64,
+      255
+    ],
+    "Target": [
+      255,
+      252,
+      245
+    ],
+    "Terracotta": [
+      216,
+      127,
+      51
+    ],
+    "TestBlock": [
+      153,
+      153,
+      153
+    ],
+    "TintedGlass": [
+      76,
+      76,
+      76
+    ],
+    "Tnt": [
+      255,
+      0,
+      0
+    ],
+    "Torchflower": [
+      0,
+      124,
+      0
+    ],
+    "TorchflowerCrop": [
+      0,
+      124,
+      0
+    ],
+    "TrappedChest": [
+      143,
+      119,
+      72
+    ],
+    "TrialSpawner": [
+      112,
+      112,
+      112
+    ],
+    "TubeCoral": [
+      51,
+      76,
+      178
+    ],
+    "TubeCoralBlock": [
+      51,
+      76,
+      178
+    ],
+    "TubeCoralFan": [
+      51,
+      76,
+      178
+    ],
+    "TubeCoralWallFan": [
+      51,
+      76,
+      178
+    ],
+    "Tuff": [
+      57,
+      41,
+      35
+    ],
+    "TurtleEgg": [
+      247,
+      233,
+      163
+    ],
+    "TwistingVines": [
+      76,
+      127,
+      153
+    ],
+    "TwistingVinesPlant": [
+      76,
+      127,
+      153
+    ],
+    "Vault": [
+      112,
+      112,
+      112
+    ],
+    "VerdantFroglight": [
+      127,
+      167,
+      150
+    ],
+    "Vine": [
+      0,
+      124,
+      0
+    ],
+    "WarpedDoor": [
+      58,
+      142,
+      140
+    ],
+    "WarpedFence": [
+      58,
+      142,
+      140
+    ],
+    "WarpedFenceGate": [
+      58,
+      142,
+      140
+    ],
+    "WarpedFungus": [
+      76,
+      127,
+      153
+    ],
+    "WarpedHangingSign": [
+      58,
+      142,
+      140
+    ],
+    "WarpedHyphae": [
+      86,
+      44,
+      62
+    ],
+    "WarpedNylium": [
+      22,
+      126,
+      134
+    ],
+    "WarpedPlanks": [
+      58,
+      142,
+      140
+    ],
+    "WarpedPressurePlate": [
+      58,
+      142,
+      140
+    ],
+    "WarpedRoots": [
+      76,
+      127,
+      153
+    ],
+    "WarpedShelf": [
+      58,
+      142,
+      140
+    ],
+    "WarpedSign": [
+      58,
+      142,
+      140
+    ],
+    "WarpedSlab": [
+      58,
+      142,
+      140
+    ],
+    "WarpedTrapdoor": [
+      58,
+      142,
+      140
+    ],
+    "WarpedWallHangingSign": [
+      58,
+      142,
+      140
+    ],
+    "WarpedWallSign": [
+      58,
+      142,
+      140
+    ],
+    "WarpedWartBlock": [
+      20,
+      180,
+      133
+    ],
+    "Water": [
+      64,
+      64,
+      255
+    ],
+    "WeatheredCopper": [
+      58,
+      142,
+      140
+    ],
+    "WeatheredCopperBulb": [
+      58,
+      142,
+      140
+    ],
+    "WeatheredCopperChest": [
+      58,
+      142,
+      140
+    ],
+    "WeatheredCopperDoor": [
+      58,
+      142,
+      140
+    ],
+    "WeatheredCopperGolemStatue": [
+      58,
+      142,
+      140
+    ],
+    "WeatheredCopperGrate": [
+      58,
+      142,
+      140
+    ],
+    "WeatheredCopperTrapdoor": [
+      58,
+      142,
+      140
+    ],
+    "WeatheredLightningRod": [
+      58,
+      142,
+      140
+    ],
+    "WeepingVines": [
+      112,
+      2,
+      0
+    ],
+    "WeepingVinesPlant": [
+      112,
+      2,
+      0
+    ],
+    "WetSponge": [
+      229,
+      229,
+      51
+    ],
+    "WhiteBanner": [
+      143,
+      119,
+      72
+    ],
+    "WhiteCarpet": [
+      255,
+      255,
+      255
+    ],
+    "WhiteConcrete": [
+      255,
+      255,
+      255
+    ],
+    "WhiteConcretePowder": [
+      255,
+      255,
+      255
+    ],
+    "WhiteGlazedTerracotta": [
+      255,
+      255,
+      255
+    ],
+    "WhiteTerracotta": [
+      209,
+      177,
+      161
+    ],
+    "WhiteTulip": [
+      0,
+      124,
+      0
+    ],
+    "WhiteWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "WhiteWool": [
+      255,
+      255,
+      255
+    ],
+    "Wildflowers": [
+      0,
+      124,
+      0
+    ],
+    "WitherRose": [
+      0,
+      124,
+      0
+    ],
+    "YellowBanner": [
+      143,
+      119,
+      72
+    ],
+    "YellowCarpet": [
+      229,
+      229,
+      51
+    ],
+    "YellowConcrete": [
+      229,
+      229,
+      51
+    ],
+    "YellowConcretePowder": [
+      229,
+      229,
+      51
+    ],
+    "YellowGlazedTerracotta": [
+      229,
+      229,
+      51
+    ],
+    "YellowTerracotta": [
+      186,
+      133,
+      36
+    ],
+    "YellowWallBanner": [
+      143,
+      119,
+      72
+    ],
+    "YellowWool": [
+      229,
+      229,
+      51
+    ]
+  },
+  "transparent": [
+    "Air",
+    "Barrier",
+    "BlackStainedGlass",
+    "BlackStainedGlassPane",
+    "BlueStainedGlass",
+    "BlueStainedGlassPane",
+    "BrownStainedGlass",
+    "BrownStainedGlassPane",
+    "CaveAir",
+    "CyanStainedGlass",
+    "CyanStainedGlassPane",
+    "Glass",
+    "GlassPane",
+    "GrayStainedGlass",
+    "GrayStainedGlassPane",
+    "GreenStainedGlass",
+    "GreenStainedGlassPane",
+    "Light",
+    "LightBlueStainedGlass",
+    "LightBlueStainedGlassPane",
+    "LightGrayStainedGlass",
+    "LightGrayStainedGlassPane",
+    "LimeStainedGlass",
+    "LimeStainedGlassPane",
+    "MagentaStainedGlass",
+    "MagentaStainedGlassPane",
+    "OrangeStainedGlass",
+    "OrangeStainedGlassPane",
+    "PinkStainedGlass",
+    "PinkStainedGlassPane",
+    "PurpleStainedGlass",
+    "PurpleStainedGlassPane",
+    "RedStainedGlass",
+    "RedStainedGlassPane",
+    "StructureVoid",
+    "TintedGlass",
+    "VoidAir",
+    "WhiteStainedGlass",
+    "WhiteStainedGlassPane",
+    "YellowStainedGlass",
+    "YellowStainedGlassPane"
+  ],
+  "water": [
+    "Water"
+  ],
+  "ice": [
+    "Ice",
+    "PackedIce",
+    "BlueIce",
+    "FrostedIce"
+  ]
+}
