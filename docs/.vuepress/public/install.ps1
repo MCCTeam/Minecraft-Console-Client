@@ -27,7 +27,7 @@ Write-Host "Fetching latest release information..."
 $release = Invoke-RestMethod -Uri $apiUrl -UseBasicParsing
 
 # --- Locate the correct asset ---
-$asset = $release.assets | Where-Object { $_.name -like "*-$suffix.exe" } | Select-Object -First 1
+$asset = $release.assets | Where-Object { $_.name -match "^MinecraftClient-.*-$([regex]::Escape($suffix))\.exe$" } | Select-Object -First 1
 
 if (-not $asset) {
     Write-Error "Could not find a release asset for '$suffix'."
