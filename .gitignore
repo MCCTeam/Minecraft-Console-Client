@@ -436,3 +436,4 @@ FodyWeavers.xsd
 # SpecStory files
 /.specstory/
 /.vscode/settings.json
+/Sentry/
