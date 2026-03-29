@@ -64,7 +64,12 @@ try {
             $bar    = $filled.PadRight(50)
             $recv   = [math]::Round($totalRead  / 1MB, 1)
             $total  = [math]::Round($totalBytes / 1MB, 1)
-            Write-Host -NoNewline ("`r[{0}] {1,3}%  {2,6:N1} / {3,6:N1} MB" -f $bar, $pct, $recv, $total)
+            # Use [Console]::Write with an explicit \r so the cursor returns to
+            # column 0 and overwrites the previous bar. Write-Host -NoNewline
+            # does not reliably reposition the cursor when the script is run
+            # via iex (pipe mode), producing multiple bars on one line.
+            $line = "`r[{0}] {1,3}%  {2,6:N1} / {3,6:N1} MB" -f $bar, $pct, $recv, $total
+            [Console]::Write($line)
         }
     }
 } finally {
@@ -73,7 +78,7 @@ try {
     $response.Close()
 }
 
-Write-Host ""   # end the progress line
+[Console]::WriteLine()   # end the progress line
 
 Write-Host ""
 Write-Host "Downloaded: .\$OUTPUT"
