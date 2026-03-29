@@ -4370,11 +4370,20 @@ namespace MinecraftClient {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Requested recipe {0} (craft all: {1})..
+        ///   Looks up a localized string similar to Requested recipe {0}..
         /// </summary>
         internal static string cmd_recipebook_craft_sent {
             get {
                 return ResourceManager.GetString("cmd.recipebook.craft.sent", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Requested recipe {0} with craft-all..
+        /// </summary>
+        internal static string cmd_recipebook_craftall_sent {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.craftall.sent", resourceCulture);
             }
         }
 
@@ -4411,6 +4420,15 @@ namespace MinecraftClient {
         internal static string cmd_recipebook_no_recipes {
             get {
                 return ResourceManager.GetString("cmd.recipebook.no.recipes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The recipe identifier cannot be empty..
+        /// </summary>
+        internal static string cmd_recipebook_recipe_id_empty {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.recipe.id.empty", resourceCulture);
             }
         }
 

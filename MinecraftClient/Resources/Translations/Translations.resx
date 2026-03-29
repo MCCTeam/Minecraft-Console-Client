@@ -2212,7 +2212,10 @@ Logging in...</value>
     <value>Failed to send recipe book craft request for {0}.</value>
   </data>
   <data name="cmd.recipebook.craft.sent" xml:space="preserve">
-    <value>Requested recipe {0} (craft all: {1}).</value>
+    <value>Requested recipe {0}.</value>
+  </data>
+  <data name="cmd.recipebook.craftall.sent" xml:space="preserve">
+    <value>Requested recipe {0} with craft-all.</value>
   </data>
   <data name="cmd.recipebook.desc" xml:space="preserve">
     <value>List unlocked recipe book recipes and craft them through the active recipe book inventory.</value>
@@ -2225,6 +2228,9 @@ Logging in...</value>
   </data>
   <data name="cmd.recipebook.no.recipes" xml:space="preserve">
     <value>No unlocked recipe book recipes are currently tracked.</value>
+  </data>
+  <data name="cmd.recipebook.recipe.id.empty" xml:space="preserve">
+    <value>The recipe identifier cannot be empty.</value>
   </data>
   <data name="cmd.recipebook.unsupported" xml:space="preserve">
     <value>Recipe book crafting is only supported on Minecraft 1.13 and newer.</value>

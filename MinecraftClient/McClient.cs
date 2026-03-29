@@ -1411,7 +1411,7 @@ namespace MinecraftClient
             if (inventories.Count == 0)
                 return null;
 
-            Container activeInventory = inventories.Values.Last();
+            Container activeInventory = inventories.MaxBy(static pair => pair.Key).Value;
             return SupportsRecipeBook(activeInventory.Type) ? activeInventory : null;
         }
 
@@ -2728,7 +2728,11 @@ namespace MinecraftClient
             if (activeInventory is null)
                 return false;
 
-            return handler.SendPlaceRecipe(activeInventory.ID, NormalizeRecipeId(recipeId), makeAll);
+            string normalizedRecipeId = NormalizeRecipeId(recipeId);
+            if (normalizedRecipeId.Length == 0)
+                return false;
+
+            return handler.SendPlaceRecipe(activeInventory.ID, normalizedRecipeId, makeAll);
         }
         #endregion
 
@@ -4172,6 +4176,9 @@ namespace MinecraftClient
         private static string NormalizeRecipeId(string recipeId)
         {
             string trimmedRecipeId = recipeId.Trim();
+            if (trimmedRecipeId.Length == 0)
+                return string.Empty;
+
             return trimmedRecipeId.Contains(':', StringComparison.Ordinal)
                 ? trimmedRecipeId
                 : "minecraft:" + trimmedRecipeId;

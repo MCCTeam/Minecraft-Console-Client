@@ -78,15 +78,29 @@ namespace MinecraftClient.Commands
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
+            if (string.IsNullOrWhiteSpace(recipeId))
+                return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_recipebook_recipe_id_empty);
+
             if (handler.GetProtocolVersion() < Protocol.Handlers.Protocol18Handler.MC_1_13_Version)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_recipebook_unsupported);
 
             if (handler.GetActiveRecipeBookInventory() is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_recipebook_no_active_inventory);
 
+            string normalizedRecipeId = NormalizeRecipeId(recipeId);
+            string successMessage = string.Format(makeAll ? Translations.cmd_recipebook_craftall_sent : Translations.cmd_recipebook_craft_sent, normalizedRecipeId);
+
             return handler.SendPlaceRecipe(recipeId, makeAll)
-                ? r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.cmd_recipebook_craft_sent, recipeId, makeAll))
-                : r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_recipebook_craft_failed, recipeId));
+                ? r.SetAndReturn(CmdResult.Status.Done, successMessage)
+                : r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_recipebook_craft_failed, normalizedRecipeId));
+        }
+
+        private static string NormalizeRecipeId(string recipeId)
+        {
+            string trimmedRecipeId = recipeId.Trim();
+            return trimmedRecipeId.Contains(':')
+                ? trimmedRecipeId
+                : "minecraft:" + trimmedRecipeId;
         }
     }
 }

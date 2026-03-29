@@ -3122,10 +3122,12 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
 
                 case PacketTypesIn.RecipeBookAdd:
-                    HandleRecipeBookAdd(packetData);
+                    if (protocolVersion >= MC_1_21_2_Version)
+                        HandleRecipeBookAdd(packetData);
                     break;
                 case PacketTypesIn.RecipeBookRemove:
-                    handler.OnRecipeBookRemove(ReadRecipeBookRecipeIds(packetData));
+                    if (protocolVersion >= MC_1_21_2_Version)
+                        handler.OnRecipeBookRemove(ReadRecipeBookRecipeIds(packetData));
                     break;
                 case PacketTypesIn.RecipeBookSettings:
                     break;
@@ -3140,7 +3142,8 @@ namespace MinecraftClient.Protocol.Handlers
         private void HandleUnlockRecipes(Queue<byte> packetData)
         {
             int action = dataTypes.ReadNextVarInt(packetData);
-            SkipRecipeBookSettings(packetData);
+            if (!SkipRecipeBookSettings(packetData))
+                return;
 
             string[] recipeIds = ReadRecipeBookRecipeIds(packetData);
 
@@ -3148,10 +3151,15 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 case 0:
                     handler.OnRecipeBookAdd(recipeIds, replace: true);
+                    // INIT packets also include a second "to be displayed" recipe list.
+                    // MCC only needs the unlocked recipe identifiers for listing/crafting.
                     _ = ReadRecipeBookRecipeIds(packetData);
                     break;
                 case 1:
+                    handler.OnRecipeBookAdd(recipeIds, replace: false);
+                    break;
                 case 3:
+                    // Action 3 is the silent-add variant, so MCC tracks it like a regular add.
                     handler.OnRecipeBookAdd(recipeIds, replace: false);
                     break;
                 case 2:
@@ -3165,6 +3173,9 @@ namespace MinecraftClient.Protocol.Handlers
             int entryCount = dataTypes.ReadNextVarInt(packetData);
             string[] recipeIds = new string[entryCount];
 
+            // RecipeBookAdd contains one entry per recipe:
+            // recipe id, notification flag, then highlight flag.
+            // MCC only tracks the unlocked recipe identifiers for now.
             for (int i = 0; i < entryCount; i++)
             {
                 recipeIds[i] = dataTypes.ReadNextString(packetData);
@@ -3187,11 +3198,16 @@ namespace MinecraftClient.Protocol.Handlers
             return recipeIds;
         }
 
-        private void SkipRecipeBookSettings(Queue<byte> packetData)
+        private bool SkipRecipeBookSettings(Queue<byte> packetData)
         {
             int boolCount = protocolVersion >= MC_1_14_Version ? 8 : 4;
+            if (packetData.Count < boolCount)
+                return false;
+
             for (int i = 0; i < boolCount; i++)
                 _ = dataTypes.ReadNextBool(packetData);
+
+            return true;
         }
 
         /// <summary>
