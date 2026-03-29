@@ -2822,41 +2822,69 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketTypesIn.Explosion:
                     Location explosionLocation;
-                    if (protocolVersion >= MC_1_19_3_Version)
+                    float explosionStrength;
+                    int explosionBlockCount;
+
+                    if (protocolVersion >= MC_1_21_2_Version)
+                    {
+                        // 1.21.2+: removed strength, block records, and player motion floats;
+                        // added optional knockback (doubles) and single particle
                         explosionLocation = new(dataTypes.ReadNextDouble(packetData),
                             dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData));
-                    else
-                        explosionLocation = new(dataTypes.ReadNextFloat(packetData),
-                            dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+                        explosionStrength = 0;
+                        explosionBlockCount = 0;
 
-                    var explosionStrength = dataTypes.ReadNextFloat(packetData);
-                    var explosionBlockCount = protocolVersion >= MC_1_17_Version
-                        ? dataTypes.ReadNextVarInt(packetData)
-                        : dataTypes.ReadNextInt(packetData); // Record count
+                        if (dataTypes.ReadNextBool(packetData)) // Has player knockback
+                        {
+                            dataTypes.ReadNextDouble(packetData); // Knockback X
+                            dataTypes.ReadNextDouble(packetData); // Knockback Y
+                            dataTypes.ReadNextDouble(packetData); // Knockback Z
+                        }
 
-                    // Records
-                    for (var i = 0; i < explosionBlockCount; i++)
-                        dataTypes.ReadNextByteArray(packetData, 3);
+                        dataTypes.ReadParticleData(packetData, itemPalette); // Explosion particle
 
-                    dataTypes.ReadNextFloat(packetData); // Player Motion X
-                    dataTypes.ReadNextFloat(packetData); // Player Motion Y
-                    dataTypes.ReadNextFloat(packetData); // Player Motion Z
-
-                    if (protocolVersion >= MC_1_20_4_Version)
-                    {
-                        dataTypes.ReadNextVarInt(packetData); // Block Interaction (enum ordinal)
-                        dataTypes.ReadParticleData(packetData, itemPalette); // Small Explosion Particles
-                        dataTypes.ReadParticleData(packetData, itemPalette); // Large Explosion Particles
-
-                        // Explosion Sound: Holder<SoundEvent> via ByteBufCodecs.holder()
-                        // VarInt id: 0 = inline (read DIRECT_STREAM_CODEC), >0 = registry ref (id-1)
                         var soundHolderId = dataTypes.ReadNextVarInt(packetData);
                         if (soundHolderId == 0)
                         {
                             dataTypes.ReadNextString(packetData); // Sound ResourceLocation
-                            var hasFixedRange = dataTypes.ReadNextBool(packetData);
-                            if (hasFixedRange)
+                            if (dataTypes.ReadNextBool(packetData))
                                 dataTypes.ReadNextFloat(packetData); // Fixed range
+                        }
+                    }
+                    else
+                    {
+                        if (protocolVersion >= MC_1_19_3_Version)
+                            explosionLocation = new(dataTypes.ReadNextDouble(packetData),
+                                dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData));
+                        else
+                            explosionLocation = new(dataTypes.ReadNextFloat(packetData),
+                                dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+
+                        explosionStrength = dataTypes.ReadNextFloat(packetData);
+                        explosionBlockCount = protocolVersion >= MC_1_17_Version
+                            ? dataTypes.ReadNextVarInt(packetData)
+                            : dataTypes.ReadNextInt(packetData);
+
+                        for (var i = 0; i < explosionBlockCount; i++)
+                            dataTypes.ReadNextByteArray(packetData, 3);
+
+                        dataTypes.ReadNextFloat(packetData); // Player Motion X
+                        dataTypes.ReadNextFloat(packetData); // Player Motion Y
+                        dataTypes.ReadNextFloat(packetData); // Player Motion Z
+
+                        if (protocolVersion >= MC_1_20_4_Version)
+                        {
+                            dataTypes.ReadNextVarInt(packetData); // Block Interaction
+                            dataTypes.ReadParticleData(packetData, itemPalette); // Small Explosion Particles
+                            dataTypes.ReadParticleData(packetData, itemPalette); // Large Explosion Particles
+
+                            var soundHolderId = dataTypes.ReadNextVarInt(packetData);
+                            if (soundHolderId == 0)
+                            {
+                                dataTypes.ReadNextString(packetData); // Sound ResourceLocation
+                                if (dataTypes.ReadNextBool(packetData))
+                                    dataTypes.ReadNextFloat(packetData); // Fixed range
+                            }
                         }
                     }
 
