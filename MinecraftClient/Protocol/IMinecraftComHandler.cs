@@ -518,6 +518,19 @@ namespace MinecraftClient.Protocol
         public void SetCanSendMessage(bool canSendMessage);
 
         /// <summary>
+        /// Called when recipe book recipes are added or replaced.
+        /// </summary>
+        /// <param name="recipeIds">Recipe identifiers to add</param>
+        /// <param name="replace">True to replace the currently tracked recipe book entries</param>
+        public void OnRecipeBookAdd(string[] recipeIds, bool replace);
+
+        /// <summary>
+        /// Called when recipe book recipes are removed.
+        /// </summary>
+        /// <param name="recipeIds">Recipe identifiers to remove</param>
+        public void OnRecipeBookRemove(string[] recipeIds);
+
+        /// <summary>
         /// Send a click container button packet to the server.
         /// Used for Enchanting table, Lectern, stone cutter and loom
         /// </summary>

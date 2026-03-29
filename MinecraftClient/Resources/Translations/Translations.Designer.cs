@@ -4359,6 +4359,69 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.nameitem.successful", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to send recipe book craft request for {0}..
+        /// </summary>
+        internal static string cmd_recipebook_craft_failed {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.craft.failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Requested recipe {0} (craft all: {1})..
+        /// </summary>
+        internal static string cmd_recipebook_craft_sent {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.craft.sent", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to List unlocked recipe book recipes and craft them through the active recipe book inventory..
+        /// </summary>
+        internal static string cmd_recipebook_desc {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.desc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unlocked recipe book recipes.
+        /// </summary>
+        internal static string cmd_recipebook_list {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.list", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You need an active player crafting grid, crafting table, furnace, blast furnace, smoker, or stonecutter inventory..
+        /// </summary>
+        internal static string cmd_recipebook_no_active_inventory {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.no.active.inventory", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No unlocked recipe book recipes are currently tracked..
+        /// </summary>
+        internal static string cmd_recipebook_no_recipes {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.no.recipes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Recipe book crafting is only supported on Minecraft 1.13 and newer..
+        /// </summary>
+        internal static string cmd_recipebook_unsupported {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.unsupported", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to restart and reconnect to the server..

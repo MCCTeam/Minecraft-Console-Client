@@ -3116,8 +3116,17 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     break;
 
+                case PacketTypesIn.UnlockRecipes:
+                    if (protocolVersion >= MC_1_13_Version)
+                        HandleUnlockRecipes(packetData);
+                    break;
+
                 case PacketTypesIn.RecipeBookAdd:
+                    HandleRecipeBookAdd(packetData);
+                    break;
                 case PacketTypesIn.RecipeBookRemove:
+                    handler.OnRecipeBookRemove(ReadRecipeBookRecipeIds(packetData));
+                    break;
                 case PacketTypesIn.RecipeBookSettings:
                     break;
 
@@ -3126,6 +3135,63 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             return true; //Packet processed
+        }
+
+        private void HandleUnlockRecipes(Queue<byte> packetData)
+        {
+            int action = dataTypes.ReadNextVarInt(packetData);
+            SkipRecipeBookSettings(packetData);
+
+            string[] recipeIds = ReadRecipeBookRecipeIds(packetData);
+
+            switch (action)
+            {
+                case 0:
+                    handler.OnRecipeBookAdd(recipeIds, replace: true);
+                    _ = ReadRecipeBookRecipeIds(packetData);
+                    break;
+                case 1:
+                case 3:
+                    handler.OnRecipeBookAdd(recipeIds, replace: false);
+                    break;
+                case 2:
+                    handler.OnRecipeBookRemove(recipeIds);
+                    break;
+            }
+        }
+
+        private void HandleRecipeBookAdd(Queue<byte> packetData)
+        {
+            int entryCount = dataTypes.ReadNextVarInt(packetData);
+            string[] recipeIds = new string[entryCount];
+
+            for (int i = 0; i < entryCount; i++)
+            {
+                recipeIds[i] = dataTypes.ReadNextString(packetData);
+                _ = dataTypes.ReadNextBool(packetData); // notification
+                _ = dataTypes.ReadNextBool(packetData); // highlight
+            }
+
+            bool replace = dataTypes.ReadNextBool(packetData);
+            handler.OnRecipeBookAdd(recipeIds, replace);
+        }
+
+        private string[] ReadRecipeBookRecipeIds(Queue<byte> packetData)
+        {
+            int recipeCount = dataTypes.ReadNextVarInt(packetData);
+            string[] recipeIds = new string[recipeCount];
+
+            for (int i = 0; i < recipeCount; i++)
+                recipeIds[i] = dataTypes.ReadNextString(packetData);
+
+            return recipeIds;
+        }
+
+        private void SkipRecipeBookSettings(Queue<byte> packetData)
+        {
+            int boolCount = protocolVersion >= MC_1_14_Version ? 8 : 4;
+            for (int i = 0; i < boolCount; i++)
+                _ = dataTypes.ReadNextBool(packetData);
         }
 
         /// <summary>
@@ -5002,6 +5068,34 @@ namespace MinecraftClient.Protocol.Handlers
                     (byte)buttonId
                 };
                 SendPacket(PacketTypesOut.ClickWindowButton, packet);
+                return true;
+            }
+            catch (SocketException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+        }
+
+        public bool SendPlaceRecipe(int windowId, string recipeId, bool makeAll)
+        {
+            try
+            {
+                List<byte> packet = new();
+                if (protocolVersion < MC_1_13_Version)
+                    return false;
+
+                packet.AddRange(DataTypes.GetVarInt(windowId));
+                packet.AddRange(dataTypes.GetString(recipeId));
+                packet.AddRange(dataTypes.GetBool(makeAll));
+                SendPacket(PacketTypesOut.CraftRecipeRequest, packet);
                 return true;
             }
             catch (SocketException)
