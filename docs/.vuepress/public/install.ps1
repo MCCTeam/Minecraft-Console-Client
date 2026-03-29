@@ -39,9 +39,41 @@ $tag         = $release.tag_name
 
 Write-Host "Downloading MinecraftClient $tag ($suffix)..."
 
-# Suppress the progress bar to avoid cluttering the terminal and speed up the download
-$ProgressPreference = 'SilentlyContinue'
-Invoke-WebRequest -Uri $downloadUrl -OutFile $OUTPUT -UseBasicParsing
+# Download with a built-in ASCII progress bar (no external tools required).
+# HttpWebRequest streams the body on the main thread so we can update the
+# progress bar inline without any Runspace or thread-safety concerns.
+$outPath  = Join-Path (Get-Location).Path $OUTPUT
+$request  = [System.Net.HttpWebRequest]::Create($downloadUrl)
+$response = $request.GetResponse()
+$totalBytes = $response.ContentLength
+
+$responseStream = $response.GetResponseStream()
+$fileStream     = [System.IO.File]::Create($outPath)
+$buffer    = New-Object byte[] 32768
+$totalRead = 0
+
+try {
+    while ($true) {
+        $read = $responseStream.Read($buffer, 0, $buffer.Length)
+        if ($read -le 0) { break }
+        $fileStream.Write($buffer, 0, $read)
+        $totalRead += $read
+        if ($totalBytes -gt 0) {
+            $pct    = [int]($totalRead * 100 / $totalBytes)
+            $filled = '=' * [int]($pct / 2)
+            $bar    = $filled.PadRight(50)
+            $recv   = [math]::Round($totalRead  / 1MB, 1)
+            $total  = [math]::Round($totalBytes / 1MB, 1)
+            Write-Host -NoNewline ("`r[{0}] {1,3}%  {2,6:N1} / {3,6:N1} MB" -f $bar, $pct, $recv, $total)
+        }
+    }
+} finally {
+    $fileStream.Close()
+    $responseStream.Close()
+    $response.Close()
+}
+
+Write-Host ""   # end the progress line
 
 Write-Host ""
 Write-Host "Downloaded: .\$OUTPUT"

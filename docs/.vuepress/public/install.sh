@@ -57,6 +57,12 @@ _download_file() {
     if command -v curl >/dev/null 2>&1; then
         curl -fL --progress-bar -o "$2" "$1"
     elif command -v wget >/dev/null 2>&1; then
+        # --show-progress forces the progress bar even when stdout is not a TTY.
+        # Fall back silently to default output if the flag is not supported
+        # (older wget versions, e.g. BusyBox wget).
+        if wget --show-progress -O "$2" "$1" 2>/dev/null; then
+            return 0
+        fi
         wget -O "$2" "$1"
     else
         echo "Error: Neither 'curl' nor 'wget' is available. Please install one and retry." >&2
