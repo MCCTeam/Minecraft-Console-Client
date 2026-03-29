@@ -7,10 +7,12 @@ namespace MinecraftClient.Mcp;
 public sealed class MccMcpToolSet
 {
     private readonly IMccMcpCapabilities capabilities;
+    private readonly MccMcpGuidanceProvider guidanceProvider;
 
-    public MccMcpToolSet(IMccMcpCapabilities capabilities)
+    public MccMcpToolSet(IMccMcpCapabilities capabilities, MccMcpGuidanceProvider guidanceProvider)
     {
         this.capabilities = capabilities;
+        this.guidanceProvider = guidanceProvider;
     }
 
     [McpServerTool(Name = "mcc_session_status"), Description("Get current MCC session and feature status.")]
@@ -47,6 +49,12 @@ public sealed class MccMcpToolSet
     public object InternalCommandsList()
     {
         return capabilities.GetInternalCommands();
+    }
+
+    [McpServerTool(Name = "mcc_agent_guidance"), Description("Get the canonical MCC operator guidance bundle for external agents using this MCP server.")]
+    public object AgentGuidance()
+    {
+        return guidanceProvider.GetToolPayload();
     }
 
     [McpServerTool(Name = "mcc_materials_list"), Description("List known MCC material names with optional filtering.")]

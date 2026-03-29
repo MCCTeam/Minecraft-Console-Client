@@ -10,10 +10,13 @@ builder.Logging.AddConsole(options =>
     options.LogToStandardErrorThreshold = LogLevel.Trace;
 });
 
+builder.Services.AddSingleton(new MccMcpConfig());
 builder.Services.AddSingleton<IMccMcpCapabilities, DeterministicCapabilities>();
+builder.Services.AddSingleton<MccMcpGuidanceProvider>();
 builder.Services.AddMcpServer()
     .WithStdioServerTransport()
-    .WithTools<MccMcpToolSet>();
+    .WithTools<MccMcpToolSet>()
+    .WithPrompts<MccMcpPromptSet>();
 
 await builder.Build().RunAsync();
 

@@ -66,9 +66,11 @@ public sealed class MccEmbeddedMcpHost
             builder.Logging.AddFilter(_ => false);
             builder.Services.AddSingleton(capabilities);
             builder.Services.AddSingleton(config);
+            builder.Services.AddSingleton<MccMcpGuidanceProvider>();
             builder.Services.AddMcpServer()
                 .WithHttpTransport()
-                .WithTools<MccMcpToolSet>();
+                .WithTools<MccMcpToolSet>()
+                .WithPrompts<MccMcpPromptSet>();
 
             builder.WebHost.UseUrls($"http://{bindHost}:{config.Transport.Port}");
             WebApplication builtApp = builder.Build();
