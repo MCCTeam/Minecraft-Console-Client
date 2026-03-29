@@ -3132,11 +3132,202 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.RecipeBookSettings:
                     break;
 
+                case PacketTypesIn.Advancements:
+                    HandleAdvancements(packetData);
+                    break;
+
+                case PacketTypesIn.SelectAdvancementTab:
+                    HandleSelectAdvancementTab(packetData);
+                    break;
+
                 default:
                     return false; //Ignored packet
             }
 
             return true; //Packet processed
+        }
+
+        /// <summary>
+        /// Handle the Advancements packet (1.12+).
+        /// Also handles the Statistics packet for pre-1.12 legacy achievements.
+        /// </summary>
+        private void HandleAdvancements(Queue<byte> packetData)
+        {
+            bool reset = dataTypes.ReadNextBool(packetData);
+
+            // --- Added advancements ---
+            int addedCount = dataTypes.ReadNextVarInt(packetData);
+            var added = new List<Achievement>(addedCount);
+            var addedDefinitions = new Dictionary<string, (string? title, string? description, AchievementType type, bool isHidden, List<List<string>> requirements)>(addedCount);
+
+            for (int i = 0; i < addedCount; i++)
+            {
+                string id = dataTypes.ReadNextString(packetData);
+
+                // Parent
+                bool hasParent = dataTypes.ReadNextBool(packetData);
+                if (hasParent)
+                    dataTypes.ReadNextString(packetData); // parentId - read and discard
+
+                // Display
+                string? title = null;
+                string? description = null;
+                var type = AchievementType.Task;
+                bool isHidden = false;
+
+                bool hasDisplay = dataTypes.ReadNextBool(packetData);
+                if (hasDisplay)
+                {
+                    title = dataTypes.ReadNextChat(packetData);
+                    description = dataTypes.ReadNextChat(packetData);
+                    dataTypes.ReadNextItemSlot(packetData, itemPalette); // icon - read and discard
+
+                    int frameType = dataTypes.ReadNextVarInt(packetData);
+                    type = frameType switch
+                    {
+                        1 => AchievementType.Challenge,
+                        2 => AchievementType.Goal,
+                        _ => AchievementType.Task
+                    };
+
+                    int flags = dataTypes.ReadNextInt(packetData);
+                    isHidden = (flags & 0x04) != 0;
+                    if ((flags & 0x01) != 0)
+                        dataTypes.ReadNextString(packetData); // background texture - read and discard
+
+                    dataTypes.ReadNextFloat(packetData); // x
+                    dataTypes.ReadNextFloat(packetData); // y
+                }
+
+                // Criteria and requirements differ by version
+                var requirements = new List<List<string>>();
+
+                if (protocolVersion < MC_1_20_6_Version)
+                {
+                    // Builder-based: criteria names list, then requirements
+                    int criteriaCount = dataTypes.ReadNextVarInt(packetData);
+                    for (int c = 0; c < criteriaCount; c++)
+                        dataTypes.ReadNextString(packetData); // criterion name only, no trigger data
+
+                    int reqGroupCount = dataTypes.ReadNextVarInt(packetData);
+                    for (int g = 0; g < reqGroupCount; g++)
+                    {
+                        int groupSize = dataTypes.ReadNextVarInt(packetData);
+                        var group = new List<string>(groupSize);
+                        for (int s = 0; s < groupSize; s++)
+                            group.Add(dataTypes.ReadNextString(packetData));
+                        requirements.Add(group);
+                    }
+                }
+                else
+                {
+                    // AdvancementHolder-based (1.20.6+): requirements only, then sendsTelemetryEvent
+                    int reqGroupCount = dataTypes.ReadNextVarInt(packetData);
+                    for (int g = 0; g < reqGroupCount; g++)
+                    {
+                        int groupSize = dataTypes.ReadNextVarInt(packetData);
+                        var group = new List<string>(groupSize);
+                        for (int s = 0; s < groupSize; s++)
+                            group.Add(dataTypes.ReadNextString(packetData));
+                        requirements.Add(group);
+                    }
+
+                    dataTypes.ReadNextBool(packetData); // sendsTelemetryEvent
+                }
+
+                addedDefinitions[id] = (title, description, type, isHidden, requirements);
+            }
+
+            // --- Removed advancement IDs ---
+            int removedCount = dataTypes.ReadNextVarInt(packetData);
+            var removedIds = new List<string>(removedCount);
+            for (int i = 0; i < removedCount; i++)
+                removedIds.Add(dataTypes.ReadNextString(packetData));
+
+            // --- Progress updates ---
+            int progressCount = dataTypes.ReadNextVarInt(packetData);
+            var progressMap = new Dictionary<string, Dictionary<string, bool>>(progressCount);
+
+            for (int i = 0; i < progressCount; i++)
+            {
+                string id = dataTypes.ReadNextString(packetData);
+                int criteriaEntries = dataTypes.ReadNextVarInt(packetData);
+                var criteria = new Dictionary<string, bool>(criteriaEntries);
+
+                for (int c = 0; c < criteriaEntries; c++)
+                {
+                    string criterionName = dataTypes.ReadNextString(packetData);
+                    bool isDone = dataTypes.ReadNextBool(packetData);
+                    if (isDone)
+                        dataTypes.ReadNextLong(packetData); // epochMs - read and discard
+                    criteria[criterionName] = isDone;
+                }
+
+                progressMap[id] = criteria;
+            }
+
+            // showAdvancements boolean added in 1.21.11+
+            if (protocolVersion >= MC_1_21_11_Version)
+                dataTypes.ReadNextBool(packetData); // showAdvancements - read and discard
+
+            // Build Achievement records from definitions + progress
+            foreach (var (id, def) in addedDefinitions)
+            {
+                progressMap.TryGetValue(id, out var criteria);
+                criteria ??= new Dictionary<string, bool>();
+
+                bool isCompleted = ComputeAdvancementCompleted(def.requirements, criteria);
+
+                var readOnlyReqs = def.requirements.ConvertAll<IReadOnlyList<string>>(static g => g.AsReadOnly());
+                added.Add(new Achievement(id, def.title, def.description, def.type, def.isHidden, isCompleted, readOnlyReqs.AsReadOnly(), criteria));
+            }
+
+            // Also build Achievement records for progress-only updates (no definition change)
+            var progressOnly = new List<Achievement>();
+            foreach (var (id, criteria) in progressMap)
+            {
+                if (!addedDefinitions.ContainsKey(id))
+                    progressOnly.Add(new Achievement(id, null, null, AchievementType.Task, false, false, [], criteria));
+            }
+
+            handler.OnAchievementsUpdate([.. added, .. progressOnly], removedIds, reset);
+        }
+
+        /// <summary>
+        /// Compute whether an advancement is completed based on AND-of-ORs requirements.
+        /// </summary>
+        private static bool ComputeAdvancementCompleted(List<List<string>> requirements, Dictionary<string, bool> criteria)
+        {
+            // Zero requirements = automatically done
+            if (requirements.Count == 0)
+                return true;
+
+            // Each OR-group must have at least one satisfied criterion
+            foreach (var group in requirements)
+            {
+                bool groupSatisfied = false;
+                foreach (string criterion in group)
+                {
+                    if (criteria.TryGetValue(criterion, out bool done) && done)
+                    {
+                        groupSatisfied = true;
+                        break;
+                    }
+                }
+                if (!groupSatisfied)
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Handle the SelectAdvancementTab packet.
+        /// </summary>
+        private void HandleSelectAdvancementTab(Queue<byte> packetData)
+        {
+            bool hasTab = dataTypes.ReadNextBool(packetData);
+            string? tabId = hasTab ? dataTypes.ReadNextString(packetData) : null;
+            handler.OnSelectAdvancementTab(tabId);
         }
 
         private void HandleUnlockRecipes(Queue<byte> packetData)
