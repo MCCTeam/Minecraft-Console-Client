@@ -4,12 +4,49 @@ title: Installation
 
 # Installation
 
+- [Quick Install (one-liner)](#quick-install)
 - [YouTube Tutorials](#youtube-tutorials)
 - [Download a compiled binary](#download-a-compiled-binary)
 - [Building from the source code](#building-from-the-source-code)
 - [Run using Docker](#using-docker)
 - [Run on Android](#run-on-android)
 - [Run MCC 24/7 on a VPS](#run-on-a-vps)
+
+## Quick Install
+
+The quickest way to get MCC is to run the installer script for your platform. It auto-detects your OS and CPU architecture, fetches the latest release from GitHub, and saves the binary to your current directory.
+
+### Linux / macOS
+
+Open a terminal in the folder where you want MCC and run:
+
+```bash
+curl -fsSL https://mccteam.github.io/install.sh | sh
+```
+
+If you prefer `wget`:
+
+```bash
+wget -qO- https://mccteam.github.io/install.sh | sh
+```
+
+The script downloads `MinecraftClient` and marks it executable. Supported architectures: `x64`, `arm64`, `arm` (Linux only).
+
+### Windows
+
+Open **PowerShell** in the folder where you want MCC and run:
+
+```powershell
+iwr -useb https://mccteam.github.io/install.ps1 | iex
+```
+
+The script downloads `MinecraftClient.exe`. Supported architectures: `x64`, `x86`, `arm64`.
+
+::: tip
+You can also download the scripts directly and inspect them before running:
+- Linux/macOS: [install.sh](https://mccteam.github.io/install.sh)
+- Windows: [install.ps1](https://mccteam.github.io/install.ps1)
+:::
 
 ## YouTube Tutorials
 
