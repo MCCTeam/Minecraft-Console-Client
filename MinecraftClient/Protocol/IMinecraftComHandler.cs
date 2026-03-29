@@ -520,9 +520,9 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when recipe book recipes are added or replaced.
         /// </summary>
-        /// <param name="recipeIds">Recipe identifiers to add</param>
+        /// <param name="recipes">Recipe entries to add</param>
         /// <param name="replace">True to replace the currently tracked recipe book entries</param>
-        public void OnRecipeBookAdd(string[] recipeIds, bool replace);
+        public void OnRecipeBookAdd(RecipeBookRecipeEntry[] recipes, bool replace);
 
         /// <summary>
         /// Called when recipe book recipes are removed.

@@ -59,14 +59,14 @@ namespace MinecraftClient.Commands
             if (!handler.GetInventoryEnabled())
                 return r.SetAndReturn(CmdResult.Status.FailNeedInventory);
 
-            string[] recipeIds = handler.GetUnlockedRecipes();
-            if (recipeIds.Length == 0)
+            RecipeBookRecipeEntry[] recipes = handler.GetUnlockedRecipes();
+            if (recipes.Length == 0)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_recipebook_no_recipes);
 
             StringBuilder response = new();
             response.AppendLine(Translations.cmd_recipebook_list);
-            foreach (string recipeId in recipeIds)
-                response.AppendLine("- " + recipeId);
+            foreach (RecipeBookRecipeEntry recipe in recipes)
+                response.AppendLine("- " + recipe.DisplayText);
 
             handler.Log.Info(response.ToString().TrimEnd());
             return r.SetAndReturn(CmdResult.Status.Done);
@@ -87,7 +87,7 @@ namespace MinecraftClient.Commands
             if (handler.GetActiveRecipeBookInventory() is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_recipebook_no_active_inventory);
 
-            string normalizedRecipeId = McClient.NormalizeRecipeId(recipeId);
+            string normalizedRecipeId = McClient.NormalizeRecipeArgument(recipeId, handler.GetProtocolVersion());
             string successMessage = string.Format(makeAll ? Translations.cmd_recipebook_craftall_sent : Translations.cmd_recipebook_craft_sent, normalizedRecipeId);
 
             return handler.SendPlaceRecipe(recipeId, makeAll)

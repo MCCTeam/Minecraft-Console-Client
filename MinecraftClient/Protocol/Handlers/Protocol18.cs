@@ -3127,7 +3127,7 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketTypesIn.RecipeBookRemove:
                     if (protocolVersion >= MC_1_21_2_Version)
-                        handler.OnRecipeBookRemove(ReadRecipeBookRecipeIds(packetData));
+                        handler.OnRecipeBookRemove(ReadRecipeBookDisplayIds(packetData));
                     break;
                 case PacketTypesIn.RecipeBookSettings:
                     break;
@@ -3146,21 +3146,20 @@ namespace MinecraftClient.Protocol.Handlers
                 return;
 
             string[] recipeIds = ReadRecipeBookRecipeIds(packetData);
+            RecipeBookRecipeEntry[] recipeEntries = recipeIds.Select(static recipeId => new RecipeBookRecipeEntry(recipeId, recipeId)).ToArray();
 
             switch (action)
             {
                 case 0:
-                    handler.OnRecipeBookAdd(recipeIds, replace: true);
+                    handler.OnRecipeBookAdd(recipeEntries, replace: true);
                     // INIT packets also include a second "to be displayed" recipe list.
                     // MCC only needs the unlocked recipe identifiers for listing/crafting.
                     _ = ReadRecipeBookRecipeIds(packetData);
                     break;
                 case 1:
-                    handler.OnRecipeBookAdd(recipeIds, replace: false);
-                    break;
                 case 3:
                     // Action 3 is the silent-add variant, so MCC tracks it like a regular add.
-                    handler.OnRecipeBookAdd(recipeIds, replace: false);
+                    handler.OnRecipeBookAdd(recipeEntries, replace: false);
                     break;
                 case 2:
                     handler.OnRecipeBookRemove(recipeIds);
@@ -3171,20 +3170,18 @@ namespace MinecraftClient.Protocol.Handlers
         private void HandleRecipeBookAdd(Queue<byte> packetData)
         {
             int entryCount = dataTypes.ReadNextVarInt(packetData);
-            string[] recipeIds = new string[entryCount];
+            RecipeBookRecipeEntry[] recipeEntries = new RecipeBookRecipeEntry[entryCount];
 
-            // RecipeBookAdd contains one entry per recipe:
-            // recipe id, notification flag, then highlight flag.
-            // MCC only tracks the unlocked recipe identifiers for now.
+            // 1.21.2+ RecipeBookAdd contains one display entry per recipe:
+            // RecipeDisplayEntry (display id, recipe display, group, category, optional requirements), then flags.
             for (int i = 0; i < entryCount; i++)
             {
-                recipeIds[i] = dataTypes.ReadNextString(packetData);
-                _ = dataTypes.ReadNextBool(packetData); // notification
-                _ = dataTypes.ReadNextBool(packetData); // highlight
+                recipeEntries[i] = ReadRecipeBookDisplayEntry(packetData);
+                _ = dataTypes.ReadNextByte(packetData); // flags
             }
 
             bool replace = dataTypes.ReadNextBool(packetData);
-            handler.OnRecipeBookAdd(recipeIds, replace);
+            handler.OnRecipeBookAdd(recipeEntries, replace);
         }
 
         private string[] ReadRecipeBookRecipeIds(Queue<byte> packetData)
@@ -3196,6 +3193,168 @@ namespace MinecraftClient.Protocol.Handlers
                 recipeIds[i] = dataTypes.ReadNextString(packetData);
 
             return recipeIds;
+        }
+
+        private string[] ReadRecipeBookDisplayIds(Queue<byte> packetData)
+        {
+            int recipeCount = dataTypes.ReadNextVarInt(packetData);
+            string[] recipeIds = new string[recipeCount];
+
+            for (int i = 0; i < recipeCount; i++)
+                recipeIds[i] = dataTypes.ReadNextVarInt(packetData).ToString(CultureInfo.InvariantCulture);
+
+            return recipeIds;
+        }
+
+        private RecipeBookRecipeEntry ReadRecipeBookDisplayEntry(Queue<byte> packetData)
+        {
+            int displayId = dataTypes.ReadNextVarInt(packetData);
+            string resultLabel = ReadRecipeDisplayResultLabel(packetData);
+
+            _ = dataTypes.ReadNextVarInt(packetData); // Optional group, encoded as varint+1 or 0
+            _ = dataTypes.ReadNextVarInt(packetData); // Recipe book category registry id
+            SkipOptionalCraftingRequirements(packetData);
+
+            string commandId = displayId.ToString(CultureInfo.InvariantCulture);
+            string displayText = $"{commandId}: {resultLabel}";
+            return new RecipeBookRecipeEntry(commandId, displayText);
+        }
+
+        private string ReadRecipeDisplayResultLabel(Queue<byte> packetData)
+        {
+            int displayType = dataTypes.ReadNextVarInt(packetData);
+            return displayType switch
+            {
+                0 => ReadShapelessRecipeDisplayResultLabel(packetData),
+                1 => ReadShapedRecipeDisplayResultLabel(packetData),
+                2 => ReadFurnaceRecipeDisplayResultLabel(packetData),
+                3 => ReadStonecutterRecipeDisplayResultLabel(packetData),
+                4 => ReadSmithingRecipeDisplayResultLabel(packetData),
+                _ => $"recipe_display_{displayType}",
+            };
+        }
+
+        private string ReadShapelessRecipeDisplayResultLabel(Queue<byte> packetData)
+        {
+            int ingredientCount = dataTypes.ReadNextVarInt(packetData);
+            for (int i = 0; i < ingredientCount; i++)
+                _ = ReadSlotDisplayLabel(packetData);
+
+            string result = ReadSlotDisplayLabel(packetData);
+            _ = ReadSlotDisplayLabel(packetData); // crafting station
+            return result;
+        }
+
+        private string ReadShapedRecipeDisplayResultLabel(Queue<byte> packetData)
+        {
+            _ = dataTypes.ReadNextVarInt(packetData); // width
+            _ = dataTypes.ReadNextVarInt(packetData); // height
+            int ingredientCount = dataTypes.ReadNextVarInt(packetData);
+            for (int i = 0; i < ingredientCount; i++)
+                _ = ReadSlotDisplayLabel(packetData);
+
+            string result = ReadSlotDisplayLabel(packetData);
+            _ = ReadSlotDisplayLabel(packetData); // crafting station
+            return result;
+        }
+
+        private string ReadFurnaceRecipeDisplayResultLabel(Queue<byte> packetData)
+        {
+            _ = ReadSlotDisplayLabel(packetData); // ingredient
+            _ = ReadSlotDisplayLabel(packetData); // fuel
+            string result = ReadSlotDisplayLabel(packetData);
+            _ = ReadSlotDisplayLabel(packetData); // crafting station
+            _ = dataTypes.ReadNextVarInt(packetData); // duration
+            _ = dataTypes.ReadNextFloat(packetData); // experience
+            return result;
+        }
+
+        private string ReadStonecutterRecipeDisplayResultLabel(Queue<byte> packetData)
+        {
+            _ = ReadSlotDisplayLabel(packetData); // input
+            string result = ReadSlotDisplayLabel(packetData);
+            _ = ReadSlotDisplayLabel(packetData); // crafting station
+            return result;
+        }
+
+        private string ReadSmithingRecipeDisplayResultLabel(Queue<byte> packetData)
+        {
+            _ = ReadSlotDisplayLabel(packetData); // template
+            _ = ReadSlotDisplayLabel(packetData); // base
+            _ = ReadSlotDisplayLabel(packetData); // addition
+            string result = ReadSlotDisplayLabel(packetData);
+            _ = ReadSlotDisplayLabel(packetData); // crafting station
+            return result;
+        }
+
+        private string ReadSlotDisplayLabel(Queue<byte> packetData)
+        {
+            int slotDisplayType = dataTypes.ReadNextVarInt(packetData);
+            return slotDisplayType switch
+            {
+                0 => "Empty",
+                1 => "Any Fuel",
+                2 => Item.GetTypeString(itemPalette.FromId(dataTypes.ReadNextVarInt(packetData))),
+                3 => dataTypes.ReadNextItemSlot(packetData, itemPalette)?.GetTypeString() ?? "Empty",
+                4 => "#" + dataTypes.ReadNextString(packetData),
+                5 => ReadSmithingTrimSlotDisplayLabel(packetData),
+                6 => ReadWithRemainderSlotDisplayLabel(packetData),
+                7 => ReadCompositeSlotDisplayLabel(packetData),
+                _ => $"slot_display_{slotDisplayType}",
+            };
+        }
+
+        private string ReadSmithingTrimSlotDisplayLabel(Queue<byte> packetData)
+        {
+            string baseLabel = ReadSlotDisplayLabel(packetData);
+            _ = ReadSlotDisplayLabel(packetData); // material
+            _ = dataTypes.ReadNextVarInt(packetData); // trim pattern registry id
+            return baseLabel;
+        }
+
+        private string ReadWithRemainderSlotDisplayLabel(Queue<byte> packetData)
+        {
+            string inputLabel = ReadSlotDisplayLabel(packetData);
+            _ = ReadSlotDisplayLabel(packetData); // remainder
+            return inputLabel;
+        }
+
+        private string ReadCompositeSlotDisplayLabel(Queue<byte> packetData)
+        {
+            int optionCount = dataTypes.ReadNextVarInt(packetData);
+            string label = "Composite";
+
+            for (int i = 0; i < optionCount; i++)
+            {
+                string optionLabel = ReadSlotDisplayLabel(packetData);
+                if (label == "Composite" && optionLabel is not "Empty" and not "Composite")
+                    label = optionLabel;
+            }
+
+            return label;
+        }
+
+        private void SkipOptionalCraftingRequirements(Queue<byte> packetData)
+        {
+            if (!dataTypes.ReadNextBool(packetData))
+                return;
+
+            int ingredientCount = dataTypes.ReadNextVarInt(packetData);
+            for (int i = 0; i < ingredientCount; i++)
+                SkipItemHolderSet(packetData);
+        }
+
+        private void SkipItemHolderSet(Queue<byte> packetData)
+        {
+            int entryCount = dataTypes.ReadNextVarInt(packetData) - 1;
+            if (entryCount == -1)
+            {
+                _ = dataTypes.ReadNextString(packetData);
+                return;
+            }
+
+            for (int i = 0; i < entryCount; i++)
+                _ = dataTypes.ReadNextVarInt(packetData);
         }
 
         private bool SkipRecipeBookSettings(Queue<byte> packetData)
@@ -5111,7 +5270,10 @@ namespace MinecraftClient.Protocol.Handlers
                     return false;
 
                 packet.AddRange(DataTypes.GetVarInt(windowId));
-                packet.AddRange(dataTypes.GetString(recipeId));
+                if (protocolVersion >= MC_1_21_2_Version)
+                    packet.AddRange(DataTypes.GetVarInt(int.Parse(recipeId, CultureInfo.InvariantCulture)));
+                else
+                    packet.AddRange(dataTypes.GetString(recipeId));
                 packet.AddRange(dataTypes.GetBool(makeAll));
                 SendPacket(PacketTypesOut.CraftRecipeRequest, packet);
                 return true;
