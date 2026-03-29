@@ -651,6 +651,79 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>recipebook</code></summary>
+
+- **Description:**
+
+  List unlocked recipe book entries and ask the server to place one of them into the active crafting inventory.
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this command to work.**
+
+  </div>
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **`craft` and `craftall` need an active player crafting grid, crafting table, furnace, blast furnace, smoker, or stonecutter inventory.**
+
+  </div>
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  **Recipe book crafting is supported on Minecraft `1.13+`.**
+
+  </div>
+
+  `list` shows the recipe book entries MCC is currently tracking.
+
+  On newer versions, the list can contain numeric display ids instead of plain recipe names. If you see something like `838: Oak Planks`, use `838` with `craft` or `craftall`.
+
+  `craft` and `craftall` send a recipe-book request to the server. They do not automatically take the result item for you. After the recipe appears in the active inventory, take the output slot the same way you would handle any other inventory action.
+
+- **Usage:**
+
+  ```
+  /recipebook list
+  ```
+
+  ```
+  /recipebook craft <recipe id>
+  ```
+
+  ```
+  /recipebook craftall <recipe id>
+  ```
+
+- **Examples:**
+
+  Show the currently tracked recipe book entries:
+
+  ```
+  /recipebook list
+  ```
+
+  Request one recipe placement:
+
+  ```
+  /recipebook craft minecraft:oak_planks
+  ```
+
+  On newer versions, use the numeric id shown by `/recipebook list`:
+
+  ```
+  /recipebook craftall 838
+  ```
+
+  If the recipe is placed in the player crafting grid, take the result from slot `0`:
+
+  ```
+  /inventory player click 0
+  ```
+
+</details>
+
+<details>
 <summary><code>connect</code></summary>
 
 - **Description:**
