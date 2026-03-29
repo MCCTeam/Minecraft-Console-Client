@@ -21,13 +21,14 @@ jobs:
     - name: Check skip CI
       id: check-skip
       run: |
-        MSG="${{ github.event.head_commit.message }}"
-        LOWER=$(echo "$MSG" | tr '[:upper:]' '[:lower:]')
+        LOWER=$(echo "$COMMIT_MSG" | tr '[:upper:]' '[:lower:]')
         if echo "$LOWER" | grep -qE 'skip.?ci|ci.?skip'; then
           echo "skip=true" >> $GITHUB_OUTPUT
         else
           echo "skip=false" >> $GITHUB_OUTPUT
-        fi      
+        fi
+      env:
+        COMMIT_MSG: ${{ github.event.head_commit.message }}
 
   fetch-translations:
     strategy:
@@ -221,12 +222,13 @@ jobs:
       - name: Truncate commit message for release name
         id: release-name
         run: |
-           RAW="${{ github.event.head_commit.message }}"
-           # Take only the first line (subject), then truncate to safe length
-           SUBJECT=$(echo "$RAW" | head -n 1)
-           MAX=220  # leave room for tag prefix + ": "
+           SUBJECT=$(echo "$COMMIT_MSG" | head -n 1)
+           MAX=220
            TRUNCATED="${SUBJECT:0:$MAX}"
-           echo "name=${{ needs.create-tag.outputs.build-tag }}: $TRUNCATED" >> $GITHUB_OUTPUT
+           echo "name=${BUILD_TAG}: $TRUNCATED" >> $GITHUB_OUTPUT
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          BUILD_TAG: ${{ needs.create-tag.outputs.build-tag }}
           
       - name: Create Release
         uses: ncipollo/release-action@v1.14.0
