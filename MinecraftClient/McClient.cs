@@ -44,10 +44,12 @@ namespace MinecraftClient
 
         private readonly Queue<Action> threadTasks = new();
         private readonly Lock threadTasksLock = new();
+        private readonly Lock recipeBookLock = new();
 
         private readonly List<ChatBot> bots = new();
         private static readonly List<ChatBot> botsOnHold = new();
         private static readonly Dictionary<int, Container> inventories = new();
+        private readonly Dictionary<string, RecipeBookRecipeEntry> unlockedRecipes = new(StringComparer.Ordinal);
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new();
         private readonly List<string> registeredServerPluginChannels = new();
@@ -1237,6 +1239,7 @@ namespace MinecraftClient
                 inventoryHandlingEnabled = false;
                 inventoryHandlingRequested = false;
                 inventories.Clear();
+                ClearUnlockedRecipes();
             }
             return true;
         }
@@ -1339,6 +1342,18 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get all unlocked recipe book recipe identifiers.
+        /// </summary>
+        /// <returns>Unlocked recipe identifiers sorted alphabetically</returns>
+        public RecipeBookRecipeEntry[] GetUnlockedRecipes()
+        {
+            lock (recipeBookLock)
+            {
+                return unlockedRecipes.Values.OrderBy(static recipe => recipe.CommandId, StringComparer.Ordinal).ToArray();
+            }
+        }
+
+        /// <summary>
         /// Get all Entities
         /// </summary>
         /// <returns>All Entities</returns>
@@ -1382,6 +1397,22 @@ namespace MinecraftClient
         public Container GetPlayerInventory()
         {
             return GetInventory(0)!;
+        }
+
+        /// <summary>
+        /// Get the currently active inventory if it supports recipe book crafting.
+        /// </summary>
+        /// <returns>Active recipe book inventory, or null if the active inventory does not support recipe book crafting</returns>
+        public Container? GetActiveRecipeBookInventory()
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => GetActiveRecipeBookInventory());
+
+            if (inventories.Count == 0)
+                return null;
+
+            Container activeInventory = inventories.MaxBy(static pair => pair.Key).Value;
+            return SupportsRecipeBook(activeInventory.Type) ? activeInventory : null;
         }
 
         /// <summary>
@@ -2476,6 +2507,7 @@ namespace MinecraftClient
 
             inventories.Clear();
             inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            ClearUnlockedRecipes();
             return true;
         }
 
@@ -2676,6 +2708,31 @@ namespace MinecraftClient
                 return false;
             
             return handler.SendRenameItem(itemName);
+        }
+
+        /// <summary>
+        /// Send a recipe book craft request for the currently active crafting inventory.
+        /// </summary>
+        /// <param name="recipeId">Recipe identifier to craft</param>
+        /// <param name="makeAll">True to craft as many items as possible</param>
+        /// <returns>True if the packet was sent</returns>
+        public bool SendPlaceRecipe(string recipeId, bool makeAll)
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SendPlaceRecipe(recipeId, makeAll));
+
+            if (protocolversion < Protocol18Handler.MC_1_13_Version)
+                return false;
+
+            Container? activeInventory = GetActiveRecipeBookInventory();
+            if (activeInventory is null)
+                return false;
+
+            string normalizedRecipeId = NormalizeRecipeArgument(recipeId, protocolversion);
+            if (normalizedRecipeId.Length == 0)
+                return false;
+
+            return handler.SendPlaceRecipe(activeInventory.ID, normalizedRecipeId, makeAll);
         }
         #endregion
 
@@ -4054,6 +4111,34 @@ namespace MinecraftClient
             Log.Debug("CanSendMessage = " + canSendMessage);
         }
 
+        public void OnRecipeBookAdd(RecipeBookRecipeEntry[] recipes, bool replace)
+        {
+            lock (recipeBookLock)
+            {
+                if (replace)
+                    unlockedRecipes.Clear();
+
+                foreach (RecipeBookRecipeEntry recipe in recipes)
+                {
+                    // Guard against malformed server packets that send empty display IDs.
+                    if (!string.IsNullOrWhiteSpace(recipe.CommandId))
+                        unlockedRecipes[recipe.CommandId] = recipe;
+                }
+            }
+        }
+
+        public void OnRecipeBookRemove(string[] recipeIds)
+        {
+            lock (recipeBookLock)
+            {
+                foreach (string recipeId in recipeIds)
+                {
+                    if (!string.IsNullOrWhiteSpace(recipeId))
+                        unlockedRecipes.Remove(recipeId);
+                }
+            }
+        }
+
         /// <summary>
         /// Send a click container button packet to the server.
         /// Used for Enchanting table, Lectern, stone cutter and loom
@@ -4065,6 +4150,51 @@ namespace MinecraftClient
         public bool ClickContainerButton(int windowId, int buttonId)
         {
             return handler.ClickContainerButton(windowId, buttonId);
+        }
+
+        private static bool SupportsRecipeBook(ContainerType containerType)
+        {
+            return containerType switch
+            {
+                ContainerType.PlayerInventory or
+                ContainerType.Crafting or
+                ContainerType.Furnace or
+                ContainerType.BlastFurnace or
+                ContainerType.Smoker or
+                ContainerType.Stonecutter => true,
+                _ => false,
+            };
+        }
+
+        private void ClearUnlockedRecipes()
+        {
+            lock (recipeBookLock)
+            {
+                unlockedRecipes.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Normalize a recipe argument for the target protocol version.
+        /// Legacy recipe-book packets use identifiers and default to the minecraft namespace.
+        /// 1.21.2+ recipe-book packets use numeric recipe display ids and should be left trimmed-only.
+        /// </summary>
+        internal static string NormalizeRecipeArgument(string recipeId, int protocolVersion)
+        {
+            return protocolVersion >= Protocol18Handler.MC_1_21_2_Version
+                ? recipeId.Trim()
+                : NormalizeRecipeId(recipeId);
+        }
+
+        private static string NormalizeRecipeId(string recipeId)
+        {
+            string trimmedRecipeId = recipeId.Trim();
+            if (trimmedRecipeId.Length == 0)
+                return string.Empty;
+
+            return trimmedRecipeId.Contains(':', StringComparison.Ordinal)
+                ? trimmedRecipeId
+                : "minecraft:" + trimmedRecipeId;
         }
 
         #endregion
