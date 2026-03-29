@@ -852,7 +852,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Connecting as:</value>
   </data>
   <data name="mcc.server_info.label_online" xml:space="preserve">
-    <value>Online:</value>
+    <value>Online Players:</value>
   </data>
   <data name="mcc.server_info.sample_more" xml:space="preserve">
     <value>... +{0}</value>

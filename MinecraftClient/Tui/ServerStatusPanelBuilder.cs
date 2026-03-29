@@ -19,6 +19,7 @@ namespace MinecraftClient.Tui
             if (info.FaviconBase64 is not null)
             {
                 var iconGrid = BuildFaviconGrid(info.FaviconBase64, FaviconDisplaySize);
+                iconGrid.VerticalAlignment = VerticalAlignment.Center;
                 DockPanel.SetDock(iconGrid, Dock.Left);
                 contentPanel.Children.Add(iconGrid);
             }
@@ -83,9 +84,10 @@ namespace MinecraftClient.Tui
 
         private static void AddVersion(StackPanel panel, Protocol.ServerStatusInfo info)
         {
+            string versionClean = Scripting.ChatBot.GetVerbatim(info.VersionName);
             var row = new TextBlock();
             row.Inlines!.Add(Label(Translations.mcc_server_info_label_version));
-            row.Inlines.Add(Value(info.VersionName, McColors.Aqua));
+            row.Inlines.Add(Value(versionClean, McColors.Aqua));
             row.Inlines.Add(new Run(" (") { Foreground = McColors.Gray });
             row.Inlines.Add(new Run(string.Format(Translations.mcc_server_info_label_protocol, info.ProtocolVersion))
                 { Foreground = McColors.Gray });
@@ -95,7 +97,7 @@ namespace MinecraftClient.Tui
 
         private static void AddConnectingAs(StackPanel panel, Protocol.ServerStatusInfo info)
         {
-            if (info.ResolvedProtocol == 0 || info.ResolvedProtocol == info.ProtocolVersion)
+            if (info.ResolvedProtocol == 0)
                 return;
 
             string resolvedMcVer = Protocol.ProtocolHandler.ProtocolVersion2MCVer(info.ResolvedProtocol);
@@ -146,17 +148,20 @@ namespace MinecraftClient.Tui
             {
                 Text = Translations.mcc_server_info_label_online,
                 Foreground = McColors.Gray,
-                Margin = new Thickness(0, 1, 0, 0),
             });
 
             int shown = Math.Min(info.SamplePlayers.Count, MaxSamplePlayers);
             for (int i = 0; i < shown; i++)
             {
-                panel.Children.Add(new TextBlock
-                {
-                    Text = $"  {info.SamplePlayers[i].Name}",
-                    Foreground = McColors.Green,
-                });
+                string name = info.SamplePlayers[i].Name;
+                if (name.Contains('\u00a7'))
+                    panel.Children.Add(McColorParser.CreateColoredTextBlock($"  {name}", TextWrapping.NoWrap));
+                else
+                    panel.Children.Add(new TextBlock
+                    {
+                        Text = $"  {name}",
+                        Foreground = McColors.Green,
+                    });
             }
 
             if (info.SamplePlayers.Count > shown)
