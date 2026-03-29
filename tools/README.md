@@ -135,6 +135,44 @@ Data source: `https://raw.githubusercontent.com/PrismarineJS/minecraft-data/mast
 
 Uses `curl` with resume (`-C -`) for reliable download over slow connections. Falls back to manual download if retries are exhausted.
 
+## gen_block_color_map.py -- Generate minimap block color JSON
+
+Extracts block-to-MapColor RGB mappings from decompiled Minecraft source for the TUI minimap.
+
+```bash
+python3 tools/gen_block_color_map.py MinecraftOfficial/26.1-rc-2-decompiled
+# -> MinecraftClient/Tui/MinimapBlockColors.json
+```
+
+Parses three files from the decompiled source:
+- `MapColor.java` -- extracts the 64 base MapColor constants and their RGB values
+- `DyeColor.java` -- maps dye colors to MapColor constants
+- `Blocks.java` -- determines each block's assigned MapColor via `.mapColor()` calls
+
+Output: `MinecraftClient/Tui/MinimapBlockColors.json` (embedded as a resource via `.csproj`). Contains color entries, plus lists of transparent, water, and ice materials.
+
+Validates each block name against MCC's `Material.cs` enum. Blocks without a matching enum value are skipped.
+
+## gen_entity_category_map.py -- Generate minimap entity category JSON
+
+Extracts entity-to-MobCategory mappings from decompiled Minecraft source for the TUI minimap.
+
+```bash
+python3 tools/gen_entity_category_map.py MinecraftOfficial/26.1-rc-2-decompiled
+# -> MinecraftClient/Tui/MinimapEntityCategories.json
+```
+
+Parses `EntityType.java` to read each entity's `MobCategory` assignment from the `EntityType.Builder.of(Factory, MobCategory.XXX)` call. Maps Minecraft categories to MCC minimap categories:
+- `MONSTER` -> hostile
+- `CREATURE`/`AMBIENT`/`AXOLOTLS`/`WATER_*` -> passive
+- `MISC` -> non_living
+
+The script maintains manual override lists for:
+- **Neutral mobs** (e.g. Enderman, Spider, Wolf, Bee) -- Minecraft has no "neutral" category; these are MONSTER or CREATURE in code but only attack when provoked
+- **Passive overrides** (e.g. Villager, WanderingTrader) -- classified as MISC in Minecraft for spawning reasons but should appear as passive on the minimap
+
+Output: `MinecraftClient/Tui/MinimapEntityCategories.json` (embedded as a resource via `.csproj`). Validates each entity name against MCC's `EntityType.cs` enum.
+
 ## Recommended workflow
 
 1. Generate server reports (Step 0)
@@ -145,6 +183,9 @@ Uses `curl` with resume (`-C -`) for reliable download over slow connections. Fa
    - Entities: `gen_entity_palette.py`
    - Metadata: `gen_entity_metadata_palette.py`
 4. Update block collision shapes: `gen_block_shapes.py`
-5. Add any missing enum values to `ItemType.cs`, `Material.cs`, `EntityType.cs`, `EntityMetaDataType.cs`
-6. Update version routing (see SKILL.md)
-7. Build and test
+5. Update minimap data (if blocks or entities changed):
+   - Block colors: `gen_block_color_map.py`
+   - Entity categories: `gen_entity_category_map.py`
+6. Add any missing enum values to `ItemType.cs`, `Material.cs`, `EntityType.cs`, `EntityMetaDataType.cs`
+7. Update version routing (see SKILL.md)
+8. Build and test

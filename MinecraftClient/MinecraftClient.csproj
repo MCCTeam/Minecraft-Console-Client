@@ -20,6 +20,8 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Physics\BlockShapeData.json" LogicalName="BlockShapeData.json" />
+    <EmbeddedResource Include="Tui\MinimapBlockColors.json" LogicalName="MinimapBlockColors.json" />
+    <EmbeddedResource Include="Tui\MinimapEntityCategories.json" LogicalName="MinimapEntityCategories.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Protocol\Handlers\Compression\**" />
