@@ -830,6 +830,36 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
   <data name="botname.TestBot" xml:space="preserve">
     <value>TestBot</value>
   </data>
+  <data name="mcc.server_info.label_server" xml:space="preserve">
+    <value>Server:</value>
+  </data>
+  <data name="mcc.server_info.label_version" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="mcc.server_info.label_protocol" xml:space="preserve">
+    <value>Protocol: {0}</value>
+  </data>
+  <data name="mcc.server_info.label_players" xml:space="preserve">
+    <value>Players:</value>
+  </data>
+  <data name="mcc.server_info.label_ping" xml:space="preserve">
+    <value>Ping:</value>
+  </data>
+  <data name="mcc.server_info.label_ping_ms" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="mcc.server_info.label_connecting_as" xml:space="preserve">
+    <value>Connecting as:</value>
+  </data>
+  <data name="mcc.server_info.label_online" xml:space="preserve">
+    <value>Online:</value>
+  </data>
+  <data name="mcc.server_info.sample_more" xml:space="preserve">
+    <value>... +{0}</value>
+  </data>
+  <data name="mcc.server_info.version_upgrade" xml:space="preserve">
+    <value>Server reported protocol {0} ({1}), upgraded to {2} ({3}) for best compatibility</value>
+  </data>
   <data name="cache.converting" xml:space="preserve">
     <value>Converting session cache from disk: {0}</value>
   </data>
@@ -2015,10 +2045,10 @@ MCC is running with default settings.</value>
     <value>Server is in offline mode.</value>
   </data>
   <data name="mcc.server_protocol" xml:space="preserve">
-    <value>Server version : {0} (protocol v{1})</value>
+    <value>Server version: {0} (protocol v{1})</value>
   </data>
   <data name="mcc.server_version" xml:space="preserve">
-    <value>Server version : </value>
+    <value>Server version: </value>
   </data>
   <data name="mcc.session" xml:space="preserve">
     <value>Checking Session...</value>
