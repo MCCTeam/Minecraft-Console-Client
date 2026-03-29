@@ -3283,14 +3283,13 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             // Also build Achievement records for progress-only updates (no definition change)
-            var progressOnly = new List<Achievement>();
             foreach (var (id, criteria) in progressMap)
             {
                 if (!addedDefinitions.ContainsKey(id))
-                    progressOnly.Add(new Achievement(id, null, null, AchievementType.Task, false, false, [], criteria));
+                    added.Add(new Achievement(id, null, null, AchievementType.Task, false, false, [], criteria));
             }
 
-            handler.OnAchievementsUpdate([.. added, .. progressOnly], removedIds, reset);
+            handler.OnAchievementsUpdate(added, removedIds, reset);
         }
 
         /// <summary>
