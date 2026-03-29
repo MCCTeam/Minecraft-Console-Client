@@ -2269,6 +2269,66 @@ namespace MinecraftClient {
             }
         }
         
+        internal static string mcc_server_info_label_server {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_server", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_version {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_version", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_protocol {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_protocol", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_players {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_players", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_ping {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_ping", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_ping_ms {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_ping_ms", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_connecting_as {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_connecting_as", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_online {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_online", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_sample_more {
+            get {
+                return ResourceManager.GetString("mcc.server_info.sample_more", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_version_upgrade {
+            get {
+                return ResourceManager.GetString("mcc.server_info.version_upgrade", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Converting session cache from disk: {0}.
         /// </summary>

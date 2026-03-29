@@ -52,6 +52,8 @@ namespace MinecraftClient.Tui
             IBrush currentColor = Brushes.White;
             bool bold = false;
             bool italic = false;
+            bool underline = false;
+            bool strikethrough = false;
             int start = 0;
 
             for (int i = 0; i < text.Length; i++)
@@ -59,7 +61,7 @@ namespace MinecraftClient.Tui
                 if (text[i] == '§' && i + 1 < text.Length)
                 {
                     if (i > start)
-                        AddRun(tb, text[start..i], currentColor, bold, italic);
+                        AddRun(tb, text[start..i], currentColor, bold, italic, underline, strikethrough);
 
                     char code = char.ToLower(text[i + 1]);
 
@@ -68,6 +70,8 @@ namespace MinecraftClient.Tui
                         currentColor = brush;
                         bold = false;
                         italic = false;
+                        underline = false;
+                        strikethrough = false;
                     }
                     else
                     {
@@ -75,10 +79,14 @@ namespace MinecraftClient.Tui
                         {
                             case 'l': bold = true; break;
                             case 'o': italic = true; break;
+                            case 'n': underline = true; break;
+                            case 'm': strikethrough = true; break;
                             case 'r':
                                 currentColor = Brushes.White;
                                 bold = false;
                                 italic = false;
+                                underline = false;
+                                strikethrough = false;
                                 break;
                         }
                     }
@@ -89,7 +97,7 @@ namespace MinecraftClient.Tui
             }
 
             if (start < text.Length)
-                AddRun(tb, text[start..], currentColor, bold, italic);
+                AddRun(tb, text[start..], currentColor, bold, italic, underline, strikethrough);
 
             if (tb.Inlines?.Count == 0)
             {
@@ -100,16 +108,29 @@ namespace MinecraftClient.Tui
             return tb;
         }
 
-        private static void AddRun(TextBlock tb, string text, IBrush color, bool bold, bool italic)
+        private static void AddRun(TextBlock tb, string text, IBrush color,
+            bool bold, bool italic, bool underline, bool strikethrough)
         {
             if (text.Length == 0) return;
 
             tb.Inlines ??= new InlineCollection();
+
+            TextDecorationCollection? decorations = null;
+            if (underline || strikethrough)
+            {
+                decorations = [];
+                if (underline)
+                    decorations.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
+                if (strikethrough)
+                    decorations.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
+            }
+
             tb.Inlines.Add(new Run(text)
             {
                 Foreground = color,
                 FontWeight = bold ? FontWeight.Bold : FontWeight.Normal,
                 FontStyle = italic ? FontStyle.Italic : FontStyle.Normal,
+                TextDecorations = decorations,
             });
         }
     }

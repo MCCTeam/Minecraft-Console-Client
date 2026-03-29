@@ -1171,5 +1171,18 @@ namespace MinecraftClient.Tui
                 _commandInput.Focus();
             }, DispatcherPriority.Loaded);
         }
+
+        #region Custom Control Append
+
+        public void AppendControlToLog(Control control)
+        {
+            _logLines.Add(string.Empty);
+            _logControls.Add(control);
+            TrimLog();
+            if (_autoScroll)
+                ScheduleScrollToEnd();
+        }
+
+        #endregion
     }
 }

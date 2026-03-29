@@ -449,7 +449,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 McClient.Instance?.GetCookie(cookieName, out cookieData);
                                 SendCookieResponse(cookieName, cookieData);
                                 break;
-                            
+
                             // Ignore other packets at this stage
                             default:
                                 return true;
@@ -467,7 +467,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 McClient.Instance?.GetCookie(cookieName, out cookieData);
                                 SendCookieResponse(cookieName, cookieData);
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.Disconnect:
                                 handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick,
                                     dataTypes.ReadNextChat(packetData));
@@ -509,7 +509,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     var dimensionIdMap = isDimension ? new Dictionary<int, string>() : null;
                                     var attributeIdMap = isAttribute ? new Dictionary<int, string>() : null;
                                     var enchantmentIdMap = isEnchantment ? new Dictionary<int, string>() : null;
-                                    
+
                                     for (var i = 0; i < entryCount; i++)
                                     {
                                         var entryId = dataTypes.ReadNextString(packetData);
@@ -537,7 +537,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         else if (isEnchantment)
                                             enchantmentIdMap!.Add(i, entryId);
                                     }
-                                    
+
                                     if (isChat)
                                         ChatParser.ReadChatType(availableChats!);
                                     else if (isDimension)
@@ -553,7 +553,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.RemoveResourcePack:
                                 if (dataTypes.ReadNextBool(packetData)) // Has UUID
                                     dataTypes.ReadNextUUID(packetData); // UUID
@@ -562,24 +562,24 @@ namespace MinecraftClient.Protocol.Handlers
                             case ConfigurationPacketTypesIn.ResourcePack:
                                 HandleResourcePackPacket(packetData);
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.StoreCookie:
                                 var name = dataTypes.ReadNextString(packetData);
                                 var data = dataTypes.ReadNextByteArray(packetData);
                                 McClient.Instance?.SetCookie(name, data);
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.Transfer:
                                 var host = dataTypes.ReadNextString(packetData);
                                 var port = dataTypes.ReadNextVarInt(packetData);
-                                    
+
                                 McClient.Instance?.Transfer(host, port);
                                 break;
-                            
+
                             case ConfigurationPacketTypesIn.KnownDataPacks:
                                 var knownPacksCount = dataTypes.ReadNextVarInt(packetData);
                                 List<(string, string, string)> knownDataPacks = new();
-                                
+
                                 for (var i = 0; i < knownPacksCount; i++)
                                 {
                                     var nameSpace = dataTypes.ReadNextString(packetData);
@@ -645,7 +645,7 @@ namespace MinecraftClient.Protocol.Handlers
                         currentState == CurrentState.Login,
                         innerException.GetType()),
                     innerException);
-                
+
                 SentrySdk.AddBreadcrumb(new Breadcrumb("S -> C Packet", "network", new Dictionary<string, string>()
                 {
                     { "Packet ID", packetId.ToString() },
@@ -786,26 +786,26 @@ namespace MinecraftClient.Protocol.Handlers
                         switch (protocolVersion)
                         {
                             case >= MC_1_16_Version:
-                            {
-                                switch (protocolVersion)
                                 {
-                                    case >= MC_1_19_Version:
-                                        dimensionTypeName =
-                                            dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
-                                        break;
-                                    case >= MC_1_16_2_Version:
-                                        dimensionType =
-                                            dataTypes.ReadNextNbt(
-                                                packetData); // Dimension Type: NBT Tag Compound
-                                        break;
-                                    default:
-                                        dataTypes.ReadNextString(packetData);
-                                        break;
-                                }
+                                    switch (protocolVersion)
+                                    {
+                                        case >= MC_1_19_Version:
+                                            dimensionTypeName =
+                                                dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
+                                            break;
+                                        case >= MC_1_16_2_Version:
+                                            dimensionType =
+                                                dataTypes.ReadNextNbt(
+                                                    packetData); // Dimension Type: NBT Tag Compound
+                                            break;
+                                        default:
+                                            dataTypes.ReadNextString(packetData);
+                                            break;
+                                    }
 
-                                currentDimension = 0;
-                                break;
-                            }
+                                    currentDimension = 0;
+                                    break;
+                                }
                             case >= MC_1_9_1_Version:
                                 currentDimension = dataTypes.ReadNextInt(packetData);
                                 break;
@@ -820,27 +820,27 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.ReadNextByte(packetData); // Difficulty - 1.13 and below
                                 break;
                             case >= MC_1_16_Version:
-                            {
-                                var dimensionName =
-                                    dataTypes.ReadNextString(
-                                        packetData); // Dimension Name (World Name) - 1.16 and above
-
-                                if (handler.GetTerrainEnabled())
                                 {
-                                    switch (protocolVersion)
-                                    {
-                                        case >= MC_1_16_2_Version and <= MC_1_18_2_Version:
-                                            World.StoreOneDimension(dimensionName, dimensionType!);
-                                            World.SetDimension(dimensionName);
-                                            break;
-                                        default:
-                                            World.SetDimension(dimensionTypeName!);
-                                            break;
-                                    }
-                                }
+                                    var dimensionName =
+                                        dataTypes.ReadNextString(
+                                            packetData); // Dimension Name (World Name) - 1.16 and above
 
-                                break;
-                            }
+                                    if (handler.GetTerrainEnabled())
+                                    {
+                                        switch (protocolVersion)
+                                        {
+                                            case >= MC_1_16_2_Version and <= MC_1_18_2_Version:
+                                                World.StoreOneDimension(dimensionName, dimensionType!);
+                                                World.SetDimension(dimensionName);
+                                                break;
+                                            default:
+                                                World.SetDimension(dimensionTypeName!);
+                                                break;
+                                        }
+                                    }
+
+                                    break;
+                                }
                         }
                     }
 
@@ -1354,7 +1354,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.Respawn:
                     string? dimensionTypeNameRespawn = null;
                     Dictionary<string, object>? dimensionTypeRespawn = null;
-                    
+
                     if (protocolVersion >= MC_1_16_Version)
                     {
                         switch (protocolVersion)
@@ -1386,27 +1386,27 @@ namespace MinecraftClient.Protocol.Handlers
                     switch (protocolVersion)
                     {
                         case >= MC_1_16_Version:
-                        {
-                            var dimensionName =
-                                dataTypes.ReadNextString(
-                                    packetData); // Dimension Name (World Name) - 1.16 and above
-
-                            if (handler.GetTerrainEnabled())
                             {
-                                switch (protocolVersion)
-                                {
-                                    case >= MC_1_16_2_Version and <= MC_1_18_2_Version:
-                                        World.StoreOneDimension(dimensionName, dimensionTypeRespawn!);
-                                        World.SetDimension(dimensionName);
-                                        break;
-                                    default:
-                                        World.SetDimension(dimensionTypeNameRespawn!);
-                                        break;
-                                }
-                            }
+                                var dimensionName =
+                                    dataTypes.ReadNextString(
+                                        packetData); // Dimension Name (World Name) - 1.16 and above
 
-                            break;
-                        }
+                                if (handler.GetTerrainEnabled())
+                                {
+                                    switch (protocolVersion)
+                                    {
+                                        case >= MC_1_16_2_Version and <= MC_1_18_2_Version:
+                                            World.StoreOneDimension(dimensionName, dimensionTypeRespawn!);
+                                            World.SetDimension(dimensionName);
+                                            break;
+                                        default:
+                                            World.SetDimension(dimensionTypeNameRespawn!);
+                                            break;
+                                    }
+                                }
+
+                                break;
+                            }
                         case < MC_1_14_Version:
                             dataTypes.ReadNextByte(packetData); // Difficulty - 1.13 and below
                             break;
@@ -1453,77 +1453,77 @@ namespace MinecraftClient.Protocol.Handlers
                     handler.OnRespawn();
                     break;
                 case PacketTypesIn.PlayerPositionAndLook:
-                {
-                    int teleportId;
-                    Location location;
-                    float yaw, pitch;
-                    int locMask;
+                    {
+                        int teleportId;
+                        Location location;
+                        float yaw, pitch;
+                        int locMask;
 
-                    if (protocolVersion >= MC_1_21_2_Version)
-                    {
-                        teleportId = dataTypes.ReadNextVarInt(packetData);
-                        location = new Location(
-                            dataTypes.ReadNextDouble(packetData), // X
-                            dataTypes.ReadNextDouble(packetData), // Y
-                            dataTypes.ReadNextDouble(packetData)  // Z
-                        );
-                        dataTypes.ReadNextDouble(packetData); // Delta X
-                        dataTypes.ReadNextDouble(packetData); // Delta Y
-                        dataTypes.ReadNextDouble(packetData); // Delta Z
-                        yaw = dataTypes.ReadNextFloat(packetData);
-                        pitch = dataTypes.ReadNextFloat(packetData);
-                        locMask = dataTypes.ReadNextInt(packetData); // Int flags (was Byte before 1.21.2)
-                    }
-                    else
-                    {
-                        location = new Location(
-                            dataTypes.ReadNextDouble(packetData), // X
-                            dataTypes.ReadNextDouble(packetData), // Y
-                            dataTypes.ReadNextDouble(packetData)  // Z
-                        );
-                        yaw = dataTypes.ReadNextFloat(packetData);
-                        pitch = dataTypes.ReadNextFloat(packetData);
-                        locMask = dataTypes.ReadNextByte(packetData);
-                        teleportId = protocolVersion >= MC_1_9_Version
-                            ? dataTypes.ReadNextVarInt(packetData) : -1;
-                    }
-
-                    if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
-                    {
-                        if (protocolVersion >= MC_1_8_Version)
+                        if (protocolVersion >= MC_1_21_2_Version)
                         {
-                            var currentLocation = handler.GetCurrentLocation();
-                            location.X = (locMask & 1 << 0) != 0 ? currentLocation.X + location.X : location.X;
-                            location.Y = (locMask & 1 << 1) != 0 ? currentLocation.Y + location.Y : location.Y;
-                            location.Z = (locMask & 1 << 2) != 0 ? currentLocation.Z + location.Z : location.Z;
+                            teleportId = dataTypes.ReadNextVarInt(packetData);
+                            location = new Location(
+                                dataTypes.ReadNextDouble(packetData), // X
+                                dataTypes.ReadNextDouble(packetData), // Y
+                                dataTypes.ReadNextDouble(packetData)  // Z
+                            );
+                            dataTypes.ReadNextDouble(packetData); // Delta X
+                            dataTypes.ReadNextDouble(packetData); // Delta Y
+                            dataTypes.ReadNextDouble(packetData); // Delta Z
+                            yaw = dataTypes.ReadNextFloat(packetData);
+                            pitch = dataTypes.ReadNextFloat(packetData);
+                            locMask = dataTypes.ReadNextInt(packetData); // Int flags (was Byte before 1.21.2)
                         }
-                    }
-
-                    if (teleportId >= 0)
-                    {
-                        LastYaw = yaw;
-                        LastPitch = pitch;
-                        handler.UpdateLocation(location, yaw, pitch);
-                        SendPacket(PacketTypesOut.TeleportConfirm, DataTypes.GetVarInt(teleportId));
-
-                        if (Config.Main.Advanced.TemporaryFixBadpacket)
+                        else
                         {
-                            SendLocationUpdate(location, true, false, yaw, pitch, true);
+                            location = new Location(
+                                dataTypes.ReadNextDouble(packetData), // X
+                                dataTypes.ReadNextDouble(packetData), // Y
+                                dataTypes.ReadNextDouble(packetData)  // Z
+                            );
+                            yaw = dataTypes.ReadNextFloat(packetData);
+                            pitch = dataTypes.ReadNextFloat(packetData);
+                            locMask = dataTypes.ReadNextByte(packetData);
+                            teleportId = protocolVersion >= MC_1_9_Version
+                                ? dataTypes.ReadNextVarInt(packetData) : -1;
+                        }
 
-                            if (teleportId == 1)
+                        if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
+                        {
+                            if (protocolVersion >= MC_1_8_Version)
+                            {
+                                var currentLocation = handler.GetCurrentLocation();
+                                location.X = (locMask & 1 << 0) != 0 ? currentLocation.X + location.X : location.X;
+                                location.Y = (locMask & 1 << 1) != 0 ? currentLocation.Y + location.Y : location.Y;
+                                location.Z = (locMask & 1 << 2) != 0 ? currentLocation.Z + location.Z : location.Z;
+                            }
+                        }
+
+                        if (teleportId >= 0)
+                        {
+                            LastYaw = yaw;
+                            LastPitch = pitch;
+                            handler.UpdateLocation(location, yaw, pitch);
+                            SendPacket(PacketTypesOut.TeleportConfirm, DataTypes.GetVarInt(teleportId));
+
+                            if (Config.Main.Advanced.TemporaryFixBadpacket)
+                            {
                                 SendLocationUpdate(location, true, false, yaw, pitch, true);
-                        }
-                    }
-                    else
-                    {
-                        handler.UpdateLocation(location, yaw, pitch);
-                        LastYaw = yaw;
-                        LastPitch = pitch;
-                    }
 
-                    if (protocolVersion is >= MC_1_17_Version and < MC_1_19_4_Version)
-                        dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 to 1.19.3
-                }
+                                if (teleportId == 1)
+                                    SendLocationUpdate(location, true, false, yaw, pitch, true);
+                            }
+                        }
+                        else
+                        {
+                            handler.UpdateLocation(location, yaw, pitch);
+                            LastYaw = yaw;
+                            LastPitch = pitch;
+                        }
+
+                        if (protocolVersion is >= MC_1_17_Version and < MC_1_19_4_Version)
+                            dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 to 1.19.3
+                    }
                     break;
                 case PacketTypesIn.ChunkData:
                     if (handler.GetTerrainEnabled())
@@ -1679,26 +1679,26 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 // 1.8 - 1.13
                                 case < MC_1_13_2_Version:
-                                {
-                                    var directionAndType = dataTypes.ReadNextByte(packetData);
-                                    byte direction, type;
-
-                                    // 1.12.2+
-                                    if (protocolVersion >= MC_1_12_2_Version)
                                     {
-                                        direction = (byte)(directionAndType & 0xF);
-                                        type = (byte)(directionAndType >> 4 & 0xF);
-                                    }
-                                    else // 1.8 - 1.12
-                                    {
-                                        direction = (byte)(directionAndType >> 4 & 0xF);
-                                        type = (byte)(directionAndType & 0xF);
-                                    }
+                                        var directionAndType = dataTypes.ReadNextByte(packetData);
+                                        byte direction, type;
 
-                                    mapIcon.Type = (MapIconType)type;
-                                    mapIcon.Direction = direction;
-                                    break;
-                                }
+                                        // 1.12.2+
+                                        if (protocolVersion >= MC_1_12_2_Version)
+                                        {
+                                            direction = (byte)(directionAndType & 0xF);
+                                            type = (byte)(directionAndType >> 4 & 0xF);
+                                        }
+                                        else // 1.8 - 1.12
+                                        {
+                                            direction = (byte)(directionAndType >> 4 & 0xF);
+                                            type = (byte)(directionAndType & 0xF);
+                                        }
+
+                                        mapIcon.Type = (MapIconType)type;
+                                        mapIcon.Direction = direction;
+                                        break;
+                                    }
                                 // 1.13.2+
                                 case >= MC_1_13_2_Version:
                                     mapIcon.Type = (MapIconType)dataTypes.ReadNextVarInt(packetData);
@@ -2290,7 +2290,7 @@ namespace MinecraftClient.Protocol.Handlers
                     handler.OnPluginChannelMessage(channel, packetData.ToArray());
                     return pForge.HandlePluginMessage(channel, packetData, ref currentDimension);
                 case PacketTypesIn.Disconnect:
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, 
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick,
                         dataTypes.ReadNextChat(packetData));
                     return false;
                 case PacketTypesIn.SetCompression:
@@ -2427,17 +2427,17 @@ namespace MinecraftClient.Protocol.Handlers
                     if (handler.GetEntityHandlingEnabled())
                     {
                         var entity = dataTypes.ReadNextEntity(packetData, entityPalette, false);
-                        
+
                         if (protocolVersion >= MC_1_20_2_Version)
                         {
                             if (entity.Type == EntityType.Player)
                                 handler.OnSpawnPlayer(entity.ID, entity.UUID, entity.Location, (byte)entity.Yaw, (byte)entity.Pitch);
                             else
                                 handler.OnSpawnEntity(entity);
-                            
+
                             break;
                         }
-                        
+
                         handler.OnSpawnEntity(entity);
                     }
 
@@ -2648,7 +2648,7 @@ namespace MinecraftClient.Protocol.Handlers
                         var numberOfProperties = protocolVersion >= MC_1_17_Version
                             ? dataTypes.ReadNextVarInt(packetData)
                             : dataTypes.ReadNextInt(packetData);
-                        
+
                         Dictionary<string, double> keys = new();
                         for (var i = 0; i < numberOfProperties; i++)
                         {
@@ -3008,17 +3008,17 @@ namespace MinecraftClient.Protocol.Handlers
                     McClient.Instance?.GetCookie(cookieName, out cookieData);
                     SendCookieResponse(cookieName, cookieData);
                     break;
-                
+
                 case PacketTypesIn.StoreCookie:
                     var cookieName2 = dataTypes.ReadNextString(packetData);
                     var cookieData2 = dataTypes.ReadNextByteArray(packetData);
                     McClient.Instance?.SetCookie(cookieName2, cookieData2);
                     break;
-                
+
                 case PacketTypesIn.Transfer:
                     var host = dataTypes.ReadNextString(packetData);
                     var port = dataTypes.ReadNextVarInt(packetData);
-                                
+
                     McClient.Instance?.Transfer(host, port);
                     break;
 
@@ -3286,17 +3286,17 @@ namespace MinecraftClient.Protocol.Handlers
             switch (protocolVersion)
             {
                 case >= MC_1_19_2_Version and < MC_1_20_2_Version:
-                {
-                    if (uuid == Guid.Empty)
-                        fullLoginPacket.AddRange(dataTypes.GetBool(false)); // Has UUID
-                    else
                     {
-                        fullLoginPacket.AddRange(dataTypes.GetBool(true)); // Has UUID
-                        fullLoginPacket.AddRange(DataTypes.GetUUID(uuid)); // UUID
-                    }
+                        if (uuid == Guid.Empty)
+                            fullLoginPacket.AddRange(dataTypes.GetBool(false)); // Has UUID
+                        else
+                        {
+                            fullLoginPacket.AddRange(dataTypes.GetBool(true)); // Has UUID
+                            fullLoginPacket.AddRange(DataTypes.GetUUID(uuid)); // UUID
+                        }
 
-                    break;
-                }
+                        break;
+                    }
                 case >= MC_1_20_2_Version:
                     uuid = handler.GetUserUuid();
 
@@ -3324,42 +3324,42 @@ namespace MinecraftClient.Protocol.Handlers
 
                     // Encryption request
                     case 0x01:
-                    {
-                        isOnlineMode = true;
-                        var serverId = dataTypes.ReadNextString(packetData);
-                        var serverPublicKey = dataTypes.ReadNextByteArray(packetData);
-                        var token = dataTypes.ReadNextByteArray(packetData);
+                        {
+                            isOnlineMode = true;
+                            var serverId = dataTypes.ReadNextString(packetData);
+                            var serverPublicKey = dataTypes.ReadNextByteArray(packetData);
+                            var token = dataTypes.ReadNextByteArray(packetData);
 
-                        var shouldAuthetnicate = false;
+                            var shouldAuthetnicate = false;
 
-                        if (protocolVersion >= MC_1_20_6_Version)
-                            shouldAuthetnicate = dataTypes.ReadNextBool(packetData);
-                        
-                        return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(),
-                            Config.Main.General.AccountType, token, serverId,
-                            serverPublicKey, playerKeyPair, session, shouldAuthetnicate);
-                    }
+                            if (protocolVersion >= MC_1_20_6_Version)
+                                shouldAuthetnicate = dataTypes.ReadNextBool(packetData);
+
+                            return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(),
+                                Config.Main.General.AccountType, token, serverId,
+                                serverPublicKey, playerKeyPair, session, shouldAuthetnicate);
+                        }
 
                     // Login successful
                     case 0x02:
-                    {
-                        log.Info($"§8{Translations.mcc_server_offline}");
-                        currentState = protocolVersion < MC_1_20_2_Version
-                            ? CurrentState.Play
-                            : CurrentState.Configuration;
-
-                        if (protocolVersion >= MC_1_20_2_Version)
-                            SendPacket(0x03, new List<byte>());
-
-                        if (!pForge.CompleteForgeHandshake())
                         {
-                            log.Error($"§8{Translations.error_forge}");
-                            return false;
-                        }
+                            log.Info($"§8{Translations.mcc_server_offline}");
+                            currentState = protocolVersion < MC_1_20_2_Version
+                                ? CurrentState.Play
+                                : CurrentState.Configuration;
 
-                        StartUpdating();
-                        return true; //No need to check session or start encryption
-                    }
+                            if (protocolVersion >= MC_1_20_2_Version)
+                                SendPacket(0x03, new List<byte>());
+
+                            if (!pForge.CompleteForgeHandshake())
+                            {
+                                log.Error($"§8{Translations.error_forge}");
+                                return false;
+                            }
+
+                            StartUpdating();
+                            return true; //No need to check session or start encryption
+                        }
                     default:
                         HandlePacket(packetId, packetData);
                         break;
@@ -3392,7 +3392,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (session.SessionPreCheckTask.Result) // PreCheck Success
                         needCheckSession = false;
                 }
-                
+
                 // 1.20.6++
                 if (shouldAuthetnicate)
                     needCheckSession = true;
@@ -3465,51 +3465,51 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected,
                             ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
                         return false;
-                    
+
                     //Login successful
                     case 0x02:
-                    {
-                        var uuidReceived = protocolVersion >= MC_1_16_Version
-                            ? dataTypes.ReadNextUUID(packetData)
-                            : Guid.Parse(dataTypes.ReadNextString(packetData));
-                        var userName = dataTypes.ReadNextString(packetData);
-                        Tuple<string, string, string>[]? playerProperty = null;
-                        if (protocolVersion >= MC_1_19_Version)
                         {
-                            var count = dataTypes.ReadNextVarInt(packetData); // Number Of Properties
-                            playerProperty = new Tuple<string, string, string>[count];
-                            for (var i = 0; i < count; ++i)
+                            var uuidReceived = protocolVersion >= MC_1_16_Version
+                                ? dataTypes.ReadNextUUID(packetData)
+                                : Guid.Parse(dataTypes.ReadNextString(packetData));
+                            var userName = dataTypes.ReadNextString(packetData);
+                            Tuple<string, string, string>[]? playerProperty = null;
+                            if (protocolVersion >= MC_1_19_Version)
                             {
-                                var name = dataTypes.ReadNextString(packetData);
-                                var value = dataTypes.ReadNextString(packetData);
-                                var isSigned = dataTypes.ReadNextBool(packetData);
-                                var signature = isSigned ? dataTypes.ReadNextString(packetData) : string.Empty;
-                                playerProperty[i] = new Tuple<string, string, string>(name, value, signature);
+                                var count = dataTypes.ReadNextVarInt(packetData); // Number Of Properties
+                                playerProperty = new Tuple<string, string, string>[count];
+                                for (var i = 0; i < count; ++i)
+                                {
+                                    var name = dataTypes.ReadNextString(packetData);
+                                    var value = dataTypes.ReadNextString(packetData);
+                                    var isSigned = dataTypes.ReadNextBool(packetData);
+                                    var signature = isSigned ? dataTypes.ReadNextString(packetData) : string.Empty;
+                                    playerProperty[i] = new Tuple<string, string, string>(name, value, signature);
+                                }
                             }
+
+                            // Strict Error Handling (removed in 1.21.2)
+                            if (protocolVersion >= MC_1_20_6_Version && protocolVersion < MC_1_21_2_Version)
+                                dataTypes.ReadNextBool(packetData);
+
+                            currentState = protocolVersion < MC_1_20_2_Version
+                                ? CurrentState.Play
+                                : CurrentState.Configuration;
+
+                            if (protocolVersion >= MC_1_20_2_Version)
+                                SendPacket(0x03, new List<byte>());
+
+                            handler.OnLoginSuccess(uuidReceived, userName, playerProperty);
+
+                            if (!pForge.CompleteForgeHandshake())
+                            {
+                                log.Error($"§8{Translations.error_forge_encrypt}");
+                                return false;
+                            }
+
+                            StartUpdating();
+                            return true;
                         }
-
-                        // Strict Error Handling (removed in 1.21.2)
-                        if (protocolVersion >= MC_1_20_6_Version && protocolVersion < MC_1_21_2_Version)
-                            dataTypes.ReadNextBool(packetData);
-
-                        currentState = protocolVersion < MC_1_20_2_Version
-                            ? CurrentState.Play
-                            : CurrentState.Configuration;
-
-                        if (protocolVersion >= MC_1_20_2_Version)
-                            SendPacket(0x03, new List<byte>());
-
-                        handler.OnLoginSuccess(uuidReceived, userName, playerProperty);
-
-                        if (!pForge.CompleteForgeHandshake())
-                        {
-                            log.Error($"§8{Translations.error_forge_encrypt}");
-                            return false;
-                        }
-
-                        StartUpdating();
-                        return true;
-                    }
                     default:
                         HandlePacket(packetId, packetData);
                         break;
@@ -3548,15 +3548,15 @@ namespace MinecraftClient.Protocol.Handlers
                         dataTypes.GetString(BehindCursor.Replace(' ', (char)0x00)));
                     break;
                 case >= MC_1_8_Version:
-                {
-                    tabCompletePacket = dataTypes.ConcatBytes(tabCompletePacket, dataTypes.GetString(BehindCursor));
+                    {
+                        tabCompletePacket = dataTypes.ConcatBytes(tabCompletePacket, dataTypes.GetString(BehindCursor));
 
-                    if (protocolVersion >= MC_1_9_Version)
-                        tabCompletePacket = dataTypes.ConcatBytes(tabCompletePacket, assumeCommand);
+                        if (protocolVersion >= MC_1_9_Version)
+                            tabCompletePacket = dataTypes.ConcatBytes(tabCompletePacket, assumeCommand);
 
-                    tabCompletePacket = dataTypes.ConcatBytes(tabCompletePacket, hasPosition);
-                    break;
-                }
+                        tabCompletePacket = dataTypes.ConcatBytes(tabCompletePacket, hasPosition);
+                        break;
+                    }
                 default:
                     tabCompletePacket = dataTypes.ConcatBytes(dataTypes.GetString(BehindCursor));
                     break;
@@ -3620,7 +3620,8 @@ namespace MinecraftClient.Protocol.Handlers
                 if (dataTypes.ReadNextVarInt(packetData) != 0x00)
                     return false;
 
-                var result = dataTypes.ReadNextString(packetData); // Get the Json data
+                // Get the Json data
+                var result = dataTypes.ReadNextString(packetData);
 
                 if (Config.Logging.DebugMessages)
                 {
@@ -3651,7 +3652,44 @@ namespace MinecraftClient.Protocol.Handlers
                 // Check for forge on the server.
                 Protocol18Forge.ServerInfoCheckForge(jsonObj, ref forgeInfo);
 
-                // Complete the normal status exchange so the probe connection closes cleanly server-side.
+                int onlinePlayers = 0, maxPlayers = 0;
+                List<ServerStatusInfo.SamplePlayer> samplePlayers = [];
+
+                if (jsonObj["players"] is System.Text.Json.Nodes.JsonObject playersObj)
+                {
+                    if (playersObj["online"] is { } onlineNode)
+                        onlinePlayers = int.Parse(onlineNode.GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
+                    if (playersObj["max"] is { } maxNode)
+                        maxPlayers = int.Parse(maxNode.GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
+                    if (playersObj["sample"] is System.Text.Json.Nodes.JsonArray sampleArray)
+                    {
+                        foreach (var entry in sampleArray)
+                        {
+                            if (entry is not System.Text.Json.Nodes.JsonObject playerObj) continue;
+                            samplePlayers.Add(new ServerStatusInfo.SamplePlayer
+                            {
+                                Name = playerObj["name"]?.GetStringValue() ?? "",
+                                Id = playerObj["id"]?.GetStringValue() ?? ""
+                            });
+                        }
+                    }
+                }
+
+                string motdRaw = "";
+                if (jsonObj["description"] is { } descNode)
+                    motdRaw = descNode.ToJsonString();
+
+                string? faviconBase64 = null;
+                if (jsonObj["favicon"] is { } faviconNode)
+                {
+                    var faviconStr = faviconNode.GetStringValue();
+                    const string prefix = "data:image/png;base64,";
+                    faviconBase64 = faviconStr.StartsWith(prefix, StringComparison.Ordinal)
+                        ? faviconStr[prefix.Length..]
+                        : faviconStr;
+                }
+
+                long pingMs = -1;
                 try
                 {
                     long pingPayload = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -3663,7 +3701,10 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
                         if (dataTypes.ReadNextVarInt(packetData) == 0x01)
-                            dataTypes.ReadNextLong(packetData);
+                        {
+                            long pongPayload = dataTypes.ReadNextLong(packetData);
+                            pingMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - pingPayload;
+                        }
                     }
                 }
                 catch
@@ -3671,8 +3712,27 @@ namespace MinecraftClient.Protocol.Handlers
                     // Some servers may close the probe connection immediately after the status response.
                 }
 
+                var statusInfo = new ServerStatusInfo
+                {
+                    Host = host,
+                    Port = port,
+                    VersionName = version,
+                    ProtocolVersion = protocolVersion,
+                    OnlinePlayers = onlinePlayers,
+                    MaxPlayers = maxPlayers,
+                    SamplePlayers = samplePlayers,
+                    MotdRaw = motdRaw,
+                    FaviconBase64 = faviconBase64,
+                    PingMs = pingMs
+                };
+
+                ProtocolHandler.TryUpgradeProtocolVersion(version, ref protocolVersion);
+                statusInfo.ResolvedProtocol = protocolVersion;
+
                 ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_server_protocol, version,
                     protocolVersion + (forgeInfo is not null ? Translations.mcc_with_forge : "")));
+
+                ServerStatusDisplay.Show(statusInfo);
 
                 return true;
             }
@@ -3792,7 +3852,7 @@ namespace MinecraftClient.Protocol.Handlers
                     SendMessageAcknowledgment(ConsumeAcknowledgment());
             }
         }
-        
+
         /// <summary>
         /// Send a chat command to the server, with or without signing based on the online mode and version.
         /// </summary>
@@ -3917,7 +3977,7 @@ namespace MinecraftClient.Protocol.Handlers
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Send a chat message to the server
         /// </summary>
@@ -4541,7 +4601,7 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(dataTypes.GetFloat(LastYaw));
                     packet.AddRange(dataTypes.GetFloat(LastPitch));
                 }
-                
+
                 SendPacket(PacketTypesOut.UseItem, packet);
                 return true;
             }
@@ -4604,12 +4664,12 @@ namespace MinecraftClient.Protocol.Handlers
                         if (playerInventory?.Items is null)
                             return false;
 
-                        int[] slotWindowIds = [36, 37, 38, 39, 40, 41, 42, 43, 44]; 
+                        int[] slotWindowIds = [36, 37, 38, 39, 40, 41, 42, 43, 44];
                         var currentSlot = ((McClient)handler).GetCurrentSlot();
-                        
+
                         playerInventory.Items.TryGetValue(slotWindowIds[currentSlot], out var item);
                         packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
-                        
+
                         packet.Add(0); // cursorX
                         packet.Add(0); // cursorY
                         packet.Add(0); // cursorZ
@@ -4626,12 +4686,12 @@ namespace MinecraftClient.Protocol.Handlers
                         packet.AddRange(DataTypes.GetVarInt(dataTypes.GetBlockFace(face)));
                         break;
                 }
-                
+
                 packet.AddRange(dataTypes.GetFloat(cursorX)); // cursorX
                 packet.AddRange(dataTypes.GetFloat(cursorY)); // cursorY
                 packet.AddRange(dataTypes.GetFloat(cursorZ)); // cursorZ
-                
-                if(protocolVersion >= MC_1_14_Version)
+
+                if (protocolVersion >= MC_1_14_Version)
                     packet.Add(0); // insideBlock = false
 
                 if (protocolVersion >= MC_1_21_2_Version)
@@ -4639,7 +4699,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (protocolVersion >= MC_1_19_Version)
                     packet.AddRange(DataTypes.GetVarInt(sequenceId));
-                
+
                 SendPacket(PacketTypesOut.PlayerBlockPlacement, packet);
                 return true;
             }
@@ -5235,7 +5295,7 @@ namespace MinecraftClient.Protocol.Handlers
                 return false;
             }
         }
-        
+
         public bool SendCookieResponse(string name, byte[]? data)
         {
             try
@@ -5244,7 +5304,7 @@ namespace MinecraftClient.Protocol.Handlers
                 var hasPayload = data is not null;
                 packet.AddRange(dataTypes.GetString(name)); // Identifier
                 packet.AddRange(dataTypes.GetBool(hasPayload)); // Has payload
-                
+
                 if (hasPayload)
                     packet.AddRange(dataTypes.GetArray(data!)); // Payload Data Array Size + Data Array
 
@@ -5262,7 +5322,7 @@ namespace MinecraftClient.Protocol.Handlers
                         SendPacket(PacketTypesOut.CookieResponse, packet);
                         break;
                 }
-                
+
                 McClient.Instance?.DeleteCookie(name);
                 return true;
             }
@@ -5293,17 +5353,17 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(dataTypes.GetString(dataPack.Item3));
                 }
 
-                switch(currentState)
+                switch (currentState)
                 {
-                    case CurrentState.Configuration: 
+                    case CurrentState.Configuration:
                         SendPacket(ConfigurationPacketTypesOut.KnownDataPacks, packet);
                         break;
-                    
+
                     case CurrentState.Play:
                         SendPacket(PacketTypesOut.KnownDataPacks, packet);
                         break;
                 }
-                
+
                 return true;
             }
             catch (SocketException)
@@ -5319,7 +5379,7 @@ namespace MinecraftClient.Protocol.Handlers
                 return false;
             }
         }
-        
+
         private byte[] GenerateSalt()
         {
             var salt = new byte[8];
