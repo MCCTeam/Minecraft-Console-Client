@@ -3202,9 +3202,9 @@ namespace MinecraftClient.Protocol.Handlers
                 // Criteria and requirements differ by version
                 var requirements = new List<List<string>>();
 
-                if (protocolVersion < MC_1_20_6_Version)
+                if (protocolVersion < MC_1_20_2_Version)
                 {
-                    // Builder-based (pre-1.20.6): criteria names list, then requirements
+                    // Builder-based (pre-1.20.2): criteria names list, then requirements
                     int criteriaCount = dataTypes.ReadNextVarInt(packetData);
                     for (int c = 0; c < criteriaCount; c++)
                         dataTypes.ReadNextString(packetData); // criterion name only, no trigger data
