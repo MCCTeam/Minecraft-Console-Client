@@ -3204,36 +3204,26 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (protocolVersion < MC_1_20_6_Version)
                 {
-                    // Builder-based: criteria names list, then requirements
+                    // Builder-based (pre-1.20.6): criteria names list, then requirements
                     int criteriaCount = dataTypes.ReadNextVarInt(packetData);
                     for (int c = 0; c < criteriaCount; c++)
                         dataTypes.ReadNextString(packetData); // criterion name only, no trigger data
-
-                    int reqGroupCount = dataTypes.ReadNextVarInt(packetData);
-                    for (int g = 0; g < reqGroupCount; g++)
-                    {
-                        int groupSize = dataTypes.ReadNextVarInt(packetData);
-                        var group = new List<string>(groupSize);
-                        for (int s = 0; s < groupSize; s++)
-                            group.Add(dataTypes.ReadNextString(packetData));
-                        requirements.Add(group);
-                    }
                 }
-                else
+
+                // Requirements (all versions)
+                int reqGroupCount = dataTypes.ReadNextVarInt(packetData);
+                for (int g = 0; g < reqGroupCount; g++)
                 {
-                    // AdvancementHolder-based (1.20.6+): requirements only, then sendsTelemetryEvent
-                    int reqGroupCount = dataTypes.ReadNextVarInt(packetData);
-                    for (int g = 0; g < reqGroupCount; g++)
-                    {
-                        int groupSize = dataTypes.ReadNextVarInt(packetData);
-                        var group = new List<string>(groupSize);
-                        for (int s = 0; s < groupSize; s++)
-                            group.Add(dataTypes.ReadNextString(packetData));
-                        requirements.Add(group);
-                    }
-
-                    dataTypes.ReadNextBool(packetData); // sendsTelemetryEvent
+                    int groupSize = dataTypes.ReadNextVarInt(packetData);
+                    var group = new List<string>(groupSize);
+                    for (int s = 0; s < groupSize; s++)
+                        group.Add(dataTypes.ReadNextString(packetData));
+                    requirements.Add(group);
                 }
+
+                // sendsTelemetryEvent (added in 1.20, present in all versions since)
+                if (protocolVersion >= MC_1_20_Version)
+                    dataTypes.ReadNextBool(packetData);
 
                 addedDefinitions[id] = (title, description, type, isHidden, requirements);
             }
