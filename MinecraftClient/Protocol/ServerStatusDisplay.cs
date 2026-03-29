@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol
 {
@@ -47,12 +48,12 @@ namespace MinecraftClient.Protocol
             sb.Append("§f");
             sb.Append(Translations.mcc_server_info_label_version);
             sb.Append(" §b");
-            sb.Append(info.VersionName);
+            sb.Append(ChatBot.GetVerbatim(info.VersionName));
             sb.Append(" §7(");
             sb.Append(string.Format(Translations.mcc_server_info_label_protocol, "§e" + info.ProtocolVersion + "§7"));
             sb.AppendLine(")");
 
-            if (info.ResolvedProtocol != 0 && info.ResolvedProtocol != info.ProtocolVersion)
+            if (info.ResolvedProtocol != 0)
             {
                 string resolvedMcVer = ProtocolHandler.ProtocolVersion2MCVer(info.ResolvedProtocol);
                 sb.Append("§f");
