@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -44,6 +45,13 @@ namespace MinecraftClient.Tui
         private readonly Grid _mapGrid;
         private readonly DispatcherTimer _timer;
 
+        private readonly Canvas _tooltipCanvas;
+        private readonly Border _tooltipBorder;
+        private readonly StackPanel _tooltipContent;
+        private SampleResult? _lastResult;
+        private int _hoverCol = -1;
+        private int _hoverRow = -1;
+
         public int BlocksPerPixel
         {
             get => _blocksPerPixel;
@@ -75,13 +83,39 @@ namespace MinecraftClient.Tui
             _infoRow = new StackPanel { Orientation = Orientation.Horizontal };
             _legendPanel = new StackPanel { Orientation = Orientation.Horizontal };
 
+            _tooltipContent = new StackPanel { Orientation = Orientation.Vertical };
+            _tooltipBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(230, 20, 20, 20)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(1),
+                Child = _tooltipContent,
+                IsVisible = false,
+            };
+
+            _tooltipCanvas = new Canvas
+            {
+                IsHitTestVisible = false,
+                Children = { _tooltipBorder },
+            };
+
+            var mapLayer = new Panel
+            {
+                ClipToBounds = true,
+                Children = { _mapGrid, _tooltipCanvas },
+            };
+
             var root = new StackPanel
             {
                 Orientation = Orientation.Vertical,
-                Children = { _mapGrid, _infoRow, _legendPanel },
+                Children = { mapLayer, _infoRow, _legendPanel },
             };
 
             Content = root;
+
+            _mapGrid.PointerMoved += OnMapPointerMoved;
+            _mapGrid.PointerExited += OnMapPointerExited;
 
             _timer = new DispatcherTimer
             {
@@ -198,12 +232,29 @@ namespace MinecraftClient.Tui
             public int PixelY;
         }
 
+        internal sealed class PixelEntityInfo
+        {
+            public string Name = "";
+            public MobCategory Category;
+            public float Health;
+            public float MaxHealth;
+            public int Priority;
+        }
+
         private sealed class SampleResult
         {
             public Color[,] Pixels = null!;
             public (char Ch, Color Fg, Color Bg)?[,] CharOverlay = null!;
             public HashSet<MobCategory> VisibleCategories = [];
             public int[,] Heights = null!;
+            public Material[,]? BlockTypes;
+            public List<(Material Mat, int Count)>?[,]? BlockSummary;
+            public List<PixelEntityInfo>?[,]? EntityMap;
+            public int PlayerBlockX;
+            public int PlayerBlockZ;
+            public int CenterX;
+            public int CenterY;
+            public int Bpp;
         }
 
         private static bool ShouldShowNameLocal(MobCategory cat,
@@ -228,6 +279,10 @@ namespace MinecraftClient.Tui
                 Pixels = new Color[mapW, mapH],
                 CharOverlay = new (char, Color, Color)?[mapW, mapH / 2],
                 Heights = new int[mapW, mapH],
+                EntityMap = new List<PixelEntityInfo>?[mapW, mapH],
+                BlockTypes = bpp == 1 ? new Material[mapW, mapH] : null,
+                BlockSummary = bpp > 1 ? new List<(Material, int)>?[mapW, mapH] : null,
+                Bpp = bpp,
             };
             var world = client.GetWorld();
             var playerLoc = client.GetCurrentLocation();
@@ -235,6 +290,11 @@ namespace MinecraftClient.Tui
             int playerBlockX = (int)Math.Floor(playerLoc.X);
             int playerBlockZ = (int)Math.Floor(playerLoc.Z);
             int playerBlockY = (int)Math.Floor(playerLoc.Y);
+
+            result.PlayerBlockX = playerBlockX;
+            result.PlayerBlockZ = playerBlockZ;
+            result.CenterX = mapW / 2;
+            result.CenterY = mapH / 2;
 
             var dim = World.GetDimension();
             int minY = dim.minY;
@@ -286,6 +346,17 @@ namespace MinecraftClient.Tui
 
                     result.VisibleCategories.Add(cat);
 
+                    string eName = ResolveEntityName(client, entity, cat, uuidNameMap);
+                    var pixelList = result.EntityMap![px, py] ??= [];
+                    pixelList.Add(new PixelEntityInfo
+                    {
+                        Name = eName,
+                        Category = cat,
+                        Health = entity.Health,
+                        MaxHealth = -1,
+                        Priority = priority,
+                    });
+
                     if (ShouldShowNameLocal(cat, showPlayers, showHostile, showNeutral, showPassive))
                     {
                         string name = ResolveEntityName(client, entity, cat, uuidNameMap);
@@ -303,6 +374,16 @@ namespace MinecraftClient.Tui
             entityPixels[(centerX, centerY)] = (MinimapEntityClassifier.PlayerColor, 5);
             result.VisibleCategories.Add(MobCategory.Player);
 
+            var selfList = result.EntityMap![centerX, centerY] ??= [];
+            selfList.Add(new PixelEntityInfo
+            {
+                Name = client.GetUsername(),
+                Category = MobCategory.Player,
+                Health = client.GetHealth(),
+                MaxHealth = 20f,
+                Priority = 5,
+            });
+
             ChunkColumn? cachedColumn = null;
             int cachedChunkX = int.MinValue, cachedChunkZ = int.MinValue;
 
@@ -317,17 +398,21 @@ namespace MinecraftClient.Tui
 
                     if (bpp == 1)
                     {
-                        var (color, surfY) = SampleColumn(world, baseX, baseZ, scanTop, minY,
+                        var (color, surfY, surfMat) = SampleColumn(world, baseX, baseZ, scanTop, minY,
                             ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
                         result.Pixels[px, py] = color;
                         result.Heights[px, py] = surfY;
+                        result.BlockTypes![px, py] = surfMat;
                     }
                     else
                     {
-                        var (color, surfY) = SampleAreaDominant(world, baseX, baseZ, bpp, scanTop, minY,
+                        var (color, surfY, matSum) = SampleAreaDominant(world, baseX, baseZ, bpp,
+                            scanTop, minY, result.BlockSummary is not null,
                             ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
                         result.Pixels[px, py] = color;
                         result.Heights[px, py] = surfY;
+                        if (result.BlockSummary is not null)
+                            result.BlockSummary[px, py] = matSum;
                     }
                 }
             }
@@ -447,7 +532,7 @@ namespace MinecraftClient.Tui
             }
         }
 
-        private static (Color color, int surfaceY) SampleColumn(World world, int x, int z,
+        private static (Color color, int surfaceY, Material surfaceMat) SampleColumn(World world, int x, int z,
             int scanTop, int minY,
             ref ChunkColumn? cachedColumn, ref int cachedChunkX, ref int cachedChunkZ)
         {
@@ -461,11 +546,12 @@ namespace MinecraftClient.Tui
             }
 
             if (cachedColumn is null)
-                return (MinimapColorMap.VoidColor, minY);
+                return (MinimapColorMap.VoidColor, minY, Material.Air);
 
             int waterDepth = 0;
             bool inIce = false;
             int surfaceY = minY;
+            Material topMat = Material.Air;
 
             for (int y = scanTop; y >= minY; y--)
             {
@@ -481,19 +567,19 @@ namespace MinecraftClient.Tui
 
                 if (MinimapColorMap.IsWater(mat))
                 {
-                    if (waterDepth == 0) surfaceY = y;
+                    if (waterDepth == 0) { surfaceY = y; topMat = mat; }
                     waterDepth++;
                     continue;
                 }
 
                 if (MinimapColorMap.IsIce(mat) && !inIce)
                 {
-                    if (waterDepth == 0) surfaceY = y;
+                    if (waterDepth == 0) { surfaceY = y; topMat = mat; }
                     inIce = true;
                     continue;
                 }
 
-                if (waterDepth == 0 && !inIce) surfaceY = y;
+                if (waterDepth == 0 && !inIce) { surfaceY = y; topMat = mat; }
 
                 var baseColor = MinimapColorMap.GetBaseColor(mat);
 
@@ -502,33 +588,43 @@ namespace MinecraftClient.Tui
                 if (inIce)
                     baseColor = MinimapColorMap.BlendIceColor(baseColor);
 
-                return (baseColor, surfaceY);
+                return (baseColor, surfaceY, topMat);
             }
 
             if (waterDepth > 0)
-                return (MinimapColorMap.WaterColor, surfaceY);
+                return (MinimapColorMap.WaterColor, surfaceY, topMat);
 
-            return (MinimapColorMap.VoidColor, minY);
+            return (MinimapColorMap.VoidColor, minY, Material.Air);
         }
 
-        private static (Color color, int surfaceY) SampleAreaDominant(World world, int baseX, int baseZ,
-            int size, int scanTop, int minY,
+        private static (Color color, int surfaceY, List<(Material Mat, int Count)>? matSummary)
+            SampleAreaDominant(World world, int baseX, int baseZ,
+            int size, int scanTop, int minY, bool collectMats,
             ref ChunkColumn? cachedColumn, ref int cachedChunkX, ref int cachedChunkZ)
         {
             var colorCounts = new Dictionary<Color, (int Count, int SumY)>();
+            Dictionary<Material, int>? matCounts = collectMats ? [] : null;
 
             int step = Math.Max(1, size / 3);
             for (int dx = 0; dx < size; dx += step)
             {
                 for (int dz = 0; dz < size; dz += step)
                 {
-                    var (c, surfY) = SampleColumn(world, baseX + dx, baseZ + dz, scanTop, minY,
+                    var (c, surfY, surfMat) = SampleColumn(world, baseX + dx, baseZ + dz, scanTop, minY,
                         ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
 
                     if (colorCounts.TryGetValue(c, out var existing))
                         colorCounts[c] = (existing.Count + 1, existing.SumY + surfY);
                     else
                         colorCounts[c] = (1, surfY);
+
+                    if (matCounts is not null)
+                    {
+                        if (matCounts.TryGetValue(surfMat, out int mc))
+                            matCounts[surfMat] = mc + 1;
+                        else
+                            matCounts[surfMat] = 1;
+                    }
                 }
             }
 
@@ -544,7 +640,17 @@ namespace MinecraftClient.Tui
                     avgY = kvp.Value.SumY / kvp.Value.Count;
                 }
             }
-            return (best, avgY);
+
+            List<(Material, int)>? summary = null;
+            if (matCounts is not null && matCounts.Count > 0)
+            {
+                summary = matCounts
+                    .OrderByDescending(kv => kv.Value)
+                    .Select(kv => (kv.Key, kv.Value))
+                    .ToList();
+            }
+
+            return (best, avgY, summary);
         }
 
         private void ApplyPixelBuffer(SampleResult result, int w, int h)
@@ -573,6 +679,224 @@ namespace MinecraftClient.Tui
                     }
                 }
             }
+
+            _lastResult = result;
+
+            if (_hoverCol >= 0 && _hoverRow >= 0)
+                UpdateTooltip(_hoverCol, _hoverRow);
+        }
+
+        private void OnMapPointerMoved(object? sender, PointerEventArgs e)
+        {
+            var pos = e.GetPosition(_mapGrid);
+            int col = (int)pos.X;
+            int row = (int)pos.Y;
+
+            if (col < 0 || col >= _mapWidth || row < 0 || row >= _cellRows)
+            {
+                HideTooltip();
+                return;
+            }
+
+            _hoverCol = col;
+            _hoverRow = row;
+            UpdateTooltip(col, row);
+        }
+
+        private void OnMapPointerExited(object? sender, PointerEventArgs e)
+        {
+            HideTooltip();
+        }
+
+        private void HideTooltip()
+        {
+            _hoverCol = -1;
+            _hoverRow = -1;
+            _tooltipBorder.IsVisible = false;
+        }
+
+        private void UpdateTooltip(int col, int row)
+        {
+            var result = _lastResult;
+            if (result is null) { _tooltipBorder.IsVisible = false; return; }
+
+            int bpp = result.Bpp;
+            int centerX = result.CenterX;
+            int centerY = result.CenterY;
+
+            int topPixelY = row * 2;
+            int botPixelY = row * 2 + 1;
+
+            int baseX = result.PlayerBlockX + (col - centerX) * bpp;
+            int baseZ_top = result.PlayerBlockZ + (topPixelY - centerY) * bpp;
+            int baseZ_bot = result.PlayerBlockZ + (botPixelY - centerY) * bpp;
+
+            _tooltipContent.Children.Clear();
+
+            if (bpp == 1)
+            {
+                int surfY_top = (topPixelY < result.Heights.GetLength(1)) ? result.Heights[col, topPixelY] : 0;
+                int surfY_bot = (botPixelY < result.Heights.GetLength(1)) ? result.Heights[col, botPixelY] : 0;
+
+                string coordLine = baseZ_top == baseZ_bot
+                    ? $"{baseX}, {surfY_top}, {baseZ_top}"
+                    : $"{baseX}, {surfY_top}, {baseZ_top}  /  {baseX}, {surfY_bot}, {baseZ_bot}";
+                _tooltipContent.Children.Add(MakeTooltipText(coordLine, Brushes.White));
+
+                if (result.BlockTypes is not null)
+                {
+                    var mat_top = result.BlockTypes[col, topPixelY];
+                    var mat_bot = (botPixelY < result.BlockTypes.GetLength(1))
+                        ? result.BlockTypes[col, botPixelY] : mat_top;
+                    string blockLine = mat_top == mat_bot
+                        ? FormatMaterialName(mat_top)
+                        : $"{FormatMaterialName(mat_top)} / {FormatMaterialName(mat_bot)}";
+                    _tooltipContent.Children.Add(MakeTooltipText(blockLine, Brushes.LightGray));
+                }
+            }
+            else
+            {
+                int endX = baseX + bpp - 1;
+                int endZ_bot = baseZ_bot + bpp - 1;
+                string coordLine = $"X {baseX}~{endX}  Z {baseZ_top}~{endZ_bot}";
+                _tooltipContent.Children.Add(MakeTooltipText(coordLine, Brushes.White));
+
+                AppendBlockSummary(result, col, topPixelY, botPixelY);
+            }
+
+            AppendEntityInfo(result, col, topPixelY, botPixelY);
+
+            if (_tooltipContent.Children.Count == 0)
+            {
+                _tooltipBorder.IsVisible = false;
+                return;
+            }
+
+            int maxTipW = Math.Max(10, _mapWidth / 2 - 2);
+            _tooltipBorder.MaxWidth = maxTipW;
+            _tooltipBorder.MaxHeight = _cellRows;
+
+            bool showRight = col < _mapWidth / 2;
+            int tipX = showRight ? col + 2 : Math.Max(0, col - maxTipW - 1);
+            int tipY = Math.Clamp(row, 0, _cellRows - 1);
+
+            Canvas.SetLeft(_tooltipBorder, tipX);
+            Canvas.SetTop(_tooltipBorder, tipY);
+            _tooltipBorder.IsVisible = true;
+        }
+
+        private void AppendBlockSummary(SampleResult result, int col, int topPy, int botPy)
+        {
+            if (result.BlockSummary is null) return;
+
+            var merged = new Dictionary<Material, int>();
+            MergeBlockCounts(result.BlockSummary, col, topPy, merged);
+            if (botPy < result.BlockSummary.GetLength(1))
+                MergeBlockCounts(result.BlockSummary, col, botPy, merged);
+
+            if (merged.Count == 0) return;
+
+            var sorted = merged.OrderByDescending(kv => kv.Value).Take(4);
+            int totalSamples = 0;
+            foreach (var kv in merged) totalSamples += kv.Value;
+
+            var parts = new List<string>();
+            foreach (var kv in sorted)
+            {
+                if (kv.Key == Material.Air && merged.Count > 1) continue;
+                parts.Add(kv.Value > 1
+                    ? $"{FormatMaterialName(kv.Key)} x{kv.Value}"
+                    : FormatMaterialName(kv.Key));
+            }
+
+            if (parts.Count == 0) return;
+
+            string line = string.Join(", ", parts);
+            _tooltipContent.Children.Add(MakeTooltipText(line, Brushes.LightGray));
+        }
+
+        private static void MergeBlockCounts(List<(Material Mat, int Count)>?[,] summary,
+            int px, int py, Dictionary<Material, int> target)
+        {
+            var list = summary[px, py];
+            if (list is null) return;
+            foreach (var (mat, count) in list)
+            {
+                if (target.TryGetValue(mat, out int c))
+                    target[mat] = c + count;
+                else
+                    target[mat] = count;
+            }
+        }
+
+        private void AppendEntityInfo(SampleResult result, int col, int topPy, int botPy)
+        {
+            var entityMap = result.EntityMap;
+            if (entityMap is null) return;
+
+            var combined = new List<PixelEntityInfo>();
+            AddEntitiesFromPixel(entityMap, col, topPy, combined);
+            if (botPy < entityMap.GetLength(1))
+                AddEntitiesFromPixel(entityMap, col, botPy, combined);
+
+            if (combined.Count == 0) return;
+
+            combined.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+            int shown = 0;
+            var seen = new HashSet<string>();
+            foreach (var ent in combined)
+            {
+                if (shown >= 4) break;
+                string key = $"{ent.Name}_{ent.Health:F0}";
+                if (!seen.Add(key)) continue;
+
+                var catColor = MinimapEntityClassifier.GetBaseColor(ent.Category);
+                string hpStr;
+                if (ent.Health > 0)
+                {
+                    hpStr = ent.MaxHealth > 0
+                        ? $"  HP:{ent.Health:F0}/{ent.MaxHealth:F0}"
+                        : $"  HP:{ent.Health:F0}";
+                }
+                else
+                    hpStr = "";
+
+                _tooltipContent.Children.Add(MakeTooltipText(
+                    $"{ent.Name}{hpStr}",
+                    new SolidColorBrush(catColor)));
+                shown++;
+            }
+        }
+
+        private static void AddEntitiesFromPixel(List<PixelEntityInfo>?[,] map,
+            int px, int py, List<PixelEntityInfo> target)
+        {
+            if (px >= 0 && px < map.GetLength(0) && py >= 0 && py < map.GetLength(1))
+            {
+                var list = map[px, py];
+                if (list is not null)
+                    target.AddRange(list);
+            }
+        }
+
+        private static TextBlock MakeTooltipText(string text, IBrush foreground)
+        {
+            return new TextBlock
+            {
+                Text = text,
+                Foreground = foreground,
+                TextWrapping = TextWrapping.Wrap,
+                Padding = new Thickness(0),
+                Margin = new Thickness(0),
+                FontSize = 1,
+            };
+        }
+
+        private static string FormatMaterialName(Material mat)
+        {
+            if (mat == Material.Air) return "Air";
+            string raw = mat.ToString();
+            return raw.Replace('_', ' ');
         }
 
         private void UpdateInfoBarAndLegend(McClient client, int bpp,
