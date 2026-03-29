@@ -1,8 +1,11 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Brigadier.NET.Builder;
 using DSharpPlus;
@@ -34,6 +37,9 @@ namespace MinecraftClient.ChatBots
         private DiscordChannel? discordChannel;
         private BridgeDirection bridgeDirection = BridgeDirection.Both;
 
+        private readonly ConcurrentQueue<string> aggregationBuffer = new();
+        private Timer? aggregationTimer;
+
         public static Configs Config = new();
 
         [TomlDoNotInlineObject]
@@ -62,6 +68,12 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$ChatBot.DiscordBridge.AllowOtherBotMessages$")]
             public bool Allow_Other_Bot_Messages = false;
 
+            [TomlInlineComment("$ChatBot.DiscordBridge.RelayAllMessages$")]
+            public bool Relay_All_Messages = false;
+
+            [TomlInlineComment("$ChatBot.DiscordBridge.MessageAggregationInterval$")]
+            public double Message_Aggregation_Interval = 3.0;
+
             [TomlPrecedingComment("$ChatBot.DiscordBridge.Formats$")]
             public string PrivateMessageFormat = "**[Private Message]** {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
@@ -70,6 +82,8 @@ namespace MinecraftClient.ChatBots
             public void OnSettingUpdate()
             {
                 Message_Send_Timeout = Message_Send_Timeout <= 0 ? 3 : Message_Send_Timeout;
+                if (Message_Aggregation_Interval < 0)
+                    Message_Aggregation_Interval = 0;
             }
         }
 
@@ -100,6 +114,12 @@ namespace MinecraftClient.ChatBots
                     .Redirect(McClient.dispatcher.GetRoot().GetChild("help").GetChild(CommandName)))
             );
 
+            if (Config.Message_Aggregation_Interval > 0)
+            {
+                var intervalMs = (int)(Config.Message_Aggregation_Interval * 1000);
+                aggregationTimer = new Timer(_ => FlushAggregationBuffer(), null, intervalMs, intervalMs);
+            }
+
             Task.Run(async () => await MainAsync());
         }
 
@@ -107,6 +127,7 @@ namespace MinecraftClient.ChatBots
         {
             McClient.dispatcher.Unregister(CommandName);
             McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            StopAggregation();
             Disconnect();
         }
 
@@ -145,6 +166,40 @@ namespace MinecraftClient.ChatBots
                     goto case BridgeDirection.Both;
             }
             return r.SetAndReturn(CmdResult.Status.Done, string.Format(Translations.bot_DiscordBridge_direction, bridgeName));
+        }
+
+        private void FlushAggregationBuffer()
+        {
+            if (aggregationBuffer.IsEmpty || !CanSendMessages())
+                return;
+
+            var sb = new StringBuilder();
+            while (aggregationBuffer.TryDequeue(out var line))
+            {
+                if (sb.Length + line.Length + 1 > 1900)
+                {
+                    SendMessage(sb.ToString());
+                    sb.Clear();
+                }
+
+                if (sb.Length > 0)
+                    sb.AppendLine();
+                sb.Append(line);
+            }
+
+            if (sb.Length > 0)
+                SendMessage(sb.ToString());
+        }
+
+        private void StopAggregation()
+        {
+            if (aggregationTimer is not null)
+            {
+                aggregationTimer.Dispose();
+                aggregationTimer = null;
+            }
+
+            FlushAggregationBuffer();
         }
 
         ~DiscordBridge()
@@ -188,7 +243,6 @@ namespace MinecraftClient.ChatBots
 
             text = GetVerbatim(text).Trim();
 
-            // Stop the crash when an empty text is recived somehow
             if (string.IsNullOrEmpty(text))
                 return;
 
@@ -205,7 +259,10 @@ namespace MinecraftClient.ChatBots
                 message = Config.TeleportRequestMessageFormat.Replace("{username}", username).Replace("{timestamp}", GetTimestamp()).Trim();
                 teleportRequest = true;
             }
-            else message = text;
+            else if (Config.Relay_All_Messages)
+                message = text;
+            else
+                return;
 
             if (teleportRequest)
             {
@@ -223,7 +280,13 @@ namespace MinecraftClient.ChatBots
                 SendMessage(messageBuilder);
                 return;
             }
-            else SendMessage(GetDiscordText(message));
+
+            string discordText = GetDiscordText(message);
+
+            if (Config.Message_Aggregation_Interval > 0)
+                aggregationBuffer.Enqueue(discordText);
+            else
+                SendMessage(discordText);
         }
 
         /// <summary>

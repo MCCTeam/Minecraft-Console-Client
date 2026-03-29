@@ -393,6 +393,12 @@ For Discord message formatting, check the following: https://mccteam.github.io/r
   <data name="ChatBot.DiscordBridge.AllowOtherBotMessages" xml:space="preserve">
     <value>When enabled, messages from other Discord bots in the channel will be relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.</value>
   </data>
+  <data name="ChatBot.DiscordBridge.RelayAllMessages" xml:space="preserve">
+    <value>When enabled, all text received from the Minecraft server (including system messages, join/leave notifications, etc.) will be relayed to Discord, not just player chat and private messages.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.MessageAggregationInterval" xml:space="preserve">
+    <value>Interval in seconds to aggregate messages before sending them to Discord. When set to 0, messages are sent immediately one by one. When set to a value like 1.0, messages received within that interval are batched into a single Discord message. Useful for reducing Discord API rate limits.</value>
+  </data>
   <data name="ChatBot.Farmer" xml:space="preserve">
     <value>Automatically farms crops for you (plants, breaks and bonemeals them).
 Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
@@ -964,7 +970,7 @@ Note: This does NOT require a Bot Token, only an Application ID. Discord must be
     <value>Show passive mob names on the minimap.</value>
   </data>
   <data name="Console.Minimap.RefreshInterval" xml:space="preserve">
-    <value>Minimap refresh interval in milliseconds (200-5000, default 1000).</value>
+    <value>Minimap refresh interval in milliseconds (100-5000).</value>
   </data>
   <data name="Main.General.AuthlibUser" xml:space="preserve">
     <value>Yggdrasil authlib multi-user selection.</value>
