@@ -45,12 +45,11 @@ namespace MinecraftClient.Tui
         private readonly Grid _mapGrid;
         private readonly DispatcherTimer _timer;
 
-        private readonly Canvas _tooltipCanvas;
-        private readonly Border _tooltipBorder;
-        private readonly StackPanel _tooltipContent;
         private SampleResult? _lastResult;
         private int _hoverCol = -1;
         private int _hoverRow = -1;
+        private double _hoverGlobalX;
+        private double _hoverGlobalY;
 
         public int BlocksPerPixel
         {
@@ -59,6 +58,10 @@ namespace MinecraftClient.Tui
         }
 
         public NameDisplayConfig NameConfig => _nameConfig;
+
+        public TuiTooltipService? TooltipService { get; set; }
+
+        public MinimapPosition Position { get; set; } = MinimapPosition.top_right;
 
         public int MapPixelWidth => _mapWidth;
         public int MapPixelHeight => _mapHeight;
@@ -83,33 +86,10 @@ namespace MinecraftClient.Tui
             _infoRow = new StackPanel { Orientation = Orientation.Horizontal };
             _legendPanel = new StackPanel { Orientation = Orientation.Horizontal };
 
-            _tooltipContent = new StackPanel { Orientation = Orientation.Vertical };
-            _tooltipBorder = new Border
-            {
-                Background = new SolidColorBrush(Color.FromArgb(230, 20, 20, 20)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
-                BorderThickness = new Thickness(1),
-                Padding = new Thickness(1),
-                Child = _tooltipContent,
-                IsVisible = false,
-            };
-
-            _tooltipCanvas = new Canvas
-            {
-                IsHitTestVisible = false,
-                Children = { _tooltipBorder },
-            };
-
-            var mapLayer = new Panel
-            {
-                ClipToBounds = true,
-                Children = { _mapGrid, _tooltipCanvas },
-            };
-
             var root = new StackPanel
             {
                 Orientation = Orientation.Vertical,
-                Children = { mapLayer, _infoRow, _legendPanel },
+                Children = { _mapGrid, _infoRow, _legendPanel },
             };
 
             Content = root;
@@ -236,6 +216,7 @@ namespace MinecraftClient.Tui
         {
             public string Name = "";
             public MobCategory Category;
+            public double X, Y, Z;
             public float Health;
             public float MaxHealth;
             public int Priority;
@@ -352,6 +333,9 @@ namespace MinecraftClient.Tui
                     {
                         Name = eName,
                         Category = cat,
+                        X = entity.Location.X,
+                        Y = entity.Location.Y,
+                        Z = entity.Location.Z,
                         Health = entity.Health,
                         MaxHealth = -1,
                         Priority = priority,
@@ -379,6 +363,9 @@ namespace MinecraftClient.Tui
             {
                 Name = client.GetUsername(),
                 Category = MobCategory.Player,
+                X = playerLoc.X,
+                Y = playerLoc.Y,
+                Z = playerLoc.Z,
                 Health = client.GetHealth(),
                 MaxHealth = 20f,
                 Priority = 5,
@@ -700,6 +687,19 @@ namespace MinecraftClient.Tui
 
             _hoverCol = col;
             _hoverRow = row;
+
+            if (this.VisualRoot is Visual root
+                && _mapGrid.TranslatePoint(pos, root) is { } gp)
+            {
+                _hoverGlobalX = gp.X;
+                _hoverGlobalY = gp.Y;
+            }
+            else
+            {
+                _hoverGlobalX = pos.X;
+                _hoverGlobalY = pos.Y;
+            }
+
             UpdateTooltip(col, row);
         }
 
@@ -712,13 +712,14 @@ namespace MinecraftClient.Tui
         {
             _hoverCol = -1;
             _hoverRow = -1;
-            _tooltipBorder.IsVisible = false;
+            TooltipService?.Hide();
         }
 
         private void UpdateTooltip(int col, int row)
         {
+            var svc = TooltipService;
             var result = _lastResult;
-            if (result is null) { _tooltipBorder.IsVisible = false; return; }
+            if (svc is null || result is null) { svc?.Hide(); return; }
 
             int bpp = result.Bpp;
             int centerX = result.CenterX;
@@ -731,7 +732,7 @@ namespace MinecraftClient.Tui
             int baseZ_top = result.PlayerBlockZ + (topPixelY - centerY) * bpp;
             int baseZ_bot = result.PlayerBlockZ + (botPixelY - centerY) * bpp;
 
-            _tooltipContent.Children.Clear();
+            var lines = new List<TuiTooltipLine>();
 
             if (bpp == 1)
             {
@@ -741,7 +742,7 @@ namespace MinecraftClient.Tui
                 string coordLine = baseZ_top == baseZ_bot
                     ? $"{baseX}, {surfY_top}, {baseZ_top}"
                     : $"{baseX}, {surfY_top}, {baseZ_top}  /  {baseX}, {surfY_bot}, {baseZ_bot}";
-                _tooltipContent.Children.Add(MakeTooltipText(coordLine, Brushes.White));
+                lines.Add(new TuiTooltipLine { Text = coordLine, Foreground = Brushes.White });
 
                 if (result.BlockTypes is not null)
                 {
@@ -751,7 +752,7 @@ namespace MinecraftClient.Tui
                     string blockLine = mat_top == mat_bot
                         ? FormatMaterialName(mat_top)
                         : $"{FormatMaterialName(mat_top)} / {FormatMaterialName(mat_bot)}";
-                    _tooltipContent.Children.Add(MakeTooltipText(blockLine, Brushes.LightGray));
+                    lines.Add(new TuiTooltipLine { Text = blockLine, Foreground = Brushes.LightGray });
                 }
             }
             else
@@ -759,33 +760,40 @@ namespace MinecraftClient.Tui
                 int endX = baseX + bpp - 1;
                 int endZ_bot = baseZ_bot + bpp - 1;
                 string coordLine = $"X {baseX}~{endX}  Z {baseZ_top}~{endZ_bot}";
-                _tooltipContent.Children.Add(MakeTooltipText(coordLine, Brushes.White));
+                lines.Add(new TuiTooltipLine { Text = coordLine, Foreground = Brushes.White });
 
-                AppendBlockSummary(result, col, topPixelY, botPixelY);
+                AppendBlockSummaryLines(result, col, topPixelY, botPixelY, lines);
             }
 
-            AppendEntityInfo(result, col, topPixelY, botPixelY);
+            AppendEntityInfoLines(result, col, topPixelY, botPixelY, lines);
 
-            if (_tooltipContent.Children.Count == 0)
+            if (lines.Count == 0)
             {
-                _tooltipBorder.IsVisible = false;
+                svc.Hide();
                 return;
             }
 
-            int maxTipW = Math.Max(10, _mapWidth / 2 - 2);
-            _tooltipBorder.MaxWidth = maxTipW;
-            _tooltipBorder.MaxHeight = _cellRows;
+            bool preferRight = Position switch
+            {
+                MinimapPosition.top_left or MinimapPosition.bottom_left => true,
+                MinimapPosition.top_right or MinimapPosition.bottom_right => false,
+                _ => true,
+            };
 
-            bool showRight = col < _mapWidth / 2;
-            int tipX = showRight ? col + 2 : Math.Max(0, col - maxTipW - 1);
-            int tipY = Math.Clamp(row, 0, _cellRows - 1);
+            double mx = _hoverGlobalX;
+            double my = _hoverGlobalY;
 
-            Canvas.SetLeft(_tooltipBorder, tipX);
-            Canvas.SetTop(_tooltipBorder, tipY);
-            _tooltipBorder.IsVisible = true;
+            if (Position == MinimapPosition.center
+                && this.VisualRoot is Visual root)
+            {
+                preferRight = mx < root.Bounds.Width / 2;
+            }
+
+            svc.Show(mx, my, lines, preferRight);
         }
 
-        private void AppendBlockSummary(SampleResult result, int col, int topPy, int botPy)
+        private void AppendBlockSummaryLines(SampleResult result, int col, int topPy, int botPy,
+            List<TuiTooltipLine> lines)
         {
             if (result.BlockSummary is null) return;
 
@@ -797,8 +805,6 @@ namespace MinecraftClient.Tui
             if (merged.Count == 0) return;
 
             var sorted = merged.OrderByDescending(kv => kv.Value).Take(4);
-            int totalSamples = 0;
-            foreach (var kv in merged) totalSamples += kv.Value;
 
             var parts = new List<string>();
             foreach (var kv in sorted)
@@ -811,8 +817,11 @@ namespace MinecraftClient.Tui
 
             if (parts.Count == 0) return;
 
-            string line = string.Join(", ", parts);
-            _tooltipContent.Children.Add(MakeTooltipText(line, Brushes.LightGray));
+            lines.Add(new TuiTooltipLine
+            {
+                Text = string.Join(", ", parts),
+                Foreground = Brushes.LightGray,
+            });
         }
 
         private static void MergeBlockCounts(List<(Material Mat, int Count)>?[,] summary,
@@ -829,7 +838,8 @@ namespace MinecraftClient.Tui
             }
         }
 
-        private void AppendEntityInfo(SampleResult result, int col, int topPy, int botPy)
+        private static void AppendEntityInfoLines(SampleResult result, int col, int topPy, int botPy,
+            List<TuiTooltipLine> lines)
         {
             var entityMap = result.EntityMap;
             if (entityMap is null) return;
@@ -851,19 +861,20 @@ namespace MinecraftClient.Tui
                 if (!seen.Add(key)) continue;
 
                 var catColor = MinimapEntityClassifier.GetBaseColor(ent.Category);
-                string hpStr;
+                string coordStr = $"({ent.X:F1}, {ent.Y:F1}, {ent.Z:F1})";
+                string hpStr = "";
                 if (ent.Health > 0)
                 {
                     hpStr = ent.MaxHealth > 0
-                        ? $"  HP:{ent.Health:F0}/{ent.MaxHealth:F0}"
-                        : $"  HP:{ent.Health:F0}";
+                        ? $" HP:{ent.Health:F0}/{ent.MaxHealth:F0}"
+                        : $" HP:{ent.Health:F0}";
                 }
-                else
-                    hpStr = "";
 
-                _tooltipContent.Children.Add(MakeTooltipText(
-                    $"{ent.Name}{hpStr}",
-                    new SolidColorBrush(catColor)));
+                lines.Add(new TuiTooltipLine
+                {
+                    Text = $"{ent.Name} {coordStr}{hpStr}",
+                    Foreground = new SolidColorBrush(catColor),
+                });
                 shown++;
             }
         }
@@ -877,19 +888,6 @@ namespace MinecraftClient.Tui
                 if (list is not null)
                     target.AddRange(list);
             }
-        }
-
-        private static TextBlock MakeTooltipText(string text, IBrush foreground)
-        {
-            return new TextBlock
-            {
-                Text = text,
-                Foreground = foreground,
-                TextWrapping = TextWrapping.Wrap,
-                Padding = new Thickness(0),
-                Margin = new Thickness(0),
-                FontSize = 1,
-            };
         }
 
         private static string FormatMaterialName(Material mat)

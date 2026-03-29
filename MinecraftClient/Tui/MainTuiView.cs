@@ -45,6 +45,8 @@ namespace MinecraftClient.Tui
         private readonly MinimapControl _minimapControl;
         private volatile bool _minimapVisible;
 
+        private TuiTooltipService? _tooltipService;
+
         private readonly Border _suggestionBorder;
         private readonly StackPanel _suggestionPanel;
         private CommandSuggestion[] _suggestions = Array.Empty<CommandSuggestion>();
@@ -56,6 +58,8 @@ namespace MinecraftClient.Tui
 
         private int MaxVisibleSuggestions =>
             Math.Max(1, Settings.Config.Console.CommandSuggestion.Max_Displayed_Suggestions);
+
+        public TuiTooltipService? TooltipService => _tooltipService;
 
         public MainTuiView()
         {
@@ -193,6 +197,10 @@ namespace MinecraftClient.Tui
                 Background = Brushes.Black,
                 Children = { _mainContent, _minimapBorder, _notificationBorder, _suggestionBorder }
             };
+
+            _tooltipService = new TuiTooltipService(_rootPanel);
+            _minimapControl.TooltipService = _tooltipService;
+            _minimapControl.Position = mmCfg.Position;
 
             Content = _rootPanel;
 
@@ -1083,6 +1091,7 @@ namespace MinecraftClient.Tui
             _minimapBorder.HorizontalAlignment = hAlign;
             _minimapBorder.VerticalAlignment = vAlign;
             _minimapBorder.Margin = margin;
+            _minimapControl.Position = pos;
             Settings.Config.Console.Minimap.Position = pos;
         }
 
