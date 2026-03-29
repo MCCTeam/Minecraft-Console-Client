@@ -3200,6 +3200,8 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool SkipRecipeBookSettings(Queue<byte> packetData)
         {
+            // MC 1.13 uses 4 booleans for the crafting/smelting recipe book states.
+            // MC 1.14+ expands this to 8 booleans by adding blast furnace and smoker states.
             int boolCount = protocolVersion >= MC_1_14_Version ? 8 : 4;
             if (packetData.Count < boolCount)
                 return false;

@@ -4173,7 +4173,7 @@ namespace MinecraftClient
             }
         }
 
-        private static string NormalizeRecipeId(string recipeId)
+        internal static string NormalizeRecipeId(string recipeId)
         {
             string trimmedRecipeId = recipeId.Trim();
             if (trimmedRecipeId.Length == 0)
