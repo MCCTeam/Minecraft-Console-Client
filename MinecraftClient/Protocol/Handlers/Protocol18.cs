@@ -2514,7 +2514,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (handler.GetEntityHandlingEnabled())
                     {
                         var entityId = dataTypes.ReadNextVarInt(packetData);
-                        var effectId = protocolVersion >= MC_1_18_2_Version
+                        var effectId = protocolVersion >= MC_1_20_4_Version
                             ? dataTypes.ReadNextVarInt(packetData) + 1
                             : dataTypes.ReadNextByte(packetData);
 
@@ -2544,7 +2544,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (handler.GetEntityHandlingEnabled())
                     {
                         var entityId = dataTypes.ReadNextVarInt(packetData);
-                        var effectId = protocolVersion >= MC_1_18_2_Version
+                        var effectId = protocolVersion >= MC_1_20_4_Version
                             ? dataTypes.ReadNextVarInt(packetData) + 1
                             : dataTypes.ReadNextByte(packetData);
 
