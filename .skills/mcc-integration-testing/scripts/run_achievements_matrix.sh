@@ -64,6 +64,16 @@ run_version() {
     # shellcheck disable=SC1090
     source "$summary_env"
 
+    if [[ -n "${MCC_LOG:-}" && ! -f "$MCC_LOG" ]]; then
+        NOTE="Harness failure: MCC log was not produced."
+        VERDICT="❌ Fail"
+    fi
+
+    if [[ -n "${COMMAND_LOG:-}" && ! -f "$COMMAND_LOG" ]]; then
+        NOTE="Harness failure: command transcript was not produced."
+        VERDICT="❌ Fail"
+    fi
+
     write_row "$VERSION" "$SERVER_DIR" "$PORT" "$FAMILY" "$INITIAL_STATUS" "$GRANT_STATUS" "$REVOKE_STATUS" \
         "$API_STATUS" "$VERDICT" "$NOTE" "$RUN_DIR" "$MCC_LOG" "$COPIED_SERVER_LOG" "$COMMAND_LOG"
 }
@@ -94,6 +104,7 @@ if ! command -v tmux >/dev/null 2>&1; then
 fi
 
 if [[ "$DOTNET_OK" == "yes" ]]; then
+    bash "$SCRIPT_DIR/preflight_test_env.sh" >/dev/null 2>&1 || true
     if ! dotnet build "$REPO_ROOT/MinecraftClient.sln" -c Release > "$BUILD_LOG" 2>&1; then
         BUILD_OK="no"
     fi

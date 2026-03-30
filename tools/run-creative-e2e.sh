@@ -5,6 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=tools/mcc-env.sh
 source "$REPO_ROOT/tools/mcc-env.sh"
+# shellcheck source=.skills/mcc-integration-testing/scripts/common.sh
+source "$REPO_ROOT/.skills/mcc-integration-testing/scripts/common.sh"
 
 usage() {
     cat <<'EOF'
@@ -37,6 +39,7 @@ MCC_LOG="$TEST_ROOT/mcc.log"
 SERVER_LOG_FILE="$MCC_SERVERS/$SERVER_DIR/logs/latest.log"
 INPUT_FILE="$REPO_ROOT/mcc_input.txt"
 MCC_PID=""
+SERVER_PORT="25565"
 
 mkdir -p "$TEST_ROOT"
 
@@ -59,33 +62,6 @@ wait_for_file_pattern() {
     return 1
 }
 
-wait_for_server_ready() {
-    local timeout="${1:-60}"
-    local elapsed=0
-
-    while (( elapsed < timeout )); do
-        if mc-log "$SERVER_DIR" 250 2>/dev/null | grep -Fq "Done ("; then
-            return 0
-        fi
-        sleep 1
-        ((elapsed += 1))
-    done
-
-    echo "Timed out waiting for server readiness" >&2
-    return 1
-}
-
-kill_other_servers() {
-    local sessions
-    sessions="$(tmux list-sessions 2>/dev/null | awk -F: '/^mc-/{print $1}' || true)"
-    if [[ -n "$sessions" ]]; then
-        while IFS= read -r session; do
-            [[ -z "$session" ]] && continue
-            tmux kill-session -t "$session" 2>/dev/null || true
-        done <<< "$sessions"
-    fi
-}
-
 cleanup() {
     if [[ -n "${MCC_PID:-}" ]] && kill -0 "$MCC_PID" 2>/dev/null; then
         echo "quit" >> "$INPUT_FILE" 2>/dev/null || true
@@ -96,7 +72,7 @@ cleanup() {
 
     if [[ -p "$MCC_SERVERS/$SERVER_DIR/stdin.pipe" ]]; then
         echo "stop" > "$MCC_SERVERS/$SERVER_DIR/stdin.pipe" 2>/dev/null || true
-        sleep 2
+        wait_for_server_stop "$SERVER_DIR" 20 >/dev/null 2>&1 || true
     fi
 
     tmux kill-session -t "$SESSION_NAME" 2>/dev/null || true
@@ -105,24 +81,7 @@ cleanup() {
 trap cleanup EXIT
 
 prepare_config() {
-    cp "$REPO_ROOT/MinecraftClient.ini" "$CFG"
-
-    sed -i \
-        -e 's/Account = { Login = "test", Password = "-" }/Account = { Login = "CursorBot", Password = "-" }/' \
-        -e "s/MinecraftVersion = \"auto\"/MinecraftVersion = \"$MC_VERSION\"/" \
-        -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
-        -e 's/InventoryHandling = false/InventoryHandling = true/' \
-        -e 's/EntityHandling = false/EntityHandling = true/' \
-        -e 's/AutoRespawn = false/AutoRespawn = true/' \
-        "$CFG"
-
-    sed -i '/^\[ChatBot.ScriptScheduler\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.DiscordRpc\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.AntiAFK\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.AutoDig\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.AutoAttack\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.PlayerListLogger\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
-    sed -i '/^\[ChatBot.ReplayCapture\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$CFG"
+    bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh" "$CFG" "$MC_VERSION" CursorBot >/dev/null
 }
 
 send_mcc_command() {
@@ -195,23 +154,30 @@ modern_mob_and_effects() {
     run_server_command "effect give CursorBot minecraft:regeneration 10 1 true"
 }
 
+bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "$SERVER_DIR" >/dev/null
+bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" --all >/dev/null
 prepare_config
-kill_other_servers
 rm -f "$MCC_LOG" "$INPUT_FILE"
 
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/ensure_offline_server.sh" "$SERVER_DIR" >/dev/null
+SERVER_PORT="$(bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/get_server_port.sh" "$SERVER_DIR")"
 if [[ -f "$MCC_SERVERS/$SERVER_DIR/server.properties" ]]; then
-    sed -i 's/^use-native-transport=.*/use-native-transport=false/' "$MCC_SERVERS/$SERVER_DIR/server.properties"
+    sed_in_place 's/^use-native-transport=.*/use-native-transport=false/' "$MCC_SERVERS/$SERVER_DIR/server.properties"
 fi
 
 mc-start "$SERVER_DIR" >/dev/null
-wait_for_server_ready || exit 1
+wait_for_server_ready "$SERVER_DIR" || exit 1
 
 : > "$INPUT_FILE"
 
 (
     cd "$REPO_ROOT"
-    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "$CFG" > "$MCC_LOG" 2>&1
+    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- \
+        "$CFG" \
+        CursorBot \
+        - \
+        "localhost:$SERVER_PORT" \
+        > "$MCC_LOG" 2>&1
 ) &
 MCC_PID=$!
 

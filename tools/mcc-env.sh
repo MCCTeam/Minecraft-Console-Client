@@ -26,6 +26,9 @@ mc-cmd()   { local v="${2:-1.20.6}"; echo "$1" > "$MCC_SERVERS/$v/stdin.pipe"; }
 mc-log()   { local s; s=$(_mc-session "${1:-1.20.6}"); tmux capture-pane -t "$s" -p -S "-${2:-50}"; }
 mc-kill()  { local v="${1:-1.20.6}" s; s=$(_mc-session "$v"); tmux kill-session -t "$s" 2>/dev/null; rm -f "$MCC_SERVERS/$v/stdin.pipe"; echo "Killed $s"; }
 mc-list()  { tmux list-sessions 2>/dev/null | grep "^mc-" || echo "No running MC servers"; }
+mc-wait-ready() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "${1:-1.20.6}" >/dev/null && source "$MCC_REPO/.skills/mcc-integration-testing/scripts/common.sh" && wait_for_server_ready "${1:-1.20.6}" "${2:-60}"; }
+mc-wait-stop() { source "$MCC_REPO/.skills/mcc-integration-testing/scripts/common.sh" && wait_for_server_stop "${1:-1.20.6}" "${2:-60}"; }
+mc-reset-test-env() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" "$@"; }
 
 # --- RCON ---
 mc-rcon() { bash "$MCC_REPO/tools/mc-rcon.sh" "$@"; }
@@ -59,3 +62,4 @@ mcc-tui()   {
 mcc-debug()   { bash "$MCC_REPO/tools/mcc-debug.sh" "$@"; }
 mcc-log-mcc() { tail -f "${TMPDIR:-/tmp}/mcc-debug/mcc-debug.log" 2>/dev/null || echo "No MCC log found"; }
 mcc-state()   { echo "debug state" >> "$MCC_REPO/mcc_input.txt"; sleep 1; tail -30 "${TMPDIR:-/tmp}/mcc-debug/mcc-debug.log" 2>/dev/null; }
+mcc-preflight() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "$@"; }

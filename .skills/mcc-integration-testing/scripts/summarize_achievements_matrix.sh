@@ -54,4 +54,4 @@ echo "## Inferred"
 echo
 echo "- Only rows with real MCC and server-log artifacts count as executed proof."
 echo "- Rows blocked by missing Java, tmux, or server directories are environment-limited, not product pass results."
-echo "- Legacy rows remain the highest-risk bucket because static inspection suggests pre-1.12 \`Statistics\` packets may not currently reach the achievements handler."
+echo "- Rows with missing MCC or command-log artifacts should be treated as harness failures until rerun confirms a product issue."
