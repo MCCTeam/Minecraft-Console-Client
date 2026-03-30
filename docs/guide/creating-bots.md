@@ -9,6 +9,7 @@ title: Creating Chat Bots
 - [Quick Introduction](#quick-introduction)
 - [Examples](#examples)
 - [AI-Assisted Bot Authoring](#ai-assisted-bot-authoring)
+- [Achievements And Advancements](#achievements-and-advancements)
 - [C# API](#c#-api)
 
 ## Notes
@@ -233,18 +234,29 @@ Create a standalone MCC /script bot that follows private messages, uses GetVerba
 
 Chat bots and C# scripts can read the current achievement state and react to updates.
 
-Useful methods:
+Methods:
 
 - `GetAchievements()`
 - `GetUnlockedAchievements()`
 - `GetLockedAchievements()`
 - `OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset)`
 
-Things worth knowing:
+The `Achievement` record exposes:
+
+- `Id` (`string`) - resource identifier, e.g. `minecraft:story/root` or `achievement.openInventory`
+- `Title` (`string?`) - display name, or `null` for legacy achievements
+- `Description` (`string?`) - display description, or `null` for legacy achievements
+- `Type` (`AchievementType`) - `Task`, `Challenge`, `Goal`, or `Legacy`
+- `IsCompleted` (`bool`) - whether all requirements have been met
+- `IsHidden` (`bool`) - whether the advancement is hidden in the UI until unlocked
+- `Requirements` (`IReadOnlyList<IReadOnlyList<string>>`) - OR-groups of criteria that must all be satisfied
+- `CriteriaProgress` (`IReadOnlyDictionary<string, bool>`) - per-criterion completion status
+
+Notes:
 
 - On `1.8` to `1.11.2`, ids use the legacy `achievement.*` format.
 - On `1.12+`, ids use advancement resource ids such as `minecraft:story/root`.
-- Legacy achievements usually have `Title = null` and `Description = null` because the server does not send display metadata in the statistics packet.
+- Legacy achievements have `Title = null` and `Description = null` because the server does not send display metadata in the statistics packet.
 - On newer versions, revoking an advancement may remove it from the current set instead of turning it into a locked entry, so `removedIds` matters.
 
 Example:

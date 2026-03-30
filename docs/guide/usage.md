@@ -224,11 +224,13 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 - **Description:**
 
-  Show the achievements or advancements currently known to MCC.
+  List achievements and advancements MCC has received from the server.
 
   On Minecraft `1.8` to `1.11.2`, MCC tracks legacy achievements such as `achievement.openInventory`.
 
   On Minecraft `1.12+`, MCC tracks advancements such as `minecraft:story/root`.
+
+  Each entry shows completion status, title (when the server sends one), id, and type. For example: `[DONE] Stone Age (minecraft:story/mine_stone) [Task]`.
 
 - **Usage:**
 
