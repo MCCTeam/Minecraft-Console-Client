@@ -436,5 +436,8 @@ FodyWeavers.xsd
 # SpecStory files
 /.specstory/
 /.vscode/settings.json
+
+# Other
 /Sentry/
+/downloads/
 server.pid

@@ -110,6 +110,9 @@ namespace MinecraftClient
 
         // player effects
         private readonly Dictionary<Effects, EffectData> playerEffects = new();
+
+        // player attributes (e.g., block_break_speed, mining_efficiency, submerged_mining_speed)
+        private readonly Dictionary<string, double> playerAttributes = new();
         
         // Sneaking
         public bool IsSneaking { get; set; } = false;
@@ -2630,6 +2633,13 @@ namespace MinecraftClient
                 if (lookAtBlock)
                     UpdateLocation(GetCurrentLocation(), location);
 
+                // Auto-compute dig duration for survival/adventure mode when not explicitly supplied
+                if (duration <= 0 && protocolversion >= Protocol18Handler.MC_1_8_Version
+                    && gamemode is 0 or 2) // Survival or Adventure
+                {
+                    duration = ComputeAutoDigDuration(location);
+                }
+
                 // Send dig start and dig end, will need to wait for server response to know dig result
                 // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
                 bool result = handler.SendPlayerDigging(0, location, blockFace, sequenceId++)
@@ -2644,6 +2654,52 @@ namespace MinecraftClient
                 }
 
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Compute the automatic dig duration in seconds for a block, based on held tool,
+        /// enchantments, effects, attributes, and player state.
+        /// Returns 0 for instant-break blocks.
+        /// </summary>
+        private double ComputeAutoDigDuration(Location location)
+        {
+            try
+            {
+                Block block = world.GetBlock(location);
+                Material blockMaterial = block.Type;
+
+                if (blockMaterial == Material.Air)
+                    return 0;
+
+                // Get held item from player inventory
+                Item? heldItem = null;
+                Item? helmetItem = null;
+                if (inventories.TryGetValue(0, out var playerInv))
+                {
+                    int hotbarSlot = 36 + CurrentSlot; // Hotbar slots are 36-44
+                    playerInv.Items.TryGetValue(hotbarSlot, out heldItem);
+                    playerInv.Items.TryGetValue(5, out helmetItem); // Slot 5 = helmet
+                }
+
+                int ticks = MiningCalculator.ComputeDigTicks(
+                    blockMaterial,
+                    heldItem,
+                    helmetItem,
+                    playerEffects,
+                    playerAttributes,
+                    playerPhysics.InWater,
+                    playerPhysics.OnGround,
+                    protocolversion);
+
+                if (ticks <= 0)
+                    return 0;
+
+                return (double)ticks / Settings.ClientTicksPerSecond;
+            }
+            catch
+            {
+                return 0;
             }
         }
 
@@ -3751,6 +3807,9 @@ namespace MinecraftClient
         {
             if (EntityID == playerEntityID)
             {
+                foreach (var kvp in prop)
+                    playerAttributes[kvp.Key] = kvp.Value;
+
                 DispatchBotEvent(bot => bot.OnPlayerProperty(prop));
             }
         }
