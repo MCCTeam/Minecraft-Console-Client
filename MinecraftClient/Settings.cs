@@ -1286,6 +1286,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$Console.Minimap.RefreshInterval$")]
                     public int RefreshInterval = Tui.MinimapControl.DefaultRefreshMs;
 
+                    [TomlInlineComment("$Console.Minimap.CaveMode$")]
+                    public Tui.CaveModeOption CaveMode = Tui.CaveModeOption.auto;
+
                     public void OnSettingUpdate()
                     {
                         Zoom = Math.Clamp(Zoom, Tui.MinimapControl.MinZoom, Tui.MinimapControl.MaxZoom);

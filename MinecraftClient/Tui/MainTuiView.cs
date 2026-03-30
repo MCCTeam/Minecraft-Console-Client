@@ -167,6 +167,7 @@ namespace MinecraftClient.Tui
             _minimapControl.NameConfig.Hostile = mmCfg.ShowHostileNames;
             _minimapControl.NameConfig.Neutral = mmCfg.ShowNeutralNames;
             _minimapControl.NameConfig.Passive = mmCfg.ShowPassiveNames;
+            _minimapControl.CaveMode = mmCfg.CaveMode;
 
             var (hAlign, vAlign, margin) = GetMinimapAlignment(mmCfg.Position);
             _minimapBorder = new Border
@@ -1096,6 +1097,14 @@ namespace MinecraftClient.Tui
         }
 
         public MinimapPosition GetMinimapPosition() => Settings.Config.Console.Minimap.Position;
+
+        public void SetMinimapCaveMode(CaveModeOption mode)
+        {
+            _minimapControl.CaveMode = mode;
+            Settings.Config.Console.Minimap.CaveMode = mode;
+        }
+
+        public CaveModeOption GetMinimapCaveMode() => _minimapControl.CaveMode;
 
         private static (HorizontalAlignment h, VerticalAlignment v, Thickness margin) GetMinimapAlignment(MinimapPosition pos) => pos switch
         {

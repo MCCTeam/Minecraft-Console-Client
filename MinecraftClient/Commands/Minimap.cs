@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
     class Minimap : Command
     {
         public override string CmdName => "minimap";
-        public override string CmdUsage => "minimap [on|off] | minimap zoom [in|out|<1-16>] | minimap names [players|hostile|neutral|passive] [on|off] | minimap names [all_on|all_off] | minimap position [top_left|top_right|center|bottom_left|bottom_right]";
+        public override string CmdUsage => "minimap [on|off] | minimap zoom [in|out|<1-16>] | minimap names [players|hostile|neutral|passive] [on|off] | minimap names [all_on|all_off] | minimap position [top_left|top_right|center|bottom_left|bottom_right] | minimap cave [auto|on|off]";
         public override string CmdDesc => Translations.cmd_minimap_desc;
 
         public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
@@ -78,6 +78,14 @@ namespace MinecraftClient.Commands
                         .Executes(r => DoPositionSet(r.Source, MinimapPosition.bottom_left)))
                     .Then(l => l.Literal("bottom_right")
                         .Executes(r => DoPositionSet(r.Source, MinimapPosition.bottom_right))))
+                .Then(l => l.Literal("cave")
+                    .Executes(r => DoCaveInfo(r.Source))
+                    .Then(l => l.Literal("auto")
+                        .Executes(r => DoCaveSet(r.Source, CaveModeOption.auto)))
+                    .Then(l => l.Literal("on")
+                        .Executes(r => DoCaveSet(r.Source, CaveModeOption.on)))
+                    .Then(l => l.Literal("off")
+                        .Executes(r => DoCaveSet(r.Source, CaveModeOption.off))))
                 .Then(l => l.Literal("_help")
                     .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help")?.GetChild(CmdName)))
@@ -249,6 +257,26 @@ namespace MinecraftClient.Commands
             Dispatcher.UIThread.Post(() => view.SetMinimapPosition(pos));
             return r.SetAndReturn(Status.Done,
                 string.Format(Translations.cmd_minimap_position_set, pos));
+        }
+
+        private static int DoCaveInfo(CmdResult r)
+        {
+            var view = GetTuiView(r);
+            if (view is null) return (int)r.status;
+
+            var mode = view.GetMinimapCaveMode();
+            return r.SetAndReturn(Status.Done,
+                string.Format(Translations.cmd_minimap_cave_current, mode));
+        }
+
+        private static int DoCaveSet(CmdResult r, CaveModeOption mode)
+        {
+            var view = GetTuiView(r);
+            if (view is null) return (int)r.status;
+
+            Dispatcher.UIThread.Post(() => view.SetMinimapCaveMode(mode));
+            return r.SetAndReturn(Status.Done,
+                string.Format(Translations.cmd_minimap_cave_set, mode));
         }
 
         private static string BoolStr(bool v) => v ? "ON" : "OFF";

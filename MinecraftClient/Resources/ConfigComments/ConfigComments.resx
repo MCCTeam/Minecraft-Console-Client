@@ -975,6 +975,9 @@ Note: This does NOT require a Bot Token, only an Application ID. Discord must be
   <data name="Console.Minimap.RefreshInterval" xml:space="preserve">
     <value>Minimap refresh interval in milliseconds (100-5000).</value>
   </data>
+  <data name="Console.Minimap.CaveMode" xml:space="preserve">
+    <value>Cave rendering mode: "auto" (detect ceiling), "on" (always cave view), "off" (always surface view).</value>
+  </data>
   <data name="Main.General.AuthlibUser" xml:space="preserve">
     <value>Yggdrasil authlib multi-user selection.</value>
   </data>

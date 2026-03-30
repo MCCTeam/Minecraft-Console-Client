@@ -2533,6 +2533,12 @@ see item details.</value>
   <data name="cmd.minimap.position_set" xml:space="preserve">
     <value>Minimap position set to: {0}</value>
   </data>
+  <data name="cmd.minimap.cave_current" xml:space="preserve">
+    <value>Current cave mode: {0}</value>
+  </data>
+  <data name="cmd.minimap.cave_set" xml:space="preserve">
+    <value>Cave mode set to: {0}</value>
+  </data>
   <data name="cmd.achievement.desc" xml:space="preserve">
     <value>list achievements/advancements from the server.</value>
   </data>

@@ -13,6 +13,8 @@ using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Tui
 {
+    public enum CaveModeOption { auto, on, off }
+
     /// <summary>
     /// TUI minimap control rendered as a grid of TextBlocks using half-block characters.
     /// Zoom is expressed as blocks-per-pixel (1 = 1:1, 16 = 16 blocks per pixel).
@@ -62,6 +64,8 @@ namespace MinecraftClient.Tui
         public TuiTooltipService? TooltipService { get; set; }
 
         public MinimapPosition Position { get; set; } = MinimapPosition.top_right;
+
+        public CaveModeOption CaveMode { get; set; } = CaveModeOption.auto;
 
         public int MapPixelWidth => _mapWidth;
         public int MapPixelHeight => _mapHeight;
@@ -177,19 +181,21 @@ namespace MinecraftClient.Tui
             bool showHostile = _nameConfig.Hostile;
             bool showNeutral = _nameConfig.Neutral;
             bool showPassive = _nameConfig.Passive;
+            var caveOpt = CaveMode;
 
             Task.Run(() =>
             {
                 try
                 {
                     var result = SampleTerrain(client, bpp, w, h,
-                        showPlayers, showHostile, showNeutral, showPassive, ct);
+                        showPlayers, showHostile, showNeutral, showPassive, caveOpt, ct);
                     if (ct.IsCancellationRequested) return;
 
                     Dispatcher.UIThread.Post(() =>
                     {
                         ApplyPixelBuffer(result, w, h);
-                        UpdateInfoBarAndLegend(client, bpp, result.VisibleCategories, w);
+                        UpdateInfoBarAndLegend(client, bpp, result.VisibleCategories, w,
+                            result.CaveModeActive);
                     });
                 }
                 catch (OperationCanceledException) { }
@@ -236,6 +242,7 @@ namespace MinecraftClient.Tui
             public int CenterX;
             public int CenterY;
             public int Bpp;
+            public bool CaveModeActive;
         }
 
         private static bool ShouldShowNameLocal(MobCategory cat,
@@ -253,7 +260,7 @@ namespace MinecraftClient.Tui
 
         private static SampleResult SampleTerrain(McClient client, int bpp, int mapW, int mapH,
             bool showPlayers, bool showHostile, bool showNeutral, bool showPassive,
-            CancellationToken ct)
+            CaveModeOption caveOpt, CancellationToken ct)
         {
             var result = new SampleResult
             {
@@ -280,6 +287,9 @@ namespace MinecraftClient.Tui
             var dim = World.GetDimension();
             int minY = dim.minY;
             int scanTop = Math.Min(playerBlockY + 32, dim.maxY - 1);
+
+            bool caveMode = ResolveCaveMode(caveOpt, world, dim, playerBlockX, playerBlockY, playerBlockZ, scanTop);
+            result.CaveModeActive = caveMode;
 
             var entities = client.GetEntityHandlingEnabled()
                 ? client.GetEntities()
@@ -374,6 +384,8 @@ namespace MinecraftClient.Tui
             ChunkColumn? cachedColumn = null;
             int cachedChunkX = int.MinValue, cachedChunkZ = int.MinValue;
 
+            bool[,]? caveMask = caveMode ? new bool[mapW, mapH] : null;
+
             for (int px = 0; px < mapW; px++)
             {
                 for (int py = 0; py < mapH; py++)
@@ -383,23 +395,51 @@ namespace MinecraftClient.Tui
                     int baseX = playerBlockX + (px - centerX) * bpp;
                     int baseZ = playerBlockZ + (py - centerY) * bpp;
 
-                    if (bpp == 1)
+                    if (caveMode)
                     {
-                        var (color, surfY, surfMat) = SampleColumn(world, baseX, baseZ, scanTop, minY,
-                            ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
-                        result.Pixels[px, py] = color;
-                        result.Heights[px, py] = surfY;
-                        result.BlockTypes![px, py] = surfMat;
+                        if (bpp == 1)
+                        {
+                            var (color, surfY, surfMat, inCave) = SampleColumnCave(
+                                world, baseX, baseZ, playerBlockY, minY, dim.maxY - 1,
+                                ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
+                            result.Pixels[px, py] = color;
+                            result.Heights[px, py] = surfY;
+                            result.BlockTypes![px, py] = surfMat;
+                            caveMask![px, py] = inCave;
+                        }
+                        else
+                        {
+                            var (color, surfY, matSum, inCave) = SampleAreaDominantCave(
+                                world, baseX, baseZ, bpp, playerBlockY, minY, dim.maxY - 1,
+                                result.BlockSummary is not null,
+                                ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
+                            result.Pixels[px, py] = color;
+                            result.Heights[px, py] = surfY;
+                            if (result.BlockSummary is not null)
+                                result.BlockSummary[px, py] = matSum;
+                            caveMask![px, py] = inCave;
+                        }
                     }
                     else
                     {
-                        var (color, surfY, matSum) = SampleAreaDominant(world, baseX, baseZ, bpp,
-                            scanTop, minY, result.BlockSummary is not null,
-                            ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
-                        result.Pixels[px, py] = color;
-                        result.Heights[px, py] = surfY;
-                        if (result.BlockSummary is not null)
-                            result.BlockSummary[px, py] = matSum;
+                        if (bpp == 1)
+                        {
+                            var (color, surfY, surfMat) = SampleColumn(world, baseX, baseZ, scanTop, minY,
+                                ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
+                            result.Pixels[px, py] = color;
+                            result.Heights[px, py] = surfY;
+                            result.BlockTypes![px, py] = surfMat;
+                        }
+                        else
+                        {
+                            var (color, surfY, matSum) = SampleAreaDominant(world, baseX, baseZ, bpp,
+                                scanTop, minY, result.BlockSummary is not null,
+                                ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
+                            result.Pixels[px, py] = color;
+                            result.Heights[px, py] = surfY;
+                            if (result.BlockSummary is not null)
+                                result.BlockSummary[px, py] = matSum;
+                        }
                     }
                 }
             }
@@ -415,6 +455,9 @@ namespace MinecraftClient.Tui
                     result.Pixels[px, py] = MinimapColorMap.ApplyHeightShade(result.Pixels[px, py], delta);
                 }
             }
+
+            if (caveMask is not null)
+                ApplyCaveBorder(result, caveMask, mapW, mapH, entityPixels);
 
             foreach (var (key, info) in entityPixels)
             {
@@ -638,6 +681,230 @@ namespace MinecraftClient.Tui
             }
 
             return (best, avgY, summary);
+        }
+
+        /// <summary>
+        /// Determine whether cave mode should be active for this frame.
+        /// Mirrors VoxelMap's detection: hasCeiling dimensions always use cave mode,
+        /// otherwise check whether the player's column has a solid block above.
+        /// </summary>
+        private static bool ResolveCaveMode(CaveModeOption opt, World world, Dimension dim,
+            int playerX, int playerY, int playerZ, int scanTop)
+        {
+            if (opt == CaveModeOption.off) return false;
+            if (opt == CaveModeOption.on) return true;
+
+            if (dim.hasCeiling) return true;
+
+            for (int y = playerY + 2; y <= scanTop; y++)
+            {
+                var mat = world.GetBlock(new Mapping.Location(playerX, y, playerZ)).Type;
+                if (MinimapColorMap.IsLightBlocking(mat))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Cave-mode column sampler. Starting from playerY, scans down through air
+        /// to find the first light-blocking block (the cave floor), or scans up if
+        /// the player is embedded in solid. Returns the floor block color with cave
+        /// darkening applied, plus an inCave flag indicating the column has a reachable
+        /// air pocket at the player's Y level.
+        /// </summary>
+        private static (Color color, int surfaceY, Material surfaceMat, bool inCave) SampleColumnCave(
+            World world, int x, int z, int playerY, int minY, int maxY,
+            ref ChunkColumn? cachedColumn, ref int cachedChunkX, ref int cachedChunkZ)
+        {
+            int chunkX = x >> 4;
+            int chunkZ = z >> 4;
+            if (chunkX != cachedChunkX || chunkZ != cachedChunkZ)
+            {
+                cachedColumn = world[chunkX, chunkZ];
+                cachedChunkX = chunkX;
+                cachedChunkZ = chunkZ;
+            }
+
+            if (cachedColumn is null)
+                return (MinimapColorMap.VoidColor, minY, Material.Air, false);
+
+            int caveFloorY = FindCaveFloorY(cachedColumn, x, z, playerY, minY, maxY);
+
+            if (caveFloorY == int.MinValue)
+            {
+                var fallback = SampleColumn(world, x, z, maxY, minY,
+                    ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
+                return (MinimapColorMap.CaveSolidColor, fallback.surfaceY, fallback.surfaceMat, false);
+            }
+
+            var loc = new Mapping.Location(x, caveFloorY, z);
+            var chunk = cachedColumn.GetChunk(loc);
+            if (chunk is null)
+                return (MinimapColorMap.CaveSolidColor, caveFloorY, Material.Air, false);
+
+            var block = chunk.GetBlock(loc);
+            var mat = block.Type;
+            var color = MinimapColorMap.GetBaseColor(mat);
+            color = MinimapColorMap.ApplyCaveDarkening(color);
+
+            return (color, caveFloorY, mat, true);
+        }
+
+        /// <summary>
+        /// Find the cave floor Y at (x, z) by scanning from playerY.
+        /// If the block at playerY is air-like, scan down for the first solid block.
+        /// If the block at playerY is solid, scan up (up to playerY + 10) for the
+        /// first air block, then return that Y (the cave ceiling opening).
+        /// Returns int.MinValue if no cave floor is found.
+        /// </summary>
+        private static int FindCaveFloorY(ChunkColumn column, int x, int z, int playerY, int minY, int maxY)
+        {
+            var startLoc = new Mapping.Location(x, playerY, z);
+            var startChunk = column.GetChunk(startLoc);
+
+            bool startIsAir;
+            if (startChunk is null)
+            {
+                startIsAir = true;
+            }
+            else
+            {
+                var startMat = startChunk.GetBlock(startLoc).Type;
+                startIsAir = !MinimapColorMap.IsLightBlocking(startMat);
+            }
+
+            if (startIsAir)
+            {
+                for (int y = playerY - 1; y >= minY; y--)
+                {
+                    var loc = new Mapping.Location(x, y, z);
+                    var chunk = column.GetChunk(loc);
+                    if (chunk is null) continue;
+
+                    var mat = chunk.GetBlock(loc).Type;
+                    if (MinimapColorMap.IsLightBlocking(mat))
+                        return y;
+                }
+                return minY;
+            }
+            else
+            {
+                int upLimit = Math.Min(playerY + 10, maxY);
+                for (int y = playerY + 1; y <= upLimit; y++)
+                {
+                    var loc = new Mapping.Location(x, y, z);
+                    var chunk = column.GetChunk(loc);
+                    if (chunk is null) continue;
+
+                    var mat = chunk.GetBlock(loc).Type;
+                    if (!MinimapColorMap.IsLightBlocking(mat))
+                    {
+                        for (int y2 = y - 1; y2 >= minY; y2--)
+                        {
+                            var loc2 = new Mapping.Location(x, y2, z);
+                            var chunk2 = column.GetChunk(loc2);
+                            if (chunk2 is null) continue;
+
+                            var mat2 = chunk2.GetBlock(loc2).Type;
+                            if (MinimapColorMap.IsLightBlocking(mat2))
+                                return y2;
+                        }
+                        return minY;
+                    }
+                }
+                return int.MinValue;
+            }
+        }
+
+        private static (Color color, int surfaceY, List<(Material Mat, int Count)>? matSummary, bool inCave)
+            SampleAreaDominantCave(World world, int baseX, int baseZ,
+            int size, int playerY, int minY, int maxY, bool collectMats,
+            ref ChunkColumn? cachedColumn, ref int cachedChunkX, ref int cachedChunkZ)
+        {
+            var colorCounts = new Dictionary<Color, (int Count, int SumY)>();
+            Dictionary<Material, int>? matCounts = collectMats ? [] : null;
+            int caveCount = 0;
+
+            int step = Math.Max(1, size / 3);
+            for (int dx = 0; dx < size; dx += step)
+            {
+                for (int dz = 0; dz < size; dz += step)
+                {
+                    var (c, surfY, surfMat, inCave) = SampleColumnCave(
+                        world, baseX + dx, baseZ + dz, playerY, minY, maxY,
+                        ref cachedColumn, ref cachedChunkX, ref cachedChunkZ);
+
+                    if (inCave) caveCount++;
+
+                    if (colorCounts.TryGetValue(c, out var existing))
+                        colorCounts[c] = (existing.Count + 1, existing.SumY + surfY);
+                    else
+                        colorCounts[c] = (1, surfY);
+
+                    if (matCounts is not null)
+                    {
+                        if (matCounts.TryGetValue(surfMat, out int mc))
+                            matCounts[surfMat] = mc + 1;
+                        else
+                            matCounts[surfMat] = 1;
+                    }
+                }
+            }
+
+            Color best = MinimapColorMap.VoidColor;
+            int bestCount = 0;
+            int avgY = minY;
+            foreach (var kvp in colorCounts)
+            {
+                if (kvp.Value.Count > bestCount)
+                {
+                    bestCount = kvp.Value.Count;
+                    best = kvp.Key;
+                    avgY = kvp.Value.SumY / kvp.Value.Count;
+                }
+            }
+
+            List<(Material, int)>? summary = null;
+            if (matCounts is not null && matCounts.Count > 0)
+            {
+                summary = matCounts
+                    .OrderByDescending(kv => kv.Value)
+                    .Select(kv => (kv.Key, kv.Value))
+                    .ToList();
+            }
+
+            int totalSamples = 0;
+            foreach (var kvp in colorCounts)
+                totalSamples += kvp.Value.Count;
+
+            bool majorityInCave = caveCount * 2 >= totalSamples;
+            return (best, avgY, summary, majorityInCave);
+        }
+
+        /// <summary>
+        /// Draw a 1-pixel dark border around the boundary between cave-reachable pixels
+        /// and non-cave (solid/surface) pixels, giving the cave region a visible edge.
+        /// </summary>
+        private static void ApplyCaveBorder(SampleResult result, bool[,] caveMask,
+            int mapW, int mapH, Dictionary<(int, int), (Color, int)> entityPixels)
+        {
+            for (int px = 0; px < mapW; px++)
+            {
+                for (int py = 0; py < mapH; py++)
+                {
+                    if (entityPixels.ContainsKey((px, py))) continue;
+                    if (caveMask[px, py]) continue;
+
+                    bool neighborInCave = false;
+                    if (px > 0 && caveMask[px - 1, py]) neighborInCave = true;
+                    if (!neighborInCave && px < mapW - 1 && caveMask[px + 1, py]) neighborInCave = true;
+                    if (!neighborInCave && py > 0 && caveMask[px, py - 1]) neighborInCave = true;
+                    if (!neighborInCave && py < mapH - 1 && caveMask[px, py + 1]) neighborInCave = true;
+
+                    if (neighborInCave)
+                        result.Pixels[px, py] = MinimapColorMap.CaveBorderColor;
+                }
+            }
         }
 
         private void ApplyPixelBuffer(SampleResult result, int w, int h)
@@ -898,7 +1165,7 @@ namespace MinecraftClient.Tui
         }
 
         private void UpdateInfoBarAndLegend(McClient client, int bpp,
-            HashSet<MobCategory> categories, int mapW)
+            HashSet<MobCategory> categories, int mapW, bool caveModeActive)
         {
             var loc = client.GetCurrentLocation();
             float yaw = client.GetYaw();
@@ -908,7 +1175,8 @@ namespace MinecraftClient.Tui
             int y = (int)Math.Floor(loc.Y);
             int z = (int)Math.Floor(loc.Z);
 
-            string coordPart = $"{x}, {y}, {z}  {arrow}  {bpp}:1";
+            string caveSuffix = caveModeActive ? "  \u25bc" : "";
+            string coordPart = $"{x}, {y}, {z}  {arrow}  {bpp}:1{caveSuffix}";
 
             var legendParts = new List<string>();
             var legendColors = new List<Color>();
