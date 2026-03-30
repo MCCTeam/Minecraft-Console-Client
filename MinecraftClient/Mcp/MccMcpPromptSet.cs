@@ -12,8 +12,8 @@ public sealed class MccMcpPromptSet
         this.guidanceProvider = guidanceProvider;
     }
 
-    [McpServerPrompt(Name = "mcc_operator_guide"), Description("Get the canonical MCC operator guidance prompt for external agents using this MCP server.")]
-    public string OperatorGuide()
+    [McpServerPrompt(Name = "mcc_operator_prompt"), Description("Get the canonical MCC MCP Operator Prompt for external agents using this MCP server.")]
+    public string OperatorPrompt()
     {
         return guidanceProvider.GetSystemPrompt();
     }

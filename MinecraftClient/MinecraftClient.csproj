@@ -20,7 +20,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Physics\BlockShapeData.json" LogicalName="BlockShapeData.json" />
-    <EmbeddedResource Include="..\.skills\mcc-mcp-operator\SKILL.md" Link="Mcp\EmbeddedSkills\SKILL.md" LogicalName="MccMcpOperatorSkill.md" />
+    <EmbeddedResource Include="Mcp\Prompts\MccMcpOperatorPrompt.md" LogicalName="MccMcpOperatorPrompt.md" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Protocol\Handlers\Compression\**" />

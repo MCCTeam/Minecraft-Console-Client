@@ -105,7 +105,7 @@ public sealed class MccMcpToolSet
         return capabilities.GetInternalCommands();
     }
 
-    [McpServerTool(Name = "mcc_agent_guidance"), Description("Get the canonical MCC operator guidance bundle for external agents using this MCP server.")]
+    [McpServerTool(Name = "mcc_agent_guidance"), Description("Get the canonical MCC MCP Operator Prompt bundle for external agents using this MCP server.")]
     public object AgentGuidance()
     {
         return guidanceProvider.GetToolPayload();

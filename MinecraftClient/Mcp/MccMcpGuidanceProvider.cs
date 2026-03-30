@@ -10,7 +10,7 @@ namespace MinecraftClient.Mcp;
 
 public sealed class MccMcpGuidanceProvider
 {
-    private const string EmbeddedSkillResourceSuffix = "MccMcpOperatorSkill.md";
+    private const string EmbeddedPromptResourceSuffix = "MccMcpOperatorPrompt.md";
     private const string BestPracticesHeading = "## Best Practices";
     private const string ExampleScenariosHeading = "## Example Scenarios";
 
@@ -23,7 +23,7 @@ public sealed class MccMcpGuidanceProvider
         guidanceDocument = new Lazy<GuidanceDocument>(LoadGuidanceDocument);
     }
 
-    public string SkillName => "mcc-mcp-operator";
+    public string PromptName => "mcc_operator_prompt";
 
     public string GetSystemPrompt()
     {
@@ -31,7 +31,7 @@ public sealed class MccMcpGuidanceProvider
         MccMcpAgentCapabilityStatus capabilityStatus = BuildCapabilityStatus();
         StringBuilder builder = new();
         builder.AppendLine("You are an external agent controlling Minecraft Console Client (MCC) through its built-in MCP server.");
-        builder.AppendLine("Use the following operator guide as your system prompt. Treat the capability snapshot as authoritative and do not invent unsupported actions.");
+        builder.AppendLine("Use the following MCP Operator Prompt as your system prompt. Treat the capability snapshot as authoritative and do not invent unsupported actions.");
         builder.AppendLine();
         builder.AppendLine(document.BodyMarkdown);
         builder.AppendLine();
@@ -49,8 +49,8 @@ public sealed class MccMcpGuidanceProvider
         GuidanceDocument document = guidanceDocument.Value;
         return new MccMcpAgentGuidancePayload
         {
-            SkillName = SkillName,
-            SkillMarkdown = document.SkillMarkdown,
+            PromptName = PromptName,
+            PromptMarkdown = document.PromptMarkdown,
             SystemPrompt = GetSystemPrompt(),
             BestPractices = document.BestPractices,
             ExampleScenarios = document.ExampleScenarios,
@@ -62,21 +62,21 @@ public sealed class MccMcpGuidanceProvider
     {
         Assembly assembly = typeof(MccMcpGuidanceProvider).Assembly;
         string resourceName = assembly.GetManifestResourceNames()
-            .FirstOrDefault(name => name.EndsWith(EmbeddedSkillResourceSuffix, StringComparison.Ordinal))
-            ?? throw new InvalidOperationException($"Embedded MCP skill resource '{EmbeddedSkillResourceSuffix}' was not found.");
+            .FirstOrDefault(name => name.EndsWith(EmbeddedPromptResourceSuffix, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException($"Embedded MCP operator prompt resource '{EmbeddedPromptResourceSuffix}' was not found.");
 
         using Stream? stream = assembly.GetManifestResourceStream(resourceName);
         if (stream is null)
-            throw new InvalidOperationException($"Embedded MCP skill resource '{resourceName}' could not be opened.");
+            throw new InvalidOperationException($"Embedded MCP operator prompt resource '{resourceName}' could not be opened.");
 
         using StreamReader reader = new(stream, Encoding.UTF8);
-        string skillMarkdown = reader.ReadToEnd();
-        string bodyMarkdown = StripFrontmatter(skillMarkdown);
+        string promptMarkdown = reader.ReadToEnd();
+        string bodyMarkdown = StripFrontmatter(promptMarkdown);
         string bestPracticesSection = ExtractSection(bodyMarkdown, BestPracticesHeading);
         string exampleScenariosSection = ExtractSection(bodyMarkdown, ExampleScenariosHeading);
 
         return new GuidanceDocument(
-            skillMarkdown.Replace("\r\n", "\n").Trim(),
+            promptMarkdown.Replace("\r\n", "\n").Trim(),
             bodyMarkdown,
             ExtractBulletList(bestPracticesSection),
             ExtractExampleScenarios(exampleScenariosSection));
@@ -181,7 +181,7 @@ public sealed class MccMcpGuidanceProvider
     }
 
     private sealed record GuidanceDocument(
-        string SkillMarkdown,
+        string PromptMarkdown,
         string BodyMarkdown,
         string[] BestPractices,
         MccMcpAgentScenario[] ExampleScenarios);
@@ -189,11 +189,11 @@ public sealed class MccMcpGuidanceProvider
 
 public sealed class MccMcpAgentGuidancePayload
 {
-    [JsonPropertyName("skillName")]
-    public string SkillName { get; init; } = string.Empty;
+    [JsonPropertyName("promptName")]
+    public string PromptName { get; init; } = string.Empty;
 
-    [JsonPropertyName("skillMarkdown")]
-    public string SkillMarkdown { get; init; } = string.Empty;
+    [JsonPropertyName("promptMarkdown")]
+    public string PromptMarkdown { get; init; } = string.Empty;
 
     [JsonPropertyName("systemPrompt")]
     public string SystemPrompt { get; init; } = string.Empty;
