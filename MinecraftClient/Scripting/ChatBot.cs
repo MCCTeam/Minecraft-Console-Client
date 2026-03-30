@@ -1089,9 +1089,10 @@ namespace MinecraftClient.Scripting
         /// <param name="direction">Example: if your player is under a block that is being destroyed, use Down</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true)
+        /// <param name="duration">Dig duration in seconds. 0 = auto-compute for survival, or instant for creative</param>
+        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
         {
-            return Handler.DigBlock(location, direction, swingArms, lookAtBlock);
+            return Handler.DigBlock(location, direction, swingArms, lookAtBlock, duration);
         }
 
         /// <summary>
