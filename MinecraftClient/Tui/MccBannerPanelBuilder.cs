@@ -84,8 +84,6 @@ namespace MinecraftClient.Tui
         private static readonly Color B1 = Color.FromRgb(200, 200, 200); // bezel bright
         private static readonly Color B2 = Color.FromRgb(160, 160, 160); // bezel mid
         private static readonly Color B3 = Color.FromRgb(120, 120, 120); // bezel dark
-        private static readonly Color Sc = Color.FromRgb(32, 32, 32);    // screen
-        private static readonly Color Sd = Color.FromRgb(26, 26, 26);    // screen (dark)
         private static readonly Color S = Color.FromRgb(20, 20, 20);     // screen bg
         private static readonly Color C = Color.FromRgb(55, 200, 55);    // creeper green
 
@@ -93,14 +91,14 @@ namespace MinecraftClient.Tui
         private static readonly Color[,] Pixels =
         {
             { B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B1,  B2 },
-            { B1,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  B3 },
-            { B1,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  B3 },
-            { B1,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sd,  Sd,  B3 },
-            { B1,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sd,  Sd,  Sd,  S,   S,   S,   B3 },
-            { B1,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sc,  Sd,  Sd,  S,   S,   S,   S,   S,   S,   B3 },
-            { B1,  Sc,  Sc,  Sc,  Sc,  Sd,  Sd,  S,   S,   C,   C,   S,   S,   C,   C,   S,   B3 },
-            { B1,  Sc,  Sc,  Sd,  Sd,  S,   S,   S,   S,   C,   C,   S,   S,   C,   C,   S,   B3 },
-            { B1,  Sd,  Sd,  S,   S,   S,   S,   S,   S,   S,   S,   C,   C,   S,   S,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   C,   C,   S,   S,   C,   C,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   C,   C,   S,   S,   C,   C,   S,   B3 },
+            { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   S,   C,   C,   S,   S,   S,   B3 },
             { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   C,   C,   C,   C,   S,   S,   B3 },
             { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   C,   C,   C,   C,   S,   S,   B3 },
             { B1,  S,   S,   S,   S,   S,   S,   S,   S,   S,   C,   S,   S,   C,   S,   S,   B3 },
@@ -145,8 +143,8 @@ namespace MinecraftClient.Tui
             var prompt = new TextBlock
             {
                 Text = " ＞_",
-                Foreground = new SolidColorBrush(Color.FromRgb(220, 220, 220)),
-                Background = new SolidColorBrush(Sc),
+                Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                Background = new SolidColorBrush(S),
                 Padding = new Thickness(0),
                 Margin = new Thickness(0),
                 HorizontalAlignment = HorizontalAlignment.Left,
