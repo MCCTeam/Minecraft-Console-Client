@@ -5,14 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 # shellcheck source=tools/mcc-env.sh
 source "$REPO_ROOT/tools/mcc-env.sh"
-
-sed_in_place() {
-    if [[ "$(uname)" == "Darwin" ]]; then
-        sed -i '' "$@"
-    else
-        sed -i "$@"
-    fi
-}
+# shellcheck source=.skills/mcc-integration-testing/scripts/common.sh
+source "$SCRIPT_DIR/common.sh"
 
 usage() {
     cat <<'EOF'
@@ -131,6 +125,7 @@ cleanup() {
     fi
 
     mc-stop "$SERVER_DIR" >/dev/null 2>&1 || true
+    wait_for_server_stop "$SERVER_DIR" 20 >/dev/null 2>&1 || true
     ln -sfn "$RUN_DIR" "$LATEST_LINK"
     write_summary
 }
@@ -163,43 +158,6 @@ wait_for_file_pattern() {
 
     echo "Timed out waiting for: $description" >&2
     return 1
-}
-
-wait_for_server_ready() {
-    local timeout="${1:-60}"
-    local elapsed=0
-
-    while (( elapsed < timeout )); do
-        if mc-log "$SERVER_DIR" 250 2>/dev/null | grep -Fq "Done ("; then
-            return 0
-        fi
-        sleep 1
-        ((elapsed += 1))
-    done
-
-    echo "Timed out waiting for server readiness" >&2
-    return 1
-}
-
-disable_noisy_bots() {
-    sed_in_place '/^\[ChatBot.ScriptScheduler\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$REPO_ROOT/MinecraftClient.ini"
-    sed_in_place '/^\[ChatBot.DiscordRpc\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$REPO_ROOT/MinecraftClient.ini"
-    sed_in_place '/^\[ChatBot.AntiAFK\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$REPO_ROOT/MinecraftClient.ini"
-    sed_in_place '/^\[ChatBot.AutoDig\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$REPO_ROOT/MinecraftClient.ini"
-    sed_in_place '/^\[ChatBot.AutoAttack\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$REPO_ROOT/MinecraftClient.ini"
-    sed_in_place '/^\[ChatBot.PlayerListLogger\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$REPO_ROOT/MinecraftClient.ini"
-    sed_in_place '/^\[ChatBot.ReplayCapture\]/,/^\[/ { s/^Enabled = true/Enabled = false/; }' "$REPO_ROOT/MinecraftClient.ini"
-}
-
-ensure_root_config() {
-    if [[ -f "$REPO_ROOT/MinecraftClient.ini" ]]; then
-        return
-    fi
-
-    (
-        cd "$REPO_ROOT"
-        dotnet run --project MinecraftClient -c Release --no-build -- --help >/dev/null 2>&1
-    )
 }
 
 write_probe_script() {
@@ -314,29 +272,6 @@ assert_pattern() {
     grep -Fq "$pattern" "$file" || fail "$description"
 }
 
-if ! command -v java >/dev/null 2>&1 || ! java -version >/dev/null 2>&1; then
-    fail "java was not found on PATH."
-fi
-
-if ! command -v tmux >/dev/null 2>&1; then
-    fail "tmux was not found on PATH."
-fi
-
-if [[ ! -d "$MCC_SERVERS/$SERVER_DIR" ]]; then
-    fail "Server directory not found: $MCC_SERVERS/$SERVER_DIR"
-fi
-
-PORT="$(bash "$SCRIPT_DIR/get_server_port.sh" "$SERVER_DIR")"
-
-ensure_root_config
-"$SCRIPT_DIR/ensure_offline_server.sh" "$SERVER_DIR"
-disable_noisy_bots
-write_probe_script
-
-if [[ "$PROFILE" == "legacy" && -f "$MCC_SERVERS/$SERVER_DIR/server.properties" ]]; then
-    sed_in_place 's/^use-native-transport=.*/use-native-transport=false/' "$MCC_SERVERS/$SERVER_DIR/server.properties"
-fi
-
 if $DO_BUILD; then
     log_step "BUILD> dotnet build MinecraftClient.sln -c Release"
     mcc-build > "$BUILD_LOG" 2>&1 || fail "dotnet build failed."
@@ -344,17 +279,35 @@ else
     : > "$BUILD_LOG"
 fi
 
+bash "$SCRIPT_DIR/preflight_test_env.sh" "$SERVER_DIR" >/dev/null || fail "Test environment preflight failed."
+bash "$SCRIPT_DIR/reset_shared_test_state.sh" "$SERVER_DIR" >/dev/null || fail "Failed to reset shared test state."
+
+if [[ ! -d "$MCC_SERVERS/$SERVER_DIR" ]]; then
+    fail "Server directory not found: $MCC_SERVERS/$SERVER_DIR"
+fi
+
+bash "$SCRIPT_DIR/prepare_offline_mcc_config.sh" "$CFG" "$MC_VERSION" CursorBot >/dev/null || fail "Failed to prepare temporary MCC config."
+PORT="$(bash "$SCRIPT_DIR/get_server_port.sh" "$SERVER_DIR")"
+
+"$SCRIPT_DIR/ensure_offline_server.sh" "$SERVER_DIR"
+write_probe_script
+
+if [[ "$PROFILE" == "legacy" && -f "$MCC_SERVERS/$SERVER_DIR/server.properties" ]]; then
+    sed_in_place 's/^use-native-transport=.*/use-native-transport=false/' "$MCC_SERVERS/$SERVER_DIR/server.properties"
+fi
+
 : > "$INPUT_FILE"
 rm -f "$MCC_LOG"
 
 log_step "Starting server $SERVER_DIR on port $PORT"
 mc-start "$SERVER_DIR" >/dev/null
-wait_for_server_ready || fail "Server did not become ready."
+wait_for_server_ready "$SERVER_DIR" || fail "Server did not become ready."
 
 log_step "Starting MCC for $MC_VERSION"
 (
     cd "$REPO_ROOT"
     MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- \
+        "$CFG" \
         CursorBot \
         - \
         "localhost:$PORT" \

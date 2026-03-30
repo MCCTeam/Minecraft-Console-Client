@@ -1,6 +1,6 @@
 ---
 name: mcc-dev-workflow
-description: Build, run, and debug Minecraft Console Client (MCC) against a real local Minecraft Java server in WSL. Use this whenever the user wants to compile MCC, start or inspect a local test server, connect MCC to a server, debug protocol or login issues, validate a code change end-to-end, or run MCC commands on a real server instead of guessing from static code.
+description: Build, run, and debug Minecraft Console Client (MCC) against a real local Minecraft Java server on Linux, macOS, or WSL. Use this whenever the user wants to compile MCC, start or inspect a local test server, connect MCC to a server, debug protocol or login issues, validate a code change end-to-end, or run MCC commands on a real server instead of guessing from static code.
 ---
 
 # MCC Development Workflow
@@ -11,7 +11,7 @@ Use this skill when the task needs a real local server loop, not just code readi
 
 - Solution: `MinecraftClient.sln`
 - Runtime target: `.NET 10` / `net10.0`
-- Environment: WSL Ubuntu, Java 21, tmux, python3
+- Environment: Linux, macOS, or WSL with Java, tmux, python3, and dotnet available
 - Default server root: `${MCC_SERVERS:-$MCC_REPO/MinecraftOfficial/downloads}`
 - Default validation target when the user does not specify a version: `1.21.11`
 
@@ -30,9 +30,21 @@ Both modes support the same commands and input/output through `ConsoleIO.Backend
 
 - Prefer a real local server over static reasoning for protocol, login, movement, inventory, entity, or command-path work.
 - Treat tmux `mc-*` sessions as shared state. Do not run multi-version server workflows in parallel unless the harness explicitly isolates them.
-- For scripted or repeatable runs, prefer a temporary config copied from `MinecraftClient.ini`. Use the repo-root config only for ad hoc manual work.
+- For scripted or repeatable runs, use a generated temporary config. Do not edit the repo-root `MinecraftClient.ini` as part of the test loop.
 - A server log line containing `Done (` means startup finished. It does not guarantee that RCON is ready on the first attempt. Retry early `mc-rcon` commands.
 - When instructions, docs, and code disagree, trust current code and current tool behavior first.
+
+## Preflight and reset
+
+Before scripted runs, especially on macOS or in a reused tmux environment:
+
+```bash
+source tools/mcc-env.sh
+mcc-preflight 1.21.11
+mc-reset-test-env 1.21.11
+```
+
+`mcc-preflight` checks Java, tmux, dotnet, python3, and server directories. It also resolves common Homebrew Java paths on macOS. `mc-reset-test-env` clears stale tmux sessions and stale `stdin.pipe` files before they turn into misleading startup failures.
 
 ## Build
 
@@ -92,7 +104,7 @@ mcc-debug -v 1.21.11 --file-input --no-build
 ### What mcc-debug.sh does
 
 1. Builds MCC (unless `--no-build`)
-2. Creates a temp config at `/tmp/mcc-debug/MinecraftClient.debug.ini` with CursorBot account, Terrain/Inventory/Entity enabled
+2. Creates a clean temp config at `/tmp/mcc-debug/MinecraftClient.debug.ini` with CursorBot account, Terrain/Inventory/Entity enabled and noisy bots disabled
 3. Ensures server is running (starts if not, waits for `Done (`)
 4. Launches MCC in the specified mode
 
@@ -210,6 +222,9 @@ After `source tools/mcc-env.sh`:
 | `mc-rcon "CMD"` | Send RCON command |
 | `mc-kill VER` | Force-kill server tmux session |
 | `mc-list` | List running MC server sessions |
+| `mc-wait-ready VER [SEC]` | Wait for server `Done (` |
+| `mc-wait-stop VER [SEC]` | Wait for server shutdown, with force-kill fallback |
+| `mc-reset-test-env [--all|VER...]` | Reset shared tmux server state and stale pipes |
 | `mcc-build` | Build MCC |
 | `mcc-run [PORT]` | Run MCC classic+FileInput on port |
 | `mcc-tui [PORT]` | Run MCC TUI mode in tmux |
@@ -218,6 +233,7 @@ After `source tools/mcc-env.sh`:
 | `mcc-debug [OPTS]` | One-step debug session (see above) |
 | `mcc-log-mcc` | Tail MCC debug log |
 | `mcc-state` | Send `debug state` and print last 30 log lines |
+| `mcc-preflight [VER...]` | Verify Java, tmux, dotnet, python3, and server dirs |
 
 ## Temporary config recipe
 
@@ -226,14 +242,10 @@ source tools/mcc-env.sh
 TEST_ROOT="${TMPDIR:-/tmp}/mcc-dev"
 CFG="$TEST_ROOT/MinecraftClient.1.21.11.ini"
 mkdir -p "$TEST_ROOT"
-cp "$MCC_REPO/MinecraftClient.ini" "$CFG"
-sed -i \
-  -e 's/Account = { Login = "test", Password = "-" }/Account = { Login = "CursorBot", Password = "-" }/' \
-  -e 's/MinecraftVersion = "auto"/MinecraftVersion = "1.21.11"/' \
-  -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
-  -e 's/InventoryHandling = false/InventoryHandling = true/' \
-  -e 's/EntityHandling = false/EntityHandling = true/' \
-  "$CFG"
+bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh" \
+  "$CFG" \
+  "1.21.11" \
+  "CursorBot"
 ```
 
 For TUI mode, also add:
@@ -256,6 +268,8 @@ Basic command check:
 ```bash
 mcc-cmd "inventory player list"
 ```
+
+If a scripted run fails before MCC joins, check for a harness problem before assuming a product regression. Missing `mcc.log`, a pre-join `Connection refused`, or a server that never reached `Done (` usually means shared-state cleanup or startup failed.
 
 ## Typical debug loop
 

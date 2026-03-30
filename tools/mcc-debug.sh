@@ -32,6 +32,7 @@ EOF
 VERSION="1.21.11-Vanilla"
 MODE="classic"
 PORT="25565"
+PORT_SET_BY_USER=false
 DO_BUILD=true
 DEBUG_ON=false
 FILE_INPUT=false
@@ -40,7 +41,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -v|--version) VERSION="$2"; shift 2 ;;
         -m|--mode)    MODE="$2"; shift 2 ;;
-        -p|--port)    PORT="$2"; shift 2 ;;
+        -p|--port)    PORT="$2"; PORT_SET_BY_USER=true; shift 2 ;;
         --no-build)   DO_BUILD=false; shift ;;
         --debug-on)   DEBUG_ON=true; shift ;;
         --file-input) FILE_INPUT=true; shift ;;
@@ -54,6 +55,10 @@ CFG="$TEST_ROOT/MinecraftClient.debug.ini"
 MCC_LOG="$TEST_ROOT/mcc-debug.log"
 INPUT_FILE="$REPO_ROOT/mcc_input.txt"
 SESSION_NAME="mc-${VERSION//\./_}"
+PREPARE_CFG_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh"
+ENSURE_SERVER_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/ensure_offline_server.sh"
+PREFLIGHT_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/preflight_test_env.sh"
+GET_PORT_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/get_server_port.sh"
 
 mkdir -p "$TEST_ROOT"
 
@@ -63,6 +68,8 @@ echo "  Mode:    $MODE"
 echo "  Config:  $CFG"
 echo "  Log:     $MCC_LOG"
 echo ""
+
+bash "$PREFLIGHT_SCRIPT" "$VERSION" >/dev/null
 
 # --- Build ---
 if $DO_BUILD; then
@@ -75,21 +82,22 @@ fi
 
 # --- Prepare config ---
 echo "[2/4] Preparing config..."
-cp "$REPO_ROOT/MinecraftClient.ini" "$CFG"
-
-sed -i \
-    -e 's/Account = { Login = "[^"]*", Password = "[^"]*" }/Account = { Login = "CursorBot", Password = "-" }/' \
-    -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
-    -e 's/InventoryHandling = false/InventoryHandling = true/' \
-    -e 's/EntityHandling = false/EntityHandling = true/' \
-    "$CFG"
+bash "$PREPARE_CFG_SCRIPT" "$CFG" "${VERSION%-Vanilla}" CursorBot >/dev/null
 
 if [[ "$MODE" == "tui" ]]; then
-    sed -i 's/ConsoleMode = "classic"/ConsoleMode = "tui"/' "$CFG"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        sed -i '' 's/ConsoleMode = "classic"/ConsoleMode = "tui"/' "$CFG"
+    else
+        sed -i 's/ConsoleMode = "classic"/ConsoleMode = "tui"/' "$CFG"
+    fi
 fi
 
 if $DEBUG_ON; then
-    sed -i 's/DebugMessages = false/DebugMessages = true/' "$CFG"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        sed -i '' 's/DebugMessages = false/DebugMessages = true/' "$CFG"
+    else
+        sed -i 's/DebugMessages = false/DebugMessages = true/' "$CFG"
+    fi
 fi
 
 echo "  Config ready"
@@ -99,14 +107,7 @@ echo "[3/4] Starting server $VERSION..."
 if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     echo "  Server already running"
 else
-    # Ensure offline mode
-    SERVER_DIR="$MCC_SERVERS/$VERSION"
-    if [[ -f "$SERVER_DIR/server.properties" ]]; then
-        sed -i 's/^online-mode=.*/online-mode=false/' "$SERVER_DIR/server.properties"
-        grep -q "^enable-rcon=" "$SERVER_DIR/server.properties" || echo "enable-rcon=true" >> "$SERVER_DIR/server.properties"
-        grep -q "^rcon.password=" "$SERVER_DIR/server.properties" || echo "rcon.password=test123" >> "$SERVER_DIR/server.properties"
-        grep -q "^rcon.port=" "$SERVER_DIR/server.properties" || echo "rcon.port=25575" >> "$SERVER_DIR/server.properties"
-    fi
+    bash "$ENSURE_SERVER_SCRIPT" "$VERSION" >/dev/null
     mc-start "$VERSION" >/dev/null
 
     echo -n "  Waiting for server..."
@@ -123,6 +124,10 @@ else
             exit 1
         fi
     done
+fi
+
+if ! $PORT_SET_BY_USER; then
+    PORT="$(bash "$GET_PORT_SCRIPT" "$VERSION")"
 fi
 
 # --- Launch MCC ---

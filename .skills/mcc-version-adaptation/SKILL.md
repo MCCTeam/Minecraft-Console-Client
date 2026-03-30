@@ -15,6 +15,7 @@ Systematic workflow for updating Minecraft Console Client to support a new Minec
   $MCC_REPO/tools/decompile.sh --version <ver>
   ```
   This auto-downloads `MinecraftDecompiler.jar` if needed, produces the decompiled source, and downloads `server.jar` into `$MCC_SERVERS/<ver>/`.
+- `tools/decompile.sh` depends on official mappings. For older versions where it refuses to decompile, fall back to a raw Java decompiler such as `cfr-decompiler` against `$MCC_SERVERS/<ver>/server.jar`. That fallback is good enough for packet inspection and registration order checks even when the output is obfuscated.
 - A test server of the target version in `$MCC_SERVERS/<version>/` (see `mcc-dev-workflow` skill)
 
 ## Step 0: Generate Server Reports (CRITICAL since 1.21.9)

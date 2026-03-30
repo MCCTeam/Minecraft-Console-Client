@@ -1,23 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-sed_in_place() {
-    if [[ "$(uname)" == "Darwin" ]]; then
-        sed -i '' "$@"
-    else
-        sed -i "$@"
-    fi
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# shellcheck source=.skills/mcc-integration-testing/scripts/common.sh
+source "$SCRIPT_DIR/common.sh"
+
+usage() {
+    cat <<'EOF' >&2
+Usage:
+  prepare_offline_mcc_config.sh <output-ini> <mc-version> [login]
+  prepare_offline_mcc_config.sh <template-ini> <output-ini> <mc-version> [login]
+EOF
 }
 
-if [[ $# -lt 3 || $# -gt 4 ]]; then
-    echo "Usage: $0 <template-ini> <output-ini> <mc-version> [login]" >&2
+if [[ $# -lt 2 || $# -gt 4 ]]; then
+    usage
     exit 1
 fi
 
-TEMPLATE_INI="$1"
-OUTPUT_INI="$2"
-MC_VERSION="$3"
-LOGIN_NAME="${4:-CursorBot}"
+TEMPLATE_INI=""
+OUTPUT_INI=""
+MC_VERSION=""
+LOGIN_NAME=""
+
+if [[ $# -ge 3 && -f "$1" ]]; then
+    TEMPLATE_INI="$1"
+    OUTPUT_INI="$2"
+    MC_VERSION="$3"
+    LOGIN_NAME="${4:-CursorBot}"
+else
+    OUTPUT_INI="$1"
+    MC_VERSION="$2"
+    LOGIN_NAME="${3:-CursorBot}"
+fi
+
 ACCOUNT_TYPE="${MCC_TEST_ACCOUNT_TYPE:-mojang}"
 PASSWORD_VALUE="${MCC_TEST_PASSWORD-}"
 
@@ -34,6 +51,32 @@ if [[ -z "${MCC_TEST_PASSWORD+x}" ]]; then
     fi
 fi
 
+generate_template_ini() {
+    local template_root
+    template_root="$(mktemp -d "${TMPDIR:-/tmp}/mcc-config-template.XXXXXX")"
+
+    if [[ ! -f "$REPO_ROOT/MinecraftClient/bin/Release/net10.0/MinecraftClient.dll" ]]; then
+        dotnet build "$REPO_ROOT/MinecraftClient.sln" -c Release -v quiet --nologo >/dev/null
+    fi
+
+    (
+        cd "$template_root"
+        dotnet run --project "$REPO_ROOT/MinecraftClient" -c Release --no-build -- --help >/dev/null 2>&1
+    )
+
+    if [[ ! -f "$template_root/MinecraftClient.ini" ]]; then
+        echo "Failed to generate a temporary MCC config template." >&2
+        exit 1
+    fi
+
+    TEMPLATE_INI="$template_root/MinecraftClient.ini"
+}
+
+if [[ -z "$TEMPLATE_INI" ]]; then
+    generate_template_ini
+fi
+
+mkdir -p "$(dirname "$OUTPUT_INI")"
 cp "$TEMPLATE_INI" "$OUTPUT_INI"
 
 sed_in_place \
@@ -45,6 +88,8 @@ sed_in_place \
     -e 's#^EntityHandling = false#EntityHandling = true#' \
     -e 's#^AutoRespawn = false#AutoRespawn = true#' \
     "$OUTPUT_INI"
+
+disable_noisy_bots_in_ini "$OUTPUT_INI"
 
 grep -Fq "AccountType = \"$ACCOUNT_TYPE\"" "$OUTPUT_INI" || {
     echo "Failed to enforce account type $ACCOUNT_TYPE in $OUTPUT_INI" >&2
