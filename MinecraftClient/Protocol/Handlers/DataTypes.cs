@@ -412,6 +412,37 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read an ItemStackTemplate (26.1+) from a cache of bytes.
+        /// Unlike ItemStack, this uses item-first encoding: item_id, count, DataComponentPatch.
+        /// ItemStackTemplate is always non-empty (no count=0 sentinel).
+        /// </summary>
+        public Item ReadNextItemStackTemplate(Queue<byte> cache, ItemPalette itemPalette)
+        {
+            var itemId = ReadNextVarInt(cache);
+            var itemCount = ReadNextVarInt(cache);
+            var item = new Item(itemPalette.FromId(itemId), itemCount, null);
+
+            var numberOfComponentsToAdd = ReadNextVarInt(cache);
+            var numberofComponentsToRemove = ReadNextVarInt(cache);
+            var structuredComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
+            var strcturedComponentsToAdd = new List<StructuredComponent>(numberOfComponentsToAdd);
+
+            for (var i = 0; i < numberOfComponentsToAdd; i++)
+            {
+                var componentTypeId = ReadNextVarInt(cache);
+                strcturedComponentsToAdd.Add(structuredComponentHandler.Parse(componentTypeId, cache));
+            }
+
+            for (var i = 0; i < numberofComponentsToRemove; i++)
+                ReadNextVarInt(cache);
+
+            if (strcturedComponentsToAdd.Count > 0)
+                item.Components = strcturedComponentsToAdd;
+
+            return item;
+        }
+
+        /// <summary>
         /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>

@@ -3530,7 +3530,7 @@ namespace MinecraftClient.Protocol.Handlers
                     2 => ReadWithAnyPotionSlotDisplayLabel(packetData),
                     3 => ReadOnlyWithComponentSlotDisplayLabel(packetData),
                     4 => Item.GetTypeString(itemPalette.FromId(dataTypes.ReadNextVarInt(packetData))),
-                    5 => dataTypes.ReadNextItemSlot(packetData, itemPalette)?.GetTypeString() ?? "Empty",
+                    5 => ReadItemStackTemplateLabel(packetData),
                     6 => "#" + dataTypes.ReadNextString(packetData),
                     7 => ReadDyedSlotDisplayLabel(packetData),
                     8 => ReadSmithingTrimSlotDisplayLabel(packetData),
@@ -3610,6 +3610,15 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             return label;
+        }
+
+        /// <summary>
+        /// Read an ItemStackTemplate (26.1+) which encodes fields in a different order
+        /// than ItemStack: item_id (VarInt), count (VarInt), DataComponentPatch.
+        /// </summary>
+        private string ReadItemStackTemplateLabel(Queue<byte> packetData)
+        {
+            return dataTypes.ReadNextItemStackTemplate(packetData, itemPalette).GetTypeString();
         }
 
         private void SkipOptionalCraftingRequirements(Queue<byte> packetData)
