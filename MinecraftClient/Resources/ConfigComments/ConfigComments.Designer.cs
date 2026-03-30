@@ -807,7 +807,8 @@ namespace MinecraftClient {
         ///NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
         ///It&apos;s similar to making animals follow you when you&apos;re holding food in your hand.
         ///This is due to a slow pathfinding algorithm, we&apos;re working on getting a better one
-        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,        /// [rest of string was truncated]&quot;;.
+        ///You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ChatBot_FollowPlayer {
             get {
@@ -1407,6 +1408,15 @@ namespace MinecraftClient {
         internal static string Console_General_ConsoleColorMode {
             get {
                 return ResourceManager.GetString("Console.General.ConsoleColorMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Whether to display the MCC startup banner with version info and icon..
+        /// </summary>
+        internal static string Console_General_Display_Icon_Banner {
+            get {
+                return ResourceManager.GetString("Console.General.Display_Icon_Banner", resourceCulture);
             }
         }
         

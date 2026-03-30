@@ -2269,6 +2269,18 @@ namespace MinecraftClient {
             }
         }
         
+        internal static string mcc_banner_classic {
+            get {
+                return ResourceManager.GetString("mcc.banner.classic", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_banner_label_mc_versions {
+            get {
+                return ResourceManager.GetString("mcc.banner.label_mc_versions", resourceCulture);
+            }
+        }
+        
         internal static string mcc_server_info_label_server {
             get {
                 return ResourceManager.GetString("mcc.server_info.label_server", resourceCulture);
