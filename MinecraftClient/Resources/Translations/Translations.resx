@@ -834,7 +834,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>Minecraft Console Client v{0} - for MC {1} to {2} - {3}</value>
   </data>
   <data name="mcc.banner.label_mc_versions" xml:space="preserve">
-    <value>MC Versions:</value>
+    <value>Supported MC Versions:</value>
   </data>
   <data name="mcc.server_info.label_server" xml:space="preserve">
     <value>Server:</value>
