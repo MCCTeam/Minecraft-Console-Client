@@ -91,6 +91,7 @@ namespace MinecraftClient.Protocol.Handlers
         private int currentDimension;
         private bool isOnlineMode = false;
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
+        private readonly Dictionary<string, bool> legacyAchievementProgress = new(StringComparer.Ordinal);
         private float LastYaw, LastPitch;
         private double lastSentX, lastSentY, lastSentZ;
         private float lastSentYaw, lastSentPitch;
@@ -120,6 +121,7 @@ namespace MinecraftClient.Protocol.Handlers
         Tuple<Thread, CancellationTokenSource>? netReader = null; // reader thread
         readonly ILogger log;
         readonly RandomNumberGenerator randomGen;
+        private bool legacyAchievementsInitialized;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler,
             ForgeInfo? forgeInfo, int rawProtocolVersion = 0)
@@ -3132,11 +3134,236 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.RecipeBookSettings:
                     break;
 
+                case PacketTypesIn.Statistics:
+                    if (protocolVersion < MC_1_12_Version)
+                        HandleLegacyStatistics(packetData);
+                    break;
+
+                case PacketTypesIn.Advancements:
+                    HandleAdvancements(packetData);
+                    break;
+
+                case PacketTypesIn.SelectAdvancementTab:
+                    HandleSelectAdvancementTab(packetData);
+                    break;
+
                 default:
                     return false; //Ignored packet
             }
 
             return true; //Packet processed
+        }
+
+        /// <summary>
+        /// Handle the Statistics packet for pre-1.12 legacy achievements.
+        /// </summary>
+        private void HandleLegacyStatistics(Queue<byte> packetData)
+        {
+            int statCount = dataTypes.ReadNextVarInt(packetData);
+
+            for (int i = 0; i < statCount; i++)
+            {
+                string statId = dataTypes.ReadNextString(packetData);
+                int value = dataTypes.ReadNextVarInt(packetData);
+
+                if (statId.StartsWith("achievement.", StringComparison.Ordinal))
+                    legacyAchievementProgress[statId] = value > 0;
+            }
+
+            List<Achievement> added = new(LegacyAchievementCatalog.Ids.Count + legacyAchievementProgress.Count);
+
+            foreach (string achievementId in LegacyAchievementCatalog.Ids)
+                added.Add(CreateLegacyAchievement(achievementId, legacyAchievementProgress.TryGetValue(achievementId, out bool completed) && completed));
+
+            foreach (var (achievementId, completed) in legacyAchievementProgress)
+            {
+                if (!LegacyAchievementCatalog.Contains(achievementId))
+                    added.Add(CreateLegacyAchievement(achievementId, completed));
+            }
+
+            handler.OnAchievementsUpdate(added, [], reset: !legacyAchievementsInitialized);
+            legacyAchievementsInitialized = true;
+        }
+
+        /// <summary>
+        /// Handle the Advancements packet (1.12+).
+        /// </summary>
+        private void HandleAdvancements(Queue<byte> packetData)
+        {
+            bool reset = dataTypes.ReadNextBool(packetData);
+
+            // --- Added advancements ---
+            int addedCount = dataTypes.ReadNextVarInt(packetData);
+            var added = new List<Achievement>(addedCount);
+            var addedDefinitions = new Dictionary<string, (string? title, string? description, AchievementType type, bool isHidden, List<List<string>> requirements)>(addedCount);
+
+            for (int i = 0; i < addedCount; i++)
+            {
+                string id = dataTypes.ReadNextString(packetData);
+
+                // Parent
+                bool hasParent = dataTypes.ReadNextBool(packetData);
+                if (hasParent)
+                    dataTypes.ReadNextString(packetData); // parentId - read and discard
+
+                // Display
+                string? title = null;
+                string? description = null;
+                var type = AchievementType.Task;
+                bool isHidden = false;
+
+                bool hasDisplay = dataTypes.ReadNextBool(packetData);
+                if (hasDisplay)
+                {
+                    title = dataTypes.ReadNextChat(packetData);
+                    description = dataTypes.ReadNextChat(packetData);
+                    dataTypes.ReadNextItemSlot(packetData, itemPalette); // icon - read and discard
+
+                    int frameType = dataTypes.ReadNextVarInt(packetData);
+                    type = frameType switch
+                    {
+                        1 => AchievementType.Challenge,
+                        2 => AchievementType.Goal,
+                        _ => AchievementType.Task
+                    };
+
+                    int flags = dataTypes.ReadNextInt(packetData);
+                    isHidden = (flags & 0x04) != 0;
+                    if ((flags & 0x01) != 0)
+                        dataTypes.ReadNextString(packetData); // background texture - read and discard
+
+                    dataTypes.ReadNextFloat(packetData); // x
+                    dataTypes.ReadNextFloat(packetData); // y
+                }
+
+                // Criteria and requirements differ by version
+                var requirements = new List<List<string>>();
+
+                if (protocolVersion < MC_1_20_2_Version)
+                {
+                    // Builder-based (pre-1.20.2): criteria names list, then requirements
+                    int criteriaCount = dataTypes.ReadNextVarInt(packetData);
+                    for (int c = 0; c < criteriaCount; c++)
+                        dataTypes.ReadNextString(packetData); // criterion name only, no trigger data
+                }
+
+                // Requirements (all versions)
+                int reqGroupCount = dataTypes.ReadNextVarInt(packetData);
+                for (int g = 0; g < reqGroupCount; g++)
+                {
+                    int groupSize = dataTypes.ReadNextVarInt(packetData);
+                    var group = new List<string>(groupSize);
+                    for (int s = 0; s < groupSize; s++)
+                        group.Add(dataTypes.ReadNextString(packetData));
+                    requirements.Add(group);
+                }
+
+                // sendsTelemetryEvent (added in 1.20, present in all versions since)
+                if (protocolVersion >= MC_1_20_Version)
+                    dataTypes.ReadNextBool(packetData);
+
+                addedDefinitions[id] = (title, description, type, isHidden, requirements);
+            }
+
+            // --- Removed advancement IDs ---
+            int removedCount = dataTypes.ReadNextVarInt(packetData);
+            var removedIds = new List<string>(removedCount);
+            for (int i = 0; i < removedCount; i++)
+                removedIds.Add(dataTypes.ReadNextString(packetData));
+
+            // --- Progress updates ---
+            int progressCount = dataTypes.ReadNextVarInt(packetData);
+            var progressMap = new Dictionary<string, Dictionary<string, bool>>(progressCount);
+
+            for (int i = 0; i < progressCount; i++)
+            {
+                string id = dataTypes.ReadNextString(packetData);
+                int criteriaEntries = dataTypes.ReadNextVarInt(packetData);
+                var criteria = new Dictionary<string, bool>(criteriaEntries);
+
+                for (int c = 0; c < criteriaEntries; c++)
+                {
+                    string criterionName = dataTypes.ReadNextString(packetData);
+                    bool isDone = dataTypes.ReadNextBool(packetData);
+                    if (isDone)
+                        dataTypes.ReadNextLong(packetData); // epochMs - read and discard
+                    criteria[criterionName] = isDone;
+                }
+
+                progressMap[id] = criteria;
+            }
+
+            // showAdvancements boolean added in 1.21.11+
+            if (protocolVersion >= MC_1_21_11_Version)
+                dataTypes.ReadNextBool(packetData); // showAdvancements - read and discard
+
+            // Build Achievement records from definitions + progress
+            foreach (var (id, def) in addedDefinitions)
+            {
+                progressMap.TryGetValue(id, out var criteria);
+                criteria ??= new Dictionary<string, bool>();
+
+                bool isCompleted = ComputeAdvancementCompleted(def.requirements, criteria);
+
+                var readOnlyReqs = def.requirements.ConvertAll<IReadOnlyList<string>>(static g => g.AsReadOnly());
+                added.Add(new Achievement(id, def.title, def.description, def.type, def.isHidden, isCompleted, readOnlyReqs.AsReadOnly(), criteria));
+            }
+
+            // Also build Achievement records for progress-only updates (no definition change)
+            foreach (var (id, criteria) in progressMap)
+            {
+                if (!addedDefinitions.ContainsKey(id))
+                    added.Add(new Achievement(id, null, null, AchievementType.Task, false, false, [], criteria));
+            }
+
+            handler.OnAchievementsUpdate(added, removedIds, reset);
+        }
+
+        private static Achievement CreateLegacyAchievement(string id, bool isCompleted)
+        {
+            Dictionary<string, bool> criteria = new(StringComparer.Ordinal)
+            {
+                [id] = isCompleted
+            };
+            IReadOnlyList<string>[] requirements = [[id]];
+            return new Achievement(id, null, null, AchievementType.Legacy, false, isCompleted, requirements, criteria);
+        }
+
+        /// <summary>
+        /// Compute whether an advancement is completed based on AND-of-ORs requirements.
+        /// </summary>
+        private static bool ComputeAdvancementCompleted(List<List<string>> requirements, Dictionary<string, bool> criteria)
+        {
+            // Zero requirements = automatically done
+            if (requirements.Count == 0)
+                return true;
+
+            // Each OR-group must have at least one satisfied criterion
+            foreach (var group in requirements)
+            {
+                bool groupSatisfied = false;
+                foreach (string criterion in group)
+                {
+                    if (criteria.TryGetValue(criterion, out bool done) && done)
+                    {
+                        groupSatisfied = true;
+                        break;
+                    }
+                }
+                if (!groupSatisfied)
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Handle the SelectAdvancementTab packet.
+        /// </summary>
+        private void HandleSelectAdvancementTab(Queue<byte> packetData)
+        {
+            bool hasTab = dataTypes.ReadNextBool(packetData);
+            string? tabId = hasTab ? dataTypes.ReadNextString(packetData) : null;
+            handler.OnSelectAdvancementTab(tabId);
         }
 
         private void HandleUnlockRecipes(Queue<byte> packetData)
@@ -3290,6 +3517,29 @@ namespace MinecraftClient.Protocol.Handlers
         private string ReadSlotDisplayLabel(Queue<byte> packetData)
         {
             int slotDisplayType = dataTypes.ReadNextVarInt(packetData);
+
+            // 26.1 changed the slot display registry order, inserting 3 new types:
+            //   Pre-26.1: 0=empty, 1=any_fuel, 2=item, 3=item_stack, 4=tag, 5=smithing_trim, 6=with_remainder, 7=composite
+            //   26.1+:    0=empty, 1=any_fuel, 2=with_any_potion, 3=only_with_component, 4=item, 5=item_stack, 6=tag, 7=dyed, 8=smithing_trim, 9=with_remainder, 10=composite
+            if (protocolVersion >= MC_26_1_Version)
+            {
+                return slotDisplayType switch
+                {
+                    0 => "Empty",
+                    1 => "Any Fuel",
+                    2 => ReadWithAnyPotionSlotDisplayLabel(packetData),
+                    3 => ReadOnlyWithComponentSlotDisplayLabel(packetData),
+                    4 => Item.GetTypeString(itemPalette.FromId(dataTypes.ReadNextVarInt(packetData))),
+                    5 => dataTypes.ReadNextItemSlot(packetData, itemPalette)?.GetTypeString() ?? "Empty",
+                    6 => "#" + dataTypes.ReadNextString(packetData),
+                    7 => ReadDyedSlotDisplayLabel(packetData),
+                    8 => ReadSmithingTrimSlotDisplayLabel(packetData),
+                    9 => ReadWithRemainderSlotDisplayLabel(packetData),
+                    10 => ReadCompositeSlotDisplayLabel(packetData),
+                    _ => $"slot_display_{slotDisplayType}",
+                };
+            }
+
             return slotDisplayType switch
             {
                 0 => "Empty",
@@ -3302,6 +3552,34 @@ namespace MinecraftClient.Protocol.Handlers
                 7 => ReadCompositeSlotDisplayLabel(packetData),
                 _ => $"slot_display_{slotDisplayType}",
             };
+        }
+
+        /// <summary>
+        /// Reads a with_any_potion slot display (26.1+): contains a nested SlotDisplay.
+        /// </summary>
+        private string ReadWithAnyPotionSlotDisplayLabel(Queue<byte> packetData)
+        {
+            return ReadSlotDisplayLabel(packetData);
+        }
+
+        /// <summary>
+        /// Reads an only_with_component slot display (26.1+): contains a nested SlotDisplay and a DataComponentType VarInt ID.
+        /// </summary>
+        private string ReadOnlyWithComponentSlotDisplayLabel(Queue<byte> packetData)
+        {
+            string sourceLabel = ReadSlotDisplayLabel(packetData);
+            _ = dataTypes.ReadNextVarInt(packetData); // DataComponentType registry id
+            return sourceLabel;
+        }
+
+        /// <summary>
+        /// Reads a dyed slot display (26.1+): contains two nested SlotDisplays (dye + target).
+        /// </summary>
+        private string ReadDyedSlotDisplayLabel(Queue<byte> packetData)
+        {
+            _ = ReadSlotDisplayLabel(packetData); // dye
+            string targetLabel = ReadSlotDisplayLabel(packetData); // target
+            return targetLabel;
         }
 
         private string ReadSmithingTrimSlotDisplayLabel(Queue<byte> packetData)

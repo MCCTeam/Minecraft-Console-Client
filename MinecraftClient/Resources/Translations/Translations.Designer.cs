@@ -7174,5 +7174,104 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.minimap.position_set", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to list achievements/advancements from the server..
+        /// </summary>
+        internal static string cmd_achievement_desc {
+            get {
+                return ResourceManager.GetString("cmd.achievement.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No achievements/advancements received yet..
+        /// </summary>
+        internal static string cmd_achievement_none {
+            get {
+                return ResourceManager.GetString("cmd.achievement.none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No completed achievements/advancements..
+        /// </summary>
+        internal static string cmd_achievement_none_unlocked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.none_unlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No incomplete achievements/advancements..
+        /// </summary>
+        internal static string cmd_achievement_none_locked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.none_locked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Achievements/Advancements:.
+        /// </summary>
+        internal static string cmd_achievement_header {
+            get {
+                return ResourceManager.GetString("cmd.achievement.header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Completed achievements/advancements:.
+        /// </summary>
+        internal static string cmd_achievement_header_unlocked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.header_unlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Incomplete achievements/advancements:.
+        /// </summary>
+        internal static string cmd_achievement_header_locked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.header_locked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [DONE].
+        /// </summary>
+        internal static string cmd_achievement_done {
+            get {
+                return ResourceManager.GetString("cmd.achievement.done", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [TODO].
+        /// </summary>
+        internal static string cmd_achievement_todo {
+            get {
+                return ResourceManager.GetString("cmd.achievement.todo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1} ({2}) [{3}].
+        /// </summary>
+        internal static string cmd_achievement_entry_titled {
+            get {
+                return ResourceManager.GetString("cmd.achievement.entry_titled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1} [{2}].
+        /// </summary>
+        internal static string cmd_achievement_entry {
+            get {
+                return ResourceManager.GetString("cmd.achievement.entry", resourceCulture);
+            }
+        }
     }
 }

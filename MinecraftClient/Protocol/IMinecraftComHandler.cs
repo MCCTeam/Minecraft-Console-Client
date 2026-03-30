@@ -531,6 +531,20 @@ namespace MinecraftClient.Protocol
         public void OnRecipeBookRemove(string[] recipeIds);
 
         /// <summary>
+        /// Called when achievement/advancement data is received from the server.
+        /// </summary>
+        /// <param name="added">Achievements that were added or updated</param>
+        /// <param name="removedIds">IDs of achievements that were removed</param>
+        /// <param name="reset">True if all existing state should be cleared before applying</param>
+        public void OnAchievementsUpdate(IReadOnlyList<Achievement> added, IReadOnlyList<string> removedIds, bool reset);
+
+        /// <summary>
+        /// Called when the server selects an advancement tab.
+        /// </summary>
+        /// <param name="tabId">The tab identifier, or null if no tab is selected</param>
+        public void OnSelectAdvancementTab(string? tabId);
+
+        /// <summary>
         /// Send a click container button packet to the server.
         /// Used for Enchanting table, Lectern, stone cutter and loom
         /// </summary>

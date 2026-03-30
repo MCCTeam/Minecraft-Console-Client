@@ -2527,4 +2527,37 @@ see item details.</value>
   <data name="cmd.minimap.position_set" xml:space="preserve">
     <value>Minimap position set to: {0}</value>
   </data>
+  <data name="cmd.achievement.desc" xml:space="preserve">
+    <value>list achievements/advancements from the server.</value>
+  </data>
+  <data name="cmd.achievement.none" xml:space="preserve">
+    <value>No achievements/advancements received yet.</value>
+  </data>
+  <data name="cmd.achievement.none_unlocked" xml:space="preserve">
+    <value>No completed achievements/advancements.</value>
+  </data>
+  <data name="cmd.achievement.none_locked" xml:space="preserve">
+    <value>No incomplete achievements/advancements.</value>
+  </data>
+  <data name="cmd.achievement.header" xml:space="preserve">
+    <value>Achievements/Advancements:</value>
+  </data>
+  <data name="cmd.achievement.header_unlocked" xml:space="preserve">
+    <value>Completed achievements/advancements:</value>
+  </data>
+  <data name="cmd.achievement.header_locked" xml:space="preserve">
+    <value>Incomplete achievements/advancements:</value>
+  </data>
+  <data name="cmd.achievement.done" xml:space="preserve">
+    <value>[DONE]</value>
+  </data>
+  <data name="cmd.achievement.todo" xml:space="preserve">
+    <value>[TODO]</value>
+  </data>
+  <data name="cmd.achievement.entry_titled" xml:space="preserve">
+    <value>{0} {1} ({2}) [{3}]</value>
+  </data>
+  <data name="cmd.achievement.entry" xml:space="preserve">
+    <value>{0} {1} [{2}]</value>
+  </data>
 </root>

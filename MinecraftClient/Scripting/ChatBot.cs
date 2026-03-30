@@ -514,6 +514,14 @@ namespace MinecraftClient.Scripting
         /// <param name="block">The block</param>
         public virtual void OnBlockChange(Location location, Block block) { }
 
+        /// <summary>
+        /// Called when achievement/advancement data is updated.
+        /// </summary>
+        /// <param name="updated">Achievements that were added or updated</param>
+        /// <param name="removedIds">IDs of achievements that were removed</param>
+        /// <param name="reset">Whether the achievement state was fully reset before this update</param>
+        public virtual void OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
@@ -1118,6 +1126,33 @@ namespace MinecraftClient.Scripting
         protected Dictionary<int, Entity> GetEntities()
         {
             return Handler.GetEntities();
+        }
+
+        /// <summary>
+        /// Get all achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of all achievements</returns>
+        protected Achievement[] GetAchievements()
+        {
+            return Handler.GetAchievements();
+        }
+
+        /// <summary>
+        /// Get only completed achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of unlocked achievements</returns>
+        protected Achievement[] GetUnlockedAchievements()
+        {
+            return Handler.GetUnlockedAchievements();
+        }
+
+        /// <summary>
+        /// Get only incomplete achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of locked achievements</returns>
+        protected Achievement[] GetLockedAchievements()
+        {
+            return Handler.GetLockedAchievements();
         }
 
         /// <summary>
