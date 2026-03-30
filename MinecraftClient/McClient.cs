@@ -45,11 +45,14 @@ namespace MinecraftClient
         private readonly Queue<Action> threadTasks = new();
         private readonly Lock threadTasksLock = new();
         private readonly Lock recipeBookLock = new();
+        private readonly Lock achievementsLock = new();
 
         private readonly List<ChatBot> bots = new();
         private static readonly List<ChatBot> botsOnHold = new();
         private static readonly Dictionary<int, Container> inventories = new();
         private readonly Dictionary<string, RecipeBookRecipeEntry> unlockedRecipes = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Achievement> achievements = new(StringComparer.Ordinal);
+        private string? activeAdvancementTab;
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new();
         private readonly List<string> registeredServerPluginChannels = new();
@@ -1353,6 +1356,42 @@ namespace MinecraftClient
             lock (recipeBookLock)
             {
                 return unlockedRecipes.Values.OrderBy(static recipe => recipe.CommandId, StringComparer.Ordinal).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Get all achievements/advancements known to the client.
+        /// </summary>
+        /// <returns>Snapshot of all achievements</returns>
+        public Achievement[] GetAchievements()
+        {
+            lock (achievementsLock)
+            {
+                return [.. achievements.Values];
+            }
+        }
+
+        /// <summary>
+        /// Get only completed achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of completed achievements</returns>
+        public Achievement[] GetUnlockedAchievements()
+        {
+            lock (achievementsLock)
+            {
+                return achievements.Values.Where(static a => a.IsCompleted).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Get only incomplete achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of locked achievements</returns>
+        public Achievement[] GetLockedAchievements()
+        {
+            lock (achievementsLock)
+            {
+                return achievements.Values.Where(static a => !a.IsCompleted).ToArray();
             }
         }
 
@@ -4196,6 +4235,67 @@ namespace MinecraftClient
                         unlockedRecipes.Remove(recipeId);
                 }
             }
+        }
+
+        public void OnAchievementsUpdate(IReadOnlyList<Achievement> added, IReadOnlyList<string> removedIds, bool reset)
+        {
+            lock (achievementsLock)
+            {
+                if (reset)
+                    achievements.Clear();
+
+                // Remove entries
+                foreach (string id in removedIds)
+                    achievements.Remove(id);
+
+                // Add/update entries. For progress-only updates (no definition),
+                // merge with existing definition if available.
+                foreach (Achievement entry in added)
+                {
+                    if (entry.Title is null && achievements.TryGetValue(entry.Id, out Achievement? existing))
+                    {
+                        // Progress-only update - merge with existing definition
+                        bool isCompleted = ComputeAchievementCompleted(existing.Requirements, entry.CriteriaProgress);
+                        achievements[entry.Id] = existing with { IsCompleted = isCompleted, CriteriaProgress = entry.CriteriaProgress };
+                    }
+                    else
+                    {
+                        achievements[entry.Id] = entry;
+                    }
+                }
+            }
+
+            DispatchBotEvent(bot => bot.OnAchievementUpdate(added, removedIds, reset));
+        }
+
+        public void OnSelectAdvancementTab(string? tabId)
+        {
+            activeAdvancementTab = tabId;
+        }
+
+        /// <summary>
+        /// Compute whether an achievement is completed based on AND-of-ORs requirements.
+        /// </summary>
+        private static bool ComputeAchievementCompleted(IReadOnlyList<IReadOnlyList<string>> requirements, IReadOnlyDictionary<string, bool> criteria)
+        {
+            if (requirements.Count == 0)
+                return true;
+
+            foreach (IReadOnlyList<string> group in requirements)
+            {
+                bool groupSatisfied = false;
+                foreach (string criterion in group)
+                {
+                    if (criteria.TryGetValue(criterion, out bool done) && done)
+                    {
+                        groupSatisfied = true;
+                        break;
+                    }
+                }
+                if (!groupSatisfied)
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>

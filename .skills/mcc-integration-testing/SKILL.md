@@ -56,7 +56,7 @@ If the environment cannot run a real server, say so and report the result as une
 - Use a real local server.
 - Launch MCC against an explicit `localhost:<server-port>` target for repeatable local tests.
 - Keep version matrices sequential in shared local environments. The tmux server harness is shared state by default.
-- Prefer temporary MCC configs for scripted runs so one test does not contaminate the next.
+- Prefer generated temporary MCC configs for scripted runs so one test does not contaminate the next.
 - Default to offline auth in generated temp configs. Do not trust the repo-root `MinecraftClient.ini` account defaults.
 - If the user explicitly asks for Microsoft online login, honor that request and generate the temp config for Microsoft auth instead of offline mode.
 - For Microsoft auth, prefer an interactive TTY launch with `BasicIO-NoColor` so the device code is easy to read and relay to the user.
@@ -65,8 +65,10 @@ If the environment cannot run a real server, say so and report the result as une
 - Legacy and modern command syntax differ. Do not assume one server-command profile fits every version.
 - Use actual MCC output and actual server logs for assertions. Do not invent success strings.
 - Treat server `Done` as startup progress, not RCON readiness. Retry the first RCON command before assuming the setup is broken.
+- Run preflight before scripted test loops. On macOS, Java may be installed but not exported on PATH in the shell the harness uses.
 - If a change touches shared routing or a version range, test at least one adjacent version that shares that path, or explicitly mark adjacent versions as unexecuted and inferred.
 - For palette or version-content changes, probe at least one neighboring or existing item, entity, or block. Do not only check the headline addition.
+- Separate product failures from harness failures. Missing logs, stale tmux state, stale `stdin.pipe`, or pre-join `Connection refused` errors are usually environment problems until proven otherwise.
 
 ## Choose the test mode
 
@@ -117,10 +119,18 @@ Run them against a real server with a temp config and summarize counts from the 
 
 Before running any scenario:
 
+0. run preflight and clear stale shared state when the environment is reused
 1. configure the target server for offline testing
 2. ensure `eula=true`
 3. ensure RCON is enabled
 4. build MCC unless the task explicitly reuses a fresh build
+
+Preflight and reset helpers:
+
+```bash
+.skills/mcc-integration-testing/scripts/preflight_test_env.sh 1.21.11-Vanilla
+.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh 1.21.11-Vanilla
+```
 
 Offline configuration helper:
 
@@ -141,8 +151,12 @@ Optionally override the login name with the fourth argument to the config helper
 
 - `.skills/mcc-integration-testing/scripts/ensure_offline_server.sh`
   - configures persistent offline mode and RCON
+- `.skills/mcc-integration-testing/scripts/preflight_test_env.sh`
+  - verifies Java, tmux, dotnet, python3, server directories, and resolves common Java PATH issues
+- `.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh`
+  - clears stale tmux sessions and stale `stdin.pipe` files before a rerun
 - `.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh`
-  - copies `MinecraftClient.ini`, prepares offline login by default, and can switch to Microsoft auth when explicitly requested
+  - generates a clean temporary MCC config, prepares offline login by default, disables noisy bots, and can switch to Microsoft auth when explicitly requested
 - `.skills/mcc-integration-testing/scripts/get_server_port.sh`
   - resolves the actual local server port from `server.properties` or the latest server log
 - `.skills/mcc-integration-testing/scripts/run_full_spectrum_test.sh`
@@ -159,6 +173,7 @@ In every report, separate:
 - `Executed`: exact scripts, commands, versions, auth mode, and whether the run was sequential or single-version
 - `Observed`: exact MCC output, exact server-log evidence, and the saved log directory
 - `Inferred`: conclusions not directly shown by that run's runtime evidence
+- `Harness issues`: setup or runner problems such as missing Java on PATH, stale tmux sessions, stale `stdin.pipe`, missing log artifacts, or failed config generation
 
 Never upgrade inferred claims to observed facts. Absence of errors is supporting evidence only; pair it with a positive assertion for the feature under test.
 
@@ -196,6 +211,7 @@ Always summarize:
 ## Troubleshooting
 
 - If the first RCON command fails, retry it before assuming the setup is broken.
+- If Java is installed but the harness still says it is missing, run `preflight_test_env.sh`. This resolves common Homebrew Java paths on macOS.
 - If MCC reaches Microsoft device-code login during an offline test, stop and inspect the generated temp config before retrying.
 - If the user explicitly requests Microsoft online login, set `MCC_TEST_ACCOUNT_TYPE=microsoft` before launching the harness.
 - If the user explicitly requests Microsoft online login, use `BasicIO-NoColor` in a real TTY, relay the device code from the TUI, and avoid pressing empty Enter at any auth prompt.
@@ -203,7 +219,8 @@ Always summarize:
 - If `dotnet run` cannot see an existing Microsoft session, check whether `SessionCache.db` and `ProfileKeyCache.ini` need to be synced from `MinecraftClient/bin/Release/net10.0/` to the repo root.
 - If Microsoft auth keeps prompting even with a valid session cache, verify `Account.Login` matches the cached username exactly.
 - If MCC reports `Connection refused`, verify the launched target matches the server's actual `server-port`.
+- If MCC reports `Connection refused` immediately after a server start, also check for stale shared state: old tmux sessions, a stale `stdin.pipe`, or a server that never actually reached `Done (`.
 - If multiple versions are being tested, do not start them in parallel unless the harness isolates tmux sessions and input files.
 - If a test assertion fails, inspect the real MCC output before changing the code or weakening the assertion.
 - If an older server behaves oddly on Linux, check `use-native-transport=false` in `server.properties`.
-- If a test should be repeatable, avoid mutating the repo-root `MinecraftClient.ini`.
+- If a matrix row fails before producing `mcc.log` or a command transcript, treat it as a harness failure, fix the environment, and rerun that row before drawing product conclusions.

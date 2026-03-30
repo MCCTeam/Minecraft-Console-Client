@@ -229,6 +229,58 @@ Make a built-in MCC chat bot named AutoTorch and wire it fully into the repo con
 Create a standalone MCC /script bot that follows private messages, uses GetVerbatim(text), and replies only to bot owners. Use the mcc-chatbot-authoring skill.
 ```
 
+## Achievements And Advancements
+
+Chat bots and C# scripts can read the current achievement state and react to updates.
+
+Useful methods:
+
+- `GetAchievements()`
+- `GetUnlockedAchievements()`
+- `GetLockedAchievements()`
+- `OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset)`
+
+Things worth knowing:
+
+- On `1.8` to `1.11.2`, ids use the legacy `achievement.*` format.
+- On `1.12+`, ids use advancement resource ids such as `minecraft:story/root`.
+- Legacy achievements usually have `Title = null` and `Description = null` because the server does not send display metadata in the statistics packet.
+- On newer versions, revoking an advancement may remove it from the current set instead of turning it into a locked entry, so `removedIds` matters.
+
+Example:
+
+```csharp
+//MCCScript 1.0
+
+MCC.LoadBot(new AchievementWatcher());
+
+//MCCScript Extensions
+
+public class AchievementWatcher : ChatBot
+{
+    public override void AfterGameJoined()
+    {
+        Achievement[] known = GetAchievements();
+        LogToConsole($"Known achievements: {known.Length}");
+    }
+
+    public override void OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset)
+    {
+        LogToConsole($"Achievement update: reset={reset}, updated={updated.Count}, removed={removedIds.Count}");
+
+        foreach (Achievement achievement in updated)
+        {
+            string title = achievement.Title ?? achievement.Id;
+            string state = achievement.IsCompleted ? "done" : "todo";
+            LogToConsole($" - {title}: {state}");
+        }
+
+        foreach (string removedId in removedIds)
+            LogToConsole($" - removed: {removedId}");
+    }
+}
+```
+
 ## C# API
 
 The authoritative reference for the C# API is [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs).
