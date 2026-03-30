@@ -3470,6 +3470,29 @@ namespace MinecraftClient.Protocol.Handlers
         private string ReadSlotDisplayLabel(Queue<byte> packetData)
         {
             int slotDisplayType = dataTypes.ReadNextVarInt(packetData);
+
+            // 26.1 changed the slot display registry order, inserting 3 new types:
+            //   Pre-26.1: 0=empty, 1=any_fuel, 2=item, 3=item_stack, 4=tag, 5=smithing_trim, 6=with_remainder, 7=composite
+            //   26.1+:    0=empty, 1=any_fuel, 2=with_any_potion, 3=only_with_component, 4=item, 5=item_stack, 6=tag, 7=dyed, 8=smithing_trim, 9=with_remainder, 10=composite
+            if (protocolVersion >= MC_26_1_Version)
+            {
+                return slotDisplayType switch
+                {
+                    0 => "Empty",
+                    1 => "Any Fuel",
+                    2 => ReadWithAnyPotionSlotDisplayLabel(packetData),
+                    3 => ReadOnlyWithComponentSlotDisplayLabel(packetData),
+                    4 => Item.GetTypeString(itemPalette.FromId(dataTypes.ReadNextVarInt(packetData))),
+                    5 => dataTypes.ReadNextItemSlot(packetData, itemPalette)?.GetTypeString() ?? "Empty",
+                    6 => "#" + dataTypes.ReadNextString(packetData),
+                    7 => ReadDyedSlotDisplayLabel(packetData),
+                    8 => ReadSmithingTrimSlotDisplayLabel(packetData),
+                    9 => ReadWithRemainderSlotDisplayLabel(packetData),
+                    10 => ReadCompositeSlotDisplayLabel(packetData),
+                    _ => $"slot_display_{slotDisplayType}",
+                };
+            }
+
             return slotDisplayType switch
             {
                 0 => "Empty",
@@ -3482,6 +3505,34 @@ namespace MinecraftClient.Protocol.Handlers
                 7 => ReadCompositeSlotDisplayLabel(packetData),
                 _ => $"slot_display_{slotDisplayType}",
             };
+        }
+
+        /// <summary>
+        /// Reads a with_any_potion slot display (26.1+): contains a nested SlotDisplay.
+        /// </summary>
+        private string ReadWithAnyPotionSlotDisplayLabel(Queue<byte> packetData)
+        {
+            return ReadSlotDisplayLabel(packetData);
+        }
+
+        /// <summary>
+        /// Reads an only_with_component slot display (26.1+): contains a nested SlotDisplay and a DataComponentType VarInt ID.
+        /// </summary>
+        private string ReadOnlyWithComponentSlotDisplayLabel(Queue<byte> packetData)
+        {
+            string sourceLabel = ReadSlotDisplayLabel(packetData);
+            _ = dataTypes.ReadNextVarInt(packetData); // DataComponentType registry id
+            return sourceLabel;
+        }
+
+        /// <summary>
+        /// Reads a dyed slot display (26.1+): contains two nested SlotDisplays (dye + target).
+        /// </summary>
+        private string ReadDyedSlotDisplayLabel(Queue<byte> packetData)
+        {
+            _ = ReadSlotDisplayLabel(packetData); // dye
+            string targetLabel = ReadSlotDisplayLabel(packetData); // target
+            return targetLabel;
         }
 
         private string ReadSmithingTrimSlotDisplayLabel(Queue<byte> packetData)
