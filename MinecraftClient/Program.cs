@@ -228,9 +228,26 @@ namespace MinecraftClient
         /// <returns>True if startup can continue; false if config load failed and user chose to exit.</returns>
         internal static bool ProcessStartupState(StartupState state)
         {
-            ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
-            if (BuildInfo is not null)
-                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+            if (Config.Console.General.Display_Icon_Banner && ConsoleIO.Backend is Tui.TuiConsoleBackend tuiBanner)
+            {
+                var view = tuiBanner.GetView();
+                if (view is not null)
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        var panel = Tui.MccBannerPanelBuilder.Build(BuildInfo);
+                        view.AppendControlToLog(panel);
+                    });
+                }
+                else
+                {
+                    ShowClassicBanner();
+                }
+            }
+            else
+            {
+                ShowClassicBanner();
+            }
 
             var cfg = state.ConfigResult;
 
@@ -269,6 +286,13 @@ namespace MinecraftClient
             }
 
             return true;
+        }
+
+        private static void ShowClassicBanner()
+        {
+            ConsoleIO.WriteLine(string.Format(Translations.mcc_banner_classic, Version, MCLowestVersion, MCHighestVersion, "Github.com/MCCTeam"));
+            if (BuildInfo is not null)
+                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
         }
 
         private static void MaybePrintClassicModeTuiRecommendation()

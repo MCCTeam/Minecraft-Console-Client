@@ -28,6 +28,7 @@ namespace MinecraftClient.Tui
             {
                 Orientation = Orientation.Vertical,
                 Margin = new Thickness(1, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
             };
 
             AddMotd(infoPanel, info);
@@ -47,7 +48,7 @@ namespace MinecraftClient.Tui
                 Background = new SolidColorBrush(Color.FromArgb(240, 20, 20, 20)),
                 Padding = new Thickness(1, 0),
                 Child = contentPanel,
-                Margin = new Thickness(0, 1),
+                Margin = new Thickness(0),
             };
         }
 
@@ -180,114 +181,8 @@ namespace MinecraftClient.Tui
         private static Run Value(string text, IBrush color) =>
             new(text) { Foreground = color };
 
-        #region Favicon Rendering
-
-        private static Grid BuildFaviconGrid(string base64Png, int displaySize)
-        {
-            byte[] pngBytes;
-            try
-            {
-                pngBytes = Convert.FromBase64String(base64Png);
-            }
-            catch
-            {
-                return new Grid();
-            }
-
-            int srcWidth, srcHeight;
-            byte[] rgba;
-            try
-            {
-                (srcWidth, srcHeight, rgba) = DecodePngToRgba(pngBytes);
-            }
-            catch
-            {
-                return new Grid();
-            }
-
-            int cellCols = displaySize;
-            int cellRows = displaySize / 2;
-
-            var grid = new Grid();
-            for (int c = 0; c < cellCols; c++)
-                grid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Auto));
-            for (int r = 0; r < cellRows; r++)
-                grid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Auto));
-
-            for (int row = 0; row < cellRows; row++)
-            {
-                for (int col = 0; col < cellCols; col++)
-                {
-                    int topPixelY = row * 2;
-                    int bottomPixelY = row * 2 + 1;
-
-                    var topColor = SamplePixel(rgba, srcWidth, srcHeight, col, topPixelY, cellCols, displaySize);
-                    var bottomColor = SamplePixel(rgba, srcWidth, srcHeight, col, bottomPixelY, cellCols, displaySize);
-
-                    var cell = new TextBlock
-                    {
-                        Text = "\u2580",
-                        Foreground = new SolidColorBrush(topColor),
-                        Background = new SolidColorBrush(bottomColor),
-                        Padding = new Thickness(0),
-                        Margin = new Thickness(0),
-                    };
-
-                    Grid.SetRow(cell, row);
-                    Grid.SetColumn(cell, col);
-                    grid.Children.Add(cell);
-                }
-            }
-
-            return grid;
-        }
-
-        private static Color SamplePixel(byte[] rgba, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH)
-        {
-            int srcX = dstX * srcW / dstW;
-            int srcY = dstY * srcH / dstH;
-            srcX = Math.Clamp(srcX, 0, srcW - 1);
-            srcY = Math.Clamp(srcY, 0, srcH - 1);
-
-            int idx = (srcY * srcW + srcX) * 4;
-            if (idx + 3 >= rgba.Length)
-                return Color.FromRgb(0, 0, 0);
-
-            byte r = rgba[idx];
-            byte g = rgba[idx + 1];
-            byte b = rgba[idx + 2];
-            byte a = rgba[idx + 3];
-
-            return a < 128 ? Color.FromRgb(0, 0, 0) : Color.FromRgb(r, g, b);
-        }
-
-        private static (int Width, int Height, byte[] Rgba) DecodePngToRgba(byte[] png)
-        {
-            using var image = new ImageMagick.MagickImage(png);
-            int w = (int)image.Width;
-            int h = (int)image.Height;
-
-            using var pixels = image.GetPixelsUnsafe();
-            var rgba = new byte[w * h * 4];
-
-            for (int y = 0; y < h; y++)
-            {
-                for (int x = 0; x < w; x++)
-                {
-                    var pixel = pixels.GetPixel(x, y)!;
-                    int idx = (y * w + x) * 4;
-                    var color = pixel.ToColor()!;
-                    rgba[idx] = (byte)(color.R >> 8);
-                    rgba[idx + 1] = (byte)(color.G >> 8);
-                    rgba[idx + 2] = (byte)(color.B >> 8);
-                    rgba[idx + 3] = (byte)(color.A >> 8);
-                }
-            }
-
-            return (w, h, rgba);
-        }
-
-        #endregion
+        private static Grid BuildFaviconGrid(string base64Png, int displaySize) =>
+            IconGridBuilder.BuildFromBase64(base64Png, displaySize);
 
         private static class McColors
         {

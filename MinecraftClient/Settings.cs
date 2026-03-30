@@ -1210,6 +1210,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$Console.General.ConsoleColorMode$")]
                     public ConsoleColorModeType ConsoleColorMode = ConsoleColorModeType.vt100_24bit;
 
+                    [TomlInlineComment("$Console.General.Display_Icon_Banner$")]
+                    public bool Display_Icon_Banner = true;
+
                     [TomlInlineComment("$Console.General.Display_Input$")]
                     public bool Display_Input = true;
 
