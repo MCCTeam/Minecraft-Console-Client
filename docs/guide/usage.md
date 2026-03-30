@@ -220,6 +220,54 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>achievement</code></summary>
+
+- **Description:**
+
+  Show the achievements or advancements currently known to MCC.
+
+  On Minecraft `1.8` to `1.11.2`, MCC tracks legacy achievements such as `achievement.openInventory`.
+
+  On Minecraft `1.12+`, MCC tracks advancements such as `minecraft:story/root`.
+
+- **Usage:**
+
+  ```
+  /achievement
+  /achievement list
+  /achievement locked
+  /achievement unlocked
+  ```
+
+- **Examples:**
+
+  List everything MCC currently knows:
+
+  ```
+  /achievement
+  ```
+
+  Show only incomplete entries:
+
+  ```
+  /achievement locked
+  ```
+
+  Show only completed entries:
+
+  ```
+  /achievement unlocked
+  ```
+
+- **Notes:**
+
+  The command only shows data the server has already sent to MCC.
+
+  Legacy achievements do not include titles or descriptions in the protocol, so older servers usually show the raw id instead.
+
+</details>
+
+<details>
 <summary><code>bed</code></summary>
 
 - **Description:**
