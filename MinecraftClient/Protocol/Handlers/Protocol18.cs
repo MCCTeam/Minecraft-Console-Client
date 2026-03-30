@@ -2643,6 +2643,27 @@ namespace MinecraftClient.Protocol.Handlers
                     }
 
                     break;
+                case PacketTypesIn.EntityVelocity:
+                    if (handler.GetEntityHandlingEnabled())
+                    {
+                        var entityId = dataTypes.ReadNextVarInt(packetData);
+                        double velocityX, velocityY, velocityZ;
+
+                        if (protocolVersion >= MC_1_21_9_Version)
+                        {
+                            (velocityX, velocityY, velocityZ) = dataTypes.ReadNextLpVec3Values(packetData);
+                        }
+                        else
+                        {
+                            velocityX = dataTypes.ReadNextShort(packetData) / 8000.0D;
+                            velocityY = dataTypes.ReadNextShort(packetData) / 8000.0D;
+                            velocityZ = dataTypes.ReadNextShort(packetData) / 8000.0D;
+                        }
+
+                        handler.OnEntityVelocity(entityId, velocityX, velocityY, velocityZ);
+                    }
+
+                    break;
                 case PacketTypesIn.EntityProperties:
                     if (handler.GetEntityHandlingEnabled())
                     {
@@ -2892,6 +2913,65 @@ namespace MinecraftClient.Protocol.Handlers
 
                     handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
                     break;
+                case PacketTypesIn.NamedSoundEffect:
+                {
+                    string? soundName = dataTypes.ReadNextString(packetData);
+                    int category = dataTypes.ReadNextVarInt(packetData);
+                    double x = dataTypes.ReadNextInt(packetData) / 8.0D;
+                    double y = dataTypes.ReadNextInt(packetData) / 8.0D;
+                    double z = dataTypes.ReadNextInt(packetData) / 8.0D;
+                    float volume = dataTypes.ReadNextFloat(packetData);
+                    float pitch = dataTypes.ReadNextFloat(packetData);
+
+                    handler.OnSoundEffect(soundName, new Location(x, y, z), category, volume, pitch, null);
+                    break;
+                }
+                case PacketTypesIn.SoundEffect:
+                {
+                    string? soundName;
+                    if (protocolVersion >= MC_1_19_Version)
+                        soundName = ReadSoundEventHolderName(packetData);
+                    else
+                    {
+                        dataTypes.ReadNextVarInt(packetData); // Sound id
+                        soundName = null;
+                    }
+
+                    int category = dataTypes.ReadNextVarInt(packetData);
+                    double x = dataTypes.ReadNextInt(packetData) / 8.0D;
+                    double y = dataTypes.ReadNextInt(packetData) / 8.0D;
+                    double z = dataTypes.ReadNextInt(packetData) / 8.0D;
+                    float volume = dataTypes.ReadNextFloat(packetData);
+                    float pitch = dataTypes.ReadNextFloat(packetData);
+
+                    if (protocolVersion >= MC_1_19_Version)
+                        dataTypes.ReadNextLong(packetData); // Seed
+
+                    handler.OnSoundEffect(soundName, new Location(x, y, z), category, volume, pitch, null);
+                    break;
+                }
+                case PacketTypesIn.EntitySoundEffect:
+                {
+                    string? soundName;
+                    if (protocolVersion >= MC_1_19_Version)
+                        soundName = ReadSoundEventHolderName(packetData);
+                    else
+                    {
+                        dataTypes.ReadNextVarInt(packetData); // Sound id
+                        soundName = null;
+                    }
+
+                    int category = dataTypes.ReadNextVarInt(packetData);
+                    int entityId = dataTypes.ReadNextVarInt(packetData);
+                    float volume = dataTypes.ReadNextFloat(packetData);
+                    float pitch = dataTypes.ReadNextFloat(packetData);
+
+                    if (protocolVersion >= MC_1_19_Version)
+                        dataTypes.ReadNextLong(packetData); // Seed
+
+                    handler.OnSoundEffect(soundName, null, category, volume, pitch, entityId);
+                    break;
+                }
                 case PacketTypesIn.HeldItemChange:
                 case PacketTypesIn.SetHeldSlot:
                     handler.OnHeldItemChange(dataTypes.ReadNextByte(packetData)); // Slot
@@ -3152,6 +3232,23 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             return true; //Packet processed
+        }
+
+        /// <summary>
+        /// Read a Holder&lt;SoundEvent&gt; from packet data and return its key when inline.
+        /// Returns null when the holder is a registry reference.
+        /// </summary>
+        private string? ReadSoundEventHolderName(Queue<byte> packetData)
+        {
+            int soundHolderId = dataTypes.ReadNextVarInt(packetData);
+            if (soundHolderId != 0)
+                return null;
+
+            string soundName = dataTypes.ReadNextString(packetData);
+            bool hasFixedRange = dataTypes.ReadNextBool(packetData);
+            if (hasFixedRange)
+                dataTypes.ReadNextFloat(packetData);
+            return soundName;
         }
 
         /// <summary>

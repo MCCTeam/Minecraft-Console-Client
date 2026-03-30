@@ -927,6 +927,7 @@ redirectFrom:
 - **Description:**
 
   Automatically catch fish using a fishing rod.
+  Bite detection combines bobber movement, bobber velocity, and splash sounds.
 
   <div class="custom-container note"><p class="custom-container-title">Note</p>
 
@@ -1102,6 +1103,66 @@ redirectFrom:
   - **Type:** `float`
 
   - **Default:** `0.2`
+
+  #### `Enable_Velocity_Detection`
+
+  - **Description:**
+
+    Enables bite detection using the fishing bobber velocity packet.
+
+    This improves reliability when bobber X/Z movement is constrained (for example by blocks near the water surface).
+
+  - **Available values:** `true` and `false`.
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  #### `Velocity_Hook_Threshold`
+
+  - **Description:**
+
+    Velocity Y threshold in blocks/tick for velocity-based bite detection.
+
+    Values below this threshold are considered a bite. Keep this value negative.
+
+  - **Type:** `float`
+
+  - **Default:** `-0.2`
+
+  #### `Enable_Sound_Detection`
+
+  - **Description:**
+
+    Enables bite detection using nearby splash sounds (`entity.fishing_bobber.splash`).
+
+  - **Available values:** `true` and `false`.
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  #### `Sound_Distance`
+
+  - **Description:**
+
+    Maximum distance in blocks between a splash sound and the tracked bobber to treat it as a bite.
+
+  - **Type:** `float`
+
+  - **Default:** `5.0`
+
+  #### `Detection_Warmup`
+
+  - **Description:**
+
+    Delay in seconds after bobber spawn before bite detection starts.
+
+    This helps ignore the initial cast-entry splash/motion.
+
+  - **Type:** `float`
+
+  - **Default:** `1.0`
 
   #### `Log_Fish_Bobber`
 
