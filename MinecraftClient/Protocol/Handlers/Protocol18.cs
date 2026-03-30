@@ -3035,6 +3035,84 @@ namespace MinecraftClient.Protocol.Handlers
                     handler.OnUpdateScore(entityName, action3, objectiveName3, objectiveDisplayName3, objectiveValue2,
                         numberFormat2);
                     break;
+                case PacketTypesIn.Teams:
+                    // Wire format per version:
+                    //   All versions: name (string), method (byte)
+                    //   method 0/2:   displayName (component), options (byte),
+                    //                 nameTagVisibility, collisionRule, color (VarInt),
+                    //                 prefix (component), suffix (component)
+                    //   method 0/3/4: players list (VarInt count + strings)
+                    //   1.21.9+ (protocol 773): nameTagVisibility and collisionRule are
+                    //           VarInt-encoded enum IDs instead of UTF strings.
+                    var teamName = dataTypes.ReadNextString(packetData);
+                    var teamMethod = dataTypes.ReadNextByte(packetData);
+
+                    var teamDisplayName = string.Empty;
+                    byte teamFriendlyFlags = 0;
+                    var teamNameTagVisibility = string.Empty;
+                    var teamCollisionRule = string.Empty;
+                    var teamColor = -1;
+                    var teamPrefix = string.Empty;
+                    var teamSuffix = string.Empty;
+
+                    if (teamMethod is 0 or 2)
+                    {
+                        teamDisplayName = dataTypes.ReadNextChat(packetData);
+                        teamFriendlyFlags = dataTypes.ReadNextByte(packetData);
+
+                        // nameTagVisibility
+                        if (protocolVersion >= MC_1_21_9_Version)
+                        {
+                            // STREAM_CODEC: 0=always, 1=never, 2=hideForOtherTeams, 3=hideForOwnTeam
+                            teamNameTagVisibility = dataTypes.ReadNextVarInt(packetData) switch
+                            {
+                                0 => "always",
+                                1 => "never",
+                                2 => "hideForOtherTeams",
+                                3 => "hideForOwnTeam",
+                                _ => "always"
+                            };
+                        }
+                        else
+                        {
+                            teamNameTagVisibility = dataTypes.ReadNextString(packetData);
+                        }
+
+                        // collisionRule
+                        if (protocolVersion >= MC_1_21_9_Version)
+                        {
+                            // STREAM_CODEC: 0=always, 1=never, 2=pushOtherTeams, 3=pushOwnTeam
+                            teamCollisionRule = dataTypes.ReadNextVarInt(packetData) switch
+                            {
+                                0 => "always",
+                                1 => "never",
+                                2 => "pushOtherTeams",
+                                3 => "pushOwnTeam",
+                                _ => "always"
+                            };
+                        }
+                        else
+                        {
+                            teamCollisionRule = dataTypes.ReadNextString(packetData);
+                        }
+
+                        teamColor = dataTypes.ReadNextVarInt(packetData);
+                        teamPrefix = dataTypes.ReadNextChat(packetData);
+                        teamSuffix = dataTypes.ReadNextChat(packetData);
+                    }
+
+                    var teamPlayers = new List<string>();
+                    if (teamMethod is 0 or 3 or 4)
+                    {
+                        int playerCount = dataTypes.ReadNextVarInt(packetData);
+                        for (int i = 0; i < playerCount; i++)
+                            teamPlayers.Add(dataTypes.ReadNextString(packetData));
+                    }
+
+                    handler.OnTeam(teamName, teamMethod, teamDisplayName, teamFriendlyFlags,
+                        teamNameTagVisibility, teamCollisionRule, teamColor,
+                        teamPrefix, teamSuffix, teamPlayers);
+                    break;
                 case PacketTypesIn.BlockChangedAck:
                     handler.OnBlockChangeAck(dataTypes.ReadNextVarInt(packetData));
                     break;

@@ -385,6 +385,23 @@ namespace MinecraftClient.Scripting
         public virtual void OnUpdateScore(string entityName, int action, string objectiveName, string objectiveDisplayName, int value, int numberFormat) { }
 
         /// <summary>
+        /// Called when a Teams packet is received from the server.
+        /// </summary>
+        /// <param name="teamName">Internal team name (up to 16 chars)</param>
+        /// <param name="method">0=create, 1=remove, 2=update, 3=add players, 4=remove players</param>
+        /// <param name="displayName">Display name (formatted). Present when method is 0 or 2.</param>
+        /// <param name="friendlyFlags">Bit 0=allowFriendlyFire, bit 1=seeFriendlyInvisibles. Present when method is 0 or 2.</param>
+        /// <param name="nameTagVisibility">Nametag visibility rule. Present when method is 0 or 2.</param>
+        /// <param name="collisionRule">Collision rule. Present when method is 0 or 2.</param>
+        /// <param name="color">ChatFormatting color value (-1=none). Present when method is 0 or 2.</param>
+        /// <param name="prefix">Member name prefix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="suffix">Member name suffix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="players">Player/entity names. Present when method is 0, 3, or 4.</param>
+        public virtual void OnTeam(string teamName, byte method, string displayName, byte friendlyFlags,
+            string nameTagVisibility, string collisionRule, int color,
+            string prefix, string suffix, List<string> players) { }
+
+        /// <summary>
         /// Called when the client received the Tab Header and Footer
         /// </summary>
         /// <param name="header">Header</param>

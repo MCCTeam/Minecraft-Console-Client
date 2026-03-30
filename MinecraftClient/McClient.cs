@@ -113,6 +113,9 @@ namespace MinecraftClient
 
         // player attributes (e.g., block_break_speed, mining_efficiency, submerged_mining_speed)
         private readonly Dictionary<string, double> playerAttributes = new();
+
+        // scoreboard teams (key = team name)
+        private readonly Dictionary<string, PlayerTeam> teams = new(StringComparer.Ordinal);
         
         // Sneaking
         public bool IsSneaking { get; set; } = false;
@@ -160,6 +163,30 @@ namespace MinecraftClient
         public Dictionary<Effects, EffectData> GetPlayerEffects()
         {
             return new Dictionary<Effects, EffectData>(playerEffects);
+        }
+
+        /// <summary>
+        /// Get a snapshot of all known scoreboard teams.
+        /// </summary>
+        /// <returns>Dictionary mapping team name to <see cref="PlayerTeam"/></returns>
+        public Dictionary<string, PlayerTeam> GetTeams()
+        {
+            lock (teams)
+                return new Dictionary<string, PlayerTeam>(teams, StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Get the team that contains the given player/entity name, or <c>null</c> if not found.
+        /// </summary>
+        public PlayerTeam? GetPlayerTeam(string playerName)
+        {
+            lock (teams)
+            {
+                foreach (var team in teams.Values)
+                    if (team.Members.Contains(playerName))
+                        return team;
+                return null;
+            }
         }
 
         public int GetLevel() { return playerLevel; }
@@ -4053,7 +4080,78 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityName, action, objectiveName, objectiveDisplayName, objectiveValue, numberFormat));
         }
-        
+
+        /// <summary>
+        /// Called when a Teams packet is received. Updates the internal team state and notifies bots.
+        /// </summary>
+        public void OnTeam(string teamName, byte method, string displayName, byte friendlyFlags,
+            string nameTagVisibility, string collisionRule, int color,
+            string prefix, string suffix, List<string> players)
+        {
+            lock (teams)
+            {
+                switch (method)
+                {
+                    case 0: // create
+                        var newTeam = new PlayerTeam
+                        {
+                            Name = teamName,
+                            DisplayName = displayName,
+                            AllowFriendlyFire = (friendlyFlags & 0x01) != 0,
+                            SeeFriendlyInvisibles = (friendlyFlags & 0x02) != 0,
+                            NameTagVisibility = nameTagVisibility,
+                            CollisionRule = collisionRule,
+                            Color = color,
+                            Prefix = prefix,
+                            Suffix = suffix
+                        };
+                        foreach (var p in players)
+                            newTeam.Members.Add(p);
+                        teams[teamName] = newTeam;
+                        break;
+
+                    case 1: // remove
+                        teams.Remove(teamName);
+                        break;
+
+                    case 2: // update parameters
+                        if (!teams.TryGetValue(teamName, out var updateTeam))
+                        {
+                            updateTeam = new PlayerTeam { Name = teamName };
+                            teams[teamName] = updateTeam;
+                        }
+                        updateTeam.DisplayName = displayName;
+                        updateTeam.AllowFriendlyFire = (friendlyFlags & 0x01) != 0;
+                        updateTeam.SeeFriendlyInvisibles = (friendlyFlags & 0x02) != 0;
+                        updateTeam.NameTagVisibility = nameTagVisibility;
+                        updateTeam.CollisionRule = collisionRule;
+                        updateTeam.Color = color;
+                        updateTeam.Prefix = prefix;
+                        updateTeam.Suffix = suffix;
+                        break;
+
+                    case 3: // add players
+                        if (!teams.TryGetValue(teamName, out var addTeam))
+                        {
+                            addTeam = new PlayerTeam { Name = teamName };
+                            teams[teamName] = addTeam;
+                        }
+                        foreach (var p in players)
+                            addTeam.Members.Add(p);
+                        break;
+
+                    case 4: // remove players
+                        if (teams.TryGetValue(teamName, out var removeTeam))
+                            foreach (var p in players)
+                                removeTeam.Members.Remove(p);
+                        break;
+                }
+            }
+            DispatchBotEvent(bot => bot.OnTeam(teamName, method, displayName, friendlyFlags,
+                nameTagVisibility, collisionRule, color, prefix, suffix, players));
+        }
+
+
         /// <summary>
         /// Called when the client received the Tab Header and Footer
         /// </summary>
