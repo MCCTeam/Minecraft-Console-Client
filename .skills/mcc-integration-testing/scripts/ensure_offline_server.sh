@@ -6,6 +6,14 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 # shellcheck source=tools/mcc-env.sh
 source "$REPO_ROOT/tools/mcc-env.sh"
 
+sed_in_place() {
+    if [[ "$(uname)" == "Darwin" ]]; then
+        sed -i '' "$@"
+    else
+        sed -i "$@"
+    fi
+}
+
 VERSION="${1:-1.21.11-Vanilla}"
 SERVER_DIR="${MCC_SERVERS:?}/$VERSION"
 PROPS_FILE="$SERVER_DIR/server.properties"
@@ -49,6 +57,15 @@ wait_for_server_stop() {
         sleep 1
         ((elapsed += 1))
     done
+
+    # Legacy servers can leave the tmux session around after stdin stop.
+    # Fall back to force-killing the session so the harness can continue.
+    mc-kill "$VERSION" >/dev/null 2>&1 || true
+
+    if ! server_running; then
+        return 0
+    fi
+
     echo "Timed out waiting for $VERSION to stop" >&2
     return 1
 }
@@ -58,7 +75,7 @@ upsert_property() {
     local value="$2"
 
     if grep -Eq "^${key}=" "$PROPS_FILE"; then
-        sed -i "s#^${key}=.*#${key}=${value}#" "$PROPS_FILE"
+        sed_in_place "s#^${key}=.*#${key}=${value}#" "$PROPS_FILE"
     else
         printf '%s=%s\n' "$key" "$value" >> "$PROPS_FILE"
     fi

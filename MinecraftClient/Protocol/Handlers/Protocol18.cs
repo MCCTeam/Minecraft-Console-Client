@@ -91,6 +91,7 @@ namespace MinecraftClient.Protocol.Handlers
         private int currentDimension;
         private bool isOnlineMode = false;
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
+        private readonly Dictionary<string, bool> legacyAchievementProgress = new(StringComparer.Ordinal);
         private float LastYaw, LastPitch;
         private double lastSentX, lastSentY, lastSentZ;
         private float lastSentYaw, lastSentPitch;
@@ -120,6 +121,7 @@ namespace MinecraftClient.Protocol.Handlers
         Tuple<Thread, CancellationTokenSource>? netReader = null; // reader thread
         readonly ILogger log;
         readonly RandomNumberGenerator randomGen;
+        private bool legacyAchievementsInitialized;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler,
             ForgeInfo? forgeInfo, int rawProtocolVersion = 0)
@@ -3132,6 +3134,11 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.RecipeBookSettings:
                     break;
 
+                case PacketTypesIn.Statistics:
+                    if (protocolVersion < MC_1_12_Version)
+                        HandleLegacyStatistics(packetData);
+                    break;
+
                 case PacketTypesIn.Advancements:
                     HandleAdvancements(packetData);
                     break;
@@ -3148,8 +3155,38 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Handle the Statistics packet for pre-1.12 legacy achievements.
+        /// </summary>
+        private void HandleLegacyStatistics(Queue<byte> packetData)
+        {
+            int statCount = dataTypes.ReadNextVarInt(packetData);
+
+            for (int i = 0; i < statCount; i++)
+            {
+                string statId = dataTypes.ReadNextString(packetData);
+                int value = dataTypes.ReadNextVarInt(packetData);
+
+                if (statId.StartsWith("achievement.", StringComparison.Ordinal))
+                    legacyAchievementProgress[statId] = value > 0;
+            }
+
+            List<Achievement> added = new(LegacyAchievementCatalog.Ids.Count + legacyAchievementProgress.Count);
+
+            foreach (string achievementId in LegacyAchievementCatalog.Ids)
+                added.Add(CreateLegacyAchievement(achievementId, legacyAchievementProgress.TryGetValue(achievementId, out bool completed) && completed));
+
+            foreach (var (achievementId, completed) in legacyAchievementProgress)
+            {
+                if (!LegacyAchievementCatalog.Contains(achievementId))
+                    added.Add(CreateLegacyAchievement(achievementId, completed));
+            }
+
+            handler.OnAchievementsUpdate(added, [], reset: !legacyAchievementsInitialized);
+            legacyAchievementsInitialized = true;
+        }
+
+        /// <summary>
         /// Handle the Advancements packet (1.12+).
-        /// Also handles the Statistics packet for pre-1.12 legacy achievements.
         /// </summary>
         private void HandleAdvancements(Queue<byte> packetData)
         {
@@ -3280,6 +3317,16 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             handler.OnAchievementsUpdate(added, removedIds, reset);
+        }
+
+        private static Achievement CreateLegacyAchievement(string id, bool isCompleted)
+        {
+            Dictionary<string, bool> criteria = new(StringComparer.Ordinal)
+            {
+                [id] = isCompleted
+            };
+            IReadOnlyList<string>[] requirements = [[id]];
+            return new Achievement(id, null, null, AchievementType.Legacy, false, isCompleted, requirements, criteria);
         }
 
         /// <summary>

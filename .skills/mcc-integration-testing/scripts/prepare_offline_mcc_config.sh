@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+sed_in_place() {
+    if [[ "$(uname)" == "Darwin" ]]; then
+        sed -i '' "$@"
+    else
+        sed -i "$@"
+    fi
+}
+
 if [[ $# -lt 3 || $# -gt 4 ]]; then
     echo "Usage: $0 <template-ini> <output-ini> <mc-version> [login]" >&2
     exit 1
@@ -28,7 +36,7 @@ fi
 
 cp "$TEMPLATE_INI" "$OUTPUT_INI"
 
-sed -i \
+sed_in_place \
     -e "s#^Account = .*#Account = { Login = \"$LOGIN_NAME\", Password = \"$PASSWORD_VALUE\" }#" \
     -e "s#^AccountType = .*#AccountType = \"$ACCOUNT_TYPE\"#" \
     -e "s#^MinecraftVersion = \"[^\"]*\"\\(.*\\)\$#MinecraftVersion = \"$MC_VERSION\"\\1#" \
