@@ -33,10 +33,64 @@ public sealed class MccMcpToolSet
         return capabilities.GetPlayerState();
     }
 
+    [McpServerTool(Name = "mcc_world_state"), Description("Get current world state, chunk loading progress, and last observed runtime time/weather values.")]
+    public object WorldState()
+    {
+        return capabilities.GetWorldState();
+    }
+
+    [McpServerTool(Name = "mcc_chunk_status"), Description("Get chunk loading status for the player location or an explicit world coordinate.")]
+    public object ChunkStatus(double? x = null, double? y = null, double? z = null)
+    {
+        return capabilities.GetChunkStatus(x, y, z);
+    }
+
+    [McpServerTool(Name = "mcc_raycast_block"), Description("Raycast from the player's current view and return the first non-air block hit.")]
+    public object RaycastBlock(double maxDistance = 8.0, bool includeNeighbors = false)
+    {
+        return capabilities.RaycastBlock(maxDistance, includeNeighbors);
+    }
+
+    [McpServerTool(Name = "mcc_path_preview"), Description("Compute a path preview to a target world coordinate without moving there.")]
+    public object PathPreview(double x, double y, double z, bool allowUnsafe = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0, int maxWaypoints = 128)
+    {
+        return capabilities.PreviewPath(x, y, z, allowUnsafe, maxOffset, minOffset, timeoutMs, maxWaypoints);
+    }
+
     [McpServerTool(Name = "mcc_players_list"), Description("List currently known online players.")]
     public object PlayersList()
     {
         return capabilities.GetPlayersList();
+    }
+
+    [McpServerTool(Name = "mcc_players_detailed"), Description("List online players with UUID, latency, gamemode, and tracked coordinates when available.")]
+    public object PlayersDetailed(bool includeSelf = false, bool includeCoordinates = true)
+    {
+        return capabilities.GetPlayersDetailed(includeSelf, includeCoordinates);
+    }
+
+    [McpServerTool(Name = "mcc_player_stats"), Description("Get current controlled player stats, orientation, and location.")]
+    public object PlayerStats()
+    {
+        return capabilities.GetPlayerStats();
+    }
+
+    [McpServerTool(Name = "mcc_status_effects"), Description("Get active player status effects only.")]
+    public object StatusEffects()
+    {
+        return capabilities.GetStatusEffects();
+    }
+
+    [McpServerTool(Name = "mcc_recent_events"), Description("Get recent high-signal MCP runtime events after a given event ID.")]
+    public object RecentEvents(long afterId = 0, int maxCount = 50, string? typeFilter = null)
+    {
+        return capabilities.GetRecentEvents(afterId, maxCount, typeFilter);
+    }
+
+    [McpServerTool(Name = "mcc_loaded_bots"), Description("List currently loaded MCC bots and scripts.")]
+    public object LoadedBots()
+    {
+        return capabilities.GetLoadedBots();
     }
 
     [McpServerTool(Name = "mcc_chat_history"), Description("Get recent chat/system lines seen by MCC.")]
@@ -87,16 +141,52 @@ public sealed class MccMcpToolSet
         return capabilities.QuitClient();
     }
 
+    [McpServerTool(Name = "mcc_disconnect"), Description("Disconnect MCC from the current server without quitting the process.")]
+    public object Disconnect()
+    {
+        return capabilities.DisconnectClient();
+    }
+
+    [McpServerTool(Name = "mcc_respawn"), Description("Send the respawn packet when the controlled player is dead.")]
+    public object Respawn()
+    {
+        return capabilities.Respawn();
+    }
+
     [McpServerTool(Name = "mcc_run_internal_command"), Description("Run an internal MCC command.")]
     public object RunInternalCommand([Description("MCC command line without leading slash.")] string command)
     {
         return capabilities.RunInternalCommand(command);
     }
 
+    [McpServerTool(Name = "mcc_animation"), Description("Play a hand-swing animation with the selected hand.")]
+    public object Animation(string hand = "MainHand")
+    {
+        return capabilities.PlayAnimation(hand);
+    }
+
+    [McpServerTool(Name = "mcc_toggle_sneak"), Description("Explicitly enable or disable sneaking.")]
+    public object ToggleSneak(bool enabled)
+    {
+        return capabilities.ToggleSneak(enabled);
+    }
+
+    [McpServerTool(Name = "mcc_toggle_sprint"), Description("Explicitly send start or stop sprinting entity actions.")]
+    public object ToggleSprint(bool enabled)
+    {
+        return capabilities.ToggleSprint(enabled);
+    }
+
     [McpServerTool(Name = "mcc_change_hotbar_slot"), Description("Change active hotbar slot (1-9).")]
     public object ChangeHotbarSlot(int slot)
     {
         return capabilities.ChangeHotbarSlot(slot);
+    }
+
+    [McpServerTool(Name = "mcc_select_item"), Description("Select a hotbar item by item type without rearranging inventory contents.")]
+    public object SelectItem(string itemType, bool preferLowestSlot = true)
+    {
+        return capabilities.SelectHotbarItem(itemType, preferLowestSlot);
     }
 
     [McpServerTool(Name = "mcc_use_item_on_hand"), Description("Use the currently held item.")]
@@ -129,6 +219,12 @@ public sealed class MccMcpToolSet
         return capabilities.InteractEntity(entityId, interaction, hand);
     }
 
+    [McpServerTool(Name = "mcc_entity_attack"), Description("Attack a tracked entity explicitly.")]
+    public object EntityAttack(int entityId)
+    {
+        return capabilities.AttackEntity(entityId);
+    }
+
     [McpServerTool(Name = "mcc_block_scan"), Description("Scan nearby blocks around player location.")]
     public object BlockScan(int radius = 3, int maxCount = 200, string? materialFilter = null)
     {
@@ -151,6 +247,12 @@ public sealed class MccMcpToolSet
     public object PlayerLocate(string playerName, bool includeSelf = false)
     {
         return capabilities.LocatePlayer(playerName, includeSelf);
+    }
+
+    [McpServerTool(Name = "mcc_entity_nearest"), Description("Return the nearest tracked entity matching the requested filters.")]
+    public object EntityNearest(string? typeFilter = null, string? nameFilter = null, double radius = 64.0, bool includePlayers = true)
+    {
+        return capabilities.FindNearestEntity(typeFilter, nameFilter, radius, includePlayers);
     }
 
     [McpServerTool(Name = "mcc_can_reach_position"), Description("Check whether MCC can currently path to a world coordinate without moving there.")]
@@ -177,10 +279,28 @@ public sealed class MccMcpToolSet
         return capabilities.LookAt(x, y, z);
     }
 
+    [McpServerTool(Name = "mcc_look_direction"), Description("Rotate player view to a cardinal direction or straight up/down.")]
+    public object LookDirection(string direction)
+    {
+        return capabilities.LookDirection(direction);
+    }
+
+    [McpServerTool(Name = "mcc_look_angles"), Description("Rotate player view to explicit yaw and pitch angles.")]
+    public object LookAngles(float yaw, float pitch)
+    {
+        return capabilities.LookAngles(yaw, pitch);
+    }
+
     [McpServerTool(Name = "mcc_inventory_snapshot"), Description("Get a snapshot of one inventory.")]
     public object InventorySnapshot([Description("Inventory ID. 0 is the player inventory.")] int inventoryId = 0)
     {
         return capabilities.GetInventorySnapshot(inventoryId);
+    }
+
+    [McpServerTool(Name = "mcc_inventory_search"), Description("Search the player inventory and optionally open containers for items matching a query.")]
+    public object InventorySearch(string query, int maxCount = 100, bool exactMatch = false, bool includeContainers = true)
+    {
+        return capabilities.SearchInventories(query, maxCount, exactMatch, includeContainers);
     }
 
     [McpServerTool(Name = "mcc_inventories_list"), Description("List currently open inventories and containers known to MCC.")]

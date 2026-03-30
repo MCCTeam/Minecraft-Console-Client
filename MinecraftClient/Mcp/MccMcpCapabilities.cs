@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol;
 using MinecraftClient.Protocol.Message;
 using MinecraftClient.Scripting;
 
@@ -20,6 +21,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
     private const double SelfEntityDistanceThreshold = 0.2;
     private const int MaxBlockScanRadius = 12;
     private const int MaxBlockFindRadius = 32;
+    private const double MaxRaycastDistance = 128.0;
     private const double DigReachDistance = 5.0;
     private const double DigReachDistanceSquared = DigReachDistance * DigReachDistance;
     private const int DefaultPathQueryTimeoutMs = 5000;
@@ -35,6 +37,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
     private const int MinContainerWaitMs = 250;
     private const int MaxContainerWaitMs = 20000;
     private const int DefaultInventoryActionWaitMs = 3500;
+    private const int MaxPathPreviewWaypoints = 1000;
 
     private sealed class InternalCommandInfo
     {
@@ -174,6 +177,226 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         });
     }
 
+    public MccMcpResult GetWorldState()
+    {
+        if (!IsCategoryEnabled(t => t.SessionStatus))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Location location = client.GetCurrentLocation();
+            World world = client.GetWorld();
+            Dimension dimension = World.GetDimension();
+            MccMcpRuntimeStateSnapshot runtimeState = MccMcpRuntimeStateStore.GetSnapshot();
+            int totalChunkCount = world.chunkCnt;
+            int pendingChunkCount = Math.Max(0, world.chunkLoadNotCompleted);
+            int loadedChunkCount = GetLoadedChunkCount(world);
+
+            return MccMcpResult.Ok(new
+            {
+                host = client.GetServerHost(),
+                port = client.GetServerPort(),
+                username = client.GetUsername(),
+                protocol = client.GetProtocolVersion(),
+                protocolVersion = client.GetProtocolVersion(),
+                terrainEnabled = client.GetTerrainEnabled(),
+                inventoryEnabled = client.GetInventoryEnabled(),
+                entityEnabled = client.GetEntityHandlingEnabled(),
+                entityHandlingEnabled = client.GetEntityHandlingEnabled(),
+                location = ToCoordinate(location),
+                tps = client.GetServerTPS(),
+                dimension = dimension.Name,
+                dimensionDetails = new
+                {
+                    name = dimension.Name,
+                    minY = dimension.minY,
+                    maxY = dimension.maxY,
+                    height = dimension.height,
+                    logicalHeight = dimension.logicalHeight,
+                    coordinateScale = dimension.coordinateScale,
+                    hasSkylight = dimension.hasSkylight,
+                    hasCeiling = dimension.hasCeiling,
+                    fixedTime = dimension.fixedTime >= 0 ? dimension.fixedTime : (long?)null
+                },
+                loadedChunkCount,
+                pendingChunkCount,
+                totalChunkCount,
+                loadRatio = GetChunkLoadRatio(world),
+                worldAge = runtimeState.WorldAge,
+                timeOfDay = runtimeState.TimeOfDay,
+                rainLevel = runtimeState.RainLevel,
+                thunderLevel = runtimeState.ThunderLevel
+            });
+        });
+    }
+
+    public MccMcpResult GetChunkStatus(double? x, double? y, double? z)
+    {
+        if (!IsCategoryEnabled(t => t.EntityWorld))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (!HasCompleteCoordinateTriple(x, y, z))
+            return MccMcpResult.Fail("invalid_args");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetTerrainEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Location queryLocation = x.HasValue && y.HasValue && z.HasValue
+                ? new Location(x.Value, y.Value, z.Value)
+                : client.GetCurrentLocation();
+
+            World world = client.GetWorld();
+            ChunkColumn? chunkColumn = world.GetChunkColumn(queryLocation);
+            return MccMcpResult.Ok(new
+            {
+                location = ToCoordinate(queryLocation),
+                chunk = new
+                {
+                    x = queryLocation.ChunkX,
+                    z = queryLocation.ChunkZ
+                },
+                chunkX = queryLocation.ChunkX,
+                chunkZ = queryLocation.ChunkZ,
+                loaded = chunkColumn is not null,
+                fullyLoaded = chunkColumn?.FullyLoaded ?? false,
+                loadedChunkCount = GetLoadedChunkCount(world),
+                pendingChunkCount = Math.Max(0, world.chunkLoadNotCompleted),
+                totalChunkCount = world.chunkCnt,
+                loadRatio = GetChunkLoadRatio(world)
+            });
+        });
+    }
+
+    public MccMcpResult RaycastBlock(double maxDistance, bool includeNeighbors)
+    {
+        if (!IsCategoryEnabled(t => t.EntityWorld))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (maxDistance <= 0 || maxDistance > MaxRaycastDistance)
+        {
+            return MccMcpResult.Fail("invalid_args", data: new
+            {
+                parameter = "maxDistance",
+                minExclusive = 0,
+                max = MaxRaycastDistance
+            });
+        }
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetTerrainEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Location playerLocation = client.GetCurrentLocation();
+            Location eyeLocation = playerLocation.EyesLocation();
+            Tuple<bool, Location, Block> raycast = RaycastHelper.RaycastBlock(client, maxDistance, includeFluids: false);
+            if (!raycast.Item1)
+            {
+                return MccMcpResult.Ok(new
+                {
+                    hit = false,
+                    maxDistance,
+                    playerLocation = ToCoordinate(playerLocation),
+                    eyeLocation = ToCoordinate(eyeLocation),
+                    location = (object?)null,
+                    block = (object?)null,
+                    distance = (double?)null,
+                    eyeDistance = (double?)null,
+                    neighbors = (object?)null
+                });
+            }
+
+            Location blockLocation = raycast.Item2;
+            Block block = raycast.Item3;
+            Location targetCenter = blockLocation.ToCenter();
+            object? neighbors = includeNeighbors ? GetNeighborBlockSnapshot(client.GetWorld(), blockLocation) : null;
+
+            return MccMcpResult.Ok(new
+            {
+                hit = true,
+                maxDistance,
+                playerLocation = ToCoordinate(playerLocation),
+                eyeLocation = ToCoordinate(eyeLocation),
+                location = ToCoordinate(blockLocation),
+                block = ToBlockState(block),
+                distance = playerLocation.Distance(targetCenter),
+                eyeDistance = eyeLocation.Distance(targetCenter),
+                neighbors
+            });
+        });
+    }
+
+    public MccMcpResult PreviewPath(double x, double y, double z, bool allowUnsafe, int maxOffset, int minOffset, int timeoutMs, int maxWaypoints)
+    {
+        if (!IsCategoryEnabled(t => t.Movement))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (!AreValidPathOffsets(maxOffset, minOffset) || timeoutMs < 0 || maxWaypoints <= 0)
+        {
+            return MccMcpResult.Fail("invalid_args", data: new
+            {
+                maxOffset,
+                minOffset,
+                timeoutMs,
+                maxWaypoints
+            });
+        }
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetTerrainEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        Location goal = new(x, y, z);
+        Location startLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+        World world = client.InvokeOnMainThread(client.GetWorld);
+        int effectiveTimeoutMs = GetPathQueryTimeoutMs(timeoutMs);
+        int waypointLimit = Math.Clamp(maxWaypoints, 1, MaxPathPreviewWaypoints);
+        Queue<Location>? path = Movement.CalculatePath(
+            world,
+            startLocation,
+            goal,
+            allowUnsafe,
+            maxOffset,
+            minOffset,
+            TimeSpan.FromMilliseconds(effectiveTimeoutMs));
+        Location[] waypoints = path?.Take(waypointLimit).ToArray() ?? [];
+        Location? finalWaypoint = path is not null && path.Count > 0 ? path.Last() : null;
+
+        return MccMcpResult.Ok(new
+        {
+            pathFound = path is not null,
+            exactReachable = finalWaypoint is Location location && location.ToFloor() == goal.ToFloor(),
+            target = ToCoordinate(goal),
+            startLocation = ToCoordinate(startLocation),
+            finalWaypoint = finalWaypoint is Location waypoint ? ToCoordinate(waypoint) : (object?)null,
+            finalDistance = finalWaypoint is Location endWaypoint ? GetDistance(endWaypoint, goal) : (double?)null,
+            waypointCount = path?.Count ?? 0,
+            truncated = path is not null && path.Count > waypointLimit,
+            waypoints = waypoints.Select(ToCoordinate).ToArray(),
+            allowUnsafe,
+            maxOffset,
+            minOffset,
+            timeoutMs = effectiveTimeoutMs
+        });
+    }
+
     public MccMcpResult GetPlayersList()
     {
         if (!IsCategoryEnabled(t => t.SessionStatus))
@@ -187,6 +410,202 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         {
             players = client.GetOnlinePlayers()
         }));
+    }
+
+    public MccMcpResult GetPlayersDetailed(bool includeSelf, bool includeCoordinates)
+    {
+        if (!IsCategoryEnabled(t => t.SessionStatus))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Dictionary<string, string> onlinePlayers = client.GetOnlinePlayersWithUUID();
+            Dictionary<Guid, NearbyPlayerSnapshot>? trackedPlayers = client.GetEntityHandlingEnabled()
+                ? BuildTrackedPlayerSnapshots(client, includeSelf: true).ToDictionary(player => player.Uuid)
+                : null;
+            Guid selfUuid = client.GetUserUuid();
+            string selfName = client.GetUsername();
+
+            var players = onlinePlayers
+                .Select(pair =>
+                {
+                    if (!Guid.TryParse(pair.Key, out Guid uuid))
+                        return null;
+
+                    bool isSelf = uuid == selfUuid || NameComparer.Equals(pair.Value, selfName);
+                    if (!includeSelf && isSelf)
+                        return null;
+
+                    PlayerInfo? playerInfo = client.GetPlayerInfo(uuid);
+                    NearbyPlayerSnapshot? trackedPlayer = trackedPlayers is not null
+                        && trackedPlayers.TryGetValue(uuid, out NearbyPlayerSnapshot? resolvedTrackedPlayer)
+                            ? resolvedTrackedPlayer
+                            : null;
+                    Location? selfLocation = isSelf ? client.GetCurrentLocation() : null;
+                    int? entityId = trackedPlayer?.EntityId ?? (isSelf ? client.GetPlayerEntityID() : null);
+                    double? x = includeCoordinates
+                        ? trackedPlayer?.X is double trackedX ? RoundCoordinate(trackedX)
+                        : selfLocation.HasValue ? RoundCoordinate(selfLocation.Value.X)
+                        : (double?)null
+                        : null;
+                    double? y = includeCoordinates
+                        ? trackedPlayer?.Y is double trackedY ? RoundCoordinate(trackedY)
+                        : selfLocation.HasValue ? RoundCoordinate(selfLocation.Value.Y)
+                        : (double?)null
+                        : null;
+                    double? z = includeCoordinates
+                        ? trackedPlayer?.Z is double trackedZ ? RoundCoordinate(trackedZ)
+                        : selfLocation.HasValue ? RoundCoordinate(selfLocation.Value.Z)
+                        : (double?)null
+                        : null;
+
+                    return new
+                    {
+                        name = playerInfo?.Name ?? pair.Value,
+                        uuid,
+                        ping = playerInfo?.Ping ?? trackedPlayer?.Latency ?? 0,
+                        gamemode = playerInfo?.Gamemode ?? -1,
+                        listed = playerInfo?.Listed ?? true,
+                        displayName = playerInfo?.DisplayName,
+                        entityId,
+                        x,
+                        y,
+                        z
+                    };
+                })
+                .Where(player => player is not null)
+                .OrderBy(player => player!.name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            return MccMcpResult.Ok(new
+            {
+                includeSelf,
+                includeCoordinates,
+                count = players.Length,
+                players
+            });
+        });
+    }
+
+    public MccMcpResult GetPlayerStats()
+    {
+        if (!IsCategoryEnabled(t => t.SessionStatus))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Location location = client.GetCurrentLocation();
+            return MccMcpResult.Ok(new
+            {
+                username = client.GetUsername(),
+                health = client.GetHealth(),
+                saturation = client.GetSaturation(),
+                level = client.GetLevel(),
+                totalExperience = client.GetTotalExperience(),
+                gamemode = client.GetGamemode(),
+                playerEntityId = client.GetPlayerEntityID(),
+                currentSlot = client.GetCurrentSlot() + 1,
+                yaw = client.GetYaw(),
+                pitch = client.GetPitch(),
+                location = ToCoordinate(location),
+                tps = client.GetServerTPS()
+            });
+        });
+    }
+
+    public MccMcpResult GetStatusEffects()
+    {
+        if (!IsCategoryEnabled(t => t.SessionStatus))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        return client.InvokeOnMainThread(() =>
+        {
+            var effects = client.GetPlayerEffects()
+                .Values
+                .Where(effect => !effect.IsExpired)
+                .OrderBy(effect => effect.Effect)
+                .Select(effect => new
+                {
+                    id = effect.Effect.ToString(),
+                    name = effect.GetDisplayName(),
+                    amplifier = effect.Amplifier,
+                    remainingSeconds = effect.RemainingSeconds,
+                    isInfinite = effect.IsInfinite
+                })
+                .ToArray();
+
+            return MccMcpResult.Ok(new
+            {
+                count = effects.Length,
+                effects
+            });
+        });
+    }
+
+    public MccMcpResult GetRecentEvents(long afterId, int maxCount, string? typeFilter)
+    {
+        if (!IsCategoryEnabled(t => t.SessionStatus))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        MccMcpRecentEventEntry[] events = MccMcpRecentEventStore.GetAfter(afterId, maxCount, typeFilter);
+        return MccMcpResult.Ok(new
+        {
+            afterId,
+            latestId = MccMcpRecentEventStore.GetLatestId(),
+            count = events.Length,
+            events = events.Select(entry => new
+            {
+                id = entry.Id,
+                timestampUtc = entry.TimestampUtc,
+                type = entry.Type,
+                data = entry.Data
+            }).ToArray()
+        });
+    }
+
+    public MccMcpResult GetLoadedBots()
+    {
+        if (!IsCategoryEnabled(t => t.SessionStatus))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        return client.InvokeOnMainThread(() =>
+        {
+            var bots = client.GetLoadedChatBots()
+                .Select(bot => new
+                {
+                    name = bot.GetType().Name,
+                    fullTypeName = bot.GetType().FullName,
+                    isScript = bot is MinecraftClient.ChatBots.Script
+                })
+                .OrderBy(bot => bot.name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            return MccMcpResult.Ok(new
+            {
+                count = bots.Length,
+                bots
+            });
+        });
     }
 
     public MccMcpResult GetChatHistory(int maxCount, bool includeJson)
@@ -394,6 +813,48 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return MccMcpResult.Ok(new { quitting = true });
     }
 
+    public MccMcpResult DisconnectClient()
+    {
+        if (!IsCategoryEnabled(t => t.ChatAndCommands))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(150).ConfigureAwait(false);
+            client.Disconnect();
+        });
+
+        return MccMcpResult.Ok(new { disconnecting = true });
+    }
+
+    public MccMcpResult Respawn()
+    {
+        if (!IsCategoryEnabled(t => t.ChatAndCommands))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        float health = client.InvokeOnMainThread(client.GetHealth);
+        if (health > 0)
+        {
+            return MccMcpResult.Fail("invalid_state", data: new
+            {
+                health
+            });
+        }
+
+        bool ok = client.InvokeOnMainThread(client.SendRespawnPacket);
+        return ok
+            ? MccMcpResult.Ok(new { success = true })
+            : MccMcpResult.Fail("action_failed", data: new { success = false });
+    }
+
     public MccMcpResult RunInternalCommand(string command)
     {
         if (!IsCategoryEnabled(t => t.ChatAndCommands))
@@ -407,6 +868,67 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             return NotConnected();
 
         return ExecuteInternalCommand(client, command.Trim());
+    }
+
+    public MccMcpResult PlayAnimation(string hand)
+    {
+        if (!IsCategoryEnabled(t => t.Movement))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (string.IsNullOrWhiteSpace(hand) || !Enum.TryParse(hand, true, out Hand parsedHand))
+            return MccMcpResult.Fail("invalid_args");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        int animation = parsedHand == Hand.MainHand ? 1 : 0;
+        bool ok = client.DoAnimation(animation);
+        object resultData = new { success = ok, hand = parsedHand.ToString() };
+        return ok
+            ? MccMcpResult.Ok(resultData)
+            : MccMcpResult.Fail("action_failed", data: resultData);
+    }
+
+    public MccMcpResult ToggleSneak(bool enabled)
+    {
+        if (!IsCategoryEnabled(t => t.Movement))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        EntityActionType action = enabled ? EntityActionType.StartSneaking : EntityActionType.StopSneaking;
+        bool ok = client.InvokeOnMainThread(() =>
+        {
+            bool actionResult = client.SendEntityAction(action);
+            if (actionResult)
+                client.IsSneaking = enabled;
+            return actionResult;
+        });
+
+        object resultData = new { success = ok, enabled };
+        return ok
+            ? MccMcpResult.Ok(resultData)
+            : MccMcpResult.Fail("action_failed", data: resultData);
+    }
+
+    public MccMcpResult ToggleSprint(bool enabled)
+    {
+        if (!IsCategoryEnabled(t => t.Movement))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        EntityActionType action = enabled ? EntityActionType.StartSprinting : EntityActionType.StopSprinting;
+        bool ok = client.SendEntityAction(action);
+        object resultData = new { success = ok, enabled };
+        return ok
+            ? MccMcpResult.Ok(resultData)
+            : MccMcpResult.Fail("action_failed", data: resultData);
     }
 
     public MccMcpResult UseItemOnHand()
@@ -439,6 +961,77 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
         bool ok = client.InvokeOnMainThread(() => client.ChangeSlot((short)(slot - 1)));
         return MccMcpResult.Ok(new { success = ok, slot });
+    }
+
+    public MccMcpResult SelectHotbarItem(string itemType, bool preferLowestSlot)
+    {
+        if (!IsCategoryEnabled(t => t.Inventory))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (string.IsNullOrWhiteSpace(itemType))
+            return MccMcpResult.Fail("invalid_args");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetInventoryEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        if (!TryParseItemType(itemType, out ItemType parsedItemType))
+        {
+            return MccMcpResult.Fail("invalid_args", data: new
+            {
+                itemType = itemType.Trim()
+            });
+        }
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Container? inventory = client.GetInventory(0);
+            if (inventory is null)
+                return MccMcpResult.Fail("invalid_state");
+
+            var matches = inventory.Items
+                .Where(pair => pair.Value.Type == parsedItemType && pair.Value.Count > 0)
+                .Select(pair =>
+                {
+                    bool isHotbar = inventory.IsHotbar(pair.Key, out int hotbar);
+                    return new
+                    {
+                        inventorySlot = pair.Key,
+                        hotbar,
+                        isHotbar,
+                        count = pair.Value.Count
+                    };
+                })
+                .Where(match => match.isHotbar)
+                .OrderBy(match => preferLowestSlot ? match.hotbar : -match.hotbar)
+                .ToArray();
+
+            if (matches.Length == 0)
+            {
+                return MccMcpResult.Fail("invalid_state", data: new
+                {
+                    itemType = parsedItemType.ToString()
+                });
+            }
+
+            var selected = matches[0];
+            bool ok = client.ChangeSlot((short)selected.hotbar);
+            object resultData = new
+            {
+                success = ok,
+                itemType = parsedItemType.ToString(),
+                inventorySlot = selected.inventorySlot,
+                selectedSlot = selected.hotbar + 1,
+                count = selected.count
+            };
+
+            return ok
+                ? MccMcpResult.Ok(resultData)
+                : MccMcpResult.Fail("action_failed", data: resultData);
+        });
     }
 
     public MccMcpResult UseItemOnBlock(double x, double y, double z)
@@ -593,6 +1186,37 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
         bool ok = client.InvokeOnMainThread(() => client.InteractEntity(entityId, interactType, parsedHand));
         return MccMcpResult.Ok(new { success = ok, entityId, interaction = interactType.ToString(), hand = parsedHand.ToString() });
+    }
+
+    public MccMcpResult AttackEntity(int entityId)
+    {
+        if (!IsCategoryEnabled(t => t.EntityWorld))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetEntityHandlingEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        return client.InvokeOnMainThread(() =>
+        {
+            if (!client.GetEntities().ContainsKey(entityId))
+                return MccMcpResult.Fail("invalid_state", data: new { entityId });
+
+            bool ok = client.InteractEntity(entityId, InteractType.Attack);
+            object resultData = new
+            {
+                success = ok,
+                entityId,
+                interaction = InteractType.Attack.ToString()
+            };
+
+            return ok
+                ? MccMcpResult.Ok(resultData)
+                : MccMcpResult.Fail("action_failed", data: resultData);
+        });
     }
 
     public MccMcpResult ScanNearbyBlocks(int radius, int maxCount, string? materialFilter)
@@ -931,6 +1555,86 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         });
     }
 
+    public MccMcpResult FindNearestEntity(string? typeFilter, string? nameFilter, double radius, bool includePlayers)
+    {
+        if (!IsCategoryEnabled(t => t.EntityWorld))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (radius <= 0 || radius > 1024)
+            return MccMcpResult.Fail("invalid_args");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetEntityHandlingEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        string? normalizedTypeFilter = string.IsNullOrWhiteSpace(typeFilter) ? null : typeFilter.Trim();
+        string? normalizedNameFilter = string.IsNullOrWhiteSpace(nameFilter) ? null : nameFilter.Trim();
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Location playerLocation = client.GetCurrentLocation();
+            Dictionary<int, string?> playerNamesByEntityId = BuildTrackedPlayerSnapshots(client, includeSelf: true)
+                .ToDictionary(player => player.EntityId, player => player.Name);
+
+            var nearest = client.GetEntities().Values
+                .Where(entity => includePlayers || entity.Type != EntityType.Player)
+                .Select(entity =>
+                {
+                    double dx = entity.Location.X - playerLocation.X;
+                    double dy = entity.Location.Y - playerLocation.Y;
+                    double dz = entity.Location.Z - playerLocation.Z;
+                    string? resolvedName = entity.Type == EntityType.Player
+                        && playerNamesByEntityId.TryGetValue(entity.ID, out string? mappedName)
+                            ? mappedName
+                            : entity.Name;
+                    return new
+                    {
+                        entity,
+                        resolvedName,
+                        distance = Math.Sqrt(dx * dx + dy * dy + dz * dz)
+                    };
+                })
+                .Where(item => item.distance <= radius)
+                .Where(item => normalizedTypeFilter is null
+                    || TextMatchesFilter(item.entity.Type.ToString(), normalizedTypeFilter)
+                    || TextMatchesFilter(item.entity.GetTypeString(), normalizedTypeFilter))
+                .Where(item => normalizedNameFilter is null || EntityNameMatches(item.resolvedName, item.entity.CustomName, normalizedNameFilter))
+                .OrderBy(item => item.distance)
+                .FirstOrDefault();
+
+            if (nearest is null)
+            {
+                return MccMcpResult.Fail("invalid_state", data: new
+                {
+                    typeFilter = normalizedTypeFilter,
+                    nameFilter = normalizedNameFilter,
+                    radius,
+                    includePlayers
+                });
+            }
+
+            return MccMcpResult.Ok(new
+            {
+                id = nearest.entity.ID,
+                type = nearest.entity.Type.ToString(),
+                typeLabel = nearest.entity.GetTypeString(),
+                uuid = nearest.entity.UUID,
+                name = nearest.resolvedName,
+                customName = nearest.entity.CustomName,
+                x = RoundCoordinate(nearest.entity.Location.X),
+                y = RoundCoordinate(nearest.entity.Location.Y),
+                z = RoundCoordinate(nearest.entity.Location.Z),
+                distance = nearest.distance,
+                health = nearest.entity.Health,
+                pose = nearest.entity.Pose.ToString(),
+                latency = nearest.entity.Latency
+            });
+        });
+    }
+
     public MccMcpResult MoveTo(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
     {
         if (!IsCategoryEnabled(t => t.Movement))
@@ -1096,6 +1800,60 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return MccMcpResult.Ok();
     }
 
+    public MccMcpResult LookDirection(string direction)
+    {
+        if (!IsCategoryEnabled(t => t.Movement))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (string.IsNullOrWhiteSpace(direction) || !Enum.TryParse(direction, true, out Direction parsedDirection) || !IsSupportedLookDirection(parsedDirection))
+            return MccMcpResult.Fail("invalid_args");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetTerrainEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Location current = client.GetCurrentLocation();
+            client.UpdateLocation(current, parsedDirection);
+            return MccMcpResult.Ok(new
+            {
+                direction = parsedDirection.ToString(),
+                yaw = client.GetYaw(),
+                pitch = client.GetPitch(),
+                location = ToCoordinate(current)
+            });
+        });
+    }
+
+    public MccMcpResult LookAngles(float yaw, float pitch)
+    {
+        if (!IsCategoryEnabled(t => t.Movement))
+            return MccMcpResult.Fail("capability_disabled");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetTerrainEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        return client.InvokeOnMainThread(() =>
+        {
+            Location current = client.GetCurrentLocation();
+            client.UpdateLocation(current, yaw, pitch);
+            return MccMcpResult.Ok(new
+            {
+                yaw = client.GetYaw(),
+                pitch = client.GetPitch(),
+                location = ToCoordinate(current)
+            });
+        });
+    }
+
     public MccMcpResult GetInventorySnapshot(int inventoryId)
     {
         if (!IsCategoryEnabled(t => t.Inventory))
@@ -1128,6 +1886,69 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 title = inventory.Title,
                 slotCount = inventory.Type.SlotCount(),
                 slots
+            });
+        });
+    }
+
+    public MccMcpResult SearchInventories(string query, int maxCount, bool exactMatch, bool includeContainers)
+    {
+        if (!IsCategoryEnabled(t => t.Inventory))
+            return MccMcpResult.Fail("capability_disabled");
+
+        if (string.IsNullOrWhiteSpace(query))
+            return MccMcpResult.Fail("invalid_args");
+
+        McClient? client = GetClient();
+        if (client is null)
+            return NotConnected();
+
+        if (!client.GetInventoryEnabled())
+            return MccMcpResult.Fail("feature_disabled");
+
+        string normalizedQuery = query.Trim();
+        ItemType? parsedItemType = exactMatch && TryParseItemType(normalizedQuery, out ItemType exactItemType)
+            ? exactItemType
+            : null;
+        int limit = Math.Clamp(maxCount, 1, 1000);
+
+        return client.InvokeOnMainThread(() =>
+        {
+            var matches = client.GetInventories()
+                .Where(entry => includeContainers || entry.Key == 0)
+                .OrderBy(entry => entry.Key)
+                .SelectMany(entry =>
+                {
+                    Container inventory = entry.Value;
+                    return inventory.Items
+                        .Where(pair => pair.Key >= 0 && pair.Value.Count > 0)
+                        .Where(pair => ItemMatches(pair.Value, normalizedQuery, exactMatch, parsedItemType))
+                        .Select(pair =>
+                        {
+                            bool isHotbar = inventory.IsHotbar(pair.Key, out int hotbar);
+                            return new
+                            {
+                                inventoryId = entry.Key,
+                                inventoryType = inventory.Type.ToString(),
+                                inventoryTitle = inventory.Title,
+                                slot = pair.Key,
+                                itemType = pair.Value.Type.ToString(),
+                                typeLabel = pair.Value.GetTypeString(),
+                                count = pair.Value.Count,
+                                isPlayerInventory = entry.Key == 0,
+                                hotbarSlot = isHotbar ? hotbar + 1 : (int?)null
+                            };
+                        });
+                })
+                .Take(limit)
+                .ToArray();
+
+            return MccMcpResult.Ok(new
+            {
+                query = normalizedQuery,
+                exactMatch,
+                includeContainers,
+                count = matches.Length,
+                matches
             });
         });
     }
@@ -2810,6 +3631,67 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
     private static bool AreValidPathOffsets(int maxOffset, int minOffset)
     {
         return maxOffset >= 0 && minOffset >= 0 && minOffset <= maxOffset;
+    }
+
+    private static bool HasCompleteCoordinateTriple(double? x, double? y, double? z)
+    {
+        return x.HasValue == y.HasValue && y.HasValue == z.HasValue;
+    }
+
+    private static int GetLoadedChunkCount(World world)
+    {
+        return Math.Max(0, world.chunkCnt - Math.Max(0, world.chunkLoadNotCompleted));
+    }
+
+    private static double GetChunkLoadRatio(World world)
+    {
+        return world.chunkCnt > 0
+            ? GetLoadedChunkCount(world) / (double)world.chunkCnt
+            : 0.0;
+    }
+
+    private static object GetNeighborBlockSnapshot(World world, Location location)
+    {
+        Location blockLocation = location.ToFloor();
+        Location north = new(blockLocation.X, blockLocation.Y, blockLocation.Z - 1);
+        Location south = new(blockLocation.X, blockLocation.Y, blockLocation.Z + 1);
+        Location east = new(blockLocation.X + 1, blockLocation.Y, blockLocation.Z);
+        Location west = new(blockLocation.X - 1, blockLocation.Y, blockLocation.Z);
+        Location above = new(blockLocation.X, blockLocation.Y + 1, blockLocation.Z);
+        Location below = new(blockLocation.X, blockLocation.Y - 1, blockLocation.Z);
+
+        return new
+        {
+            north = new { location = ToCoordinate(north), block = ToBlockState(world.GetBlock(north)) },
+            south = new { location = ToCoordinate(south), block = ToBlockState(world.GetBlock(south)) },
+            east = new { location = ToCoordinate(east), block = ToBlockState(world.GetBlock(east)) },
+            west = new { location = ToCoordinate(west), block = ToBlockState(world.GetBlock(west)) },
+            above = new { location = ToCoordinate(above), block = ToBlockState(world.GetBlock(above)) },
+            below = new { location = ToCoordinate(below), block = ToBlockState(world.GetBlock(below)) }
+        };
+    }
+
+    private static bool ItemMatches(Item item, string query, bool exactMatch, ItemType? exactItemType)
+    {
+        if (exactItemType.HasValue)
+            return item.Type == exactItemType.Value;
+
+        string typeName = item.Type.ToString();
+        string typeLabel = item.GetTypeString();
+        return exactMatch
+            ? TextEqualsFilter(typeName, query) || TextEqualsFilter(typeLabel, query)
+            : TextMatchesFilter(typeName, query) || TextMatchesFilter(typeLabel, query);
+    }
+
+    private static bool EntityNameMatches(string? name, string? customName, string filter)
+    {
+        return (!string.IsNullOrWhiteSpace(name) && TextMatchesFilter(name, filter))
+            || (!string.IsNullOrWhiteSpace(customName) && TextMatchesFilter(customName, filter));
+    }
+
+    private static bool IsSupportedLookDirection(Direction direction)
+    {
+        return direction is Direction.Up or Direction.Down or Direction.North or Direction.South or Direction.East or Direction.West;
     }
 
     private static NearbyItemSnapshot[] BuildNearbyItemSnapshots(McClient client, ItemType? itemType, double radius, int maxCount)

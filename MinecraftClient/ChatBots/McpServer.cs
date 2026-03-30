@@ -1,4 +1,5 @@
 using System;
+using MinecraftClient.Mapping;
 using MinecraftClient.Mcp;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
@@ -58,7 +59,7 @@ namespace MinecraftClient.ChatBots
             if (!Config.Enabled)
                 return;
 
-            MccMcpChatHistoryStore.Clear();
+            ClearStores();
 
             MccMcpConfig mcpConfig = new()
             {
@@ -86,15 +87,20 @@ namespace MinecraftClient.ChatBots
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
+            MccMcpRecentEventStore.Add("disconnect", new
+            {
+                reason = reason.ToString(),
+                message
+            });
             StopHost();
-            MccMcpChatHistoryStore.Clear();
+            ClearStores();
             return false;
         }
 
         public override void OnUnload()
         {
             StopHost();
-            MccMcpChatHistoryStore.Clear();
+            ClearStores();
         }
 
         public override void GetText(string text, string? json)
@@ -133,6 +139,120 @@ namespace MinecraftClient.ChatBots
             });
         }
 
+        public override void OnTimeUpdate(long WorldAge, long TimeOfDay)
+        {
+            MccMcpRuntimeStateStore.SetTime(WorldAge, TimeOfDay);
+        }
+
+        public override void OnRainLevelChange(float level)
+        {
+            MccMcpRuntimeStateStore.SetRainLevel(level);
+            MccMcpRecentEventStore.Add("weather_rain", new { level });
+        }
+
+        public override void OnThunderLevelChange(float level)
+        {
+            MccMcpRuntimeStateStore.SetThunderLevel(level);
+            MccMcpRecentEventStore.Add("weather_thunder", new { level });
+        }
+
+        public override void OnDeath()
+        {
+            MccMcpRecentEventStore.Add("death");
+        }
+
+        public override void OnRespawn()
+        {
+            MccMcpRecentEventStore.Add("respawn");
+        }
+
+        public override void OnPlayerJoin(Guid uuid, string name)
+        {
+            MccMcpRecentEventStore.Add("player_join", new
+            {
+                uuid,
+                name
+            });
+        }
+
+        public override void OnPlayerLeave(Guid uuid, string? name)
+        {
+            MccMcpRecentEventStore.Add("player_leave", new
+            {
+                uuid,
+                name
+            });
+        }
+
+        public override void OnInventoryOpen(int inventoryId)
+        {
+            MccMcpRecentEventStore.Add("inventory_open", new { inventoryId });
+        }
+
+        public override void OnInventoryClose(int inventoryId)
+        {
+            MccMcpRecentEventStore.Add("inventory_close", new { inventoryId });
+        }
+
+        public override void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json)
+        {
+            if (action == 2)
+            {
+                MccMcpRecentEventStore.Add("actionbar", new
+                {
+                    action,
+                    text = actionbartext,
+                    fadein,
+                    stay,
+                    fadeout,
+                    json
+                });
+                return;
+            }
+
+            if (action is 0 or 1)
+            {
+                MccMcpRecentEventStore.Add("title", new
+                {
+                    action,
+                    titleText = titletext,
+                    subtitleText = subtitletext,
+                    fadein,
+                    stay,
+                    fadeout,
+                    json
+                });
+            }
+        }
+
+        public override void OnBlockBreakAnimation(Entity entity, Location location, byte stage)
+        {
+            MccMcpRecentEventStore.Add("block_break_animation", new
+            {
+                entityId = entity.ID,
+                entityType = entity.Type.ToString(),
+                stage,
+                location = new
+                {
+                    x = location.X,
+                    y = location.Y,
+                    z = location.Z
+                }
+            });
+        }
+
+        public override void OnEntityAnimation(Entity entity, byte animation)
+        {
+            MccMcpRecentEventStore.Add("entity_animation", new
+            {
+                entityId = entity.ID,
+                entityType = entity.Type.ToString(),
+                animation,
+                name = entity.Name,
+                customName = entity.CustomName
+            });
+        }
+
         private void StopHost()
         {
             if (host is null || !host.IsRunning)
@@ -142,6 +262,13 @@ namespace MinecraftClient.ChatBots
                 LogToConsole(Translations.bot_mcpserver_stopped);
             else
                 LogToConsole(string.Format(Translations.bot_mcpserver_stop_failed, error ?? "unknown"));
+        }
+
+        private static void ClearStores()
+        {
+            MccMcpChatHistoryStore.Clear();
+            MccMcpRuntimeStateStore.Clear();
+            MccMcpRecentEventStore.Clear();
         }
     }
 }

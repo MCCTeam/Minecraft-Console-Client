@@ -24,14 +24,36 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
 {
     private static double C(double value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
 
+    private readonly List<RecentEvent> recentEvents = [];
+    private long nextEventId = 1;
+    private double playerX = C(0.5);
+    private double playerY = C(80.0);
+    private double playerZ = C(0.5);
+    private float yaw;
+    private float pitch;
+    private int currentSlot = 1;
+    private bool sneaking;
+    private bool sprinting;
+    private float health = 20.0f;
+    private bool disconnecting;
+
+    public DeterministicCapabilities()
+    {
+        AddRecentEvent("player_join", new { name = "HarnessBot" });
+        AddRecentEvent("inventory_open", new { inventoryId = 1, type = "Generic_9x3", title = "Chest" });
+        AddRecentEvent("weather_rain", new { level = 1.0 });
+        AddRecentEvent("title", new { text = "mcp_title" });
+        AddRecentEvent("actionbar", new { text = "mcp_actionbar" });
+    }
+
     public MccMcpResult GetSessionStatus() =>
         MccMcpResult.Ok(new
         {
-            connected = true,
+            connected = !disconnecting,
             host = "deterministic.local",
             port = 25565,
             username = "HarnessBot",
-            location = new { x = C(0.5), y = C(80.0), z = C(0.5) }
+            location = new { x = playerX, y = playerY, z = playerZ }
         });
 
     public MccMcpResult GetServerInfo() =>
@@ -47,20 +69,220 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
         {
             nickname = "HarnessBot",
             username = "HarnessBot",
-            health = 20.0f,
+            health,
             saturation = 20,
             gamemode = 1,
-            currentSlot = 1,
-            yaw = 0.0f,
-            pitch = 0.0f,
-            location = new { x = C(0.5), y = C(80.0), z = C(0.5) },
+            currentSlot,
+            yaw,
+            pitch,
+            location = new { x = playerX, y = playerY, z = playerZ },
             effects = new object[0]
         });
+
+    public MccMcpResult GetWorldState() =>
+        MccMcpResult.Ok(new
+        {
+            connected = !disconnecting,
+            host = "deterministic.local",
+            port = 25565,
+            username = "HarnessBot",
+            protocol = 769,
+            terrainEnabled = true,
+            inventoryEnabled = true,
+            entityHandlingEnabled = true,
+            location = new { x = playerX, y = playerY, z = playerZ },
+            tps = 20.0,
+            dimension = "minecraft:overworld",
+            loadedChunkCount = 9,
+            pendingChunkCount = 0,
+            totalChunkCount = 9,
+            loadRatio = 1.0,
+            worldAge = 12000L,
+            timeOfDay = 6000L,
+            rainLevel = 1.0,
+            thunderLevel = 0.0
+        });
+
+    public MccMcpResult GetChunkStatus(double? x, double? y, double? z)
+    {
+        double resolvedX = x ?? playerX;
+        double resolvedY = y ?? playerY;
+        double resolvedZ = z ?? playerZ;
+        int chunkX = (int)Math.Floor(resolvedX) >> 4;
+        int chunkZ = (int)Math.Floor(resolvedZ) >> 4;
+
+        return MccMcpResult.Ok(new
+        {
+            location = new { x = C(resolvedX), y = C(resolvedY), z = C(resolvedZ) },
+            chunk = new { x = chunkX, z = chunkZ },
+            loaded = true,
+            fullyLoaded = true,
+            loadedChunkCount = 9,
+            pendingChunkCount = 0,
+            totalChunkCount = 9,
+            loadRatio = 1.0
+        });
+    }
+
+    public MccMcpResult RaycastBlock(double maxDistance, bool includeNeighbors)
+    {
+        object? neighbors = includeNeighbors
+            ? new
+            {
+                north = new { x = 0, y = 79, z = -1, material = "Air", typeLabel = "Air" },
+                south = new { x = 0, y = 79, z = 1, material = "Air", typeLabel = "Air" },
+                east = new { x = 1, y = 79, z = 0, material = "Air", typeLabel = "Air" },
+                west = new { x = -1, y = 79, z = 0, material = "Air", typeLabel = "Air" },
+                above = new { x = 0, y = 80, z = 0, material = "Air", typeLabel = "Air" },
+                below = new { x = 0, y = 78, z = 0, material = "Stone", typeLabel = "Stone" }
+            }
+            : null;
+
+        return MccMcpResult.Ok(new
+        {
+            hit = true,
+            maxDistance,
+            playerLocation = new { x = playerX, y = playerY, z = playerZ },
+            eyeLocation = new { x = playerX, y = C(playerY + 1.62), z = playerZ },
+            location = new { x = 0, y = 79, z = 0 },
+            block = new { material = "Stone", typeLabel = "Stone", blockId = 1, blockMeta = 0 },
+            distance = 1.12,
+            eyeDistance = 2.03,
+            neighbors
+        });
+    }
+
+    public MccMcpResult PreviewPath(double x, double y, double z, bool allowUnsafe, int maxOffset, int minOffset, int timeoutMs, int maxWaypoints)
+    {
+        object[] waypoints =
+        [
+            new { x = playerX, y = playerY, z = playerZ },
+            new { x = C((playerX + x) / 2), y = C((playerY + y) / 2), z = C((playerZ + z) / 2) },
+            new { x = C(x), y = C(y), z = C(z) }
+        ];
+
+        return MccMcpResult.Ok(new
+        {
+            pathFound = true,
+            exactReachable = true,
+            target = new { x = C(x), y = C(y), z = C(z) },
+            startLocation = new { x = playerX, y = playerY, z = playerZ },
+            finalWaypoint = new { x = C(x), y = C(y), z = C(z) },
+            finalDistance = 0.0,
+            waypointCount = waypoints.Length,
+            truncated = waypoints.Length > Math.Max(1, maxWaypoints),
+            waypoints = waypoints.Take(Math.Max(1, maxWaypoints)).ToArray(),
+            allowUnsafe,
+            maxOffset,
+            minOffset,
+            timeoutMs = timeoutMs <= 0 ? 5000 : timeoutMs
+        });
+    }
 
     public MccMcpResult GetPlayersList() =>
         MccMcpResult.Ok(new
         {
             players = new[] { "HarnessBot", "PlayerOne" }
+        });
+
+    public MccMcpResult GetPlayersDetailed(bool includeSelf, bool includeCoordinates)
+    {
+        List<object> players = [];
+        if (includeSelf)
+        {
+            players.Add(new
+            {
+                name = "HarnessBot",
+                uuid = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                ping = 5,
+                gamemode = 1,
+                listed = true,
+                displayName = "HarnessBot",
+                entityId = 1,
+                x = includeCoordinates ? playerX : (double?)null,
+                y = includeCoordinates ? playerY : (double?)null,
+                z = includeCoordinates ? playerZ : (double?)null
+            });
+        }
+
+        players.Add(new
+        {
+            name = "PlayerOne",
+            uuid = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            ping = 12,
+            gamemode = 1,
+            listed = true,
+            displayName = "PlayerOne",
+            entityId = 2,
+            x = includeCoordinates ? C(3.5) : (double?)null,
+            y = includeCoordinates ? C(80.0) : (double?)null,
+            z = includeCoordinates ? C(0.5) : (double?)null
+        });
+
+        return MccMcpResult.Ok(new
+        {
+            count = players.Count,
+            players = players.ToArray()
+        });
+    }
+
+    public MccMcpResult GetPlayerStats() =>
+        MccMcpResult.Ok(new
+        {
+            health,
+            saturation = 20,
+            level = 12,
+            totalExperience = 245,
+            gamemode = 1,
+            playerEntityId = 1,
+            currentSlot,
+            yaw,
+            pitch,
+            sneaking,
+            sprinting,
+            location = new { x = playerX, y = playerY, z = playerZ },
+            tps = 20.0
+        });
+
+    public MccMcpResult GetStatusEffects() =>
+        MccMcpResult.Ok(new
+        {
+            count = 0,
+            effects = Array.Empty<object>()
+        });
+
+    public MccMcpResult GetRecentEvents(long afterId, int maxCount, string? typeFilter)
+    {
+        RecentEvent[] events = recentEvents
+            .Where(e => e.Id > afterId)
+            .Where(e => string.IsNullOrWhiteSpace(typeFilter) || string.Equals(e.Type, typeFilter, StringComparison.OrdinalIgnoreCase))
+            .Take(Math.Max(1, maxCount))
+            .ToArray();
+
+        return MccMcpResult.Ok(new
+        {
+            afterId,
+            latestId = recentEvents.Count > 0 ? recentEvents[^1].Id : 0,
+            count = events.Length,
+            events = events.Select(e => new
+            {
+                id = e.Id,
+                timestampUtc = e.TimestampUtc,
+                type = e.Type,
+                data = e.Data
+            }).ToArray()
+        });
+    }
+
+    public MccMcpResult GetLoadedBots() =>
+        MccMcpResult.Ok(new
+        {
+            count = 2,
+            bots = new object[]
+            {
+                new { name = "McpServer", fullTypeName = "MinecraftClient.ChatBots.McpServer", isScript = false },
+                new { name = "HarnessScript", fullTypeName = "MinecraftClient.ChatBots.Script", isScript = true }
+            }
         });
 
     public MccMcpResult GetChatHistory(int maxCount, bool includeJson) =>
@@ -135,14 +357,38 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
     public MccMcpResult QuitClient() =>
         MccMcpResult.Ok(new { quitting = true });
 
+    public MccMcpResult DisconnectClient()
+    {
+        disconnecting = true;
+        AddRecentEvent("disconnect", new { reason = "requested", message = "Disconnect requested by test client." });
+        return MccMcpResult.Ok(new { disconnecting = true });
+    }
+
     public MccMcpResult RunInternalCommand(string command) =>
         MccMcpResult.Ok(new { command, status = "Done", output = "deterministic" });
 
     public MccMcpResult UseItemOnHand() =>
         MccMcpResult.Ok(new { success = true, action = "use_item_on_hand" });
 
-    public MccMcpResult ChangeHotbarSlot(int slot) =>
-        MccMcpResult.Ok(new { success = true, slot });
+    public MccMcpResult ChangeHotbarSlot(int slot)
+    {
+        currentSlot = slot;
+        return MccMcpResult.Ok(new { success = true, slot });
+    }
+
+    public MccMcpResult SelectHotbarItem(string itemType, bool preferLowestSlot)
+    {
+        currentSlot = string.Equals(itemType, "DiamondSword", StringComparison.OrdinalIgnoreCase) ? 2 : 1;
+        return MccMcpResult.Ok(new
+        {
+            success = true,
+            itemType,
+            inventorySlot = currentSlot - 1,
+            selectedSlot = currentSlot,
+            count = string.Equals(itemType, "DiamondSword", StringComparison.OrdinalIgnoreCase) ? 1 : 32,
+            preferLowestSlot
+        });
+    }
 
     public MccMcpResult UseItemOnBlock(double x, double y, double z) =>
         MccMcpResult.Ok(new { success = true, x = C(x), y = C(y), z = C(z), action = "useitem" });
@@ -168,6 +414,58 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
 
     public MccMcpResult InteractEntity(int entityId, string interaction, string hand) =>
         MccMcpResult.Ok(new { success = true, entityId, interaction, hand });
+
+    public MccMcpResult AttackEntity(int entityId) =>
+        MccMcpResult.Ok(new { success = true, entityId, interaction = "Attack" });
+
+    public MccMcpResult FindNearestEntity(string? typeFilter, string? nameFilter, double radius, bool includePlayers)
+    {
+        bool wantsArmorStand = string.IsNullOrWhiteSpace(typeFilter)
+            || string.Equals(typeFilter, "ArmorStand", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(typeFilter, "Armor Stand", StringComparison.OrdinalIgnoreCase);
+
+        if (wantsArmorStand && radius >= 4.0)
+        {
+            return MccMcpResult.Ok(new
+            {
+                id = 7,
+                type = "ArmorStand",
+                typeLabel = "Armor Stand",
+                uuid = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                name = "Armor Stand",
+                customName = (string?)null,
+                x = C(2.5),
+                y = C(80.0),
+                z = C(0.5),
+                distance = 2.0,
+                health = 20.0f,
+                pose = "Standing",
+                latency = 0
+            });
+        }
+
+        if (includePlayers && radius >= 3.0)
+        {
+            return MccMcpResult.Ok(new
+            {
+                id = 2,
+                type = "Player",
+                typeLabel = "Player",
+                uuid = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                name = string.IsNullOrWhiteSpace(nameFilter) ? "PlayerOne" : nameFilter,
+                customName = (string?)null,
+                x = C(3.5),
+                y = C(80.0),
+                z = C(0.5),
+                distance = 3.0,
+                health = 20.0f,
+                pose = "Standing",
+                latency = 12
+            });
+        }
+
+        return MccMcpResult.Fail("invalid_state", data: new { typeFilter, nameFilter, radius, includePlayers });
+    }
 
     public MccMcpResult ScanNearbyBlocks(int radius, int maxCount, string? materialFilter) =>
         MccMcpResult.Ok(new
@@ -298,6 +596,61 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
     public MccMcpResult LookAt(double x, double y, double z) =>
         MccMcpResult.Ok(new { looked = true, x = C(x), y = C(y), z = C(z) });
 
+    public MccMcpResult LookDirection(string direction)
+    {
+        switch (direction.Trim().ToLowerInvariant())
+        {
+            case "up":
+                yaw = 0.0f;
+                pitch = -90.0f;
+                break;
+            case "down":
+                yaw = 0.0f;
+                pitch = 90.0f;
+                break;
+            case "north":
+                yaw = 180.0f;
+                pitch = 0.0f;
+                break;
+            case "south":
+                yaw = 0.0f;
+                pitch = 0.0f;
+                break;
+            case "east":
+                yaw = -90.0f;
+                pitch = 0.0f;
+                break;
+            case "west":
+                yaw = 90.0f;
+                pitch = 0.0f;
+                break;
+        }
+
+        return MccMcpResult.Ok(new { success = true, direction, yaw, pitch });
+    }
+
+    public MccMcpResult LookAngles(float yaw, float pitch)
+    {
+        this.yaw = yaw;
+        this.pitch = pitch;
+        return MccMcpResult.Ok(new { success = true, yaw, pitch });
+    }
+
+    public MccMcpResult PlayAnimation(string hand) =>
+        MccMcpResult.Ok(new { success = true, hand });
+
+    public MccMcpResult ToggleSneak(bool enabled)
+    {
+        sneaking = enabled;
+        return MccMcpResult.Ok(new { success = true, enabled = sneaking });
+    }
+
+    public MccMcpResult ToggleSprint(bool enabled)
+    {
+        sprinting = enabled;
+        return MccMcpResult.Ok(new { success = true, enabled = sprinting });
+    }
+
     public MccMcpResult ListInventories() =>
         MccMcpResult.Ok(new
         {
@@ -322,8 +675,73 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             }
         });
 
-    public MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent) =>
-        MccMcpResult.Ok(new
+    public MccMcpResult SearchInventories(string query, int maxCount, bool exactMatch, bool includeContainers)
+    {
+        List<object> matches = [];
+
+        if (query.Contains("stone", StringComparison.OrdinalIgnoreCase))
+        {
+            matches.Add(new
+            {
+                inventoryId = 0,
+                inventoryType = "PlayerInventory",
+                inventoryTitle = "Player Inventory",
+                slot = 0,
+                itemType = "Stone",
+                typeLabel = "Stone",
+                count = 32,
+                isPlayerInventory = true,
+                hotbarSlot = 1
+            });
+        }
+
+        if (query.Contains("diamond", StringComparison.OrdinalIgnoreCase) || query.Contains("sword", StringComparison.OrdinalIgnoreCase))
+        {
+            matches.Add(new
+            {
+                inventoryId = 0,
+                inventoryType = "PlayerInventory",
+                inventoryTitle = "Player Inventory",
+                slot = 1,
+                itemType = "DiamondSword",
+                typeLabel = "Diamond Sword",
+                count = 1,
+                isPlayerInventory = true,
+                hotbarSlot = 2
+            });
+        }
+
+        if (includeContainers)
+        {
+            matches.Add(new
+            {
+                inventoryId = 1,
+                inventoryType = "Generic_9x3",
+                inventoryTitle = "Chest",
+                slot = 0,
+                itemType = "Stone",
+                typeLabel = "Stone",
+                count = 16,
+                isPlayerInventory = false,
+                hotbarSlot = (int?)null
+            });
+        }
+
+        object[] result = matches.Take(Math.Max(1, maxCount)).ToArray();
+        return MccMcpResult.Ok(new
+        {
+            query,
+            exactMatch,
+            includeContainers,
+            count = result.Length,
+            matches = result
+        });
+    }
+
+    public MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent)
+    {
+        AddRecentEvent("inventory_open", new { inventoryId = 1, type = "Generic_9x3", title = "Chest", x, y, z });
+        return MccMcpResult.Ok(new
         {
             success = true,
             openAccepted = true,
@@ -335,15 +753,20 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             block = new { material = "Chest", typeLabel = "Chest", blockId = 0, blockMeta = 0 },
             inventory = new { id = 1, type = "Generic_9x3", title = "Chest", slotCount = 63, nonEmptySlots = 2 }
         });
+    }
 
-    public MccMcpResult CloseContainer(int inventoryId, int timeoutMs) =>
-        MccMcpResult.Ok(new
+    public MccMcpResult CloseContainer(int inventoryId, int timeoutMs)
+    {
+        int resolvedInventoryId = inventoryId <= 0 ? 1 : inventoryId;
+        AddRecentEvent("inventory_close", new { inventoryId = resolvedInventoryId });
+        return MccMcpResult.Ok(new
         {
             success = true,
             closed = true,
-            inventoryId = inventoryId <= 0 ? 1 : inventoryId,
+            inventoryId = resolvedInventoryId,
             timeoutMs = timeoutMs <= 0 ? 5000 : timeoutMs
         });
+    }
 
     public MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType) =>
         MccMcpResult.Ok(new { success = true, inventoryId, slotId, actionType });
@@ -540,6 +963,22 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             }
         });
 
+    public MccMcpResult Respawn()
+    {
+        health = 20.0f;
+        AddRecentEvent("respawn", new { location = new { x = playerX, y = playerY, z = playerZ } });
+        return MccMcpResult.Ok(new { success = true, respawned = true });
+    }
+
     public MccMcpResult GetWorldBlockAt(int x, int y, int z) =>
         MccMcpResult.Ok(new { x, y, z, material = "Air", blockId = 0, blockMeta = 0 });
+
+    private void AddRecentEvent(string type, object? data)
+    {
+        recentEvents.Add(new RecentEvent(nextEventId++, DateTimeOffset.UtcNow, type, data));
+        if (recentEvents.Count > 100)
+            recentEvents.RemoveAt(0);
+    }
+
+    private sealed record RecentEvent(long Id, DateTimeOffset TimestampUtc, string Type, object? Data);
 }
