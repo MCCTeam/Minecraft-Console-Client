@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MinecraftClient.Inventory;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components.Subcomponents._1_20_6;
 
 namespace MinecraftClient.Mapping
 {
@@ -74,27 +77,14 @@ namespace MinecraftClient.Mapping
         {
             float speed = GetToolSpeed(blockMaterial, heldItem, protocolVersion);
 
-            if (protocolVersion >= Protocol18Handler.MC_1_21_11_Version)
+            if (speed > 1.0f)
             {
-                // 1.21.11+: Efficiency is delivered via the MINING_EFFICIENCY attribute
-                if (speed > 1.0f && playerAttributes.TryGetValue("player.mining_efficiency", out double miningEff))
-                    speed += (float)miningEff;
-            }
-            else
-            {
-                // Pre-1.21.11: Efficiency enchantment adds level^2 + 1
-                int effLevel = GetEnchantmentLevel(heldItem, Enchantments.Efficiency, protocolVersion);
-                if (speed > 1.0f && effLevel > 0)
-                    speed += effLevel * effLevel + 1;
+                speed += GetEfficiencyBonus(heldItem, playerAttributes, protocolVersion);
             }
 
-            // Haste effect: multiply by 1 + 0.2 * (amplifier + 1)
-            if (effects.TryGetValue(Effects.Haste, out var hasteData))
-                speed *= 1.0f + (hasteData.Amplifier + 1) * 0.2f;
-
-            // Conduit Power also grants dig speed equivalent when in water
-            if (effects.TryGetValue(Effects.ConduitPower, out var conduitData))
-                speed *= 1.0f + (conduitData.Amplifier + 1) * 0.2f;
+            int digSpeedAmplifier = GetDigSpeedAmplifier(effects);
+            if (digSpeedAmplifier >= 0)
+                speed *= 1.0f + (digSpeedAmplifier + 1) * 0.2f;
 
             // Mining Fatigue
             if (effects.TryGetValue(Effects.MiningFatigue, out var fatigueData))
@@ -155,19 +145,19 @@ namespace MinecraftClient.Mapping
                 return 1.0f;
 
             // Modern path: use ToolComponent from structured components
-            if (protocolVersion >= Protocol18Handler.MC_1_20_6_Version)
+            if (protocolVersion >= Protocol18Handler.MC_1_20_6_Version
+                && TryGetToolRules(heldItem, out List<RuleSubComponent>? rules, out float defaultMiningSpeed))
             {
-                var toolComp = heldItem.Components?.OfType<ToolComponent>().FirstOrDefault();
-                if (toolComp is not null)
+                foreach (var rule in rules)
                 {
-                    // Check rules for matching blocks
-                    foreach (var rule in toolComp.Rules)
-                    {
-                        if (rule.HasSpeed && MatchesBlockSet(rule.Blocks, blockMaterial))
-                            return rule.Speed;
-                    }
-                    return toolComp.DefaultMiningSpeed;
+                    if (rule.HasSpeed && MatchesBlockSet(rule.Blocks, blockMaterial))
+                        return rule.Speed;
                 }
+
+                // Structured tool data covers modern mining rules, but keep the legacy fallback for
+                // explicit block holder-sets that MCC cannot resolve yet (for example cobweb).
+                if (defaultMiningSpeed > 1.0f)
+                    return defaultMiningSpeed;
             }
 
             // Legacy path: hardcoded tool speed tables
@@ -186,23 +176,46 @@ namespace MinecraftClient.Mapping
                 return false;
 
             // Modern path: check ToolComponent rules
-            if (protocolVersion >= Protocol18Handler.MC_1_20_6_Version)
+            if (protocolVersion >= Protocol18Handler.MC_1_20_6_Version
+                && TryGetToolRules(heldItem, out List<RuleSubComponent>? rules, out _))
             {
-                var toolComp = heldItem.Components?.OfType<ToolComponent>().FirstOrDefault();
-                if (toolComp is not null)
+                foreach (var rule in rules)
                 {
-                    foreach (var rule in toolComp.Rules)
-                    {
-                        if (rule.HasCorrectDropForBlocks && rule.CorrectDropForBlocks
-                            && MatchesBlockSet(rule.Blocks, blockMaterial))
-                            return true;
-                    }
+                    if (rule.HasCorrectDropForBlocks && MatchesBlockSet(rule.Blocks, blockMaterial))
+                        return rule.CorrectDropForBlocks;
                 }
-                return false;
             }
 
-            // Legacy path: check if Material2Tool recommends this tool type
+            // Legacy path, plus a modern fallback for direct block holder-sets MCC cannot resolve yet.
             return IsCorrectToolLegacy(heldItem.Type, blockMaterial);
+        }
+
+        private static bool TryGetToolRules(
+            Item heldItem,
+            [NotNullWhen(true)] out List<RuleSubComponent>? rules,
+            out float defaultMiningSpeed)
+        {
+            rules = null;
+            defaultMiningSpeed = 1.0f;
+
+            if (heldItem.Components is null)
+                return false;
+
+            if (heldItem.Components.OfType<ToolComponent>().FirstOrDefault() is ToolComponent toolComponent)
+            {
+                rules = toolComponent.Rules;
+                defaultMiningSpeed = toolComponent.DefaultMiningSpeed;
+                return true;
+            }
+
+            if (heldItem.Components.OfType<ToolComponent1215>().FirstOrDefault() is ToolComponent1215 toolComponent1215)
+            {
+                rules = toolComponent1215.Rules;
+                defaultMiningSpeed = toolComponent1215.DefaultMiningSpeed;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -241,18 +254,32 @@ namespace MinecraftClient.Mapping
             string tag = tagName.Replace("minecraft:", "");
 
             ItemType[] tools = Material2Tool.GetCorrectToolForBlock(blockMaterial);
-            if (tools.Length == 0)
-                return false;
-
-            ItemType firstTool = tools[0];
             return tag switch
             {
-                "mineable/pickaxe" => IsPickaxe(firstTool),
-                "mineable/axe" => IsAxe(firstTool),
-                "mineable/shovel" => IsShovel(firstTool),
-                "mineable/hoe" => IsHoe(firstTool),
+                "mineable/pickaxe" => tools.Length > 0 && IsPickaxe(tools[0]),
+                "mineable/axe" => tools.Length > 0 && IsAxe(tools[0]),
+                "mineable/shovel" => tools.Length > 0 && IsShovel(tools[0]),
+                "mineable/hoe" => tools.Length > 0 && IsHoe(tools[0]),
+                "leaves" => IsLeaf(blockMaterial),
+                "wool" => IsWool(blockMaterial),
+                "incorrect_for_wooden_tool" => RequiresHigherTier(blockMaterial, 0),
+                "incorrect_for_gold_tool" => RequiresHigherTier(blockMaterial, 0),
+                "incorrect_for_stone_tool" => RequiresHigherTier(blockMaterial, 1),
+                "incorrect_for_copper_tool" => RequiresHigherTier(blockMaterial, 1),
+                "incorrect_for_iron_tool" => RequiresHigherTier(blockMaterial, 2),
+                "incorrect_for_diamond_tool" => RequiresHigherTier(blockMaterial, 3),
+                "incorrect_for_netherite_tool" => RequiresHigherTier(blockMaterial, 4),
                 _ => false
             };
+        }
+
+        private static bool RequiresHigherTier(Material blockMaterial, int tier)
+        {
+            ItemType[] recommended = Material2Tool.GetCorrectToolForBlock(blockMaterial);
+            if (recommended.Length == 0)
+                return false;
+
+            return GetRequiredTier(blockMaterial, recommended) > tier;
         }
 
         /// <summary>
@@ -330,6 +357,16 @@ namespace MinecraftClient.Mapping
         /// </summary>
         private static float GetLegacyToolSpeed(ItemType toolType, Material blockMaterial)
         {
+            float specialToolSpeed = toolType switch
+            {
+                ItemType.Shears => GetShearsSpeed(blockMaterial),
+                _ when IsSword(toolType) && blockMaterial == Material.Cobweb => 15.0f,
+                _ => 1.0f
+            };
+
+            if (specialToolSpeed > 1.0f)
+                return specialToolSpeed;
+
             ItemType[] recommended = Material2Tool.GetCorrectToolForBlock(blockMaterial);
             if (recommended.Length == 0)
                 return 1.0f;
@@ -339,14 +376,7 @@ namespace MinecraftClient.Mapping
             ToolCategory neededCategory = GetToolCategory(recommended[0]);
 
             if (heldCategory == ToolCategory.None || heldCategory != neededCategory)
-            {
-                // Special cases: sword on cobweb, shears on specific blocks
-                if (toolType is ItemType.Shears && IsShearable(blockMaterial))
-                    return 1.5f;
-                if (IsSword(toolType) && blockMaterial == Material.Cobweb)
-                    return 15.0f;
                 return 1.0f;
-            }
 
             return GetBaseToolSpeed(toolType);
         }
@@ -400,7 +430,13 @@ namespace MinecraftClient.Mapping
             ToolCategory neededCategory = GetToolCategory(recommended[0]);
 
             if (heldCategory == ToolCategory.None || heldCategory != neededCategory)
+            {
+                if (toolType == ItemType.Shears && blockMaterial == Material.Cobweb)
+                    return true;
+                if (IsSword(toolType) && blockMaterial == Material.Cobweb)
+                    return true;
                 return false;
+            }
 
             // Check tool tier requirement
             int heldTier = GetToolTier(toolType);
@@ -476,17 +512,60 @@ namespace MinecraftClient.Mapping
             item is ItemType.WoodenSword or ItemType.StoneSword or ItemType.IronSword
                  or ItemType.GoldenSword or ItemType.DiamondSword or ItemType.NetheriteSword;
 
+        private static float GetShearsSpeed(Material block)
+        {
+            return block switch
+            {
+                Material.Cobweb => 15.0f,
+                Material.Vine or Material.GlowLichen => 2.0f,
+                _ when IsLeaf(block) => 15.0f,
+                _ when IsWool(block) => 5.0f,
+                _ => 1.0f
+            };
+        }
+
         private static bool IsShearable(Material block) =>
-            block is Material.Cobweb or Material.OakLeaves or Material.SpruceLeaves
-                  or Material.BirchLeaves or Material.JungleLeaves or Material.AcaciaLeaves
-                  or Material.DarkOakLeaves or Material.CherryLeaves or Material.MangroveLeaves
-                  or Material.AzaleaLeaves or Material.FloweringAzaleaLeaves
-                  or Material.WhiteWool or Material.OrangeWool or Material.MagentaWool
+            block == Material.Cobweb || IsLeaf(block) || IsWool(block) || block is Material.Vine or Material.GlowLichen;
+
+        private static bool IsLeaf(Material block) =>
+            block is Material.OakLeaves or Material.SpruceLeaves or Material.BirchLeaves
+                  or Material.JungleLeaves or Material.AcaciaLeaves or Material.DarkOakLeaves
+                  or Material.CherryLeaves or Material.MangroveLeaves or Material.AzaleaLeaves
+                  or Material.FloweringAzaleaLeaves or Material.PaleOakLeaves;
+
+        private static bool IsWool(Material block) =>
+            block is Material.WhiteWool or Material.OrangeWool or Material.MagentaWool
                   or Material.LightBlueWool or Material.YellowWool or Material.LimeWool
                   or Material.PinkWool or Material.GrayWool or Material.LightGrayWool
                   or Material.CyanWool or Material.PurpleWool or Material.BlueWool
                   or Material.BrownWool or Material.GreenWool or Material.RedWool
-                  or Material.BlackWool or Material.Vine;
+                  or Material.BlackWool;
+
+        private static float GetEfficiencyBonus(Item? heldItem, Dictionary<string, double> playerAttributes, int protocolVersion)
+        {
+            if (protocolVersion >= Protocol18Handler.MC_1_21_11_Version
+                && playerAttributes.TryGetValue("player.mining_efficiency", out double miningEfficiency)
+                && miningEfficiency > 0.0)
+            {
+                return (float)miningEfficiency;
+            }
+
+            int efficiencyLevel = GetEnchantmentLevel(heldItem, Enchantments.Efficiency, protocolVersion);
+            return efficiencyLevel > 0 ? efficiencyLevel * efficiencyLevel + 1 : 0.0f;
+        }
+
+        private static int GetDigSpeedAmplifier(Dictionary<Effects, EffectData> effects)
+        {
+            int amplifier = -1;
+
+            if (effects.TryGetValue(Effects.Haste, out var hasteData))
+                amplifier = Math.Max(amplifier, hasteData.Amplifier);
+
+            if (effects.TryGetValue(Effects.ConduitPower, out var conduitData))
+                amplifier = Math.Max(amplifier, conduitData.Amplifier);
+
+            return amplifier;
+        }
 
         #endregion
     }
