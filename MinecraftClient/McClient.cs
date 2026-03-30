@@ -3799,6 +3799,44 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when an entity velocity update is received.
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="velocityX">Velocity on X axis (blocks/tick)</param>
+        /// <param name="velocityY">Velocity on Y axis (blocks/tick)</param>
+        /// <param name="velocityZ">Velocity on Z axis (blocks/tick)</param>
+        public void OnEntityVelocity(int entityID, double velocityX, double velocityY, double velocityZ)
+        {
+            if (entities.TryGetValue(entityID, out Entity? entity))
+                DispatchBotEvent(bot => bot.OnEntityVelocity(entity, velocityX, velocityY, velocityZ));
+        }
+
+        /// <summary>
+        /// Called when a sound packet is received.
+        /// </summary>
+        /// <param name="soundName">Sound key when available, otherwise null</param>
+        /// <param name="location">Sound location when available</param>
+        /// <param name="category">Sound category id from packet</param>
+        /// <param name="volume">Sound volume</param>
+        /// <param name="pitch">Sound pitch</param>
+        /// <param name="entityID">Source entity id for entity sound packets, if any</param>
+        public void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch,
+            int? entityID)
+        {
+            Entity? sourceEntity = null;
+            Location? resolvedLocation = location;
+
+            if (entityID is int id && entities.TryGetValue(id, out Entity? entity))
+            {
+                sourceEntity = entity;
+                resolvedLocation ??= entity.Location;
+            }
+
+            DispatchBotEvent(bot => bot.OnSoundEffect(soundName, resolvedLocation, category, volume, pitch,
+                sourceEntity));
+        }
+
+        /// <summary>
         /// Called when received entity properties from server.
         /// </summary>
         /// <param name="EntityID"></param>

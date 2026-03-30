@@ -200,6 +200,29 @@ namespace MinecraftClient.Scripting
         public virtual void OnEntityMove(Entity entity) { }
 
         /// <summary>
+        /// Called when a tracked entity receives a velocity update packet.
+        /// Velocity is expressed in blocks per tick.
+        /// </summary>
+        /// <param name="entity">Entity with updated velocity</param>
+        /// <param name="velocityX">Velocity on X axis (blocks/tick)</param>
+        /// <param name="velocityY">Velocity on Y axis (blocks/tick)</param>
+        /// <param name="velocityZ">Velocity on Z axis (blocks/tick)</param>
+        public virtual void OnEntityVelocity(Entity entity, double velocityX, double velocityY, double velocityZ) { }
+
+        /// <summary>
+        /// Called when a sound packet is received.
+        /// The sound name is null when the protocol provides only a registry id.
+        /// </summary>
+        /// <param name="soundName">Sound key when available, otherwise null</param>
+        /// <param name="location">Sound position when available</param>
+        /// <param name="category">Sound category id from packet</param>
+        /// <param name="volume">Sound volume</param>
+        /// <param name="pitch">Sound pitch</param>
+        /// <param name="sourceEntity">Source entity for entity-sound packets when tracked</param>
+        public virtual void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch,
+            Entity? sourceEntity) { }
+
+        /// <summary>
         /// Called when an entity rotates
         /// </summary>
         /// <param name="entity">Entity with updated rotation</param>

@@ -296,6 +296,16 @@ namespace MinecraftClient.Protocol
         void OnEntityTeleport(int entityID, Double x, Double y, Double z, bool onGround);
 
         /// <summary>
+        /// Called when an entity velocity update packet is received.
+        /// Velocity values are in blocks per tick.
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="velocityX">Velocity X</param>
+        /// <param name="velocityY">Velocity Y</param>
+        /// <param name="velocityZ">Velocity Z</param>
+        void OnEntityVelocity(int entityID, double velocityX, double velocityY, double velocityZ);
+
+        /// <summary>
         /// Called when additional properties have been received for an entity
         /// </summary>
         /// <param name="EntityID">Entity ID</param>
@@ -370,6 +380,17 @@ namespace MinecraftClient.Protocol
         /// <param name="strength">Explosion strength</param>
         /// <param name="affectedBlocks">Amount of affected blocks</param>
         void OnExplosion(Location location, float strength, int affectedBlocks);
+
+        /// <summary>
+        /// Called when a sound packet is received.
+        /// </summary>
+        /// <param name="soundName">Sound key if available, otherwise null</param>
+        /// <param name="location">Sound location for world sounds, or null if unavailable</param>
+        /// <param name="category">Sound category id</param>
+        /// <param name="volume">Sound volume</param>
+        /// <param name="pitch">Sound pitch</param>
+        /// <param name="entityID">Source entity id for entity-sound packets, if any</param>
+        void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch, int? entityID);
 
         /// <summary>
         /// Called when a player's game mode has changed

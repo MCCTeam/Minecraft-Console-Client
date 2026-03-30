@@ -311,6 +311,21 @@ You can use "/fish" to control the bot manually.
   <data name="ChatBot.AutoFishing.Hook_Threshold" xml:space="preserve">
     <value>A "stationary" hook that moves above this threshold in the Y-axis will be considered to have caught a fish.</value>
   </data>
+  <data name="ChatBot.AutoFishing.Enable_Velocity_Detection" xml:space="preserve">
+    <value>Enable fish bite detection using fishing bobber velocity packets.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Velocity_Hook_Threshold" xml:space="preserve">
+    <value>Velocity Y threshold (blocks/tick). Values below this are treated as a bite. Keep this value negative.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Enable_Sound_Detection" xml:space="preserve">
+    <value>Enable fish bite detection using splash sounds near the fishing bobber.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Sound_Distance" xml:space="preserve">
+    <value>Maximum distance (blocks) between splash sound and bobber to treat it as a bite.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Detection_Warmup" xml:space="preserve">
+    <value>Delay (seconds) after bobber spawn before bite detection starts. Helps ignore cast-entry splash/motion.</value>
+  </data>
   <data name="ChatBot.AutoFishing.Log_Fish_Bobber" xml:space="preserve">
     <value>Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet.</value>
   </data>
