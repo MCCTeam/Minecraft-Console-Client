@@ -20,6 +20,8 @@ namespace MinecraftClient.Tui
         public static readonly Color LavaColor = Color.FromRgb(255, 100, 0);
         public static readonly Color DefaultColor = Color.FromRgb(60, 60, 60);
         public static readonly Color VoidColor = Color.FromRgb(0, 0, 0);
+        public static readonly Color CaveBorderColor = Color.FromRgb(16, 16, 16);
+        public static readonly Color CaveSolidColor = Color.FromRgb(24, 20, 18);
 
         private static readonly FrozenDictionary<Material, Color> ColorTable;
         private static readonly FrozenSet<Material> FullyTransparentMats;
@@ -114,6 +116,14 @@ namespace MinecraftClient.Tui
 
         public static bool IsFullyTransparent(Material m) => FullyTransparentMats.Contains(m);
 
+        /// <summary>
+        /// Returns true for materials that block light propagation (solid, liquids),
+        /// used by cave mode to find the surface from the player's Y level.
+        /// Mirrors VoxelMap's lightDampening > 0 check.
+        /// </summary>
+        public static bool IsLightBlocking(Material m)
+            => (m == Material.Lava) || (!FullyTransparentMats.Contains(m) && m.IsSolid());
+
         public static bool IsWater(Material m) => WaterMats.Contains(m);
 
         public static bool IsIce(Material m) => IceMats.Contains(m);
@@ -137,8 +147,8 @@ namespace MinecraftClient.Tui
             int multiplier = heightDelta switch
             {
                 > 0 => 255,   // higher than neighbor: brightest
-                0   => 220,   // same height: normal
-                _   => 180,   // lower than neighbor: darker
+                0 => 220,   // same height: normal
+                _ => 180,   // lower than neighbor: darker
             };
             byte r = (byte)(baseColor.R * multiplier / 255);
             byte g = (byte)(baseColor.G * multiplier / 255);
@@ -155,6 +165,19 @@ namespace MinecraftClient.Tui
         public static Color BlendIceColor(Color bottomColor)
         {
             return Blend(IceColor, bottomColor, 0.35);
+        }
+
+        /// <summary>
+        /// Darken a color to simulate underground lighting. Cave floors receive
+        /// a minimum brightness of ~32/255 for non-solid blocks (matching VoxelMap),
+        /// while solid/unreachable columns render as near-black.
+        /// </summary>
+        public static Color ApplyCaveDarkening(Color baseColor, double factor = 0.55)
+        {
+            byte r = (byte)(baseColor.R * factor);
+            byte g = (byte)(baseColor.G * factor);
+            byte b = (byte)(baseColor.B * factor);
+            return Color.FromRgb(r, g, b);
         }
 
         private static Color Blend(Color top, Color bottom, double topAlpha)

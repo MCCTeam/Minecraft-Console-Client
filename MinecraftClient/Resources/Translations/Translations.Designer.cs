@@ -7188,6 +7188,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current cave mode: {0}.
+        /// </summary>
+        internal static string cmd_minimap_cave_current {
+            get {
+                return ResourceManager.GetString("cmd.minimap.cave_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cave mode set to: {0}.
+        /// </summary>
+        internal static string cmd_minimap_cave_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.cave_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to list achievements/advancements from the server..
         /// </summary>
         internal static string cmd_achievement_desc {
