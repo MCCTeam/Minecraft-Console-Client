@@ -243,6 +243,9 @@
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
     <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
   </data>
+  <data name="bot.autodig.drop_low_durability" xml:space="preserve">
+    <value>Dropped low durability {0} from slot {1}.</value>
+  </data>
   <data name="bot.autodig.start" xml:space="preserve">
     <value>Automatic digging has started.</value>
   </data>
@@ -251,6 +254,9 @@
   </data>
   <data name="bot.autodig.stop" xml:space="preserve">
     <value>Auto-digging has been stopped.</value>
+  </data>
+  <data name="bot.autodig.switch" xml:space="preserve">
+    <value>Switch to {1} from slot {0}.</value>
   </data>
   <data name="bot.autoDrop.added" xml:space="preserve">
     <value>Added item {0}</value>

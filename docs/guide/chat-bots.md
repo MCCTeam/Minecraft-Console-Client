@@ -748,6 +748,46 @@ redirectFrom:
 
   - **Default:** `3.0`
 
+  #### `Auto_Tool_Switch`
+
+  - **Description:**
+
+    Automatically switch to a more suitable tool from your inventory before digging.
+
+    When `Durability_Limit` is above zero, tools below that durability threshold are skipped.
+
+  - **Available values:** `true` and `false`
+
+  - **Type:** `boolean`
+
+  - **Default:** `false`
+
+  #### `Durability_Limit`
+
+  - **Description:**
+
+    Will not use tools with less durability than this.
+
+    Set to `0` to disable this durability check.
+
+  - **Type:** `integer`
+
+  - **Default:** `2`
+
+  #### `Drop_Low_Durability_Tools`
+
+  - **Description:**
+
+    Drop the replaced tool if its remaining durability is below `Durability_Limit`.
+
+    This setting is only useful when `Auto_Tool_Switch` is enabled.
+
+  - **Available values:** `true` and `false`
+
+  - **Type:** `boolean`
+
+  - **Default:** `false`
+
   #### `Dig_Timeout`
 
   - **Description:**
