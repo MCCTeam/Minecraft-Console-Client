@@ -438,6 +438,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dropped low durability {0} from slot {1}..
+        /// </summary>
+        internal static string bot_autodig_drop_low_durability {
+            get {
+                return ResourceManager.GetString("bot.autodig.drop_low_durability", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The block currently pointed to is not in the allowed list..
         /// </summary>
         internal static string bot_autodig_not_allow {
@@ -470,6 +479,15 @@ namespace MinecraftClient {
         internal static string bot_autodig_stop {
             get {
                 return ResourceManager.GetString("bot.autodig.stop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Switch to {0} from slot {1}..
+        /// </summary>
+        internal static string bot_autodig_switch {
+            get {
+                return ResourceManager.GetString("bot.autodig.switch", resourceCulture);
             }
         }
         
