@@ -281,6 +281,68 @@ public class AchievementWatcher : ChatBot
 }
 ```
 
+## Scoreboard teams
+
+Chat bots and C# scripts can read the current team state and react to team changes.
+
+Useful methods and events:
+
+- `GetTeams()` - returns a snapshot of all teams the server has sent
+- `GetPlayerTeam(playerName)` - returns the team a specific player is on, or `null`
+- `OnTeam(teamName, method, displayName, friendlyFlags, nameTagVisibility, collisionRule, color, prefix, suffix, players)` - called whenever a team packet arrives
+
+The `method` byte tells you what changed:
+
+- `0` - team created (includes full parameters and initial member list)
+- `1` - team removed
+- `2` - team parameters updated (display name, colors, rules)
+- `3` - players added to the team
+- `4` - players removed from the team
+
+The `color` field is a `ChatFormatting` enum ordinal. Common values: `0`=black, `9`=blue, `10`=green, `12`=red, `14`=yellow, `-1`=none/reset.
+
+The `nameTagVisibility` and `collisionRule` strings take values from the Minecraft wiki: `"always"`, `"never"`, `"hideForOtherTeams"`, `"hideForOwnTeam"` (visibility) or `"pushOtherTeams"`, `"pushOwnTeam"` (collision).
+
+Example:
+
+```csharp
+//MCCScript 1.0
+
+MCC.LoadBot(new TeamWatcher());
+
+//MCCScript Extensions
+
+public class TeamWatcher : ChatBot
+{
+    public override void AfterGameJoined()
+    {
+        foreach (var team in GetTeams().Values)
+            LogToConsole($"Team '{team.Name}' has {team.Members.Count} member(s)");
+    }
+
+    public override void OnTeam(string teamName, byte method, string displayName,
+        byte friendlyFlags, string nameTagVisibility, string collisionRule,
+        int color, string prefix, string suffix, List<string> players)
+    {
+        switch (method)
+        {
+            case 0:
+                LogToConsole($"Team '{teamName}' created with {players.Count} member(s)");
+                break;
+            case 1:
+                LogToConsole($"Team '{teamName}' removed");
+                break;
+            case 3:
+                LogToConsole($"{string.Join(", ", players)} joined team '{teamName}'");
+                break;
+            case 4:
+                LogToConsole($"{string.Join(", ", players)} left team '{teamName}'");
+                break;
+        }
+    }
+}
+```
+
 ## C# API
 
 The authoritative reference for the C# API is [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs).

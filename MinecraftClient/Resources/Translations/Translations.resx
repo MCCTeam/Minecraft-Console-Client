@@ -1562,6 +1562,21 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="cmd.tps.desc" xml:space="preserve">
     <value>Display server current tps (tick per second). May not be accurate</value>
   </data>
+  <data name="cmd.teams.desc" xml:space="preserve">
+    <value>List all scoreboard teams and their members.</value>
+  </data>
+  <data name="cmd.teams.no_teams" xml:space="preserve">
+    <value>No teams are currently tracked.</value>
+  </data>
+  <data name="cmd.teams.team_header" xml:space="preserve">
+    <value>Team '{0}' (display: {1}, color: {2}, prefix: '{3}', suffix: '{4}', nameTagVisibility: {5}, collisionRule: {6}, friendlyFire: {7}, seeInvisibles: {8})</value>
+  </data>
+  <data name="cmd.teams.team_members" xml:space="preserve">
+    <value>  Members ({0}): {1}</value>
+  </data>
+  <data name="cmd.teams.team_no_members" xml:space="preserve">
+    <value>  No members.</value>
+  </data>
   <data name="cmd.useblock.desc" xml:space="preserve">
     <value>Place a block or open chest</value>
   </data>

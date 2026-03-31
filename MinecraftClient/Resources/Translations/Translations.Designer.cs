@@ -4661,6 +4661,51 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to List all scoreboard teams and their members.
+        /// </summary>
+        internal static string cmd_teams_desc {
+            get {
+                return ResourceManager.GetString("cmd.teams.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No teams are currently tracked.
+        /// </summary>
+        internal static string cmd_teams_no_teams {
+            get {
+                return ResourceManager.GetString("cmd.teams.no_teams", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team '{0}' (display: {1}, ...).
+        /// </summary>
+        internal static string cmd_teams_team_header {
+            get {
+                return ResourceManager.GetString("cmd.teams.team_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   Members ({0}): {1}.
+        /// </summary>
+        internal static string cmd_teams_team_members {
+            get {
+                return ResourceManager.GetString("cmd.teams.team_members", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   No members.
+        /// </summary>
+        internal static string cmd_teams_team_no_members {
+            get {
+                return ResourceManager.GetString("cmd.teams.team_no_members", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Place a block or open chest.
         /// </summary>
         internal static string cmd_useblock_desc {
