@@ -954,6 +954,30 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>teams</code></summary>
+
+- **Description:**
+
+  List all scoreboard teams the server has sent, along with their members and settings.
+
+- **Usage:**
+
+  ```
+  /teams
+  ```
+
+- **Example output:**
+
+  ```
+  Team 'RedTeam' (display: RedTeam, color: 12, prefix: '', suffix: '', nameTagVisibility: always, collisionRule: always, friendlyFire: True, seeInvisibles: True)
+    Members (2): Steve, Alex
+  Team 'BlueTeam' (display: BlueTeam, color: 9, prefix: '', suffix: '', nameTagVisibility: always, collisionRule: always, friendlyFire: True, seeInvisibles: True)
+    No members.
+  ```
+
+</details>
+
+<details>
 <summary><code>useitem</code></summary>
 
 - **Description:**
