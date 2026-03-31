@@ -483,7 +483,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Switch to {1} from slot {0}..
+        ///   Looks up a localized string similar to Switch to {0} from slot {1}..
         /// </summary>
         internal static string bot_autodig_switch {
             get {

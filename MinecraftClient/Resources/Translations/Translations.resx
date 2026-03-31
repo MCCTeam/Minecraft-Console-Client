@@ -256,7 +256,7 @@
     <value>Auto-digging has been stopped.</value>
   </data>
   <data name="bot.autodig.switch" xml:space="preserve">
-    <value>Switch to {1} from slot {0}.</value>
+    <value>Switch to {0} from slot {1}.</value>
   </data>
   <data name="bot.autoDrop.added" xml:space="preserve">
     <value>Added item {0}</value>

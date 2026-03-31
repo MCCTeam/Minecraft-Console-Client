@@ -294,7 +294,7 @@ namespace MinecraftClient.ChatBots
             int handSlot = 36 + GetCurrentSlot();
             container.Items.TryGetValue(handSlot, out Item? currentTool);
 
-            if (IsRecommendedTool(currentTool, recommendedTools) && currentTool is not null && HasEnoughDurability(currentTool))
+            if (currentTool is not null && IsRecommendedTool(currentTool, recommendedTools) && HasEnoughDurability(currentTool))
                 return true;
 
             foreach (ItemType recommendedTool in recommendedTools)
@@ -307,7 +307,7 @@ namespace MinecraftClient.ChatBots
                     if (!SwapToolIntoHand(slot, handSlot))
                         return false;
 
-                    LogToConsole(GetTimestamp() + ": " + string.Format(Translations.bot_autodig_switch, slot, item.GetTypeString()));
+                    LogToConsole(GetTimestamp() + ": " + string.Format(Translations.bot_autodig_switch, item.GetTypeString(), slot));
 
                     if (Config.Drop_Low_Durability_Tools && IsBelowDurabilityLimit(currentTool) &&
                         WindowAction(0, slot, WindowActionType.DropItemStack))
