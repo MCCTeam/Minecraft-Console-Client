@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -24,6 +25,8 @@ public sealed class MccMcpGuidanceProvider
     }
 
     public string PromptName => "mcc_operator_prompt";
+
+    public string SkillName => "mcc-mcp-operator";
 
     public string GetSystemPrompt()
     {
@@ -51,6 +54,9 @@ public sealed class MccMcpGuidanceProvider
         {
             PromptName = PromptName,
             PromptMarkdown = document.PromptMarkdown,
+            SkillName = SkillName,
+            GuidanceVersion = document.GuidanceVersion,
+            SkillMarkdown = document.SkillMarkdown,
             SystemPrompt = GetSystemPrompt(),
             BestPractices = document.BestPractices,
             ExampleScenarios = document.ExampleScenarios,
@@ -76,6 +82,7 @@ public sealed class MccMcpGuidanceProvider
         string exampleScenariosSection = ExtractSection(bodyMarkdown, ExampleScenariosHeading);
 
         return new GuidanceDocument(
+            ComputeGuidanceVersion(promptMarkdown),
             promptMarkdown.Replace("\r\n", "\n").Trim(),
             bodyMarkdown,
             ExtractBulletList(bestPracticesSection),
@@ -180,11 +187,22 @@ public sealed class MccMcpGuidanceProvider
         return enabled ? "enabled" : "disabled";
     }
 
+    private static string ComputeGuidanceVersion(string markdown)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(markdown.Replace("\r\n", "\n").Trim());
+        byte[] hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash[..8]).ToLowerInvariant();
+    }
+
     private sealed record GuidanceDocument(
-        string PromptMarkdown,
+        string GuidanceVersion,
+        string SkillMarkdown,
         string BodyMarkdown,
         string[] BestPractices,
-        MccMcpAgentScenario[] ExampleScenarios);
+        MccMcpAgentScenario[] ExampleScenarios)
+    {
+        public string PromptMarkdown => SkillMarkdown;
+    }
 }
 
 public sealed class MccMcpAgentGuidancePayload
@@ -194,6 +212,15 @@ public sealed class MccMcpAgentGuidancePayload
 
     [JsonPropertyName("promptMarkdown")]
     public string PromptMarkdown { get; init; } = string.Empty;
+
+    [JsonPropertyName("skillName")]
+    public string SkillName { get; init; } = string.Empty;
+
+    [JsonPropertyName("guidanceVersion")]
+    public string GuidanceVersion { get; init; } = string.Empty;
+
+    [JsonPropertyName("skillMarkdown")]
+    public string SkillMarkdown { get; init; } = string.Empty;
 
     [JsonPropertyName("systemPrompt")]
     public string SystemPrompt { get; init; } = string.Empty;
