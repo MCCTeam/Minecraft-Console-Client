@@ -1872,12 +1872,17 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (!inventories.TryGetValue(inventoryId, out Container? inventory))
                 return MccMcpResult.Fail("invalid_state");
 
-            var slots = inventory.Items.Select(item => new
-            {
-                slot = item.Key,
-                type = item.Value.Type.ToString(),
-                count = item.Value.Count
-            }).ToArray();
+            var slots = inventory.Items
+                .Where(item => IsSnapshotInventorySlot(inventory, item.Key))
+                .OrderBy(item => item.Key)
+                .Select(item => new
+                {
+                    slot = item.Key,
+                    type = item.Value.Type.ToString(),
+                    count = item.Value.Count
+                })
+                .ToArray();
+            object? cursor = TryBuildCursorSnapshot(inventory);
 
             return MccMcpResult.Ok(new
             {
@@ -1885,7 +1890,8 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 type = inventory.Type.ToString(),
                 title = inventory.Title,
                 slotCount = inventory.Type.SlotCount(),
-                slots
+                slots,
+                cursor
             });
         });
     }
@@ -1975,7 +1981,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                     type = entry.Value.Type.ToString(),
                     title = entry.Value.Title,
                     slotCount = entry.Value.Type.SlotCount(),
-                    nonEmptySlots = entry.Value.Items.Count,
+                    nonEmptySlots = entry.Value.Items.Count(item => IsSnapshotInventorySlot(entry.Value, item.Key)),
                     active = entry.Key > 0 && entry.Key == GetActiveContainerId(client)
                 })
                 .ToArray();
@@ -2118,12 +2124,19 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (!inventories.TryGetValue(inventoryId, out Container? inventory))
                 return MccMcpResult.Fail("invalid_state");
 
+            int cursorCount = GetCursorItemCount(inventory, parsedItemType);
             var matchingSlotQuery = inventory.Items
+                .Where(pair => IsDroppableInventorySlot(inventory, pair.Key))
                 .Where(pair => pair.Value.Type == parsedItemType && pair.Value.Count > 0)
-                .Select(pair => new { slot = pair.Key, count = pair.Value.Count });
+                .Select(pair => new
+                {
+                    slot = pair.Key,
+                    count = pair.Value.Count,
+                    hotbarPriority = inventoryId == 0 && IsHotbarSlot(inventory, pair.Key) ? 0 : 1
+                });
             var matchingSlots = (preferStack
-                    ? matchingSlotQuery.OrderByDescending(pair => pair.count).ThenBy(pair => pair.slot)
-                    : matchingSlotQuery.OrderBy(pair => pair.count).ThenBy(pair => pair.slot))
+                    ? matchingSlotQuery.OrderBy(pair => pair.hotbarPriority).ThenByDescending(pair => pair.count).ThenBy(pair => pair.slot)
+                    : matchingSlotQuery.OrderBy(pair => pair.hotbarPriority).ThenBy(pair => pair.count).ThenBy(pair => pair.slot))
                 .ToArray();
 
             int beforeCount = matchingSlots.Sum(pair => pair.count);
@@ -2134,6 +2147,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                     itemType = parsedItemType.ToString(),
                     requestedCount = count,
                     availableCount = beforeCount,
+                    cursorCount,
                     inventoryId
                 });
             }
@@ -2151,43 +2165,39 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
                 int dropFromSlot = Math.Min(remaining, currentItem.Count);
                 touchedSlots.Add(entry.slot);
-                bool ok = true;
-
-                if (dropFromSlot == currentItem.Count)
-                {
-                    ok = client.DoWindowAction(inventoryId, entry.slot, WindowActionType.DropItemStack);
-                }
-                else
-                {
-                    for (int i = 0; i < dropFromSlot; i++)
-                    {
-                        if (!client.DoWindowAction(inventoryId, entry.slot, WindowActionType.DropItem))
-                        {
-                            ok = false;
-                            break;
-                        }
-                    }
-                }
+                bool ok = TryDropInventorySlotItems(client, inventoryId, inventory, entry.slot, parsedItemType, dropFromSlot, out int droppedFromSlot);
 
                 if (!ok)
                 {
+                    Container? failedInventory = client.GetInventory(inventoryId);
+                    int currentCount = failedInventory is null
+                        ? 0
+                        : failedInventory.Items
+                            .Where(pair => IsDroppableInventorySlot(failedInventory, pair.Key))
+                            .Where(pair => pair.Value.Type == parsedItemType)
+                            .Sum(pair => pair.Value.Count);
                     return MccMcpResult.Fail("action_failed", data: new
                     {
                         itemType = parsedItemType.ToString(),
                         requestedCount = count,
-                        droppedCount = count - remaining,
+                        droppedCount = count - remaining + droppedFromSlot,
                         remainingCount = remaining,
+                        currentCount,
                         inventoryId,
                         touchedSlots = touchedSlots.ToArray()
                     });
                 }
 
-                remaining -= dropFromSlot;
+                remaining -= droppedFromSlot;
             }
 
-            int afterCount = inventory.Items
-                .Where(pair => pair.Value.Type == parsedItemType)
-                .Sum(pair => pair.Value.Count);
+            Container? finalInventory = client.GetInventory(inventoryId);
+            int afterCount = finalInventory is null
+                ? 0
+                : finalInventory.Items
+                    .Where(pair => IsDroppableInventorySlot(finalInventory, pair.Key))
+                    .Where(pair => pair.Value.Type == parsedItemType)
+                    .Sum(pair => pair.Value.Count);
             int droppedCount = beforeCount - afterCount;
 
             if (remaining > 0)
@@ -3118,6 +3128,56 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return true;
     }
 
+    private static bool IsSnapshotInventorySlot(Container inventory, int slotId)
+    {
+        return slotId >= 0 && slotId < inventory.Type.SlotCount();
+    }
+
+    private static bool IsDroppableInventorySlot(Container inventory, int slotId)
+    {
+        if (!IsSnapshotInventorySlot(inventory, slotId))
+            return false;
+
+        return !(slotId == 0 && (inventory.Type == ContainerType.PlayerInventory || inventory.Type == ContainerType.Crafting));
+    }
+
+    private static bool IsHotbarSlot(Container inventory, int slotId)
+    {
+        return inventory.IsHotbar(slotId, out _);
+    }
+
+    private static object? TryBuildCursorSnapshot(Container inventory)
+    {
+        return inventory.Items.TryGetValue(-1, out Item? cursorItem) && cursorItem.Count > 0
+            ? new
+            {
+                type = cursorItem.Type.ToString(),
+                count = cursorItem.Count
+            }
+            : null;
+    }
+
+    private static int GetCursorItemCount(Container inventory, ItemType itemType)
+    {
+        return inventory.Items.TryGetValue(-1, out Item? cursorItem) && cursorItem.Type == itemType
+            ? cursorItem.Count
+            : 0;
+    }
+
+    private static bool TryDropInventorySlotItems(McClient client, int inventoryId, Container inventory, int slotId, ItemType itemType, int dropCount, out int droppedCount)
+    {
+        droppedCount = 0;
+        if (!inventory.Items.TryGetValue(slotId, out Item? currentItem) || currentItem.Type != itemType || currentItem.Count <= 0)
+            return false;
+
+        if (inventoryId == 0 && inventory.IsHotbar(slotId, out int hotbarSlot))
+        {
+            return TryDropHotbarSlotItems(client, slotId, hotbarSlot, itemType, dropCount, currentItem.Count, out droppedCount);
+        }
+
+        return TryDropWindowSlotItems(client, inventoryId, slotId, itemType, dropCount, currentItem.Count, out droppedCount);
+    }
+
     private static int CountItemInRange(Container inventory, ItemType itemType, int startSlot, int endSlot)
     {
         return inventory.Items
@@ -3271,6 +3331,99 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return inventory.Items.TryGetValue(slot, out Item? item) && item.Type == itemType ? item.Count : 0;
     }
 
+    private static bool TryDropHotbarSlotItems(McClient client, int slotId, int hotbarSlot, ItemType itemType, int dropCount, int availableInSlot, out int droppedCount)
+    {
+        droppedCount = 0;
+        byte previousSlot = client.GetCurrentSlot();
+        bool restoreSlot = previousSlot != hotbarSlot;
+
+        if (restoreSlot && !client.ChangeSlot((short)hotbarSlot))
+            return false;
+
+        try
+        {
+            if (dropCount >= availableInSlot)
+            {
+                if (!client.DropSelectedItem(dropEntireStack: true))
+                    return false;
+
+                if (!WaitForSlotItemCount(client, 0, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs, out _, out _))
+                    return false;
+
+                droppedCount = availableInSlot;
+                return true;
+            }
+
+            int remaining = dropCount;
+            while (remaining > 0)
+            {
+                Container? currentInventory = client.GetInventory(0);
+                if (currentInventory is null)
+                    return false;
+
+                int beforeSlotCount = GetSlotItemCount(currentInventory, slotId, itemType);
+                if (beforeSlotCount <= 0)
+                    break;
+
+                if (!client.DropSelectedItem(dropEntireStack: false))
+                    return false;
+
+                if (!WaitForSlotItemCount(client, 0, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs, out _, out _))
+                    return false;
+
+                remaining--;
+                droppedCount++;
+            }
+
+            return remaining == 0;
+        }
+        finally
+        {
+            if (restoreSlot)
+                client.ChangeSlot((short)previousSlot);
+        }
+    }
+
+    private static bool TryDropWindowSlotItems(McClient client, int inventoryId, int slotId, ItemType itemType, int dropCount, int availableInSlot, out int droppedCount)
+    {
+        droppedCount = 0;
+
+        if (dropCount >= availableInSlot)
+        {
+            if (!client.DoWindowAction(inventoryId, slotId, WindowActionType.DropItemStack))
+                return false;
+
+            if (!WaitForSlotItemCount(client, inventoryId, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs, out _, out _))
+                return false;
+
+            droppedCount = availableInSlot;
+            return true;
+        }
+
+        int remaining = dropCount;
+        while (remaining > 0)
+        {
+            Container? currentInventory = client.GetInventory(inventoryId);
+            if (currentInventory is null)
+                return false;
+
+            int beforeSlotCount = GetSlotItemCount(currentInventory, slotId, itemType);
+            if (beforeSlotCount <= 0)
+                break;
+
+            if (!client.DoWindowAction(inventoryId, slotId, WindowActionType.DropItem))
+                return false;
+
+            if (!WaitForSlotItemCount(client, inventoryId, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs, out _, out _))
+                return false;
+
+            remaining--;
+            droppedCount++;
+        }
+
+        return remaining == 0;
+    }
+
     private static bool WaitForCursorItem(McClient client, ItemType itemType, int waitMs, out Item? cursorItem)
     {
         cursorItem = null;
@@ -3328,6 +3481,28 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
             if (targetUpdated && cursorUpdated)
                 return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static bool WaitForSlotItemCount(McClient client, int inventoryId, int slotId, ItemType itemType, Func<int, bool> predicate, int waitMs, out Container? inventory, out int itemCount)
+    {
+        inventory = null;
+        itemCount = 0;
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            inventory = client.GetInventory(inventoryId);
+            if (inventory is not null)
+            {
+                itemCount = GetSlotItemCount(inventory, slotId, itemType);
+                if (predicate(itemCount))
+                    return true;
+            }
 
             if (DateTime.UtcNow >= deadline)
                 return false;

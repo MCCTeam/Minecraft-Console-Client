@@ -2614,6 +2614,41 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Drop the currently selected hotbar item like a real player pressing Q or Ctrl+Q.
+        /// </summary>
+        /// <param name="dropEntireStack">TRUE to drop the whole stack, FALSE to drop one item</param>
+        /// <returns>TRUE if the packet was sent</returns>
+        public bool DropSelectedItem(bool dropEntireStack)
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => DropSelectedItem(dropEntireStack));
+
+            Location actionLocation = GetCurrentLocation().ToFloor();
+            int status = dropEntireStack ? 3 : 4;
+            bool sent = handler.SendPlayerDigging(status, actionLocation, Direction.Down, sequenceId++);
+            if (sent)
+                ApplySelectedItemDropPrediction(dropEntireStack);
+
+            return sent;
+        }
+
+        private void ApplySelectedItemDropPrediction(bool dropEntireStack)
+        {
+            if (!inventories.TryGetValue(0, out Container? playerInventory))
+                return;
+
+            int selectedSlotId = CurrentSlot + 36;
+            if (!playerInventory.Items.TryGetValue(selectedSlotId, out Item? heldItem) || heldItem.IsEmpty)
+                return;
+
+            if (dropEntireStack || heldItem.Count <= 1)
+                playerInventory.Items.Remove(selectedSlotId);
+            else heldItem.Count--;
+
+            DispatchBotEvent(bot => bot.OnInventoryUpdate(0));
+        }
+
+        /// <summary>
         /// Update sign text
         /// </summary>
         /// <param name="location">sign location</param>
