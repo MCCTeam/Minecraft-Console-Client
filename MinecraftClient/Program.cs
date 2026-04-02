@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -174,6 +176,9 @@ namespace MinecraftClient
             };
 
             // --- Determine console mode and initialize backend ---
+            if (!OperatingSystem.IsWindows())
+                InstallCursesNativeResolver();
+
             if (!ConsoleIO.BasicIO && Config.Console.General.ConsoleMode == ConsoleModeType.tui)
             {
                 ConsoleIO.Backend?.Shutdown();
@@ -204,6 +209,26 @@ namespace MinecraftClient
             // MaybePrintClassicModeTuiRecommendation();
 
             RunStartupSequence(args);
+        }
+
+        /// <summary>
+        /// Consolonia's Unix.Terminal uses <c>[DllImport("libcoreclr.so")]</c> to reach
+        /// <c>dlopen</c>/<c>dlsym</c> on .NET Core. The library ships a
+        /// <c>SetDllImportResolver</c> that maps <c>libcoreclr.so</c> to the current
+        /// process, but it is compiled under <c>#if NET6_0</c> (exact TFM match) instead
+        /// of <c>NET6_0_OR_GREATER</c>, so it is dead code when the consuming project
+        /// targets net8.0+. On a self-contained single-file publish the physical
+        /// <c>libcoreclr.so</c> does not exist on the search path, causing a
+        /// <c>DllNotFoundException</c> that crashes the TUI.
+        ///
+        /// We work around this by registering our own resolver before any Consolonia
+        /// code runs: if any assembly asks for <c>libcoreclr.so</c> we return
+        /// <c>(IntPtr)(-1)</c> which the runtime interprets as "the current process".
+        /// </summary>
+        private static void InstallCursesNativeResolver()
+        {
+            AssemblyLoadContext.Default.ResolvingUnmanagedDll += (assembly, libraryName) =>
+                libraryName == "libcoreclr.so" ? (IntPtr)(-1) : IntPtr.Zero;
         }
 
         private static void HandleTuiStartupFailure(Exception exception)
