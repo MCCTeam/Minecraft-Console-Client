@@ -324,6 +324,12 @@ namespace MinecraftClient.Protocol.Handlers
             catch (NullReferenceException)
             {
             }
+            catch (SocketException)
+            {
+            }
+            catch (System.IO.IOException)
+            {
+            }
 
             if (cancelToken.IsCancellationRequested)
                 return;

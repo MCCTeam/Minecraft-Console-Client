@@ -1579,6 +1579,12 @@ namespace MinecraftClient
             if (String.IsNullOrEmpty(text))
                 return;
 
+            if (!CanSendMessage)
+            {
+                Log.Warn(Translations.mcc_send_text_not_connected);
+                return;
+            }
+
             int maxLength = handler.GetMaxChatMessageLength();
 
             lock (chatQueue)

@@ -394,6 +394,12 @@
   <data name="bot.autoRelog.wait" xml:space="preserve">
     <value>Waiting {0:0.000} seconds before reconnecting...</value>
   </data>
+  <data name="bot.autoRelog.wait_with_retries" xml:space="preserve">
+    <value>Waiting {0:0.000} seconds before reconnecting... ({1} retries left)</value>
+  </data>
+  <data name="bot.autoRelog.retries_unlimited" xml:space="preserve">
+    <value>unlimited</value>
+  </data>
   <data name="bot.autoRespond.file_not_found" xml:space="preserve">
     <value>File not found: '{0}'</value>
   </data>
@@ -2057,6 +2063,9 @@ Type '{0}quit' to leave the server.</value>
   </data>
   <data name="mcc.restart" xml:space="preserve">
     <value>Restarting Minecraft Console Client...</value>
+  </data>
+  <data name="mcc.send_text_not_connected" xml:space="preserve">
+    <value>Cannot send text: not connected to a server.</value>
   </data>
   <data name="mcc.restart_delay" xml:space="preserve">
     <value>Waiting {0} seconds before restarting...</value>

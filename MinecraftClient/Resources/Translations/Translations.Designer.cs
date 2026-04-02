@@ -898,6 +898,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Waiting {0:0.000} seconds before reconnecting... ({1} retries left).
+        /// </summary>
+        internal static string bot_autoRelog_wait_with_retries {
+            get {
+                return ResourceManager.GetString("bot.autoRelog.wait_with_retries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to unlimited.
+        /// </summary>
+        internal static string bot_autoRelog_retries_unlimited {
+            get {
+                return ResourceManager.GetString("bot.autoRelog.retries_unlimited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File not found: &apos;{0}&apos;.
         /// </summary>
         internal static string bot_autoRespond_file_not_found {
@@ -6155,6 +6173,15 @@ namespace MinecraftClient {
         internal static string mcc_restart {
             get {
                 return ResourceManager.GetString("mcc.restart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot send text: not connected to a server..
+        /// </summary>
+        internal static string mcc_send_text_not_connected {
+            get {
+                return ResourceManager.GetString("mcc.send_text_not_connected", resourceCulture);
             }
         }
         
