@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -16,8 +17,19 @@ namespace MinecraftClient.Tui
 {
     public class MainTuiView : UserControl
     {
-        private const int MaxLogLines = 5000;
+        private static readonly int MaxLogLines = ResolveMaxLogLines();
         private const int CtrlCDoublePressMsec = 1500;
+
+        private static int ResolveMaxLogLines()
+        {
+            int configured = Settings.Config.Console.General.TUI_Log_Scrollback;
+            if (configured > 0)
+                return configured;
+
+            bool isArm = RuntimeInformation.ProcessArchitecture
+                is Architecture.Arm or Architecture.Arm64;
+            return isArm ? 500 : 3000;
+        }
 
         private readonly ObservableCollection<string> _logLines = new();
         private readonly ObservableCollection<Control> _logControls = new();
@@ -78,6 +90,7 @@ namespace MinecraftClient.Tui
             {
                 ItemsSource = _logControls,
                 Focusable = false,
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
             };
 
             _logScrollViewer = new ScrollViewer

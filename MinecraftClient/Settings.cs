@@ -1218,6 +1218,9 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Console.General.History_Input_Records$")]
                     public int History_Input_Records = 32;
+
+                    [TomlInlineComment("$Console.General.TUI_Log_Scrollback$")]
+                    public int TUI_Log_Scrollback = 0;
                 }
 
                 [TomlDoNotInlineObject]

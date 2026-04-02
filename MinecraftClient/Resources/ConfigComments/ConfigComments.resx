@@ -587,6 +587,12 @@ Custom colors are only available when using "vt100_24bit" color mode.</value>
   <data name="Console.General.Display_Input" xml:space="preserve">
     <value>You can use "Ctrl+P" to print out the current input and cursor position.</value>
   </data>
+  <data name="Console.General.History_Input_Records" xml:space="preserve">
+    <value>Maximum number of input history records to keep.</value>
+  </data>
+  <data name="Console.General.TUI_Log_Scrollback" xml:space="preserve">
+    <value>Maximum log lines kept in TUI mode scrollback. Set to 0 for automatic.</value>
+  </data>
   <data name="Head" xml:space="preserve">
     <value>Startup Config File
 Please do not record extraneous data in this file as it will be overwritten by MCC.
