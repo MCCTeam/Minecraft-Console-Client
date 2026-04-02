@@ -1430,6 +1430,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Maximum number of input history records to keep..
+        /// </summary>
+        internal static string Console_General_History_Input_Records {
+            get {
+                return ResourceManager.GetString("Console.General.History_Input_Records", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum log lines kept in TUI mode scrollback. Set to 0 for automatic (3000 on x86/x64, 500 on ARM)..
+        /// </summary>
+        internal static string Console_General_TUI_Log_Scrollback {
+            get {
+                return ResourceManager.GetString("Console.General.TUI_Log_Scrollback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Startup Config File
         ///Please do not record extraneous data in this file as it will be overwritten by MCC.
         ///
