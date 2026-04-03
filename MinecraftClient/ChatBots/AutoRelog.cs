@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
@@ -95,6 +95,11 @@ namespace MinecraftClient.ChatBots
             _Initialize();
         }
 
+        public override void AfterGameJoined()
+        {
+            Configs._BotRecoAttempts = 0;
+        }
+
         private void _Initialize()
         {
             McClient.ReconnectionAttemptsLeft = Config.Retries;
@@ -144,10 +149,17 @@ namespace MinecraftClient.ChatBots
         {
             double delay = random.NextDouble() * (Config.Delay.max - Config.Delay.min) + Config.Delay.min;
             LogDebugToConsole(string.Format(string.IsNullOrEmpty(msg) ? Translations.bot_autoRelog_reconnect_always : Translations.bot_autoRelog_reconnect, msg));
-            
-            // TODO: Change this translation string to add the retries left text
-            LogToConsole(string.Format(Translations.bot_autoRelog_wait, delay) + $" ({Config.Retries - Configs._BotRecoAttempts} retries left)");
-            ReconnectToTheServer(Config.Retries - Configs._BotRecoAttempts, (int)Math.Floor(delay), true);
+
+            int retriesLeft = Config.Retries - Configs._BotRecoAttempts;
+            if (retriesLeft < 0)
+                retriesLeft = 0;
+
+            string retriesDisplay = Config.Retries == int.MaxValue
+                ? Translations.bot_autoRelog_retries_unlimited
+                : retriesLeft.ToString();
+
+            LogToConsole(string.Format(Translations.bot_autoRelog_wait_with_retries, delay, retriesDisplay));
+            ReconnectToTheServer(retriesLeft, (int)Math.Floor(delay), true);
         }
 
         public static bool OnDisconnectStatic(DisconnectReason reason, string message)

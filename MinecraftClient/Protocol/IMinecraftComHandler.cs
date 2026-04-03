@@ -296,6 +296,16 @@ namespace MinecraftClient.Protocol
         void OnEntityTeleport(int entityID, Double x, Double y, Double z, bool onGround);
 
         /// <summary>
+        /// Called when an entity velocity update packet is received.
+        /// Velocity values are in blocks per tick.
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="velocityX">Velocity X</param>
+        /// <param name="velocityY">Velocity Y</param>
+        /// <param name="velocityZ">Velocity Z</param>
+        void OnEntityVelocity(int entityID, double velocityX, double velocityY, double velocityZ);
+
+        /// <summary>
         /// Called when additional properties have been received for an entity
         /// </summary>
         /// <param name="EntityID">Entity ID</param>
@@ -372,6 +382,17 @@ namespace MinecraftClient.Protocol
         void OnExplosion(Location location, float strength, int affectedBlocks);
 
         /// <summary>
+        /// Called when a sound packet is received.
+        /// </summary>
+        /// <param name="soundName">Sound key if available, otherwise null</param>
+        /// <param name="location">Sound location for world sounds, or null if unavailable</param>
+        /// <param name="category">Sound category id</param>
+        /// <param name="volume">Sound volume</param>
+        /// <param name="pitch">Sound pitch</param>
+        /// <param name="entityID">Source entity id for entity-sound packets, if any</param>
+        void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch, int? entityID);
+
+        /// <summary>
         /// Called when a player's game mode has changed
         /// </summary>
         /// <param name="uuid">Affected player's UUID</param>
@@ -435,6 +456,19 @@ namespace MinecraftClient.Protocol
         void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<String, object>? factorCodec);
 
         /// <summary>
+        /// Called when an entity has an effect removed
+        /// </summary>
+        /// <param name="entityid">Entity ID</param>
+        /// <param name="effect">Effect that was removed</param>
+        void OnRemoveEntityEffect(int entityid, Effects effect);
+
+        /// <summary>
+        /// Get the player's active effects
+        /// </summary>
+        /// <returns>Dictionary of active effects</returns>
+        Dictionary<Effects, EffectData> GetPlayerEffects();
+
+        /// <summary>
         /// Called when Soreboard Objective
         /// </summary>
         /// <param name="objectiveName">objective name</param>
@@ -454,6 +488,23 @@ namespace MinecraftClient.Protocol
         /// <param name="objectiveValue">The score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
         /// <param name="numberFormat">Number format: 0 - blank, 1 - styled, 2 - fixed</param>
         void OnUpdateScore(string entityName, int action, string objectiveName, string objectiveDisplayName, int objectiveValue, int numberFormat);
+
+        /// <summary>
+        /// Called when a Teams packet is received from the server.
+        /// </summary>
+        /// <param name="teamName">Internal team name (up to 16 chars)</param>
+        /// <param name="method">0=create, 1=remove, 2=update, 3=add players, 4=remove players</param>
+        /// <param name="displayName">Display name (formatted). Present when method is 0 or 2.</param>
+        /// <param name="friendlyFlags">Bit 0=allowFriendlyFire, bit 1=seeFriendlyInvisibles. Present when method is 0 or 2.</param>
+        /// <param name="nameTagVisibility">Nametag visibility rule string. Present when method is 0 or 2.</param>
+        /// <param name="collisionRule">Collision rule string. Present when method is 0 or 2.</param>
+        /// <param name="color">ChatFormatting color value (-1=none). Present when method is 0 or 2.</param>
+        /// <param name="prefix">Member name prefix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="suffix">Member name suffix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="players">Player/entity names. Present when method is 0, 3, or 4.</param>
+        void OnTeam(string teamName, byte method, string displayName, byte friendlyFlags,
+            string nameTagVisibility, string collisionRule, int color,
+            string prefix, string suffix, List<string> players);
 
         /// <summary>
         /// Called when the client received the Tab Header and Footer
@@ -503,6 +554,33 @@ namespace MinecraftClient.Protocol
         public void OnAutoCompleteDone(int transactionId, string[] result);
 
         public void SetCanSendMessage(bool canSendMessage);
+
+        /// <summary>
+        /// Called when recipe book recipes are added or replaced.
+        /// </summary>
+        /// <param name="recipes">Recipe entries to add</param>
+        /// <param name="replace">True to replace the currently tracked recipe book entries</param>
+        public void OnRecipeBookAdd(RecipeBookRecipeEntry[] recipes, bool replace);
+
+        /// <summary>
+        /// Called when recipe book recipes are removed.
+        /// </summary>
+        /// <param name="recipeIds">Recipe identifiers to remove</param>
+        public void OnRecipeBookRemove(string[] recipeIds);
+
+        /// <summary>
+        /// Called when achievement/advancement data is received from the server.
+        /// </summary>
+        /// <param name="added">Achievements that were added or updated</param>
+        /// <param name="removedIds">IDs of achievements that were removed</param>
+        /// <param name="reset">True if all existing state should be cleared before applying</param>
+        public void OnAchievementsUpdate(IReadOnlyList<Achievement> added, IReadOnlyList<string> removedIds, bool reset);
+
+        /// <summary>
+        /// Called when the server selects an advancement tab.
+        /// </summary>
+        /// <param name="tabId">The tab identifier, or null if no tab is selected</param>
+        public void OnSelectAdvancementTab(string? tabId);
 
         /// <summary>
         /// Send a click container button packet to the server.

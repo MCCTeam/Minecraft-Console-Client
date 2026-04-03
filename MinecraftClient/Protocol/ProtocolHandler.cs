@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using DnsClient;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
@@ -386,6 +387,61 @@ namespace MinecraftClient.Protocol
             {
                 return 0;
             }
+        }
+
+        private static readonly Regex VersionTokenRegex = new(@"\d+\.\d+(?:\.\d+)?", RegexOptions.Compiled);
+
+        private static readonly int[] SupportedProtocols18 =
+        [
+            4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404,
+            477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756,
+            757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768, 769, 770, 771,
+            772, 773, 774, 775
+        ];
+
+        /// <summary>
+        /// For multi-version servers (e.g. "Requires MC 1.8 / 1.21"), try to find the
+        /// highest protocol version that both the server and MCC support.
+        /// Returns true if the protocol was upgraded, with the new value in
+        /// <paramref name="protocolVersion"/>.
+        /// </summary>
+        public static bool TryUpgradeProtocolVersion(string versionName, ref int protocolVersion)
+        {
+            if (string.IsNullOrEmpty(versionName))
+                return false;
+
+            var matches = VersionTokenRegex.Matches(versionName);
+            if (matches.Count < 2)
+                return false;
+
+            int bestProtocol = protocolVersion;
+            string bestVersion = "";
+
+            foreach (Match m in matches)
+            {
+                int proto = MCVer2ProtocolVersion(m.Value);
+                if (proto <= 0)
+                    continue;
+                if (Array.IndexOf(SupportedProtocols18, proto) < 0)
+                    continue;
+                if (proto > bestProtocol)
+                {
+                    bestProtocol = proto;
+                    bestVersion = m.Value;
+                }
+            }
+
+            if (bestProtocol > protocolVersion && bestVersion.Length > 0)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(
+                    Translations.mcc_server_info_version_upgrade,
+                    ProtocolVersion2MCVer(protocolVersion), protocolVersion,
+                    "§a" + bestVersion + "§8", bestProtocol));
+                protocolVersion = bestProtocol;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

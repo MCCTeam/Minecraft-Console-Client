@@ -104,7 +104,7 @@ namespace MinecraftClient
         /// </summary>
         public static void WriteLine(string line)
         {
-            if (BasicIO)
+            if (BasicIO || Backend is null)
                 Console.WriteLine(line);
             else
                 Backend.WriteLine(line);
@@ -137,7 +137,7 @@ namespace MinecraftClient
                 {
                     str = str.Replace('\n', ' ');
                 }
-                if (BasicIO)
+                if (BasicIO || Backend is null)
                 {
                     if (BasicIO_NoColor)
                     {

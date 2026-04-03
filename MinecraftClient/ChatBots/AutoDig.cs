@@ -5,7 +5,9 @@ using System.Threading;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
+using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 
@@ -25,15 +27,12 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [NonSerialized]
             [TomlInlineComment("$ChatBot.AutoDig.Auto_Tool_Switch$")]
             public bool Auto_Tool_Switch = false;
 
-            [NonSerialized]
             [TomlInlineComment("$ChatBot.AutoDig.Durability_Limit$")]
             public int Durability_Limit = 2;
 
-            [NonSerialized]
             [TomlInlineComment("$ChatBot.AutoDig.Drop_Low_Durability_Tools$")]
             public bool Drop_Low_Durability_Tools = false;
 
@@ -65,6 +64,8 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                Durability_Limit = Math.Max(0, Durability_Limit);
+
                 if (Auto_Start_Delay >= 0)
                     Auto_Start_Delay = Math.Max(0.1, Auto_Start_Delay);
 
@@ -225,6 +226,102 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        private static int GetLegacyMaxDamage(ItemType itemType)
+        {
+            return itemType switch
+            {
+                ItemType.WoodenPickaxe or ItemType.WoodenAxe or ItemType.WoodenShovel or ItemType.WoodenSword or ItemType.WoodenHoe => 59,
+                ItemType.StonePickaxe or ItemType.StoneAxe or ItemType.StoneShovel or ItemType.StoneSword or ItemType.StoneHoe => 131,
+                ItemType.IronPickaxe or ItemType.IronAxe or ItemType.IronShovel or ItemType.IronSword or ItemType.IronHoe => 250,
+                ItemType.GoldenPickaxe or ItemType.GoldenAxe or ItemType.GoldenShovel or ItemType.GoldenSword or ItemType.GoldenHoe => 32,
+                ItemType.DiamondPickaxe or ItemType.DiamondAxe or ItemType.DiamondShovel or ItemType.DiamondSword or ItemType.DiamondHoe => 1561,
+                ItemType.NetheritePickaxe or ItemType.NetheriteAxe or ItemType.NetheriteShovel or ItemType.NetheriteSword or ItemType.NetheriteHoe => 2031,
+                ItemType.Shears => 238,
+                _ => 0
+            };
+        }
+
+        private static int GetMaxDamage(Item item)
+        {
+            if (item.Components is not null)
+            {
+                var maxDamageComponent = item.Components.OfType<MaxDamageComponent>().FirstOrDefault();
+                if (maxDamageComponent is not null)
+                    return maxDamageComponent.MaxDamage;
+            }
+
+            return GetLegacyMaxDamage(item.Type);
+        }
+
+        private static int GetRemainingDurability(Item item)
+        {
+            int maxDamage = GetMaxDamage(item);
+            return maxDamage > 0 ? maxDamage - item.Damage : int.MaxValue;
+        }
+
+        private bool HasEnoughDurability(Item item)
+        {
+            return Config.Durability_Limit <= 0 || GetRemainingDurability(item) >= Config.Durability_Limit;
+        }
+
+        private bool IsBelowDurabilityLimit(Item? item)
+        {
+            return item is not null && Config.Durability_Limit > 0 && GetRemainingDurability(item) < Config.Durability_Limit;
+        }
+
+        private static bool IsRecommendedTool(Item? item, ItemType[] recommendedTools)
+        {
+            return item is not null && recommendedTools.Contains(item.Type);
+        }
+
+        private bool SwapToolIntoHand(int sourceSlot, int handSlot)
+        {
+            return WindowAction(0, sourceSlot, WindowActionType.LeftClick)
+                && WindowAction(0, handSlot, WindowActionType.LeftClick)
+                && WindowAction(0, sourceSlot, WindowActionType.LeftClick);
+        }
+
+        private bool EnsureSuitableTool(Material blockType)
+        {
+            if (!inventoryEnabled || !Config.Auto_Tool_Switch)
+                return true;
+
+            ItemType[] recommendedTools = Material2Tool.GetCorrectToolForBlock(blockType);
+            if (recommendedTools.Length == 0)
+                return true;
+
+            Container container = GetPlayerInventory();
+            int handSlot = 36 + GetCurrentSlot();
+            container.Items.TryGetValue(handSlot, out Item? currentTool);
+
+            if (currentTool is not null && IsRecommendedTool(currentTool, recommendedTools) && HasEnoughDurability(currentTool))
+                return true;
+
+            foreach (ItemType recommendedTool in recommendedTools)
+            {
+                foreach ((int slot, Item item) in container.Items)
+                {
+                    if (slot == handSlot || item.Type != recommendedTool || !HasEnoughDurability(item))
+                        continue;
+
+                    if (!SwapToolIntoHand(slot, handSlot))
+                        return false;
+
+                    LogToConsole(GetTimestamp() + ": " + string.Format(Translations.bot_autodig_switch, item.GetTypeString(), slot));
+
+                    if (Config.Drop_Low_Durability_Tools && IsBelowDurabilityLimit(currentTool) &&
+                        WindowAction(0, slot, WindowActionType.DropItemStack))
+                    {
+                        LogToConsole(GetTimestamp() + ": " + string.Format(Translations.bot_autodig_drop_low_durability, currentTool!.GetTypeString(), slot));
+                    }
+
+                    return true;
+                }
+            }
+
+            return !IsBelowDurabilityLimit(currentTool);
+        }
+
         public override void Update()
         {
             lock (stateLock)
@@ -293,6 +390,9 @@ namespace MinecraftClient.ChatBots
                     if (Config.Mode == Configs.ModeType.lookat ||
                         (Config.Mode == Configs.ModeType.both && Config._Locations.Contains(blockLoc)))
                     {
+                        if (!EnsureSuitableTool(block.Type))
+                            return false;
+
                         if (DigBlock(blockLoc, Direction.Down, lookAtBlock: false))
                         {
                             currentDig = blockLoc;
@@ -354,6 +454,9 @@ namespace MinecraftClient.ChatBots
 
                 if (minDistance <= 6.0)
                 {
+                    if (!EnsureSuitableTool(targetBlock.Type))
+                        return false;
+
                     if (DigBlock(target, Direction.Down, lookAtBlock: true))
                     {
                         currentDig = target;
@@ -388,6 +491,9 @@ namespace MinecraftClient.ChatBots
                         ((Config.List_Type == Configs.ListType.whitelist && Config.Blocks.Contains(block.Type)) ||
                         (Config.List_Type == Configs.ListType.blacklist && !Config.Blocks.Contains(block.Type))))
                     {
+                        if (!EnsureSuitableTool(block.Type))
+                            return false;
+
                         if (DigBlock(blockLoc, Direction.Down, lookAtBlock: true))
                         {
                             currentDig = blockLoc;

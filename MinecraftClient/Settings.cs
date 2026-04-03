@@ -136,7 +136,22 @@ namespace MinecraftClient
 
         }
 
-        public static Tuple<bool, bool> LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
+        /// <summary>
+        /// Structured result returned by <see cref="LoadFromFile(string, bool)"/>.
+        /// </summary>
+        public readonly struct ConfigLoadResult
+        {
+            public bool Success { get; init; }
+            public bool NeedWriteDefault { get; init; }
+            /// <summary>True when a pre-TOML legacy config was detected, backed up, and a fresh default is needed.</summary>
+            public bool IsLegacyUpgrade { get; init; }
+            /// <summary>Non-null when the load failed due to a parse/IO error (not a legacy upgrade).</summary>
+            public string? ErrorMessage { get; init; }
+            /// <summary>Path where the old config was backed up (legacy upgrade case).</summary>
+            public string? LegacyBackupPath { get; init; }
+        }
+
+        public static ConfigLoadResult LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
         {
             bool keepAccountSettings = InternalConfig.KeepAccountSettings;
             bool keepServerSettings = InternalConfig.KeepServerSettings;
@@ -157,21 +172,27 @@ namespace MinecraftClient
                 Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
                 try
                 {
-                    // The old configuration file has been backed up as A.
                     string configString = File.ReadAllText(filepath);
                     if (configString.Contains("Some settings missing here after an upgrade?"))
                     {
                         string newFilePath = Path.ChangeExtension(filepath, ".old.ini");
                         File.Copy(filepath, newFilePath, true);
-                        ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
-                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.mcc_backup_old_config, newFilePath));
-                        return new(false, true);
+                        return new ConfigLoadResult
+                        {
+                            Success = false,
+                            NeedWriteDefault = true,
+                            IsLegacyUpgrade = true,
+                            LegacyBackupPath = newFilePath
+                        };
                     }
                 }
                 catch { }
-                ConsoleIO.WriteLineFormatted("§c" + Translations.config_load_fail);
-                ConsoleIO.WriteLine(ex.GetFullMessage());
-                return new(false, false);
+                return new ConfigLoadResult
+                {
+                    Success = false,
+                    NeedWriteDefault = false,
+                    ErrorMessage = ex.GetFullMessage()
+                };
             }
             finally
             {
@@ -180,7 +201,7 @@ namespace MinecraftClient
                 if (!keepServerSettings)
                     InternalConfig.KeepServerSettings = false;
             }
-            return new(true, false);
+            return new ConfigLoadResult { Success = true, NeedWriteDefault = false };
         }
 
         public static void WriteToFile(string filepath, bool backupOldFile)
@@ -796,6 +817,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.Advanced.show_inventory_layout$")]
                     public bool ShowInventoryLayout = true;
 
+                    [TomlInlineComment("$Main.Advanced.show_effect_names_in_tui$")]
+                    public bool ShowEffectNamesInTUI = false;
+
                     [TomlInlineComment("$Main.Advanced.terrain_and_movements$")]
                     public bool TerrainAndMovements = false;
 
@@ -1084,6 +1108,9 @@ namespace MinecraftClient
                 [TomlPrecedingComment("$Console.CommandSuggestion$")]
                 public CommandSuggestionConfig CommandSuggestion = new();
 
+                [TomlPrecedingComment("$Console.Minimap$")]
+                public MinimapConfig Minimap = new();
+
                 public void OnSettingUpdate()
                 {
                     var backend = ConsoleIO.Backend;
@@ -1183,11 +1210,17 @@ namespace MinecraftClient
                     [TomlInlineComment("$Console.General.ConsoleColorMode$")]
                     public ConsoleColorModeType ConsoleColorMode = ConsoleColorModeType.vt100_24bit;
 
+                    [TomlInlineComment("$Console.General.Display_Icon_Banner$")]
+                    public bool Display_Icon_Banner = true;
+
                     [TomlInlineComment("$Console.General.Display_Input$")]
                     public bool Display_Input = true;
 
                     [TomlInlineComment("$Console.General.History_Input_Records$")]
                     public int History_Input_Records = 32;
+
+                    [TomlInlineComment("$Console.General.TUI_Log_Scrollback$")]
+                    public int TUI_Log_Scrollback = 0;
                 }
 
                 [TomlDoNotInlineObject]
@@ -1222,6 +1255,53 @@ namespace MinecraftClient
 
                 public enum ConsoleModeType { classic, tui };
                 public enum ConsoleColorModeType { disable, legacy_4bit, vt100_4bit, vt100_8bit, vt100_24bit };
+
+                [TomlDoNotInlineObject]
+                public class MinimapConfig
+                {
+                    [TomlInlineComment("$Console.Minimap.Enabled$")]
+                    public bool Enabled = false;
+
+                    [TomlInlineComment("$Console.Minimap.Zoom$")]
+                    public int Zoom = Tui.MinimapControl.DefaultZoom;
+
+                    [TomlInlineComment("$Console.Minimap.Width$")]
+                    public int Width = Tui.MinimapControl.DefaultWidth;
+
+                    [TomlInlineComment("$Console.Minimap.Height$")]
+                    public int Height = Tui.MinimapControl.DefaultHeight;
+
+                    [TomlInlineComment("$Console.Minimap.Position$")]
+                    public Tui.MinimapPosition Position = Tui.MinimapPosition.top_right;
+
+                    [TomlInlineComment("$Console.Minimap.ShowPlayerNames$")]
+                    public bool ShowPlayerNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowHostileNames$")]
+                    public bool ShowHostileNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowNeutralNames$")]
+                    public bool ShowNeutralNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowPassiveNames$")]
+                    public bool ShowPassiveNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.RefreshInterval$")]
+                    public int RefreshInterval = Tui.MinimapControl.DefaultRefreshMs;
+
+                    [TomlInlineComment("$Console.Minimap.CaveMode$")]
+                    public Tui.CaveModeOption CaveMode = Tui.CaveModeOption.auto;
+
+                    public void OnSettingUpdate()
+                    {
+                        Zoom = Math.Clamp(Zoom, Tui.MinimapControl.MinZoom, Tui.MinimapControl.MaxZoom);
+                        Width = Math.Clamp(Width, 10, 120);
+                        Height = Math.Clamp(Height, 4, 80);
+                        if (Height % 2 != 0) Height++;
+                        RefreshInterval = Math.Clamp(RefreshInterval,
+                            Tui.MinimapControl.MinRefreshMs, Tui.MinimapControl.MaxRefreshMs);
+                    }
+                }
             }
         }
 

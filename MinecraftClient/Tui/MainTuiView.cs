@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -9,13 +11,25 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Tui
 {
     public class MainTuiView : UserControl
     {
-        private const int MaxLogLines = 5000;
+        private static readonly int MaxLogLines = ResolveMaxLogLines();
         private const int CtrlCDoublePressMsec = 1500;
+
+        private static int ResolveMaxLogLines()
+        {
+            int configured = Settings.Config.Console.General.TUI_Log_Scrollback;
+            if (configured > 0)
+                return configured;
+
+            bool isArm = RuntimeInformation.ProcessArchitecture
+                is Architecture.Arm or Architecture.Arm64;
+            return isArm ? 500 : 3000;
+        }
 
         private readonly ObservableCollection<string> _logLines = new();
         private readonly ObservableCollection<Control> _logControls = new();
@@ -39,6 +53,12 @@ namespace MinecraftClient.Tui
         private long _lastLogClickTicks;
         private const int DoubleClickMsec = 500;
 
+        private readonly Border _minimapBorder;
+        private readonly MinimapControl _minimapControl;
+        private volatile bool _minimapVisible;
+
+        private TuiTooltipService? _tooltipService;
+
         private readonly Border _suggestionBorder;
         private readonly StackPanel _suggestionPanel;
         private CommandSuggestion[] _suggestions = Array.Empty<CommandSuggestion>();
@@ -50,6 +70,8 @@ namespace MinecraftClient.Tui
 
         private int MaxVisibleSuggestions =>
             Math.Max(1, Settings.Config.Console.CommandSuggestion.Max_Displayed_Suggestions);
+
+        public TuiTooltipService? TooltipService => _tooltipService;
 
         public MainTuiView()
         {
@@ -68,6 +90,7 @@ namespace MinecraftClient.Tui
             {
                 ItemsSource = _logControls,
                 Focusable = false,
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
             };
 
             _logScrollViewer = new ScrollViewer
@@ -148,6 +171,30 @@ namespace MinecraftClient.Tui
                 Margin = new Thickness(0, 0, 0, 1),
             };
 
+            var mmCfg = Settings.Config.Console.Minimap;
+            mmCfg.OnSettingUpdate();
+            _minimapControl = new MinimapControl(mmCfg.Width, mmCfg.Height);
+            _minimapControl.BlocksPerPixel = mmCfg.Zoom;
+            _minimapControl.RefreshIntervalMs = mmCfg.RefreshInterval;
+            _minimapControl.NameConfig.Players = mmCfg.ShowPlayerNames;
+            _minimapControl.NameConfig.Hostile = mmCfg.ShowHostileNames;
+            _minimapControl.NameConfig.Neutral = mmCfg.ShowNeutralNames;
+            _minimapControl.NameConfig.Passive = mmCfg.ShowPassiveNames;
+            _minimapControl.CaveMode = mmCfg.CaveMode;
+
+            var (hAlign, vAlign, margin) = GetMinimapAlignment(mmCfg.Position);
+            _minimapBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(220, 15, 15, 15)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(80, 80, 80)),
+                BorderThickness = new Thickness(1),
+                Child = _minimapControl,
+                IsVisible = false,
+                HorizontalAlignment = hAlign,
+                VerticalAlignment = vAlign,
+                Margin = margin,
+            };
+
             _mainContent = new DockPanel
             {
                 Background = Brushes.Black,
@@ -162,10 +209,21 @@ namespace MinecraftClient.Tui
             _rootPanel = new Panel
             {
                 Background = Brushes.Black,
-                Children = { _mainContent, _notificationBorder, _suggestionBorder }
+                Children = { _mainContent, _minimapBorder, _notificationBorder, _suggestionBorder }
             };
 
+            _tooltipService = new TuiTooltipService(_rootPanel);
+            _minimapControl.TooltipService = _tooltipService;
+            _minimapControl.Position = mmCfg.Position;
+
             Content = _rootPanel;
+
+            if (mmCfg.Enabled)
+            {
+                _minimapVisible = true;
+                _minimapBorder.IsVisible = true;
+                _minimapControl.Start();
+            }
 
             StartStatusBarTimer();
         }
@@ -272,7 +330,7 @@ namespace MinecraftClient.Tui
 
         private void OnCommandKeyDown(object? sender, KeyEventArgs e)
         {
-            if (_tabCycling && e.Key is not (Key.Tab or Key.Up or Key.Down or Key.Escape))
+            if (_tabCycling && e.Key is not Key.Tab)
                 _tabCycling = false;
 
             bool ctrl = (e.KeyModifiers & KeyModifiers.Control) != 0;
@@ -494,10 +552,32 @@ namespace MinecraftClient.Tui
             }
 
             string historyText = _commandHistory[_historyIndex];
-            _commandInput.Text = historyText;
-            _commandInput.CaretIndex = historyText.Length;
-            Dispatcher.UIThread.Post(() => _commandInput.CaretIndex = historyText.Length,
-                DispatcherPriority.Input);
+            SetCommandText(historyText);
+        }
+
+        private void SetCommandText(string text)
+        {
+            _commandInput.TextChanged -= OnCommandTextChanged;
+            try
+            {
+                _commandInput.Text = text;
+                _commandInput.CaretIndex = text.Length;
+            }
+            finally
+            {
+                _commandInput.TextChanged += OnCommandTextChanged;
+            }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                var endKeyEvent = new KeyEventArgs
+                {
+                    RoutedEvent = KeyDownEvent,
+                    Key = Key.End,
+                    Source = _commandInput,
+                };
+                _commandInput.RaiseEvent(endKeyEvent);
+            }, DispatcherPriority.Input);
         }
 
         #endregion
@@ -855,6 +935,45 @@ namespace MinecraftClient.Tui
                 Foreground = new SolidColorBrush(Color.FromRgb(220, 190, 100)),
             });
 
+            // Add effects display
+            var effects = client.GetPlayerEffects().Values
+                .Where(effectData => !effectData.IsExpired)
+                .OrderBy(effectData => effectData.Effect)
+                .ToArray();
+            if (effects.Length > 0)
+            {
+                bool showEffectNamesInTui = Settings.Config.Main.Advanced.ShowEffectNamesInTUI;
+
+                _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run("  |  ")
+                {
+                    Foreground = Brushes.Gray,
+                });
+
+                bool first = true;
+                foreach (var effectData in effects)
+                {
+                    if (!first)
+                    {
+                        _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(", ")
+                        {
+                            Foreground = Brushes.Gray,
+                        });
+                    }
+                    first = false;
+
+                    var color = GetEffectIconAndColor(effectData.Effect).Color;
+                    var displayText = showEffectNamesInTui
+                        ? effectData.GetDisplayName()
+                        : GetCompactEffectLabel(effectData);
+                    displayText = $"{displayText} ({effectData.GetRemainingDurationText()})";
+
+                    _statusBar.Inlines.Add(new Avalonia.Controls.Documents.Run(displayText)
+                    {
+                        Foreground = color,
+                    });
+                }
+            }
+
             _statusBar.IsVisible = true;
         }
 
@@ -871,6 +990,152 @@ namespace MinecraftClient.Tui
                 sb.Append(emptyChar);
             }
             return sb.ToString();
+        }
+
+        private static string GetCompactEffectLabel(EffectData effectData)
+        {
+            var icon = GetEffectIconAndColor(effectData.Effect).Icon;
+            return effectData.Amplifier > 0
+                ? $"{icon}{effectData.Amplifier + 1}"
+                : icon;
+        }
+
+        private static (string Icon, IBrush Color) GetEffectIconAndColor(Effects effect)
+        {
+            return effect switch
+            {
+                Effects.Speed => ("⚡", new SolidColorBrush(Color.FromRgb(135, 206, 235))),
+                Effects.Slowness => ("🐢", new SolidColorBrush(Color.FromRgb(139, 139, 139))),
+                Effects.Haste => ("⛏", new SolidColorBrush(Color.FromRgb(255, 215, 0))),
+                Effects.MiningFatigue => ("🔨", new SolidColorBrush(Color.FromRgb(64, 64, 64))),
+                Effects.Strength => ("⚔", new SolidColorBrush(Color.FromRgb(255, 99, 71))),
+                Effects.InstantHealth => ("❤", new SolidColorBrush(Color.FromRgb(255, 182, 193))),
+                Effects.InstantDamage => ("💀", new SolidColorBrush(Color.FromRgb(139, 0, 0))),
+                Effects.JumpBoost => ("🦘", new SolidColorBrush(Color.FromRgb(50, 205, 50))),
+                Effects.Nausea => ("💫", new SolidColorBrush(Color.FromRgb(85, 107, 47))),
+                Effects.Regeneration => ("✨", new SolidColorBrush(Color.FromRgb(255, 105, 180))),
+                Effects.Resistance => ("🛡", new SolidColorBrush(Color.FromRgb(112, 128, 144))),
+                Effects.FireResistance => ("🔥", new SolidColorBrush(Color.FromRgb(255, 140, 0))),
+                Effects.WaterBreathing => ("🐟", new SolidColorBrush(Color.FromRgb(0, 191, 255))),
+                Effects.Invisibility => ("👻", new SolidColorBrush(Color.FromRgb(200, 200, 200))),
+                Effects.Blindness => ("🕶", new SolidColorBrush(Color.FromRgb(50, 50, 50))),
+                Effects.NightVision => ("👁", new SolidColorBrush(Color.FromRgb(0, 255, 127))),
+                Effects.Hunger => ("🍔", new SolidColorBrush(Color.FromRgb(139, 69, 19))),
+                Effects.Weakness => ("💪", new SolidColorBrush(Color.FromRgb(128, 128, 128))),
+                Effects.Poison => ("☠", new SolidColorBrush(Color.FromRgb(75, 0, 130))),
+                Effects.Wither => ("🥀", new SolidColorBrush(Color.FromRgb(0, 0, 0))),
+                Effects.HealthBoost => ("💖", new SolidColorBrush(Color.FromRgb(255, 20, 147))),
+                Effects.Absorption => ("💛", new SolidColorBrush(Color.FromRgb(255, 215, 0))),
+                Effects.Saturation => ("🍖", new SolidColorBrush(Color.FromRgb(255, 165, 0))),
+                Effects.Glowing => ("💡", new SolidColorBrush(Color.FromRgb(255, 255, 150))),
+                Effects.Levitation => ("🎈", new SolidColorBrush(Color.FromRgb(147, 112, 219))),
+                Effects.Luck => ("🍀", new SolidColorBrush(Color.FromRgb(50, 205, 50))),
+                Effects.BadLuck => ("🐈‍⬛", new SolidColorBrush(Color.FromRgb(128, 0, 0))),
+                Effects.SlowFalling => ("🪶", new SolidColorBrush(Color.FromRgb(255, 182, 193))),
+                Effects.ConduitPower => ("🐡", new SolidColorBrush(Color.FromRgb(0, 255, 255))),
+                Effects.DolphinsGrace => ("🐬", new SolidColorBrush(Color.FromRgb(135, 206, 235))),
+                Effects.BadOmen => ("🏴", new SolidColorBrush(Color.FromRgb(0, 100, 0))),
+                Effects.HerooftheVillage => ("🎉", new SolidColorBrush(Color.FromRgb(255, 215, 0))),
+                _ => ("✦", new SolidColorBrush(Color.FromRgb(200, 200, 200))),
+            };
+        }
+
+        #endregion
+
+        #region Minimap
+
+        public void ShowMinimap()
+        {
+            if (_minimapVisible) return;
+            _minimapVisible = true;
+            _minimapBorder.IsVisible = true;
+            _minimapControl.Start();
+            Settings.Config.Console.Minimap.Enabled = true;
+        }
+
+        public void HideMinimap()
+        {
+            if (!_minimapVisible) return;
+            _minimapVisible = false;
+            _minimapControl.Stop();
+            _minimapBorder.IsVisible = false;
+            Settings.Config.Console.Minimap.Enabled = false;
+        }
+
+        public void ToggleMinimap()
+        {
+            if (_minimapVisible)
+                HideMinimap();
+            else
+                ShowMinimap();
+        }
+
+        public bool IsMinimapVisible => _minimapVisible;
+
+        public void SetMinimapZoom(int level)
+        {
+            _minimapControl.BlocksPerPixel = level;
+            Settings.Config.Console.Minimap.Zoom = level;
+        }
+
+        public int GetMinimapZoom() => _minimapControl.BlocksPerPixel;
+
+        public NameDisplayConfig GetMinimapNameConfig() => _minimapControl.NameConfig;
+
+        public void SyncMinimapNameConfig()
+        {
+            var nc = _minimapControl.NameConfig;
+            var cfg = Settings.Config.Console.Minimap;
+            cfg.ShowPlayerNames = nc.Players;
+            cfg.ShowHostileNames = nc.Hostile;
+            cfg.ShowNeutralNames = nc.Neutral;
+            cfg.ShowPassiveNames = nc.Passive;
+        }
+
+        public void ResizeMinimap(int width, int height)
+        {
+            _minimapControl.Resize(width, height);
+            Settings.Config.Console.Minimap.Width = width;
+            Settings.Config.Console.Minimap.Height = height;
+        }
+
+        public void SetMinimapPosition(MinimapPosition pos)
+        {
+            var (hAlign, vAlign, margin) = GetMinimapAlignment(pos);
+            _minimapBorder.HorizontalAlignment = hAlign;
+            _minimapBorder.VerticalAlignment = vAlign;
+            _minimapBorder.Margin = margin;
+            _minimapControl.Position = pos;
+            Settings.Config.Console.Minimap.Position = pos;
+        }
+
+        public MinimapPosition GetMinimapPosition() => Settings.Config.Console.Minimap.Position;
+
+        public void SetMinimapCaveMode(CaveModeOption mode)
+        {
+            _minimapControl.CaveMode = mode;
+            Settings.Config.Console.Minimap.CaveMode = mode;
+        }
+
+        public CaveModeOption GetMinimapCaveMode() => _minimapControl.CaveMode;
+
+        private static (HorizontalAlignment h, VerticalAlignment v, Thickness margin) GetMinimapAlignment(MinimapPosition pos) => pos switch
+        {
+            MinimapPosition.top_left => (HorizontalAlignment.Left, VerticalAlignment.Top, new Thickness(1, 1, 0, 0)),
+            MinimapPosition.top_right => (HorizontalAlignment.Right, VerticalAlignment.Top, new Thickness(0, 1, 1, 0)),
+            MinimapPosition.center => (HorizontalAlignment.Center, VerticalAlignment.Center, new Thickness(0)),
+            MinimapPosition.bottom_left => (HorizontalAlignment.Left, VerticalAlignment.Bottom, new Thickness(1, 0, 0, 2)),
+            MinimapPosition.bottom_right => (HorizontalAlignment.Right, VerticalAlignment.Bottom, new Thickness(0, 0, 1, 2)),
+            _ => (HorizontalAlignment.Right, VerticalAlignment.Top, new Thickness(0, 1, 1, 0)),
+        };
+
+        public void ApplyMinimapConfig()
+        {
+            var cfg = Settings.Config.Console.Minimap;
+            if (cfg.Enabled && !_minimapVisible)
+                ShowMinimap();
+            else if (!cfg.Enabled && _minimapVisible)
+                HideMinimap();
         }
 
         #endregion
@@ -928,5 +1193,18 @@ namespace MinecraftClient.Tui
                 _commandInput.Focus();
             }, DispatcherPriority.Loaded);
         }
+
+        #region Custom Control Append
+
+        public void AppendControlToLog(Control control)
+        {
+            _logLines.Add(string.Empty);
+            _logControls.Add(control);
+            TrimLog();
+            if (_autoScroll)
+                ScheduleScrollToEnd();
+        }
+
+        #endregion
     }
 }

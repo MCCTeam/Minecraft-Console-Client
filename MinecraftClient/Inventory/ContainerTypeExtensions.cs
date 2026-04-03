@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Inventory
+namespace MinecraftClient.Inventory
 {
     public static class ContainerTypeExtensions
     {
@@ -13,9 +13,14 @@
             {
 #pragma warning disable format // @formatter:off
                 ContainerType.PlayerInventory  =>  46,
+                ContainerType.Generic_9x1      =>  45,
+                ContainerType.Generic_9x2      =>  54,
                 ContainerType.Generic_9x3      =>  63,
+                ContainerType.Generic_9x4      =>  72,
+                ContainerType.Generic_9x5      =>  81,
                 ContainerType.Generic_9x6      =>  90,
                 ContainerType.Generic_3x3      =>  45,
+                ContainerType.Crafter          =>  45,
                 ContainerType.Crafting         =>  46,
                 ContainerType.BlastFurnace     =>  39,
                 ContainerType.Furnace          =>  39,
@@ -27,6 +32,7 @@
                 ContainerType.Anvil            =>  39,
                 ContainerType.Hopper           =>  41,
                 ContainerType.ShulkerBox       =>  63,
+                ContainerType.SmightingTable   =>  39,
                 ContainerType.Loom             =>  40,
                 ContainerType.Stonecutter      =>  38,
                 ContainerType.Lectern          =>  37,
@@ -52,6 +58,7 @@
                 ContainerType.Generic_9x3      =>  AsciiArt.Container_Generic_9x3,
                 ContainerType.Generic_9x6      =>  AsciiArt.Container_Generic_9x6,
                 ContainerType.Generic_3x3      =>  AsciiArt.Container_Generic_3x3,
+                ContainerType.Crafter          =>  AsciiArt.Container_Generic_3x3,
                 ContainerType.Crafting         =>  AsciiArt.Container_Crafting,
                 ContainerType.BlastFurnace     =>  AsciiArt.Container_Furnace,
                 ContainerType.Furnace          =>  AsciiArt.Container_Furnace,

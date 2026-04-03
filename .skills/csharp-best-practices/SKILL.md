@@ -3,7 +3,6 @@ name: csharp-best-practices
 description: >
   C# 14 / .NET 10 coding conventions, idiomatic patterns, and performance best practices
   for the Minecraft Console Client codebase. Use when writing, reviewing, or modifying C# code.
-version: 0.4.0
 ---
 
 # C# 14 / .NET 10 Best Practices

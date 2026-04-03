@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace MinecraftClient.Inventory
 {
@@ -91,10 +91,11 @@ namespace MinecraftClient.Inventory
         /// <param name="id">Container ID</param>
         /// <param name="typeID">Container Type</param>
         /// <param name="title">Container Title</param>
-        public Container(int id, int typeID, string title)
+        /// <param name="protocolVersion">Protocol version for version-specific mapping</param>
+        public Container(int id, int typeID, string title, int protocolVersion = 0)
         {
             ID = id;
-            Type = GetContainerType(typeID);
+            Type = GetContainerType(typeID, protocolVersion);
             Title = title;
             Items = new();
             Properties = new();
@@ -131,22 +132,62 @@ namespace MinecraftClient.Inventory
         /// Get container type from Type ID
         /// </summary>
         /// <param name="typeID">Container Type ID</param>
+        /// <param name="protocolVersion">Protocol version (menu registry changed across versions)</param>
         /// <returns>Container Type</returns>
-        public static ContainerType GetContainerType(int typeID)
+        public static ContainerType GetContainerType(int typeID, int protocolVersion = 0)
         {
-            // https://wiki.vg/Inventory didn't state the inventory ID, assume that list start with 0
+            // MC 1.20.4 (protocol 765) added crafter_3x3 at index 7, shifting all subsequent IDs by +1.
+            // Registry order from decompiled MenuType.java:
+            //   1.14-1.20.2: generic_9x1..generic_3x3(6), anvil(7), beacon(8), ... stonecutter(22)
+            //   1.20.4+:     generic_9x1..generic_3x3(6), crafter_3x3(7), anvil(8), beacon(9), ... stonecutter(24)
+            if (protocolVersion >= 765)
+            {
+                return typeID switch
+                {
+#pragma warning disable format // @formatter:off
+                    0  => ContainerType.Generic_9x1,
+                    1  => ContainerType.Generic_9x2,
+                    2  => ContainerType.Generic_9x3,
+                    3  => ContainerType.Generic_9x4,
+                    4  => ContainerType.Generic_9x5,
+                    5  => ContainerType.Generic_9x6,
+                    6  => ContainerType.Generic_3x3,
+                    7  => ContainerType.Crafter,
+                    8  => ContainerType.Anvil,
+                    9  => ContainerType.Beacon,
+                    10 => ContainerType.BlastFurnace,
+                    11 => ContainerType.BrewingStand,
+                    12 => ContainerType.Crafting,
+                    13 => ContainerType.Enchantment,
+                    14 => ContainerType.Furnace,
+                    15 => ContainerType.Grindstone,
+                    16 => ContainerType.Hopper,
+                    17 => ContainerType.Lectern,
+                    18 => ContainerType.Loom,
+                    19 => ContainerType.Merchant,
+                    20 => ContainerType.ShulkerBox,
+                    21 => ContainerType.SmightingTable,
+                    22 => ContainerType.Smoker,
+                    23 => ContainerType.Cartography,
+                    24 => ContainerType.Stonecutter,
+                    _  => ContainerType.Unknown,
+#pragma warning restore format // @formatter:on
+                };
+            }
+
             return typeID switch
             {
-                0 => ContainerType.Generic_9x1,
-                1 => ContainerType.Generic_9x2,
-                2 => ContainerType.Generic_9x3,
-                3 => ContainerType.Generic_9x4,
-                4 => ContainerType.Generic_9x5,
-                5 => ContainerType.Generic_9x6,
-                6 => ContainerType.Generic_3x3,
-                7 => ContainerType.Anvil,
-                8 => ContainerType.Beacon,
-                9 => ContainerType.BlastFurnace,
+#pragma warning disable format // @formatter:off
+                0  => ContainerType.Generic_9x1,
+                1  => ContainerType.Generic_9x2,
+                2  => ContainerType.Generic_9x3,
+                3  => ContainerType.Generic_9x4,
+                4  => ContainerType.Generic_9x5,
+                5  => ContainerType.Generic_9x6,
+                6  => ContainerType.Generic_3x3,
+                7  => ContainerType.Anvil,
+                8  => ContainerType.Beacon,
+                9  => ContainerType.BlastFurnace,
                 10 => ContainerType.BrewingStand,
                 11 => ContainerType.Crafting,
                 12 => ContainerType.Enchantment,
@@ -160,7 +201,8 @@ namespace MinecraftClient.Inventory
                 20 => ContainerType.Smoker,
                 21 => ContainerType.Cartography,
                 22 => ContainerType.Stonecutter,
-                _ => ContainerType.Unknown,
+                _  => ContainerType.Unknown,
+#pragma warning restore format // @formatter:on
             };
         }
 

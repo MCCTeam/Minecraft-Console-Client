@@ -25,14 +25,18 @@ namespace MinecraftClient.Tui
 
         internal static TuiConsoleBackend? Instance { get; private set; }
 
+        private Program.StartupState? _pendingStartupState;
+        private readonly ManualResetEventSlim _viewReady = new(false);
+
         /// <summary>
         /// Initializes the Avalonia app and starts the main UI loop.
         /// This blocks the calling thread until the TUI exits.
         /// Before blocking, it starts MCC's remaining initialization on a background thread.
         /// </summary>
-        public void RunTuiMainLoop(string[] args)
+        internal void RunTuiMainLoop(string[] args, Program.StartupState startupState)
         {
             Instance = this;
+            _pendingStartupState = startupState;
 
             AppDomain.CurrentDomain.ProcessExit += (_, _) => RestoreTerminalState();
 
@@ -46,7 +50,7 @@ namespace MinecraftClient.Tui
 
             new Thread(() =>
             {
-                Thread.Sleep(500);
+                _viewReady.Wait();
                 ContinueMccStartup(args);
             })
             { Name = "MCC-Main", IsBackground = true }.Start();
@@ -113,7 +117,15 @@ namespace MinecraftClient.Tui
         {
             try
             {
-                Program.ContinueAfterTuiInit(args);
+                var instance = Instance;
+                if (instance?._pendingStartupState is { } state)
+                {
+                    instance._pendingStartupState = null;
+                    if (!Program.ProcessStartupState(state))
+                        return;
+                }
+
+                Program.RunStartupSequence(args);
             }
             catch (Exception ex)
             {
@@ -124,6 +136,7 @@ namespace MinecraftClient.Tui
         internal void SetView(MainTuiView view)
         {
             _view = view;
+            _viewReady.Set();
         }
 
         internal MainTuiView? GetView() => _view;
@@ -256,7 +269,7 @@ namespace MinecraftClient.Tui
 
             new Thread(() =>
             {
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 Environment.Exit(0);
             }) { Name = "TUI-Exit-Guard", IsBackground = true }.Start();
         }

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Consolonia.Themes;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Tui
 {
@@ -16,9 +17,15 @@ namespace MinecraftClient.Tui
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                var handler = InventoryTuiHost.ActiveHandler!;
+                var windowId = InventoryTuiHost.ActiveWindowId;
+                var container = handler.GetInventory(windowId);
+                var containerType = container?.Type ?? ContainerType.PlayerInventory;
+                var view = ContainerViewBase.CreateView(containerType, handler, windowId);
+
                 desktop.MainWindow = new Window
                 {
-                    Content = new InventoryMainView(),
+                    Content = view,
                     Title = "MCC Inventory"
                 };
             }

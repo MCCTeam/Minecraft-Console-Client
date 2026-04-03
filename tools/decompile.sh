@@ -86,18 +86,90 @@ fi
 
 mkdir -p "$MC_OFFICIAL/remapped_jar"
 
+# --- Resolve version metadata from Mojang manifest ---
+MANIFEST_URL="https://launchermeta.mojang.com/mc/game/version_manifest_v2.json"
+VERSION_URL=$(curl -sL "$MANIFEST_URL" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for v in data['versions']:
+    if v['id'] == '$VERSION':
+        print(v['url'])
+        break
+")
+if [[ -z "$VERSION_URL" ]]; then
+    echo "Error: version $VERSION not found in Mojang launcher manifest."
+    exit 1
+fi
+
+VERSION_META=$(curl -sL "$VERSION_URL")
+MAPPING_KEY="${SIDE_LOWER}_mappings"
+HAS_MAPPINGS=$(echo "$VERSION_META" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+print('true' if '$MAPPING_KEY' in data.get('downloads', {}) else 'false')
+")
+
 echo "=== Decompiling Minecraft $VERSION ($SIDE) ==="
 echo "  Remapped JAR: $REMAPPED_JAR"
 echo "  Decompiled:   $DECOMPILED_DIR"
+echo "  Obfuscated:   $HAS_MAPPINGS"
 echo ""
 
 cd "$MC_OFFICIAL"
-java -jar "$DECOMPILER_JAR" \
-    --version "$VERSION" \
-    --side "$SIDE" \
-    --decompile \
-    --output "$REMAPPED_JAR" \
-    --decompiled-output "$DECOMPILED_DIR"
+
+if [[ "$HAS_MAPPINGS" == "true" ]]; then
+    # Obfuscated version: use --version/--side to auto-download jar + mappings + deobfuscate
+    java -jar "$DECOMPILER_JAR" \
+        --version "$VERSION" \
+        --side "$SIDE" \
+        --decompile \
+        --output "$REMAPPED_JAR" \
+        --decompiled-output "$DECOMPILED_DIR"
+else
+    # Unobfuscated version (26.1+): download jar, extract inner jar from bundle, decompile directly.
+    # MinecraftDecompiler requires --mapping-path with --input, but unobfuscated versions
+    # have no mappings. We use Vineflower directly instead.
+    echo "No Proguard mappings for $VERSION; decompiling without deobfuscation."
+
+    JAR_URL=$(echo "$VERSION_META" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+print(data['downloads']['${SIDE_LOWER}']['url'])
+")
+    ORIGINAL_JAR="$MC_OFFICIAL/remapped_jar/${VERSION}-${SIDE_LOWER}-original.jar"
+    if [[ ! -f "$ORIGINAL_JAR" ]]; then
+        echo "Downloading ${SIDE_LOWER}.jar ..."
+        curl -L -o "$ORIGINAL_JAR" "$JAR_URL"
+    fi
+
+    # Since 1.18, server.jar is a bundled jar containing the actual game jar inside
+    # META-INF/versions/<ver>/server-<ver>.jar. Extract it if present.
+    DECOMPILE_TARGET="$ORIGINAL_JAR"
+    EXTRACT_DIR=$(mktemp -d)
+    trap "rm -rf '$EXTRACT_DIR'" EXIT
+    if unzip -q -o "$ORIGINAL_JAR" "META-INF/versions.list" -d "$EXTRACT_DIR" 2>/dev/null; then
+        INNER_PATH=$(awk '{print $NF}' "$EXTRACT_DIR/META-INF/versions.list" | head -1)
+        if [[ -n "$INNER_PATH" ]]; then
+            unzip -q -o "$ORIGINAL_JAR" "META-INF/versions/$INNER_PATH" -d "$EXTRACT_DIR"
+            DECOMPILE_TARGET="$EXTRACT_DIR/META-INF/versions/$INNER_PATH"
+            echo "Extracted inner jar: $INNER_PATH"
+        fi
+    fi
+
+    # Use Vineflower directly (bundled with MinecraftDecompiler, or standalone)
+    VINEFLOWER_JAR="$MC_OFFICIAL/downloads/decompiler/vineflower.jar"
+    if [[ ! -f "$VINEFLOWER_JAR" ]]; then
+        # Fall back to vineflower bundled inside MinecraftDecompiler's cache
+        VINEFLOWER_JAR=$(find "$MC_OFFICIAL" -name "vineflower*.jar" -not -name "MinecraftDecompiler.jar" 2>/dev/null | head -1)
+    fi
+    if [[ -z "$VINEFLOWER_JAR" || ! -f "$VINEFLOWER_JAR" ]]; then
+        echo "Error: vineflower.jar not found. Place it at $MC_OFFICIAL/downloads/decompiler/vineflower.jar"
+        exit 1
+    fi
+
+    echo "Decompiling with Vineflower: $VINEFLOWER_JAR"
+    java -jar "$VINEFLOWER_JAR" "$DECOMPILE_TARGET" "$DECOMPILED_DIR"
+fi
 
 echo ""
 echo "=== Done ==="
@@ -108,29 +180,18 @@ if [[ "$SIDE" == "SERVER" ]]; then
     DOWNLOADS_DIR="$MC_OFFICIAL/downloads/$VERSION"
     if [[ ! -f "$DOWNLOADS_DIR/server.jar" ]]; then
         mkdir -p "$DOWNLOADS_DIR"
-        # MinecraftDecompiler downloads the original jar into its cache;
-        # extract it from the bundled remapped jar or re-download via manifest.
         echo ""
         echo "Downloading server.jar for $VERSION into $DOWNLOADS_DIR ..."
-        MANIFEST_URL="https://launchermeta.mojang.com/mc/game/version_manifest_v2.json"
-        VERSION_URL=$(curl -sL "$MANIFEST_URL" | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-for v in data['versions']:
-    if v['id'] == '$VERSION':
-        print(v['url'])
-        break
-")
-        if [[ -n "$VERSION_URL" ]]; then
-            SERVER_JAR_URL=$(curl -sL "$VERSION_URL" | python3 -c "
+        SERVER_JAR_URL=$(echo "$VERSION_META" | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
 print(data['downloads']['server']['url'])
 ")
+        if [[ -n "$SERVER_JAR_URL" ]]; then
             curl -L -o "$DOWNLOADS_DIR/server.jar" "$SERVER_JAR_URL"
             echo "Downloaded server.jar"
         else
-            echo "Warning: could not find version $VERSION in Mojang manifest; server.jar not downloaded."
+            echo "Warning: could not download server.jar for $VERSION."
         fi
     else
         echo "server.jar already exists: $DOWNLOADS_DIR/server.jar"

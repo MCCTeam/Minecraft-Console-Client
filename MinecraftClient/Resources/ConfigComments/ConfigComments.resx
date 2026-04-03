@@ -311,6 +311,21 @@ You can use "/fish" to control the bot manually.
   <data name="ChatBot.AutoFishing.Hook_Threshold" xml:space="preserve">
     <value>A "stationary" hook that moves above this threshold in the Y-axis will be considered to have caught a fish.</value>
   </data>
+  <data name="ChatBot.AutoFishing.Enable_Velocity_Detection" xml:space="preserve">
+    <value>Enable fish bite detection using fishing bobber velocity packets.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Velocity_Hook_Threshold" xml:space="preserve">
+    <value>Velocity Y threshold (blocks/tick). Values below this are treated as a bite. Keep this value negative.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Enable_Sound_Detection" xml:space="preserve">
+    <value>Enable fish bite detection using splash sounds near the fishing bobber.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Sound_Distance" xml:space="preserve">
+    <value>Maximum distance (blocks) between splash sound and bobber to treat it as a bite.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Detection_Warmup" xml:space="preserve">
+    <value>Delay (seconds) after bobber spawn before bite detection starts. Helps ignore cast-entry splash/motion.</value>
+  </data>
   <data name="ChatBot.AutoFishing.Log_Fish_Bobber" xml:space="preserve">
     <value>Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet.</value>
   </data>
@@ -392,6 +407,12 @@ For Discord message formatting, check the following: https://mccteam.github.io/r
   </data>
   <data name="ChatBot.DiscordBridge.AllowOtherBotMessages" xml:space="preserve">
     <value>When enabled, messages from other Discord bots in the channel will be relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.RelayAllMessages" xml:space="preserve">
+    <value>When enabled, all text received from the Minecraft server (including system messages, join/leave notifications, etc.) will be relayed to Discord, not just player chat and private messages.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.MessageAggregationInterval" xml:space="preserve">
+    <value>Interval in seconds to aggregate messages before sending them to Discord. When set to 0, messages are sent immediately one by one. When set to a value like 1.0, messages received within that interval are batched into a single Discord message. Useful for reducing Discord API rate limits.</value>
   </data>
   <data name="ChatBot.Farmer" xml:space="preserve">
     <value>Automatically farms crops for you (plants, breaks and bonemeals them).
@@ -560,8 +581,17 @@ Custom colors are only available when using "vt100_24bit" color mode.</value>
   <data name="Console.General.ConsoleColorMode" xml:space="preserve">
     <value>Use "disable", "legacy_4bit", "vt100_4bit", "vt100_8bit" or "vt100_24bit". If a garbled code like "←[0m" appears on the terminal, you can try switching to "legacy_4bit" mode, or just disable it.</value>
   </data>
+  <data name="Console.General.Display_Icon_Banner" xml:space="preserve">
+    <value>Whether to display the MCC startup icon banner.</value>
+  </data>
   <data name="Console.General.Display_Input" xml:space="preserve">
     <value>You can use "Ctrl+P" to print out the current input and cursor position.</value>
+  </data>
+  <data name="Console.General.History_Input_Records" xml:space="preserve">
+    <value>Maximum number of input history records to keep.</value>
+  </data>
+  <data name="Console.General.TUI_Log_Scrollback" xml:space="preserve">
+    <value>Maximum log lines kept in TUI mode scrollback. Set to 0 for automatic.</value>
   </data>
   <data name="Head" xml:space="preserve">
     <value>Startup Config File
@@ -704,6 +734,9 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
   </data>
   <data name="Main.Advanced.show_inventory_layout" xml:space="preserve">
     <value>Show inventory layout as ASCII art in inventory command.</value>
+  </data>
+  <data name="Main.Advanced.show_effect_names_in_tui" xml:space="preserve">
+    <value>Show full effect names and levels in the TUI status bar instead of compact effect icons only.</value>
   </data>
   <data name="Main.Advanced.show_system_messages" xml:space="preserve">
     <value>System messages for server ops.</value>
@@ -929,6 +962,42 @@ Note: This does NOT require a Bot Token, only an Application ID. Discord must be
   </data>
   <data name="Main.Advanced.enable_sentry" xml:space="preserve">
     <value>Set to false to opt-out of Sentry error logging.</value>
+  </data>
+  <data name="Console.Minimap" xml:space="preserve">
+    <value>Settings for the TUI minimap overlay that shows terrain and entities.</value>
+  </data>
+  <data name="Console.Minimap.Enabled" xml:space="preserve">
+    <value>Whether the minimap is visible on startup in TUI mode.</value>
+  </data>
+  <data name="Console.Minimap.Zoom" xml:space="preserve">
+    <value>Blocks per pixel, 1-16. 1 = closest (1:1), 16 = farthest (16 blocks per pixel).</value>
+  </data>
+  <data name="Console.Minimap.Width" xml:space="preserve">
+    <value>Map width in pixels (characters). Range 10-120, default 40.</value>
+  </data>
+  <data name="Console.Minimap.Height" xml:space="preserve">
+    <value>Map height in pixels (must be even, uses half-block chars). Range 4-80, default 40.</value>
+  </data>
+  <data name="Console.Minimap.Position" xml:space="preserve">
+    <value>Minimap position: "top_left", "top_right", "center", "bottom_left", or "bottom_right".</value>
+  </data>
+  <data name="Console.Minimap.ShowPlayerNames" xml:space="preserve">
+    <value>Show player names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowHostileNames" xml:space="preserve">
+    <value>Show hostile mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowNeutralNames" xml:space="preserve">
+    <value>Show neutral mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowPassiveNames" xml:space="preserve">
+    <value>Show passive mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.RefreshInterval" xml:space="preserve">
+    <value>Minimap refresh interval in milliseconds (100-5000).</value>
+  </data>
+  <data name="Console.Minimap.CaveMode" xml:space="preserve">
+    <value>Cave rendering mode: "auto" (detect ceiling), "on" (always cave view), "off" (always surface view).</value>
   </data>
   <data name="Main.General.AuthlibUser" xml:space="preserve">
     <value>Yggdrasil authlib multi-user selection.</value>

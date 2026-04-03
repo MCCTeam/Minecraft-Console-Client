@@ -5,6 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 # shellcheck source=tools/mcc-env.sh
 source "$REPO_ROOT/tools/mcc-env.sh"
+# shellcheck source=.skills/mcc-integration-testing/scripts/common.sh
+source "$SCRIPT_DIR/common.sh"
 
 VERSION="${1:-1.21.11-Vanilla}"
 MC_VERSION="${VERSION%-Vanilla}"
@@ -34,46 +36,12 @@ cleanup() {
     fi
 
     mc-stop "$VERSION" >/dev/null 2>&1 || true
+    wait_for_server_stop "$VERSION" 20 >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
 prepare_config() {
-    bash "$SCRIPT_DIR/prepare_offline_mcc_config.sh" "$REPO_ROOT/MinecraftClient.ini" "$CFG" "$MC_VERSION" >/dev/null
-}
-
-wait_for_file_pattern() {
-    local file="$1"
-    local pattern="$2"
-    local description="$3"
-    local timeout="${4:-60}"
-    local elapsed=0
-
-    while (( elapsed < timeout )); do
-        if [[ -f "$file" ]] && grep -Fq "$pattern" "$file"; then
-            return 0
-        fi
-        sleep 1
-        ((elapsed += 1))
-    done
-
-    echo "Timed out waiting for: $description" >&2
-    return 1
-}
-
-wait_for_server_ready() {
-    local timeout="${1:-60}"
-    local elapsed=0
-
-    while (( elapsed < timeout )); do
-        if mc-log "$VERSION" 250 2>/dev/null | grep -Fq "Done ("; then
-            return 0
-        fi
-        sleep 1
-        ((elapsed += 1))
-    done
-
-    echo "Timed out waiting for server readiness" >&2
-    return 1
+    bash "$SCRIPT_DIR/prepare_offline_mcc_config.sh" "$CFG" "$MC_VERSION" CursorBot >/dev/null
 }
 
 wait_for_server_log_pattern() {
@@ -99,6 +67,25 @@ capture_server_logs() {
     if [[ -f "$SERVER_LOG_FILE" ]]; then
         cp "$SERVER_LOG_FILE" "$SERVER_FILE_LOG"
     fi
+}
+
+wait_for_file_pattern() {
+    local file="$1"
+    local pattern="$2"
+    local description="$3"
+    local timeout="${4:-60}"
+    local elapsed=0
+
+    while (( elapsed < timeout )); do
+        if [[ -f "$file" ]] && grep -Fq "$pattern" "$file"; then
+            return 0
+        fi
+        sleep 1
+        ((elapsed += 1))
+    done
+
+    echo "Timed out waiting for: $description" >&2
+    return 1
 }
 
 fail() {
@@ -146,18 +133,19 @@ run_mcc_command() {
     sleep 2
 }
 
+bash "$SCRIPT_DIR/preflight_test_env.sh" "$VERSION" >/dev/null
+bash "$SCRIPT_DIR/reset_shared_test_state.sh" "$VERSION" >/dev/null
 "$SCRIPT_DIR/ensure_offline_server.sh" "$VERSION"
+echo "Building MCC..."
+mcc-build > "$BUILD_LOG" 2>&1 || fail "mcc-build failed"
 prepare_config
 SERVER_PORT="$(bash "$SCRIPT_DIR/get_server_port.sh" "$VERSION")"
 
 : > "$INPUT_FILE"
 
-echo "Building MCC..."
-mcc-build > "$BUILD_LOG" 2>&1 || fail "mcc-build failed"
-
 echo "Starting server..."
 mc-start "$VERSION" >/dev/null
-wait_for_server_ready || fail "Server did not become ready"
+wait_for_server_ready "$VERSION" || fail "Server did not become ready"
 
 echo "Starting MCC..."
 (

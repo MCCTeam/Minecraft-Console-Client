@@ -13,7 +13,7 @@ title: Creating Chat Bots
 
 ## Notes
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **This page covers the basics of the Chat Bot API. For the full surface area, read [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and the example scripts linked below.**
 
@@ -41,7 +41,7 @@ More in-depth:
 
 This introduction assumes that you have the basic knowledge of C#.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **In this page, "Chat Bot" and "Script" are used interchangeably.**
 
@@ -124,7 +124,7 @@ MCC.LoadBot(new YourChatBotClassNameHere());
 
 The **Script Metadata** section also lets you include namespaces and DLL references with `//using <namespace>` and `//dll <dll name>`.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Avoid adding whitespace between `//` and keywords**
 
@@ -176,7 +176,7 @@ When the Chat Bot is initialized for the first time, the `Initialize` method is 
 
 Use it to initialize state such as dictionaries or cached values.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **For allocating resources like a database connection, we recommend allocating them in `AfterGameJoined` and freeing them in `OnDisconnect`**
 
@@ -227,6 +227,120 @@ Make a built-in MCC chat bot named AutoTorch and wire it fully into the repo con
 
 ```text
 Create a standalone MCC /script bot that follows private messages, uses GetVerbatim(text), and replies only to bot owners. Use the mcc-chatbot-authoring skill.
+```
+
+## Achievements And Advancements
+
+Chat bots and C# scripts can read the current achievement state and react to updates.
+
+Useful methods:
+
+- `GetAchievements()`
+- `GetUnlockedAchievements()`
+- `GetLockedAchievements()`
+- `OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset)`
+
+Things worth knowing:
+
+- On `1.8` to `1.11.2`, ids use the legacy `achievement.*` format.
+- On `1.12+`, ids use advancement resource ids such as `minecraft:story/root`.
+- Legacy achievements usually have `Title = null` and `Description = null` because the server does not send display metadata in the statistics packet.
+- On newer versions, revoking an advancement may remove it from the current set instead of turning it into a locked entry, so `removedIds` matters.
+
+Example:
+
+```csharp
+//MCCScript 1.0
+
+MCC.LoadBot(new AchievementWatcher());
+
+//MCCScript Extensions
+
+public class AchievementWatcher : ChatBot
+{
+    public override void AfterGameJoined()
+    {
+        Achievement[] known = GetAchievements();
+        LogToConsole($"Known achievements: {known.Length}");
+    }
+
+    public override void OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset)
+    {
+        LogToConsole($"Achievement update: reset={reset}, updated={updated.Count}, removed={removedIds.Count}");
+
+        foreach (Achievement achievement in updated)
+        {
+            string title = achievement.Title ?? achievement.Id;
+            string state = achievement.IsCompleted ? "done" : "todo";
+            LogToConsole($" - {title}: {state}");
+        }
+
+        foreach (string removedId in removedIds)
+            LogToConsole($" - removed: {removedId}");
+    }
+}
+```
+
+## Scoreboard teams
+
+Chat bots and C# scripts can read the current team state and react to team changes.
+
+Useful methods and events:
+
+- `GetTeams()` - returns a snapshot of all teams the server has sent
+- `GetPlayerTeam(playerName)` - returns the team a specific player is on, or `null`
+- `OnTeam(teamName, method, displayName, friendlyFlags, nameTagVisibility, collisionRule, color, prefix, suffix, players)` - called whenever a team packet arrives
+
+The `method` byte tells you what changed:
+
+- `0` - team created (includes full parameters and initial member list)
+- `1` - team removed
+- `2` - team parameters updated (display name, colors, rules)
+- `3` - players added to the team
+- `4` - players removed from the team
+
+The `color` field is a `ChatFormatting` enum ordinal. Common values: `0`=black, `9`=blue, `10`=green, `12`=red, `14`=yellow, `-1`=none/reset.
+
+The `nameTagVisibility` and `collisionRule` strings take values from the Minecraft wiki: `"always"`, `"never"`, `"hideForOtherTeams"`, `"hideForOwnTeam"` (visibility) or `"pushOtherTeams"`, `"pushOwnTeam"` (collision).
+
+Example:
+
+```csharp
+//MCCScript 1.0
+
+MCC.LoadBot(new TeamWatcher());
+
+//MCCScript Extensions
+
+public class TeamWatcher : ChatBot
+{
+    public override void AfterGameJoined()
+    {
+        foreach (var team in GetTeams().Values)
+            LogToConsole($"Team '{team.Name}' has {team.Members.Count} member(s)");
+    }
+
+    public override void OnTeam(string teamName, byte method, string displayName,
+        byte friendlyFlags, string nameTagVisibility, string collisionRule,
+        int color, string prefix, string suffix, List<string> players)
+    {
+        switch (method)
+        {
+            case 0:
+                LogToConsole($"Team '{teamName}' created with {players.Count} member(s)");
+                break;
+            case 1:
+                LogToConsole($"Team '{teamName}' removed");
+                break;
+            case 3:
+                LogToConsole($"{string.Join(", ", players)} joined team '{teamName}'");
+                break;
+            case 4:
+                LogToConsole($"{string.Join(", ", players)} left team '{teamName}'");
+                break;
+        }
+    }
+}
 ```
 
 ## C# API
