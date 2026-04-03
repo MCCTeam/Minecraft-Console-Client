@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
+    internal interface IMainThreadTask
+    {
+        void ExecuteSynchronously();
+        void Cancel();
+    }
+
     /// <summary>
     /// Holds an asynchronous task with return value
     /// </summary>
     /// <typeparam name="T">Type of the return value</typeparam>
-    public class TaskWithResult<T>
+    public sealed class TaskWithResult<T> : IMainThreadTask
     {
-        private readonly AutoResetEvent resultEvent = new(false);
         private readonly Func<T> task;
-        private T? result = default;
-        private Exception? exception = null;
-        private bool taskRun = false;
-        private readonly Lock taskRunLock = new();
+        private readonly TaskCompletionSource<T> completionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int taskState;
 
         /// <summary>
         /// Create a new asynchronous task with return value
@@ -28,13 +32,7 @@ namespace MinecraftClient
         /// <summary>
         /// Check whether the task has finished running
         /// </summary>
-        public bool HasRun
-        {
-            get
-            {
-                return taskRun;
-            }
-        }
+        public bool HasRun => completionSource.Task.IsCompleted;
 
         /// <summary>
         /// Get the task result (return value of the inner delegate)
@@ -44,10 +42,10 @@ namespace MinecraftClient
         {
             get
             {
-                if (taskRun)
-                    return result!;
-                else
+                if (!completionSource.Task.IsCompleted)
                     throw new InvalidOperationException("Attempting to retrieve the result of an unfinished task");
+
+                return completionSource.Task.GetAwaiter().GetResult();
             }
         }
 
@@ -58,8 +56,13 @@ namespace MinecraftClient
         {
             get
             {
-                return exception;
+                return completionSource.Task.Exception?.InnerException;
             }
+        }
+
+        public Task<T> AsTask()
+        {
+            return completionSource.Task;
         }
 
         /// <summary>
@@ -67,31 +70,25 @@ namespace MinecraftClient
         /// </summary>
         public void ExecuteSynchronously()
         {
-            // Make sur the task will not run twice
-            lock (taskRunLock)
-            {
-                if (taskRun)
-                {
-                    throw new InvalidOperationException("Attempting to run a task twice");
-                }
-            }
+            if (Interlocked.CompareExchange(ref taskState, 1, 0) != 0)
+                throw new InvalidOperationException("Attempting to run a task twice");
 
-            // Run the task
             try
             {
-                result = task();
+                completionSource.TrySetResult(task());
             }
             catch (Exception e)
             {
-                exception = e;
+                completionSource.TrySetException(e);
             }
+        }
 
-            // Mark task as complete and release wait event
-            lock (taskRunLock)
-            {
-                taskRun = true;
-            }
-            resultEvent.Set();
+        public void Cancel()
+        {
+            if (Interlocked.CompareExchange(ref taskState, 1, 0) != 0)
+                return;
+
+            completionSource.TrySetException(new OperationCanceledException("Main-thread task was canceled before execution."));
         }
 
         /// <summary>
@@ -101,22 +98,7 @@ namespace MinecraftClient
         /// <exception cref="System.Exception">Any exception thrown by the task</exception>
         public T WaitGetResult()
         {
-            // Wait only if the result is not available yet
-            bool mustWait = false;
-            lock (taskRunLock)
-            {
-                mustWait = !taskRun;
-            }
-            if (mustWait)
-            {
-                resultEvent.WaitOne();
-            }
-
-            // Receive exception from task
-            if (exception is not null)
-                throw exception;
-
-            return result!;
+            return completionSource.Task.GetAwaiter().GetResult();
         }
     }
 }

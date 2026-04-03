@@ -7,6 +7,8 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using DnsClient;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
@@ -1108,6 +1110,43 @@ namespace MinecraftClient.Protocol
             }
         }
 
+        public static async Task<bool> SessionCheckAsync(string uuid, string accesstoken, string serverhash, LoginType type)
+        {
+            try
+            {
+                string jsonRequest = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid +
+                                     "\",\"serverId\":\"" + serverhash + "\"}";
+                string host = type == LoginType.yggdrasil
+                    ? Config.Main.General.AuthServer.Host
+                    : "sessionserver.mojang.com";
+                int port = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.Port : 443;
+                string endpoint = type == LoginType.yggdrasil
+                    ? Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/sessionserver/session/minecraft/join"
+                    : "/session/minecraft/join";
+
+                bool useHttps = type == LoginType.yggdrasil ? Config.Main.General.AuthServer.UseHttps : true;
+                var response = await DoHTTPSRequestAsync(
+                    HttpMethod.Post,
+                    host,
+                    port,
+                    endpoint,
+                    new Dictionary<string, string>
+                    {
+                        { "Accept", "application/json" },
+                        { "Content-Type", "application/json" }
+                    },
+                    jsonRequest,
+                    useHttps,
+                    CancellationToken.None);
+
+                return response.StatusCode >= 200 && response.StatusCode < 300;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Retrieve available Realms worlds of a player and display them
         /// </summary>
@@ -1347,6 +1386,57 @@ namespace MinecraftClient.Protocol
             if (exception is not null)
                 throw exception;
             return statusCode;
+        }
+
+        private static async Task<(int StatusCode, string Result)> DoHTTPSRequestAsync(HttpMethod method, string host, int port, string path, Dictionary<string, string> headers, string? body, bool useHttps, CancellationToken cancellationToken)
+        {
+            if (Settings.Config.Logging.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.debug_request, host));
+
+            using SocketsHttpHandler handler = new();
+            handler.ConnectCallback = async (ctx, ct) =>
+            {
+                TcpClient client = ProxyHandler.NewTcpClient(host, port, true);
+                return client.GetStream();
+            };
+
+            using HttpClient client = new(handler);
+
+            string scheme = useHttps ? "https" : "http";
+            using HttpRequestMessage request = new(method, scheme + "://" + host + ":" + port + path);
+
+            string contentType = "text/plain";
+            foreach (var header in headers)
+            {
+                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                if (header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+                    contentType = header.Value;
+            }
+
+            if (body is not null)
+                request.Content = new StringContent(body, Encoding.UTF8, contentType);
+
+            if (Settings.Config.Logging.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8> " + request);
+
+            using CancellationTokenSource timeoutCancellationTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(30));
+
+            using HttpResponseMessage response = await client.SendAsync(request, timeoutCancellationTokenSource.Token);
+            int statusCode = (int)response.StatusCode;
+            string responseBody = statusCode == 204
+                ? "No Content"
+                : await response.Content.ReadAsStringAsync(timeoutCancellationTokenSource.Token);
+
+            if (Settings.Config.Logging.DebugMessages)
+            {
+                ConsoleIO.WriteLine("");
+                foreach (string line in responseBody.Split('\n'))
+                    ConsoleIO.WriteLineFormatted("§8< " + line);
+            }
+
+            return (statusCode, responseBody);
         }
 
         /// <summary>

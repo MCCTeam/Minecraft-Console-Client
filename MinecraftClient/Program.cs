@@ -661,7 +661,7 @@ namespace MinecraftClient
                     SessionCache.Store(loginLower, session);
 
                 if (result == ProtocolHandler.LoginResult.Success)
-                    session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck(Config.Main.General.AccountType));
+                    session.SessionPreCheckTask = session.SessionPreCheckAsync(Config.Main.General.AccountType);
             }
 
             if (result == ProtocolHandler.LoginResult.Success)

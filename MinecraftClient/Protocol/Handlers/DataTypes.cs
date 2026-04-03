@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Mapping;
@@ -305,6 +307,27 @@ namespace MinecraftClient.Protocol.Handlers
             while (true)
             {
                 b = socket.ReadDataRAW(1)[0];
+                i |= (b & 0x7F) << j++ * 7;
+                if (j > 5) throw new OverflowException("VarInt too big");
+                if ((b & 0x80) != 128) break;
+            }
+
+            return i;
+        }
+
+        /// <summary>
+        /// Read an integer from the network asynchronously.
+        /// </summary>
+        /// <returns>The integer</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public async Task<int> ReadNextVarIntRAWAsync(SocketWrapper socket, CancellationToken cancellationToken)
+        {
+            int i = 0;
+            int j = 0;
+            byte b;
+            while (true)
+            {
+                b = (await socket.ReadDataRAWAsync(1, cancellationToken))[0];
                 i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
                 if ((b & 0x80) != 128) break;

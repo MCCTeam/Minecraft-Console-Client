@@ -1,5 +1,8 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Crypto;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -68,6 +71,22 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        private async Task ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            int read = 0;
+            while (read < buffer.Length)
+            {
+                int currentRead = encrypted
+                    ? await s!.ReadAsync(buffer[read..], cancellationToken)
+                    : await c.GetStream().ReadAsync(buffer[read..], cancellationToken);
+
+                if (currentRead == 0)
+                    throw new IOException("Connection closed.");
+
+                read += currentRead;
+            }
+        }
+
         /// <summary>
         /// Read some data from the server.
         /// </summary>
@@ -84,6 +103,18 @@ namespace MinecraftClient.Protocol.Handlers
             return Array.Empty<byte>();
         }
 
+        public async Task<byte[]> ReadDataRAWAsync(int length, CancellationToken cancellationToken)
+        {
+            if (length > 0)
+            {
+                byte[] cache = new byte[length];
+                await ReceiveAsync(cache, cancellationToken);
+                return cache;
+            }
+
+            return Array.Empty<byte>();
+        }
+
         /// <summary>
         /// Send raw data to the server.
         /// </summary>
@@ -97,6 +128,17 @@ namespace MinecraftClient.Protocol.Handlers
                 s!.Write(buffer, 0, buffer.Length);
             else
                 c.Client.Send(buffer);
+        }
+
+        public async Task SendDataRAWAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        {
+            if (!IsConnected())
+                throw new SocketException((int)SocketError.NotConnected);
+
+            if (encrypted)
+                await s!.WriteAsync(buffer, cancellationToken);
+            else
+                await c.GetStream().WriteAsync(buffer, cancellationToken);
         }
 
         /// <summary>

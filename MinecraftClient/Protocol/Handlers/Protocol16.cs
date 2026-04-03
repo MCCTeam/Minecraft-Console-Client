@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
@@ -29,7 +30,9 @@ namespace MinecraftClient.Protocol.Handlers
         readonly IMinecraftComHandler handler;
         private bool encrypted = false;
         private readonly int protocolversion;
-        private Tuple<Thread, CancellationTokenSource>? netRead = null;
+        private Task? netReadTask;
+        private CancellationTokenSource? netReadCancellationTokenSource;
+        private int netReadThreadId = -1;
         Crypto.AesCfb8Stream? s;
         readonly TcpClient c;
 
@@ -69,15 +72,15 @@ namespace MinecraftClient.Protocol.Handlers
             c = Client;
         }
 
-        private void Updater(object? o)
+        private void Updater(CancellationToken cancelToken)
         {
-            var cancelToken = (CancellationToken)o!;
-
             if (cancelToken.IsCancellationRequested)
                 return;
 
             try
             {
+                netReadThreadId = Environment.CurrentManagedThreadId;
+                using IDisposable _ = MainThreadExecutionScope.Enter(handler);
                 Stopwatch stopWatch = Stopwatch.StartNew();
                 long nextUpdateDue = 0;
 
@@ -104,6 +107,8 @@ namespace MinecraftClient.Protocol.Handlers
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
             catch (OperationCanceledException) { }
+            catch (Exception) { }
+            finally { netReadThreadId = -1; }
 
             if (cancelToken.IsCancellationRequested)
                 return;
@@ -240,9 +245,13 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void StartUpdating()
         {
-            netRead = new(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
-            netRead.Item1.Name = "ProtocolPacketHandler";
-            netRead.Item1.Start(netRead.Item2.Token);
+            CancellationTokenSource netReadCts = new();
+            netReadCancellationTokenSource = netReadCts;
+            netReadTask = Task.Factory.StartNew(
+                () => Updater(netReadCts.Token),
+                netReadCts.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
         }
 
         /// <summary>
@@ -251,7 +260,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetMainThreadId()
         {
-            return netRead is not null ? netRead.Item1.ManagedThreadId : -1;
+            return netReadThreadId;
         }
 
         public bool SendCookieResponse(string name, byte[]? data)
@@ -268,9 +277,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                if (netRead is not null)
+                if (netReadCancellationTokenSource is not null)
                 {
-                    netRead.Item2.Cancel();
+                    netReadCancellationTokenSource.Cancel();
                     c.Close();
                 }
             }
@@ -519,7 +528,8 @@ namespace MinecraftClient.Protocol.Handlers
             Receive(pid, 0, 1, SocketFlags.None);
             while (pid[0] == 0xFA) //Skip some early plugin messages
             {
-                ProcessPacket(pid[0]);
+                using (MainThreadExecutionScope.Enter(handler))
+                    ProcessPacket(pid[0]);
                 Receive(pid, 0, 1, SocketFlags.None);
             }
             if (pid[0] == 0xFD)
@@ -559,8 +569,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (session.ServerPublicKey is not null && session.SessionPreCheckTask is not null
                     && serverIDhash == session.ServerIDhash && Enumerable.SequenceEqual(serverPublicKey, session.ServerPublicKey))
                 {
-                    session.SessionPreCheckTask.Wait();
-                    if (session.SessionPreCheckTask.Result) // PreCheck Successed
+                    if (session.SessionPreCheckTask.IsCompletedSuccessfully && session.SessionPreCheckTask.Result)
                         needCheckSession = false;
                 }
 
@@ -633,7 +642,8 @@ namespace MinecraftClient.Protocol.Handlers
                             Receive(pid, 0, 1, SocketFlags.None);
                             while (pid[0] >= 0xC0 && pid[0] != 0xFF) //Skip some early packets or plugin messages
                             {
-                                ProcessPacket(pid[0]);
+                                using (MainThreadExecutionScope.Enter(handler))
+                                    ProcessPacket(pid[0]);
                                 Receive(pid, 0, 1, SocketFlags.None);
                             }
                             if (pid[0] == (byte)1)

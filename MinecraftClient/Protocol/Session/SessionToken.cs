@@ -54,6 +54,16 @@ namespace MinecraftClient.Protocol.Session
             return false;
         }
 
+        public async Task<bool> SessionPreCheckAsync(LoginType type)
+        {
+            if (ID == string.Empty || PlayerID == String.Empty || ServerPublicKey is null)
+                return false;
+
+            Crypto.CryptoHandler.ClientAESPrivateKey ??= Crypto.CryptoHandler.GenerateAESPrivateKey();
+            string serverHash = Crypto.CryptoHandler.GetServerHash(ServerIDhash, ServerPublicKey, Crypto.CryptoHandler.ClientAESPrivateKey);
+            return await ProtocolHandler.SessionCheckAsync(PlayerID, ID, serverHash, type);
+        }
+
         public override string ToString()
         {
             return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken, ServerIDhash,
