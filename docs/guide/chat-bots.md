@@ -2354,31 +2354,41 @@ redirectFrom:
 
   </div>
 
-  **Recommended Harnsesses/Agents**:
-    - Claude Code
-    - Codex
-    - Open Code
-    - Cursor
-    - Open Claw
+  <details>
+  <summary><strong>Recommended harnesses / agents</strong></summary>
 
-  **Recommended models:**
-    - **Frontier, more expensive, for most complex/demanding tasks:**
-      - Opus 4.6
-      - GPT 5.6
-      - GLM-5 (Cheapest out of these)
+  - Claude Code
+  - Codex
+  - OpenCode
+  - Cursor
+  - Open Claw
 
-    - **Open-Source, almost as good, cheaper, for medium complex tasks:**
-      - MiMo-V2-Pro
-      - MiniMax M2.7 (Cheapest out of these)
-      - Kimi K2.5
+  </details>
 
-    - **Very cheap, for medium and simpler tasks**:
-      - Google Gemini 3 Flash (Cheapes, recommended)
-      - NVIDIA Nemotron 3 Super (Free through Nvidia and on Open Router with `(free)` label, might hit rate limits) (NOTE: Your data will be used to train the model)
-      - Deep Seek V3.2
+  <details>
+  <summary><strong>Recommended models</strong></summary>
 
-    - **Ultra cheap, for very simple tasks:**
-      - Google Gemini 3.1 Flash Lite Preview
+  Model rankings are based on the [Agentic Intelligence Benchmark](https://artificialanalysis.ai/?intelligence=agentic-index).
+
+  **Frontier (best results, higher cost):**
+  - [Claude Opus 4.6](https://openrouter.ai/anthropic/claude-opus-4.6)
+  - [GPT 5.4](https://openrouter.ai/openai/gpt-5.4)
+  - [GLM-5](https://openrouter.ai/z-ai/glm-5) -- cheapest in this tier
+
+  **Open-source (close to frontier, lower cost):**
+  - [MiMo-V2-Pro](https://openrouter.ai/xiaomi/mimo-v2-pro)
+  - [MiniMax M2.7](https://openrouter.ai/minimax/minimax-m2.7) -- cheapest in this tier
+  - [Kimi K2.5](https://openrouter.ai/moonshotai/kimi-k2.5)
+
+  **Budget (good for medium and simpler tasks):**
+  - [Google Gemini 3 Flash](https://openrouter.ai/google/gemini-3-flash-preview) -- recommended
+  - NVIDIA Nemotron 3 Super: [free tier](https://openrouter.ai/nvidia/nemotron-3-super-120b-a12b:free) / [paid tier](https://openrouter.ai/nvidia/nemotron-3-super-120b-a12b) / [NVIDIA Build](https://build.nvidia.com/nvidia/nemotron-3-super-120b-a12b) -- free tier may hit rate limits; your data is used for model training
+  - [DeepSeek V3.2](https://openrouter.ai/deepseek/deepseek-v3.2)
+
+  **Ultra-budget (for very simple tasks):**
+  - [Google Gemini 3.1 Flash Lite Preview](https://openrouter.ai/google/gemini-3.1-flash-lite-preview)
+
+  </details>
 
 - **Settings:**
 
