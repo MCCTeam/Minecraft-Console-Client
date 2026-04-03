@@ -1108,6 +1108,9 @@ namespace MinecraftClient
                 [TomlPrecedingComment("$Console.CommandSuggestion$")]
                 public CommandSuggestionConfig CommandSuggestion = new();
 
+                [TomlPrecedingComment("$Console.Minimap$")]
+                public MinimapConfig Minimap = new();
+
                 public void OnSettingUpdate()
                 {
                     var backend = ConsoleIO.Backend;
@@ -1207,11 +1210,17 @@ namespace MinecraftClient
                     [TomlInlineComment("$Console.General.ConsoleColorMode$")]
                     public ConsoleColorModeType ConsoleColorMode = ConsoleColorModeType.vt100_24bit;
 
+                    [TomlInlineComment("$Console.General.Display_Icon_Banner$")]
+                    public bool Display_Icon_Banner = true;
+
                     [TomlInlineComment("$Console.General.Display_Input$")]
                     public bool Display_Input = true;
 
                     [TomlInlineComment("$Console.General.History_Input_Records$")]
                     public int History_Input_Records = 32;
+
+                    [TomlInlineComment("$Console.General.TUI_Log_Scrollback$")]
+                    public int TUI_Log_Scrollback = 0;
                 }
 
                 [TomlDoNotInlineObject]
@@ -1246,6 +1255,53 @@ namespace MinecraftClient
 
                 public enum ConsoleModeType { classic, tui };
                 public enum ConsoleColorModeType { disable, legacy_4bit, vt100_4bit, vt100_8bit, vt100_24bit };
+
+                [TomlDoNotInlineObject]
+                public class MinimapConfig
+                {
+                    [TomlInlineComment("$Console.Minimap.Enabled$")]
+                    public bool Enabled = false;
+
+                    [TomlInlineComment("$Console.Minimap.Zoom$")]
+                    public int Zoom = Tui.MinimapControl.DefaultZoom;
+
+                    [TomlInlineComment("$Console.Minimap.Width$")]
+                    public int Width = Tui.MinimapControl.DefaultWidth;
+
+                    [TomlInlineComment("$Console.Minimap.Height$")]
+                    public int Height = Tui.MinimapControl.DefaultHeight;
+
+                    [TomlInlineComment("$Console.Minimap.Position$")]
+                    public Tui.MinimapPosition Position = Tui.MinimapPosition.top_right;
+
+                    [TomlInlineComment("$Console.Minimap.ShowPlayerNames$")]
+                    public bool ShowPlayerNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowHostileNames$")]
+                    public bool ShowHostileNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowNeutralNames$")]
+                    public bool ShowNeutralNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowPassiveNames$")]
+                    public bool ShowPassiveNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.RefreshInterval$")]
+                    public int RefreshInterval = Tui.MinimapControl.DefaultRefreshMs;
+
+                    [TomlInlineComment("$Console.Minimap.CaveMode$")]
+                    public Tui.CaveModeOption CaveMode = Tui.CaveModeOption.auto;
+
+                    public void OnSettingUpdate()
+                    {
+                        Zoom = Math.Clamp(Zoom, Tui.MinimapControl.MinZoom, Tui.MinimapControl.MaxZoom);
+                        Width = Math.Clamp(Width, 10, 120);
+                        Height = Math.Clamp(Height, 4, 80);
+                        if (Height % 2 != 0) Height++;
+                        RefreshInterval = Math.Clamp(RefreshInterval,
+                            Tui.MinimapControl.MinRefreshMs, Tui.MinimapControl.MaxRefreshMs);
+                    }
+                }
             }
         }
 

@@ -811,6 +811,11 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
+        public bool SendPlaceRecipe(int windowId, string recipeId, bool makeAll)
+        {
+            return false; //MC 1.8-1.12.1 recipe book not supported
+        }
+
         public bool SendCloseWindow(int windowId)
         {
             return false; //Currently not implemented

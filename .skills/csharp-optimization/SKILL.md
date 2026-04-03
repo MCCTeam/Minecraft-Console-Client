@@ -7,7 +7,6 @@ metadata:
   category: technique
   triggers: performance, allocations, GC, hot path, latency, throughput,
     memory pressure, optimize, slow, freeze, lag spike, packet processing speed
-version: 0.2.0
 ---
 
 # C# Performance Optimization for MCC

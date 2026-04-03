@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -161,14 +163,7 @@ namespace MinecraftClient
             }
 
             if (configResult.NeedWriteDefault)
-            {
                 Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
-                WriteBackSettings(false);
-            }
-            else if (configResult.Success)
-            {
-                WriteBackSettings(true);
-            }
 
             if (!Config.Main.Advanced.EnableSentry)
                 _sentrySdk?.Dispose();
@@ -181,12 +176,22 @@ namespace MinecraftClient
             };
 
             // --- Determine console mode and initialize backend ---
+            if (!OperatingSystem.IsWindows())
+                InstallCursesNativeResolver();
+
             if (!ConsoleIO.BasicIO && Config.Console.General.ConsoleMode == ConsoleModeType.tui)
             {
                 ConsoleIO.Backend?.Shutdown();
-                var tuiBackend = new Tui.TuiConsoleBackend();
-                ConsoleIO.Backend = tuiBackend;
-                tuiBackend.RunTuiMainLoop(args, startupState);
+                try
+                {
+                    var tuiBackend = new Tui.TuiConsoleBackend();
+                    ConsoleIO.Backend = tuiBackend;
+                    tuiBackend.RunTuiMainLoop(args, startupState);
+                }
+                catch (Exception ex)
+                {
+                    HandleTuiStartupFailure(ex);
+                }
                 return;
             }
 
@@ -200,7 +205,44 @@ namespace MinecraftClient
             if (!ProcessStartupState(startupState))
                 return;
 
+            // Wait for this issue to be fixed before enabling it: https://github.com/Consolonia/Consolonia/issues/602
+            // MaybePrintClassicModeTuiRecommendation();
+
             RunStartupSequence(args);
+        }
+
+        /// <summary>
+        /// Consolonia's Unix.Terminal uses <c>[DllImport("libcoreclr.so")]</c> to reach
+        /// <c>dlopen</c>/<c>dlsym</c> on .NET Core. The library ships a
+        /// <c>SetDllImportResolver</c> that maps <c>libcoreclr.so</c> to the current
+        /// process, but it is compiled under <c>#if NET6_0</c> (exact TFM match) instead
+        /// of <c>NET6_0_OR_GREATER</c>, so it is dead code when the consuming project
+        /// targets net8.0+. On a self-contained single-file publish the physical
+        /// <c>libcoreclr.so</c> does not exist on the search path, causing a
+        /// <c>DllNotFoundException</c> that crashes the TUI.
+        ///
+        /// We work around this by registering our own resolver before any Consolonia
+        /// code runs: if any assembly asks for <c>libcoreclr.so</c> we return
+        /// <c>(IntPtr)(-1)</c> which the runtime interprets as "the current process".
+        /// </summary>
+        private static void InstallCursesNativeResolver()
+        {
+            AssemblyLoadContext.Default.ResolvingUnmanagedDll += (assembly, libraryName) =>
+                libraryName == "libcoreclr.so" ? (IntPtr)(-1) : IntPtr.Zero;
+        }
+
+        private static void HandleTuiStartupFailure(Exception exception)
+        {
+            Config.Console.General.ConsoleMode = ConsoleModeType.classic;
+            WriteBackSettings(enableBackup: false);
+
+            ConsoleIO.Backend = new ClassicConsoleBackend();
+            ConsoleIO.Backend.Init();
+
+            ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_tui_startup_failed);
+            ConsoleIO.WriteLine(exception.ToString());
+            ConsoleIO.WriteLineFormatted("§e" + Translations.mcc_report_issue);
+            ConsoleIO.WriteLineFormatted("§e" + Translations.mcc_tui_startup_fallback_classic);
         }
 
         /// <summary>
@@ -211,14 +253,33 @@ namespace MinecraftClient
         /// <returns>True if startup can continue; false if config load failed and user chose to exit.</returns>
         internal static bool ProcessStartupState(StartupState state)
         {
-            ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
-            if (BuildInfo is not null)
-                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+            if (Config.Console.General.Display_Icon_Banner && ConsoleIO.Backend is Tui.TuiConsoleBackend tuiBanner)
+            {
+                var view = tuiBanner.GetView();
+                if (view is not null)
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        var panel = Tui.MccBannerPanelBuilder.Build(BuildInfo);
+                        view.AppendControlToLog(panel);
+                    });
+                }
+                else
+                {
+                    ShowClassicBanner();
+                }
+            }
+            else
+            {
+                ShowClassicBanner();
+            }
 
             var cfg = state.ConfigResult;
 
             if (cfg.NeedWriteDefault)
             {
+                WriteBackSettings(false);
+
                 if (cfg.IsLegacyUpgrade)
                 {
                     ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
@@ -243,11 +304,33 @@ namespace MinecraftClient
             }
             else
             {
+                WriteBackSettings(true);
+
                 if (!Config.Main.Advanced.Language.StartsWith("en"))
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_help_us_translate, Settings.TranslationProjectUrl));
             }
 
             return true;
+        }
+
+        private static void ShowClassicBanner()
+        {
+            ConsoleIO.WriteLine(string.Format(Translations.mcc_banner_classic, Version, MCLowestVersion, MCHighestVersion, "Github.com/MCCTeam"));
+            if (BuildInfo is not null)
+                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+        }
+
+        private static void MaybePrintClassicModeTuiRecommendation()
+        {
+            if (ConsoleIO.BasicIO
+                || Config.Console.General.ConsoleMode != ConsoleModeType.classic
+                || Console.IsInputRedirected)
+            {
+                return;
+            }
+
+            char cmdChar = Config.Main.Advanced.InternalCmdChar.ToChar();
+            ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_console_mode_tui_recommendation, cmdChar));
         }
 
         /// <summary>

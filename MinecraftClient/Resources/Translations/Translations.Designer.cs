@@ -438,6 +438,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dropped low durability {0} from slot {1}..
+        /// </summary>
+        internal static string bot_autodig_drop_low_durability {
+            get {
+                return ResourceManager.GetString("bot.autodig.drop_low_durability", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The block currently pointed to is not in the allowed list..
         /// </summary>
         internal static string bot_autodig_not_allow {
@@ -470,6 +479,15 @@ namespace MinecraftClient {
         internal static string bot_autodig_stop {
             get {
                 return ResourceManager.GetString("bot.autodig.stop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Switch to {0} from slot {1}..
+        /// </summary>
+        internal static string bot_autodig_switch {
+            get {
+                return ResourceManager.GetString("bot.autodig.switch", resourceCulture);
             }
         }
         
@@ -876,6 +894,24 @@ namespace MinecraftClient {
         internal static string bot_autoRelog_wait {
             get {
                 return ResourceManager.GetString("bot.autoRelog.wait", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Waiting {0:0.000} seconds before reconnecting... ({1} retries left).
+        /// </summary>
+        internal static string bot_autoRelog_wait_with_retries {
+            get {
+                return ResourceManager.GetString("bot.autoRelog.wait_with_retries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to unlimited.
+        /// </summary>
+        internal static string bot_autoRelog_retries_unlimited {
+            get {
+                return ResourceManager.GetString("bot.autoRelog.retries_unlimited", resourceCulture);
             }
         }
         
@@ -2269,6 +2305,78 @@ namespace MinecraftClient {
             }
         }
         
+        internal static string mcc_banner_classic {
+            get {
+                return ResourceManager.GetString("mcc.banner.classic", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_banner_label_mc_versions {
+            get {
+                return ResourceManager.GetString("mcc.banner.label_mc_versions", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_server {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_server", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_version {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_version", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_protocol {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_protocol", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_players {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_players", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_ping {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_ping", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_ping_ms {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_ping_ms", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_connecting_as {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_connecting_as", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_label_online {
+            get {
+                return ResourceManager.GetString("mcc.server_info.label_online", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_sample_more {
+            get {
+                return ResourceManager.GetString("mcc.server_info.sample_more", resourceCulture);
+            }
+        }
+        
+        internal static string mcc_server_info_version_upgrade {
+            get {
+                return ResourceManager.GetString("mcc.server_info.version_upgrade", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Converting session cache from disk: {0}.
         /// </summary>
@@ -3559,6 +3667,51 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to quickly enable recommended features..
+        /// </summary>
+        internal static string cmd_tryout_desc {
+            get {
+                return ResourceManager.GetString("cmd.tryout.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Available quick actions:.
+        /// </summary>
+        internal static string cmd_tryout_list_header {
+            get {
+                return ResourceManager.GetString("cmd.tryout.list.header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to tui: set [Console.General] ConsoleMode = &quot;tui&quot; for the next restart..
+        /// </summary>
+        internal static string cmd_tryout_list_tui {
+            get {
+                return ResourceManager.GetString("cmd.tryout.list.tui", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [Console.General] ConsoleMode is already &quot;tui&quot; in the config. To switch back, set [Console.General] ConsoleMode = &quot;classic&quot;. Restart MCC after changing it for the new mode to take effect..
+        /// </summary>
+        internal static string cmd_tryout_tui_already_enabled {
+            get {
+                return ResourceManager.GetString("cmd.tryout.tui.already_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated [Console.General] ConsoleMode from &quot;{0}&quot; to &quot;{1}&quot; in the config. To switch back, set [Console.General] ConsoleMode = &quot;classic&quot;. Restart MCC to apply the change..
+        /// </summary>
+        internal static string cmd_tryout_tui_enabled {
+            get {
+                return ResourceManager.GetString("cmd.tryout.tui.enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Display Health and Food saturation..
         /// </summary>
         internal static string cmd_health_desc {
@@ -4254,6 +4407,87 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.nameitem.successful", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to send recipe book craft request for {0}..
+        /// </summary>
+        internal static string cmd_recipebook_craft_failed {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.craft.failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Requested recipe {0}..
+        /// </summary>
+        internal static string cmd_recipebook_craft_sent {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.craft.sent", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Requested recipe {0} with craft-all..
+        /// </summary>
+        internal static string cmd_recipebook_craftall_sent {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.craftall.sent", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to List unlocked recipe book recipes and craft them through the active recipe book inventory..
+        /// </summary>
+        internal static string cmd_recipebook_desc {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.desc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unlocked recipe book recipes.
+        /// </summary>
+        internal static string cmd_recipebook_list {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.list", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You need an active player crafting grid, crafting table, furnace, blast furnace, smoker, or stonecutter inventory..
+        /// </summary>
+        internal static string cmd_recipebook_no_active_inventory {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.no.active.inventory", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No unlocked recipe book recipes are currently tracked..
+        /// </summary>
+        internal static string cmd_recipebook_no_recipes {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.no.recipes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The recipe identifier cannot be empty..
+        /// </summary>
+        internal static string cmd_recipebook_recipe_id_empty {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.recipe.id.empty", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Recipe book crafting is only supported on Minecraft 1.13 and newer..
+        /// </summary>
+        internal static string cmd_recipebook_unsupported {
+            get {
+                return ResourceManager.GetString("cmd.recipebook.unsupported", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to restart and reconnect to the server..
@@ -4459,6 +4693,51 @@ namespace MinecraftClient {
         internal static string cmd_tps_desc {
             get {
                 return ResourceManager.GetString("cmd.tps.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List all scoreboard teams and their members.
+        /// </summary>
+        internal static string cmd_teams_desc {
+            get {
+                return ResourceManager.GetString("cmd.teams.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No teams are currently tracked.
+        /// </summary>
+        internal static string cmd_teams_no_teams {
+            get {
+                return ResourceManager.GetString("cmd.teams.no_teams", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team '{0}' (display: {1}, ...).
+        /// </summary>
+        internal static string cmd_teams_team_header {
+            get {
+                return ResourceManager.GetString("cmd.teams.team_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   Members ({0}): {1}.
+        /// </summary>
+        internal static string cmd_teams_team_members {
+            get {
+                return ResourceManager.GetString("cmd.teams.team_members", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   No members.
+        /// </summary>
+        internal static string cmd_teams_team_no_members {
+            get {
+                return ResourceManager.GetString("cmd.teams.team_no_members", resourceCulture);
             }
         }
         
@@ -5535,6 +5814,42 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tip: try TUI mode for a cleaner interface, mouse-friendly container actions, and a nicer layout. Run {0}feature tui§8 to switch [Console.General] ConsoleMode to &quot;tui&quot; for the next restart..
+        /// </summary>
+        internal static string mcc_console_mode_tui_recommendation {
+            get {
+                return ResourceManager.GetString("mcc.console_mode_tui_recommendation", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to MCC encountered a problem while starting TUI mode..
+        /// </summary>
+        internal static string mcc_tui_startup_failed {
+            get {
+                return ResourceManager.GetString("mcc.tui_startup_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to As a fallback, MCC has automatically switched [Console.General] ConsoleMode to &quot;classic&quot;. This will take effect after you restart MCC..
+        /// </summary>
+        internal static string mcc_tui_startup_fallback_classic {
+            get {
+                return ResourceManager.GetString("mcc.tui_startup_fallback_classic", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Please report this issue to the MCC Team..
+        /// </summary>
+        internal static string mcc_report_issue {
+            get {
+                return ResourceManager.GetString("mcc.report_issue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to To sign in, open {0} in your browser and enter the code: {1}.
         /// </summary>
         internal static string mcc_device_code_prompt {
@@ -5858,6 +6173,15 @@ namespace MinecraftClient {
         internal static string mcc_restart {
             get {
                 return ResourceManager.GetString("mcc.restart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot send text: not connected to a server..
+        /// </summary>
+        internal static string mcc_send_text_not_connected {
+            get {
+                return ResourceManager.GetString("mcc.send_text_not_connected", resourceCulture);
             }
         }
         
@@ -6799,7 +7123,7 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("tui.crafting.grid", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Starting embedded MCP server....
         /// </summary>
@@ -6808,7 +7132,7 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.mcpserver.starting", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Embedded MCP server started on {0}.
         /// </summary>
@@ -6817,7 +7141,7 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.mcpserver.started", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to start embedded MCP server: {0}.
         /// </summary>
@@ -6826,7 +7150,7 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.mcpserver.start_failed", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Embedded MCP auth token is required but environment variable {0} is empty..
         /// </summary>
@@ -6835,7 +7159,7 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.mcpserver.missing_auth_token", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Embedded MCP server stopped..
         /// </summary>
@@ -6844,13 +7168,283 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.mcpserver.stopped", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to stop embedded MCP server cleanly: {0}.
         /// </summary>
         internal static string bot_mcpserver_stop_failed {
             get {
                 return ResourceManager.GetString("bot.mcpserver.stop_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle the TUI minimap overlay, or adjust its zoom level..
+        /// </summary>
+        internal static string cmd_minimap_desc {
+            get {
+                return ResourceManager.GetString("cmd.minimap.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap enabled..
+        /// </summary>
+        internal static string cmd_minimap_enabled {
+            get {
+                return ResourceManager.GetString("cmd.minimap.enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap disabled..
+        /// </summary>
+        internal static string cmd_minimap_disabled {
+            get {
+                return ResourceManager.GetString("cmd.minimap.disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap zoom set to {0}:1 (blocks per pixel)..
+        /// </summary>
+        internal static string cmd_minimap_zoom_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.zoom_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current minimap zoom: {0}:1 blocks/px (range 1-{1})..
+        /// </summary>
+        internal static string cmd_minimap_zoom_current {
+            get {
+                return ResourceManager.GetString("cmd.minimap.zoom_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The minimap command is only available in TUI mode..
+        /// </summary>
+        internal static string cmd_minimap_tui_only {
+            get {
+                return ResourceManager.GetString("cmd.minimap.tui_only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hostile.
+        /// </summary>
+        internal static string tui_minimap_legend_hostile {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.hostile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Passive.
+        /// </summary>
+        internal static string tui_minimap_legend_passive {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.passive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Neutral.
+        /// </summary>
+        internal static string tui_minimap_legend_neutral {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.neutral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player.
+        /// </summary>
+        internal static string tui_minimap_legend_player {
+            get {
+                return ResourceManager.GetString("tui.minimap.legend.player", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name display -- Players: {0}, Hostile: {1}, Neutral: {2}, Passive: {3}.
+        /// </summary>
+        internal static string cmd_minimap_names_status {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All entity name labels enabled..
+        /// </summary>
+        internal static string cmd_minimap_names_all_on {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_all_on", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All entity name labels disabled..
+        /// </summary>
+        internal static string cmd_minimap_names_all_off {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_all_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} name display: {1}.
+        /// </summary>
+        internal static string cmd_minimap_names_cat {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_cat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} name display set to {1}..
+        /// </summary>
+        internal static string cmd_minimap_names_cat_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.names_cat_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current minimap position: {0}.
+        /// </summary>
+        internal static string cmd_minimap_position_current {
+            get {
+                return ResourceManager.GetString("cmd.minimap.position_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimap position set to: {0}.
+        /// </summary>
+        internal static string cmd_minimap_position_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.position_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current cave mode: {0}.
+        /// </summary>
+        internal static string cmd_minimap_cave_current {
+            get {
+                return ResourceManager.GetString("cmd.minimap.cave_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cave mode set to: {0}.
+        /// </summary>
+        internal static string cmd_minimap_cave_set {
+            get {
+                return ResourceManager.GetString("cmd.minimap.cave_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to list achievements/advancements from the server..
+        /// </summary>
+        internal static string cmd_achievement_desc {
+            get {
+                return ResourceManager.GetString("cmd.achievement.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No achievements/advancements received yet..
+        /// </summary>
+        internal static string cmd_achievement_none {
+            get {
+                return ResourceManager.GetString("cmd.achievement.none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No completed achievements/advancements..
+        /// </summary>
+        internal static string cmd_achievement_none_unlocked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.none_unlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No incomplete achievements/advancements..
+        /// </summary>
+        internal static string cmd_achievement_none_locked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.none_locked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Achievements/Advancements:.
+        /// </summary>
+        internal static string cmd_achievement_header {
+            get {
+                return ResourceManager.GetString("cmd.achievement.header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Completed achievements/advancements:.
+        /// </summary>
+        internal static string cmd_achievement_header_unlocked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.header_unlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Incomplete achievements/advancements:.
+        /// </summary>
+        internal static string cmd_achievement_header_locked {
+            get {
+                return ResourceManager.GetString("cmd.achievement.header_locked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [DONE].
+        /// </summary>
+        internal static string cmd_achievement_done {
+            get {
+                return ResourceManager.GetString("cmd.achievement.done", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [TODO].
+        /// </summary>
+        internal static string cmd_achievement_todo {
+            get {
+                return ResourceManager.GetString("cmd.achievement.todo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1} ({2}) [{3}].
+        /// </summary>
+        internal static string cmd_achievement_entry_titled {
+            get {
+                return ResourceManager.GetString("cmd.achievement.entry_titled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1} [{2}].
+        /// </summary>
+        internal static string cmd_achievement_entry {
+            get {
+                return ResourceManager.GetString("cmd.achievement.entry", resourceCulture);
             }
         }
     }

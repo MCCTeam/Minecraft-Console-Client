@@ -206,6 +206,29 @@ namespace MinecraftClient.Scripting
         public virtual void OnEntityMove(Entity entity) { }
 
         /// <summary>
+        /// Called when a tracked entity receives a velocity update packet.
+        /// Velocity is expressed in blocks per tick.
+        /// </summary>
+        /// <param name="entity">Entity with updated velocity</param>
+        /// <param name="velocityX">Velocity on X axis (blocks/tick)</param>
+        /// <param name="velocityY">Velocity on Y axis (blocks/tick)</param>
+        /// <param name="velocityZ">Velocity on Z axis (blocks/tick)</param>
+        public virtual void OnEntityVelocity(Entity entity, double velocityX, double velocityY, double velocityZ) { }
+
+        /// <summary>
+        /// Called when a sound packet is received.
+        /// The sound name is null when the protocol provides only a registry id.
+        /// </summary>
+        /// <param name="soundName">Sound key when available, otherwise null</param>
+        /// <param name="location">Sound position when available</param>
+        /// <param name="category">Sound category id from packet</param>
+        /// <param name="volume">Sound volume</param>
+        /// <param name="pitch">Sound pitch</param>
+        /// <param name="sourceEntity">Source entity for entity-sound packets when tracked</param>
+        public virtual void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch,
+            Entity? sourceEntity) { }
+
+        /// <summary>
         /// Called when an entity rotates
         /// </summary>
         /// <param name="entity">Entity with updated rotation</param>
@@ -368,6 +391,23 @@ namespace MinecraftClient.Scripting
         public virtual void OnUpdateScore(string entityName, int action, string objectiveName, string objectiveDisplayName, int value, int numberFormat) { }
 
         /// <summary>
+        /// Called when a Teams packet is received from the server.
+        /// </summary>
+        /// <param name="teamName">Internal team name (up to 16 chars)</param>
+        /// <param name="method">0=create, 1=remove, 2=update, 3=add players, 4=remove players</param>
+        /// <param name="displayName">Display name (formatted). Present when method is 0 or 2.</param>
+        /// <param name="friendlyFlags">Bit 0=allowFriendlyFire, bit 1=seeFriendlyInvisibles. Present when method is 0 or 2.</param>
+        /// <param name="nameTagVisibility">Nametag visibility rule. Present when method is 0 or 2.</param>
+        /// <param name="collisionRule">Collision rule. Present when method is 0 or 2.</param>
+        /// <param name="color">ChatFormatting color value (-1=none). Present when method is 0 or 2.</param>
+        /// <param name="prefix">Member name prefix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="suffix">Member name suffix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="players">Player/entity names. Present when method is 0, 3, or 4.</param>
+        public virtual void OnTeam(string teamName, byte method, string displayName, byte friendlyFlags,
+            string nameTagVisibility, string collisionRule, int color,
+            string prefix, string suffix, List<string> players) { }
+
+        /// <summary>
         /// Called when the client received the Tab Header and Footer
         /// </summary>
         /// <param name="header">Header</param>
@@ -519,6 +559,14 @@ namespace MinecraftClient.Scripting
         /// <param name="location">The location of the block.</param>
         /// <param name="block">The block</param>
         public virtual void OnBlockChange(Location location, Block block) { }
+
+        /// <summary>
+        /// Called when achievement/advancement data is updated.
+        /// </summary>
+        /// <param name="updated">Achievements that were added or updated</param>
+        /// <param name="removedIds">IDs of achievements that were removed</param>
+        /// <param name="reset">Whether the achievement state was fully reset before this update</param>
+        public virtual void OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
@@ -1095,9 +1143,10 @@ namespace MinecraftClient.Scripting
         /// <param name="direction">Example: if your player is under a block that is being destroyed, use Down</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true)
+        /// <param name="duration">Dig duration in seconds. 0 = auto-compute for survival, or instant for creative</param>
+        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
         {
-            return Handler.DigBlock(location, direction, swingArms, lookAtBlock);
+            return Handler.DigBlock(location, direction, swingArms, lookAtBlock, duration);
         }
 
         /// <summary>
@@ -1124,6 +1173,33 @@ namespace MinecraftClient.Scripting
         protected Dictionary<int, Entity> GetEntities()
         {
             return Handler.GetEntities();
+        }
+
+        /// <summary>
+        /// Get all achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of all achievements</returns>
+        protected Achievement[] GetAchievements()
+        {
+            return Handler.GetAchievements();
+        }
+
+        /// <summary>
+        /// Get only completed achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of unlocked achievements</returns>
+        protected Achievement[] GetUnlockedAchievements()
+        {
+            return Handler.GetUnlockedAchievements();
+        }
+
+        /// <summary>
+        /// Get only incomplete achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of locked achievements</returns>
+        protected Achievement[] GetLockedAchievements()
+        {
+            return Handler.GetLockedAchievements();
         }
 
         /// <summary>

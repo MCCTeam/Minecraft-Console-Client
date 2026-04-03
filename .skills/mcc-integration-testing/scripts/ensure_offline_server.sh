@@ -5,6 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 # shellcheck source=tools/mcc-env.sh
 source "$REPO_ROOT/tools/mcc-env.sh"
+# shellcheck source=.skills/mcc-integration-testing/scripts/common.sh
+source "$SCRIPT_DIR/common.sh"
 
 VERSION="${1:-1.21.11-Vanilla}"
 SERVER_DIR="${MCC_SERVERS:?}/$VERSION"
@@ -25,40 +27,12 @@ server_running() {
     mc-list | grep -Fq "$SESSION_NAME"
 }
 
-wait_for_server_ready() {
-    local timeout="${1:-60}"
-    local elapsed=0
-    while (( elapsed < timeout )); do
-        if mc-log "$VERSION" 200 2>/dev/null | grep -Fq "Done ("; then
-            return 0
-        fi
-        sleep 1
-        ((elapsed += 1))
-    done
-    echo "Timed out waiting for $VERSION to become ready" >&2
-    return 1
-}
-
-wait_for_server_stop() {
-    local timeout="${1:-60}"
-    local elapsed=0
-    while (( elapsed < timeout )); do
-        if ! server_running; then
-            return 0
-        fi
-        sleep 1
-        ((elapsed += 1))
-    done
-    echo "Timed out waiting for $VERSION to stop" >&2
-    return 1
-}
-
 upsert_property() {
     local key="$1"
     local value="$2"
 
     if grep -Eq "^${key}=" "$PROPS_FILE"; then
-        sed -i "s#^${key}=.*#${key}=${value}#" "$PROPS_FILE"
+        sed_in_place "s#^${key}=.*#${key}=${value}#" "$PROPS_FILE"
     else
         printf '%s=%s\n' "$key" "$value" >> "$PROPS_FILE"
     fi
@@ -66,14 +40,14 @@ upsert_property() {
 
 if [[ ! -f "$PROPS_FILE" ]]; then
     mc-start "$VERSION"
-    wait_for_server_ready
+    wait_for_server_ready "$VERSION"
     mc-stop "$VERSION"
-    wait_for_server_stop
+    wait_for_server_stop "$VERSION"
 fi
 
 if server_running; then
     mc-stop "$VERSION"
-    wait_for_server_stop
+    wait_for_server_stop "$VERSION"
 fi
 
 upsert_property "online-mode" "false"

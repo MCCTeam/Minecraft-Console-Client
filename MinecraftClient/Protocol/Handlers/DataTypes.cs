@@ -412,6 +412,37 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read an ItemStackTemplate (26.1+) from a cache of bytes.
+        /// Unlike ItemStack, this uses item-first encoding: item_id, count, DataComponentPatch.
+        /// ItemStackTemplate is always non-empty (no count=0 sentinel).
+        /// </summary>
+        public Item ReadNextItemStackTemplate(Queue<byte> cache, ItemPalette itemPalette)
+        {
+            var itemId = ReadNextVarInt(cache);
+            var itemCount = ReadNextVarInt(cache);
+            var item = new Item(itemPalette.FromId(itemId), itemCount, null);
+
+            var numberOfComponentsToAdd = ReadNextVarInt(cache);
+            var numberofComponentsToRemove = ReadNextVarInt(cache);
+            var structuredComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
+            var strcturedComponentsToAdd = new List<StructuredComponent>(numberOfComponentsToAdd);
+
+            for (var i = 0; i < numberOfComponentsToAdd; i++)
+            {
+                var componentTypeId = ReadNextVarInt(cache);
+                strcturedComponentsToAdd.Add(structuredComponentHandler.Parse(componentTypeId, cache));
+            }
+
+            for (var i = 0; i < numberofComponentsToRemove; i++)
+                ReadNextVarInt(cache);
+
+            if (strcturedComponentsToAdd.Count > 0)
+                item.Components = strcturedComponentsToAdd;
+
+            return item;
+        }
+
+        /// <summary>
         /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
@@ -664,8 +695,10 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
+            var entity = new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch,
                 data);
+            entity.UUID = entityUUID;
+            return entity;
         }
 
         /// <summary>
@@ -1021,20 +1054,44 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        private static bool HasLpVec3Continuation(int firstByte) => (firstByte & 4) == 4;
+
+        private static double UnpackLpVec3(long packedAxis)
+        {
+            return Math.Min((double)(packedAxis & 32767L), 32766.0) * 2.0 / 32766.0 - 1.0;
+        }
+
         /// <summary>
-        /// Read an LpVec3 (low-precision vec3) from the cache (1.21.9+).
-        /// Variable-length encoding: first byte 0 = zero vector; otherwise
-        /// 2 bytes + 4 bytes (6 total), plus an optional VarInt continuation.
+        /// Read and decode an LpVec3 (low-precision vec3) from the cache (1.21.9+).
+        /// Returned vector is expressed in blocks per tick.
         /// </summary>
-        public void ReadNextLpVec3(Queue<byte> cache)
+        public (double X, double Y, double Z) ReadNextLpVec3Values(Queue<byte> cache)
         {
             int first = ReadNextByte(cache);
             if (first == 0)
-                return;
-            ReadNextByte(cache);        // second byte
-            ReadData(4, cache);         // uint32
-            if ((first & 4) == 4)       // continuation bit set
-                ReadNextVarInt(cache);
+                return (0.0, 0.0, 0.0);
+
+            int second = ReadNextByte(cache);
+            uint high = (uint)ReadNextInt(cache);
+            long packed = ((long)high << 16) | (long)(second << 8) | (uint)first;
+
+            long scale = first & 3;
+            if (HasLpVec3Continuation(first))
+                scale |= ((long)ReadNextVarInt(cache) & 0xFFFFFFFFL) << 2;
+
+            return (
+                UnpackLpVec3(packed >> 3) * scale,
+                UnpackLpVec3(packed >> 18) * scale,
+                UnpackLpVec3(packed >> 33) * scale
+            );
+        }
+
+        /// <summary>
+        /// Read an LpVec3 (low-precision vec3) from the cache (1.21.9+) and discard it.
+        /// </summary>
+        public void ReadNextLpVec3(Queue<byte> cache)
+        {
+            ReadNextLpVec3Values(cache);
         }
 
         /// <summary>

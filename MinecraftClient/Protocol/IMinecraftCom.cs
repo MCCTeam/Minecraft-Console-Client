@@ -191,6 +191,15 @@ namespace MinecraftClient.Protocol
         bool ClickContainerButton(int windowId, int buttonId);
 
         /// <summary>
+        /// Send a place recipe packet to the server for the active recipe book container.
+        /// </summary>
+        /// <param name="windowId">Id of the window being clicked</param>
+        /// <param name="recipeId">Recipe identifier to craft</param>
+        /// <param name="makeAll">True to craft as many items as possible</param>
+        /// <returns>True if packet was successfully sent</returns>
+        bool SendPlaceRecipe(int windowId, string recipeId, bool makeAll);
+
+        /// <summary>
         /// Plays animation
         /// </summary>
         /// <param name="animation">0 for left arm, 1 for right arm</param>

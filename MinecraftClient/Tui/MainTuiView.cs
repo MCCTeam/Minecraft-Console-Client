@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -16,8 +17,19 @@ namespace MinecraftClient.Tui
 {
     public class MainTuiView : UserControl
     {
-        private const int MaxLogLines = 5000;
+        private static readonly int MaxLogLines = ResolveMaxLogLines();
         private const int CtrlCDoublePressMsec = 1500;
+
+        private static int ResolveMaxLogLines()
+        {
+            int configured = Settings.Config.Console.General.TUI_Log_Scrollback;
+            if (configured > 0)
+                return configured;
+
+            bool isArm = RuntimeInformation.ProcessArchitecture
+                is Architecture.Arm or Architecture.Arm64;
+            return isArm ? 500 : 3000;
+        }
 
         private readonly ObservableCollection<string> _logLines = new();
         private readonly ObservableCollection<Control> _logControls = new();
@@ -41,6 +53,12 @@ namespace MinecraftClient.Tui
         private long _lastLogClickTicks;
         private const int DoubleClickMsec = 500;
 
+        private readonly Border _minimapBorder;
+        private readonly MinimapControl _minimapControl;
+        private volatile bool _minimapVisible;
+
+        private TuiTooltipService? _tooltipService;
+
         private readonly Border _suggestionBorder;
         private readonly StackPanel _suggestionPanel;
         private CommandSuggestion[] _suggestions = Array.Empty<CommandSuggestion>();
@@ -52,6 +70,8 @@ namespace MinecraftClient.Tui
 
         private int MaxVisibleSuggestions =>
             Math.Max(1, Settings.Config.Console.CommandSuggestion.Max_Displayed_Suggestions);
+
+        public TuiTooltipService? TooltipService => _tooltipService;
 
         public MainTuiView()
         {
@@ -70,6 +90,7 @@ namespace MinecraftClient.Tui
             {
                 ItemsSource = _logControls,
                 Focusable = false,
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
             };
 
             _logScrollViewer = new ScrollViewer
@@ -150,6 +171,30 @@ namespace MinecraftClient.Tui
                 Margin = new Thickness(0, 0, 0, 1),
             };
 
+            var mmCfg = Settings.Config.Console.Minimap;
+            mmCfg.OnSettingUpdate();
+            _minimapControl = new MinimapControl(mmCfg.Width, mmCfg.Height);
+            _minimapControl.BlocksPerPixel = mmCfg.Zoom;
+            _minimapControl.RefreshIntervalMs = mmCfg.RefreshInterval;
+            _minimapControl.NameConfig.Players = mmCfg.ShowPlayerNames;
+            _minimapControl.NameConfig.Hostile = mmCfg.ShowHostileNames;
+            _minimapControl.NameConfig.Neutral = mmCfg.ShowNeutralNames;
+            _minimapControl.NameConfig.Passive = mmCfg.ShowPassiveNames;
+            _minimapControl.CaveMode = mmCfg.CaveMode;
+
+            var (hAlign, vAlign, margin) = GetMinimapAlignment(mmCfg.Position);
+            _minimapBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(220, 15, 15, 15)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(80, 80, 80)),
+                BorderThickness = new Thickness(1),
+                Child = _minimapControl,
+                IsVisible = false,
+                HorizontalAlignment = hAlign,
+                VerticalAlignment = vAlign,
+                Margin = margin,
+            };
+
             _mainContent = new DockPanel
             {
                 Background = Brushes.Black,
@@ -164,10 +209,21 @@ namespace MinecraftClient.Tui
             _rootPanel = new Panel
             {
                 Background = Brushes.Black,
-                Children = { _mainContent, _notificationBorder, _suggestionBorder }
+                Children = { _mainContent, _minimapBorder, _notificationBorder, _suggestionBorder }
             };
 
+            _tooltipService = new TuiTooltipService(_rootPanel);
+            _minimapControl.TooltipService = _tooltipService;
+            _minimapControl.Position = mmCfg.Position;
+
             Content = _rootPanel;
+
+            if (mmCfg.Enabled)
+            {
+                _minimapVisible = true;
+                _minimapBorder.IsVisible = true;
+                _minimapControl.Start();
+            }
 
             StartStatusBarTimer();
         }
@@ -986,6 +1042,104 @@ namespace MinecraftClient.Tui
 
         #endregion
 
+        #region Minimap
+
+        public void ShowMinimap()
+        {
+            if (_minimapVisible) return;
+            _minimapVisible = true;
+            _minimapBorder.IsVisible = true;
+            _minimapControl.Start();
+            Settings.Config.Console.Minimap.Enabled = true;
+        }
+
+        public void HideMinimap()
+        {
+            if (!_minimapVisible) return;
+            _minimapVisible = false;
+            _minimapControl.Stop();
+            _minimapBorder.IsVisible = false;
+            Settings.Config.Console.Minimap.Enabled = false;
+        }
+
+        public void ToggleMinimap()
+        {
+            if (_minimapVisible)
+                HideMinimap();
+            else
+                ShowMinimap();
+        }
+
+        public bool IsMinimapVisible => _minimapVisible;
+
+        public void SetMinimapZoom(int level)
+        {
+            _minimapControl.BlocksPerPixel = level;
+            Settings.Config.Console.Minimap.Zoom = level;
+        }
+
+        public int GetMinimapZoom() => _minimapControl.BlocksPerPixel;
+
+        public NameDisplayConfig GetMinimapNameConfig() => _minimapControl.NameConfig;
+
+        public void SyncMinimapNameConfig()
+        {
+            var nc = _minimapControl.NameConfig;
+            var cfg = Settings.Config.Console.Minimap;
+            cfg.ShowPlayerNames = nc.Players;
+            cfg.ShowHostileNames = nc.Hostile;
+            cfg.ShowNeutralNames = nc.Neutral;
+            cfg.ShowPassiveNames = nc.Passive;
+        }
+
+        public void ResizeMinimap(int width, int height)
+        {
+            _minimapControl.Resize(width, height);
+            Settings.Config.Console.Minimap.Width = width;
+            Settings.Config.Console.Minimap.Height = height;
+        }
+
+        public void SetMinimapPosition(MinimapPosition pos)
+        {
+            var (hAlign, vAlign, margin) = GetMinimapAlignment(pos);
+            _minimapBorder.HorizontalAlignment = hAlign;
+            _minimapBorder.VerticalAlignment = vAlign;
+            _minimapBorder.Margin = margin;
+            _minimapControl.Position = pos;
+            Settings.Config.Console.Minimap.Position = pos;
+        }
+
+        public MinimapPosition GetMinimapPosition() => Settings.Config.Console.Minimap.Position;
+
+        public void SetMinimapCaveMode(CaveModeOption mode)
+        {
+            _minimapControl.CaveMode = mode;
+            Settings.Config.Console.Minimap.CaveMode = mode;
+        }
+
+        public CaveModeOption GetMinimapCaveMode() => _minimapControl.CaveMode;
+
+        private static (HorizontalAlignment h, VerticalAlignment v, Thickness margin) GetMinimapAlignment(MinimapPosition pos) => pos switch
+        {
+            MinimapPosition.top_left => (HorizontalAlignment.Left, VerticalAlignment.Top, new Thickness(1, 1, 0, 0)),
+            MinimapPosition.top_right => (HorizontalAlignment.Right, VerticalAlignment.Top, new Thickness(0, 1, 1, 0)),
+            MinimapPosition.center => (HorizontalAlignment.Center, VerticalAlignment.Center, new Thickness(0)),
+            MinimapPosition.bottom_left => (HorizontalAlignment.Left, VerticalAlignment.Bottom, new Thickness(1, 0, 0, 2)),
+            MinimapPosition.bottom_right => (HorizontalAlignment.Right, VerticalAlignment.Bottom, new Thickness(0, 0, 1, 2)),
+            _ => (HorizontalAlignment.Right, VerticalAlignment.Top, new Thickness(0, 1, 1, 0)),
+        };
+
+        public void ApplyMinimapConfig()
+        {
+            var cfg = Settings.Config.Console.Minimap;
+            if (cfg.Enabled && !_minimapVisible)
+                ShowMinimap();
+            else if (!cfg.Enabled && _minimapVisible)
+                HideMinimap();
+        }
+
+        #endregion
+
         #region Overlay
 
         public void ShowOverlay(Control content, Action? onClose = null)
@@ -1039,5 +1193,18 @@ namespace MinecraftClient.Tui
                 _commandInput.Focus();
             }, DispatcherPriority.Loaded);
         }
+
+        #region Custom Control Append
+
+        public void AppendControlToLog(Control control)
+        {
+            _logLines.Add(string.Empty);
+            _logControls.Add(control);
+            TrimLog();
+            if (_autoScroll)
+                ScheduleScrollToEnd();
+        }
+
+        #endregion
     }
 }

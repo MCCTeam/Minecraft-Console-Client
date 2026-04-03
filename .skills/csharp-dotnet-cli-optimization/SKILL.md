@@ -31,7 +31,6 @@ metadata:
     - slow
     - hang
     - deadlock
-version: 0.2.0
 ---
 
 # C#/.NET CLI Optimization

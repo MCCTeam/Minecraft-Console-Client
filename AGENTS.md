@@ -4,6 +4,7 @@
 - Minecraft Console Client (MCC) is a cross-platform text/TUI client for Minecraft Java Edition.
 - Primary scope: connect to servers, send chat and commands, receive text, automate gameplay/admin tasks, and extend behavior through built-in bots or runtime C# scripts.
 - Secondary scope: protocol/version adaptation tooling, docs site, legacy GUI wrapper, and debug tooling.
+- Decompiled server source for both the old and new MC versions in `$MCC_REPO/MinecraftOfficial/<version>-decompiled/`
 
 ## Build / Run
 - Init submodules first: `git submodule update --init --recursive`

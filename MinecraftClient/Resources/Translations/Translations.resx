@@ -243,6 +243,9 @@
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
     <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
   </data>
+  <data name="bot.autodig.drop_low_durability" xml:space="preserve">
+    <value>Dropped low durability {0} from slot {1}.</value>
+  </data>
   <data name="bot.autodig.start" xml:space="preserve">
     <value>Automatic digging has started.</value>
   </data>
@@ -251,6 +254,9 @@
   </data>
   <data name="bot.autodig.stop" xml:space="preserve">
     <value>Auto-digging has been stopped.</value>
+  </data>
+  <data name="bot.autodig.switch" xml:space="preserve">
+    <value>Switch to {0} from slot {1}.</value>
   </data>
   <data name="bot.autoDrop.added" xml:space="preserve">
     <value>Added item {0}</value>
@@ -387,6 +393,12 @@
   </data>
   <data name="bot.autoRelog.wait" xml:space="preserve">
     <value>Waiting {0:0.000} seconds before reconnecting...</value>
+  </data>
+  <data name="bot.autoRelog.wait_with_retries" xml:space="preserve">
+    <value>Waiting {0:0.000} seconds before reconnecting... ({1} retries left)</value>
+  </data>
+  <data name="bot.autoRelog.retries_unlimited" xml:space="preserve">
+    <value>unlimited</value>
   </data>
   <data name="bot.autoRespond.file_not_found" xml:space="preserve">
     <value>File not found: '{0}'</value>
@@ -830,6 +842,42 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
   <data name="botname.TestBot" xml:space="preserve">
     <value>TestBot</value>
   </data>
+  <data name="mcc.banner.classic" xml:space="preserve">
+    <value>Minecraft Console Client v{0} - for MC {1} to {2} - {3}</value>
+  </data>
+  <data name="mcc.banner.label_mc_versions" xml:space="preserve">
+    <value>Supported MC Versions:</value>
+  </data>
+  <data name="mcc.server_info.label_server" xml:space="preserve">
+    <value>Server:</value>
+  </data>
+  <data name="mcc.server_info.label_version" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="mcc.server_info.label_protocol" xml:space="preserve">
+    <value>Protocol: {0}</value>
+  </data>
+  <data name="mcc.server_info.label_players" xml:space="preserve">
+    <value>Players:</value>
+  </data>
+  <data name="mcc.server_info.label_ping" xml:space="preserve">
+    <value>Ping:</value>
+  </data>
+  <data name="mcc.server_info.label_ping_ms" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="mcc.server_info.label_connecting_as" xml:space="preserve">
+    <value>Connecting as:</value>
+  </data>
+  <data name="mcc.server_info.label_online" xml:space="preserve">
+    <value>Online Players:</value>
+  </data>
+  <data name="mcc.server_info.sample_more" xml:space="preserve">
+    <value>... +{0}</value>
+  </data>
+  <data name="mcc.server_info.version_upgrade" xml:space="preserve">
+    <value>Server reported protocol {0} ({1}), upgraded to {2} ({3}) for best compatibility</value>
+  </data>
   <data name="cache.converting" xml:space="preserve">
     <value>Converting session cache from disk: {0}</value>
   </data>
@@ -1249,6 +1297,21 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.effects.none" xml:space="preserve">
     <value>No active effects.</value>
   </data>
+  <data name="cmd.tryout.desc" xml:space="preserve">
+    <value>try a recommended feature.</value>
+  </data>
+  <data name="cmd.tryout.list.header" xml:space="preserve">
+    <value>Available tryouts:</value>
+  </data>
+  <data name="cmd.tryout.list.tui" xml:space="preserve">
+    <value>tui: set [Console.General] ConsoleMode = "tui" for the next restart.</value>
+  </data>
+  <data name="cmd.tryout.tui.already_enabled" xml:space="preserve">
+    <value>[Console.General] ConsoleMode is already "tui" in the config. To switch back, set [Console.General] ConsoleMode = "classic". Restart MCC after changing it for the new mode to take effect.</value>
+  </data>
+  <data name="cmd.tryout.tui.enabled" xml:space="preserve">
+    <value>Updated [Console.General] ConsoleMode from "{0}" to "{1}" in the config. To switch back, set [Console.General] ConsoleMode = "classic". Restart MCC to apply the change.</value>
+  </data>
   <data name="cmd.health.desc" xml:space="preserve">
     <value>Display Health and Food saturation.</value>
   </data>
@@ -1510,6 +1573,21 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   </data>
   <data name="cmd.tps.desc" xml:space="preserve">
     <value>Display server current tps (tick per second). May not be accurate</value>
+  </data>
+  <data name="cmd.teams.desc" xml:space="preserve">
+    <value>List all scoreboard teams and their members.</value>
+  </data>
+  <data name="cmd.teams.no_teams" xml:space="preserve">
+    <value>No teams are currently tracked.</value>
+  </data>
+  <data name="cmd.teams.team_header" xml:space="preserve">
+    <value>Team '{0}' (display: {1}, color: {2}, prefix: '{3}', suffix: '{4}', nameTagVisibility: {5}, collisionRule: {6}, friendlyFire: {7}, seeInvisibles: {8})</value>
+  </data>
+  <data name="cmd.teams.team_members" xml:space="preserve">
+    <value>  Members ({0}): {1}</value>
+  </data>
+  <data name="cmd.teams.team_no_members" xml:space="preserve">
+    <value>  No members.</value>
   </data>
   <data name="cmd.useblock.desc" xml:space="preserve">
     <value>Place a block or open chest</value>
@@ -1863,6 +1941,18 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="mcc.connecting" xml:space="preserve">
     <value>Connecting to {0}...</value>
   </data>
+  <data name="mcc.console_mode_tui_recommendation" xml:space="preserve">
+    <value>Tip: try TUI mode for a cleaner interface, mouse-friendly inventory actions, and a nicer layout. Run {0}tryout tui§8 to switch [Console.General] ConsoleMode to "tui" for the next restart.</value>
+  </data>
+  <data name="mcc.tui_startup_failed" xml:space="preserve">
+    <value>MCC encountered a problem while starting TUI mode.</value>
+  </data>
+  <data name="mcc.tui_startup_fallback_classic" xml:space="preserve">
+    <value>As a fallback, MCC has automatically switched [Console.General] ConsoleMode to "classic". This will take effect after you restart MCC.</value>
+  </data>
+  <data name="mcc.report_issue" xml:space="preserve">
+    <value>Please report this issue to the MCC Team.</value>
+  </data>
   <data name="mcc.device_code_prompt" xml:space="preserve">
     <value>To sign in, open {0} in your browser and enter the code: §e{1}</value>
   </data>
@@ -1974,6 +2064,9 @@ Type '{0}quit' to leave the server.</value>
   <data name="mcc.restart" xml:space="preserve">
     <value>Restarting Minecraft Console Client...</value>
   </data>
+  <data name="mcc.send_text_not_connected" xml:space="preserve">
+    <value>Cannot send text: not connected to a server.</value>
+  </data>
   <data name="mcc.restart_delay" xml:space="preserve">
     <value>Waiting {0} seconds before restarting...</value>
   </data>
@@ -1988,10 +2081,10 @@ MCC is running with default settings.</value>
     <value>Server is in offline mode.</value>
   </data>
   <data name="mcc.server_protocol" xml:space="preserve">
-    <value>Server version : {0} (protocol v{1})</value>
+    <value>Server version: {0} (protocol v{1})</value>
   </data>
   <data name="mcc.server_version" xml:space="preserve">
-    <value>Server version : </value>
+    <value>Server version: </value>
   </data>
   <data name="mcc.session" xml:space="preserve">
     <value>Checking Session...</value>
@@ -2150,6 +2243,33 @@ Logging in...</value>
   </data>
   <data name="cmd.nameitem.desc" xml:space="preserve">
     <value>Set an item name when an Anvil inventory is active and the item is in the first slot.</value>
+  </data>
+  <data name="cmd.recipebook.craft.failed" xml:space="preserve">
+    <value>Failed to send recipe book craft request for {0}.</value>
+  </data>
+  <data name="cmd.recipebook.craft.sent" xml:space="preserve">
+    <value>Requested recipe {0}.</value>
+  </data>
+  <data name="cmd.recipebook.craftall.sent" xml:space="preserve">
+    <value>Requested recipe {0} with craft-all.</value>
+  </data>
+  <data name="cmd.recipebook.desc" xml:space="preserve">
+    <value>List unlocked recipe book recipes and craft them through the active recipe book inventory.</value>
+  </data>
+  <data name="cmd.recipebook.list" xml:space="preserve">
+    <value>Unlocked recipe book recipes</value>
+  </data>
+  <data name="cmd.recipebook.no.active.inventory" xml:space="preserve">
+    <value>You need an active player crafting grid, crafting table, furnace, blast furnace, smoker, or stonecutter inventory.</value>
+  </data>
+  <data name="cmd.recipebook.no.recipes" xml:space="preserve">
+    <value>No unlocked recipe book recipes are currently tracked.</value>
+  </data>
+  <data name="cmd.recipebook.recipe.id.empty" xml:space="preserve">
+    <value>The recipe identifier cannot be empty.</value>
+  </data>
+  <data name="cmd.recipebook.unsupported" xml:space="preserve">
+    <value>Recipe book crafting is only supported on Minecraft 1.13 and newer.</value>
   </data>
   <data name="bot.antiafk.may.not.move" xml:space="preserve">
     <value>Bot movement lock is held by bot {0}, so the Anti AFK bot might not move!</value>
@@ -2412,5 +2532,95 @@ see item details.</value>
   </data>
   <data name="bot.mcpserver.stop_failed" xml:space="preserve">
     <value>Failed to stop embedded MCP server cleanly: {0}</value>
+  </data>
+  <data name="cmd.minimap.desc" xml:space="preserve">
+    <value>Toggle the TUI minimap overlay, or adjust its zoom level.</value>
+  </data>
+  <data name="cmd.minimap.enabled" xml:space="preserve">
+    <value>Minimap enabled.</value>
+  </data>
+  <data name="cmd.minimap.disabled" xml:space="preserve">
+    <value>Minimap disabled.</value>
+  </data>
+  <data name="cmd.minimap.zoom_set" xml:space="preserve">
+    <value>Minimap zoom set to {0}:1 (blocks per pixel).</value>
+  </data>
+  <data name="cmd.minimap.zoom_current" xml:space="preserve">
+    <value>Current minimap zoom: {0}:1 blocks/px (range 1-{1}).</value>
+  </data>
+  <data name="cmd.minimap.tui_only" xml:space="preserve">
+    <value>The minimap command is only available in TUI mode.</value>
+  </data>
+  <data name="tui.minimap.legend.hostile" xml:space="preserve">
+    <value>Hostile</value>
+  </data>
+  <data name="tui.minimap.legend.passive" xml:space="preserve">
+    <value>Passive</value>
+  </data>
+  <data name="tui.minimap.legend.neutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="tui.minimap.legend.player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="cmd.minimap.names_status" xml:space="preserve">
+    <value>Name display -- Players: {0}, Hostile: {1}, Neutral: {2}, Passive: {3}</value>
+  </data>
+  <data name="cmd.minimap.names_all_on" xml:space="preserve">
+    <value>All entity name labels enabled.</value>
+  </data>
+  <data name="cmd.minimap.names_all_off" xml:space="preserve">
+    <value>All entity name labels disabled.</value>
+  </data>
+  <data name="cmd.minimap.names_cat" xml:space="preserve">
+    <value>{0} name display: {1}</value>
+  </data>
+  <data name="cmd.minimap.names_cat_set" xml:space="preserve">
+    <value>{0} name display set to {1}.</value>
+  </data>
+  <data name="cmd.minimap.position_current" xml:space="preserve">
+    <value>Current minimap position: {0}</value>
+  </data>
+  <data name="cmd.minimap.position_set" xml:space="preserve">
+    <value>Minimap position set to: {0}</value>
+  </data>
+  <data name="cmd.minimap.cave_current" xml:space="preserve">
+    <value>Current cave mode: {0}</value>
+  </data>
+  <data name="cmd.minimap.cave_set" xml:space="preserve">
+    <value>Cave mode set to: {0}</value>
+  </data>
+  <data name="cmd.achievement.desc" xml:space="preserve">
+    <value>list achievements/advancements from the server.</value>
+  </data>
+  <data name="cmd.achievement.none" xml:space="preserve">
+    <value>No achievements/advancements received yet.</value>
+  </data>
+  <data name="cmd.achievement.none_unlocked" xml:space="preserve">
+    <value>No completed achievements/advancements.</value>
+  </data>
+  <data name="cmd.achievement.none_locked" xml:space="preserve">
+    <value>No incomplete achievements/advancements.</value>
+  </data>
+  <data name="cmd.achievement.header" xml:space="preserve">
+    <value>Achievements/Advancements:</value>
+  </data>
+  <data name="cmd.achievement.header_unlocked" xml:space="preserve">
+    <value>Completed achievements/advancements:</value>
+  </data>
+  <data name="cmd.achievement.header_locked" xml:space="preserve">
+    <value>Incomplete achievements/advancements:</value>
+  </data>
+  <data name="cmd.achievement.done" xml:space="preserve">
+    <value>[DONE]</value>
+  </data>
+  <data name="cmd.achievement.todo" xml:space="preserve">
+    <value>[TODO]</value>
+  </data>
+  <data name="cmd.achievement.entry_titled" xml:space="preserve">
+    <value>{0} {1} ({2}) [{3}]</value>
+  </data>
+  <data name="cmd.achievement.entry" xml:space="preserve">
+    <value>{0} {1} [{2}]</value>
   </data>
 </root>

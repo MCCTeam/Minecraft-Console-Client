@@ -1,6 +1,7 @@
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.CommandHandler.CmdResult;
 
@@ -9,7 +10,7 @@ namespace MinecraftClient.Commands
     class Useblock : Command
     {
         public override string CmdName { get { return "useblock"; } }
-        public override string CmdUsage { get { return "useblock <x> <y> <z>"; } }
+        public override string CmdUsage { get { return "useblock <x> <y> <z> [mainhand|offhand]"; } }
         public override string CmdDesc { get { return Translations.cmd_useblock_desc; } }
 
         public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
@@ -22,7 +23,11 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("Location", MccArguments.Location())
-                    .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"))))
+                    .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"), Hand.MainHand))
+                    .Then(l => l.Literal("mainhand")
+                        .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"), Hand.MainHand)))
+                    .Then(l => l.Literal("offhand")
+                        .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"), Hand.OffHand))))
                 .Then(l => l.Literal("_help")
                     .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
@@ -39,7 +44,7 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int UseBlockAtLocation(CmdResult r, Location block)
+        private int UseBlockAtLocation(CmdResult r, Location block, Hand hand)
         {
             McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
@@ -48,7 +53,7 @@ namespace MinecraftClient.Commands
             Location current = handler.GetCurrentLocation();
             block = block.ToAbsolute(current).ToFloor();
             Location blockCenter = block.ToCenter();
-            bool res = handler.PlaceBlock(block, Direction.Down, lookAtBlock: true);
+            bool res = handler.PlaceBlock(block, Direction.Down, hand, lookAtBlock: true);
             return r.SetAndReturn(string.Format(Translations.cmd_useblock_use, blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed"), res);
         }
     }

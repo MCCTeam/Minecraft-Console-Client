@@ -44,10 +44,15 @@ namespace MinecraftClient
 
         private readonly Queue<Action> threadTasks = new();
         private readonly Lock threadTasksLock = new();
+        private readonly Lock recipeBookLock = new();
+        private readonly Lock achievementsLock = new();
 
         private readonly List<ChatBot> bots = new();
         private static readonly List<ChatBot> botsOnHold = new();
         private static readonly Dictionary<int, Container> inventories = new();
+        private readonly Dictionary<string, RecipeBookRecipeEntry> unlockedRecipes = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Achievement> achievements = new(StringComparer.Ordinal);
+        private string? activeAdvancementTab;
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new();
         private readonly List<string> registeredServerPluginChannels = new();
@@ -105,6 +110,12 @@ namespace MinecraftClient
 
         // player effects
         private readonly Dictionary<Effects, EffectData> playerEffects = new();
+
+        // player attributes (e.g., block_break_speed, mining_efficiency, submerged_mining_speed)
+        private readonly Dictionary<string, double> playerAttributes = new();
+
+        // scoreboard teams (key = team name)
+        private readonly Dictionary<string, PlayerTeam> teams = new(StringComparer.Ordinal);
         
         // Sneaking
         public bool IsSneaking { get; set; } = false;
@@ -154,6 +165,30 @@ namespace MinecraftClient
         public Dictionary<Effects, EffectData> GetPlayerEffects()
         {
             return new Dictionary<Effects, EffectData>(playerEffects);
+        }
+
+        /// <summary>
+        /// Get a snapshot of all known scoreboard teams.
+        /// </summary>
+        /// <returns>Dictionary mapping team name to <see cref="PlayerTeam"/></returns>
+        public Dictionary<string, PlayerTeam> GetTeams()
+        {
+            lock (teams)
+                return new Dictionary<string, PlayerTeam>(teams, StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Get the team that contains the given player/entity name, or <c>null</c> if not found.
+        /// </summary>
+        public PlayerTeam? GetPlayerTeam(string playerName)
+        {
+            lock (teams)
+            {
+                foreach (var team in teams.Values)
+                    if (team.Members.Contains(playerName))
+                        return team;
+                return null;
+            }
         }
 
         public int GetLevel() { return playerLevel; }
@@ -1257,6 +1292,7 @@ namespace MinecraftClient
                 inventoryHandlingEnabled = false;
                 inventoryHandlingRequested = false;
                 inventories.Clear();
+                ClearUnlockedRecipes();
             }
             return true;
         }
@@ -1359,6 +1395,54 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get all unlocked recipe book recipe identifiers.
+        /// </summary>
+        /// <returns>Unlocked recipe identifiers sorted alphabetically</returns>
+        public RecipeBookRecipeEntry[] GetUnlockedRecipes()
+        {
+            lock (recipeBookLock)
+            {
+                return unlockedRecipes.Values.OrderBy(static recipe => recipe.CommandId, StringComparer.Ordinal).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Get all achievements/advancements known to the client.
+        /// </summary>
+        /// <returns>Snapshot of all achievements</returns>
+        public Achievement[] GetAchievements()
+        {
+            lock (achievementsLock)
+            {
+                return [.. achievements.Values];
+            }
+        }
+
+        /// <summary>
+        /// Get only completed achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of completed achievements</returns>
+        public Achievement[] GetUnlockedAchievements()
+        {
+            lock (achievementsLock)
+            {
+                return achievements.Values.Where(static a => a.IsCompleted).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Get only incomplete achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of locked achievements</returns>
+        public Achievement[] GetLockedAchievements()
+        {
+            lock (achievementsLock)
+            {
+                return achievements.Values.Where(static a => !a.IsCompleted).ToArray();
+            }
+        }
+
+        /// <summary>
         /// Get all Entities
         /// </summary>
         /// <returns>All Entities</returns>
@@ -1402,6 +1486,22 @@ namespace MinecraftClient
         public Container GetPlayerInventory()
         {
             return GetInventory(0)!;
+        }
+
+        /// <summary>
+        /// Get the currently active inventory if it supports recipe book crafting.
+        /// </summary>
+        /// <returns>Active recipe book inventory, or null if the active inventory does not support recipe book crafting</returns>
+        public Container? GetActiveRecipeBookInventory()
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => GetActiveRecipeBookInventory());
+
+            if (inventories.Count == 0)
+                return null;
+
+            Container activeInventory = inventories.MaxBy(static pair => pair.Key).Value;
+            return SupportsRecipeBook(activeInventory.Type) ? activeInventory : null;
         }
 
         /// <summary>
@@ -1498,6 +1598,12 @@ namespace MinecraftClient
         {
             if (String.IsNullOrEmpty(text))
                 return;
+
+            if (!CanSendMessage)
+            {
+                Log.Warn(Translations.mcc_send_text_not_connected);
+                return;
+            }
 
             int maxLength = handler.GetMaxChatMessageLength();
 
@@ -2516,6 +2622,7 @@ namespace MinecraftClient
 
             inventories.Clear();
             inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            ClearUnlockedRecipes();
             return true;
         }
 
@@ -2599,6 +2706,13 @@ namespace MinecraftClient
                 if (lookAtBlock)
                     UpdateLocation(GetCurrentLocation(), location);
 
+                // Auto-compute dig duration for survival/adventure mode when not explicitly supplied
+                if (duration <= 0 && protocolversion >= Protocol18Handler.MC_1_8_Version
+                    && gamemode is 0 or 2) // Survival or Adventure
+                {
+                    duration = ComputeAutoDigDuration(location);
+                }
+
                 // Send dig start and dig end, will need to wait for server response to know dig result
                 // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
                 bool result = handler.SendPlayerDigging(0, location, blockFace, sequenceId++)
@@ -2613,6 +2727,52 @@ namespace MinecraftClient
                 }
 
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Compute the automatic dig duration in seconds for a block, based on held tool,
+        /// enchantments, effects, attributes, and player state.
+        /// Returns 0 for instant-break blocks.
+        /// </summary>
+        private double ComputeAutoDigDuration(Location location)
+        {
+            try
+            {
+                Block block = world.GetBlock(location);
+                Material blockMaterial = block.Type;
+
+                if (blockMaterial == Material.Air)
+                    return 0;
+
+                // Get held item from player inventory
+                Item? heldItem = null;
+                Item? helmetItem = null;
+                if (inventories.TryGetValue(0, out var playerInv))
+                {
+                    int hotbarSlot = 36 + CurrentSlot; // Hotbar slots are 36-44
+                    playerInv.Items.TryGetValue(hotbarSlot, out heldItem);
+                    playerInv.Items.TryGetValue(5, out helmetItem); // Slot 5 = helmet
+                }
+
+                int ticks = MiningCalculator.ComputeDigTicks(
+                    blockMaterial,
+                    heldItem,
+                    helmetItem,
+                    playerEffects,
+                    playerAttributes,
+                    playerPhysics.InWater,
+                    playerPhysics.OnGround,
+                    protocolversion);
+
+                if (ticks <= 0)
+                    return 0;
+
+                return (double)ticks / Settings.ClientTicksPerSecond;
+            }
+            catch
+            {
+                return 0;
             }
         }
 
@@ -2751,6 +2911,31 @@ namespace MinecraftClient
                 return false;
             
             return handler.SendRenameItem(itemName);
+        }
+
+        /// <summary>
+        /// Send a recipe book craft request for the currently active crafting inventory.
+        /// </summary>
+        /// <param name="recipeId">Recipe identifier to craft</param>
+        /// <param name="makeAll">True to craft as many items as possible</param>
+        /// <returns>True if the packet was sent</returns>
+        public bool SendPlaceRecipe(string recipeId, bool makeAll)
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SendPlaceRecipe(recipeId, makeAll));
+
+            if (protocolversion < Protocol18Handler.MC_1_13_Version)
+                return false;
+
+            Container? activeInventory = GetActiveRecipeBookInventory();
+            if (activeInventory is null)
+                return false;
+
+            string normalizedRecipeId = NormalizeRecipeArgument(recipeId, protocolversion);
+            if (normalizedRecipeId.Length == 0)
+                return false;
+
+            return handler.SendPlaceRecipe(activeInventory.ID, normalizedRecipeId, makeAll);
         }
         #endregion
 
@@ -3738,6 +3923,44 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when an entity velocity update is received.
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="velocityX">Velocity on X axis (blocks/tick)</param>
+        /// <param name="velocityY">Velocity on Y axis (blocks/tick)</param>
+        /// <param name="velocityZ">Velocity on Z axis (blocks/tick)</param>
+        public void OnEntityVelocity(int entityID, double velocityX, double velocityY, double velocityZ)
+        {
+            if (entities.TryGetValue(entityID, out Entity? entity))
+                DispatchBotEvent(bot => bot.OnEntityVelocity(entity, velocityX, velocityY, velocityZ));
+        }
+
+        /// <summary>
+        /// Called when a sound packet is received.
+        /// </summary>
+        /// <param name="soundName">Sound key when available, otherwise null</param>
+        /// <param name="location">Sound location when available</param>
+        /// <param name="category">Sound category id from packet</param>
+        /// <param name="volume">Sound volume</param>
+        /// <param name="pitch">Sound pitch</param>
+        /// <param name="entityID">Source entity id for entity sound packets, if any</param>
+        public void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch,
+            int? entityID)
+        {
+            Entity? sourceEntity = null;
+            Location? resolvedLocation = location;
+
+            if (entityID is int id && entities.TryGetValue(id, out Entity? entity))
+            {
+                sourceEntity = entity;
+                resolvedLocation ??= entity.Location;
+            }
+
+            DispatchBotEvent(bot => bot.OnSoundEffect(soundName, resolvedLocation, category, volume, pitch,
+                sourceEntity));
+        }
+
+        /// <summary>
         /// Called when received entity properties from server.
         /// </summary>
         /// <param name="EntityID"></param>
@@ -3746,6 +3969,9 @@ namespace MinecraftClient
         {
             if (EntityID == playerEntityID)
             {
+                foreach (var kvp in prop)
+                    playerAttributes[kvp.Key] = kvp.Value;
+
                 DispatchBotEvent(bot => bot.OnPlayerProperty(prop));
             }
         }
@@ -3777,11 +4003,15 @@ namespace MinecraftClient
             {
                 DateTime currentTime = DateTime.Now;
                 long tickDiff = WorldAge - lastAge;
-                Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
+                double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
                 lastAge = WorldAge;
                 lastTime = currentTime;
-                if (tps <= 20 && tps > 0)
+                if (tps > 0)
                 {
+                    // A Minecraft server cannot genuinely exceed 20 TPS; values above 20 are
+                    // caused by packet-timing jitter. Clamp instead of discarding so that a
+                    // healthy server averages to 20 rather than being biased downward.
+                    tps = Math.Min(tps, 20.0);
                     // calculate average tps
                     if (tpsSamples.Count >= maxSamples)
                     {
@@ -3951,7 +4181,78 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityName, action, objectiveName, objectiveDisplayName, objectiveValue, numberFormat));
         }
-        
+
+        /// <summary>
+        /// Called when a Teams packet is received. Updates the internal team state and notifies bots.
+        /// </summary>
+        public void OnTeam(string teamName, byte method, string displayName, byte friendlyFlags,
+            string nameTagVisibility, string collisionRule, int color,
+            string prefix, string suffix, List<string> players)
+        {
+            lock (teams)
+            {
+                switch (method)
+                {
+                    case 0: // create
+                        var newTeam = new PlayerTeam
+                        {
+                            Name = teamName,
+                            DisplayName = displayName,
+                            AllowFriendlyFire = (friendlyFlags & 0x01) != 0,
+                            SeeFriendlyInvisibles = (friendlyFlags & 0x02) != 0,
+                            NameTagVisibility = nameTagVisibility,
+                            CollisionRule = collisionRule,
+                            Color = color,
+                            Prefix = prefix,
+                            Suffix = suffix
+                        };
+                        foreach (var p in players)
+                            newTeam.Members.Add(p);
+                        teams[teamName] = newTeam;
+                        break;
+
+                    case 1: // remove
+                        teams.Remove(teamName);
+                        break;
+
+                    case 2: // update parameters
+                        if (!teams.TryGetValue(teamName, out var updateTeam))
+                        {
+                            updateTeam = new PlayerTeam { Name = teamName };
+                            teams[teamName] = updateTeam;
+                        }
+                        updateTeam.DisplayName = displayName;
+                        updateTeam.AllowFriendlyFire = (friendlyFlags & 0x01) != 0;
+                        updateTeam.SeeFriendlyInvisibles = (friendlyFlags & 0x02) != 0;
+                        updateTeam.NameTagVisibility = nameTagVisibility;
+                        updateTeam.CollisionRule = collisionRule;
+                        updateTeam.Color = color;
+                        updateTeam.Prefix = prefix;
+                        updateTeam.Suffix = suffix;
+                        break;
+
+                    case 3: // add players
+                        if (!teams.TryGetValue(teamName, out var addTeam))
+                        {
+                            addTeam = new PlayerTeam { Name = teamName };
+                            teams[teamName] = addTeam;
+                        }
+                        foreach (var p in players)
+                            addTeam.Members.Add(p);
+                        break;
+
+                    case 4: // remove players
+                        if (teams.TryGetValue(teamName, out var removeTeam))
+                            foreach (var p in players)
+                                removeTeam.Members.Remove(p);
+                        break;
+                }
+            }
+            DispatchBotEvent(bot => bot.OnTeam(teamName, method, displayName, friendlyFlags,
+                nameTagVisibility, collisionRule, color, prefix, suffix, players));
+        }
+
+
         /// <summary>
         /// Called when the client received the Tab Header and Footer
         /// </summary>
@@ -4152,6 +4453,95 @@ namespace MinecraftClient
             Log.Debug("CanSendMessage = " + canSendMessage);
         }
 
+        public void OnRecipeBookAdd(RecipeBookRecipeEntry[] recipes, bool replace)
+        {
+            lock (recipeBookLock)
+            {
+                if (replace)
+                    unlockedRecipes.Clear();
+
+                foreach (RecipeBookRecipeEntry recipe in recipes)
+                {
+                    // Guard against malformed server packets that send empty display IDs.
+                    if (!string.IsNullOrWhiteSpace(recipe.CommandId))
+                        unlockedRecipes[recipe.CommandId] = recipe;
+                }
+            }
+        }
+
+        public void OnRecipeBookRemove(string[] recipeIds)
+        {
+            lock (recipeBookLock)
+            {
+                foreach (string recipeId in recipeIds)
+                {
+                    if (!string.IsNullOrWhiteSpace(recipeId))
+                        unlockedRecipes.Remove(recipeId);
+                }
+            }
+        }
+
+        public void OnAchievementsUpdate(IReadOnlyList<Achievement> added, IReadOnlyList<string> removedIds, bool reset)
+        {
+            lock (achievementsLock)
+            {
+                if (reset)
+                    achievements.Clear();
+
+                // Remove entries
+                foreach (string id in removedIds)
+                    achievements.Remove(id);
+
+                // Add/update entries. For progress-only updates (no definition),
+                // merge with existing definition if available.
+                foreach (Achievement entry in added)
+                {
+                    if (entry.Title is null && achievements.TryGetValue(entry.Id, out Achievement? existing))
+                    {
+                        // Progress-only update - merge with existing definition
+                        bool isCompleted = ComputeAchievementCompleted(existing.Requirements, entry.CriteriaProgress);
+                        achievements[entry.Id] = existing with { IsCompleted = isCompleted, CriteriaProgress = entry.CriteriaProgress };
+                    }
+                    else
+                    {
+                        achievements[entry.Id] = entry;
+                    }
+                }
+            }
+
+            DispatchBotEvent(bot => bot.OnAchievementUpdate(added, removedIds, reset));
+        }
+
+        public void OnSelectAdvancementTab(string? tabId)
+        {
+            activeAdvancementTab = tabId;
+        }
+
+        /// <summary>
+        /// Compute whether an achievement is completed based on AND-of-ORs requirements.
+        /// </summary>
+        private static bool ComputeAchievementCompleted(IReadOnlyList<IReadOnlyList<string>> requirements, IReadOnlyDictionary<string, bool> criteria)
+        {
+            if (requirements.Count == 0)
+                return true;
+
+            foreach (IReadOnlyList<string> group in requirements)
+            {
+                bool groupSatisfied = false;
+                foreach (string criterion in group)
+                {
+                    if (criteria.TryGetValue(criterion, out bool done) && done)
+                    {
+                        groupSatisfied = true;
+                        break;
+                    }
+                }
+                if (!groupSatisfied)
+                    return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// Send a click container button packet to the server.
         /// Used for Enchanting table, Lectern, stone cutter and loom
@@ -4294,6 +4684,51 @@ namespace MinecraftClient
         {
             Location blockLocation = location.ToFloor();
             return ((int)blockLocation.X, (int)blockLocation.Y, (int)blockLocation.Z);
+        }
+
+        private static bool SupportsRecipeBook(ContainerType containerType)
+        {
+            return containerType switch
+            {
+                ContainerType.PlayerInventory or
+                ContainerType.Crafting or
+                ContainerType.Furnace or
+                ContainerType.BlastFurnace or
+                ContainerType.Smoker or
+                ContainerType.Stonecutter => true,
+                _ => false,
+            };
+        }
+
+        private void ClearUnlockedRecipes()
+        {
+            lock (recipeBookLock)
+            {
+                unlockedRecipes.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Normalize a recipe argument for the target protocol version.
+        /// Legacy recipe-book packets use identifiers and default to the minecraft namespace.
+        /// 1.21.2+ recipe-book packets use numeric recipe display ids and should be left trimmed-only.
+        /// </summary>
+        internal static string NormalizeRecipeArgument(string recipeId, int protocolVersion)
+        {
+            return protocolVersion >= Protocol18Handler.MC_1_21_2_Version
+                ? recipeId.Trim()
+                : NormalizeRecipeId(recipeId);
+        }
+
+        private static string NormalizeRecipeId(string recipeId)
+        {
+            string trimmedRecipeId = recipeId.Trim();
+            if (trimmedRecipeId.Length == 0)
+                return string.Empty;
+
+            return trimmedRecipeId.Contains(':', StringComparison.Ordinal)
+                ? trimmedRecipeId
+                : "minecraft:" + trimmedRecipeId;
         }
 
         #endregion
