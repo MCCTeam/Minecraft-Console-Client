@@ -28,6 +28,9 @@ namespace MinecraftClient.Tui
             AddVersionRange(infoPanel);
             AddGithub(infoPanel);
 
+            if (Settings.Config.Main.Advanced.ShowGithubStarReminder)
+                AddStarReminder(infoPanel);
+
             if (buildInfo is not null)
                 AddBuildInfo(infoPanel, buildInfo);
 
@@ -67,6 +70,14 @@ namespace MinecraftClient.Tui
         {
             var row = new TextBlock();
             row.Inlines!.Add(Val("Github.com/MCCTeam", Pal.Gray));
+            panel.Children.Add(row);
+        }
+
+        private static void AddStarReminder(StackPanel panel)
+        {
+            var row = new TextBlock();
+            row.Inlines!.Add(new Run("\u2b50 ") { Foreground = Pal.Gold });
+            row.Inlines.Add(Val("Star us on GitHub!", Pal.Gold));
             panel.Children.Add(row);
         }
 

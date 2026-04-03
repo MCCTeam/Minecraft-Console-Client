@@ -820,6 +820,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.Advanced.show_effect_names_in_tui$")]
                     public bool ShowEffectNamesInTUI = false;
 
+                    [TomlInlineComment("$Main.Advanced.show_github_star_reminder$")]
+                    public bool ShowGithubStarReminder = true;
+
                     [TomlInlineComment("$Main.Advanced.terrain_and_movements$")]
                     public bool TerrainAndMovements = false;
 

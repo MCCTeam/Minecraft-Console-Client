@@ -2311,6 +2311,12 @@ namespace MinecraftClient {
             }
         }
         
+        internal static string mcc_banner_star_reminder {
+            get {
+                return ResourceManager.GetString("mcc.banner.star_reminder", resourceCulture);
+            }
+        }
+        
         internal static string mcc_banner_label_mc_versions {
             get {
                 return ResourceManager.GetString("mcc.banner.label_mc_versions", resourceCulture);

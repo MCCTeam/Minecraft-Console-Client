@@ -1878,6 +1878,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show a GitHub star reminder on startup. Set to false to hide it..
+        /// </summary>
+        internal static string Main_Advanced_show_github_star_reminder {
+            get {
+                return ResourceManager.GetString("Main.Advanced.show_github_star_reminder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show full effect names and levels in the TUI status bar instead of compact effect icons only..
         /// </summary>
         internal static string Main_Advanced_show_effect_names_in_tui {

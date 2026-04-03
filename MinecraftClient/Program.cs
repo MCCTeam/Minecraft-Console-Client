@@ -318,6 +318,8 @@ namespace MinecraftClient
             ConsoleIO.WriteLine(string.Format(Translations.mcc_banner_classic, Version, MCLowestVersion, MCHighestVersion, "Github.com/MCCTeam"));
             if (BuildInfo is not null)
                 ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+            if (Config.Main.Advanced.ShowGithubStarReminder)
+                ConsoleIO.WriteLineFormatted("§e" + Translations.mcc_banner_star_reminder);
         }
 
         private static void MaybePrintClassicModeTuiRecommendation()
