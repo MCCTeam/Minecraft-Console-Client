@@ -3912,11 +3912,15 @@ namespace MinecraftClient
             {
                 DateTime currentTime = DateTime.Now;
                 long tickDiff = WorldAge - lastAge;
-                Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
+                double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
                 lastAge = WorldAge;
                 lastTime = currentTime;
-                if (tps <= 20 && tps > 0)
+                if (tps > 0)
                 {
+                    // A Minecraft server cannot genuinely exceed 20 TPS; values above 20 are
+                    // caused by packet-timing jitter. Clamp instead of discarding so that a
+                    // healthy server averages to 20 rather than being biased downward.
+                    tps = Math.Min(tps, 20.0);
                     // calculate average tps
                     if (tpsSamples.Count >= maxSamples)
                     {
