@@ -547,6 +547,13 @@ namespace MinecraftClient.Protocol
         public void OnBlockChange(Location location, Block block);
 
         /// <summary>
+        /// Called when block entity update data is received for a loaded block.
+        /// </summary>
+        /// <param name="location">The block location.</param>
+        /// <param name="nbt">The block entity NBT payload.</param>
+        public void OnBlockEntityData(Location location, Dictionary<string, object>? nbt);
+
+        /// <summary>
         /// Called when "AutoComplete" completes.
         /// </summary>
         /// <param name="transactionId">The number of this result.</param>

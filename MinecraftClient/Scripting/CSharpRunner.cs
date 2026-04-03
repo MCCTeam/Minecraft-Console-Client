@@ -215,6 +215,11 @@ namespace MinecraftClient.Scripting
             this.localVars = localVars;
         }
 
+        /// <summary>
+        /// Access the shared MCC gameplay API used by bots and the embedded MCP server.
+        /// </summary>
+        new public MccGameApi Game => base.Game;
+
         /* == Wrappers for ChatBot API with public visibility and call limit to one per tick for safety == */
 
         /// <summary>

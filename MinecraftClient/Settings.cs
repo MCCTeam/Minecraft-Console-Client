@@ -1811,6 +1811,17 @@ namespace MinecraftClient
                     get { return ChatBots.DiscordRpc.Config; }
                     set { ChatBots.DiscordRpc.Config = value; ChatBots.DiscordRpc.Config.OnSettingUpdate(); }
                 }
+
+                [TomlPrecedingComment("$ChatBot.McpServer$")]
+                public ChatBots.McpServer.Configs McpServer
+                {
+                    get { return ChatBots.McpServer.Config; }
+                    set
+                    {
+                        ChatBots.McpServer.Config = value ?? new ChatBots.McpServer.Configs();
+                        ChatBots.McpServer.Config.OnSettingUpdate();
+                    }
+                }
             }
         }
 

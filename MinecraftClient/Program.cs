@@ -890,13 +890,14 @@ namespace MinecraftClient
         /// <param name="keepAccountAndServerSettings">Optional, keep account and server settings</param>
         public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
-            ConsoleIO.Backend.StopReadThread();
+            ConsoleIO.Backend?.StopReadThread();
             new Thread(new ThreadStart(delegate
             {
                 if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt is not null)
                 {
-                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                    if (ConsoleIO.Backend is not null)
+                        ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
                     offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
                 }
                 if (delaySeconds > 0)
@@ -918,7 +919,8 @@ namespace MinecraftClient
             if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
             if (offlinePrompt is not null)
             {
-                ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                if (ConsoleIO.Backend is not null)
+                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
                 offlinePrompt.Item2.Cancel();
                 if (Thread.CurrentThread != offlinePrompt.Item1)
                     offlinePrompt.Item1.Join(1000);
@@ -990,8 +992,9 @@ namespace MinecraftClient
 
                 if (offlinePrompt is null)
                 {
-                    ConsoleIO.Backend.StopReadThread();
-                    ConsoleIO.Backend.OnInputChange += ConsoleIO.OfflineAutocompleteHandler;
+                    ConsoleIO.Backend?.StopReadThread();
+                    if (ConsoleIO.Backend is not null)
+                        ConsoleIO.Backend.OnInputChange += ConsoleIO.OfflineAutocompleteHandler;
 
                     var cancellationTokenSource = new CancellationTokenSource();
                     offlinePrompt = new(new Thread(new ThreadStart(delegate
