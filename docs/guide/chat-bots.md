@@ -43,6 +43,7 @@ redirectFrom:
   - [Follow player](#follow-player)
   - [Hangman](#hangman)
   - [Mailer](#mailer)
+  - [MCP Server](#mcp-server)
   - [Map](#map)
   - [PlayerList Logger](#playerlist-logger)
   - [Remote Control](#remote-control)
@@ -2326,6 +2327,437 @@ redirectFrom:
   - **Type:** `integer`
 
   - **Default:** `30`
+
+## MCP Server
+
+- **Description:**
+
+  This lets you control MCC from an AI agent such as Claude Code, Codex, Cursor, OpenCode and others.
+
+  Once enabled, your AI client can connect to the running MCC session and ask it to do things like read chat, check nearby players, move around, inspect inventories, or interact with entities.
+
+  The MCP server starts after MCC joins the game. By default it listens on `http://127.0.0.1:33333/mcp`.
+
+  This bot does not log in to Minecraft on its own. MCC still connects to the server normally first. The MCP part simply gives your AI agent a way to use the session that is already running.
+
+  We recommend protecting it with an auth token, even for local use.
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  This feature is new and experimental, it still requires a lot of testing and polish. Please leave your feedback on our Discord server.
+
+  </div>
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  The performance of task execution depends on how smart the LLM (Large Language Model) (e.g. Sonnet 4.6, GPT 5.4) and Harness/AI Agent (e.g. Claude Code) are.
+
+  </div>
+
+  **Recommended Harnsesses/Agents**:
+    - Claude Code
+    - Codex
+    - Open Code
+    - Cursor
+    - Open Claw
+
+  **Recommended models:**
+    - **Frontier, more expensive, for most complex/demanding tasks:**
+      - Opus 4.6
+      - GPT 5.6
+      - GLM-5 (Cheapest out of these)
+
+    - **Open-Source, almost as good, cheaper, for medium complex tasks:**
+      - MiMo-V2-Pro
+      - MiniMax M2.7 (Cheapest out of these)
+      - Kimi K2.5
+
+    - **Very cheap, for medium and simpler tasks**:
+      - Google Gemini 3 Flash (Cheapes, recommended)
+      - NVIDIA Nemotron 3 Super (Free through Nvidia and on Open Router with `(free)` label, might hit rate limits) (NOTE: Your data will be used to train the model)
+      - Deep Seek V3.2
+
+    - **Ultra cheap, for very simple tasks:**
+      - Google Gemini 3.1 Flash Lite Preview
+
+- **Settings:**
+
+  **Section:** **`ChatBot.McpServer`**
+
+  <details>
+  <summary><strong>Quick start</strong></summary>
+
+  1. Enable `ChatBot.McpServer`.
+  2. Set `Transport.RequireAuthToken = true`.
+  3. Export a token before starting MCC:
+
+     ```bash
+     export MCC_MCP_AUTH_TOKEN="replace-me"
+     ```
+
+  4. Leave `Transport.BindHost = "127.0.0.1"` unless you intentionally want to expose the endpoint to other machines.
+  5. Start MCC and join a Minecraft server.
+  6. Connect your AI client to `http://127.0.0.1:33333/mcp`.
+
+  The embedded host starts after the bot joins the game, not at process launch.
+
+  Tool availability still depends on MCC runtime support. Movement, inventory, and entity tools need the corresponding MCC features to be available for the current version and session.
+
+  </details>
+
+  <details>
+  <summary><strong>Recommended config</strong></summary>
+
+  ```toml
+  [ChatBot.McpServer]
+  Enabled = true
+  Transport = { BindHost = "127.0.0.1", Port = 33333, Route = "/mcp", RequireAuthToken = true, AuthTokenEnvVar = "MCC_MCP_AUTH_TOKEN" }
+  Capabilities = { SessionStatus = true, ChatAndCommands = true, Movement = true, Inventory = true, EntityWorld = true }
+  ```
+
+  For a local setup, keeping the bind host on `127.0.0.1` is the safest default.
+
+  We recommend enabling bearer-token protection and exporting the token before starting MCC:
+
+  ```bash
+  export MCC_MCP_AUTH_TOKEN="replace-me"
+  ```
+
+  </details>
+
+  <details>
+  <summary><strong>All settings</strong></summary>
+
+  #### `Enabled`
+
+  - **Description:**
+
+    Enables or disables the built-in MCP server bot.
+
+  - **Type:** `boolean`
+
+  - **Default:** `false`
+
+  #### `Transport.BindHost`
+
+  - **Description:**
+
+    Hostname or IP address the embedded HTTP server binds to.
+
+    Use `127.0.0.1` for local-only access. Binding to `0.0.0.0` exposes the endpoint to your network.
+
+  - **Type:** `string`
+
+  - **Default:** `127.0.0.1`
+
+  #### `Transport.Port`
+
+  - **Description:**
+
+    TCP port used by the embedded HTTP MCP server.
+
+  - **Type:** `integer`
+
+  - **Default:** `33333`
+
+  #### `Transport.Route`
+
+  - **Description:**
+
+    HTTP path used by the MCP endpoint.
+
+  - **Type:** `string`
+
+  - **Default:** `/mcp`
+
+  #### `Transport.RequireAuthToken`
+
+  - **Description:**
+
+    Require an `Authorization: Bearer ...` header before clients can use the server.
+
+    Recommended: `true`
+
+  - **Type:** `boolean`
+
+  - **Default:** `false`
+
+  #### `Transport.AuthTokenEnvVar`
+
+  - **Description:**
+
+    Environment variable name MCC reads when bearer-token auth is enabled.
+
+  - **Type:** `string`
+
+  - **Default:** `MCC_MCP_AUTH_TOKEN`
+
+  #### `Capabilities.SessionStatus`
+
+  - **Description:**
+
+    Enables session, server, chat-history, event-history, reference, and status-reporting tools.
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  #### `Capabilities.ChatAndCommands`
+
+  - **Description:**
+
+    Enables chat sending, internal command execution, respawn, disconnect, quit, and related direct-control tools.
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  #### `Capabilities.Movement`
+
+  - **Description:**
+
+    Enables movement, path preview, look, reachability, and nearby block/player queries.
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  #### `Capabilities.Inventory`
+
+  - **Description:**
+
+    Enables inventory snapshots, container open/close, window actions, item selection, item use, drop, deposit, and withdraw tools.
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  #### `Capabilities.EntityWorld`
+
+  - **Description:**
+
+    Enables entity queries, sign search, block lookup, nearby dropped-item listing, and item pickup helpers.
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  </details>
+
+  The client examples below assume the default local endpoint `http://127.0.0.1:33333/mcp`.
+
+  The recommended setup is to keep `RequireAuthToken = true`. If you temporarily disable auth for local testing, you can omit the auth-header parts.
+
+  <details>
+  <summary><strong>Claude Code</strong></summary>
+
+  Official docs: [Claude Code MCP](https://code.claude.com/docs/en/mcp)
+
+  These commands assume the default local MCC endpoint:
+
+  ```bash
+  claude mcp add --transport http mcc http://127.0.0.1:33333/mcp
+  claude mcp list
+  ```
+
+  If you enabled bearer-token auth in MCC:
+
+  ```bash
+  claude mcp add --transport http mcc http://127.0.0.1:33333/mcp \
+    --header "Authorization: Bearer $MCC_MCP_AUTH_TOKEN"
+  ```
+
+  You can check the server status inside Claude Code with `/mcp`.
+
+  </details>
+
+  <details>
+  <summary><strong>Codex</strong></summary>
+
+  Official docs: [OpenAI Docs MCP quickstart](https://developers.openai.com/learn/docs-mcp)
+
+  Add the MCC server with the Codex CLI:
+
+  ```bash
+  codex mcp add mcc --url http://127.0.0.1:33333/mcp
+  codex mcp list
+  ```
+
+  You can also place it directly in `~/.codex/config.toml`:
+
+  ```toml
+  [mcp_servers.mcc]
+  url = "http://127.0.0.1:33333/mcp"
+  ```
+
+  If your Codex setup supports custom MCP headers, add the same `Authorization: Bearer ...` header you use in the other examples.
+
+  </details>
+
+  <details>
+  <summary><strong>Cursor</strong></summary>
+
+  Official docs: [Cursor MCP docs](https://docs.cursor.com/en/tools/mcp)
+
+  Create `~/.cursor/mcp.json` and add:
+
+  ```json
+  {
+    "mcpServers": {
+      "mcc": {
+        "url": "http://127.0.0.1:33333/mcp"
+      }
+    }
+  }
+  ```
+
+  Restart Cursor after saving the file.
+
+  If your Cursor setup uses auth headers for remote MCP servers, add `Authorization: Bearer ...` with your MCC token.
+
+  </details>
+
+  <details>
+  <summary><strong>OpenCode</strong></summary>
+
+  Official docs: [OpenCode MCP servers](https://opencode.ai/docs/mcp-servers)
+
+  Put this in `~/.config/opencode/opencode.json` for a global setup, or in `opencode.json` in your project root:
+
+  ```json
+  {
+    "$schema": "https://opencode.ai/config.json",
+    "mcp": {
+      "mcc": {
+        "type": "remote",
+        "url": "http://127.0.0.1:33333/mcp",
+        "enabled": true
+      }
+    }
+  }
+  ```
+
+  If you enabled bearer-token auth in MCC, add headers like this:
+
+  ```json
+  {
+    "$schema": "https://opencode.ai/config.json",
+    "mcp": {
+      "mcc": {
+        "type": "remote",
+        "url": "http://127.0.0.1:33333/mcp",
+        "enabled": true,
+        "oauth": false,
+        "headers": {
+          "Authorization": "Bearer {env:MCC_MCP_AUTH_TOKEN}"
+        }
+      }
+    }
+  }
+  ```
+
+  </details>
+
+  <details>
+  <summary><strong>Available MCP tools</strong></summary>
+
+  These are the tools currently exposed by `ChatBot.McpServer`.
+
+  **Session, status, and reference**
+
+  - `mcc_session_status`: Get the current MCC session state and feature availability.
+  - `mcc_server_info`: Get the active server connection info and current TPS.
+  - `mcc_player_state`: Get the current controlled-player state.
+  - `mcc_world_state`: Get world state, chunk loading progress, and last observed time and weather values.
+  - `mcc_chunk_status`: Check chunk loading status for the player location or a target coordinate.
+  - `mcc_player_stats`: Get player stats, orientation, and current location.
+  - `mcc_status_effects`: List active player status effects.
+  - `mcc_loaded_bots`: List loaded built-in bots and scripts.
+  - `mcc_internal_commands_list`: List available MCC internal commands.
+  - `mcc_agent_guidance`: Return the MCC MCP operator prompt bundle for external agents.
+  - `mcc_materials_list`: List known MCC material names.
+  - `mcc_block_types_list`: List known MCC block types.
+  - `mcc_entity_types_list`: List known MCC entity types.
+  - `mcc_world_block_at`: Get block information at a world coordinate.
+
+  **Observed state**
+
+  - `mcc_recent_events`: Read recent high-signal runtime events such as weather, titles, death, respawn, inventory open/close, and joins/leaves.
+  - `mcc_chat_history`: Read recent chat and system lines seen by MCC.
+  - `mcc_players_list`: List online players known to MCC.
+  - `mcc_players_detailed`: List tracked players with UUID, latency, gamemode, and coordinates when available.
+
+  **Chat and direct control**
+
+  - `mcc_send_chat`: Send chat text or a slash command to the server.
+  - `mcc_quit_client`: Quit MCC cleanly.
+  - `mcc_disconnect`: Disconnect MCC from the server without quitting the process.
+  - `mcc_respawn`: Respawn the controlled player when dead.
+  - `mcc_run_internal_command`: Run an MCC internal command.
+  - `mcc_animation`: Play a hand-swing animation.
+  - `mcc_toggle_sneak`: Start or stop sneaking.
+  - `mcc_toggle_sprint`: Start or stop sprinting.
+  - `mcc_change_hotbar_slot`: Change the active hotbar slot.
+  - `mcc_select_item`: Select a hotbar item by item type.
+  - `mcc_use_item_on_hand`: Use the currently held item.
+  - `mcc_use_item_on_block`: Use the held item on a target block.
+  - `mcc_dig_block`: Dig a block at a target location.
+  - `mcc_place_block`: Place the currently held block or item at a target location.
+
+  **Movement, view, and nearby queries**
+
+  - `mcc_raycast_block`: Raycast from the player's view and return the first non-air block hit.
+  - `mcc_path_preview`: Compute a path without moving there.
+  - `mcc_block_scan`: Scan nearby blocks around the player.
+  - `mcc_blocks_find`: Find nearby blocks by name, type, or ID.
+  - `mcc_player_nearby`: Check whether a player is nearby.
+  - `mcc_player_locate`: Locate a tracked player by name.
+  - `mcc_entity_nearest`: Find the nearest tracked entity that matches the requested filters.
+  - `mcc_can_reach_position`: Check whether MCC can path to a coordinate without moving there.
+  - `mcc_move_to`: Path to a world coordinate and verify arrival.
+  - `mcc_move_to_player`: Locate a tracked player, move to them, and verify arrival.
+  - `mcc_look_at`: Rotate the view toward a world coordinate.
+  - `mcc_look_direction`: Rotate the view to a cardinal direction or straight up/down.
+  - `mcc_look_angles`: Rotate the view to explicit yaw and pitch angles.
+
+  **Inventory and container workflows**
+
+  - `mcc_inventory_snapshot`: Read a snapshot of one inventory.
+  - `mcc_inventory_search`: Search the player inventory and optionally open containers for matching items.
+  - `mcc_inventories_list`: List open inventories and containers known to MCC.
+  - `mcc_container_open_at`: Open a container block at world coordinates and wait for its inventory.
+  - `mcc_container_close`: Close an open non-player container.
+  - `mcc_inventory_window_action`: Perform a window action on an inventory slot.
+  - `mcc_inventory_drop_item`: Drop an exact item count from an inventory.
+  - `mcc_container_deposit_item`: Move items from the player inventory into an open container.
+  - `mcc_container_withdraw_item`: Move items from an open container into the player inventory.
+
+  **Entities, signs, and dropped items**
+
+  - `mcc_entities_query`: Query tracked entities.
+  - `mcc_entities_list`: List tracked entities with optional filters.
+  - `mcc_entity_info`: Get detailed info for one tracked entity.
+  - `mcc_entity_interact`: Interact with a tracked entity.
+  - `mcc_entity_attack`: Attack a tracked entity.
+  - `mcc_signs_find`: Find nearby signs by text.
+  - `mcc_items_list`: List nearby dropped item entities.
+  - `mcc_items_pickup`: Move to and pick up nearby dropped items of a given type.
+
+  </details>
+
+  <details>
+  <summary><strong>Simple example usage</strong></summary>
+
+  Once your client is connected, keep the prompts simple and concrete.
+
+  - `What server is MCC connected to right now?`
+  - `List online players and tell me whether Steve is nearby.`
+  - `Preview a path to 10 80 0. If the path looks valid, move there.`
+  - `Show my player inventory, then open the chest at 2 80 0 and tell me what is inside.`
+  - `List nearby dropped Stone items and pick them up.`
+  - `Find the nearest ArmorStand and show me its details.`
+
+  </details>
 
 ## Map
 
