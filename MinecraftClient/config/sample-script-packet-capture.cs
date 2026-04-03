@@ -4,8 +4,6 @@ MCC.LoadBot(new PacketCadenceCaptureBot());
 
 //MCCScript Extensions
 
-using System.Threading;
-
 public class PacketCadenceCaptureBot : ChatBot
 {
     private const int CaptureDurationSeconds = 5;

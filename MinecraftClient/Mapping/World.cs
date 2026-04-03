@@ -12,9 +12,9 @@ namespace MinecraftClient.Mapping
     {
         /// <summary>
         /// The chunks contained into the Minecraft world
-        /// Tuple<int, int>: Tuple<chunkX, chunkZ>
+        /// (int ChunkX, int ChunkZ): chunkX, chunkZ
         /// </summary>
-        private ConcurrentDictionary<Tuple<int, int>, ChunkColumn> chunks = new();
+        private ConcurrentDictionary<(int ChunkX, int ChunkZ), ChunkColumn> chunks = new();
 
         /// <summary>
         /// The dimension info of the world
@@ -49,12 +49,12 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                chunks.TryGetValue(new(chunkX, chunkZ), out ChunkColumn? chunkColumn);
+                chunks.TryGetValue((chunkX, chunkZ), out ChunkColumn? chunkColumn);
                 return chunkColumn;
             }
             set
             {
-                Tuple<int, int> chunkCoord = new(chunkX, chunkZ);
+                var chunkCoord = (chunkX, chunkZ);
                 if (value is null)
                     chunks.TryRemove(chunkCoord, out _);
                 else
@@ -361,7 +361,7 @@ namespace MinecraftClient.Mapping
         /// <param name="loadCompleted">Whether the ChunkColumn has been fully loaded</param>
         public void StoreChunk(int chunkX, int chunkY, int chunkZ, int chunkColumnSize, Chunk? chunk, bool loadCompleted)
         {
-            ChunkColumn chunkColumn = chunks.GetOrAdd(new(chunkX, chunkZ), (_) => new(chunkColumnSize));
+            ChunkColumn chunkColumn = chunks.GetOrAdd((chunkX, chunkZ), (_) => new(chunkColumnSize));
             chunkColumn[chunkY] = chunk;
             if (loadCompleted)
                 chunkColumn.FullyLoaded = true;

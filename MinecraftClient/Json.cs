@@ -1,3 +1,4 @@
+using System;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -23,8 +24,44 @@ public static class Json
     public static JsonNode? ParseJson(string? json)
     {
         if (string.IsNullOrWhiteSpace(json)) return null;
+        ReadOnlySpan<char> text = json.AsSpan().TrimStart();
+        if (!LooksLikeJson(text))
+            return JsonValue.Create(json);
+
         try { return JsonNode.Parse(json); }
         catch (JsonException) { return JsonValue.Create(json); }
+    }
+
+    private static bool LooksLikeJson(ReadOnlySpan<char> text)
+    {
+        if (text.IsEmpty)
+            return false;
+
+        return text[0] switch
+        {
+            '{' or '"' => true,
+            '[' => LooksLikeJsonArray(text[1..]),
+            '-' => text.Length > 1 && char.IsAsciiDigit(text[1]),
+            >= '0' and <= '9' => true,
+            't' or 'f' or 'n' => true,
+            _ => false
+        };
+    }
+
+    private static bool LooksLikeJsonArray(ReadOnlySpan<char> text)
+    {
+        text = text.TrimStart();
+        if (text.IsEmpty)
+            return false;
+
+        return text[0] switch
+        {
+            ']' or '{' or '[' or '"' => true,
+            '-' => text.Length > 1 && char.IsAsciiDigit(text[1]),
+            >= '0' and <= '9' => true,
+            't' or 'f' or 'n' => true,
+            _ => false
+        };
     }
 
     /// <summary>

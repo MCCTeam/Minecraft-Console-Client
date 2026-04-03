@@ -21,6 +21,7 @@ EOF
 SERVER_DIR="${1:-}"
 MC_VERSION="${2:-}"
 PROFILE="${3:-}"
+SERVER_PORT=""
 
 if [[ -z "$SERVER_DIR" || -z "$MC_VERSION" || -z "$PROFILE" ]]; then
     usage >&2
@@ -62,6 +63,21 @@ wait_for_file_pattern() {
     return 1
 }
 
+wait_for_rcon_port_free() {
+    local timeout="${1:-30}"
+    local elapsed=0
+
+    while (( elapsed < timeout )); do
+        if ! ss -ltn '( sport = :25575 )' 2>/dev/null | grep -Fq ':25575'; then
+            return 0
+        fi
+        sleep 1
+        ((elapsed += 1))
+    done
+
+    echo "Timed out waiting for RCON port 25575 to become free" >&2
+    return 1
+}
 cleanup() {
     if [[ -n "${MCC_PID:-}" ]] && kill -0 "$MCC_PID" 2>/dev/null; then
         echo "quit" >> "$INPUT_FILE" 2>/dev/null || true
@@ -76,12 +92,24 @@ cleanup() {
     fi
 
     tmux kill-session -t "$SESSION_NAME" 2>/dev/null || true
+    wait_for_rcon_port_free 30 || true
 }
 
 trap cleanup EXIT
 
 prepare_config() {
-    bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh" "$CFG" "$MC_VERSION" CursorBot >/dev/null
+    MCC_TEST_ACCOUNT_TYPE=mojang MCC_TEST_PASSWORD=- \
+        bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh" \
+        "$REPO_ROOT/MinecraftClient.ini" "$CFG" "$MC_VERSION" CursorBot >/dev/null
+
+    sed_in_place \
+        -e "s#^Server = .*#Server = { Host = \"localhost\", Port = $SERVER_PORT }#" \
+        -e 's/TerrainAndMovements = false/TerrainAndMovements = true/' \
+        -e 's/InventoryHandling = false/InventoryHandling = true/' \
+        -e 's/EntityHandling = false/EntityHandling = true/' \
+        -e 's/AutoRespawn = false/AutoRespawn = true/' \
+        "$CFG"
+    disable_noisy_bots_in_ini "$CFG"
 }
 
 send_mcc_command() {
@@ -156,7 +184,7 @@ modern_mob_and_effects() {
 
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "$SERVER_DIR" >/dev/null
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" --all >/dev/null
-prepare_config
+wait_for_rcon_port_free 30 || true
 rm -f "$MCC_LOG" "$INPUT_FILE"
 
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/ensure_offline_server.sh" "$SERVER_DIR" >/dev/null
@@ -167,6 +195,7 @@ fi
 
 mc-start "$SERVER_DIR" >/dev/null
 wait_for_server_ready "$SERVER_DIR" || exit 1
+prepare_config
 
 : > "$INPUT_FILE"
 
