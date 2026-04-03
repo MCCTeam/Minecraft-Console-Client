@@ -1,4 +1,5 @@
 using System;
+using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Mcp;
 
@@ -12,59 +13,35 @@ public sealed class MccMcpRuntimeStateSnapshot
 
 public static class MccMcpRuntimeStateStore
 {
-    private static readonly object stateLock = new();
-    private static long? worldAge;
-    private static long? timeOfDay;
-    private static float? rainLevel;
-    private static float? thunderLevel;
-
     public static void SetTime(long newWorldAge, long newTimeOfDay)
     {
-        lock (stateLock)
-        {
-            worldAge = newWorldAge;
-            timeOfDay = newTimeOfDay;
-        }
+        MccObservedStateStore.SetTime(newWorldAge, newTimeOfDay);
     }
 
     public static void SetRainLevel(float level)
     {
-        lock (stateLock)
-        {
-            rainLevel = level;
-        }
+        MccObservedStateStore.SetRainLevel(level);
     }
 
     public static void SetThunderLevel(float level)
     {
-        lock (stateLock)
-        {
-            thunderLevel = level;
-        }
+        MccObservedStateStore.SetThunderLevel(level);
     }
 
     public static MccMcpRuntimeStateSnapshot GetSnapshot()
     {
-        lock (stateLock)
+        MccRuntimeStateSnapshot snapshot = MccObservedStateStore.GetRuntimeStateSnapshot();
+        return new MccMcpRuntimeStateSnapshot
         {
-            return new MccMcpRuntimeStateSnapshot
-            {
-                WorldAge = worldAge,
-                TimeOfDay = timeOfDay,
-                RainLevel = rainLevel,
-                ThunderLevel = thunderLevel
-            };
-        }
+            WorldAge = snapshot.WorldAge,
+            TimeOfDay = snapshot.TimeOfDay,
+            RainLevel = snapshot.RainLevel,
+            ThunderLevel = snapshot.ThunderLevel
+        };
     }
 
     public static void Clear()
     {
-        lock (stateLock)
-        {
-            worldAge = null;
-            timeOfDay = null;
-            rainLevel = null;
-            thunderLevel = null;
-        }
+        MccObservedStateStore.ClearRuntimeState();
     }
 }

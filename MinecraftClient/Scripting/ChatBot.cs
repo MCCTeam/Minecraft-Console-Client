@@ -48,6 +48,7 @@ namespace MinecraftClient.Scripting
         private readonly List<string> registeredChatBotCommands = new();
         private readonly Lock delayTasksLock = new();
         private readonly List<TaskWithDelay> delayedTasks = new();
+        private MccGameApi? _game;
         protected McClient Handler
         {
             get
@@ -59,6 +60,11 @@ namespace MinecraftClient.Scripting
                 throw new InvalidOperationException(Translations.exception_chatbot_init);
             }
         }
+
+        /// <summary>
+        /// Shared gameplay and observed-state API used by MCP and available to built-in bots and scripts.
+        /// </summary>
+        protected MccGameApi Game => _game ??= new MccGameApi(() => Handler);
 
         /// <summary>
         /// Will be called every client tick (~50ms at 20 TPS).

@@ -87,7 +87,7 @@ namespace MinecraftClient.ChatBots
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            MccMcpRecentEventStore.Add("disconnect", new
+            MccObservedStateStore.AddRecentEvent("disconnect", new
             {
                 reason = reason.ToString(),
                 message
@@ -128,7 +128,7 @@ namespace MinecraftClient.ChatBots
                 message = parsedMessage;
             }
 
-            MccMcpChatHistoryStore.Add(new MccMcpChatHistoryEntry
+            MccObservedStateStore.AddChatHistoryEntry(new MccChatHistoryEntry
             {
                 TimestampUtc = DateTimeOffset.UtcNow,
                 Kind = kind,
@@ -141,34 +141,34 @@ namespace MinecraftClient.ChatBots
 
         public override void OnTimeUpdate(long WorldAge, long TimeOfDay)
         {
-            MccMcpRuntimeStateStore.SetTime(WorldAge, TimeOfDay);
+            MccObservedStateStore.SetTime(WorldAge, TimeOfDay);
         }
 
         public override void OnRainLevelChange(float level)
         {
-            MccMcpRuntimeStateStore.SetRainLevel(level);
-            MccMcpRecentEventStore.Add("weather_rain", new { level });
+            MccObservedStateStore.SetRainLevel(level);
+            MccObservedStateStore.AddRecentEvent("weather_rain", new { level });
         }
 
         public override void OnThunderLevelChange(float level)
         {
-            MccMcpRuntimeStateStore.SetThunderLevel(level);
-            MccMcpRecentEventStore.Add("weather_thunder", new { level });
+            MccObservedStateStore.SetThunderLevel(level);
+            MccObservedStateStore.AddRecentEvent("weather_thunder", new { level });
         }
 
         public override void OnDeath()
         {
-            MccMcpRecentEventStore.Add("death");
+            MccObservedStateStore.AddRecentEvent("death");
         }
 
         public override void OnRespawn()
         {
-            MccMcpRecentEventStore.Add("respawn");
+            MccObservedStateStore.AddRecentEvent("respawn");
         }
 
         public override void OnPlayerJoin(Guid uuid, string name)
         {
-            MccMcpRecentEventStore.Add("player_join", new
+            MccObservedStateStore.AddRecentEvent("player_join", new
             {
                 uuid,
                 name
@@ -177,7 +177,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnPlayerLeave(Guid uuid, string? name)
         {
-            MccMcpRecentEventStore.Add("player_leave", new
+            MccObservedStateStore.AddRecentEvent("player_leave", new
             {
                 uuid,
                 name
@@ -186,19 +186,19 @@ namespace MinecraftClient.ChatBots
 
         public override void OnInventoryOpen(int inventoryId)
         {
-            MccMcpRecentEventStore.Add("inventory_open", new { inventoryId });
+            MccObservedStateStore.AddRecentEvent("inventory_open", new { inventoryId });
         }
 
         public override void OnInventoryClose(int inventoryId)
         {
-            MccMcpRecentEventStore.Add("inventory_close", new { inventoryId });
+            MccObservedStateStore.AddRecentEvent("inventory_close", new { inventoryId });
         }
 
         public override void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json)
         {
             if (action == 2)
             {
-                MccMcpRecentEventStore.Add("actionbar", new
+                MccObservedStateStore.AddRecentEvent("actionbar", new
                 {
                     action,
                     text = actionbartext,
@@ -212,7 +212,7 @@ namespace MinecraftClient.ChatBots
 
             if (action is 0 or 1)
             {
-                MccMcpRecentEventStore.Add("title", new
+                MccObservedStateStore.AddRecentEvent("title", new
                 {
                     action,
                     titleText = titletext,
@@ -227,7 +227,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnBlockBreakAnimation(Entity entity, Location location, byte stage)
         {
-            MccMcpRecentEventStore.Add("block_break_animation", new
+            MccObservedStateStore.AddRecentEvent("block_break_animation", new
             {
                 entityId = entity.ID,
                 entityType = entity.Type.ToString(),
@@ -243,7 +243,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityAnimation(Entity entity, byte animation)
         {
-            MccMcpRecentEventStore.Add("entity_animation", new
+            MccObservedStateStore.AddRecentEvent("entity_animation", new
             {
                 entityId = entity.ID,
                 entityType = entity.Type.ToString(),
@@ -266,9 +266,7 @@ namespace MinecraftClient.ChatBots
 
         private static void ClearStores()
         {
-            MccMcpChatHistoryStore.Clear();
-            MccMcpRuntimeStateStore.Clear();
-            MccMcpRecentEventStore.Clear();
+            MccObservedStateStore.ClearAll();
         }
     }
 }
