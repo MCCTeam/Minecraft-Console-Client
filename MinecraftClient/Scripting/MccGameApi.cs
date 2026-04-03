@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol;
@@ -629,6 +630,8 @@ public sealed class MccGameApi
 
     /// <summary>
     /// Move to a tracked player by name and verify arrival.
+    /// Callers running on ChatBot update callbacks should prefer <see cref="MoveToPlayerAsync"/>
+    /// so the main MCC updater thread is not blocked while pathfinding completes.
     /// </summary>
     public MccGameResult<MccMoveToPlayerResult> MoveToPlayer(string playerName, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
     {
@@ -696,6 +699,14 @@ public sealed class MccGameApi
         return pathFound && arrived
             ? MccGameResult<MccMoveToPlayerResult>.Ok(resultData)
             : MccGameResult<MccMoveToPlayerResult>.Fail("action_incomplete", data: resultData);
+    }
+
+    /// <summary>
+    /// Run <see cref="MoveToPlayer"/> on a worker thread so ChatBot callbacks can poll the result without blocking MCC updates.
+    /// </summary>
+    public Task<MccGameResult<MccMoveToPlayerResult>> MoveToPlayerAsync(string playerName, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
+    {
+        return Task.Run(() => MoveToPlayer(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
     }
 
     /// <summary>
@@ -953,6 +964,8 @@ public sealed class MccGameApi
 
     /// <summary>
     /// Move to nearby dropped items and verify pickup completion.
+    /// Callers running on ChatBot update callbacks should prefer <see cref="PickupItemsAsync"/>
+    /// so the main MCC updater thread is not blocked while movement and pickup verification complete.
     /// </summary>
     public MccGameResult<MccPickupItemsResult> PickupItems(string itemType, double radius = 16, int maxItems = 10, bool allowUnsafe = false, int timeoutMs = 0)
     {
@@ -1037,6 +1050,14 @@ public sealed class MccGameApi
         return successfulPickups > 0 || collectedCount > 0
             ? MccGameResult<MccPickupItemsResult>.Ok(resultData)
             : MccGameResult<MccPickupItemsResult>.Fail("action_incomplete", data: resultData);
+    }
+
+    /// <summary>
+    /// Run <see cref="PickupItems"/> on a worker thread so ChatBot callbacks can poll the result without blocking MCC updates.
+    /// </summary>
+    public Task<MccGameResult<MccPickupItemsResult>> PickupItemsAsync(string itemType, double radius = 16, int maxItems = 10, bool allowUnsafe = false, int timeoutMs = 0)
+    {
+        return Task.Run(() => PickupItems(itemType, radius, maxItems, allowUnsafe, timeoutMs));
     }
 
     private static MccGameResult<T> NotConnected<T>()

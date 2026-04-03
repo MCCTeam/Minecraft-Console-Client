@@ -1347,9 +1347,27 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         if (!client.GetTerrainEnabled())
             return MccMcpResult.Fail("feature_disabled");
 
-        Location target = new(x, y, z);
-        client.InvokeOnMainThread(() => client.UpdateLocation(client.GetCurrentLocation(), target));
-        return MccMcpResult.Ok();
+        return client.InvokeOnMainThread(() =>
+        {
+            Location current = client.GetCurrentLocation();
+            Location target = new(x, y, z);
+            client.UpdateLocation(current, target);
+            bool success = client.SendLocationUpdate();
+            return success
+                ? MccMcpResult.Ok(new
+                {
+                    success,
+                    yaw = client.GetYaw(),
+                    pitch = client.GetPitch(),
+                    location = ToCoordinate(current),
+                    target = ToCoordinate(target)
+                })
+                : MccMcpResult.Fail("action_failed", data: new
+                {
+                    success,
+                    target = ToCoordinate(target)
+                });
+        });
     }
 
     public MccMcpResult LookDirection(string direction)
@@ -1371,12 +1389,20 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         {
             Location current = client.GetCurrentLocation();
             client.UpdateLocation(current, parsedDirection);
-            return MccMcpResult.Ok(new
+            bool success = client.SendLocationUpdate();
+            return success
+                ? MccMcpResult.Ok(new
             {
+                success,
                 direction = parsedDirection.ToString(),
                 yaw = client.GetYaw(),
                 pitch = client.GetPitch(),
                 location = ToCoordinate(current)
+            })
+                : MccMcpResult.Fail("action_failed", data: new
+            {
+                success,
+                direction = parsedDirection.ToString()
             });
         });
     }
@@ -1397,10 +1423,20 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         {
             Location current = client.GetCurrentLocation();
             client.UpdateLocation(current, yaw, pitch);
-            return MccMcpResult.Ok(new
+            bool success = client.SendLocationUpdate();
+            return success
+                ? MccMcpResult.Ok(new
             {
+                success,
                 yaw = client.GetYaw(),
                 pitch = client.GetPitch(),
+                location = ToCoordinate(current)
+            })
+                : MccMcpResult.Fail("action_failed", data: new
+            {
+                success,
+                yaw,
+                pitch,
                 location = ToCoordinate(current)
             });
         });

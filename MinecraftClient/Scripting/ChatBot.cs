@@ -1176,6 +1176,7 @@ namespace MinecraftClient.Scripting
         protected void LookAtLocation(Location location)
         {
             Handler.UpdateLocation(Handler.GetCurrentLocation(), location);
+            Handler.SendLocationUpdate();
         }
 
         /// <summary>
@@ -1186,6 +1187,7 @@ namespace MinecraftClient.Scripting
         protected void LookAtLocation(float yaw, float pitch)
         {
             Handler.UpdateLocation(Handler.GetCurrentLocation(), yaw, pitch);
+            Handler.SendLocationUpdate();
         }
 
         /// <summary>

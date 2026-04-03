@@ -1705,6 +1705,26 @@ namespace MinecraftClient
             changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
         }
 
+        private static bool IsServerManagedOutputSlot(Container inventory, int slotId)
+        {
+            return (inventory.Type, slotId) switch
+            {
+                (ContainerType.PlayerInventory, 0) => true,
+                (ContainerType.Crafting, 0) => true,
+                (ContainerType.Anvil, 2) => true,
+                (ContainerType.BlastFurnace, 2) => true,
+                (ContainerType.Furnace, 2) => true,
+                (ContainerType.Smoker, 2) => true,
+                (ContainerType.Grindstone, 2) => true,
+                (ContainerType.Cartography, 2) => true,
+                (ContainerType.Merchant, 2) => true,
+                (ContainerType.Stonecutter, 1) => true,
+                (ContainerType.Loom, 3) => true,
+                (ContainerType.SmightingTable, 3) => true,
+                _ => false
+            };
+        }
+
         /// <summary>
         /// Click a slot in the specified window
         /// </summary>
@@ -1731,8 +1751,9 @@ namespace MinecraftClient
                         // Check if cursor have item (slot -1)
                         if (playerInventory.Items.ContainsKey(-1))
                         {
-                            // When item on cursor and clicking slot 0, nothing will happen
-                            if (slotId == 0) break;
+                            // Result slots are server-managed and cannot accept cursor items directly.
+                            if (IsServerManagedOutputSlot(inventory, slotId))
+                                break;
 
                             // Check target slot also have item?
                             if (inventory.Items.ContainsKey(slotId))
@@ -1778,8 +1799,8 @@ namespace MinecraftClient
                             // Check target slot have item?
                             if (inventory.Items.ContainsKey(slotId))
                             {
-                                // When taking item from slot 0, server will update us
-                                if (slotId == 0) break;
+                                if (IsServerManagedOutputSlot(inventory, slotId))
+                                    break;
 
                                 // Put target slot item to cursor
                                 playerInventory.Items[-1] = inventory.Items[slotId];
@@ -1793,8 +1814,8 @@ namespace MinecraftClient
                         // Check if cursor have item (slot -1)
                         if (playerInventory.Items.ContainsKey(-1))
                         {
-                            // When item on cursor and clicking slot 0, nothing will happen
-                            if (slotId == 0) break;
+                            if (IsServerManagedOutputSlot(inventory, slotId))
+                                break;
 
                             // Check target slot have item?
                             if (inventory.Items.ContainsKey(slotId))
@@ -1830,10 +1851,8 @@ namespace MinecraftClient
                             // Check target slot have item?
                             if (inventory.Items.ContainsKey(slotId))
                             {
-                                if (slotId == 0)
+                                if (IsServerManagedOutputSlot(inventory, slotId))
                                 {
-                                    // no matter how many item in slot 0, only 1 will be taken out
-                                    // Also server will update us
                                     break;
                                 }
                                 if (inventory.Items[slotId].Count == 1)
@@ -1869,7 +1888,8 @@ namespace MinecraftClient
                         break;
                     case WindowActionType.ShiftClick:
                     case WindowActionType.ShiftRightClick:
-                        if (slotId == 0) break;
+                        if (IsServerManagedOutputSlot(inventory, slotId))
+                            break;
                         if (item is not null)
                         {
                             /* Target slot have item */
@@ -3033,6 +3053,21 @@ namespace MinecraftClient
             _yaw = yaw;
             _pitch = pitch;
             UpdateLocation(location, false);
+        }
+
+        /// <summary>
+        /// Send the current player position and look angles to the server.
+        /// </summary>
+        /// <returns>TRUE if the update packet was sent</returns>
+        public bool SendLocationUpdate()
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(SendLocationUpdate);
+
+            Location current = GetCurrentLocation();
+            bool onGround = physicsInitialized ? playerPhysics.OnGround : Movement.IsOnGround(world, current);
+            bool horizontalCollision = physicsInitialized && playerPhysics.HorizontalCollision;
+            return handler.SendLocationUpdate(current, onGround, horizontalCollision, _yaw, _pitch);
         }
 
         /// <summary>

@@ -92,6 +92,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
             handler.UpdateLocation(handler.GetCurrentLocation(), direction);
+            handler.SendLocationUpdate();
             return r.SetAndReturn(Status.Done, "Looking " + direction.ToString());
         }
 
@@ -102,6 +103,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(Status.FailNeedTerrain);
 
             handler.UpdateLocation(handler.GetCurrentLocation(), yaw, pitch);
+            handler.SendLocationUpdate();
             return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_look_at, yaw.ToString("0.00"), pitch.ToString("0.00")));
         }
 
@@ -113,6 +115,7 @@ namespace MinecraftClient.Commands
 
             Location current = handler.GetCurrentLocation();
             handler.UpdateLocation(current, location);
+            handler.SendLocationUpdate();
             return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_look_block, location));
         }
     }
