@@ -2857,12 +2857,21 @@ namespace MinecraftClient.Protocol.Handlers
 
                     if (protocolVersion >= MC_1_21_2_Version)
                     {
-                        // 1.21.2+: removed strength, block records, and player motion floats;
-                        // added optional knockback (doubles) and single particle
                         explosionLocation = new(dataTypes.ReadNextDouble(packetData),
                             dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData));
-                        explosionStrength = 0;
-                        explosionBlockCount = 0;
+
+                        if (protocolVersion >= MC_1_21_9_Version)
+                        {
+                            // 1.21.9+: added radius (float), blockCount (int), and blockParticles (WeightedList)
+                            explosionStrength = dataTypes.ReadNextFloat(packetData);   // Radius
+                            explosionBlockCount = dataTypes.ReadNextInt(packetData);   // Block count
+                        }
+                        else
+                        {
+                            // 1.21.2–1.21.8: no strength/block-count fields
+                            explosionStrength = 0;
+                            explosionBlockCount = 0;
+                        }
 
                         if (dataTypes.ReadNextBool(packetData)) // Has player knockback
                         {
@@ -2879,6 +2888,20 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.ReadNextString(packetData); // Sound ResourceLocation
                             if (dataTypes.ReadNextBool(packetData))
                                 dataTypes.ReadNextFloat(packetData); // Fixed range
+                        }
+
+                        if (protocolVersion >= MC_1_21_9_Version)
+                        {
+                            // 1.21.9+: WeightedList<ExplosionParticleInfo> blockParticles
+                            // Each entry: particle + float scaling + float speed + VarInt weight
+                            var blockParticleCount = dataTypes.ReadNextVarInt(packetData);
+                            for (var i = 0; i < blockParticleCount; i++)
+                            {
+                                dataTypes.ReadParticleData(packetData, itemPalette); // Particle type
+                                dataTypes.ReadNextFloat(packetData); // Scaling
+                                dataTypes.ReadNextFloat(packetData); // Speed
+                                dataTypes.ReadNextVarInt(packetData); // Weight
+                            }
                         }
                     }
                     else
