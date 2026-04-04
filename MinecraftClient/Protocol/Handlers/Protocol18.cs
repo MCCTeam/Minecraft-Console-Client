@@ -3048,7 +3048,7 @@ namespace MinecraftClient.Protocol.Handlers
                     //                 nameTagVisibility, collisionRule, color (VarInt),
                     //                 prefix (component), suffix (component)
                     //   method 0/3/4: players list (VarInt count + strings)
-                    //   1.21.9+ (protocol 773): nameTagVisibility and collisionRule are
+                    //   1.21.5+ (protocol 770): nameTagVisibility and collisionRule are
                     //           VarInt-encoded enum IDs instead of UTF strings.
                     var teamName = dataTypes.ReadNextString(packetData);
                     var teamMethod = dataTypes.ReadNextByte(packetData);
@@ -3067,7 +3067,7 @@ namespace MinecraftClient.Protocol.Handlers
                         teamFriendlyFlags = dataTypes.ReadNextByte(packetData);
 
                         // nameTagVisibility
-                        if (protocolVersion >= MC_1_21_9_Version)
+                        if (protocolVersion >= MC_1_21_5_Version)
                         {
                             // STREAM_CODEC: 0=always, 1=never, 2=hideForOtherTeams, 3=hideForOwnTeam
                             teamNameTagVisibility = dataTypes.ReadNextVarInt(packetData) switch
@@ -3085,7 +3085,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
 
                         // collisionRule
-                        if (protocolVersion >= MC_1_21_9_Version)
+                        if (protocolVersion >= MC_1_21_5_Version)
                         {
                             // STREAM_CODEC: 0=always, 1=never, 2=pushOtherTeams, 3=pushOwnTeam
                             teamCollisionRule = dataTypes.ReadNextVarInt(packetData) switch
