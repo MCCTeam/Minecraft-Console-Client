@@ -880,6 +880,32 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>tab</code></summary>
+
+- **Description:**
+
+  Show the current player tab list in a more detailed format than `/list`.
+
+  In the classic console, `/tab` prints a colored table with ping and player names. Team prefixes, suffixes, and display names are applied when the server sends them.
+
+  In TUI mode, `/tab` opens a live overlay that refreshes automatically while it is visible. Press `Esc` to close it.
+
+  If you want a separate team column, enable [Console.TabList.ShowTeams](configuration.md#showteams).
+
+- **Usage:**
+
+  ```
+  /tab
+  ```
+
+- **Notes:**
+
+  - `/tab` uses the tab list information sent by the server, so players hidden from the server tab list will not appear here.
+  - The TUI overlay follows the live player list, so joins, leaves, ping updates, and scoreboard team updates show up without reopening it.
+
+</details>
+
+<details>
 <summary><code>set</code></summary>
 
 - **Description:**

@@ -22,6 +22,8 @@ namespace MinecraftClient.Protocol
 
         public bool Listed = true;
 
+        public int TabListOrder;
+
         // Entity info
 
         public Mapping.Entity? entity;
@@ -73,6 +75,7 @@ namespace MinecraftClient.Protocol
             Uuid = uuid;
             Gamemode = -1;
             Ping = 0;
+            TabListOrder = 0;
             lastMessageVerified = true;
             precedingSignature = null;
         }

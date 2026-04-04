@@ -1444,6 +1444,30 @@ Note that parameters in '[]' are optional.</value>
   <data name="cmd.list.players" xml:space="preserve">
     <value>PlayerList: {0}</value>
   </data>
+  <data name="cmd.tab.desc" xml:space="preserve">
+    <value>show a vanilla-like tab list. In TUI mode, opens a live overlay.</value>
+  </data>
+  <data name="cmd.tab.no_players" xml:space="preserve">
+    <value>No listed players are currently tracked.</value>
+  </data>
+  <data name="cmd.tab.title" xml:space="preserve">
+    <value>Tab list ({0} players)</value>
+  </data>
+  <data name="cmd.tab.column_ping" xml:space="preserve">
+    <value>Ping</value>
+  </data>
+  <data name="cmd.tab.column_team" xml:space="preserve">
+    <value>Team</value>
+  </data>
+  <data name="cmd.tab.column_player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="cmd.tab.tui_opened" xml:space="preserve">
+    <value>Live tab overlay opened.</value>
+  </data>
+  <data name="cmd.tab.tui_unavailable" xml:space="preserve">
+    <value>The tab overlay is not available right now.</value>
+  </data>
   <data name="cmd.log.desc" xml:space="preserve">
     <value>log some text to the console.</value>
   </data>
@@ -2433,6 +2457,9 @@ see item details.</value>
   </data>
   <data name="tui.inventory.item_count" xml:space="preserve">
     <value>{0} items</value>
+  </data>
+  <data name="tui.tab.hint" xml:space="preserve">
+    <value>Press Esc to close. Refreshes automatically.</value>
   </data>
   <data name="bot.effect.gained" xml:space="preserve">
     <value>You're now under {0} effect (Duration: {1}).</value>
