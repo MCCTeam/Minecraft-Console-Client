@@ -2190,7 +2190,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     string? displayName = null;
                                     if (dataTypes.ReadNextBool(packetData)) // Has display name
-                                        displayName = dataTypes.ReadNextString(packetData); // Display name
+                                        displayName = ChatParser.ParseText(dataTypes.ReadNextString(packetData)); // Display name
 
                                     // 1.19 Additions
                                     long? keyExpiration = null;
@@ -2231,7 +2231,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         var player = handler.GetPlayerInfo(uuid);
                                         if (player is not null)
-                                            player.DisplayName = dataTypes.ReadNextString(packetData);
+                                            player.DisplayName = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                                         else
                                             dataTypes.SkipNextString(packetData);
                                     }
@@ -3045,12 +3045,22 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.Teams:
                     // Wire format per version:
                     //   All versions: name (string), method (byte)
-                    //   method 0/2:   displayName (component), options (byte),
+                    //   1.8/1.8.9 method 0/2:
+                    //                 displayName (string), prefix (string), suffix (string),
+                    //                 options (byte), nameTagVisibility, color (byte)
+                    //   1.9-1.12.2 method 0/2:
+                    //                 displayName (string), prefix (string), suffix (string),
+                    //                 options (byte), nameTagVisibility, collisionRule,
+                    //                 color (byte)
+                    //   1.13-1.21.4 method 0/2:
+                    //                 displayName (component), options (byte),
                     //                 nameTagVisibility, collisionRule, color (VarInt),
                     //                 prefix (component), suffix (component)
+                    //   1.21.5+ method 0/2:
+                    //                 displayName (component), options (byte),
+                    //                 nameTagVisibility (VarInt), collisionRule (VarInt),
+                    //                 color (VarInt), prefix (component), suffix (component)
                     //   method 0/3/4: players list (VarInt count + strings)
-                    //   1.21.5+ (protocol 770): nameTagVisibility and collisionRule are
-                    //           VarInt-encoded enum IDs instead of UTF strings.
                     var teamName = dataTypes.ReadNextString(packetData);
                     var teamMethod = dataTypes.ReadNextByte(packetData);
 
@@ -3064,48 +3074,64 @@ namespace MinecraftClient.Protocol.Handlers
 
                     if (teamMethod is 0 or 2)
                     {
-                        teamDisplayName = dataTypes.ReadNextChat(packetData);
-                        teamFriendlyFlags = dataTypes.ReadNextByte(packetData);
-
-                        // nameTagVisibility
-                        if (protocolVersion >= MC_1_21_5_Version)
+                        if (protocolVersion < MC_1_13_Version)
                         {
-                            // STREAM_CODEC: 0=always, 1=never, 2=hideForOtherTeams, 3=hideForOwnTeam
-                            teamNameTagVisibility = dataTypes.ReadNextVarInt(packetData) switch
-                            {
-                                0 => "always",
-                                1 => "never",
-                                2 => "hideForOtherTeams",
-                                3 => "hideForOwnTeam",
-                                _ => "always"
-                            };
-                        }
-                        else
-                        {
+                            teamDisplayName = dataTypes.ReadNextString(packetData);
+                            teamPrefix = dataTypes.ReadNextString(packetData);
+                            teamSuffix = dataTypes.ReadNextString(packetData);
+                            teamFriendlyFlags = dataTypes.ReadNextByte(packetData);
                             teamNameTagVisibility = dataTypes.ReadNextString(packetData);
-                        }
 
-                        // collisionRule
-                        if (protocolVersion >= MC_1_21_5_Version)
-                        {
-                            // STREAM_CODEC: 0=always, 1=never, 2=pushOtherTeams, 3=pushOwnTeam
-                            teamCollisionRule = dataTypes.ReadNextVarInt(packetData) switch
-                            {
-                                0 => "always",
-                                1 => "never",
-                                2 => "pushOtherTeams",
-                                3 => "pushOwnTeam",
-                                _ => "always"
-                            };
+                            if (protocolVersion >= MC_1_9_Version)
+                                teamCollisionRule = dataTypes.ReadNextString(packetData);
+
+                            teamColor = unchecked((sbyte)dataTypes.ReadNextByte(packetData));
                         }
                         else
                         {
-                            teamCollisionRule = dataTypes.ReadNextString(packetData);
-                        }
+                            teamDisplayName = dataTypes.ReadNextChat(packetData);
+                            teamFriendlyFlags = dataTypes.ReadNextByte(packetData);
 
-                        teamColor = dataTypes.ReadNextVarInt(packetData);
-                        teamPrefix = dataTypes.ReadNextChat(packetData);
-                        teamSuffix = dataTypes.ReadNextChat(packetData);
+                            // nameTagVisibility
+                            if (protocolVersion >= MC_1_21_5_Version)
+                            {
+                                // STREAM_CODEC: 0=always, 1=never, 2=hideForOtherTeams, 3=hideForOwnTeam
+                                teamNameTagVisibility = dataTypes.ReadNextVarInt(packetData) switch
+                                {
+                                    0 => "always",
+                                    1 => "never",
+                                    2 => "hideForOtherTeams",
+                                    3 => "hideForOwnTeam",
+                                    _ => "always"
+                                };
+                            }
+                            else
+                            {
+                                teamNameTagVisibility = dataTypes.ReadNextString(packetData);
+                            }
+
+                            // collisionRule
+                            if (protocolVersion >= MC_1_21_5_Version)
+                            {
+                                // STREAM_CODEC: 0=always, 1=never, 2=pushOtherTeams, 3=pushOwnTeam
+                                teamCollisionRule = dataTypes.ReadNextVarInt(packetData) switch
+                                {
+                                    0 => "always",
+                                    1 => "never",
+                                    2 => "pushOtherTeams",
+                                    3 => "pushOwnTeam",
+                                    _ => "always"
+                                };
+                            }
+                            else
+                            {
+                                teamCollisionRule = dataTypes.ReadNextString(packetData);
+                            }
+
+                            teamColor = dataTypes.ReadNextVarInt(packetData);
+                            teamPrefix = dataTypes.ReadNextChat(packetData);
+                            teamSuffix = dataTypes.ReadNextChat(packetData);
+                        }
                     }
 
                     var teamPlayers = new List<string>();
