@@ -2138,7 +2138,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             // Consume all action-selected fields to keep entry boundaries aligned.
                             if (protocolVersion >= MC_1_21_2_Version && (actionBitset & 1 << 6) > 0) // Actions bit 6: update list order
-                                dataTypes.ReadNextVarInt(packetData);
+                                player.TabListOrder = dataTypes.ReadNextVarInt(packetData);
 
                             if (protocolVersion >= MC_1_21_4_Version && (actionBitset & 1 << 7) > 0) // Actions bit 7: update hat
                                 dataTypes.ReadNextBool(packetData);

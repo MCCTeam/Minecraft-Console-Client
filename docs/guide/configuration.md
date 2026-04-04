@@ -1183,6 +1183,40 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `30`
 
+### Console TabList section
+
+- **Section header:** `Console.TabList`
+
+- **Description:**
+
+  Settings for the `/tab` command and the live tab overlay in TUI mode.
+
+<details>
+<summary>Tab list settings</summary>
+
+#### `ShowTeams`
+
+- **Description:**
+
+  Show a separate team column in `/tab` output.
+
+  This is disabled by default so `/tab` stays closer to the in-game player list and keeps the output compact. Team formatting still applies to player names even when the extra column is hidden.
+
+  When enabled, MCC shows the team display name when the server provides one. If the server only sends an internal team identifier, MCC hides that noise instead of printing a raw UUID-like value.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
+
+- **Example:**
+
+  ```toml
+  [Console.TabList]
+  ShowTeams = true
+  ```
+
+</details>
+
 #### `Max_Displayed_Suggestions`
 
 - **Description:**

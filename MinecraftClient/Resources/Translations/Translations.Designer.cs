@@ -4178,6 +4178,78 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.list.players", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to show a vanilla-like tab list. In TUI mode, opens a live overlay..
+        /// </summary>
+        internal static string cmd_tab_desc {
+            get {
+                return ResourceManager.GetString("cmd.tab.desc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No listed players are currently tracked..
+        /// </summary>
+        internal static string cmd_tab_no_players {
+            get {
+                return ResourceManager.GetString("cmd.tab.no_players", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Tab list ({0} players).
+        /// </summary>
+        internal static string cmd_tab_title {
+            get {
+                return ResourceManager.GetString("cmd.tab.title", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Ping.
+        /// </summary>
+        internal static string cmd_tab_column_ping {
+            get {
+                return ResourceManager.GetString("cmd.tab.column_ping", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Team.
+        /// </summary>
+        internal static string cmd_tab_column_team {
+            get {
+                return ResourceManager.GetString("cmd.tab.column_team", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Player.
+        /// </summary>
+        internal static string cmd_tab_column_player {
+            get {
+                return ResourceManager.GetString("cmd.tab.column_player", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Live tab overlay opened..
+        /// </summary>
+        internal static string cmd_tab_tui_opened {
+            get {
+                return ResourceManager.GetString("cmd.tab.tui_opened", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The tab overlay is not available right now..
+        /// </summary>
+        internal static string cmd_tab_tui_unavailable {
+            get {
+                return ResourceManager.GetString("cmd.tab.tui_unavailable", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to log some text to the console..
@@ -4746,7 +4818,7 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.teams.team_no_members", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Place a block or open chest.
         /// </summary>
@@ -6893,6 +6965,15 @@ namespace MinecraftClient {
         internal static string tui_inventory_item_count {
             get {
                 return ResourceManager.GetString("tui.inventory.item_count", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Press Esc to close. Refreshes automatically..
+        /// </summary>
+        internal static string tui_tab_hint {
+            get {
+                return ResourceManager.GetString("tui.tab.hint", resourceCulture);
             }
         }
 

@@ -38,6 +38,9 @@ namespace MinecraftClient
         private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
 
         private static bool commandsLoaded = false;
+        private readonly Lock tabListHeaderFooterLock = new();
+        private string tabListHeader = string.Empty;
+        private string tabListFooter = string.Empty;
 
         private readonly Queue<string> chatQueue = new();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
@@ -1548,6 +1551,86 @@ namespace MinecraftClient
                 return player;
             else
                 return null;
+        }
+
+        internal TabListSnapshot GetTabListSnapshot()
+        {
+            List<(Guid Uuid, string Name, string DisplayName, int Gamemode, int Ping, int TabListOrder, bool Listed)> players;
+            lock (onlinePlayers)
+            {
+                players = onlinePlayers
+                    .Select(static pair => (
+                        pair.Key,
+                        pair.Value.Name,
+                        pair.Value.DisplayName ?? string.Empty,
+                        pair.Value.Gamemode,
+                        pair.Value.Ping,
+                        pair.Value.TabListOrder,
+                        pair.Value.Listed))
+                    .ToList();
+            }
+
+            Dictionary<string, PlayerTeam> teamSnapshot;
+            lock (teams)
+            {
+                teamSnapshot = teams.ToDictionary(
+                    static pair => pair.Key,
+                    static pair =>
+                    {
+                        var sourceTeam = pair.Value;
+                        var copy = new PlayerTeam
+                        {
+                            Name = sourceTeam.Name,
+                            DisplayName = sourceTeam.DisplayName,
+                            AllowFriendlyFire = sourceTeam.AllowFriendlyFire,
+                            SeeFriendlyInvisibles = sourceTeam.SeeFriendlyInvisibles,
+                            NameTagVisibility = sourceTeam.NameTagVisibility,
+                            CollisionRule = sourceTeam.CollisionRule,
+                            Color = sourceTeam.Color,
+                            Prefix = sourceTeam.Prefix,
+                            Suffix = sourceTeam.Suffix
+                        };
+
+                        foreach (string member in sourceTeam.Members)
+                            copy.Members.Add(member);
+
+                        return copy;
+                    },
+                    StringComparer.OrdinalIgnoreCase);
+            }
+
+            string header;
+            string footer;
+            lock (tabListHeaderFooterLock)
+            {
+                header = tabListHeader;
+                footer = tabListFooter;
+            }
+
+            var entries = players
+                .Select(player =>
+                {
+                    PlayerTeam? team = teamSnapshot.Values.FirstOrDefault(
+                        team => team.Members.Contains(player.Name));
+
+                    string displayName = !string.IsNullOrWhiteSpace(player.DisplayName)
+                        ? player.DisplayName
+                        : TabListFormatter.FormatTeamMemberName(player.Name, team);
+
+                    return new TabListEntry(
+                        player.Uuid,
+                        player.Name,
+                        displayName,
+                        team?.Name ?? string.Empty,
+                        !string.IsNullOrWhiteSpace(team?.DisplayName) ? team.DisplayName : team?.Name ?? string.Empty,
+                        player.Gamemode,
+                        player.Ping,
+                        player.TabListOrder,
+                        player.Listed);
+                })
+                .ToList();
+
+            return new TabListSnapshot(header, footer, entries);
         }
 
         public PlayerKeyPair? GetPlayerKeyPair()
@@ -4260,6 +4343,11 @@ namespace MinecraftClient
         /// <param name="footer">Footer</param>
         public void OnTabListHeaderAndFooter(string header, string footer)
         {
+            lock (tabListHeaderFooterLock)
+            {
+                tabListHeader = header;
+                tabListFooter = footer;
+            }
             DispatchBotEvent(bot => bot.OnTabListHeaderAndFooter(header, footer));
         }
 

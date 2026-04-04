@@ -1114,6 +1114,9 @@ namespace MinecraftClient
                 [TomlPrecedingComment("$Console.Minimap$")]
                 public MinimapConfig Minimap = new();
 
+                [TomlPrecedingComment("$Console.TabList$")]
+                public TabListConfig TabList = new();
+
                 public void OnSettingUpdate()
                 {
                     var backend = ConsoleIO.Backend;
@@ -1304,6 +1307,13 @@ namespace MinecraftClient
                         RefreshInterval = Math.Clamp(RefreshInterval,
                             Tui.MinimapControl.MinRefreshMs, Tui.MinimapControl.MaxRefreshMs);
                     }
+                }
+
+                [TomlDoNotInlineObject]
+                public class TabListConfig
+                {
+                    [TomlInlineComment("$Console.TabList.ShowTeams$")]
+                    public bool ShowTeams = false;
                 }
             }
         }
