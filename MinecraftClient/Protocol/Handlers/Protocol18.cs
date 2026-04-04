@@ -2189,7 +2189,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     string? displayName = null;
                                     if (dataTypes.ReadNextBool(packetData)) // Has display name
-                                        displayName = dataTypes.ReadNextString(packetData); // Display name
+                                        displayName = ChatParser.ParseText(dataTypes.ReadNextString(packetData)); // Display name
 
                                     // 1.19 Additions
                                     long? keyExpiration = null;
@@ -2230,7 +2230,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         var player = handler.GetPlayerInfo(uuid);
                                         if (player is not null)
-                                            player.DisplayName = dataTypes.ReadNextString(packetData);
+                                            player.DisplayName = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                                         else
                                             dataTypes.SkipNextString(packetData);
                                     }
