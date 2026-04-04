@@ -402,10 +402,7 @@ namespace MinecraftClient.Protocol.Message
         private static string TranslateString(string rulename, List<string> using_data)
         {
             if (!RulesInitialized)
-            {
-                InitRules();
-                RulesInitialized = true;
-            }
+                InitTranslations();
 
             if (TranslationRules.ContainsKey(rulename))
             {

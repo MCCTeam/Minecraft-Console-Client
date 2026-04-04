@@ -74,7 +74,7 @@ namespace MinecraftClient
         /// <summary>
         /// The main entry point of Minecraft Console Client
         /// </summary>
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             // [SENTRY] Initialize Sentry SDK only if the DSN is not empty
             if (SentryDSN != string.Empty)
@@ -94,7 +94,7 @@ namespace MinecraftClient
                 };
             }
 
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
                 _ = "a".ToLower();
@@ -208,7 +208,7 @@ namespace MinecraftClient
             // Wait for this issue to be fixed before enabling it: https://github.com/Consolonia/Consolonia/issues/602
             // MaybePrintClassicModeTuiRecommendation();
 
-            RunStartupSequence(args);
+            await RunStartupSequenceAsync(args);
         }
 
         /// <summary>
@@ -381,7 +381,10 @@ namespace MinecraftClient
         /// Called from Main() for classic/basic mode, or from TuiConsoleBackend on a
         /// background thread after the Avalonia UI loop has started.
         /// </summary>
-        internal static void RunStartupSequence(string[] args)
+        internal static void RunStartupSequence(string[] args) =>
+            RunStartupSequenceAsync(args).GetAwaiter().GetResult();
+
+        internal static async Task RunStartupSequenceAsync(string[] args)
         {
             //Other command-line arguments
             if (args.Length >= 1)
@@ -578,7 +581,7 @@ namespace MinecraftClient
             }
 
             startupargs = args;
-            InitializeClient();
+            await InitializeClientAsync();
         }
 
         /// <summary>
@@ -597,7 +600,7 @@ namespace MinecraftClient
         /// <summary>
         /// Start a new Client
         /// </summary>
-        private static void InitializeClient()
+        private static async Task InitializeClientAsync()
         {
             // Ensure that we use the provided Minecraft version if we can't connect automatically.
             //
@@ -634,7 +637,9 @@ namespace MinecraftClient
                         {
                             try
                             {
-                                result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                                var refreshResult = await ProtocolHandler.MicrosoftLoginRefreshAsync(session.RefreshToken);
+                                result = refreshResult.Result;
+                                session = refreshResult.Session;
                             }
                             catch (Exception ex)
                             {
@@ -654,7 +659,9 @@ namespace MinecraftClient
                 if (result != ProtocolHandler.LoginResult.Success)
                 {
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : (Config.Main.General.AccountType == LoginType.microsoft ? "Microsoft" : Config.Main.General.AuthServer.Host)));
-                    result = ProtocolHandler.GetLogin(InternalConfig.Account.Login, InternalConfig.Account.Password, Config.Main.General.AccountType, out session);
+                    var loginResult = await ProtocolHandler.GetLoginAsync(InternalConfig.Account.Login, InternalConfig.Account.Password, Config.Main.General.AccountType);
+                    result = loginResult.Result;
+                    session = loginResult.Session;
                 }
 
                 if (result == ProtocolHandler.LoginResult.Success && Config.Main.Advanced.SessionCache != CacheType.none)
@@ -680,7 +687,7 @@ namespace MinecraftClient
 
                 List<string> availableWorlds = new();
                 if (Config.Main.Advanced.MinecraftRealms && !String.IsNullOrEmpty(session.ID))
-                    availableWorlds = ProtocolHandler.RealmsListWorlds(InternalConfig.Username, session.PlayerID, session.ID);
+                    availableWorlds = await ProtocolHandler.RealmsListWorldsAsync(InternalConfig.Username, session.PlayerID, session.ID);
 
                 if (InternalConfig.ServerIP == string.Empty)
                 {
@@ -700,7 +707,7 @@ namespace MinecraftClient
                                 worldId = availableWorlds[worldIndex];
                             if (availableWorlds.Contains(worldId))
                             {
-                                string realmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, InternalConfig.Username, session.PlayerID, session.ID);
+                                string realmsAddress = await ProtocolHandler.GetRealmsWorldServerAddressAsync(worldId, InternalConfig.Username, session.PlayerID, session.ID);
                                 if (realmsAddress != "")
                                 {
                                     addressInput = realmsAddress;
@@ -909,7 +916,7 @@ namespace MinecraftClient
                 }
                 ConsoleIO.WriteLine(Translations.mcc_restart);
                 ReloadSettings(keepAccountAndServerSettings);
-                InitializeClient();
+                InitializeClientAsync().GetAwaiter().GetResult();
             })).Start();
         }
 

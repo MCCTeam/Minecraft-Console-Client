@@ -592,24 +592,23 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
         public static LoginResult GetLogin(string user, string pass, LoginType type, out SessionToken session)
         {
-            if (type == LoginType.microsoft)
+            var login = GetLoginAsync(user, pass, type).GetAwaiter().GetResult();
+            session = login.Session;
+            return login.Result;
+        }
+
+        public static Task<(LoginResult Result, SessionToken Session)> GetLoginAsync(string user, string pass, LoginType type, CancellationToken cancellationToken = default)
+        {
+            return type switch
             {
-                if (Config.Main.General.Method == LoginMethod.mcc)
-                    return MicrosoftMCCLogin(user, pass, out session);
-                else
-                    return MicrosoftBrowserLogin(out session, user);
-            }
-            else if (type == LoginType.mojang)
-            {
-                return MojangLogin(user, pass, out session);
-            }
-            else if (type == LoginType.yggdrasil)
-            {
-                return YggdrasiLogin(user, pass, out session);
-            }
-            else
-                throw new InvalidOperationException(
-                    "Account type must be Mojang or Microsoft or valid authlib 3rd Servers!");
+                LoginType.microsoft => Config.Main.General.Method == LoginMethod.mcc
+                    ? MicrosoftMCCLoginAsync(user, pass, cancellationToken)
+                    : MicrosoftBrowserLoginAsync(user, cancellationToken),
+                LoginType.mojang => MojangLoginAsync(user, pass, cancellationToken),
+                LoginType.yggdrasil => YggdrasiLoginAsync(user, pass, cancellationToken),
+                _ => throw new InvalidOperationException(
+                    "Account type must be Mojang or Microsoft or valid authlib 3rd Servers!")
+            };
         }
 
         /// <summary>
@@ -621,20 +620,29 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResult MojangLogin(string user, string pass, out SessionToken session)
         {
-            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+            var login = MojangLoginAsync(user, pass).GetAwaiter().GetResult();
+            session = login.Session;
+            return login.Result;
+        }
+
+        private static async Task<(LoginResult Result, SessionToken Session)> MojangLoginAsync(string user, string pass, CancellationToken cancellationToken = default)
+        {
+            SessionToken session = new() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
 
             try
             {
-                string result = "";
+                string result;
                 string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" +
                                       JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) +
                                       "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", 443, "/authenticate", json_request, ref result);
+                var response = await DoHTTPSPostAsync("authserver.mojang.com", 443, "/authenticate", json_request, cancellationToken);
+                int code = response.StatusCode;
+                result = response.Result;
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
                     {
-                        return LoginResult.NotPremium;
+                        return (LoginResult.NotPremium, session);
                     }
                     else
                     {
@@ -647,27 +655,27 @@ namespace MinecraftClient.Protocol
                             session.PlayerID = loginResponse["selectedProfile"]!["id"]!.GetStringValue();
                             session.PlayerName = loginResponse["selectedProfile"]!["name"]!
                                 .GetStringValue();
-                            return LoginResult.Success;
+                            return (LoginResult.Success, session);
                         }
-                        else return LoginResult.InvalidResponse;
+                        else return (LoginResult.InvalidResponse, session);
                     }
                 }
                 else if (code == 403)
                 {
                     if (result.Contains("UserMigratedException"))
                     {
-                        return LoginResult.AccountMigrated;
+                        return (LoginResult.AccountMigrated, session);
                     }
-                    else return LoginResult.WrongPassword;
+                    else return (LoginResult.WrongPassword, session);
                 }
                 else if (code == 503)
                 {
-                    return LoginResult.ServiceUnavailable;
+                    return (LoginResult.ServiceUnavailable, session);
                 }
                 else
                 {
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.error_http_code, code));
-                    return LoginResult.OtherError;
+                    return (LoginResult.OtherError, session);
                 }
             }
             catch (System.Security.Authentication.AuthenticationException e)
@@ -677,7 +685,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
 
-                return LoginResult.SSLError;
+                return (LoginResult.SSLError, session);
             }
             catch (System.IO.IOException e)
             {
@@ -688,9 +696,9 @@ namespace MinecraftClient.Protocol
 
                 if (e.Message.Contains("authentication"))
                 {
-                    return LoginResult.SSLError;
+                    return (LoginResult.SSLError, session);
                 }
-                else return LoginResult.OtherError;
+                else return (LoginResult.OtherError, session);
             }
             catch (Exception e)
             {
@@ -699,28 +707,41 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
 
-                return LoginResult.OtherError;
+                return (LoginResult.OtherError, session);
             }
         }
 
         private static LoginResult YggdrasiLogin(string user, string pass, out SessionToken session)
         {
-            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+            var login = YggdrasiLoginAsync(user, pass).GetAwaiter().GetResult();
+            session = login.Session;
+            return login.Result;
+        }
+
+        private static async Task<(LoginResult Result, SessionToken Session)> YggdrasiLoginAsync(string user, string pass, CancellationToken cancellationToken = default)
+        {
+            SessionToken session = new() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
 
             try
             {
-                string result = "";
+                string result;
                 string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" +
                                       JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) +
                                       "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost(Config.Main.General.AuthServer.Host, Config.Main.General.AuthServer.Port,
-                    Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/authserver/authenticate", json_request,
-                    Config.Main.General.AuthServer.UseHttps, ref result);
+                var response = await DoHTTPSPostAsync(
+                    Config.Main.General.AuthServer.Host,
+                    Config.Main.General.AuthServer.Port,
+                    Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/authserver/authenticate",
+                    json_request,
+                    Config.Main.General.AuthServer.UseHttps,
+                    cancellationToken);
+                int code = response.StatusCode;
+                result = response.Result;
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
                     {
-                        return LoginResult.NotPremium;
+                        return (LoginResult.NotPremium, session);
                     }
                     else
                     {
@@ -735,7 +756,7 @@ namespace MinecraftClient.Protocol
                                     .GetStringValue();
                                 session.PlayerName = loginResponse["selectedProfile"]!["name"]!
                                     .GetStringValue();
-                                return LoginResult.Success;
+                                return (LoginResult.Success, session);
                             }
                             else
                             {
@@ -771,33 +792,33 @@ namespace MinecraftClient.Protocol
                                     session.PlayerID = selectedProfile["id"]!.GetStringValue();
                                     session.PlayerName = selectedProfile["name"]!.GetStringValue();
                                     SessionToken currentsession = session;
-                                    return GetNewYggdrasilToken(currentsession, out session);
+                                    return await GetNewYggdrasilTokenAsync(currentsession, cancellationToken);
                                 }
                                 else
                                 {
-                                    return LoginResult.WrongSelection;
+                                    return (LoginResult.WrongSelection, session);
                                 }
                             }
                         }
-                        else return LoginResult.InvalidResponse;
+                        else return (LoginResult.InvalidResponse, session);
                     }
                 }
                 else if (code == 403)
                 {
                     if (result.Contains("UserMigratedException"))
                     {
-                        return LoginResult.AccountMigrated;
+                        return (LoginResult.AccountMigrated, session);
                     }
-                    else return LoginResult.WrongPassword;
+                    else return (LoginResult.WrongPassword, session);
                 }
                 else if (code == 503)
                 {
-                    return LoginResult.ServiceUnavailable;
+                    return (LoginResult.ServiceUnavailable, session);
                 }
                 else
                 {
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.error_http_code, code));
-                    return LoginResult.OtherError;
+                    return (LoginResult.OtherError, session);
                 }
             }
             catch (System.Security.Authentication.AuthenticationException e)
@@ -807,7 +828,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
 
-                return LoginResult.SSLError;
+                return (LoginResult.SSLError, session);
             }
             catch (System.IO.IOException e)
             {
@@ -818,9 +839,9 @@ namespace MinecraftClient.Protocol
 
                 if (e.Message.Contains("authentication"))
                 {
-                    return LoginResult.SSLError;
+                    return (LoginResult.SSLError, session);
                 }
-                else return LoginResult.OtherError;
+                else return (LoginResult.OtherError, session);
             }
             catch (Exception e)
             {
@@ -829,7 +850,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
 
-                return LoginResult.OtherError;
+                return (LoginResult.OtherError, session);
             }
         }
 
@@ -843,9 +864,16 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
         {
+            var login = MicrosoftMCCLoginAsync(email, password).GetAwaiter().GetResult();
+            session = login.Session;
+            return login.Result;
+        }
+
+        private static async Task<(LoginResult Result, SessionToken Session)> MicrosoftMCCLoginAsync(string email, string password, CancellationToken cancellationToken = default)
+        {
             try
             {
-                var deviceCode = Microsoft.RequestDeviceCode();
+                var deviceCode = await Microsoft.RequestDeviceCodeAsync(cancellationToken);
 
                 ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_device_code_prompt, deviceCode.VerificationUri, deviceCode.UserCode));
 
@@ -854,19 +882,19 @@ namespace MinecraftClient.Protocol
 
                 ConsoleIO.WriteLineFormatted(Translations.mcc_device_code_waiting);
 
-                var msaResponse = Microsoft.PollDeviceCodeToken(deviceCode.DeviceCode, deviceCode.ExpiresIn, deviceCode.Interval);
-                return MicrosoftLogin(msaResponse, out session);
+                var msaResponse = await Microsoft.PollDeviceCodeTokenAsync(deviceCode.DeviceCode, deviceCode.ExpiresIn, deviceCode.Interval, cancellationToken);
+                return await MicrosoftLoginAsync(msaResponse, cancellationToken);
             }
             catch (Exception e)
             {
-                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+                SessionToken session = new() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
                 ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
                 if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
 
-                return LoginResult.OtherError;
+                return (LoginResult.OtherError, session);
             }
         }
 
@@ -882,6 +910,13 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static LoginResult MicrosoftBrowserLogin(out SessionToken session, string loginHint = "")
         {
+            var login = MicrosoftBrowserLoginAsync(loginHint).GetAwaiter().GetResult();
+            session = login.Session;
+            return login.Result;
+        }
+
+        public static async Task<(LoginResult Result, SessionToken Session)> MicrosoftBrowserLoginAsync(string loginHint = "", CancellationToken cancellationToken = default)
+        {
             if (string.IsNullOrEmpty(loginHint))
                 Microsoft.OpenBrowser(Microsoft.SignInUrl);
             else
@@ -893,40 +928,54 @@ namespace MinecraftClient.Protocol
             string code = ConsoleIO.ReadLine();
             ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, "Microsoft"));
 
-            var msaResponse = Microsoft.RequestAccessToken(code);
-            return MicrosoftLogin(msaResponse, out session);
+            var msaResponse = await Microsoft.RequestAccessTokenAsync(code);
+            return await MicrosoftLoginAsync(msaResponse, cancellationToken);
         }
 
         public static LoginResult MicrosoftLoginRefresh(string refreshToken, out SessionToken session)
         {
-            var msaResponse = Microsoft.RefreshAccessToken(refreshToken);
-            return MicrosoftLogin(msaResponse, out session);
+            var login = MicrosoftLoginRefreshAsync(refreshToken).GetAwaiter().GetResult();
+            session = login.Session;
+            return login.Result;
+        }
+
+        public static async Task<(LoginResult Result, SessionToken Session)> MicrosoftLoginRefreshAsync(string refreshToken, CancellationToken cancellationToken = default)
+        {
+            var msaResponse = await Microsoft.RefreshAccessTokenAsync(refreshToken);
+            return await MicrosoftLoginAsync(msaResponse, cancellationToken);
         }
 
         private static LoginResult MicrosoftLogin(Microsoft.LoginResponse msaResponse, out SessionToken session)
         {
-            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+            var login = MicrosoftLoginAsync(msaResponse).GetAwaiter().GetResult();
+            session = login.Session;
+            return login.Result;
+        }
+
+        private static async Task<(LoginResult Result, SessionToken Session)> MicrosoftLoginAsync(Microsoft.LoginResponse msaResponse, CancellationToken cancellationToken = default)
+        {
+            SessionToken session = new() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
 
             try
             {
-                var xblResponse = XboxLive.XblAuthenticate(msaResponse);
-                var xsts = XboxLive.XSTSAuthenticate(xblResponse); // Might throw even password correct
+                var xblResponse = await XboxLive.XblAuthenticateAsync(msaResponse, cancellationToken);
+                var xsts = await XboxLive.XSTSAuthenticateAsync(xblResponse, cancellationToken); // Might throw even password correct
 
-                string accessToken = MinecraftWithXbox.LoginWithXbox(xsts.UserHash, xsts.Token);
-                bool hasGame = MinecraftWithXbox.UserHasGame(accessToken);
+                string accessToken = await MinecraftWithXbox.LoginWithXboxAsync(xsts.UserHash, xsts.Token, cancellationToken);
+                bool hasGame = await MinecraftWithXbox.UserHasGameAsync(accessToken, cancellationToken);
                 if (hasGame)
                 {
-                    var profile = MinecraftWithXbox.GetUserProfile(accessToken);
+                    var profile = await MinecraftWithXbox.GetUserProfileAsync(accessToken, cancellationToken);
                     session.PlayerName = profile.UserName;
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
                     session.RefreshToken = msaResponse.RefreshToken;
                     InternalConfig.Account.Login = msaResponse.Email;
-                    return LoginResult.Success;
+                    return (LoginResult.Success, session);
                 }
                 else
                 {
-                    return LoginResult.NotPremium;
+                    return (LoginResult.NotPremium, session);
                 }
             }
             catch (Exception e)
@@ -937,7 +986,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
 
-                return LoginResult.WrongPassword; // Might not always be wrong password
+                return (LoginResult.WrongPassword, session); // Might not always be wrong password
             }
         }
 
@@ -1077,6 +1126,52 @@ namespace MinecraftClient.Protocol
             }
         }
 
+        public static async Task<(LoginResult Result, SessionToken Session)> GetNewYggdrasilTokenAsync(SessionToken currentsession, CancellationToken cancellationToken = default)
+        {
+            SessionToken session = new();
+            try
+            {
+                string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) +
+                                      "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) +
+                                      "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) +
+                                      "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
+                var response = await DoHTTPSPostAsync(
+                    Config.Main.General.AuthServer.Host,
+                    Config.Main.General.AuthServer.Port,
+                    Config.Main.General.AuthServer.AuthlibInjectorAPIPath + "/authserver/refresh",
+                    json_request,
+                    Config.Main.General.AuthServer.UseHttps,
+                    cancellationToken);
+                string result = response.Result;
+                int code = response.StatusCode;
+                if (code == 200)
+                {
+                    var loginResponse = Json.ParseJson(result);
+                    if (loginResponse?["accessToken"] is not null
+                        && loginResponse["selectedProfile"]?["id"] is not null
+                        && loginResponse["selectedProfile"]?["name"] is not null)
+                    {
+                        session.ID = loginResponse["accessToken"]!.GetStringValue();
+                        session.PlayerID = loginResponse["selectedProfile"]!["id"]!.GetStringValue();
+                        session.PlayerName = loginResponse["selectedProfile"]!["name"]!.GetStringValue();
+                        return (LoginResult.Success, session);
+                    }
+
+                    return (LoginResult.InvalidResponse, session);
+                }
+
+                if (code == 403 && result.Contains("InvalidToken"))
+                    return (LoginResult.InvalidToken, session);
+
+                ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.error_auth, code));
+                return (LoginResult.OtherError, session);
+            }
+            catch
+            {
+                return (LoginResult.OtherError, session);
+            }
+        }
+
         /// <summary>
         /// Check session using Mojang's Yggdrasil authentication scheme. Allows to join an online-mode server
         /// </summary>
@@ -1154,15 +1249,18 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Player UUID</param>
         /// <param name="accesstoken">Access token</param>
         /// <returns>List of ID of available Realms worlds</returns>
-        public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
+        public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken) =>
+            RealmsListWorldsAsync(username, uuid, accesstoken).GetAwaiter().GetResult();
+
+        public static async Task<List<string>> RealmsListWorldsAsync(string username, string uuid, string accesstoken, CancellationToken cancellationToken = default)
         {
             List<string> realmsWorldsResult = new(); // Store world ID
             try
             {
-                string result = "";
+                string result;
                 string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username,
                     Program.MCHighestVersion);
-                DoHTTPSGet("pc.realms.minecraft.net", 443, "/worlds", cookies, ref result);
+                (_, result) = await DoHTTPSGetAsync("pc.realms.minecraft.net", 443, "/worlds", cookies, cancellationToken);
                 var realmsWorlds = Json.ParseJson(result);
                 if (realmsWorlds?["servers"] is System.Text.Json.Nodes.JsonArray serversArray
                     && serversArray.Count > 0)
@@ -1218,15 +1316,21 @@ namespace MinecraftClient.Protocol
         /// <param name="accesstoken">Access token</param>
         /// <returns>Server address (host:port) or empty string if failure</returns>
         public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid,
-            string accesstoken)
+            string accesstoken) =>
+            GetRealmsWorldServerAddressAsync(worldId, username, uuid, accesstoken).GetAwaiter().GetResult();
+
+        public static async Task<string> GetRealmsWorldServerAddressAsync(string worldId, string username, string uuid,
+            string accesstoken, CancellationToken cancellationToken = default)
         {
             try
             {
-                string result = "";
+                string result;
                 string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username,
                     Program.MCHighestVersion);
-                int statusCode = DoHTTPSGet("pc.realms.minecraft.net", 443, "/worlds/v1/" + worldId + "/join/pc",
-                    cookies, ref result);
+                var response = await DoHTTPSGetAsync("pc.realms.minecraft.net", 443, "/worlds/v1/" + worldId + "/join/pc",
+                    cookies, cancellationToken);
+                int statusCode = response.StatusCode;
+                result = response.Result;
                 if (statusCode == 200)
                 {
                     var serverAddress = Json.ParseJson(result);
@@ -1267,6 +1371,13 @@ namespace MinecraftClient.Protocol
         /// <returns>HTTP Status code</returns>
         private static int DoHTTPSGet(string host, int port, string path, string cookies, ref string result)
         {
+            var response = DoHTTPSGetAsync(host, port, path, cookies).GetAwaiter().GetResult();
+            result = response.Result;
+            return response.StatusCode;
+        }
+
+        private static Task<(int StatusCode, string Result)> DoHTTPSGetAsync(string host, int port, string path, string cookies, CancellationToken cancellationToken = default)
+        {
             Dictionary<string, string> headers = new()
             {
                 { "Cookie", cookies },
@@ -1274,7 +1385,7 @@ namespace MinecraftClient.Protocol
                 { "Pragma", "no-cache" },
                 { "User-Agent", "Java/1.6.0_27" }
             };
-            return DoHTTPSRequest(HttpMethod.Get, host, port, path, headers, null, useHttps: true, ref result);
+            return DoHTTPSRequestAsync(HttpMethod.Get, host, port, path, headers, null, useHttps: true, cancellationToken);
         }
 
         /// <summary>
@@ -1301,12 +1412,22 @@ namespace MinecraftClient.Protocol
         /// <returns>HTTP Status code</returns>
         private static int DoHTTPSPost(string host, int port, string path, string body, bool useHttps, ref string result)
         {
+            var response = DoHTTPSPostAsync(host, port, path, body, useHttps).GetAwaiter().GetResult();
+            result = response.Result;
+            return response.StatusCode;
+        }
+
+        private static Task<(int StatusCode, string Result)> DoHTTPSPostAsync(string host, int port, string path, string body, CancellationToken cancellationToken = default) =>
+            DoHTTPSPostAsync(host, port, path, body, useHttps: true, cancellationToken);
+
+        private static Task<(int StatusCode, string Result)> DoHTTPSPostAsync(string host, int port, string path, string body, bool useHttps, CancellationToken cancellationToken = default)
+        {
             Dictionary<string, string> headers = new()
             {
                 { "User-Agent", "MCC/" + Program.Version },
                 { "Content-Type", "application/json" }
             };
-            return DoHTTPSRequest(HttpMethod.Post, host, port, path, headers, body, useHttps, ref result);
+            return DoHTTPSRequestAsync(HttpMethod.Post, host, port, path, headers, body, useHttps, cancellationToken);
         }
 
         /// <summary>
@@ -1323,69 +1444,11 @@ namespace MinecraftClient.Protocol
         /// <returns>HTTP Status code</returns>
         private static int DoHTTPSRequest(HttpMethod method, string host, int port, string path, Dictionary<string, string> headers, string? body, bool useHttps, ref string result)
         {
-            string? postResult = null;
-            int statusCode = 520;
-            Exception? exception = null;
-            AutoTimeout.Perform(() =>
-            {
-                try
-                {
-                    if (Settings.Config.Logging.DebugMessages)
-                        ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.debug_request, host));
-
-                    using SocketsHttpHandler handler = new SocketsHttpHandler();
-                    handler.ConnectCallback = async (ctx, ct) =>
-                    {
-                        TcpClient client = ProxyHandler.NewTcpClient(host, port, true);
-                        return client.GetStream();
-                    };
-
-                    using HttpClient client = new HttpClient(handler);
-
-                    string scheme = useHttps ? "https" : "http";
-                    var request = new HttpRequestMessage(method, scheme + "://" + host + ":" + port + path);
-
-                    var contentType = "text/plain";
-                    foreach (var header in headers)
-                    {
-                        request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                        if (header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
-                            contentType = header.Value;
-                    }
-
-                    if (body is not null)
-                        request.Content = new StringContent(body, Encoding.UTF8, contentType);
-
-                    if (Settings.Config.Logging.DebugMessages)
-                        ConsoleIO.WriteLineFormatted("§8> " + request);
-
-                    HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
-                    statusCode = (int)response.StatusCode;
-
-                    postResult = statusCode == 204
-                        ? "No Content"
-                        : response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                    if (Settings.Config.Logging.DebugMessages)
-                    {
-                        ConsoleIO.WriteLine("");
-                        foreach (string line in postResult.Split('\n'))
-                            ConsoleIO.WriteLineFormatted("§8< " + line);
-                    }
-                }
-                catch (Exception e)
-                {
-                    if (e is not System.Threading.ThreadAbortException)
-                    {
-                        exception = e;
-                    }
-                }
-            }, TimeSpan.FromSeconds(30));
-            if (postResult is not null)
-                result = postResult;
-            if (exception is not null)
-                throw exception;
-            return statusCode;
+            var response = DoHTTPSRequestAsync(method, host, port, path, headers, body, useHttps, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+            result = response.Result;
+            return response.StatusCode;
         }
 
         private static async Task<(int StatusCode, string Result)> DoHTTPSRequestAsync(HttpMethod method, string host, int port, string path, Dictionary<string, string> headers, string? body, bool useHttps, CancellationToken cancellationToken)
