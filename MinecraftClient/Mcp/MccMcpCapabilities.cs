@@ -862,6 +862,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult DigBlock(double x, double y, double z, double durationSeconds)
     {
+        return DigBlockAsync(x, y, z, durationSeconds).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> DigBlockAsync(double x, double y, double z, double durationSeconds)
+    {
         if (!IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -923,7 +928,10 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (!accepted)
                 continue;
 
-            if (WaitForBlockChange(client, target, beforeBlock, GetDigVerifyWaitMs(attemptDuration), out afterBlock))
+            (bool blockChanged, Block updatedBlock) =
+                await WaitForBlockChangeAsync(client, target, beforeBlock, GetDigVerifyWaitMs(attemptDuration));
+            afterBlock = updatedBlock;
+            if (blockChanged)
             {
                 changed = true;
                 break;
@@ -1591,6 +1599,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult DropInventoryItem(string itemType, int count, int inventoryId, bool preferStack)
     {
+        return DropInventoryItemAsync(itemType, count, inventoryId, preferStack).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> DropInventoryItemAsync(string itemType, int count, int inventoryId, bool preferStack)
+    {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -1612,10 +1625,10 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             });
         }
 
-        return client.InvokeOnMainThread(() =>
+        return await Task.Run(async () =>
         {
-            Dictionary<int, Container> inventories = client.GetInventories();
-            if (!inventories.TryGetValue(inventoryId, out Container? inventory))
+            Container? inventory = client.GetInventory(inventoryId);
+            if (inventory is null)
                 return MccMcpResult.Fail("invalid_state");
 
             int cursorCount = GetCursorItemCount(inventory, parsedItemType);
@@ -1659,7 +1672,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
                 int dropFromSlot = Math.Min(remaining, currentItem.Count);
                 touchedSlots.Add(entry.slot);
-                bool ok = TryDropInventorySlotItems(client, inventoryId, inventory, entry.slot, parsedItemType, dropFromSlot, out int droppedFromSlot);
+                (bool ok, int droppedFromSlot) = await TryDropInventorySlotItemsAsync(client, inventoryId, inventory, entry.slot, parsedItemType, dropFromSlot);
 
                 if (!ok)
                 {
@@ -1725,12 +1738,22 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack)
     {
-        return TransferContainerItem(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
+        return DepositContainerItemAsync(itemType, count, inventoryId, preferLargestStack).GetAwaiter().GetResult();
+    }
+
+    public Task<MccMcpResult> DepositContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack)
+    {
+        return TransferContainerItemAsync(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
     }
 
     public MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack)
     {
-        return TransferContainerItem(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Withdraw);
+        return WithdrawContainerItemAsync(itemType, count, inventoryId, preferLargestStack).GetAwaiter().GetResult();
+    }
+
+    public Task<MccMcpResult> WithdrawContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack)
+    {
+        return TransferContainerItemAsync(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Withdraw);
     }
 
     public MccMcpResult QueryEntities(int maxCount)
@@ -1958,6 +1981,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     private MccMcpResult TransferContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack, InventoryTransferDirection direction)
     {
+        return TransferContainerItemAsync(itemType, count, inventoryId, preferLargestStack, direction).GetAwaiter().GetResult();
+    }
+
+    private async Task<MccMcpResult> TransferContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack, InventoryTransferDirection direction)
+    {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -2078,7 +2106,18 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
                 if (direction == InventoryTransferDirection.Withdraw)
                 {
-                    if (!WaitForRangeCount(client, resolvedInventoryId, parsedItemType, sourceStart, sourceEnd, countAfterShift => countAfterShift < beforeSourceCount, DefaultInventoryActionWaitMs, out Container? afterShift, out int afterSourceCount))
+                    Container? afterShift = null;
+                    int afterSourceCount = beforeSourceCount;
+                    if (!await WaitForRangeCountAsync(client, resolvedInventoryId, parsedItemType, sourceStart, sourceEnd, countAfterShift => countAfterShift < beforeSourceCount, DefaultInventoryActionWaitMs, result =>
+                        {
+                            afterShift = result.Inventory;
+                            afterSourceCount = result.ItemCount;
+                        },
+                        onInitialize: () =>
+                        {
+                            afterShift = null;
+                            afterSourceCount = beforeSourceCount;
+                        }))
                     {
                         afterShift = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
                         afterSourceCount = afterShift is null ? beforeSourceCount : CountItemInRange(afterShift, parsedItemType, sourceStart, sourceEnd);
@@ -2088,7 +2127,18 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 }
                 else
                 {
-                    if (!WaitForRangeCount(client, resolvedInventoryId, parsedItemType, targetStart, targetEnd, countAfterShift => countAfterShift > beforeTargetCount, DefaultInventoryActionWaitMs, out Container? afterShift, out int afterTargetCount))
+                    Container? afterShift = null;
+                    int afterTargetCount = beforeTargetCount;
+                    if (!await WaitForRangeCountAsync(client, resolvedInventoryId, parsedItemType, targetStart, targetEnd, countAfterShift => countAfterShift > beforeTargetCount, DefaultInventoryActionWaitMs, result =>
+                        {
+                            afterShift = result.Inventory;
+                            afterTargetCount = result.ItemCount;
+                        },
+                        onInitialize: () =>
+                        {
+                            afterShift = null;
+                            afterTargetCount = beforeTargetCount;
+                        }))
                     {
                         afterShift = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
                         afterTargetCount = afterShift is null ? beforeTargetCount : CountItemInRange(afterShift, parsedItemType, targetStart, targetEnd);
@@ -2100,7 +2150,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 if (direction == InventoryTransferDirection.Withdraw && movedCount > remaining)
                 {
                     int excessCount = movedCount - remaining;
-                    MccMcpResult returnExcess = TransferContainerItem(parsedItemType.ToString(), excessCount, resolvedInventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
+                    MccMcpResult returnExcess = await TransferContainerItemAsync(parsedItemType.ToString(), excessCount, resolvedInventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
                     if (!returnExcess.Success)
                     {
                         return MccMcpResult.Fail("action_incomplete", data: new
@@ -2121,7 +2171,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             }
             else
             {
-                movedCount = TransferPartialFromSlot(
+                movedCount = await TransferPartialFromSlotAsync(
                     client,
                     resolvedInventoryId,
                     slot,
@@ -2405,16 +2455,10 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     private static bool TryDropInventorySlotItems(McClient client, int inventoryId, Container inventory, int slotId, ItemType itemType, int dropCount, out int droppedCount)
     {
-        droppedCount = 0;
-        if (!inventory.Items.TryGetValue(slotId, out Item? currentItem) || currentItem.Type != itemType || currentItem.Count <= 0)
-            return false;
-
-        if (inventoryId == 0 && inventory.IsHotbar(slotId, out int hotbarSlot))
-        {
-            return TryDropHotbarSlotItems(client, slotId, hotbarSlot, itemType, dropCount, currentItem.Count, out droppedCount);
-        }
-
-        return TryDropWindowSlotItems(client, inventoryId, slotId, itemType, dropCount, currentItem.Count, out droppedCount);
+        (bool success, int actualDroppedCount) =
+            TryDropInventorySlotItemsAsync(client, inventoryId, inventory, slotId, itemType, dropCount).GetAwaiter().GetResult();
+        droppedCount = actualDroppedCount;
+        return success;
     }
 
     private static int CountItemInRange(Container inventory, ItemType itemType, int startSlot, int endSlot)
@@ -2438,7 +2482,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             .ToArray();
     }
 
-    private static int TransferPartialFromSlot(McClient client, int inventoryId, int sourceSlot, ItemType itemType, int requestedCount, int sourceStart, int sourceEnd, int targetStart, int targetEnd, List<int> touchedTargetSlots)
+    private static async Task<int> TransferPartialFromSlotAsync(McClient client, int inventoryId, int sourceSlot, ItemType itemType, int requestedCount, int sourceStart, int sourceEnd, int targetStart, int targetEnd, List<int> touchedTargetSlots)
     {
         Container? inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
         if (inventory is null || !inventory.Items.TryGetValue(sourceSlot, out Item? sourceItem) || sourceItem.Count <= 0)
@@ -2448,7 +2492,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         if (!client.DoWindowAction(inventoryId, sourceSlot, WindowActionType.LeftClick))
             return 0;
 
-        if (!WaitForCursorItem(client, itemType, DefaultInventoryActionWaitMs, out _))
+        if (!await WaitForCursorItemAsync(client, itemType, DefaultInventoryActionWaitMs))
             return 0;
 
         int moved = 0;
@@ -2467,7 +2511,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (step <= 0 || !PlaceItemsFromCursor(client, inventoryId, targetSlot, step))
                 break;
 
-            if (!WaitForPlacement(client, inventoryId, targetSlot, itemType, beforeTargetCount, beforeCursorCount, step))
+            if (!await WaitForPlacementAsync(client, inventoryId, targetSlot, itemType, beforeTargetCount, beforeCursorCount, step))
                 break;
 
             touchedTargetSlots.Add(targetSlot);
@@ -2484,7 +2528,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (!client.DoWindowAction(inventoryId, returnSlot, WindowActionType.LeftClick))
                 return 0;
 
-            if (!WaitForCursorClear(client, DefaultInventoryActionWaitMs))
+            if (!await WaitForCursorClearAsync(client, DefaultInventoryActionWaitMs))
                 return 0;
         }
 
@@ -2570,27 +2614,27 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return inventory.Items.TryGetValue(slot, out Item? item) && item.Type == itemType ? item.Count : 0;
     }
 
-    private static bool TryDropHotbarSlotItems(McClient client, int slotId, int hotbarSlot, ItemType itemType, int dropCount, int availableInSlot, out int droppedCount)
+    private static async Task<(bool Success, int DroppedCount)> TryDropHotbarSlotItemsAsync(McClient client, int slotId, int hotbarSlot, ItemType itemType, int dropCount, int availableInSlot)
     {
-        droppedCount = 0;
-        byte previousSlot = client.GetCurrentSlot();
+        int droppedCount = 0;
+        byte previousSlot = client.InvokeOnMainThread(client.GetCurrentSlot);
         bool restoreSlot = previousSlot != hotbarSlot;
 
         if (restoreSlot && !client.ChangeSlot((short)hotbarSlot))
-            return false;
+            return (false, 0);
 
         try
         {
             if (dropCount >= availableInSlot)
             {
                 if (!client.DropSelectedItem(dropEntireStack: true))
-                    return false;
+                    return (false, droppedCount);
 
-                if (!WaitForSlotItemCount(client, 0, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs, out _, out _))
-                    return false;
+                if (!await WaitForSlotItemCountAsync(client, 0, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs))
+                    return (false, droppedCount);
 
                 droppedCount = availableInSlot;
-                return true;
+                return (true, droppedCount);
             }
 
             int remaining = dropCount;
@@ -2598,23 +2642,23 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             {
                 Container? currentInventory = client.GetInventory(0);
                 if (currentInventory is null)
-                    return false;
+                    return (false, droppedCount);
 
                 int beforeSlotCount = GetSlotItemCount(currentInventory, slotId, itemType);
                 if (beforeSlotCount <= 0)
                     break;
 
                 if (!client.DropSelectedItem(dropEntireStack: false))
-                    return false;
+                    return (false, droppedCount);
 
-                if (!WaitForSlotItemCount(client, 0, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs, out _, out _))
-                    return false;
+                if (!await WaitForSlotItemCountAsync(client, 0, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs))
+                    return (false, droppedCount);
 
                 remaining--;
                 droppedCount++;
             }
 
-            return remaining == 0;
+            return (remaining == 0, droppedCount);
         }
         finally
         {
@@ -2623,20 +2667,20 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         }
     }
 
-    private static bool TryDropWindowSlotItems(McClient client, int inventoryId, int slotId, ItemType itemType, int dropCount, int availableInSlot, out int droppedCount)
+    private static async Task<(bool Success, int DroppedCount)> TryDropWindowSlotItemsAsync(McClient client, int inventoryId, int slotId, ItemType itemType, int dropCount, int availableInSlot)
     {
-        droppedCount = 0;
+        int droppedCount = 0;
 
         if (dropCount >= availableInSlot)
         {
             if (!client.DoWindowAction(inventoryId, slotId, WindowActionType.DropItemStack))
-                return false;
+                return (false, droppedCount);
 
-            if (!WaitForSlotItemCount(client, inventoryId, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs, out _, out _))
-                return false;
+            if (!await WaitForSlotItemCountAsync(client, inventoryId, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs))
+                return (false, droppedCount);
 
             droppedCount = availableInSlot;
-            return true;
+            return (true, droppedCount);
         }
 
         int remaining = dropCount;
@@ -2644,23 +2688,143 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         {
             Container? currentInventory = client.GetInventory(inventoryId);
             if (currentInventory is null)
-                return false;
+                return (false, droppedCount);
 
             int beforeSlotCount = GetSlotItemCount(currentInventory, slotId, itemType);
             if (beforeSlotCount <= 0)
                 break;
 
             if (!client.DoWindowAction(inventoryId, slotId, WindowActionType.DropItem))
-                return false;
+                return (false, droppedCount);
 
-            if (!WaitForSlotItemCount(client, inventoryId, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs, out _, out _))
-                return false;
+            if (!await WaitForSlotItemCountAsync(client, inventoryId, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs))
+                return (false, droppedCount);
 
             remaining--;
             droppedCount++;
         }
 
-        return remaining == 0;
+        return (remaining == 0, droppedCount);
+    }
+
+    private static Task<(bool Success, int DroppedCount)> TryDropInventorySlotItemsAsync(McClient client, int inventoryId, Container inventory, int slotId, ItemType itemType, int dropCount)
+    {
+        if (!inventory.Items.TryGetValue(slotId, out Item? currentItem) || currentItem.Type != itemType || currentItem.Count <= 0)
+            return Task.FromResult((false, 0));
+
+        if (inventoryId == 0 && inventory.IsHotbar(slotId, out int hotbarSlot))
+            return TryDropHotbarSlotItemsAsync(client, slotId, hotbarSlot, itemType, dropCount, currentItem.Count);
+
+        return TryDropWindowSlotItemsAsync(client, inventoryId, slotId, itemType, dropCount, currentItem.Count);
+    }
+
+    private readonly record struct InventoryCountState(Container? Inventory, int ItemCount);
+
+    private static async Task<bool> WaitForCursorItemAsync(McClient client, ItemType itemType, int waitMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            if (TryGetCursorItem(client, out Item? cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<bool> WaitForCursorClearAsync(McClient client, int waitMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            if (!TryGetCursorItem(client, out _))
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<bool> WaitForPlacementAsync(McClient client, int inventoryId, int targetSlot, ItemType itemType, int beforeTargetCount, int beforeCursorCount, int placedCount)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(DefaultInventoryActionWaitMs);
+        while (true)
+        {
+            bool targetUpdated = false;
+            bool cursorUpdated = false;
+
+            Container? inventory = client.GetInventory(inventoryId);
+            if (inventory is not null)
+            {
+                int currentTargetCount = GetSlotItemCount(inventory, targetSlot, itemType);
+                targetUpdated = currentTargetCount >= beforeTargetCount + placedCount;
+            }
+
+            if (placedCount >= beforeCursorCount)
+            {
+                cursorUpdated = !TryGetCursorItem(client, out _);
+            }
+            else if (TryGetCursorItem(client, out Item? cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
+            {
+                cursorUpdated = cursorItem.Count <= beforeCursorCount - placedCount;
+            }
+
+            if (targetUpdated && cursorUpdated)
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<bool> WaitForSlotItemCountAsync(McClient client, int inventoryId, int slotId, ItemType itemType, Func<int, bool> predicate, int waitMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            Container? inventory = client.GetInventory(inventoryId);
+            if (inventory is not null)
+            {
+                int itemCount = GetSlotItemCount(inventory, slotId, itemType);
+                if (predicate(itemCount))
+                    return true;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<bool> WaitForRangeCountAsync(McClient client, int inventoryId, ItemType itemType, int startSlot, int endSlot, Func<int, bool> predicate, int waitMs, Action<InventoryCountState> onObserved, Action onInitialize)
+    {
+        onInitialize();
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            Container? inventory = client.GetInventory(inventoryId);
+            int itemCount = 0;
+            if (inventory is not null)
+            {
+                itemCount = CountItemInRange(inventory, itemType, startSlot, endSlot);
+                onObserved(new InventoryCountState(inventory, itemCount));
+                if (predicate(itemCount))
+                    return true;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
+        }
     }
 
     private static bool WaitForCursorItem(McClient client, ItemType itemType, int waitMs, out Item? cursorItem)
@@ -3037,6 +3201,24 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 return false;
 
             Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<(bool Changed, Block AfterBlock)> WaitForBlockChangeAsync(McClient client, Location target, Block beforeBlock, int waitMs)
+    {
+        Block afterBlock = beforeBlock;
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            Block current = client.InvokeOnMainThread(() => client.GetWorld().GetBlock(target));
+            afterBlock = current;
+            if (!AreEquivalentBlocks(current, beforeBlock))
+                return (true, afterBlock);
+
+            if (DateTime.UtcNow >= deadline)
+                return (false, afterBlock);
+
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 

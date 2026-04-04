@@ -3975,6 +3975,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if login successful</returns>
         public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
         {
+            return LoginAsync(playerKeyPair, session, isTransfer).GetAwaiter().GetResult();
+        }
+
+        private async Task<bool> LoginAsync(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
+        {
             int nextState = isTransfer && protocolVersion >= MC_1_20_6_Version ? 3 : 2;
 
             if (nextState == 3)
@@ -4052,7 +4057,7 @@ namespace MinecraftClient.Protocol.Handlers
             // 3. Encryption Request - 9. Login Acknowledged
             while (true)
             {
-                var (packetId, packetData) = ReadNextPacket();
+                var (packetId, packetData) = await ReadNextPacketAsync(CancellationToken.None);
 
                 switch (packetId)
                 {
@@ -4075,7 +4080,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_20_6_Version)
                                 shouldAuthetnicate = dataTypes.ReadNextBool(packetData);
 
-                            return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(),
+                            return await StartEncryptionAsync(handler.GetUserUuidStr(), handler.GetSessionID(),
                                 Config.Main.General.AccountType, token, serverId,
                                 serverPublicKey, playerKeyPair, session, shouldAuthetnicate);
                         }
@@ -4091,7 +4096,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_20_2_Version)
                                 SendPacket(0x03, new List<byte>());
 
-                            if (!pForge.CompleteForgeHandshake())
+                            if (!await pForge.CompleteForgeHandshakeAsync())
                             {
                                 log.Error($"§8{Translations.error_forge}");
                                 return false;
@@ -4112,7 +4117,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Start network encryption. Automatically called by Login() if the server requests encryption.
         /// </summary>
         /// <returns>True if encryption was successful</returns>
-        private bool StartEncryption(string uuid, string sessionID, LoginType type, byte[] token, string serverIDhash,
+        private async Task<bool> StartEncryptionAsync(string uuid, string sessionID, LoginType type, byte[] token, string serverIDhash,
             byte[] serverPublicKey, PlayerKeyPair? playerKeyPair, SessionToken session, bool shouldAuthetnicate)
         {
             var RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
@@ -4140,7 +4145,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (needCheckSession)
                 {
                     var serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
-                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash, type))
+                    if (await ProtocolHandler.SessionCheckAsync(uuid, sessionID, serverHash, type))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
@@ -4190,7 +4195,7 @@ namespace MinecraftClient.Protocol.Handlers
             int loopPrevention = ushort.MaxValue;
             while (true)
             {
-                var (packetId, packetData) = ReadNextPacket();
+                var (packetId, packetData) = await ReadNextPacketAsync(CancellationToken.None);
                 if (packetId < 0 || loopPrevention-- < 0) // Failed to read packet or too many iterations (issue #1150)
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost,
@@ -4241,7 +4246,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             handler.OnLoginSuccess(uuidReceived, userName, playerProperty);
 
-                            if (!pForge.CompleteForgeHandshake())
+                            if (!await pForge.CompleteForgeHandshakeAsync())
                             {
                                 log.Error($"§8{Translations.error_forge_encrypt}");
                                 return false;

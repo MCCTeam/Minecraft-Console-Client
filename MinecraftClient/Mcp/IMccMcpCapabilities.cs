@@ -35,6 +35,7 @@ public interface IMccMcpCapabilities
     MccMcpResult SelectHotbarItem(string itemType, bool preferLowestSlot);
     MccMcpResult UseItemOnBlock(double x, double y, double z);
     MccMcpResult DigBlock(double x, double y, double z, double durationSeconds);
+    Task<MccMcpResult> DigBlockAsync(double x, double y, double z, double durationSeconds);
     MccMcpResult PlaceBlock(int x, int y, int z, string face, string hand, bool lookAtBlock);
     MccMcpResult InteractEntity(int entityId, string interaction, string hand);
     MccMcpResult AttackEntity(int entityId);
@@ -60,8 +61,11 @@ public interface IMccMcpCapabilities
     Task<MccMcpResult> CloseContainerAsync(int inventoryId, int timeoutMs);
     MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType);
     MccMcpResult DropInventoryItem(string itemType, int count, int inventoryId, bool preferStack);
+    Task<MccMcpResult> DropInventoryItemAsync(string itemType, int count, int inventoryId, bool preferStack);
     MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack);
+    Task<MccMcpResult> DepositContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack);
     MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack);
+    Task<MccMcpResult> WithdrawContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack);
     MccMcpResult QueryEntities(int maxCount);
     MccMcpResult ListEntities(int maxCount, string? typeFilter, double radius);
     MccMcpResult GetEntityInfo(int entityId, bool includeMetadata, bool includeEquipment, bool includeEffects);

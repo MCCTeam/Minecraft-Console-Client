@@ -203,9 +203,9 @@ public sealed class MccMcpToolSet
     }
 
     [McpServerTool(Name = "mcc_dig_block"), Description("Dig a block at target location.")]
-    public object DigBlock(double x, double y, double z, double durationSeconds = 0)
+    public async Task<object> DigBlock(double x, double y, double z, double durationSeconds = 0)
     {
-        return capabilities.DigBlock(x, y, z, durationSeconds);
+        return await capabilities.DigBlockAsync(x, y, z, durationSeconds);
     }
 
     [McpServerTool(Name = "mcc_place_block"), Description("Place the currently held block/item at a target block location.")]
@@ -329,33 +329,33 @@ public sealed class MccMcpToolSet
     }
 
     [McpServerTool(Name = "mcc_inventory_drop_item"), Description("Drop an exact item count from an inventory by item type.")]
-    public object InventoryDropItem(
+    public async Task<object> InventoryDropItem(
         [Description("Item type enum name (e.g. Diamond).")] string itemType,
         [Description("Exact number of items to drop.")] int count,
         [Description("Inventory ID. 0 is the player inventory.")] int inventoryId = 0,
         [Description("Prefer dropping from larger stacks first when true.")] bool preferStack = false)
     {
-        return capabilities.DropInventoryItem(itemType, count, inventoryId, preferStack);
+        return await capabilities.DropInventoryItemAsync(itemType, count, inventoryId, preferStack);
     }
 
     [McpServerTool(Name = "mcc_container_deposit_item"), Description("Move an exact item count from the player inventory into an open container and verify the transfer.")]
-    public object ContainerDepositItem(
+    public async Task<object> ContainerDepositItem(
         [Description("Item type enum name (e.g. Diamond).")] string itemType,
         [Description("Exact number of items to move into the container.")] int count,
         [Description("Container inventory ID, or -1 for the active non-player container.")] int inventoryId = -1,
         [Description("Prefer larger source stacks first when true.")] bool preferLargestStack = true)
     {
-        return capabilities.DepositContainerItem(itemType, count, inventoryId, preferLargestStack);
+        return await capabilities.DepositContainerItemAsync(itemType, count, inventoryId, preferLargestStack);
     }
 
     [McpServerTool(Name = "mcc_container_withdraw_item"), Description("Move an exact item count from an open container into the player inventory and verify the transfer.")]
-    public object ContainerWithdrawItem(
+    public async Task<object> ContainerWithdrawItem(
         [Description("Item type enum name (e.g. Diamond).")] string itemType,
         [Description("Exact number of items to move into the player inventory.")] int count,
         [Description("Container inventory ID, or -1 for the active non-player container.")] int inventoryId = -1,
         [Description("Prefer larger source stacks first when true.")] bool preferLargestStack = true)
     {
-        return capabilities.WithdrawContainerItem(itemType, count, inventoryId, preferLargestStack);
+        return await capabilities.WithdrawContainerItemAsync(itemType, count, inventoryId, preferLargestStack);
     }
 
     [McpServerTool(Name = "mcc_entities_query"), Description("Query tracked entities.")]

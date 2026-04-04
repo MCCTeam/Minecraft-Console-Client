@@ -409,6 +409,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             playerLocation = new { x = C(0.5), y = C(80.0), z = C(0.5) }
         });
 
+    public Task<MccMcpResult> DigBlockAsync(double x, double y, double z, double durationSeconds) =>
+        Task.FromResult(DigBlock(x, y, z, durationSeconds));
+
     public MccMcpResult PlaceBlock(int x, int y, int z, string face, string hand, bool lookAtBlock) =>
         MccMcpResult.Ok(new { success = true, x, y, z, face, hand, lookAtBlock, action = "place_block" });
 
@@ -797,6 +800,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             preferStack
         });
 
+    public Task<MccMcpResult> DropInventoryItemAsync(string itemType, int count, int inventoryId, bool preferStack) =>
+        Task.FromResult(DropInventoryItem(itemType, count, inventoryId, preferStack));
+
     public MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack) =>
         MccMcpResult.Ok(new
         {
@@ -815,6 +821,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             touchedTargetSlots = new[] { 0 }
         });
 
+    public Task<MccMcpResult> DepositContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack) =>
+        Task.FromResult(DepositContainerItem(itemType, count, inventoryId, preferLargestStack));
+
     public MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack) =>
         MccMcpResult.Ok(new
         {
@@ -832,6 +841,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             touchedSourceSlots = new[] { 0 },
             touchedTargetSlots = new[] { 36 }
         });
+
+    public Task<MccMcpResult> WithdrawContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack) =>
+        Task.FromResult(WithdrawContainerItem(itemType, count, inventoryId, preferLargestStack));
 
     public MccMcpResult QueryEntities(int maxCount) =>
         MccMcpResult.Ok(new
