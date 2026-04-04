@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 //using System.Linq;
 //using System.Text;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol.PacketPipeline;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -23,7 +24,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache for reading data</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        private Chunk? ReadBlockStatesField(Queue<byte> cache)
+        private Chunk? ReadBlockStatesField(PacketReader cache)
         {
             // read Block states (Type: Paletted Container)
             byte bitsPerEntry = dataTypes.ReadNextByte(cache);
@@ -134,7 +135,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[]? verticalStripBitmask, Queue<byte> cache)
+        public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[]? verticalStripBitmask, PacketReader cache)
         {
             World world = handler.GetWorld();
 
@@ -236,7 +237,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
+        public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, PacketReader cache)
         {
             World world = handler.GetWorld();
 

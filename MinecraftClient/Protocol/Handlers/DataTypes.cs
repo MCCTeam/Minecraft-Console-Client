@@ -8,6 +8,7 @@ using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Protocol.PacketPipeline;
 using MinecraftClient.Protocol.Handlers.StructuredComponents;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 using MinecraftClient.Protocol.Message;
@@ -44,6 +45,12 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public byte[] ReadData(int offset, PacketReader reader)
+        {
+            return reader.ReadData(offset);
+        }
+
         /// <summary>
         /// Read some data from a cache of bytes and remove it from the cache
         /// </summary>
@@ -56,6 +63,12 @@ namespace MinecraftClient.Protocol.Handlers
                 dest[i] = cache.Dequeue();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public void ReadDataReverse(PacketReader reader, Span<byte> dest)
+        {
+            reader.ReadDataReverse(dest);
+        }
+
         /// <summary>
         /// Remove some data from the cache
         /// </summary>
@@ -66,6 +79,12 @@ namespace MinecraftClient.Protocol.Handlers
         {
             while (offset-- > 0)
                 cache.Dequeue();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public void DropData(int offset, PacketReader reader)
+        {
+            reader.Skip(offset);
         }
 
         /// <summary>
@@ -84,6 +103,13 @@ namespace MinecraftClient.Protocol.Handlers
             else return "";
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public string ReadNextString(PacketReader reader)
+        {
+            int length = ReadNextVarInt(reader);
+            return length > 0 ? Encoding.UTF8.GetString(ReadData(length, reader)) : "";
+        }
+
         /// <summary>
         /// Skip a string from a cache of bytes and remove it from the cache
         /// </summary>
@@ -94,6 +120,12 @@ namespace MinecraftClient.Protocol.Handlers
             DropData(length, cache);
         }
 
+        public void SkipNextString(PacketReader reader)
+        {
+            int length = ReadNextVarInt(reader);
+            DropData(length, reader);
+        }
+
         /// <summary>
         /// Read a boolean from a cache of bytes and remove it from the cache
         /// </summary>
@@ -102,6 +134,12 @@ namespace MinecraftClient.Protocol.Handlers
         public bool ReadNextBool(Queue<byte> cache)
         {
             return ReadNextByte(cache) != 0x00;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public bool ReadNextBool(PacketReader reader)
+        {
+            return ReadNextByte(reader) != 0x00;
         }
 
         /// <summary>
@@ -117,6 +155,12 @@ namespace MinecraftClient.Protocol.Handlers
             return BitConverter.ToInt16(rawValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public short ReadNextShort(PacketReader reader)
+        {
+            return reader.ReadInt16BigEndian();
+        }
+
         /// <summary>
         /// Read an integer from a cache of bytes and remove it from the cache
         /// </summary>
@@ -128,6 +172,12 @@ namespace MinecraftClient.Protocol.Handlers
             for (int i = (4 - 1); i >= 0; --i) //Endianness
                 rawValue[i] = cache.Dequeue();
             return BitConverter.ToInt32(rawValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public int ReadNextInt(PacketReader reader)
+        {
+            return reader.ReadInt32BigEndian();
         }
 
         /// <summary>
@@ -143,6 +193,12 @@ namespace MinecraftClient.Protocol.Handlers
             return BitConverter.ToInt64(rawValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public long ReadNextLong(PacketReader reader)
+        {
+            return reader.ReadInt64BigEndian();
+        }
+
         /// <summary>
         /// Read an unsigned short integer from a cache of bytes and remove it from the cache
         /// </summary>
@@ -156,6 +212,12 @@ namespace MinecraftClient.Protocol.Handlers
             return BitConverter.ToUInt16(rawValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public ushort ReadNextUShort(PacketReader reader)
+        {
+            return reader.ReadUInt16BigEndian();
+        }
+
         /// <summary>
         /// Read an unsigned long integer from a cache of bytes and remove it from the cache
         /// </summary>
@@ -167,6 +229,12 @@ namespace MinecraftClient.Protocol.Handlers
             for (int i = (8 - 1); i >= 0; --i) //Endianness
                 rawValue[i] = cache.Dequeue();
             return BitConverter.ToUInt64(rawValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public ulong ReadNextULong(PacketReader reader)
+        {
+            return unchecked((ulong)reader.ReadInt64BigEndian());
         }
 
         /// <summary>
@@ -199,6 +267,32 @@ namespace MinecraftClient.Protocol.Handlers
             return new Location(x, y, z);
         }
 
+        public Location ReadNextLocation(PacketReader reader)
+        {
+            ulong locEncoded = ReadNextULong(reader);
+            int x, y, z;
+            if (protocolversion >= Protocol18Handler.MC_1_14_Version)
+            {
+                x = (int)(locEncoded >> 38);
+                y = (int)(locEncoded & 0xFFF);
+                z = (int)(locEncoded << 26 >> 38);
+            }
+            else
+            {
+                x = (int)(locEncoded >> 38);
+                y = (int)((locEncoded >> 26) & 0xFFF);
+                z = (int)(locEncoded << 38 >> 38);
+            }
+
+            if (x >= 0x02000000)
+                x -= 0x04000000;
+            if (y >= 0x00000800)
+                y -= 0x00001000;
+            if (z >= 0x02000000)
+                z -= 0x04000000;
+            return new Location(x, y, z);
+        }
+
         /// <summary>
         /// Read several little endian unsigned short integers at once from a cache of bytes and remove them from the cache
         /// </summary>
@@ -206,6 +300,15 @@ namespace MinecraftClient.Protocol.Handlers
         public ushort[] ReadNextUShortsLittleEndian(int amount, Queue<byte> cache)
         {
             byte[] rawValues = ReadData(2 * amount, cache);
+            ushort[] result = new ushort[amount];
+            for (int i = 0; i < amount; i++)
+                result[i] = BitConverter.ToUInt16(rawValues, i * 2);
+            return result;
+        }
+
+        public ushort[] ReadNextUShortsLittleEndian(int amount, PacketReader reader)
+        {
+            byte[] rawValues = ReadData(2 * amount, reader);
             ushort[] result = new ushort[amount];
             for (int i = 0; i < amount; i++)
                 result[i] = BitConverter.ToUInt16(rawValues, i * 2);
@@ -228,6 +331,16 @@ namespace MinecraftClient.Protocol.Handlers
             return guid;
         }
 
+        public Guid ReadNextUUID(PacketReader reader)
+        {
+            Span<byte> javaUUID = stackalloc byte[16];
+            reader.ReadData(javaUUID);
+            Guid guid = new(javaUUID);
+            if (BitConverter.IsLittleEndian)
+                guid = guid.ToLittleEndian();
+            return guid;
+        }
+
         /// <summary>
         /// Read a byte array from a cache of bytes and remove it from the cache
         /// </summary>
@@ -242,6 +355,15 @@ namespace MinecraftClient.Protocol.Handlers
             return ReadData(len, cache);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public byte[] ReadNextByteArray(PacketReader reader)
+        {
+            int len = protocolversion >= Protocol18Handler.MC_1_8_Version
+                ? ReadNextVarInt(reader)
+                : ReadNextShort(reader);
+            return ReadData(len, reader);
+        }
+
         /// <summary>
         /// Read a byte array with given length from a cache of bytes and remove it from the cache
         /// </summary>
@@ -252,6 +374,12 @@ namespace MinecraftClient.Protocol.Handlers
         public byte[] ReadNextByteArray(Queue<byte> cache, int length)
         {
             return ReadData(length, cache);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public byte[] ReadNextByteArray(PacketReader reader, int length)
+        {
+            return ReadData(length, reader);
         }
 
         /// <summary>
@@ -268,6 +396,15 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
+        public ulong[] ReadNextULongArray(PacketReader reader)
+        {
+            int len = ReadNextVarInt(reader);
+            ulong[] result = new ulong[len];
+            for (int i = 0; i < len; i++)
+                result[i] = ReadNextULong(reader);
+            return result;
+        }
+
         /// <summary>
         /// Read a double from a cache of bytes and remove it from the cache
         /// </summary>
@@ -281,6 +418,12 @@ namespace MinecraftClient.Protocol.Handlers
             return BitConverter.ToDouble(rawValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public double ReadNextDouble(PacketReader reader)
+        {
+            return BitConverter.Int64BitsToDouble(ReadNextLong(reader));
+        }
+
         /// <summary>
         /// Read a float from a cache of bytes and remove it from the cache
         /// </summary>
@@ -292,6 +435,12 @@ namespace MinecraftClient.Protocol.Handlers
             for (int i = (4 - 1); i >= 0; --i) //Endianness
                 rawValue[i] = cache.Dequeue();
             return BitConverter.ToSingle(rawValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public float ReadNextFloat(PacketReader reader)
+        {
+            return BitConverter.Int32BitsToSingle(ReadNextInt(reader));
         }
 
         /// <summary>
@@ -357,6 +506,22 @@ namespace MinecraftClient.Protocol.Handlers
             return i;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public int ReadNextVarInt(PacketReader reader)
+        {
+            int i = 0;
+            int j = 0;
+            byte b;
+            do
+            {
+                b = reader.ReadByte();
+                i |= (b & 0x7F) << j++ * 7;
+                if (j > 5) throw new OverflowException("VarInt too big");
+            } while ((b & 0x80) == 128);
+
+            return i;
+        }
+
         /// <summary>
         /// Skip a VarInt from a cache of bytes with better performance
         /// </summary>
@@ -366,6 +531,14 @@ namespace MinecraftClient.Protocol.Handlers
         {
             while (true)
                 if ((ReadNextByte(cache) & 0x80) != 128)
+                    break;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public void SkipNextVarInt(PacketReader reader)
+        {
+            while (true)
+                if ((ReadNextByte(reader) & 0x80) != 128)
                     break;
         }
 
@@ -384,6 +557,19 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 low &= 0x7FFF;
                 high = ReadNextByte(cache);
+            }
+
+            return ((high & 0xFF) << 15) | low;
+        }
+
+        public int ReadNextVarShort(PacketReader reader)
+        {
+            ushort low = ReadNextUShort(reader);
+            byte high = 0;
+            if ((low & 0x8000) != 0)
+            {
+                low &= 0x7FFF;
+                high = ReadNextByte(reader);
             }
 
             return ((high & 0xFF) << 15) | low;
@@ -415,6 +601,27 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
+        public long ReadNextVarLong(PacketReader reader)
+        {
+            int numRead = 0;
+            long result = 0;
+            byte read;
+            do
+            {
+                read = ReadNextByte(reader);
+                long value = (read & 0x7F);
+                result |= (value << (7 * numRead));
+
+                numRead++;
+                if (numRead > 10)
+                {
+                    throw new OverflowException("VarLong is too big");
+                }
+            } while ((read & 0x80) != 0);
+
+            return result;
+        }
+
         /// <summary>
         /// Read a single byte from a cache of bytes and remove it from the cache
         /// </summary>
@@ -426,12 +633,23 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public byte ReadNextByte(PacketReader reader)
+        {
+            return reader.ReadByte();
+        }
+
         /// <summary>
         /// Read an uncompressed Named Binary Tag blob and remove it from the cache
         /// </summary>
         public Dictionary<string, object> ReadNextNbt(Queue<byte> cache)
         {
             return ReadNextNbt(cache, true);
+        }
+
+        public Dictionary<string, object> ReadNextNbt(PacketReader reader)
+        {
+            return ReadWithQueueFallback(reader, cache => ReadNextNbt(cache, true));
         }
 
         /// <summary>
@@ -463,6 +681,11 @@ namespace MinecraftClient.Protocol.Handlers
                 item.Components = strcturedComponentsToAdd;
 
             return item;
+        }
+
+        public Item ReadNextItemStackTemplate(PacketReader reader, ItemPalette itemPalette)
+        {
+            return ReadWithQueueFallback(reader, cache => ReadNextItemStackTemplate(cache, itemPalette));
         }
 
         /// <summary>
@@ -566,6 +789,11 @@ namespace MinecraftClient.Protocol.Handlers
                     return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
                 }
             }
+        }
+
+        public Item? ReadNextItemSlot(PacketReader reader, ItemPalette itemPalette)
+        {
+            return ReadWithQueueFallback(reader, cache => ReadNextItemSlot(cache, itemPalette));
         }
 
         private void ReadNextDetail(Queue<byte> cache)
@@ -722,6 +950,11 @@ namespace MinecraftClient.Protocol.Handlers
                 data);
             entity.UUID = entityUUID;
             return entity;
+        }
+
+        public Entity ReadNextEntity(PacketReader reader, EntityPalette entityPalette, bool living)
+        {
+            return ReadWithQueueFallback(reader, cache => ReadNextEntity(cache, entityPalette, living));
         }
 
         /// <summary>
@@ -1077,6 +1310,12 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        public Dictionary<int, object?> ReadNextMetadata(PacketReader reader, ItemPalette itemPalette,
+            EntityMetadataPalette metadataPalette)
+        {
+            return ReadWithQueueFallback(reader, cache => ReadNextMetadata(cache, itemPalette, metadataPalette));
+        }
+
         private static bool HasLpVec3Continuation(int firstByte) => (firstByte & 4) == 4;
 
         private static double UnpackLpVec3(long packedAxis)
@@ -1109,12 +1348,38 @@ namespace MinecraftClient.Protocol.Handlers
             );
         }
 
+        public (double X, double Y, double Z) ReadNextLpVec3Values(PacketReader reader)
+        {
+            int first = ReadNextByte(reader);
+            if (first == 0)
+                return (0.0, 0.0, 0.0);
+
+            int second = ReadNextByte(reader);
+            uint high = (uint)ReadNextInt(reader);
+            long packed = ((long)high << 16) | (long)(second << 8) | (uint)first;
+
+            long scale = first & 3;
+            if (HasLpVec3Continuation(first))
+                scale |= ((long)ReadNextVarInt(reader) & 0xFFFFFFFFL) << 2;
+
+            return (
+                UnpackLpVec3(packed >> 3) * scale,
+                UnpackLpVec3(packed >> 18) * scale,
+                UnpackLpVec3(packed >> 33) * scale
+            );
+        }
+
         /// <summary>
         /// Read an LpVec3 (low-precision vec3) from the cache (1.21.9+) and discard it.
         /// </summary>
         public void ReadNextLpVec3(Queue<byte> cache)
         {
             ReadNextLpVec3Values(cache);
+        }
+
+        public void ReadNextLpVec3(PacketReader reader)
+        {
+            ReadNextLpVec3Values(reader);
         }
 
         /// <summary>
@@ -1379,6 +1644,11 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        public void ReadParticleData(PacketReader reader, ItemPalette itemPalette)
+        {
+            ReadWithQueueFallback(reader, cache => ReadParticleData(cache, itemPalette));
+        }
+
         private void ReadDustParticle(Queue<byte> cache)
         {
             ReadNextFloat(cache); // Red
@@ -1437,6 +1707,11 @@ namespace MinecraftClient.Protocol.Handlers
                 maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);
         }
 
+        public VillagerTrade ReadNextTrade(PacketReader reader, ItemPalette itemPalette)
+        {
+            return ReadWithQueueFallback(reader, cache => ReadNextTrade(cache, itemPalette));
+        }
+
         public string ReadNextChat(Queue<byte> cache)
         {
             if (protocolversion >= Protocol18Handler.MC_1_20_4_Version)
@@ -1452,6 +1727,11 @@ namespace MinecraftClient.Protocol.Handlers
                 var json = ReadNextString(cache);
                 return ChatParser.ParseText(json);
             }
+        }
+
+        public string ReadNextChat(PacketReader reader)
+        {
+            return ReadWithQueueFallback(reader, ReadNextChat);
         }
 
         /// <summary>
@@ -2034,6 +2314,23 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             return fields.ToArray();
+        }
+
+        private static T ReadWithQueueFallback<T>(PacketReader reader, Func<Queue<byte>, T> read)
+        {
+            byte[] remaining = reader.CopyRemaining();
+            Queue<byte> cache = new(remaining);
+            T result = read(cache);
+            reader.Skip(remaining.Length - cache.Count);
+            return result;
+        }
+
+        private static void ReadWithQueueFallback(PacketReader reader, Action<Queue<byte>> read)
+        {
+            byte[] remaining = reader.CopyRemaining();
+            Queue<byte> cache = new(remaining);
+            read(cache);
+            reader.Skip(remaining.Length - cache.Count);
         }
     }
 }

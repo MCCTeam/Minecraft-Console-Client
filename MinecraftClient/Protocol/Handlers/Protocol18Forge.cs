@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.PacketPipeline;
 using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -52,7 +53,9 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 while (fmlHandshakeState != FMLHandshakeClientState.DONE)
                 {
-                    (int packetID, Queue<byte> packetData) = await protocol18.ReadNextPacketAsync(cancellationToken);
+                    IncomingPacket packet = await protocol18.ReadNextPacketAsync(cancellationToken);
+                    int packetID = packet.PacketId;
+                    PacketReader packetData = packet.CreateReader();
 
                     if (packetID == 0x40) // Disconnect
                     {
@@ -93,7 +96,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetData">Packet data to read from</param>
         /// <returns>Length from packet data</returns>
-        public int ReadNextVarShort(Queue<byte> packetData)
+        public int ReadNextVarShort(PacketReader packetData)
         {
             if (ForgeEnabled())
             {
@@ -114,7 +117,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">Plugin message data</param>
         /// <param name="currentDimension">Current world dimension</param>
         /// <returns>TRUE if the plugin message was recognized and handled</returns>
-        public bool HandlePluginMessage(string channel, Queue<byte> packetData, ref int currentDimension)
+        public bool HandlePluginMessage(string channel, PacketReader packetData, ref int currentDimension)
         {
             if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML && fmlHandshakeState != FMLHandshakeClientState.DONE)
             {
@@ -243,7 +246,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">Plugin message data</param>
         /// <param name="responseData">Response data to return to server</param>
         /// <returns>TRUE/FALSE depending on whether the packet was understood or not</returns>
-        public bool HandleLoginPluginRequest(string channel, Queue<byte> packetData, ref List<byte> responseData)
+        public bool HandleLoginPluginRequest(string channel, PacketReader packetData, ref List<byte> responseData)
         {
             if (ForgeEnabled() && (forgeInfo!.Version == FMLVersion.FML2 || forgeInfo!.Version == FMLVersion.FML3) && channel == "fml:loginwrapper")
             {
@@ -332,7 +335,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             // FML3 specific, 
                             List<string> dataPackRegistries = new();
-                            if (forgeInfo!.Version == FMLVersion.FML3 && packetData.Count != 0)
+                            if (forgeInfo!.Version == FMLVersion.FML3 && packetData.RemainingLength != 0)
                             {
                                 int dataPackRegistryCount = dataTypes.ReadNextVarInt(packetData);
                                 for (int i = 0; i < dataPackRegistryCount; i++)

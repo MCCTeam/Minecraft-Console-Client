@@ -107,24 +107,24 @@ namespace MinecraftClient.Protocol.Handlers
             return Array.Empty<byte>();
         }
 
-        internal Tuple<int, Queue<byte>> GetNextPacket(int compressionThreshold, DataTypes dataTypes)
+        internal IncomingPacket GetNextPacket(int compressionThreshold, DataTypes dataTypes)
         {
             int packetLength = ReadNextVarIntRaw();
             using PacketReadStream packetStream = new(readStream, packetLength);
             byte[] payload = ReadPacketPayload(packetStream, compressionThreshold);
-            Queue<byte> packetData = new(payload);
+            var packetData = new PacketReader(payload);
             int packetId = dataTypes.ReadNextVarInt(packetData);
-            return new(packetId, packetData);
+            return new(packetId, packetData.CopyRemaining());
         }
 
-        internal async Task<Tuple<int, Queue<byte>>> GetNextPacketAsync(int compressionThreshold, DataTypes dataTypes, CancellationToken cancellationToken)
+        internal async Task<IncomingPacket> GetNextPacketAsync(int compressionThreshold, DataTypes dataTypes, CancellationToken cancellationToken)
         {
             int packetLength = await ReadNextVarIntRawAsync(cancellationToken);
             await using PacketReadStream packetStream = new(readStream, packetLength);
             byte[] payload = await ReadPacketPayloadAsync(packetStream, compressionThreshold, cancellationToken);
-            Queue<byte> packetData = new(payload);
+            var packetData = new PacketReader(payload);
             int packetId = dataTypes.ReadNextVarInt(packetData);
-            return new(packetId, packetData);
+            return new(packetId, packetData.CopyRemaining());
         }
 
         /// <summary>

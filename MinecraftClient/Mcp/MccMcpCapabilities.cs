@@ -2289,34 +2289,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return client.GetInventories().Keys.Where(id => id > 0).DefaultIfEmpty(0).Max();
     }
 
-    private static bool WaitForContainerOpen(McClient client, ISet<int> beforeIds, int waitMs, out int inventoryId, out Container? inventory)
-    {
-        inventoryId = 0;
-        inventory = null;
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            (int activeId, Container? activeInventory) state = client.InvokeOnMainThread(() =>
-            {
-                int activeId = GetActiveContainerId(client);
-                Container? activeInventory = activeId > 0 ? client.GetInventory(activeId) : null;
-                return (activeId, activeInventory);
-            });
-
-            if (state.activeId > 0 && (!beforeIds.Contains(state.activeId) || beforeIds.Count == 0) && state.activeInventory is not null)
-            {
-                inventoryId = state.activeId;
-                inventory = state.activeInventory;
-                return true;
-            }
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
-    }
-
     private static async Task<bool> WaitForContainerOpenAsync(McClient client, ISet<int> beforeIds, int waitMs, Action<ContainerOpenState> onOpened)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
@@ -2339,22 +2311,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 return false;
 
             await Task.Delay(ArrivalPollIntervalMs);
-        }
-    }
-
-    private static bool WaitForContainerClose(McClient client, int inventoryId, int waitMs)
-    {
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            bool stillOpen = client.InvokeOnMainThread(() => client.GetInventories().ContainsKey(inventoryId));
-            if (!stillOpen)
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
         }
     }
 
@@ -2451,14 +2407,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return inventory.Items.TryGetValue(-1, out Item? cursorItem) && cursorItem.Type == itemType
             ? cursorItem.Count
             : 0;
-    }
-
-    private static bool TryDropInventorySlotItems(McClient client, int inventoryId, Container inventory, int slotId, ItemType itemType, int dropCount, out int droppedCount)
-    {
-        (bool success, int actualDroppedCount) =
-            TryDropInventorySlotItemsAsync(client, inventoryId, inventory, slotId, itemType, dropCount).GetAwaiter().GetResult();
-        droppedCount = actualDroppedCount;
-        return success;
     }
 
     private static int CountItemInRange(Container inventory, ItemType itemType, int startSlot, int endSlot)
@@ -2827,115 +2775,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         }
     }
 
-    private static bool WaitForCursorItem(McClient client, ItemType itemType, int waitMs, out Item? cursorItem)
-    {
-        cursorItem = null;
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            if (TryGetCursorItem(client, out cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
-    }
-
-    private static bool WaitForCursorClear(McClient client, int waitMs)
-    {
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            if (!TryGetCursorItem(client, out _))
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
-    }
-
-    private static bool WaitForPlacement(McClient client, int inventoryId, int targetSlot, ItemType itemType, int beforeTargetCount, int beforeCursorCount, int placedCount)
-    {
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(DefaultInventoryActionWaitMs);
-        while (true)
-        {
-            bool targetUpdated = false;
-            bool cursorUpdated = false;
-
-            Container? inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
-            if (inventory is not null)
-            {
-                int currentTargetCount = GetSlotItemCount(inventory, targetSlot, itemType);
-                targetUpdated = currentTargetCount >= beforeTargetCount + placedCount;
-            }
-
-            if (placedCount >= beforeCursorCount)
-            {
-                cursorUpdated = !TryGetCursorItem(client, out _);
-            }
-            else if (TryGetCursorItem(client, out Item? cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
-            {
-                cursorUpdated = cursorItem.Count <= beforeCursorCount - placedCount;
-            }
-
-            if (targetUpdated && cursorUpdated)
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
-    }
-
-    private static bool WaitForSlotItemCount(McClient client, int inventoryId, int slotId, ItemType itemType, Func<int, bool> predicate, int waitMs, out Container? inventory, out int itemCount)
-    {
-        inventory = null;
-        itemCount = 0;
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            inventory = client.GetInventory(inventoryId);
-            if (inventory is not null)
-            {
-                itemCount = GetSlotItemCount(inventory, slotId, itemType);
-                if (predicate(itemCount))
-                    return true;
-            }
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
-    }
-
-    private static bool WaitForRangeCount(McClient client, int inventoryId, ItemType itemType, int startSlot, int endSlot, Func<int, bool> predicate, int waitMs, out Container? inventory, out int itemCount)
-    {
-        inventory = null;
-        itemCount = 0;
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
-            if (inventory is not null)
-            {
-                itemCount = CountItemInRange(inventory, itemType, startSlot, endSlot);
-                if (predicate(itemCount))
-                    return true;
-            }
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
-    }
-
     private static List<NearbyPlayerSnapshot> BuildTrackedPlayerSnapshots(McClient client, bool includeSelf)
     {
         Location playerLocation = client.GetCurrentLocation();
@@ -3121,25 +2960,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return new string(buffer);
     }
 
-    private static bool WaitForArrival(McClient client, Location goal, int waitMs, double tolerance, out Location? finalLocation)
-    {
-        finalLocation = null;
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            Location location = client.InvokeOnMainThread(client.GetCurrentLocation);
-            finalLocation = location;
-            double distance = GetDistance(location, goal);
-            if (distance <= tolerance)
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
-    }
-
     private static async Task<(bool Arrived, Location FinalLocation)> WaitForArrivalAsync(McClient client, Location goal, int waitMs, double tolerance)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
@@ -3184,24 +3004,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         if (timeoutMs <= 0)
             return DefaultPathQueryTimeoutMs;
         return Math.Clamp(timeoutMs, MinPathQueryTimeoutMs, MaxPathQueryTimeoutMs);
-    }
-
-    private static bool WaitForBlockChange(McClient client, Location target, Block beforeBlock, int waitMs, out Block afterBlock)
-    {
-        afterBlock = beforeBlock;
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            Block current = client.InvokeOnMainThread(() => client.GetWorld().GetBlock(target));
-            afterBlock = current;
-            if (!AreEquivalentBlocks(current, beforeBlock))
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
     }
 
     private static async Task<(bool Changed, Block AfterBlock)> WaitForBlockChangeAsync(McClient client, Location target, Block beforeBlock, int waitMs)
@@ -3335,22 +3137,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             .OrderBy(item => item.Distance)
             .Take(maxCount)
             .ToArray();
-    }
-
-    private static bool WaitForEntityRemoval(McClient client, int entityId, int waitMs)
-    {
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            bool exists = client.InvokeOnMainThread(() => client.GetEntities().ContainsKey(entityId));
-            if (!exists)
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
     }
 
     private static int GetInventoryItemCount(McClient client, ItemType itemType)
