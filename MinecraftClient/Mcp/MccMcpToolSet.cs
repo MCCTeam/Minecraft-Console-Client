@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Threading.Tasks;
 using ModelContextProtocol.Server;
 
 namespace MinecraftClient.Mcp;
@@ -262,15 +263,15 @@ public sealed class MccMcpToolSet
     }
 
     [McpServerTool(Name = "mcc_move_to"), Description("Request movement/pathing to a world coordinate and verify arrival.")]
-    public object MoveTo(double x, double y, double z, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
+    public async Task<object> MoveTo(double x, double y, double z, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
     {
-        return capabilities.MoveTo(x, y, z, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs);
+        return await capabilities.MoveToAsync(x, y, z, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs);
     }
 
     [McpServerTool(Name = "mcc_move_to_player"), Description("Locate a tracked player entity, request movement/pathing, and verify arrival.")]
-    public object MoveToPlayer(string playerName, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
+    public async Task<object> MoveToPlayer(string playerName, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
     {
-        return capabilities.MoveToPlayer(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs);
+        return await capabilities.MoveToPlayerAsync(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs);
     }
 
     [McpServerTool(Name = "mcc_look_at"), Description("Rotate player view toward world coordinates.")]
@@ -310,15 +311,15 @@ public sealed class MccMcpToolSet
     }
 
     [McpServerTool(Name = "mcc_container_open_at"), Description("Open an interactable container block at world coordinates and wait for the container inventory to appear.")]
-    public object ContainerOpenAt(int x, int y, int z, int timeoutMs = 0, bool closeCurrent = true)
+    public async Task<object> ContainerOpenAt(int x, int y, int z, int timeoutMs = 0, bool closeCurrent = true)
     {
-        return capabilities.OpenContainerAt(x, y, z, timeoutMs, closeCurrent);
+        return await capabilities.OpenContainerAtAsync(x, y, z, timeoutMs, closeCurrent);
     }
 
     [McpServerTool(Name = "mcc_container_close"), Description("Close an open non-player container. Use inventoryId=-1 to close the active container.")]
-    public object ContainerClose([Description("Container inventory ID, or -1 for the active non-player container.")] int inventoryId = -1, int timeoutMs = 0)
+    public async Task<object> ContainerClose([Description("Container inventory ID, or -1 for the active non-player container.")] int inventoryId = -1, int timeoutMs = 0)
     {
-        return capabilities.CloseContainer(inventoryId, timeoutMs);
+        return await capabilities.CloseContainerAsync(inventoryId, timeoutMs);
     }
 
     [McpServerTool(Name = "mcc_inventory_window_action"), Description("Perform a window action on an inventory slot.")]
@@ -388,9 +389,9 @@ public sealed class MccMcpToolSet
     }
 
     [McpServerTool(Name = "mcc_items_pickup"), Description("Move to and pick up nearby dropped items of a given item type.")]
-    public object ItemsPickup(string itemType, double radius = 32, int maxItems = 20, bool allowUnsafe = false, int timeoutMs = 0)
+    public async Task<object> ItemsPickup(string itemType, double radius = 32, int maxItems = 20, bool allowUnsafe = false, int timeoutMs = 0)
     {
-        return capabilities.PickupItems(itemType, radius, maxItems, allowUnsafe, timeoutMs);
+        return await capabilities.PickupItemsAsync(itemType, radius, maxItems, allowUnsafe, timeoutMs);
     }
 
     [McpServerTool(Name = "mcc_world_block_at"), Description("Get block information at world coordinates.")]

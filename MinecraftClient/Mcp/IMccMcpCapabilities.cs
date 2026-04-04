@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace MinecraftClient.Mcp;
 
 public interface IMccMcpCapabilities
@@ -43,7 +45,9 @@ public interface IMccMcpCapabilities
     MccMcpResult FindNearestEntity(string? typeFilter, string? nameFilter, double radius, bool includePlayers);
     MccMcpResult CanReachPosition(double x, double y, double z, bool allowUnsafe, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult MoveTo(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
+    Task<MccMcpResult> MoveToAsync(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult MoveToPlayer(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
+    Task<MccMcpResult> MoveToPlayerAsync(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult LookAt(double x, double y, double z);
     MccMcpResult LookDirection(string direction);
     MccMcpResult LookAngles(float yaw, float pitch);
@@ -51,7 +55,9 @@ public interface IMccMcpCapabilities
     MccMcpResult GetInventorySnapshot(int inventoryId);
     MccMcpResult SearchInventories(string query, int maxCount, bool exactMatch, bool includeContainers);
     MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent);
+    Task<MccMcpResult> OpenContainerAtAsync(int x, int y, int z, int timeoutMs, bool closeCurrent);
     MccMcpResult CloseContainer(int inventoryId, int timeoutMs);
+    Task<MccMcpResult> CloseContainerAsync(int inventoryId, int timeoutMs);
     MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType);
     MccMcpResult DropInventoryItem(string itemType, int count, int inventoryId, bool preferStack);
     MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack);
@@ -62,5 +68,6 @@ public interface IMccMcpCapabilities
     MccMcpResult FindSigns(string text, bool exactMatch, int radius, int maxCount, bool includeBackText);
     MccMcpResult ListItemEntities(string? itemType, double radius, int maxCount);
     MccMcpResult PickupItems(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs);
+    Task<MccMcpResult> PickupItemsAsync(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs);
     MccMcpResult GetWorldBlockAt(int x, int y, int z);
 }

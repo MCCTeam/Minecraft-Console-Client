@@ -94,10 +94,29 @@ namespace MinecraftClient.Protocol
         public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion,
             ref ForgeInfo? forgeInfo)
         {
+            (bool success, int resolvedProtocolVersion, ForgeInfo? resolvedForgeInfo) =
+                GetServerInfoAsync(serverIP, serverPort, protocolversion).GetAwaiter().GetResult();
+
+            if (!success)
+                return false;
+
+            if (protocolversion != 0 && protocolversion != resolvedProtocolVersion)
+                ConsoleIO.WriteLineFormatted("§8" + Translations.error_version_different, acceptnewlines: true);
+            if (protocolversion == 0 && resolvedProtocolVersion <= 1)
+                ConsoleIO.WriteLineFormatted("§8" + Translations.error_no_version_report, acceptnewlines: true);
+            if (protocolversion == 0)
+                protocolversion = resolvedProtocolVersion;
+
+            forgeInfo = resolvedForgeInfo;
+            return true;
+        }
+
+        public static async Task<(bool Success, int ProtocolVersion, ForgeInfo? ForgeInfo)> GetServerInfoAsync(string serverIP, ushort serverPort, int protocolversion)
+        {
             bool success = false;
             int protocolversionTmp = 0;
             ForgeInfo? forgeInfoTmp = null;
-            if (AutoTimeout.Perform(() =>
+            if (await AutoTimeout.PerformAsync(() =>
                     {
                         try
                         {
@@ -120,19 +139,15 @@ namespace MinecraftClient.Protocol
                         ? 10
                         : 30)))
             {
-                if (protocolversion != 0 && protocolversion != protocolversionTmp)
-                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_version_different, acceptnewlines: true);
-                if (protocolversion == 0 && protocolversionTmp <= 1)
-                    ConsoleIO.WriteLineFormatted("§8" + Translations.error_no_version_report, acceptnewlines: true);
                 if (protocolversion == 0)
                     protocolversion = protocolversionTmp;
-                forgeInfo = forgeInfoTmp;
-                return success;
+
+                return (success, protocolversion, forgeInfoTmp);
             }
             else
             {
                 ConsoleIO.WriteLineFormatted("§8" + Translations.error_connection_timeout, acceptnewlines: true);
-                return false;
+                return (false, protocolversion, forgeInfoTmp);
             }
         }
 

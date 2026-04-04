@@ -704,9 +704,76 @@ public sealed class MccGameApi
     /// <summary>
     /// Run <see cref="MoveToPlayer"/> on a worker thread so ChatBot callbacks can poll the result without blocking MCC updates.
     /// </summary>
-    public Task<MccGameResult<MccMoveToPlayerResult>> MoveToPlayerAsync(string playerName, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
+    public async Task<MccGameResult<MccMoveToPlayerResult>> MoveToPlayerAsync(string playerName, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutMs = 0)
     {
-        return Task.Run(() => MoveToPlayer(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
+        if (string.IsNullOrWhiteSpace(playerName))
+            return MccGameResult<MccMoveToPlayerResult>.Fail("invalid_args");
+
+        if (!AreValidPathOffsets(maxOffset, minOffset) || timeoutMs < 0)
+            return MccGameResult<MccMoveToPlayerResult>.Fail("invalid_args");
+
+        McClient? client = clientProvider();
+        if (client is null)
+            return NotConnected<MccMoveToPlayerResult>();
+
+        if (!client.GetTerrainEnabled() || !client.GetEntityHandlingEnabled())
+            return MccGameResult<MccMoveToPlayerResult>.Fail("feature_disabled");
+
+        string nameFilter = playerName.Trim();
+        NearbyPlayerSnapshot? target = client.InvokeOnMainThread(() =>
+        {
+            return BuildTrackedPlayerSnapshots(client, includeSelf: false)
+                .Where(player => PlayerNameMatches(player, nameFilter))
+                .OrderBy(player => player.Distance)
+                .FirstOrDefault();
+        });
+
+        if (target is null)
+            return MccGameResult<MccMoveToPlayerResult>.Fail("invalid_state");
+
+        Location goal = new(target.X, target.Y, target.Z);
+        Location startLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+        TimeSpan? timeout = timeoutMs > 0 ? TimeSpan.FromMilliseconds(timeoutMs) : null;
+        bool pathFound = client.InvokeOnMainThread(() => client.MoveTo(goal, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout));
+
+        int verifyWaitMs = GetArrivalWaitMs(timeoutMs);
+        double tolerance = GetArrivalTolerance(maxOffset, minOffset);
+        Location finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+        bool arrived = false;
+
+        if (pathFound)
+        {
+            (arrived, finalLocation) = await WaitForArrivalAsync(client, goal, verifyWaitMs, tolerance);
+        }
+
+        MccMoveToPlayerResult resultData = new()
+        {
+            PathFound = pathFound,
+            Arrived = arrived,
+            Tolerance = tolerance,
+            VerifyWaitMs = verifyWaitMs,
+            Target = new MccMoveToPlayerTarget
+            {
+                PlayerName = target.Name,
+                EntityId = target.EntityId,
+                X = MccGameCommon.RoundCoordinate(target.X),
+                Y = MccGameCommon.RoundCoordinate(target.Y),
+                Z = MccGameCommon.RoundCoordinate(target.Z)
+            },
+            StartLocation = MccGameCommon.ToCoordinate(startLocation),
+            FinalLocation = MccGameCommon.ToCoordinate(finalLocation),
+            FinalDistance = MccGameCommon.GetDistance(finalLocation, goal),
+            DistanceMoved = MccGameCommon.GetDistance(startLocation, finalLocation),
+            AllowUnsafe = allowUnsafe,
+            AllowDirectTeleport = allowDirectTeleport,
+            MaxOffset = maxOffset,
+            MinOffset = minOffset,
+            TimeoutMs = timeoutMs
+        };
+
+        return pathFound && arrived
+            ? MccGameResult<MccMoveToPlayerResult>.Ok(resultData)
+            : MccGameResult<MccMoveToPlayerResult>.Fail("action_incomplete", data: resultData);
     }
 
     /// <summary>
@@ -1055,9 +1122,94 @@ public sealed class MccGameApi
     /// <summary>
     /// Run <see cref="PickupItems"/> on a worker thread so ChatBot callbacks can poll the result without blocking MCC updates.
     /// </summary>
-    public Task<MccGameResult<MccPickupItemsResult>> PickupItemsAsync(string itemType, double radius = 16, int maxItems = 10, bool allowUnsafe = false, int timeoutMs = 0)
+    public async Task<MccGameResult<MccPickupItemsResult>> PickupItemsAsync(string itemType, double radius = 16, int maxItems = 10, bool allowUnsafe = false, int timeoutMs = 0)
     {
-        return Task.Run(() => PickupItems(itemType, radius, maxItems, allowUnsafe, timeoutMs));
+        if (string.IsNullOrWhiteSpace(itemType) || radius <= 0 || radius > 1024 || maxItems < 1 || timeoutMs < 0)
+            return MccGameResult<MccPickupItemsResult>.Fail("invalid_args");
+
+        if (!MccGameCommon.TryParseItemType(itemType.Trim(), out ItemType parsedItemType))
+            return MccGameResult<MccPickupItemsResult>.Fail("invalid_args");
+
+        McClient? client = clientProvider();
+        if (client is null)
+            return NotConnected<MccPickupItemsResult>();
+
+        if (!client.GetTerrainEnabled() || !client.GetEntityHandlingEnabled())
+            return MccGameResult<MccPickupItemsResult>.Fail("feature_disabled");
+
+        int limit = Math.Clamp(maxItems, 1, 50);
+        NearbyItemSnapshot[] targets = client.InvokeOnMainThread(() => BuildNearbyItemSnapshots(client, parsedItemType, radius, limit));
+        if (targets.Length == 0)
+            return MccGameResult<MccPickupItemsResult>.Fail("invalid_state");
+
+        bool inventoryEnabled = client.GetInventoryEnabled();
+        int beforeCount = inventoryEnabled ? client.InvokeOnMainThread(() => GetInventoryItemCount(client, parsedItemType)) : 0;
+        int initialCount = beforeCount;
+        int verifyWaitMs = timeoutMs > 0 ? Math.Clamp(timeoutMs, MinArrivalWaitMs, MaxArrivalWaitMs) : 2500;
+        List<MccPickupAttempt> attempts = new(targets.Length);
+        int successfulPickups = 0;
+
+        foreach (NearbyItemSnapshot target in targets)
+        {
+            Location targetLocation = new(target.X, target.Y, target.Z);
+            Location startLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+            TimeSpan? moveTimeout = timeoutMs > 0 ? TimeSpan.FromMilliseconds(timeoutMs) : null;
+            bool pathFound = client.InvokeOnMainThread(() => client.MoveTo(targetLocation, allowUnsafe, false, 0, 0, moveTimeout));
+
+            Location finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+            bool arrived = false;
+            if (pathFound)
+            {
+                (arrived, finalLocation) = await WaitForArrivalAsync(client, targetLocation, verifyWaitMs, 2.0);
+            }
+
+            bool entityGone = await WaitForEntityRemovalAsync(client, target.EntityId, verifyWaitMs);
+            int afterCount = inventoryEnabled ? client.InvokeOnMainThread(() => GetInventoryItemCount(client, parsedItemType)) : beforeCount;
+            int inventoryDelta = inventoryEnabled ? Math.Max(0, afterCount - beforeCount) : 0;
+            bool pickedUp = entityGone || inventoryDelta > 0;
+            if (pickedUp)
+                successfulPickups++;
+
+            attempts.Add(new MccPickupAttempt
+            {
+                EntityId = target.EntityId,
+                ItemType = target.ItemType.ToString(),
+                TypeLabel = target.TypeLabel,
+                ExpectedCount = target.Count,
+                Target = MccGameCommon.ToCoordinate(target.X, target.Y, target.Z),
+                PathFound = pathFound,
+                Arrived = arrived,
+                EntityGone = entityGone,
+                InventoryDelta = inventoryDelta,
+                StartLocation = MccGameCommon.ToCoordinate(startLocation),
+                FinalLocation = MccGameCommon.ToCoordinate(finalLocation),
+                FinalDistance = MccGameCommon.GetDistance(finalLocation, targetLocation)
+            });
+
+            beforeCount = afterCount;
+        }
+
+        int remainingNearby = client.InvokeOnMainThread(() => BuildNearbyItemSnapshots(client, parsedItemType, radius, 1000).Length);
+        int collectedCount = inventoryEnabled ? Math.Max(0, beforeCount - initialCount) : successfulPickups;
+        MccPickupItemsResult resultData = new()
+        {
+            ItemType = parsedItemType.ToString(),
+            Radius = radius,
+            MaxItems = limit,
+            AllowUnsafe = allowUnsafe,
+            TimeoutMs = verifyWaitMs,
+            Attempted = attempts.Count,
+            SuccessfulPickups = successfulPickups,
+            CollectedCount = collectedCount,
+            InitialInventoryCount = inventoryEnabled ? initialCount : null,
+            FinalInventoryCount = inventoryEnabled ? beforeCount : null,
+            RemainingNearby = remainingNearby,
+            Attempts = attempts.ToArray()
+        };
+
+        return successfulPickups > 0
+            ? MccGameResult<MccPickupItemsResult>.Ok(resultData)
+            : MccGameResult<MccPickupItemsResult>.Fail("action_incomplete", data: resultData);
     }
 
     private static MccGameResult<T> NotConnected<T>()
@@ -1132,6 +1284,24 @@ public sealed class MccGameApi
         }
     }
 
+    private static async Task<(bool Arrived, Location FinalLocation)> WaitForArrivalAsync(McClient client, Location goal, int waitMs, double tolerance)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        Location finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+
+        while (true)
+        {
+            finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+            if (MccGameCommon.GetDistance(finalLocation, goal) <= tolerance)
+                return (true, finalLocation);
+
+            if (DateTime.UtcNow >= deadline)
+                return (false, finalLocation);
+
+            await Task.Delay(ArrivalPollIntervalMs);
+        }
+    }
+
     private static bool WaitForEntityRemoval(McClient client, int entityId, int waitMs)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
@@ -1145,6 +1315,22 @@ public sealed class MccGameApi
                 return false;
 
             Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<bool> WaitForEntityRemovalAsync(McClient client, int entityId, int waitMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            bool exists = client.InvokeOnMainThread(() => client.GetEntities().ContainsKey(entityId));
+            if (!exists)
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 

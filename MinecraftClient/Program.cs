@@ -763,11 +763,15 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(Translations.mcc_forge);
                     else
                         ConsoleIO.WriteLine(Translations.mcc_retrieve);
-                    if (!ProtocolHandler.GetServerInfo(InternalConfig.ServerIP, InternalConfig.ServerPort, ref protocolversion, ref forgeInfo))
+                    var serverInfo = await ProtocolHandler.GetServerInfoAsync(InternalConfig.ServerIP, InternalConfig.ServerPort, protocolversion);
+                    if (!serverInfo.Success)
                     {
                         HandleFailure(Translations.error_ping, true, ChatBot.DisconnectReason.ConnectionLost);
                         return;
                     }
+
+                    protocolversion = serverInfo.ProtocolVersion;
+                    forgeInfo = serverInfo.ForgeInfo;
                 }
 
                 if ((Config.Main.General.AccountType == LoginType.microsoft || Config.Main.General.AccountType == LoginType.yggdrasil)
@@ -928,6 +932,11 @@ namespace MinecraftClient
 
         public static void DoExit(int exitcode = 0)
         {
+            DoExitAsync(exitcode).GetAwaiter().GetResult();
+        }
+
+        private static Task DoExitAsync(int exitcode = 0)
+        {
             WriteBackSettings();
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
 
@@ -945,6 +954,7 @@ namespace MinecraftClient
             if (Config.Main.Advanced.PlayerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
             ConsoleIO.Backend?.Shutdown();
             Environment.Exit(exitcode);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -952,7 +962,7 @@ namespace MinecraftClient
         /// </summary>
         public static void Exit(int exitcode = 0)
         {
-            StartLifecycleTask(Task.Run(() => DoExit(exitcode)));
+            StartLifecycleTask(DoExitAsync(exitcode));
         }
 
         private static void StartLifecycleTask(Task lifecycleTask)

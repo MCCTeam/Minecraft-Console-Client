@@ -71,6 +71,8 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         public required double Distance { get; init; }
     }
 
+    private readonly record struct ContainerOpenState(int InventoryId, Container? Inventory);
+
     private enum InventoryTransferDirection
     {
         Deposit,
@@ -1275,6 +1277,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult MoveTo(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
     {
+        return MoveToAsync(x, y, z, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> MoveToAsync(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
+    {
         if (!IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -1302,9 +1309,12 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
         int verifyWaitMs = GetArrivalWaitMs(timeoutMs);
         double tolerance = GetArrivalTolerance(maxOffset, minOffset);
-        Location? finalLocation = null;
-        bool arrived = pathFound && WaitForArrival(client, goal, verifyWaitMs, tolerance, out finalLocation);
-        finalLocation ??= client.InvokeOnMainThread(client.GetCurrentLocation);
+        Location finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+        bool arrived = false;
+        if (pathFound)
+        {
+            (arrived, finalLocation) = await WaitForArrivalAsync(client, goal, verifyWaitMs, tolerance);
+        }
         object resultData = new
         {
             pathFound,
@@ -1313,9 +1323,9 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             verifyWaitMs,
             target = ToCoordinate(goal),
             startLocation = ToCoordinate(startLocation),
-            finalLocation = ToCoordinate(finalLocation.Value),
-            finalDistance = GetDistance(finalLocation.Value, goal),
-            distanceMoved = GetDistance(startLocation, finalLocation.Value),
+            finalLocation = ToCoordinate(finalLocation),
+            finalDistance = GetDistance(finalLocation, goal),
+            distanceMoved = GetDistance(startLocation, finalLocation),
             allowUnsafe,
             allowDirectTeleport,
             maxOffset,
@@ -1330,9 +1340,14 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult MoveToPlayer(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
     {
+        return MoveToPlayerAsync(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> MoveToPlayerAsync(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
+    {
         if (!IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
-        return ToMcpResult(game.MoveToPlayer(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
+        return ToMcpResult(await game.MoveToPlayerAsync(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
     }
 
     public MccMcpResult LookAt(double x, double y, double z)
@@ -1465,6 +1480,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent)
     {
+        return OpenContainerAtAsync(x, y, z, timeoutMs, closeCurrent).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> OpenContainerAtAsync(int x, int y, int z, int timeoutMs, bool closeCurrent)
+    {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -1495,10 +1515,15 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             });
         }
 
-        return OpenContainerCore(client, location, state.block, state.activeContainerId, waitMs, closeCurrent);
+        return await OpenContainerCoreAsync(client, location, state.block, state.activeContainerId, waitMs, closeCurrent);
     }
 
     public MccMcpResult CloseContainer(int inventoryId, int timeoutMs)
+    {
+        return CloseContainerAsync(inventoryId, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> CloseContainerAsync(int inventoryId, int timeoutMs)
     {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
@@ -1527,7 +1552,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         }
 
         bool closeAccepted = client.CloseInventory(resolvedInventoryId);
-        bool closed = closeAccepted && WaitForContainerClose(client, resolvedInventoryId, waitMs);
+        bool closed = closeAccepted && await WaitForContainerCloseAsync(client, resolvedInventoryId, waitMs);
         var resultData = new
         {
             success = closeAccepted && closed,
@@ -1825,9 +1850,14 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult PickupItems(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs)
     {
+        return PickupItemsAsync(itemType, radius, maxItems, allowUnsafe, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> PickupItemsAsync(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs)
+    {
         if (!IsCategoryEnabled(t => t.EntityWorld) || !IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
-        return ToMcpResult(game.PickupItems(itemType, radius, maxItems, allowUnsafe, timeoutMs));
+        return ToMcpResult(await game.PickupItemsAsync(itemType, radius, maxItems, allowUnsafe, timeoutMs));
     }
 
     public MccMcpResult GetWorldBlockAt(int x, int y, int z)
@@ -1858,7 +1888,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         });
     }
 
-    private static MccMcpResult OpenContainerCore(McClient client, Location location, Block block, int activeContainerId, int waitMs, bool closeCurrent)
+    private static async Task<MccMcpResult> OpenContainerCoreAsync(McClient client, Location location, Block block, int activeContainerId, int waitMs, bool closeCurrent)
     {
         if (activeContainerId > 0)
         {
@@ -1876,7 +1906,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             }
 
             bool closeAccepted = client.CloseInventory(activeContainerId);
-            bool closed = closeAccepted && WaitForContainerClose(client, activeContainerId, waitMs);
+            bool closed = closeAccepted && await WaitForContainerCloseAsync(client, activeContainerId, waitMs);
             if (!closeAccepted || !closed)
             {
                 return MccMcpResult.Fail("action_incomplete", data: new
@@ -1894,7 +1924,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         int openedInventoryId = 0;
         Container? openedInventory = null;
         bool openAccepted = client.InvokeOnMainThread(() => client.PlaceBlock(location, Direction.Down, Hand.MainHand, lookAtBlock: true));
-        bool opened = openAccepted && WaitForContainerOpen(client, beforeIds, waitMs, out openedInventoryId, out openedInventory);
+        bool opened = openAccepted && await WaitForContainerOpenAsync(client, beforeIds, waitMs, result =>
+        {
+            openedInventoryId = result.InventoryId;
+            openedInventory = result.Inventory;
+        });
         var resultData = new
         {
             success = openAccepted && opened && openedInventory is not null,
@@ -2233,6 +2267,31 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         }
     }
 
+    private static async Task<bool> WaitForContainerOpenAsync(McClient client, ISet<int> beforeIds, int waitMs, Action<ContainerOpenState> onOpened)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            (int activeId, Container? activeInventory) state = client.InvokeOnMainThread(() =>
+            {
+                int activeId = GetActiveContainerId(client);
+                Container? activeInventory = activeId > 0 ? client.GetInventory(activeId) : null;
+                return (activeId, activeInventory);
+            });
+
+            if (state.activeId > 0 && (!beforeIds.Contains(state.activeId) || beforeIds.Count == 0) && state.activeInventory is not null)
+            {
+                onOpened(new ContainerOpenState(state.activeId, state.activeInventory));
+                return true;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
+        }
+    }
+
     private static bool WaitForContainerClose(McClient client, int inventoryId, int waitMs)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
@@ -2246,6 +2305,22 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 return false;
 
             Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<bool> WaitForContainerCloseAsync(McClient client, int inventoryId, int waitMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        while (true)
+        {
+            bool stillOpen = client.InvokeOnMainThread(() => client.GetInventories().ContainsKey(inventoryId));
+            if (!stillOpen)
+                return true;
+
+            if (DateTime.UtcNow >= deadline)
+                return false;
+
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
@@ -2898,6 +2973,24 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 return false;
 
             Thread.Sleep(ArrivalPollIntervalMs);
+        }
+    }
+
+    private static async Task<(bool Arrived, Location FinalLocation)> WaitForArrivalAsync(McClient client, Location goal, int waitMs, double tolerance)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        Location finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+        while (true)
+        {
+            finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+            double distance = GetDistance(finalLocation, goal);
+            if (distance <= tolerance)
+                return (true, finalLocation);
+
+            if (DateTime.UtcNow >= deadline)
+                return (false, finalLocation);
+
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 

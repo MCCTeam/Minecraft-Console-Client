@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -22,6 +23,11 @@ namespace MinecraftClient
             return Perform(action, TimeSpan.FromMilliseconds(timeout));
         }
 
+        public static Task<bool> PerformAsync(Action action, int timeout, CancellationToken cancellationToken = default)
+        {
+            return PerformAsync(action, TimeSpan.FromMilliseconds(timeout), cancellationToken);
+        }
+
         /// <summary>
         /// Perform the specified action with specified timeout
         /// </summary>
@@ -30,14 +36,26 @@ namespace MinecraftClient
         /// <returns>True if the action finished whithout timing out</returns>
         public static bool Perform(Action action, TimeSpan timeout)
         {
-            Thread thread = new(new ThreadStart(action));
-            thread.Start();
+            return PerformAsync(action, timeout).GetAwaiter().GetResult();
+        }
 
-            bool success = thread.Join(timeout);
-            if (!success)
-                thread.Interrupt();
+        public static async Task<bool> PerformAsync(Action action, TimeSpan timeout, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(action);
 
-            return success;
+            try
+            {
+                await Task.Run(action, cancellationToken).WaitAsync(timeout, cancellationToken);
+                return true;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                return false;
+            }
+            catch (TimeoutException)
+            {
+                return false;
+            }
         }
     }
 }
