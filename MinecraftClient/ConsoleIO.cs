@@ -76,6 +76,13 @@ namespace MinecraftClient
             return Backend.ReadPassword();
         }
 
+        public static Task<string?> ReadPasswordAsync(CancellationToken cancellationToken = default)
+        {
+            if (BasicIO)
+                return Task.FromResult<string?>(Console.ReadLine());
+            return Backend.ReadPasswordAsync(cancellationToken);
+        }
+
         /// <summary>
         /// Read a line from the standard input
         /// </summary>
@@ -84,6 +91,13 @@ namespace MinecraftClient
             if (BasicIO)
                 return Console.ReadLine() ?? String.Empty;
             return Backend.RequestImmediateInput();
+        }
+
+        public static Task<string> ReadLineAsync(CancellationToken cancellationToken = default)
+        {
+            if (BasicIO)
+                return Task.FromResult(Console.ReadLine() ?? string.Empty);
+            return Backend.RequestImmediateInputAsync(cancellationToken);
         }
 
         /// <summary>

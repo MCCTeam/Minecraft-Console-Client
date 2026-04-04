@@ -577,7 +577,7 @@ namespace MinecraftClient
             if (string.IsNullOrWhiteSpace(InternalConfig.Account.Password) && !skipPassword &&
                 (Config.Main.Advanced.SessionCache == CacheType.none || !SessionCache.Contains(ToLowerIfNeed(InternalConfig.Account.Login))))
             {
-                RequestPassword();
+                await RequestPasswordAsync();
             }
 
             startupargs = args;
@@ -587,10 +587,10 @@ namespace MinecraftClient
         /// <summary>
         /// Reduest user to submit password.
         /// </summary>
-        private static void RequestPassword()
+        private static async Task RequestPasswordAsync()
         {
             ConsoleIO.WriteLine(ConsoleIO.BasicIO ? string.Format(Translations.mcc_password_basic_io, InternalConfig.Account.Login) + "\n" : Translations.mcc_password_hidden);
-            string? password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            string? password = await ConsoleIO.ReadPasswordAsync();
             if (string.IsNullOrWhiteSpace(password))
                 InternalConfig.Account.Password = "-";
             else
@@ -651,7 +651,7 @@ namespace MinecraftClient
                         if (result != ProtocolHandler.LoginResult.Success
                             && string.IsNullOrWhiteSpace(InternalConfig.Account.Password)
                             && !(Config.Main.General.AccountType == LoginType.microsoft))
-                            RequestPassword();
+                            await RequestPasswordAsync();
                     }
                     else ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_session_valid, session.PlayerName));
                 }
@@ -897,27 +897,33 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
         /// <param name="keepAccountAndServerSettings">Optional, keep account and server settings</param>
-        public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
+        public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false, bool announceDelay = true)
         {
             ConsoleIO.Backend?.StopReadThread();
-            new Thread(new ThreadStart(delegate
+            StartLifecycleTask(RestartAsync(delaySeconds, keepAccountAndServerSettings, announceDelay));
+        }
+
+        private static async Task RestartAsync(int delaySeconds, bool keepAccountAndServerSettings, bool announceDelay)
+        {
+            if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
+            if (offlinePrompt is not null)
             {
-                if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt is not null)
-                {
-                    if (ConsoleIO.Backend is not null)
-                        ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
-                    offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
-                }
-                if (delaySeconds > 0)
-                {
+                if (ConsoleIO.Backend is not null)
+                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                offlinePrompt.Item2.Cancel();
+                offlinePrompt.Item1.Join();
+                offlinePrompt = null;
+                ConsoleIO.Reset();
+            }
+            if (delaySeconds > 0)
+            {
+                if (announceDelay)
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
-                    Thread.Sleep(delaySeconds * 1000);
-                }
-                ConsoleIO.WriteLine(Translations.mcc_restart);
-                ReloadSettings(keepAccountAndServerSettings);
-                InitializeClientAsync().GetAwaiter().GetResult();
-            })).Start();
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+            }
+            ConsoleIO.WriteLine(Translations.mcc_restart);
+            ReloadSettings(keepAccountAndServerSettings);
+            await InitializeClientAsync();
         }
 
         public static void DoExit(int exitcode = 0)
@@ -946,7 +952,26 @@ namespace MinecraftClient
         /// </summary>
         public static void Exit(int exitcode = 0)
         {
-            new Thread(() => { DoExit(exitcode); }).Start();
+            StartLifecycleTask(Task.Run(() => DoExit(exitcode)));
+        }
+
+        private static void StartLifecycleTask(Task lifecycleTask)
+        {
+            _ = ObserveLifecycleTaskAsync(lifecycleTask);
+        }
+
+        private static async Task ObserveLifecycleTaskAsync(Task lifecycleTask)
+        {
+            try
+            {
+                await lifecycleTask;
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+                if (Settings.Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8" + ex);
+            }
         }
 
         /// <summary>

@@ -369,9 +369,8 @@ namespace MinecraftClient
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
-                    Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Program.Restart(5, announceDelay: false);
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
@@ -490,9 +489,8 @@ namespace MinecraftClient
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     Log.Info($"Reconnecting... Attempts left: {ReconnectionAttemptsLeft}");
-                    Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Program.Restart(5, announceDelay: false);
                 }
                 else if (InternalConfig.InteractiveMode)
                 {

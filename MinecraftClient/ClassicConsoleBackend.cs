@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -50,12 +52,32 @@ namespace MinecraftClient
             return ConsoleInteractive.ConsoleReader.RequestImmediateInput();
         }
 
+        public Task<string> RequestImmediateInputAsync(CancellationToken cancellationToken)
+        {
+            // ConsoleInteractive only exposes a blocking immediate-read API.
+            // Keep the compatibility boundary here so the wider startup/runtime path can await it.
+            return Task.Run(ConsoleInteractive.ConsoleReader.RequestImmediateInput, cancellationToken);
+        }
+
         public string? ReadPassword()
         {
             ConsoleInteractive.ConsoleReader.SetInputVisible(false);
             var input = ConsoleInteractive.ConsoleReader.RequestImmediateInput();
             ConsoleInteractive.ConsoleReader.SetInputVisible(true);
             return input;
+        }
+
+        public async Task<string?> ReadPasswordAsync(CancellationToken cancellationToken)
+        {
+            ConsoleInteractive.ConsoleReader.SetInputVisible(false);
+            try
+            {
+                return await RequestImmediateInputAsync(cancellationToken);
+            }
+            finally
+            {
+                ConsoleInteractive.ConsoleReader.SetInputVisible(true);
+            }
         }
 
         public void ClearInputBuffer()

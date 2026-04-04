@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +14,7 @@ public sealed class MccEmbeddedMcpHost
 {
     private readonly MccMcpConfig config;
     private readonly IMccMcpCapabilities capabilities;
-    private readonly object stateLock = new();
+    private readonly SemaphoreSlim stateLock = new(1, 1);
     private WebApplication? app;
 
     public MccEmbeddedMcpHost(MccMcpConfig config, IMccMcpCapabilities capabilities)
@@ -25,10 +27,7 @@ public sealed class MccEmbeddedMcpHost
     {
         get
         {
-            lock (stateLock)
-            {
-                return app is not null;
-            }
+            return app is not null;
         }
     }
 
@@ -36,29 +35,37 @@ public sealed class MccEmbeddedMcpHost
 
     public bool Start(out string? error)
     {
-        lock (stateLock)
+        (bool success, string? startError) = StartAsync().GetAwaiter().GetResult();
+        error = startError;
+        return success;
+    }
+
+    public bool Stop(out string? error)
+    {
+        (bool success, string? stopError) = StopAsync().GetAwaiter().GetResult();
+        error = stopError;
+        return success;
+    }
+
+    public async Task<(bool Success, string? Error)> StartAsync(CancellationToken cancellationToken = default)
+    {
+        await stateLock.WaitAsync(cancellationToken);
+        try
         {
-            error = null;
             if (app is not null)
-                return true;
+                return (true, null);
 
             string route = NormalizeRoute(config.Transport.Route);
             string bindHost = string.IsNullOrWhiteSpace(config.Transport.BindHost) ? "127.0.0.1" : config.Transport.BindHost.Trim();
             if (config.Transport.Port is < 1 or > 65535)
-            {
-                error = "invalid_port";
-                return false;
-            }
+                return (false, "invalid_port");
 
             string? requiredToken = null;
             if (config.Transport.RequireAuthToken)
             {
                 requiredToken = Environment.GetEnvironmentVariable(config.Transport.AuthTokenEnvVar);
                 if (string.IsNullOrWhiteSpace(requiredToken))
-                {
-                    error = "missing_auth_token";
-                    return false;
-                }
+                    return (false, "missing_auth_token");
             }
 
             WebApplicationBuilder builder = WebApplication.CreateBuilder();
@@ -96,32 +103,48 @@ public sealed class MccEmbeddedMcpHost
             }
 
             builtApp.MapMcp(route);
-            builtApp.StartAsync().GetAwaiter().GetResult();
-            app = builtApp;
-            return true;
-        }
-    }
-
-    public bool Stop(out string? error)
-    {
-        lock (stateLock)
-        {
-            error = null;
-            if (app is null)
-                return true;
 
             try
             {
-                app.StopAsync().GetAwaiter().GetResult();
-                app.DisposeAsync().AsTask().GetAwaiter().GetResult();
-                app = null;
-                return true;
+                await builtApp.StartAsync(cancellationToken);
+                app = builtApp;
+                return (true, null);
             }
             catch
             {
-                error = "stop_failed";
-                return false;
+                await builtApp.DisposeAsync();
+                throw;
             }
+        }
+        finally
+        {
+            stateLock.Release();
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> StopAsync(CancellationToken cancellationToken = default)
+    {
+        await stateLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (app is null)
+                return (true, null);
+
+            try
+            {
+                await app.StopAsync(cancellationToken);
+                await app.DisposeAsync();
+                app = null;
+                return (true, null);
+            }
+            catch
+            {
+                return (false, "stop_failed");
+            }
+        }
+        finally
+        {
+            stateLock.Release();
         }
     }
 

@@ -284,7 +284,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Serialized packet/tick loop.
         /// </summary>
-        private void Updater(CancellationToken cancelToken)
+        private async Task UpdaterAsync(CancellationToken cancelToken)
         {
             if (cancelToken.IsCancellationRequested)
                 return;
@@ -316,7 +316,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     long sleepLength = nextUpdateDue - stopWatch.ElapsedMilliseconds;
                     if (sleepLength > 1)
-                        Thread.Sleep((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds));
+                        await Task.Delay((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds), cancelToken);
                 }
             }
             catch (ObjectDisposedException)
@@ -395,23 +395,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">will contain raw packet Data</param>
         internal Tuple<int, Queue<byte>> ReadNextPacket()
         {
-            var size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            Queue<byte> packetData = new(socketWrapper.ReadDataRAW(size)); //Packet contents
-
-            //Handle packet decompression
-            if (protocolVersion >= MC_1_8_Version
-                && compression_treshold >= 0)
-            {
-                var sizeUncompressed = dataTypes.ReadNextVarInt(packetData);
-                if (sizeUncompressed != 0) // != 0 means compressed, let's decompress
-                {
-                    var toDecompress = packetData.ToArray();
-                    var uncompressed = ZlibUtils.Decompress(toDecompress, sizeUncompressed);
-                    packetData = new Queue<byte>(uncompressed);
-                }
-            }
-
-            var packetId = dataTypes.ReadNextVarInt(packetData); // Packet ID
+            var (packetId, packetData) = socketWrapper.GetNextPacket(
+                protocolVersion >= MC_1_8_Version ? compression_treshold : -1,
+                dataTypes);
             if (handler.GetNetworkPacketCaptureEnabled())
                 handler.OnNetworkPacket(packetId, packetData.ToList(), currentState == CurrentState.Login, true);
 
@@ -420,22 +406,10 @@ namespace MinecraftClient.Protocol.Handlers
 
         internal async Task<Tuple<int, Queue<byte>>> ReadNextPacketAsync(CancellationToken cancellationToken)
         {
-            var size = await dataTypes.ReadNextVarIntRAWAsync(socketWrapper, cancellationToken); //Packet size
-            Queue<byte> packetData = new(await socketWrapper.ReadDataRAWAsync(size, cancellationToken)); //Packet contents
-
-            if (protocolVersion >= MC_1_8_Version
-                && compression_treshold >= 0)
-            {
-                var sizeUncompressed = dataTypes.ReadNextVarInt(packetData);
-                if (sizeUncompressed != 0)
-                {
-                    var toDecompress = packetData.ToArray();
-                    var uncompressed = ZlibUtils.Decompress(toDecompress, sizeUncompressed);
-                    packetData = new Queue<byte>(uncompressed);
-                }
-            }
-
-            var packetId = dataTypes.ReadNextVarInt(packetData);
+            var (packetId, packetData) = await socketWrapper.GetNextPacketAsync(
+                protocolVersion >= MC_1_8_Version ? compression_treshold : -1,
+                dataTypes,
+                cancellationToken);
             if (handler.GetNetworkPacketCaptureEnabled())
                 handler.OnNetworkPacket(packetId, packetData.ToList(), currentState == CurrentState.Login, true);
 
@@ -3867,21 +3841,17 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Start the updating thread. Should be called after login success.
+        /// Start the serialized packet/tick tasks. Should be called after login success.
         /// </summary>
         private void StartUpdating()
         {
             CancellationTokenSource netMainCts = new();
             netMainCancellationTokenSource = netMainCts;
-            netMainTask = Task.Factory.StartNew(
-                () => Updater(netMainCts.Token),
-                netMainCts.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+            netMainTask = Task.Run(() => UpdaterAsync(netMainCts.Token), netMainCts.Token);
 
             CancellationTokenSource netReaderCts = new();
             netReaderCancellationTokenSource = netReaderCts;
-            netReaderTask = PacketReaderAsync(netReaderCts.Token);
+            netReaderTask = Task.Run(() => PacketReaderAsync(netReaderCts.Token), netReaderCts.Token);
         }
 
         /// <summary>
@@ -4381,14 +4351,8 @@ namespace MinecraftClient.Protocol.Handlers
                 var statusRequest = DataTypes.GetVarInt(0);
                 socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(statusRequest.Length), statusRequest));
 
-                // Read Response length
-                var packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
-                if (packetLength <= 0)
-                    return false;
-
-                // Read the Packet Id
-                var packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
-                if (dataTypes.ReadNextVarInt(packetData) != 0x00)
+                var (statusPacketId, packetData) = socketWrapper.GetNextPacket(-1, dataTypes);
+                if (statusPacketId != 0x00)
                     return false;
 
                 // Get the Json data
@@ -4467,15 +4431,11 @@ namespace MinecraftClient.Protocol.Handlers
                     var pingRequest = dataTypes.ConcatBytes(DataTypes.GetVarInt(0x01), DataTypes.GetLong(pingPayload));
                     socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(pingRequest.Length), pingRequest));
 
-                    packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
-                    if (packetLength > 0)
+                    var (pongPacketId, pongPacketData) = socketWrapper.GetNextPacket(-1, dataTypes);
+                    if (pongPacketId == 0x01)
                     {
-                        packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
-                        if (dataTypes.ReadNextVarInt(packetData) == 0x01)
-                        {
-                            long pongPayload = dataTypes.ReadNextLong(packetData);
-                            pingMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - pingPayload;
-                        }
+                        long pongPayload = dataTypes.ReadNextLong(pongPacketData);
+                        pingMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - pingPayload;
                     }
                 }
                 catch

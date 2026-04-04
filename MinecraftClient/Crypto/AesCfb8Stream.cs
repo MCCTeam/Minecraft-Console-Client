@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using MinecraftClient.Crypto.AesHandler;
 
 namespace MinecraftClient.Crypto
 {
@@ -11,8 +12,7 @@ namespace MinecraftClient.Crypto
     {
         public const int blockSize = 16;
 
-        private readonly Aes? Aes = null;
-        private readonly FastAes? FastAes = null;
+        private readonly IAesHandler aesHandler;
 
         private bool inStreamEnded = false;
 
@@ -24,18 +24,7 @@ namespace MinecraftClient.Crypto
         public AesCfb8Stream(Stream stream, byte[] key)
         {
             BaseStream = stream;
-
-            if (FastAes.IsSupported())
-                FastAes = new FastAes(key);
-            else
-            {
-                Aes = Aes.Create();
-                Aes.BlockSize = 128;
-                Aes.KeySize = 128;
-                Aes.Key = key;
-                Aes.Mode = CipherMode.ECB;
-                Aes.Padding = PaddingMode.None;
-            }
+            aesHandler = AesHandlerFactory.Create(key);
 
             Array.Copy(key, ReadStreamIV, 16);
             Array.Copy(key, WriteStreamIV, 16);
@@ -96,10 +85,7 @@ namespace MinecraftClient.Crypto
             }
 
             Span<byte> blockOutput = stackalloc byte[blockSize];
-            if (FastAes is not null)
-                FastAes.EncryptEcb(ReadStreamIV, blockOutput);
-            else
-                Aes!.EncryptEcb(ReadStreamIV, blockOutput, PaddingMode.None);
+            aesHandler.EncryptEcb(ReadStreamIV, blockOutput);
 
             // Shift left
             Array.Copy(ReadStreamIV, 1, ReadStreamIV, 0, blockSize - 1);
@@ -111,10 +97,7 @@ namespace MinecraftClient.Crypto
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EncryptBlock(ReadOnlySpan<byte> blockInput, Span<byte> blockOutput)
         {
-            if (FastAes is not null)
-                FastAes.EncryptEcb(blockInput, blockOutput);
-            else
-                Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);
+            aesHandler.EncryptEcb(blockInput, blockOutput);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -124,31 +107,39 @@ namespace MinecraftClient.Crypto
                 return 0;
 
             Span<byte> blockOutput = stackalloc byte[blockSize];
+            byte[] inputBuf = ArrayPool<byte>.Shared.Rent(blockSize + required);
 
-            byte[] inputBuf = new byte[blockSize + required];
-            Array.Copy(ReadStreamIV, inputBuf, blockSize);
-
-            for (int readed = 0, curRead; readed < required; readed += curRead)
+            try
             {
-                curRead = BaseStream.Read(inputBuf, blockSize + readed, required - readed);
-                if (curRead == 0)
+                Array.Copy(ReadStreamIV, inputBuf, blockSize);
+
+                for (int readed = 0, curRead; readed < required; readed += curRead)
                 {
-                    inStreamEnded = true;
-                    return readed;
+                    curRead = BaseStream.Read(inputBuf, blockSize + readed, required - readed);
+                    if (curRead == 0)
+                    {
+                        inStreamEnded = true;
+                        Array.Copy(inputBuf, readed, ReadStreamIV, 0, blockSize);
+                        return readed;
+                    }
+
+                    int processEnd = readed + curRead;
+                    for (int idx = readed; idx < processEnd; idx++)
+                    {
+                        ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
+                        EncryptBlock(blockInput, blockOutput);
+                        buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
+                    }
                 }
 
-                int processEnd = readed + curRead;
-                for (int idx = readed; idx < processEnd; idx++)
-                {
-                    ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
-                    EncryptBlock(blockInput, blockOutput);
-                    buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
-                }
+                Array.Copy(inputBuf, required, ReadStreamIV, 0, blockSize);
+
+                return required;
             }
-
-            Array.Copy(inputBuf, required, ReadStreamIV, 0, blockSize);
-
-            return required;
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(inputBuf);
+            }
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -179,19 +170,27 @@ namespace MinecraftClient.Crypto
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public override void Write(byte[] input, int offset, int required)
         {
-            byte[] outputBuf = new byte[blockSize + required];
-            Array.Copy(WriteStreamIV, outputBuf, blockSize);
+            byte[] outputBuf = ArrayPool<byte>.Shared.Rent(blockSize + required);
 
-            Span<byte> blockOutput = stackalloc byte[blockSize];
-            for (int wirtten = 0; wirtten < required; ++wirtten)
+            try
             {
-                ReadOnlySpan<byte> blockInput = new(outputBuf, wirtten, blockSize);
-                EncryptBlock(blockInput, blockOutput);
-                outputBuf[blockSize + wirtten] = (byte)(blockOutput[0] ^ input[offset + wirtten]);
-            }
-            BaseStream.Write(outputBuf, blockSize, required);
+                Array.Copy(WriteStreamIV, outputBuf, blockSize);
 
-            Array.Copy(outputBuf, required, WriteStreamIV, 0, blockSize);
+                Span<byte> blockOutput = stackalloc byte[blockSize];
+                for (int written = 0; written < required; ++written)
+                {
+                    ReadOnlySpan<byte> blockInput = new(outputBuf, written, blockSize);
+                    EncryptBlock(blockInput, blockOutput);
+                    outputBuf[blockSize + written] = (byte)(blockOutput[0] ^ input[offset + written]);
+                }
+
+                BaseStream.Write(outputBuf, blockSize, required);
+                Array.Copy(outputBuf, required, WriteStreamIV, 0, blockSize);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(outputBuf);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -200,26 +199,34 @@ namespace MinecraftClient.Crypto
             if (inStreamEnded || buffer.Length == 0)
                 return 0;
 
-            byte[] inputBuf = new byte[blockSize + buffer.Length];
-            Array.Copy(ReadStreamIV, inputBuf, blockSize);
+            byte[] inputBuf = ArrayPool<byte>.Shared.Rent(blockSize + buffer.Length);
 
-            for (int readed = 0; readed < buffer.Length;)
+            try
             {
-                int curRead = await BaseStream.ReadAsync(inputBuf.AsMemory(blockSize + readed, buffer.Length - readed), cancellationToken);
-                if (curRead == 0)
+                Array.Copy(ReadStreamIV, inputBuf, blockSize);
+
+                for (int readed = 0; readed < buffer.Length;)
                 {
-                    inStreamEnded = true;
-                    Array.Copy(inputBuf, readed, ReadStreamIV, 0, blockSize);
-                    return readed;
+                    int curRead = await BaseStream.ReadAsync(inputBuf.AsMemory(blockSize + readed, buffer.Length - readed), cancellationToken);
+                    if (curRead == 0)
+                    {
+                        inStreamEnded = true;
+                        Array.Copy(inputBuf, readed, ReadStreamIV, 0, blockSize);
+                        return readed;
+                    }
+
+                    int processEnd = readed + curRead;
+                    DecryptToOutputBuffer(inputBuf, buffer, readed, processEnd);
+                    readed = processEnd;
                 }
 
-                int processEnd = readed + curRead;
-                DecryptToOutputBuffer(inputBuf, buffer, readed, processEnd);
-                readed = processEnd;
+                Array.Copy(inputBuf, buffer.Length, ReadStreamIV, 0, blockSize);
+                return buffer.Length;
             }
-
-            Array.Copy(inputBuf, buffer.Length, ReadStreamIV, 0, blockSize);
-            return buffer.Length;
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(inputBuf);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -228,12 +235,20 @@ namespace MinecraftClient.Crypto
             if (buffer.Length == 0)
                 return;
 
-            byte[] outputBuf = new byte[blockSize + buffer.Length];
-            Array.Copy(WriteStreamIV, outputBuf, blockSize);
-            EncryptToOutputBuffer(buffer, outputBuf);
+            byte[] outputBuf = ArrayPool<byte>.Shared.Rent(blockSize + buffer.Length);
 
-            await BaseStream.WriteAsync(outputBuf.AsMemory(blockSize, buffer.Length), cancellationToken);
-            Array.Copy(outputBuf, buffer.Length, WriteStreamIV, 0, blockSize);
+            try
+            {
+                Array.Copy(WriteStreamIV, outputBuf, blockSize);
+                EncryptToOutputBuffer(buffer, outputBuf);
+
+                await BaseStream.WriteAsync(outputBuf.AsMemory(blockSize, buffer.Length), cancellationToken);
+                Array.Copy(outputBuf, buffer.Length, WriteStreamIV, 0, blockSize);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(outputBuf);
+            }
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -244,6 +259,16 @@ namespace MinecraftClient.Crypto
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             return WriteAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                aesHandler.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]

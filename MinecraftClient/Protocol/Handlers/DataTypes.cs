@@ -306,7 +306,7 @@ namespace MinecraftClient.Protocol.Handlers
             byte b;
             while (true)
             {
-                b = socket.ReadDataRAW(1)[0];
+                b = socket.ReadByteRAW();
                 i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
                 if ((b & 0x80) != 128) break;
@@ -327,7 +327,7 @@ namespace MinecraftClient.Protocol.Handlers
             byte b;
             while (true)
             {
-                b = (await socket.ReadDataRAWAsync(1, cancellationToken))[0];
+                b = await socket.ReadByteRAWAsync(cancellationToken);
                 i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
                 if ((b & 0x80) != 128) break;

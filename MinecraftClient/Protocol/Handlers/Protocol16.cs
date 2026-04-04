@@ -72,7 +72,7 @@ namespace MinecraftClient.Protocol.Handlers
             c = Client;
         }
 
-        private void Updater(CancellationToken cancelToken)
+        private async Task UpdaterAsync(CancellationToken cancelToken)
         {
             if (cancelToken.IsCancellationRequested)
                 return;
@@ -100,7 +100,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     long sleepLength = nextUpdateDue - stopWatch.ElapsedMilliseconds;
                     if (sleepLength > 1)
-                        Thread.Sleep((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds));
+                        await Task.Delay((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds), cancelToken);
                 }
             }
             catch (System.IO.IOException) { }
@@ -247,11 +247,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             CancellationTokenSource netReadCts = new();
             netReadCancellationTokenSource = netReadCts;
-            netReadTask = Task.Factory.StartNew(
-                () => Updater(netReadCts.Token),
-                netReadCts.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+            netReadTask = Task.Run(() => UpdaterAsync(netReadCts.Token), netReadCts.Token);
         }
 
         /// <summary>
