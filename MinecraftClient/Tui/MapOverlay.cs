@@ -19,8 +19,8 @@ namespace MinecraftClient.Tui
     /// </summary>
     internal sealed class MapOverlay : Panel
     {
-        private const double ZoomFactor = 1.25;
         private const double MaxScale = 2.0;
+        private const double ZoomStep = 0.25;
         private const double KeyPanStep = 4.0;
         private const double OffsetEpsilon = 0.5;
 
@@ -221,7 +221,25 @@ namespace MinecraftClient.Tui
             _offsetY = Math.Clamp(_offsetY, 0, maxOffY);
         }
 
-        private void ZoomAtCenter(double factor)
+        private double NextStepScale(bool zoomIn)
+        {
+            if (zoomIn)
+            {
+                double next = Math.Floor(_scale / ZoomStep + 1.0 - 1e-9) * ZoomStep;
+                if (next <= _scale + 1e-9)
+                    next += ZoomStep;
+                return Math.Clamp(next, _fitScale, MaxScale);
+            }
+            else
+            {
+                double prev = Math.Ceiling(_scale / ZoomStep - 1.0 + 1e-9) * ZoomStep;
+                if (prev >= _scale - 1e-9)
+                    prev -= ZoomStep;
+                return Math.Clamp(prev, _fitScale, MaxScale);
+            }
+        }
+
+        private void ZoomAtCenter(bool zoomIn)
         {
             if (_map?.Colors is null) return;
 
@@ -231,12 +249,7 @@ namespace MinecraftClient.Tui
             double centerMapX = _offsetX + (viewW / 2.0) / _scale;
             double centerMapY = _offsetY + (viewPixelsH / 2.0) / _scale;
 
-            double newScale = Math.Clamp(_scale * factor, _fitScale, MaxScale);
-
-            if ((_scale < 1.0 - 1e-9 && newScale > 1.0 + 1e-9) ||
-                (_scale > 1.0 + 1e-9 && newScale < 1.0 - 1e-9))
-                newScale = 1.0;
-
+            double newScale = NextStepScale(zoomIn);
             if (Math.Abs(newScale - _scale) < 1e-12)
                 return;
 
@@ -358,8 +371,7 @@ namespace MinecraftClient.Tui
 
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            double factor = e.Delta.Y > 0 ? ZoomFactor : 1.0 / ZoomFactor;
-            ZoomAtCenter(factor);
+            ZoomAtCenter(e.Delta.Y > 0);
             e.Handled = true;
         }
 
@@ -420,12 +432,12 @@ namespace MinecraftClient.Tui
         {
             if (e.Text is "+" or "=")
             {
-                ZoomAtCenter(ZoomFactor);
+                ZoomAtCenter(true);
                 e.Handled = true;
             }
             else if (e.Text is "-")
             {
-                ZoomAtCenter(1.0 / ZoomFactor);
+                ZoomAtCenter(false);
                 e.Handled = true;
             }
         }
@@ -441,12 +453,12 @@ namespace MinecraftClient.Tui
                     return;
 
                 case Key.Add:
-                    ZoomAtCenter(ZoomFactor);
+                    ZoomAtCenter(true);
                     e.Handled = true;
                     return;
 
                 case Key.Subtract:
-                    ZoomAtCenter(1.0 / ZoomFactor);
+                    ZoomAtCenter(false);
                     e.Handled = true;
                     return;
 
