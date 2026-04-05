@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -612,7 +612,7 @@ namespace MinecraftClient.Scripting
         }
 
         /// <summary>
-        /// Remove color codes ("§c") from a text message received from the server
+        /// Remove color codes ("§c" and "§#rrggbb") from a text message received from the server
         /// </summary>
         public static string GetVerbatim(string? text)
         {
@@ -623,10 +623,20 @@ namespace MinecraftClient.Scripting
             var data = new char[text.Length];
 
             for (int i = 0; i < text.Length; i++)
+            {
                 if (text[i] != '§')
+                {
                     data[idx++] = text[i];
+                }
+                else if (i + 1 < text.Length && text[i + 1] == '#' && i + 7 < text.Length)
+                {
+                    i += 7; // skip §#rrggbb (8 chars total, loop increments once)
+                }
                 else
-                    i++;
+                {
+                    i++; // skip §x (2 chars total)
+                }
+            }
 
             return new string(data, 0, idx);
         }
