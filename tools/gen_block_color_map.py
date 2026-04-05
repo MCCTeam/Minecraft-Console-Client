@@ -205,6 +205,28 @@ WATER_BLOCKS = ["Water"]
 ICE_BLOCKS = ["Ice", "PackedIce", "BlueIce", "FrostedIce"]
 
 
+def build_map_palette(map_color_java: Path) -> dict[str, list[int]]:
+    """Build MapColor ID -> [R, G, B] palette for the Map bot (map packet rendering).
+
+    Returns a dict keyed by string IDs ("0", "1", ...) to keep JSON simple.
+    """
+    text = map_color_java.read_text()
+    palette: dict[str, list[int]] = {}
+
+    pattern = re.compile(
+        r'new\s+MapColor\(\s*(\d+)\s*,\s*(\d+)\s*\)')
+    for m in pattern.finditer(text):
+        cid = int(m.group(1))
+        raw = int(m.group(2))
+        r = (raw >> 16) & 0xFF
+        g = (raw >> 8) & 0xFF
+        b = raw & 0xFF
+        palette[str(cid)] = [r, g, b]
+
+    print(f"  Built map_palette with {len(palette)} base color entries")
+    return dict(sorted(palette.items(), key=lambda x: int(x[0])))
+
+
 def main():
     if len(sys.argv) != 2:
         print(__doc__)
@@ -249,12 +271,15 @@ def main():
         block_colors = matched
         print(f"  {len(block_colors)} blocks matched to Material.cs entries")
 
+    map_palette = build_map_palette(map_color_java)
+
     output = {
         "version": root.name.replace("-decompiled", "").replace("-client", ""),
         "colors": {k: list(v) for k, v in sorted(block_colors.items())},
         "transparent": sorted(TRANSPARENT_BLOCKS),
         "water": WATER_BLOCKS,
         "ice": ICE_BLOCKS,
+        "map_palette": map_palette,
     }
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)

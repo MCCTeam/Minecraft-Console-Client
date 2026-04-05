@@ -123,50 +123,44 @@ namespace MinecraftClient.Tui
             int cols = Pixels.GetLength(1);
             int textRows = Pixels.GetLength(0) / 2;
 
-            var pixelGrid = new Grid();
-            for (int c = 0; c < cols; c++)
-                pixelGrid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Auto));
-            for (int r = 0; r < textRows; r++)
-                pixelGrid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Auto));
+            var panel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                Margin = new Thickness(0),
+            };
 
             for (int row = 0; row < textRows; row++)
             {
+                var line = new TextBlock { Padding = new Thickness(0), Margin = new Thickness(0) };
+
                 for (int col = 0; col < cols; col++)
                 {
                     var topColor = Pixels[row * 2, col];
                     var bottomColor = Pixels[row * 2 + 1, col];
 
-                    var cell = new TextBlock
+                    if (row == 1 && col == 1)
                     {
-                        Text = "\u2580",
+                        line.Inlines!.Add(new Run(" \uff1e_")
+                        {
+                            Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                            Background = new SolidColorBrush(S),
+                        });
+                        col += 4;
+                        topColor = Pixels[row * 2, col];
+                        bottomColor = Pixels[row * 2 + 1, col];
+                    }
+
+                    line.Inlines!.Add(new Run("\u2580")
+                    {
                         Foreground = new SolidColorBrush(topColor),
                         Background = new SolidColorBrush(bottomColor),
-                        Padding = new Thickness(0),
-                        Margin = new Thickness(0),
-                    };
-
-                    Grid.SetRow(cell, row);
-                    Grid.SetColumn(cell, col);
-                    pixelGrid.Children.Add(cell);
+                    });
                 }
+
+                panel.Children.Add(line);
             }
 
-            var prompt = new TextBlock
-            {
-                Text = " ＞_",
-                Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
-                Background = new SolidColorBrush(S),
-                Padding = new Thickness(0),
-                Margin = new Thickness(0),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
-            };
-            Grid.SetRow(prompt, 1);
-            Grid.SetColumn(prompt, 1);
-            Grid.SetColumnSpan(prompt, 4);
-            pixelGrid.Children.Add(prompt);
-
-            return pixelGrid;
+            return panel;
         }
 
         #endregion

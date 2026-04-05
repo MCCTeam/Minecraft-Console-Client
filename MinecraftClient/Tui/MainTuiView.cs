@@ -118,6 +118,7 @@ namespace MinecraftClient.Tui
             };
 
             _commandInput.AddHandler(KeyDownEvent, OnCommandKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+            _commandInput.AddHandler(TextInputEvent, OnCommandTextInput, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             _commandInput.TextChanged += OnCommandTextChanged;
 
             var promptLabel = new TextBlock
@@ -487,17 +488,40 @@ namespace MinecraftClient.Tui
             _commandInput.CaretIndex = pos;
         }
 
+        private void OnCommandTextInput(object? sender, TextInputEventArgs e)
+        {
+            string? incoming = e.Text;
+            if (string.IsNullOrEmpty(incoming) || (!incoming.Contains('\n') && !incoming.Contains('\r')))
+                return;
+
+            e.Handled = true;
+
+            string[] lines = incoming.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
+
+            string prefix = _commandInput.Text ?? "";
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                bool isLast = i == lines.Length - 1;
+
+                if (line.Length > 0 || prefix.Length > 0)
+                {
+                    _acceptingSuggestion = true;
+                    try { _commandInput.Text = prefix + line; }
+                    finally { _acceptingSuggestion = false; }
+                }
+
+                if (!isLast)
+                {
+                    SubmitCommand();
+                    prefix = "";
+                }
+            }
+        }
+
         private void OnCommandTextChanged(object? sender, TextChangedEventArgs e)
         {
             string text = _commandInput.Text ?? string.Empty;
-
-            if (text.Contains('\n') || text.Contains('\r'))
-            {
-                string cleaned = text.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ');
-                _commandInput.Text = cleaned;
-                _commandInput.CaretIndex = cleaned.Length;
-                return;
-            }
 
             if (_acceptingSuggestion || _tabCycling)
                 return;
@@ -1171,6 +1195,8 @@ namespace MinecraftClient.Tui
         }
 
         public bool HasOverlay => _overlayContent != null;
+
+        public Control? OverlayContent => _overlayContent;
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
