@@ -154,9 +154,9 @@ namespace MinecraftClient.Tui
 
         private void UpdateHeaderText()
         {
-            int zoomPercent = _scale > 0 ? (int)Math.Round(_scale * 100) : 0;
+            string zoomText = _scale > 0 ? (_scale * 100).ToString("F1") : "0.0";
             _headerBlock.Text = string.Format(Translations.bot_map_tui_header,
-                _map.MapId, _map.Width, _map.Height, zoomPercent);
+                _map.MapId, _map.Width, _map.Height, zoomText);
         }
 
         protected override void OnSizeChanged(SizeChangedEventArgs e)
