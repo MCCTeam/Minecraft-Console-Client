@@ -1683,6 +1683,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Map #{0} ({1}x{2}).
+        /// </summary>
+        internal static string bot_map_tui_header {
+            get {
+                return ResourceManager.GetString("bot.map.tui_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press Escape or E to close.
+        /// </summary>
+        internal static string bot_map_tui_controls {
+            get {
+                return ResourceManager.GetString("bot.map.tui_controls", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to replay command.
         /// </summary>
         internal static string bot_replayCapture_cmd {

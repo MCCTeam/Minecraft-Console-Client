@@ -660,6 +660,12 @@ cooldown: {6}</value>
   <data name="bot.map.sent_to_telegram" xml:space="preserve">
     <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
   </data>
+  <data name="bot.map.tui_header" xml:space="preserve">
+    <value>Map #{0} ({1}x{2})</value>
+  </data>
+  <data name="bot.map.tui_controls" xml:space="preserve">
+    <value>Press Escape or E to close</value>
+  </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
     <value>replay command</value>
   </data>

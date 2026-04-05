@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using ImageMagick;
@@ -11,6 +12,7 @@ using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Mapping;
 using MinecraftClient.Scripting;
+using MinecraftClient.Tui;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -142,7 +144,12 @@ namespace MinecraftClient.ChatBots
                     SaveToFile(map);
 
                 if (Config.Render_In_Console)
-                    RenderInConsole(map);
+                {
+                    if (ConsoleIO.Backend is TuiConsoleBackend)
+                        RenderInTui(map);
+                    else
+                        RenderInConsole(map);
+                }
 
                 return r.SetAndReturn(CmdResult.Status.Done);
             }
@@ -213,7 +220,12 @@ namespace MinecraftClient.ChatBots
                     SaveToFile(map);
 
                 if (Config.Render_In_Console)
-                    RenderInConsole(map);
+                {
+                    if (ConsoleIO.Backend is TuiConsoleBackend)
+                        RenderInTui(map);
+                    else
+                        RenderInConsole(map);
+                }
             }
         }
 
@@ -340,6 +352,24 @@ namespace MinecraftClient.ChatBots
                     });
                 }
             }
+        }
+
+        private static void RenderInTui(McMap map)
+        {
+            var view = TuiConsoleBackend.Instance?.GetView();
+            if (view is null)
+                return;
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (view.HasOverlay && view.OverlayContent is MapOverlay existing)
+                {
+                    existing.UpdateMap(map);
+                    return;
+                }
+
+                view.ShowOverlay(new MapOverlay(map));
+            });
         }
 
         private static void RenderInConsole(McMap map)
