@@ -20,7 +20,7 @@ namespace MinecraftClient.Tui
     internal sealed class MapOverlay : Panel
     {
         private const double MaxScale = 2.0;
-        private const double ZoomStep = 0.25;
+        private const double ZoomStep = 0.125;
         private const double KeyPanStep = 4.0;
         private const double OffsetEpsilon = 0.5;
 
