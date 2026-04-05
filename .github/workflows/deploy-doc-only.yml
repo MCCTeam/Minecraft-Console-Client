@@ -6,8 +6,27 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has-deploy-token: ${{ steps.check.outputs.has-deploy-token }}
+    steps:
+      - name: Check required secrets
+        id: check
+        run: |
+          if [ -z "$GH_PAGES_TOKEN" ]; then
+            echo "has-deploy-token=false" >> $GITHUB_OUTPUT
+            echo "::warning::GH_PAGES_TOKEN is not set, skipping documentation deployment."
+          else
+            echo "has-deploy-token=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_PAGES_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
+
   Build:
     runs-on: ubuntu-latest
+    needs: check-secrets
+    if: ${{ needs.check-secrets.outputs.has-deploy-token == 'true' }}
 
     steps:
 
@@ -17,8 +36,22 @@ jobs:
         fetch-depth: 0
         submodules: 'true'
 
+    - name: Check Crowdin secrets
+      id: crowdin-check
+      run: |
+        if [ -z "$CROWDIN_PROJECT_ID" ] || [ -z "$CROWDIN_PERSONAL_TOKEN" ]; then
+          echo "available=false" >> $GITHUB_OUTPUT
+          echo "::warning::Crowdin secrets not set, skipping translation download."
+        else
+          echo "available=true" >> $GITHUB_OUTPUT
+        fi
+      env:
+        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+
     - name: Download translations from crowdin
-      uses: crowdin/github-action@v1.6.0
+      if: ${{ steps.crowdin-check.outputs.available == 'true' }}
+      uses: crowdin/github-action@v2.4.0
       with:
         upload_sources: false
         upload_translations: false
