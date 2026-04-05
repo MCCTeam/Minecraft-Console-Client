@@ -184,14 +184,7 @@ namespace MinecraftClient.Tui
                 ItemsSource = chatLines,
                 Focusable = false,
                 ItemTemplate = new FuncDataTemplate<string>((s, _) =>
-                    new TextBlock
-                    {
-                        Text = s,
-                        Foreground = Brushes.Gray,
-                        Padding = new Thickness(0),
-                        Margin = new Thickness(0),
-                        TextWrapping = TextWrapping.Wrap,
-                    }),
+                    McColorParser.CreateColoredTextBlock(s ?? "", TextWrapping.Wrap)),
             };
             _chatScrollViewer = new ScrollViewer
             {
