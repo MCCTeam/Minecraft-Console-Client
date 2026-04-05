@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 using Brigadier.NET;
 using Brigadier.NET.Exceptions;
 using MinecraftClient.ChatBots;
@@ -45,10 +47,12 @@ namespace MinecraftClient
         private readonly Queue<string> chatQueue = new();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private readonly Queue<Action> threadTasks = new();
+        private Queue<IMainThreadTask> threadTasks = new();
         private readonly Lock threadTasksLock = new();
         private readonly Lock recipeBookLock = new();
         private readonly Lock achievementsLock = new();
+        private readonly Lock consoleCommandProcessingLock = new();
+        private readonly Lock networkAutoCompleteLock = new();
 
         private readonly List<ChatBot> bots = new();
         private static readonly List<ChatBot> botsOnHold = new();
@@ -226,7 +230,11 @@ namespace MinecraftClient
         IMinecraftCom handler = null!;
         SessionToken _sessionToken;
         CancellationTokenSource? cmdprompt = null;
-        Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
+        private Channel<string>? consoleCommandChannel;
+        private Task? consoleCommandProcessingTask;
+        private TaskCompletionSource<string[]>? pendingNetworkAutoCompleteRequest;
+        private TaskCompletionSource<bool>? pendingCommandListInitialization;
+        Tuple<Task, CancellationTokenSource>? timeoutdetector = null;
         private int transferInProgress = 0;
 
         public ILogger Log;
@@ -313,9 +321,10 @@ namespace MinecraftClient
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.mcc_version_supported);
 
-                timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
-                timeoutdetector.Item1.Name = "MCC Connection timeout detector";
-                timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
+                CancellationTokenSource timeoutDetectorCancellationTokenSource = new();
+                Task timeoutDetectorTask = TimeoutDetectorAsync(timeoutDetectorCancellationTokenSource.Token);
+                timeoutdetector = new(timeoutDetectorTask, timeoutDetectorCancellationTokenSource);
+                _ = ObserveTimeoutDetectorAsync(timeoutDetectorTask, timeoutDetectorCancellationTokenSource.Token);
 
                 try
                 {
@@ -327,10 +336,7 @@ namespace MinecraftClient
 
                         Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
-                        cmdprompt = new CancellationTokenSource();
-                        ConsoleIO.Backend.BeginReadThread();
-                        ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
-                        ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
+                        StartConsoleHandlers();
                     }
                     else
                     {
@@ -366,15 +372,12 @@ namespace MinecraftClient
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
-                    Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Program.Restart(5, announceDelay: false);
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleIO.Backend.StopReadThread();
-                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    StopConsoleHandlers();
                     Program.HandleFailure();
                 }
 
@@ -392,9 +395,7 @@ namespace MinecraftClient
                 // kick messages and Ignore_Kick_Message is false, or retry limit reached)
                 if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleIO.Backend.StopReadThread();
-                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    StopConsoleHandlers();
                     Program.HandleFailure();
                 }
 
@@ -418,6 +419,7 @@ namespace MinecraftClient
             try
             {
                 Log.Info($"Initiating a transfer to: {newHost}:{newPort}");
+                StopConsoleHandlers();
                 
                 // Unload bots
                 UnloadAllBots();
@@ -452,10 +454,7 @@ namespace MinecraftClient
                     UpdateKeepAlive();
                     Log.Info($"Successfully transferred connection and logged in to {newHost}:{newPort}.");
 
-                    cmdprompt = new CancellationTokenSource();
-                    ConsoleIO.Backend.BeginReadThread();
-                    ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
+                    StartConsoleHandlers();
                 }
                 else
                 {
@@ -493,15 +492,12 @@ namespace MinecraftClient
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     Log.Info($"Reconnecting... Attempts left: {ReconnectionAttemptsLeft}");
-                    Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Program.Restart(5, announceDelay: false);
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleIO.Backend.StopReadThread();
-                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    StopConsoleHandlers();
                     Program.HandleFailure();
                 }
 
@@ -706,13 +702,20 @@ namespace MinecraftClient
                 }
             }
 
+            Queue<IMainThreadTask>? pendingThreadTasks = null;
             lock (threadTasksLock)
             {
-                while (threadTasks.Count > 0)
+                if (threadTasks.Count > 0)
                 {
-                    Action taskToRun = threadTasks.Dequeue();
-                    taskToRun();
+                    pendingThreadTasks = threadTasks;
+                    threadTasks = new();
                 }
+            }
+
+            if (pendingThreadTasks is not null)
+            {
+                while (pendingThreadTasks.Count > 0)
+                    pendingThreadTasks.Dequeue().ExecuteSynchronously();
             }
 
             lock (DigLock)
@@ -737,29 +740,44 @@ namespace MinecraftClient
         /// <summary>
         /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive is too old.
         /// </summary>
-        private void TimeoutDetector(object? o)
+        private async Task TimeoutDetectorAsync(CancellationToken cancellationToken)
         {
             UpdateKeepAlive();
-            do
+            using PeriodicTimer periodicTimer = new(TimeSpan.FromSeconds(15));
+            try
             {
-                Thread.Sleep(TimeSpan.FromSeconds(15));
-
-                if (((CancellationToken)o!).IsCancellationRequested)
-                    return;
-
-                lock (lastKeepAliveLock)
+                while (await periodicTimer.WaitForNextTickAsync(cancellationToken))
                 {
-                    if (lastKeepAlive.AddSeconds(Config.Main.Advanced.TcpTimeout) < DateTime.Now)
+                    lock (lastKeepAliveLock)
                     {
-                        if (((CancellationToken)o!).IsCancellationRequested)
-                            return;
+                        if (lastKeepAlive.AddSeconds(Config.Main.Advanced.TcpTimeout) < DateTime.Now)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                        OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_timeout);
-                        return;
+                            OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_timeout);
+                            return;
+                        }
                     }
                 }
             }
-            while (!((CancellationToken)o!).IsCancellationRequested);
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+        }
+
+        private async Task ObserveTimeoutDetectorAsync(Task timeoutDetectorTask, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await timeoutDetectorTask;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception e)
+            {
+                Log.Warn(e.ToString());
+            }
         }
 
         /// <summary>
@@ -770,6 +788,259 @@ namespace MinecraftClient
             lock (lastKeepAliveLock)
             {
                 lastKeepAlive = DateTime.Now;
+            }
+        }
+
+        private void StartConsoleHandlers()
+        {
+            if (ConsoleIO.Backend is null)
+                return;
+
+            cmdprompt = new CancellationTokenSource();
+            StartConsoleCommandProcessing(cmdprompt.Token);
+            ConsoleIO.Backend.BeginReadThread();
+            ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
+            ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
+        }
+
+        private void StopConsoleHandlers()
+        {
+            if (ConsoleIO.Backend is not null)
+            {
+                ConsoleIO.Backend.StopReadThread();
+                ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
+                ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+            }
+
+            StopConsoleCommandProcessing();
+        }
+
+        private void StartConsoleCommandProcessing(CancellationToken cancellationToken)
+        {
+            lock (consoleCommandProcessingLock)
+            {
+                consoleCommandChannel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions()
+                {
+                    SingleReader = true,
+                    SingleWriter = false,
+                    AllowSynchronousContinuations = false
+                });
+                consoleCommandProcessingTask = ProcessConsoleMessagesAsync(consoleCommandChannel.Reader, cancellationToken);
+                _ = ObserveConsoleCommandProcessingAsync(consoleCommandProcessingTask, cancellationToken);
+            }
+        }
+
+        private void StopConsoleCommandProcessing()
+        {
+            Channel<string>? activeChannel;
+
+            lock (consoleCommandProcessingLock)
+            {
+                activeChannel = consoleCommandChannel;
+                consoleCommandChannel = null;
+            }
+
+            activeChannel?.Writer.TryComplete();
+
+            if (cmdprompt is not null)
+            {
+                cmdprompt.Cancel();
+                cmdprompt = null;
+            }
+
+            CancelPendingNetworkAutoComplete();
+            CancelPendingCommandListInitialization();
+        }
+
+        private async Task ObserveConsoleCommandProcessingAsync(Task processingTask, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await processingTask;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception e)
+            {
+                Log.Warn(e.ToString());
+            }
+            finally
+            {
+                lock (consoleCommandProcessingLock)
+                {
+                    if (ReferenceEquals(consoleCommandProcessingTask, processingTask))
+                        consoleCommandProcessingTask = null;
+                }
+            }
+        }
+
+        private async Task ProcessConsoleMessagesAsync(ChannelReader<string> channelReader, CancellationToken cancellationToken)
+        {
+            await foreach (string message in channelReader.ReadAllAsync(cancellationToken))
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                if (TryParseBasicIoAutocompleteRequest(message, out _))
+                    await HandleBasicIoAutocompleteRequestAsync(message, cancellationToken);
+                else
+                    await InvokeOnMainThreadAsync(() => HandleCommandPromptText(message));
+            }
+        }
+
+        private async Task HandleBasicIoAutocompleteRequestAsync(string text, CancellationToken cancellationToken)
+        {
+            try
+            {
+                string[] command = text[1..].Split((char)0x00);
+                if (command.Length < 2 || !command[0].Equals("autocomplete", StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                await WaitForCommandListInitializationAsync(cancellationToken);
+
+                Task<string[]> requestTask = InvokeRequired
+                    ? await InvokeOnMainThreadAsync(() => BeginNetworkAutoCompleteRequest(command[1]))
+                    : BeginNetworkAutoCompleteRequest(command[1]);
+
+                await requestTask.WaitAsync(cancellationToken);
+
+                if (command.Length > 1)
+                    ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + ConsoleIO.AutoCompleteResult);
+                else ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private static bool TryParseBasicIoAutocompleteRequest(string text, out string behindCursor)
+        {
+            behindCursor = string.Empty;
+
+            if (!ConsoleIO.BasicIO || string.IsNullOrEmpty(text) || text[0] != (char)0x00)
+                return false;
+
+            string[] command = text[1..].Split((char)0x00);
+            if (command.Length < 2 || !command[0].Equals("autocomplete", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            behindCursor = command[1];
+            return true;
+        }
+
+        private Task<string[]> BeginNetworkAutoCompleteRequest(string behindCursor)
+        {
+            if (string.IsNullOrEmpty(behindCursor))
+                return Task.FromResult(Array.Empty<string>());
+
+            TaskCompletionSource<string[]> request = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            lock (networkAutoCompleteLock)
+            {
+                pendingNetworkAutoCompleteRequest?.TrySetException(new OperationCanceledException());
+                pendingNetworkAutoCompleteRequest = request;
+            }
+
+            try
+            {
+                if (handler.AutoComplete(behindCursor) < 0)
+                {
+                    CompletePendingNetworkAutoComplete(Array.Empty<string>());
+                }
+            }
+            catch (Exception e)
+            {
+                lock (networkAutoCompleteLock)
+                {
+                    if (ReferenceEquals(pendingNetworkAutoCompleteRequest, request))
+                        pendingNetworkAutoCompleteRequest = null;
+                }
+                request.TrySetException(e);
+            }
+
+            return request.Task;
+        }
+
+        private void BeginCommandListInitialization()
+        {
+            lock (networkAutoCompleteLock)
+            {
+                pendingCommandListInitialization?.TrySetCanceled();
+                pendingCommandListInitialization = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+        }
+
+        private void CompletePendingNetworkAutoComplete(string[] result)
+        {
+            TaskCompletionSource<string[]>? pendingRequest;
+            lock (networkAutoCompleteLock)
+            {
+                pendingRequest = pendingNetworkAutoCompleteRequest;
+                pendingNetworkAutoCompleteRequest = null;
+            }
+
+            pendingRequest?.TrySetResult(result);
+        }
+
+        private void CancelPendingNetworkAutoComplete()
+        {
+            TaskCompletionSource<string[]>? pendingRequest;
+            lock (networkAutoCompleteLock)
+            {
+                pendingRequest = pendingNetworkAutoCompleteRequest;
+                pendingNetworkAutoCompleteRequest = null;
+            }
+
+            pendingRequest?.TrySetCanceled();
+        }
+
+        private void CompletePendingCommandListInitialization()
+        {
+            TaskCompletionSource<bool>? pendingInitialization;
+            lock (networkAutoCompleteLock)
+            {
+                pendingInitialization = pendingCommandListInitialization;
+                pendingCommandListInitialization = null;
+            }
+
+            pendingInitialization?.TrySetResult(true);
+        }
+
+        private void CancelPendingCommandListInitialization()
+        {
+            TaskCompletionSource<bool>? pendingInitialization;
+            lock (networkAutoCompleteLock)
+            {
+                pendingInitialization = pendingCommandListInitialization;
+                pendingCommandListInitialization = null;
+            }
+
+            pendingInitialization?.TrySetCanceled();
+        }
+
+        private async Task WaitForCommandListInitializationAsync(CancellationToken cancellationToken)
+        {
+            Task? initializationTask;
+            lock (networkAutoCompleteLock)
+            {
+                initializationTask = pendingCommandListInitialization?.Task;
+            }
+
+            if (initializationTask is null)
+                return;
+
+            try
+            {
+                await initializationTask.WaitAsync(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+            catch (TimeoutException)
+            {
+            }
+            catch (OperationCanceledException)
+            {
             }
         }
 
@@ -784,17 +1055,12 @@ namespace MinecraftClient
 
             botsOnHold.Clear();
             botsOnHold.AddRange(bots);
+            StopConsoleHandlers();
 
             if (handler is not null)
             {
                 handler.Disconnect();
                 handler.Dispose();
-            }
-
-            if (cmdprompt is not null)
-            {
-                cmdprompt.Cancel();
-                cmdprompt = null;
             }
 
             if (timeoutdetector is not null)
@@ -823,8 +1089,7 @@ namespace MinecraftClient
 
             if (timeoutdetector is not null)
             {
-                if (timeoutdetector is not null && Thread.CurrentThread != timeoutdetector.Item1)
-                    timeoutdetector.Item2.Cancel();
+                timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
             }
 
@@ -875,9 +1140,7 @@ namespace MinecraftClient
             
             if (!will_restart)
             {
-                ConsoleIO.Backend.StopReadThread();
-                ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                StopConsoleHandlers();
                 Program.HandleFailure(null, false, reason);
             }
         }
@@ -888,16 +1151,18 @@ namespace MinecraftClient
 
         private void ConsoleReaderOnMessageReceived(object? sender, string e)
         {
+            Channel<string>? activeChannel;
+            lock (consoleCommandProcessingLock)
+            {
+                activeChannel = consoleCommandChannel;
+            }
 
-            if (client.Client is null)
+            if (activeChannel is null || client.Client is null)
                 return;
 
             if (client.Client.Connected)
             {
-                new Thread(() =>
-                {
-                    InvokeOnMainThread(() => HandleCommandPromptText(e));
-                }).Start();
+                activeChannel.Writer.TryWrite(e);
             }
             else
                 return;
@@ -919,55 +1184,44 @@ namespace MinecraftClient
         {
             if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
             {
-                //Process a request from the GUI
-                string[] command = text[1..].Split((char)0x00);
-                switch (command[0].ToLower())
-                {
-                    case "autocomplete":
-                        int id = handler.AutoComplete(command[1]);
-                        while (!ConsoleIO.AutoCompleteDone) { Thread.Sleep(100); }
-                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + ConsoleIO.AutoCompleteResult); }
-                        else ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
-                        break;
-                }
+                _ = HandleBasicIoAutocompleteRequestAsync(text, CancellationToken.None);
+                return;
             }
-            else
-            {
-                text = text.Trim();
 
-                if (text.Length > 1
-                    && Config.Main.Advanced.InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
-                    && text[0] == '/')
+            text = text.Trim();
+
+            if (text.Length > 1
+                && Config.Main.Advanced.InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                && text[0] == '/')
+            {
+                SendText(text);
+            }
+            else if (text.Length > 2
+                && Config.Main.Advanced.InternalCmdChar != MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                && text[0] == Config.Main.Advanced.InternalCmdChar.ToChar()
+                && text[1] == '/')
+            {
+                SendText(text[1..]);
+            }
+            else if (text.Length > 0)
+            {
+                if (Config.Main.Advanced.InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
+                    || text[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
                 {
-                    SendText(text);
-                }
-                else if (text.Length > 2
-                    && Config.Main.Advanced.InternalCmdChar != MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
-                    && text[0] == Config.Main.Advanced.InternalCmdChar.ToChar()
-                    && text[1] == '/')
-                {
-                    SendText(text[1..]);
-                }
-                else if (text.Length > 0)
-                {
-                    if (Config.Main.Advanced.InternalCmdChar == MainConfigHelper.MainConfig.AdvancedConfig.InternalCmdCharType.none
-                        || text[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
-                    {
-                        CmdResult result = new();
-                        string command = Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' ? text : text[1..];
-                        if (!PerformInternalCommand(Config.AppVar.ExpandVars(command), ref result, Settings.Config.AppVar.GetVariables()) && Config.Main.Advanced.InternalCmdChar.ToChar() == '/')
-                        {
-                            SendText(text);
-                        }
-                        else if (result.status != CmdResult.Status.NotRun && (result.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(result.result)))
-                        {
-                            Log.Info(result);
-                        }
-                    }
-                    else
+                    CmdResult result = new();
+                    string command = Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' ? text : text[1..];
+                    if (!PerformInternalCommand(Config.AppVar.ExpandVars(command), ref result, Settings.Config.AppVar.GetVariables()) && Config.Main.Advanced.InternalCmdChar.ToChar() == '/')
                     {
                         SendText(text);
                     }
+                    else if (result.status != CmdResult.Status.NotRun && (result.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(result.result)))
+                    {
+                        Log.Info(result);
+                    }
+                }
+                else
+                {
+                    SendText(text);
                 }
             }
         }
@@ -1102,19 +1356,7 @@ namespace MinecraftClient
         /// <typeparam name="T">Type of the return value</typeparam>
         public T InvokeOnMainThread<T>(Func<T> task)
         {
-            if (!InvokeRequired)
-            {
-                return task();
-            }
-            else
-            {
-                TaskWithResult<T> taskWithResult = new(task);
-                lock (threadTasksLock)
-                {
-                    threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
-                }
-                return taskWithResult.WaitGetResult();
-            }
+            return InvokeOnMainThreadAsync(task).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -1129,6 +1371,37 @@ namespace MinecraftClient
             InvokeOnMainThread(() => { task(); return true; });
         }
 
+        private Task<T> InvokeOnMainThreadAsync<T>(Func<T> task)
+        {
+            if (!InvokeRequired)
+            {
+                try
+                {
+                    return Task.FromResult(task());
+                }
+                catch (Exception e)
+                {
+                    return Task.FromException<T>(e);
+                }
+            }
+
+            TaskWithResult<T> taskWithResult = new(task);
+            lock (threadTasksLock)
+            {
+                threadTasks.Enqueue(taskWithResult);
+            }
+            return taskWithResult.AsTask();
+        }
+
+        private Task InvokeOnMainThreadAsync(Action task)
+        {
+            return InvokeOnMainThreadAsync(() =>
+            {
+                task();
+                return true;
+            });
+        }
+
         /// <summary>
         /// Clear all tasks
         /// </summary>
@@ -1136,7 +1409,8 @@ namespace MinecraftClient
         {
             lock (threadTasksLock)
             {
-                threadTasks.Clear();
+                while (threadTasks.Count > 0)
+                    threadTasks.Dequeue().Cancel();
             }
         }
 
@@ -1148,16 +1422,13 @@ namespace MinecraftClient
         {
             get
             {
-                int callingThreadId = Environment.CurrentManagedThreadId;
-                if (handler is not null)
-                {
-                    return handler.GetNetMainThreadId() != callingThreadId;
-                }
-                else
+                if (handler is null)
                 {
                     // net read thread (main thread) not yet ready
                     return false;
                 }
+
+                return !MainThreadExecutionScope.IsActive(this);
             }
         }
 
@@ -3123,6 +3394,7 @@ namespace MinecraftClient
 
             DispatchBotEvent(bot => bot.AfterGameJoined());
 
+            BeginCommandListInitialization();
             ConsoleIO.InitCommandList(dispatcher);
         }
 
@@ -4533,6 +4805,8 @@ namespace MinecraftClient
         public void OnAutoCompleteDone(int transactionId, string[] result)
         {
             ConsoleIO.OnAutoCompleteDone(transactionId, result);
+            CompletePendingNetworkAutoComplete(result);
+            CompletePendingCommandListInitialization();
         }
 
         public void SetCanSendMessage(bool canSendMessage)

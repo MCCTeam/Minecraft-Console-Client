@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Threading;
 using Consolonia;
@@ -48,12 +49,11 @@ namespace MinecraftClient.Tui
                     Dispatcher.UIThread.Post(() => view.HandleCtrlC());
             };
 
-            new Thread(() =>
+            _ = Task.Run(() =>
             {
                 _viewReady.Wait();
                 ContinueMccStartup(args);
-            })
-            { Name = "MCC-Main", IsBackground = true }.Start();
+            });
 
             AppBuilder builder = AppBuilder.Configure<MccTuiApp>()
                 .UseConsolonia()
@@ -207,31 +207,48 @@ namespace MinecraftClient.Tui
 
         public string RequestImmediateInput()
         {
+            return RequestImmediateInputAsync(CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        public Task<string> RequestImmediateInputAsync(CancellationToken cancellationToken)
+        {
             if (_shutdownRequested)
             {
-                Thread.Sleep(Timeout.Infinite);
-                return string.Empty;
+                return Task.FromCanceled<string>(cancellationToken.CanBeCanceled
+                    ? cancellationToken
+                    : new CancellationToken(canceled: true));
             }
 
-            var mre = new ManualResetEventSlim(false);
-            string? result = null;
+            TaskCompletionSource<string> completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
             void Handler(object? sender, string e)
             {
-                result = e;
-                mre.Set();
+                MessageReceived -= Handler;
+                completion.TrySetResult(e);
             }
 
             MessageReceived += Handler;
-            mre.Wait();
-            MessageReceived -= Handler;
 
-            return result ?? string.Empty;
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationToken.Register(() =>
+                {
+                    MessageReceived -= Handler;
+                    completion.TrySetCanceled(cancellationToken);
+                });
+            }
+
+            return completion.Task;
         }
 
         public string? ReadPassword()
         {
-            return RequestImmediateInput();
+            return ReadPasswordAsync(CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        public async Task<string?> ReadPasswordAsync(CancellationToken cancellationToken)
+        {
+            return await RequestImmediateInputAsync(cancellationToken);
         }
 
         public void ClearInputBuffer()
@@ -267,11 +284,11 @@ namespace MinecraftClient.Tui
                     Dispatcher.UIThread.Post(() => lifetime.Shutdown());
             }
 
-            new Thread(() =>
+            _ = Task.Run(async () =>
             {
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
                 Environment.Exit(0);
-            }) { Name = "TUI-Exit-Guard", IsBackground = true }.Start();
+            });
         }
 
         private volatile bool _shutdownRequested;

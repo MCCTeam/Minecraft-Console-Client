@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol
 {
@@ -37,7 +38,13 @@ namespace MinecraftClient.Protocol
         {
             string postData = "client_id={0}&grant_type=authorization_code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&code={1}";
             postData = string.Format(postData, clientId, code);
-            return RequestToken(postData);
+            return RequestTokenAsync(postData).GetAwaiter().GetResult();
+        }
+
+        public static Task<LoginResponse> RequestAccessTokenAsync(string code)
+        {
+            string postData = "client_id={0}&grant_type=authorization_code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&code={1}";
+            return RequestTokenAsync(string.Format(postData, clientId, code));
         }
 
         /// <summary>
@@ -49,7 +56,13 @@ namespace MinecraftClient.Protocol
         {
             string postData = "client_id={0}&grant_type=refresh_token&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&refresh_token={1}";
             postData = string.Format(postData, clientId, refreshToken);
-            return RequestToken(postData);
+            return RequestTokenAsync(postData).GetAwaiter().GetResult();
+        }
+
+        public static Task<LoginResponse> RefreshAccessTokenAsync(string refreshToken)
+        {
+            string postData = "client_id={0}&grant_type=refresh_token&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&refresh_token={1}";
+            return RequestTokenAsync(string.Format(postData, clientId, refreshToken));
         }
 
         /// <summary>
@@ -59,13 +72,18 @@ namespace MinecraftClient.Protocol
         /// <returns>Device code response for user to complete authentication</returns>
         public static DeviceCodeResponse RequestDeviceCode()
         {
+            return RequestDeviceCodeAsync().GetAwaiter().GetResult();
+        }
+
+        public static async Task<DeviceCodeResponse> RequestDeviceCodeAsync(CancellationToken cancellationToken = default)
+        {
             string postData = string.Format("client_id={0}&scope=XboxLive.signin%20offline_access%20openid%20email", clientId);
 
             var request = new ProxiedWebRequest(deviceCodeUrl)
             {
                 UserAgent = "MCC/" + Program.Version
             };
-            var response = request.Post("application/x-www-form-urlencoded", postData);
+            var response = await request.PostAsync("application/x-www-form-urlencoded", postData, cancellationToken);
             var jsonData = Json.ParseJson(response.Body);
 
             if (jsonData?["error"] is not null)
@@ -94,6 +112,11 @@ namespace MinecraftClient.Protocol
         /// <returns>Login response with access token and refresh token</returns>
         public static LoginResponse PollDeviceCodeToken(string deviceCode, int expiresIn, int interval)
         {
+            return PollDeviceCodeTokenAsync(deviceCode, expiresIn, interval).GetAwaiter().GetResult();
+        }
+
+        public static async Task<LoginResponse> PollDeviceCodeTokenAsync(string deviceCode, int expiresIn, int interval, CancellationToken cancellationToken = default)
+        {
             // Per OAuth 2.0 device code spec, server may respond with "slow_down" requiring
             // the client to increase its polling interval by this amount
             const int SlowDownIncrementSeconds = 5;
@@ -107,13 +130,13 @@ namespace MinecraftClient.Protocol
 
             while (stopwatch.Elapsed.TotalSeconds < expiresIn)
             {
-                Thread.Sleep(pollInterval * 1000);
+                await Task.Delay(TimeSpan.FromSeconds(pollInterval), cancellationToken);
 
                 var request = new ProxiedWebRequest(tokenUrl)
                 {
                     UserAgent = "MCC/" + Program.Version
                 };
-                var response = request.Post("application/x-www-form-urlencoded", postData);
+                var response = await request.PostAsync("application/x-www-form-urlencoded", postData, cancellationToken);
                 var jsonData = Json.ParseJson(response.Body);
 
                 if (jsonData?["error"] is not null)
@@ -174,11 +197,16 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResponse RequestToken(string postData)
         {
+            return RequestTokenAsync(postData).GetAwaiter().GetResult();
+        }
+
+        private static async Task<LoginResponse> RequestTokenAsync(string postData, CancellationToken cancellationToken = default)
+        {
             var request = new ProxiedWebRequest(tokenUrl)
             {
                 UserAgent = "MCC/" + Program.Version
             };
-            var response = request.Post("application/x-www-form-urlencoded", postData);
+            var response = await request.PostAsync("application/x-www-form-urlencoded", postData, cancellationToken);
             var jsonData = Json.ParseJson(response.Body);
 
             // Error handling
@@ -272,6 +300,11 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static XblAuthenticateResponse XblAuthenticate(Microsoft.LoginResponse loginResponse)
         {
+            return XblAuthenticateAsync(loginResponse).GetAwaiter().GetResult();
+        }
+
+        public static async Task<XblAuthenticateResponse> XblAuthenticateAsync(Microsoft.LoginResponse loginResponse, CancellationToken cancellationToken = default)
+        {
             var request = new ProxiedWebRequest(xbl)
             {
                 UserAgent = userAgent,
@@ -291,7 +324,7 @@ namespace MinecraftClient.Protocol
                 + "\"RelyingParty\": \"http://auth.xboxlive.com\","
                 + "\"TokenType\": \"JWT\""
                 + "}";
-            var response = request.Post("application/json", payload);
+            var response = await request.PostAsync("application/json", payload, cancellationToken);
             if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
@@ -322,6 +355,11 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static XSTSAuthenticateResponse XSTSAuthenticate(XblAuthenticateResponse xblResponse)
         {
+            return XSTSAuthenticateAsync(xblResponse).GetAwaiter().GetResult();
+        }
+
+        public static async Task<XSTSAuthenticateResponse> XSTSAuthenticateAsync(XblAuthenticateResponse xblResponse, CancellationToken cancellationToken = default)
+        {
             var request = new ProxiedWebRequest(xsts)
             {
                 UserAgent = userAgent,
@@ -339,7 +377,7 @@ namespace MinecraftClient.Protocol
                 + "\"RelyingParty\": \"rp://api.minecraftservices.com/\","
                 + "\"TokenType\": \"JWT\""
                 + "}";
-            var response = request.Post("application/json", payload);
+            var response = await request.PostAsync("application/json", payload, cancellationToken);
             if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
@@ -405,13 +443,18 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static string LoginWithXbox(string userHash, string xstsToken)
         {
+            return LoginWithXboxAsync(userHash, xstsToken).GetAwaiter().GetResult();
+        }
+
+        public static async Task<string> LoginWithXboxAsync(string userHash, string xstsToken, CancellationToken cancellationToken = default)
+        {
             var request = new ProxiedWebRequest(loginWithXbox)
             {
                 Accept = "application/json"
             };
 
             string payload = "{\"identityToken\": \"XBL3.0 x=" + userHash + ";" + xstsToken + "\"}";
-            var response = request.Post("application/json", payload);
+            var response = await request.PostAsync("application/json", payload, cancellationToken);
 
             if (Settings.Config.Logging.DebugMessages)
             {
@@ -431,9 +474,14 @@ namespace MinecraftClient.Protocol
         /// <returns>True if the user own the game</returns>
         public static bool UserHasGame(string accessToken)
         {
+            return UserHasGameAsync(accessToken).GetAwaiter().GetResult();
+        }
+
+        public static async Task<bool> UserHasGameAsync(string accessToken, CancellationToken cancellationToken = default)
+        {
             var request = new ProxiedWebRequest(ownership);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
-            var response = request.Get();
+            var response = await request.GetAsync(cancellationToken);
 
             if (Settings.Config.Logging.DebugMessages)
             {
@@ -447,9 +495,14 @@ namespace MinecraftClient.Protocol
 
         public static UserProfile GetUserProfile(string accessToken)
         {
+            return GetUserProfileAsync(accessToken).GetAwaiter().GetResult();
+        }
+
+        public static async Task<UserProfile> GetUserProfileAsync(string accessToken, CancellationToken cancellationToken = default)
+        {
             var request = new ProxiedWebRequest(profile);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
-            var response = request.Get();
+            var response = await request.GetAsync(cancellationToken);
 
             if (Settings.Config.Logging.DebugMessages)
             {

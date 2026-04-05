@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MinecraftClient.Protocol.PacketPipeline;
 
 namespace MinecraftClient.Protocol.Handlers.packet.s2c
 {
@@ -59,7 +60,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
         public static bool IsCommandTreeAvailable => HasValidCommandTree();
 
-        public static void Read(DataTypes dataTypes, Queue<byte> packetData, int protocolVersion)
+        public static void Read(DataTypes dataTypes, PacketReader packetData, int protocolVersion)
         {
             Reset();
             ConsoleIO.OnDeclareMinecraftCommand(Array.Empty<string>());
@@ -88,7 +89,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
                 : [];
         }
 
-        private static void ReadCommandTree(DataTypes dataTypes, Queue<byte> packetData, int protocolVersion)
+        private static void ReadCommandTree(DataTypes dataTypes, PacketReader packetData, int protocolVersion)
         {
             int count = dataTypes.ReadNextVarInt(packetData);
             Nodes = new CommandNode[count];
@@ -117,7 +118,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
 
         private static CommandNode ReadArgumentNode(
             DataTypes dataTypes,
-            Queue<byte> packetData,
+            PacketReader packetData,
             int protocolVersion,
             byte flags,
             int[] children,
@@ -135,7 +136,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             return new(flags, children, redirectNode, name, descriptor, suggestionsType, parserId);
         }
 
-        private static int[] ReadChildIndices(DataTypes dataTypes, Queue<byte> packetData)
+        private static int[] ReadChildIndices(DataTypes dataTypes, PacketReader packetData)
         {
             int childCount = dataTypes.ReadNextVarInt(packetData);
             int[] children = new int[childCount];
@@ -146,7 +147,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             return children;
         }
 
-        private static CommandArgumentDescriptor ReadArgumentDescriptor(DataTypes dataTypes, Queue<byte> packetData, ArgumentTypeLayout layout)
+        private static CommandArgumentDescriptor ReadArgumentDescriptor(DataTypes dataTypes, PacketReader packetData, ArgumentTypeLayout layout)
         {
             switch (layout.PayloadKind)
             {
@@ -189,7 +190,7 @@ namespace MinecraftClient.Protocol.Handlers.packet.s2c
             }
         }
 
-        private static void ReadNumberBounds<TValue>(DataTypes dataTypes, Queue<byte> packetData, Func<DataTypes, Queue<byte>, TValue> readValue)
+        private static void ReadNumberBounds<TValue>(DataTypes dataTypes, PacketReader packetData, Func<DataTypes, PacketReader, TValue> readValue)
         {
             byte flags = dataTypes.ReadNextByte(packetData);
             if ((flags & 0x01) != 0)

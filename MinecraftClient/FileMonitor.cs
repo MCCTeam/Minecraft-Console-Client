@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -12,7 +13,7 @@ namespace MinecraftClient
     public class FileMonitor : IDisposable
     {
         private readonly Tuple<FileSystemWatcher, CancellationTokenSource>? monitor = null;
-        private readonly Tuple<Thread, CancellationTokenSource>? polling = null;
+        private readonly Tuple<Task, CancellationTokenSource>? polling = null;
 
         /// <summary>
         /// Create a new FileMonitor and start monitoring
@@ -48,9 +49,9 @@ namespace MinecraftClient
 
                 monitor = null;
                 var cancellationTokenSource = new CancellationTokenSource();
-                polling = new Tuple<Thread, CancellationTokenSource>(new Thread(() => PollingThread(folder, filename, handler, cancellationTokenSource.Token)), cancellationTokenSource);
-                polling.Item1.Name = String.Format("{0} Polling thread: {1}", GetType().Name, Path.Combine(folder, filename));
-                polling.Item1.Start();
+                polling = new Tuple<Task, CancellationTokenSource>(
+                    Task.Run(() => PollingLoopAsync(folder, filename, handler, cancellationTokenSource.Token), cancellationTokenSource.Token),
+                    cancellationTokenSource);
             }
         }
 
@@ -66,25 +67,29 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Fallback polling thread for use when operating system does not support FileSystemWatcher
+        /// Fallback polling loop for use when operating system does not support FileSystemWatcher
         /// </summary>
         /// <param name="folder">Folder to monitor</param>
         /// <param name="filename">File name to monitor</param>
         /// <param name="handler">Callback when file changes</param>
-        private void PollingThread(string folder, string filename, FileSystemEventHandler handler, CancellationToken cancellationToken)
+        private async Task PollingLoopAsync(string folder, string filename, FileSystemEventHandler handler, CancellationToken cancellationToken)
         {
             string filePath = Path.Combine(folder, filename);
             DateTime lastWrite = GetLastWrite(filePath);
-            while (!cancellationToken.IsCancellationRequested)
+            using PeriodicTimer periodicTimer = new(TimeSpan.FromSeconds(5));
+            try
             {
-                Thread.Sleep(5000);
-                DateTime lastWriteNew = GetLastWrite(filePath);
-                if (lastWriteNew != lastWrite)
+                while (await periodicTimer.WaitForNextTickAsync(cancellationToken))
                 {
-                    lastWrite = lastWriteNew;
-                    handler(this, new FileSystemEventArgs(WatcherChangeTypes.Changed, folder, filename));
+                    DateTime lastWriteNew = GetLastWrite(filePath);
+                    if (lastWriteNew != lastWrite)
+                    {
+                        lastWrite = lastWriteNew;
+                        handler(this, new FileSystemEventArgs(WatcherChangeTypes.Changed, folder, filename));
+                    }
                 }
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
         }
 
         /// <summary>

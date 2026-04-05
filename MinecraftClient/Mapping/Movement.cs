@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MinecraftClient.Mapping
 {
@@ -150,17 +149,8 @@ namespace MinecraftClient.Mapping
         public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe,
             int maxOffset, int minOffset, TimeSpan timeout)
         {
-            CancellationTokenSource cts = new();
-            Task<Queue<Location>?> pathfindingTask = Task.Factory.StartNew(() =>
-                CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
-            pathfindingTask.Wait(timeout);
-            if (!pathfindingTask.IsCompleted)
-            {
-                cts.Cancel();
-                pathfindingTask.Wait();
-            }
-
-            return pathfindingTask.Result;
+            using CancellationTokenSource cts = new(timeout);
+            return CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token);
         }
 
         /// <summary>

@@ -409,6 +409,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             playerLocation = new { x = C(0.5), y = C(80.0), z = C(0.5) }
         });
 
+    public Task<MccMcpResult> DigBlockAsync(double x, double y, double z, double durationSeconds) =>
+        Task.FromResult(DigBlock(x, y, z, durationSeconds));
+
     public MccMcpResult PlaceBlock(int x, int y, int z, string face, string hand, bool lookAtBlock) =>
         MccMcpResult.Ok(new { success = true, x, y, z, face, hand, lookAtBlock, action = "place_block" });
 
@@ -567,6 +570,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             timeoutMs
         });
 
+    public Task<MccMcpResult> MoveToAsync(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs) =>
+        Task.FromResult(MoveTo(x, y, z, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
+
     public MccMcpResult MoveToPlayer(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs) =>
         MccMcpResult.Ok(new
         {
@@ -592,6 +598,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             minOffset,
             timeoutMs
         });
+
+    public Task<MccMcpResult> MoveToPlayerAsync(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs) =>
+        Task.FromResult(MoveToPlayer(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
 
     public MccMcpResult LookAt(double x, double y, double z) =>
         MccMcpResult.Ok(new { looked = true, x = C(x), y = C(y), z = C(z) });
@@ -755,6 +764,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
         });
     }
 
+    public Task<MccMcpResult> OpenContainerAtAsync(int x, int y, int z, int timeoutMs, bool closeCurrent) =>
+        Task.FromResult(OpenContainerAt(x, y, z, timeoutMs, closeCurrent));
+
     public MccMcpResult CloseContainer(int inventoryId, int timeoutMs)
     {
         int resolvedInventoryId = inventoryId <= 0 ? 1 : inventoryId;
@@ -767,6 +779,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             timeoutMs = timeoutMs <= 0 ? 5000 : timeoutMs
         });
     }
+
+    public Task<MccMcpResult> CloseContainerAsync(int inventoryId, int timeoutMs) =>
+        Task.FromResult(CloseContainer(inventoryId, timeoutMs));
 
     public MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType) =>
         MccMcpResult.Ok(new { success = true, inventoryId, slotId, actionType });
@@ -784,6 +799,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             touchedSlots = new[] { 36 },
             preferStack
         });
+
+    public Task<MccMcpResult> DropInventoryItemAsync(string itemType, int count, int inventoryId, bool preferStack) =>
+        Task.FromResult(DropInventoryItem(itemType, count, inventoryId, preferStack));
 
     public MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack) =>
         MccMcpResult.Ok(new
@@ -803,6 +821,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             touchedTargetSlots = new[] { 0 }
         });
 
+    public Task<MccMcpResult> DepositContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack) =>
+        Task.FromResult(DepositContainerItem(itemType, count, inventoryId, preferLargestStack));
+
     public MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack) =>
         MccMcpResult.Ok(new
         {
@@ -820,6 +841,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
             touchedSourceSlots = new[] { 0 },
             touchedTargetSlots = new[] { 36 }
         });
+
+    public Task<MccMcpResult> WithdrawContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack) =>
+        Task.FromResult(WithdrawContainerItem(itemType, count, inventoryId, preferLargestStack));
 
     public MccMcpResult QueryEntities(int maxCount) =>
         MccMcpResult.Ok(new
@@ -962,6 +986,9 @@ internal sealed class DeterministicCapabilities : IMccMcpCapabilities
                 }
             }
         });
+
+    public Task<MccMcpResult> PickupItemsAsync(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs) =>
+        Task.FromResult(PickupItems(itemType, radius, maxItems, allowUnsafe, timeoutMs));
 
     public MccMcpResult Respawn()
     {

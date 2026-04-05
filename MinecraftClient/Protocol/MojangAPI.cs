@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 /// !!! ATTENTION !!!
@@ -103,14 +104,15 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="name">Playername</param>
         /// <returns>UUID as string</returns>
-        public static string NameToUuid(string name)
+        public static string NameToUuid(string name) =>
+            NameToUuidAsync(name).GetAwaiter().GetResult();
+
+        public static async Task<string> NameToUuidAsync(string name, CancellationToken cancellationToken = default)
         {
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" + name);
-                fetchTask.Wait();
-                string result = Json.ParseJson(fetchTask.Result)!["id"]!.GetStringValue();
-                fetchTask.Dispose();
+                string responseBody = await httpClient.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" + name, cancellationToken);
+                string result = Json.ParseJson(responseBody)!["id"]!.GetStringValue();
                 return result;
             }
             catch (Exception) { return string.Empty; }
@@ -121,15 +123,16 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="uuid">UUID of a player</param>
         /// <returns>Players UUID</returns>
-        public static string UuidToCurrentName(string uuid)
+        public static string UuidToCurrentName(string uuid) =>
+            UuidToCurrentNameAsync(uuid).GetAwaiter().GetResult();
+
+        public static async Task<string> UuidToCurrentNameAsync(string uuid, CancellationToken cancellationToken = default)
         {
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
-                fetchTask.Wait();
-                var nameChanges = Json.ParseJson(fetchTask.Result)!.AsArray();
-                fetchTask.Dispose();
+                string responseBody = await httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names", cancellationToken);
+                var nameChanges = Json.ParseJson(responseBody)!.AsArray();
 
                 // Names are sorted from past to most recent. We need to get the last name in the list
                 return nameChanges[^1]!["name"]!.GetStringValue();
@@ -142,7 +145,10 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="uuid">UUID of a player</param>
         /// <returns>Name history, as a dictionary</returns>
-        public static Dictionary<string, DateTime> UuidToNameHistory(string uuid)
+        public static Dictionary<string, DateTime> UuidToNameHistory(string uuid) =>
+            UuidToNameHistoryAsync(uuid).GetAwaiter().GetResult();
+
+        public static async Task<Dictionary<string, DateTime>> UuidToNameHistoryAsync(string uuid, CancellationToken cancellationToken = default)
         {
             Dictionary<string, DateTime> tempDict = new();
             System.Text.Json.Nodes.JsonArray jsonDataList;
@@ -150,10 +156,8 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
-                fetchTask.Wait();
-                jsonDataList = Json.ParseJson(fetchTask.Result)!.AsArray();
-                fetchTask.Dispose();
+                string responseBody = await httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names", cancellationToken);
+                jsonDataList = Json.ParseJson(responseBody)!.AsArray();
             }
             catch (Exception) { return tempDict; }
 
@@ -181,17 +185,18 @@ namespace MinecraftClient.Protocol
         /// Get the Mojang API status
         /// </summary>
         /// <returns>Dictionary of the Mojang services</returns>
-        public static MojangServiceStatus GetMojangServiceStatus()
+        public static MojangServiceStatus GetMojangServiceStatus() =>
+            GetMojangServiceStatusAsync().GetAwaiter().GetResult();
+
+        public static async Task<MojangServiceStatus> GetMojangServiceStatusAsync(CancellationToken cancellationToken = default)
         {
             System.Text.Json.Nodes.JsonArray jsonDataList;
 
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://status.mojang.com/check");
-                fetchTask.Wait();
-                jsonDataList = Json.ParseJson(fetchTask.Result)!.AsArray();
-                fetchTask.Dispose();
+                string responseBody = await httpClient.GetStringAsync("https://status.mojang.com/check", cancellationToken);
+                jsonDataList = Json.ParseJson(responseBody)!.AsArray();
             }
             catch (Exception)
             {
@@ -215,7 +220,10 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param uuid="uuid">UUID of a player</param>
         /// <returns>Dictionary with a link to the skin and cape of a player.</returns>
-        public static SkinInfo GetSkinInfo(string uuid)
+        public static SkinInfo GetSkinInfo(string uuid) =>
+            GetSkinInfoAsync(uuid).GetAwaiter().GetResult();
+
+        public static async Task<SkinInfo> GetSkinInfoAsync(string uuid, CancellationToken cancellationToken = default)
         {
             System.Text.Json.Nodes.JsonObject textureObj;
             string base64SkinInfo;
@@ -224,11 +232,9 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                Task<string> fetchTask = httpClient.GetStringAsync("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
-                fetchTask.Wait();
+                string responseBody = await httpClient.GetStringAsync("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid, cancellationToken);
                 // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
-                base64SkinInfo = Json.ParseJson(fetchTask.Result)!["properties"]![0]!["value"]!.GetStringValue();
-                fetchTask.Dispose();
+                base64SkinInfo = Json.ParseJson(responseBody)!["properties"]![0]!["value"]!.GetStringValue();
             }
             catch (Exception) { return new SkinInfo(); }
 

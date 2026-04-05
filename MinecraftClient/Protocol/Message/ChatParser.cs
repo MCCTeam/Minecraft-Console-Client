@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using static MinecraftClient.Settings;
 
@@ -231,6 +232,8 @@ namespace MinecraftClient.Protocol.Message
         /// Specify whether translation rules have been loaded
         /// </summary>
         private static bool RulesInitialized = false;
+        private static readonly Lock RulesInitializationLock = new();
+        private static Task? RulesRefreshTask = null;
 
         /// <summary>
         /// Set of translation rules for formatting text
@@ -243,23 +246,25 @@ namespace MinecraftClient.Protocol.Message
         /// </summary>
         public static void InitTranslations()
         {
-            if (!RulesInitialized)
+            lock (RulesInitializationLock)
             {
-                InitRules();
+                if (RulesInitialized)
+                    return;
+
                 RulesInitialized = true;
+                RulesRefreshTask = InitRulesAsync();
+                _ = ObserveInitRulesAsync(RulesRefreshTask);
             }
         }
 
         /// <summary>
-        /// Internal rule initialization method. Looks for local rule file or download it from Mojang asset servers.
+        /// Internal rule initialization method. Looks for local rule file and refreshes it from Mojang asset servers if needed.
         /// </summary>
-        private static void InitRules()
+        private static async Task InitRulesAsync()
         {
             if (Config.Main.Advanced.Language == "en_us")
             {
-                TranslationRules =
-                    JsonSerializer.Deserialize<Dictionary<string, string>>(
-                        (byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
+                TranslationRules = LoadEmbeddedTranslationRules();
                 return;
             }
 
@@ -269,21 +274,9 @@ namespace MinecraftClient.Protocol.Message
 
             string languageFilePath = "lang" + Path.DirectorySeparatorChar + Config.Main.Advanced.Language + ".json";
 
-            // Load the external dictionary of translation rules or display an error message
-            if (File.Exists(languageFilePath))
-            {
-                try
-                {
-                    TranslationRules =
-                        JsonSerializer.Deserialize<Dictionary<string, string>>(File.OpenRead(languageFilePath))!;
-                }
-                catch (IOException)
-                {
-                }
-                catch (JsonException)
-                {
-                }
-            }
+            if (TryLoadTranslationRulesFromFile(languageFilePath, out Dictionary<string, string>? translationRules))
+                TranslationRules = translationRules;
+            else TranslationRules = LoadEmbeddedTranslationRules();
 
             if (TranslationRules.TryGetValue("Version", out string? version) &&
                 version == Settings.TranslationsFile_Version)
@@ -296,14 +289,12 @@ namespace MinecraftClient.Protocol.Message
             // Try downloading language file from Mojang's servers?
             ConsoleIO.WriteLineFormatted(
                 "§8" + string.Format(Translations.chat_download, Config.Main.Advanced.Language));
-            HttpClient httpClient = new();
+            using HttpClient httpClient = new();
             try
             {
-                Task<string> fetch_index = httpClient.GetStringAsync(TranslationsFile_Website_Index);
-                fetch_index.Wait();
-                Match match = Regex.Match(fetch_index.Result,
+                string fetchIndex = await httpClient.GetStringAsync(TranslationsFile_Website_Index);
+                Match match = Regex.Match(fetchIndex,
                     $"minecraft/lang/{Config.Main.Advanced.Language}.json" + @""":\s\{""hash"":\s""([\d\w]{40})""");
-                fetch_index.Dispose();
                 if (match.Success && match.Groups.Count == 2)
                 {
                     string hash = match.Groups[1].Value;
@@ -312,22 +303,19 @@ namespace MinecraftClient.Protocol.Message
                         ConsoleIO.WriteLineFormatted(
                             string.Format(Translations.chat_request, translation_file_location));
 
-                    Task<Dictionary<string, string>?> fetckFileTask =
-                        httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
-                    fetckFileTask.Wait();
-                    if (fetckFileTask.Result is not null && fetckFileTask.Result.Count > 0)
+                    Dictionary<string, string>? fetchedFile =
+                        await httpClient.GetFromJsonAsync<Dictionary<string, string>>(translation_file_location);
+                    if (fetchedFile is not null && fetchedFile.Count > 0)
                     {
-                        TranslationRules = fetckFileTask.Result;
+                        TranslationRules = fetchedFile;
                         TranslationRules["Version"] = TranslationsFile_Version;
-                        File.WriteAllText(languageFilePath,
+                        await File.WriteAllTextAsync(languageFilePath,
                             JsonSerializer.Serialize(TranslationRules, typeof(Dictionary<string, string>)),
                             Encoding.UTF8);
 
                         ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.chat_done, languageFilePath));
                         return;
                     }
-
-                    fetckFileTask.Dispose();
                 }
                 else
                 {
@@ -350,15 +338,50 @@ namespace MinecraftClient.Protocol.Message
                 if (Config.Logging.DebugMessages && !string.IsNullOrEmpty(e.StackTrace))
                     ConsoleIO.WriteLine(e.StackTrace);
             }
-            finally
-            {
-                httpClient.Dispose();
-            }
-
-            TranslationRules =
-                JsonSerializer.Deserialize<Dictionary<string, string>>(
-                    (byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
+            TranslationRules = LoadEmbeddedTranslationRules();
             ConsoleIO.WriteLine(Translations.chat_use_default);
+        }
+
+        private static async Task ObserveInitRulesAsync(Task initRulesTask)
+        {
+            try
+            {
+                await initRulesTask;
+            }
+            catch (Exception e)
+            {
+                TranslationRules = LoadEmbeddedTranslationRules();
+                if (Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLine(e.ToString());
+            }
+        }
+
+        private static Dictionary<string, string> LoadEmbeddedTranslationRules()
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(
+                (byte[])MinecraftAssets.ResourceManager.GetObject("en_us.json")!)!;
+        }
+
+        private static bool TryLoadTranslationRulesFromFile(string languageFilePath, out Dictionary<string, string>? translationRules)
+        {
+            translationRules = null;
+            if (!File.Exists(languageFilePath))
+                return false;
+
+            try
+            {
+                translationRules =
+                    JsonSerializer.Deserialize<Dictionary<string, string>>(File.OpenRead(languageFilePath))!;
+                return translationRules is not null;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
         }
 
         public static string? TranslateString(string rulename)
@@ -379,10 +402,7 @@ namespace MinecraftClient.Protocol.Message
         private static string TranslateString(string rulename, List<string> using_data)
         {
             if (!RulesInitialized)
-            {
-                InitRules();
-                RulesInitialized = true;
-            }
+                InitTranslations();
 
             if (TranslationRules.ContainsKey(rulename))
             {

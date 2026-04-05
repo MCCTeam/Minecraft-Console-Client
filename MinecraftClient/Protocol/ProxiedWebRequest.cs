@@ -3,6 +3,8 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol
@@ -73,11 +75,25 @@ namespace MinecraftClient.Protocol
         public Response Get() => Send(HttpMethod.Get);
 
         /// <summary>
+        /// Perform GET request asynchronously. Proxy is handled automatically.
+        /// </summary>
+        public Task<Response> GetAsync(CancellationToken cancellationToken = default) =>
+            SendAsync(HttpMethod.Get, cancellationToken: cancellationToken);
+
+        /// <summary>
         /// Perform POST request. Proxy is handled automatically.
         /// </summary>
         /// <param name="contentType">The content type of request body</param>
         /// <param name="body">Request body</param>
         public Response Post(string contentType, string body) => Send(HttpMethod.Post, contentType, body);
+
+        /// <summary>
+        /// Perform POST request asynchronously. Proxy is handled automatically.
+        /// </summary>
+        /// <param name="contentType">The content type of request body</param>
+        /// <param name="body">Request body</param>
+        public Task<Response> PostAsync(string contentType, string body, CancellationToken cancellationToken = default) =>
+            SendAsync(HttpMethod.Post, contentType, body, cancellationToken);
 
         /// <summary>
         /// Send an HTTP request. Proxy is configured automatically from Settings.
@@ -129,6 +145,66 @@ namespace MinecraftClient.Protocol
 
                 var cookies = new NameValueCollection();
                 foreach (System.Net.Cookie cookie in handler.CookieContainer.GetCookies(_uri))
+                {
+                    if (!cookie.Expired)
+                        cookies.Add(cookie.Name, cookie.Value);
+                }
+
+                return new Response((int)httpResponse.StatusCode, responseBody, responseHeaders, cookies);
+            }
+            catch (HttpRequestException ex)
+            {
+                if (Debug)
+                    ConsoleIO.WriteLine("HTTP error: " + ex.Message);
+                return Response.Empty();
+            }
+        }
+
+        /// <summary>
+        /// Send an HTTP request asynchronously. Proxy is configured automatically from Settings.
+        /// </summary>
+        private async Task<Response> SendAsync(HttpMethod method, string? contentType = null, string? body = null, CancellationToken cancellationToken = default)
+        {
+            using var handler = CreateHandler();
+            using var client = new HttpClient(handler);
+
+            using var request = new HttpRequestMessage(method, _uri);
+
+            foreach (string key in Headers)
+            {
+                if (key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase) ||
+                    key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase) ||
+                    key.Equals("Host", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                request.Headers.TryAddWithoutValidation(key, Headers[key]);
+            }
+
+            if (body is not null)
+                request.Content = new StringContent(body, Encoding.UTF8, contentType ?? "text/plain");
+
+            if (Debug)
+            {
+                ConsoleIO.WriteLine($"< {method} {_uri}");
+                foreach (string key in Headers)
+                    ConsoleIO.WriteLine($"< {key}: {Headers[key]}");
+            }
+
+            try
+            {
+                using var httpResponse = await client.SendAsync(request, cancellationToken);
+                string responseBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
+                var responseHeaders = new NameValueCollection();
+                foreach (var header in httpResponse.Headers)
+                    foreach (var val in header.Value)
+                        responseHeaders.Add(header.Key.ToLowerInvariant(), val);
+                foreach (var header in httpResponse.Content.Headers)
+                    foreach (var val in header.Value)
+                        responseHeaders.Add(header.Key.ToLowerInvariant(), val);
+
+                var cookies = new NameValueCollection();
+                foreach (Cookie cookie in handler.CookieContainer.GetCookies(_uri))
                 {
                     if (!cookie.Expired)
                         cookies.Add(cookie.Name, cookie.Value);

@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
@@ -29,7 +31,9 @@ namespace MinecraftClient.Protocol.Handlers
         readonly IMinecraftComHandler handler;
         private bool encrypted = false;
         private readonly int protocolversion;
-        private Tuple<Thread, CancellationTokenSource>? netRead = null;
+        private Task? netReadTask;
+        private CancellationTokenSource? netReadCancellationTokenSource;
+        private int netReadThreadId = -1;
         Crypto.AesCfb8Stream? s;
         readonly TcpClient c;
 
@@ -69,15 +73,15 @@ namespace MinecraftClient.Protocol.Handlers
             c = Client;
         }
 
-        private void Updater(object? o)
+        private async Task UpdaterAsync(CancellationToken cancelToken)
         {
-            var cancelToken = (CancellationToken)o!;
-
             if (cancelToken.IsCancellationRequested)
                 return;
 
             try
             {
+                netReadThreadId = Environment.CurrentManagedThreadId;
+                using IDisposable _ = MainThreadExecutionScope.Enter(handler);
                 Stopwatch stopWatch = Stopwatch.StartNew();
                 long nextUpdateDue = 0;
 
@@ -97,13 +101,15 @@ namespace MinecraftClient.Protocol.Handlers
 
                     long sleepLength = nextUpdateDue - stopWatch.ElapsedMilliseconds;
                     if (sleepLength > 1)
-                        Thread.Sleep((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds));
+                        await Task.Delay((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds), cancelToken);
                 }
             }
             catch (System.IO.IOException) { }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
             catch (OperationCanceledException) { }
+            catch (Exception) { }
+            finally { netReadThreadId = -1; }
 
             if (cancelToken.IsCancellationRequested)
                 return;
@@ -240,9 +246,9 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void StartUpdating()
         {
-            netRead = new(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
-            netRead.Item1.Name = "ProtocolPacketHandler";
-            netRead.Item1.Start(netRead.Item2.Token);
+            CancellationTokenSource netReadCts = new();
+            netReadCancellationTokenSource = netReadCts;
+            netReadTask = Task.Run(() => UpdaterAsync(netReadCts.Token), netReadCts.Token);
         }
 
         /// <summary>
@@ -251,7 +257,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetMainThreadId()
         {
-            return netRead is not null ? netRead.Item1.ManagedThreadId : -1;
+            return netReadThreadId;
         }
 
         public bool SendCookieResponse(string name, byte[]? data)
@@ -268,9 +274,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                if (netRead is not null)
+                if (netReadCancellationTokenSource is not null)
                 {
-                    netRead.Item2.Cancel();
+                    netReadCancellationTokenSource.Cancel();
                     c.Close();
                 }
             }
@@ -471,6 +477,15 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        private async Task ReceiveAsync(byte[] buffer, int start, int offset, CancellationToken cancellationToken = default)
+        {
+            if (offset <= 0)
+                return;
+
+            Stream stream = encrypted ? s! : c.GetStream();
+            await stream.ReadExactlyAsync(buffer.AsMemory(start, offset), cancellationToken);
+        }
+
         private void Send(byte[] buffer)
         {
             if (encrypted)
@@ -479,7 +494,61 @@ namespace MinecraftClient.Protocol.Handlers
                 c.Client.Send(buffer);
         }
 
-        private bool Handshake(string uuid, string username, string sessionID, string host, int port, SessionToken session)
+        private async Task SendAsync(byte[] buffer, CancellationToken cancellationToken = default)
+        {
+            if (buffer.Length == 0)
+                return;
+
+            Stream stream = encrypted ? s! : c.GetStream();
+            await stream.WriteAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
+            await stream.FlushAsync(cancellationToken);
+        }
+
+        private async Task<byte[]> ReadDataAsync(int offset, CancellationToken cancellationToken = default)
+        {
+            if (offset <= 0)
+                return [];
+
+            byte[] cache = new byte[offset];
+            await ReceiveAsync(cache, 0, offset, cancellationToken);
+            return cache;
+        }
+
+        private async Task<string> ReadNextStringAsync(CancellationToken cancellationToken = default)
+        {
+            ushort length = (ushort)await ReadNextShortAsync(cancellationToken);
+            if (length <= 0)
+                return "";
+
+            byte[] cache = new byte[length * 2];
+            await ReceiveAsync(cache, 0, length * 2, cancellationToken);
+            return Encoding.BigEndianUnicode.GetString(cache);
+        }
+
+        private async Task<byte[]> ReadNextByteArrayAsync(CancellationToken cancellationToken = default)
+        {
+            short len = await ReadNextShortAsync(cancellationToken);
+            byte[] data = new byte[len];
+            await ReceiveAsync(data, 0, len, cancellationToken);
+            return data;
+        }
+
+        private async Task<short> ReadNextShortAsync(CancellationToken cancellationToken = default)
+        {
+            byte[] tmp = new byte[2];
+            await ReceiveAsync(tmp, 0, 2, cancellationToken);
+            Array.Reverse(tmp);
+            return BitConverter.ToInt16(tmp, 0);
+        }
+
+        private async Task<byte> ReadNextByteAsync(CancellationToken cancellationToken = default)
+        {
+            byte[] result = new byte[1];
+            await ReceiveAsync(result, 0, 1, cancellationToken);
+            return result[0];
+        }
+
+        private async Task<bool> HandshakeAsync(string uuid, string username, string sessionID, string host, int port, SessionToken session, CancellationToken cancellationToken = default)
         {
             //array
             byte[] data = new byte[10 + (username.Length + host.Length) * 2];
@@ -513,27 +582,28 @@ namespace MinecraftClient.Protocol.Handlers
             Array.Reverse(sh);
             sh.CopyTo(data, 6 + (username.Length * 2) + (host.Length * 2));
 
-            Send(data);
+            await SendAsync(data, cancellationToken);
 
             byte[] pid = new byte[1];
-            Receive(pid, 0, 1, SocketFlags.None);
+            await ReceiveAsync(pid, 0, 1, cancellationToken);
             while (pid[0] == 0xFA) //Skip some early plugin messages
             {
-                ProcessPacket(pid[0]);
-                Receive(pid, 0, 1, SocketFlags.None);
+                using (MainThreadExecutionScope.Enter(handler))
+                    ProcessPacket(pid[0]);
+                await ReceiveAsync(pid, 0, 1, cancellationToken);
             }
             if (pid[0] == 0xFD)
             {
-                string serverID = ReadNextString();
-                byte[] PublicServerkey = ReadNextByteArray();
-                byte[] token = ReadNextByteArray();
+                string serverID = await ReadNextStringAsync(cancellationToken);
+                byte[] PublicServerkey = await ReadNextByteArrayAsync(cancellationToken);
+                byte[] token = await ReadNextByteArrayAsync(cancellationToken);
 
                 if (serverID == "-")
                     ConsoleIO.WriteLineFormatted("§8" + Translations.mcc_server_offline, acceptnewlines: true);
                 else if (Settings.Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_handshake, serverID));
 
-                return StartEncryption(uuid, username, sessionID, Config.Main.General.AccountType, token, serverID, PublicServerkey, session);
+                return await StartEncryptionAsync(uuid, username, sessionID, Config.Main.General.AccountType, token, serverID, PublicServerkey, session, cancellationToken);
             }
             else
             {
@@ -542,7 +612,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        private bool StartEncryption(string uuid, string username, string sessionID, LoginType type, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
+        private async Task<bool> StartEncryptionAsync(string uuid, string username, string sessionID, LoginType type, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session, CancellationToken cancellationToken = default)
         {
             RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
@@ -559,14 +629,13 @@ namespace MinecraftClient.Protocol.Handlers
                 if (session.ServerPublicKey is not null && session.SessionPreCheckTask is not null
                     && serverIDhash == session.ServerIDhash && Enumerable.SequenceEqual(serverPublicKey, session.ServerPublicKey))
                 {
-                    session.SessionPreCheckTask.Wait();
-                    if (session.SessionPreCheckTask.Result) // PreCheck Successed
+                    if (session.SessionPreCheckTask.IsCompletedSuccessfully && session.SessionPreCheckTask.Result)
                         needCheckSession = false;
                 }
 
                 if (needCheckSession)
                 {
-                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash, type))
+                    if (await ProtocolHandler.SessionCheckAsync(uuid, sessionID, serverHash, type))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
@@ -599,14 +668,14 @@ namespace MinecraftClient.Protocol.Handlers
             token_enc.CopyTo(data, 5 + (short)key_enc.Length);
 
             //Send it back
-            Send(data);
+            await SendAsync(data, cancellationToken);
 
             //Getting the next packet
             byte[] pid = new byte[1];
-            Receive(pid, 0, 1, SocketFlags.None);
+            await ReceiveAsync(pid, 0, 1, cancellationToken);
             if (pid[0] == 0xFC)
             {
-                ReadData(4);
+                await ReadDataAsync(4, cancellationToken);
                 s = new AesCfb8Stream(c.GetStream(), secretKey);
                 encrypted = true;
                 return true;
@@ -620,9 +689,14 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
         {
-            if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
+            return LoginAsync(playerKeyPair, session, isTransfer).GetAwaiter().GetResult();
+        }
+
+        private async Task<bool> LoginAsync(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
+        {
+            if (await HandshakeAsync(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
             {
-                Send(new byte[] { 0xCD, 0 });
+                await SendAsync([0xCD, 0]);
                 try
                 {
                     byte[] pid = new byte[1];
@@ -630,21 +704,24 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         if (c.Connected)
                         {
-                            Receive(pid, 0, 1, SocketFlags.None);
+                            await ReceiveAsync(pid, 0, 1);
                             while (pid[0] >= 0xC0 && pid[0] != 0xFF) //Skip some early packets or plugin messages
                             {
-                                ProcessPacket(pid[0]);
-                                Receive(pid, 0, 1, SocketFlags.None);
+                                using (MainThreadExecutionScope.Enter(handler))
+                                    ProcessPacket(pid[0]);
+                                await ReceiveAsync(pid, 0, 1);
                             }
                             if (pid[0] == (byte)1)
                             {
-                                ReadData(4); ReadNextString(); ReadData(5);
+                                await ReadDataAsync(4);
+                                _ = await ReadNextStringAsync();
+                                await ReadDataAsync(5);
                                 StartUpdating();
                                 return true; //The Server accepted the request
                             }
                             else if (pid[0] == (byte)0xFF)
                             {
-                                string reason = ReadNextString();
+                                string reason = await ReadNextStringAsync();
                                 handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, reason);
                                 return false;
                             }

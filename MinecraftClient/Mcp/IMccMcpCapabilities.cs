@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace MinecraftClient.Mcp;
 
 public interface IMccMcpCapabilities
@@ -33,6 +35,7 @@ public interface IMccMcpCapabilities
     MccMcpResult SelectHotbarItem(string itemType, bool preferLowestSlot);
     MccMcpResult UseItemOnBlock(double x, double y, double z);
     MccMcpResult DigBlock(double x, double y, double z, double durationSeconds);
+    Task<MccMcpResult> DigBlockAsync(double x, double y, double z, double durationSeconds);
     MccMcpResult PlaceBlock(int x, int y, int z, string face, string hand, bool lookAtBlock);
     MccMcpResult InteractEntity(int entityId, string interaction, string hand);
     MccMcpResult AttackEntity(int entityId);
@@ -43,7 +46,9 @@ public interface IMccMcpCapabilities
     MccMcpResult FindNearestEntity(string? typeFilter, string? nameFilter, double radius, bool includePlayers);
     MccMcpResult CanReachPosition(double x, double y, double z, bool allowUnsafe, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult MoveTo(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
+    Task<MccMcpResult> MoveToAsync(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult MoveToPlayer(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
+    Task<MccMcpResult> MoveToPlayerAsync(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs);
     MccMcpResult LookAt(double x, double y, double z);
     MccMcpResult LookDirection(string direction);
     MccMcpResult LookAngles(float yaw, float pitch);
@@ -51,16 +56,22 @@ public interface IMccMcpCapabilities
     MccMcpResult GetInventorySnapshot(int inventoryId);
     MccMcpResult SearchInventories(string query, int maxCount, bool exactMatch, bool includeContainers);
     MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent);
+    Task<MccMcpResult> OpenContainerAtAsync(int x, int y, int z, int timeoutMs, bool closeCurrent);
     MccMcpResult CloseContainer(int inventoryId, int timeoutMs);
+    Task<MccMcpResult> CloseContainerAsync(int inventoryId, int timeoutMs);
     MccMcpResult InventoryWindowAction(int inventoryId, int slotId, string actionType);
     MccMcpResult DropInventoryItem(string itemType, int count, int inventoryId, bool preferStack);
+    Task<MccMcpResult> DropInventoryItemAsync(string itemType, int count, int inventoryId, bool preferStack);
     MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack);
+    Task<MccMcpResult> DepositContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack);
     MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack);
+    Task<MccMcpResult> WithdrawContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack);
     MccMcpResult QueryEntities(int maxCount);
     MccMcpResult ListEntities(int maxCount, string? typeFilter, double radius);
     MccMcpResult GetEntityInfo(int entityId, bool includeMetadata, bool includeEquipment, bool includeEffects);
     MccMcpResult FindSigns(string text, bool exactMatch, int radius, int maxCount, bool includeBackText);
     MccMcpResult ListItemEntities(string? itemType, double radius, int maxCount);
     MccMcpResult PickupItems(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs);
+    Task<MccMcpResult> PickupItemsAsync(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs);
     MccMcpResult GetWorldBlockAt(int x, int y, int z);
 }

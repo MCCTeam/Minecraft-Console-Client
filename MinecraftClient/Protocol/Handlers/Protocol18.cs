@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
@@ -20,6 +21,7 @@ using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Handlers.packet.s2c;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.PacketPipeline;
 using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
@@ -90,7 +92,7 @@ namespace MinecraftClient.Protocol.Handlers
         private readonly int rawProtocolVersion;
         private int currentDimension;
         private bool isOnlineMode = false;
-        private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
+        private readonly BlockingCollection<IncomingPacket> packetQueue = new();
         private readonly Dictionary<string, bool> legacyAchievementProgress = new(StringComparer.Ordinal);
         private float LastYaw, LastPitch;
         private double lastSentX, lastSentY, lastSentZ;
@@ -117,8 +119,11 @@ namespace MinecraftClient.Protocol.Handlers
         readonly PacketTypePalette packetPalette;
         readonly SocketWrapper socketWrapper;
         readonly DataTypes dataTypes;
-        Tuple<Thread, CancellationTokenSource>? netMain = null; // main thread
-        Tuple<Thread, CancellationTokenSource>? netReader = null; // reader thread
+        private Task? netMainTask;
+        private CancellationTokenSource? netMainCancellationTokenSource;
+        private int netMainThreadId = -1;
+        private Task? netReaderTask;
+        private CancellationTokenSource? netReaderCancellationTokenSource;
         readonly ILogger log;
         readonly RandomNumberGenerator randomGen;
         private bool legacyAchievementsInitialized;
@@ -278,17 +283,17 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Separate thread. Network reading loop.
+        /// Serialized packet/tick loop.
         /// </summary>
-        private void Updater(object? o)
+        private async Task UpdaterAsync(CancellationToken cancelToken)
         {
-            var cancelToken = (CancellationToken)o!;
-
             if (cancelToken.IsCancellationRequested)
                 return;
 
             try
             {
+                netMainThreadId = Environment.CurrentManagedThreadId;
+                using IDisposable _ = MainThreadExecutionScope.Enter(handler);
                 Stopwatch stopWatch = Stopwatch.StartNew();
                 long nextUpdateDue = 0;
                 while (!packetQueue.IsAddingCompleted)
@@ -305,14 +310,13 @@ namespace MinecraftClient.Protocol.Handlers
 
                     if (packetQueue.TryTake(out var packetInfo, 1))
                     {
-                        var (packetId, packetData) = packetInfo;
-                        HandlePacket(packetId, packetData);
+                        HandlePacket(packetInfo.PacketId, packetInfo.CreateReader());
                         continue;
                     }
 
                     long sleepLength = nextUpdateDue - stopWatch.ElapsedMilliseconds;
                     if (sleepLength > 1)
-                        Thread.Sleep((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds));
+                        await Task.Delay((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds), cancelToken);
                 }
             }
             catch (ObjectDisposedException)
@@ -330,6 +334,13 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException)
             {
             }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                netMainThreadId = -1;
+            }
 
             if (cancelToken.IsCancellationRequested)
                 return;
@@ -340,20 +351,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read and decompress packets.
         /// </summary>
-        internal void PacketReader(object? o)
+        internal async Task PacketReaderAsync(CancellationToken cancelToken)
         {
-            var cancelToken = (CancellationToken)o!;
-            while (socketWrapper.IsConnected() && !cancelToken.IsCancellationRequested)
+            while (!cancelToken.IsCancellationRequested)
             {
                 try
                 {
-                    while (socketWrapper.HasDataAvailable())
-                    {
-                        packetQueue.Add(ReadNextPacket(), cancelToken);
-
-                        if (cancelToken.IsCancellationRequested)
-                            break;
-                    }
+                    packetQueue.Add(await ReadNextPacketAsync(cancelToken), cancelToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -375,11 +379,10 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     break;
                 }
-
-                if (cancelToken.IsCancellationRequested)
+                catch (Exception)
+                {
                     break;
-
-                Thread.Sleep(10);
+                }
             }
 
             packetQueue.CompleteAdding();
@@ -390,29 +393,27 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetId">will contain packet ID</param>
         /// <param name="packetData">will contain raw packet Data</param>
-        internal Tuple<int, Queue<byte>> ReadNextPacket()
+        internal IncomingPacket ReadNextPacket()
         {
-            var size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            Queue<byte> packetData = new(socketWrapper.ReadDataRAW(size)); //Packet contents
-
-            //Handle packet decompression
-            if (protocolVersion >= MC_1_8_Version
-                && compression_treshold >= 0)
-            {
-                var sizeUncompressed = dataTypes.ReadNextVarInt(packetData);
-                if (sizeUncompressed != 0) // != 0 means compressed, let's decompress
-                {
-                    var toDecompress = packetData.ToArray();
-                    var uncompressed = ZlibUtils.Decompress(toDecompress, sizeUncompressed);
-                    packetData = new Queue<byte>(uncompressed);
-                }
-            }
-
-            var packetId = dataTypes.ReadNextVarInt(packetData); // Packet ID
+            IncomingPacket packet = socketWrapper.GetNextPacket(
+                protocolVersion >= MC_1_8_Version ? compression_treshold : -1,
+                dataTypes);
             if (handler.GetNetworkPacketCaptureEnabled())
-                handler.OnNetworkPacket(packetId, packetData.ToList(), currentState == CurrentState.Login, true);
+                handler.OnNetworkPacket(packet.PacketId, packet.Payload.ToList(), currentState == CurrentState.Login, true);
 
-            return new(packetId, packetData);
+            return packet;
+        }
+
+        internal async Task<IncomingPacket> ReadNextPacketAsync(CancellationToken cancellationToken)
+        {
+            IncomingPacket packet = await socketWrapper.GetNextPacketAsync(
+                protocolVersion >= MC_1_8_Version ? compression_treshold : -1,
+                dataTypes,
+                cancellationToken);
+            if (handler.GetNetworkPacketCaptureEnabled())
+                handler.OnNetworkPacket(packet.PacketId, packet.Payload.ToList(), currentState == CurrentState.Login, true);
+
+            return packet;
         }
 
         /// <summary>
@@ -421,11 +422,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetId">Packet ID</param>
         /// <param name="packetData">Packet contents</param>
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
-        internal bool HandlePacket(int packetId, Queue<byte> packetData)
+        internal bool HandlePacket(int packetId, PacketReader packetData)
         {
-            // This copy is necessary because by the time we get to the catch block,
-            // the packetData queue will have been processed and the data will be lost
-            var _copy = packetData.ToArray();
+            byte[] _copy = packetData.GetRawData();
 
             try
             {
@@ -487,11 +486,11 @@ namespace MinecraftClient.Protocol.Handlers
                                 break;
 
                             case ConfigurationPacketTypesIn.KeepAlive:
-                                SendPacket(ConfigurationPacketTypesOut.KeepAlive, packetData);
+                                SendPacket(ConfigurationPacketTypesOut.KeepAlive, packetData.CopyRemaining());
                                 break;
 
                             case ConfigurationPacketTypesIn.Ping:
-                                SendPacket(ConfigurationPacketTypesOut.Pong, packetData);
+                                SendPacket(ConfigurationPacketTypesOut.Pong, packetData.CopyRemaining());
                                 break;
 
                             case ConfigurationPacketTypesIn.RegistryData:
@@ -673,7 +672,7 @@ namespace MinecraftClient.Protocol.Handlers
             return true;
         }
 
-        public void HandleResourcePackPacket(Queue<byte> packetData)
+        public void HandleResourcePackPacket(PacketReader packetData)
         {
             var uuid = Guid.Empty;
 
@@ -721,17 +720,17 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        private bool HandlePlayPackets(int packetId, Queue<byte> packetData)
+        private bool HandlePlayPackets(int packetId, PacketReader packetData)
         {
             switch (packetPalette.GetIncomingTypeById(packetId))
             {
                 case PacketTypesIn.KeepAlive: // Keep Alive (Play)
-                    SendPacket(PacketTypesOut.KeepAlive, packetData);
+                    SendPacket(PacketTypesOut.KeepAlive, packetData.CopyRemaining());
                     handler.OnServerKeepAlive();
                     break;
 
                 case PacketTypesIn.Ping:
-                    SendPacket(PacketTypesOut.Pong, packetData);
+                    SendPacket(PacketTypesOut.Pong, packetData.CopyRemaining());
                     break;
 
                 case PacketTypesIn.JoinGame:
@@ -1601,7 +1600,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap,
                                     currentDimension == 0, chunksContinuous, currentDimension,
-                                    new Queue<byte>(decompressed));
+                                    new PacketReader(decompressed));
                                 Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
                             }
                             else
@@ -1983,7 +1982,7 @@ namespace MinecraftClient.Protocol.Handlers
                             hasSkyLight = dataTypes.ReadNextBool(packetData);
                             var compressed = dataTypes.ReadData(compressedDataSize, packetData);
                             var decompressed = ZlibUtils.Decompress(compressed);
-                            chunkData = new Queue<byte>(decompressed);
+                            chunkData = new PacketReader(decompressed);
                         }
                         else
                         {
@@ -2296,7 +2295,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Length is unneeded as the whole remaining packetData is the entire payload of the packet.
                     if (protocolVersion < MC_1_8_Version)
                         pForge.ReadNextVarShort(packetData);
-                    handler.OnPluginChannelMessage(channel, packetData.ToArray());
+                    handler.OnPluginChannelMessage(channel, packetData.CopyRemaining());
                     return pForge.HandlePluginMessage(channel, packetData, ref currentDimension);
                 case PacketTypesIn.Disconnect:
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick,
@@ -3371,7 +3370,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a Holder&lt;SoundEvent&gt; from packet data and return its key when inline.
         /// Returns null when the holder is a registry reference.
         /// </summary>
-        private string? ReadSoundEventHolderName(Queue<byte> packetData)
+        private string? ReadSoundEventHolderName(PacketReader packetData)
         {
             int soundHolderId = dataTypes.ReadNextVarInt(packetData);
             if (soundHolderId != 0)
@@ -3387,7 +3386,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Handle the Statistics packet for pre-1.12 legacy achievements.
         /// </summary>
-        private void HandleLegacyStatistics(Queue<byte> packetData)
+        private void HandleLegacyStatistics(PacketReader packetData)
         {
             int statCount = dataTypes.ReadNextVarInt(packetData);
 
@@ -3418,7 +3417,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Handle the Advancements packet (1.12+).
         /// </summary>
-        private void HandleAdvancements(Queue<byte> packetData)
+        private void HandleAdvancements(PacketReader packetData)
         {
             bool reset = dataTypes.ReadNextBool(packetData);
 
@@ -3589,14 +3588,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Handle the SelectAdvancementTab packet.
         /// </summary>
-        private void HandleSelectAdvancementTab(Queue<byte> packetData)
+        private void HandleSelectAdvancementTab(PacketReader packetData)
         {
             bool hasTab = dataTypes.ReadNextBool(packetData);
             string? tabId = hasTab ? dataTypes.ReadNextString(packetData) : null;
             handler.OnSelectAdvancementTab(tabId);
         }
 
-        private void HandleUnlockRecipes(Queue<byte> packetData)
+        private void HandleUnlockRecipes(PacketReader packetData)
         {
             int action = dataTypes.ReadNextVarInt(packetData);
             if (!SkipRecipeBookSettings(packetData))
@@ -3624,7 +3623,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        private void HandleRecipeBookAdd(Queue<byte> packetData)
+        private void HandleRecipeBookAdd(PacketReader packetData)
         {
             int entryCount = dataTypes.ReadNextVarInt(packetData);
             RecipeBookRecipeEntry[] recipeEntries = new RecipeBookRecipeEntry[entryCount];
@@ -3641,7 +3640,7 @@ namespace MinecraftClient.Protocol.Handlers
             handler.OnRecipeBookAdd(recipeEntries, replace);
         }
 
-        private string[] ReadRecipeBookRecipeIds(Queue<byte> packetData)
+        private string[] ReadRecipeBookRecipeIds(PacketReader packetData)
         {
             int recipeCount = dataTypes.ReadNextVarInt(packetData);
             string[] recipeIds = new string[recipeCount];
@@ -3652,7 +3651,7 @@ namespace MinecraftClient.Protocol.Handlers
             return recipeIds;
         }
 
-        private string[] ReadRecipeBookDisplayIds(Queue<byte> packetData)
+        private string[] ReadRecipeBookDisplayIds(PacketReader packetData)
         {
             int recipeCount = dataTypes.ReadNextVarInt(packetData);
             string[] recipeIds = new string[recipeCount];
@@ -3663,7 +3662,7 @@ namespace MinecraftClient.Protocol.Handlers
             return recipeIds;
         }
 
-        private RecipeBookRecipeEntry ReadRecipeBookDisplayEntry(Queue<byte> packetData)
+        private RecipeBookRecipeEntry ReadRecipeBookDisplayEntry(PacketReader packetData)
         {
             int displayId = dataTypes.ReadNextVarInt(packetData);
             string resultLabel = ReadRecipeDisplayResultLabel(packetData);
@@ -3677,7 +3676,7 @@ namespace MinecraftClient.Protocol.Handlers
             return new RecipeBookRecipeEntry(commandId, displayText);
         }
 
-        private string ReadRecipeDisplayResultLabel(Queue<byte> packetData)
+        private string ReadRecipeDisplayResultLabel(PacketReader packetData)
         {
             int displayType = dataTypes.ReadNextVarInt(packetData);
             return displayType switch
@@ -3691,7 +3690,7 @@ namespace MinecraftClient.Protocol.Handlers
             };
         }
 
-        private string ReadShapelessRecipeDisplayResultLabel(Queue<byte> packetData)
+        private string ReadShapelessRecipeDisplayResultLabel(PacketReader packetData)
         {
             int ingredientCount = dataTypes.ReadNextVarInt(packetData);
             for (int i = 0; i < ingredientCount; i++)
@@ -3702,7 +3701,7 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
-        private string ReadShapedRecipeDisplayResultLabel(Queue<byte> packetData)
+        private string ReadShapedRecipeDisplayResultLabel(PacketReader packetData)
         {
             _ = dataTypes.ReadNextVarInt(packetData); // width
             _ = dataTypes.ReadNextVarInt(packetData); // height
@@ -3715,7 +3714,7 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
-        private string ReadFurnaceRecipeDisplayResultLabel(Queue<byte> packetData)
+        private string ReadFurnaceRecipeDisplayResultLabel(PacketReader packetData)
         {
             _ = ReadSlotDisplayLabel(packetData); // ingredient
             _ = ReadSlotDisplayLabel(packetData); // fuel
@@ -3726,7 +3725,7 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
-        private string ReadStonecutterRecipeDisplayResultLabel(Queue<byte> packetData)
+        private string ReadStonecutterRecipeDisplayResultLabel(PacketReader packetData)
         {
             _ = ReadSlotDisplayLabel(packetData); // input
             string result = ReadSlotDisplayLabel(packetData);
@@ -3734,7 +3733,7 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
-        private string ReadSmithingRecipeDisplayResultLabel(Queue<byte> packetData)
+        private string ReadSmithingRecipeDisplayResultLabel(PacketReader packetData)
         {
             _ = ReadSlotDisplayLabel(packetData); // template
             _ = ReadSlotDisplayLabel(packetData); // base
@@ -3744,7 +3743,7 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
-        private string ReadSlotDisplayLabel(Queue<byte> packetData)
+        private string ReadSlotDisplayLabel(PacketReader packetData)
         {
             int slotDisplayType = dataTypes.ReadNextVarInt(packetData);
 
@@ -3787,7 +3786,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Reads a with_any_potion slot display (26.1+): contains a nested SlotDisplay.
         /// </summary>
-        private string ReadWithAnyPotionSlotDisplayLabel(Queue<byte> packetData)
+        private string ReadWithAnyPotionSlotDisplayLabel(PacketReader packetData)
         {
             return ReadSlotDisplayLabel(packetData);
         }
@@ -3795,7 +3794,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Reads an only_with_component slot display (26.1+): contains a nested SlotDisplay and a DataComponentType VarInt ID.
         /// </summary>
-        private string ReadOnlyWithComponentSlotDisplayLabel(Queue<byte> packetData)
+        private string ReadOnlyWithComponentSlotDisplayLabel(PacketReader packetData)
         {
             string sourceLabel = ReadSlotDisplayLabel(packetData);
             _ = dataTypes.ReadNextVarInt(packetData); // DataComponentType registry id
@@ -3805,14 +3804,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Reads a dyed slot display (26.1+): contains two nested SlotDisplays (dye + target).
         /// </summary>
-        private string ReadDyedSlotDisplayLabel(Queue<byte> packetData)
+        private string ReadDyedSlotDisplayLabel(PacketReader packetData)
         {
             _ = ReadSlotDisplayLabel(packetData); // dye
             string targetLabel = ReadSlotDisplayLabel(packetData); // target
             return targetLabel;
         }
 
-        private string ReadSmithingTrimSlotDisplayLabel(Queue<byte> packetData)
+        private string ReadSmithingTrimSlotDisplayLabel(PacketReader packetData)
         {
             string baseLabel = ReadSlotDisplayLabel(packetData);
             _ = ReadSlotDisplayLabel(packetData); // material
@@ -3820,14 +3819,14 @@ namespace MinecraftClient.Protocol.Handlers
             return baseLabel;
         }
 
-        private string ReadWithRemainderSlotDisplayLabel(Queue<byte> packetData)
+        private string ReadWithRemainderSlotDisplayLabel(PacketReader packetData)
         {
             string inputLabel = ReadSlotDisplayLabel(packetData);
             _ = ReadSlotDisplayLabel(packetData); // remainder
             return inputLabel;
         }
 
-        private string ReadCompositeSlotDisplayLabel(Queue<byte> packetData)
+        private string ReadCompositeSlotDisplayLabel(PacketReader packetData)
         {
             int optionCount = dataTypes.ReadNextVarInt(packetData);
             string label = "Composite";
@@ -3846,12 +3845,12 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an ItemStackTemplate (26.1+) which encodes fields in a different order
         /// than ItemStack: item_id (VarInt), count (VarInt), DataComponentPatch.
         /// </summary>
-        private string ReadItemStackTemplateLabel(Queue<byte> packetData)
+        private string ReadItemStackTemplateLabel(PacketReader packetData)
         {
             return dataTypes.ReadNextItemStackTemplate(packetData, itemPalette).GetTypeString();
         }
 
-        private void SkipOptionalCraftingRequirements(Queue<byte> packetData)
+        private void SkipOptionalCraftingRequirements(PacketReader packetData)
         {
             if (!dataTypes.ReadNextBool(packetData))
                 return;
@@ -3861,7 +3860,7 @@ namespace MinecraftClient.Protocol.Handlers
                 SkipItemHolderSet(packetData);
         }
 
-        private void SkipItemHolderSet(Queue<byte> packetData)
+        private void SkipItemHolderSet(PacketReader packetData)
         {
             int entryCount = dataTypes.ReadNextVarInt(packetData) - 1;
             if (entryCount == -1)
@@ -3874,12 +3873,12 @@ namespace MinecraftClient.Protocol.Handlers
                 _ = dataTypes.ReadNextVarInt(packetData);
         }
 
-        private bool SkipRecipeBookSettings(Queue<byte> packetData)
+        private bool SkipRecipeBookSettings(PacketReader packetData)
         {
             // MC 1.13 uses 4 booleans for the crafting/smelting recipe book states.
             // MC 1.14+ expands this to 8 booleans by adding blast furnace and smoker states.
             int boolCount = protocolVersion >= MC_1_14_Version ? 8 : 4;
-            if (packetData.Count < boolCount)
+            if (packetData.RemainingLength < boolCount)
                 return false;
 
             for (int i = 0; i < boolCount; i++)
@@ -3889,23 +3888,17 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Start the updating thread. Should be called after login success.
+        /// Start the serialized packet/tick tasks. Should be called after login success.
         /// </summary>
         private void StartUpdating()
         {
-            Thread threadUpdater = new(new ParameterizedThreadStart(Updater))
-            {
-                Name = "ProtocolPacketHandler"
-            };
-            netMain = new Tuple<Thread, CancellationTokenSource>(threadUpdater, new CancellationTokenSource());
-            threadUpdater.Start(netMain.Item2.Token);
+            CancellationTokenSource netMainCts = new();
+            netMainCancellationTokenSource = netMainCts;
+            netMainTask = Task.Run(() => UpdaterAsync(netMainCts.Token), netMainCts.Token);
 
-            Thread threadReader = new(new ParameterizedThreadStart(PacketReader))
-            {
-                Name = "ProtocolPacketReader"
-            };
-            netReader = new Tuple<Thread, CancellationTokenSource>(threadReader, new CancellationTokenSource());
-            threadReader.Start(netReader.Item2.Token);
+            CancellationTokenSource netReaderCts = new();
+            netReaderCancellationTokenSource = netReaderCts;
+            netReaderTask = Task.Run(() => PacketReaderAsync(netReaderCts.Token), netReaderCts.Token);
         }
 
         /// <summary>
@@ -3914,7 +3907,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetMainThreadId()
         {
-            return netMain is not null ? netMain.Item1.ManagedThreadId : -1;
+            return netMainThreadId;
         }
 
         /// <summary>
@@ -3924,14 +3917,14 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                if (netMain is not null)
+                if (netMainCancellationTokenSource is not null)
                 {
-                    netMain.Item2.Cancel();
+                    netMainCancellationTokenSource.Cancel();
                 }
 
-                if (netReader is not null)
+                if (netReaderCancellationTokenSource is not null)
                 {
-                    netReader.Item2.Cancel();
+                    netReaderCancellationTokenSource.Cancel();
                     socketWrapper.Disconnect();
                 }
             }
@@ -3950,9 +3943,9 @@ namespace MinecraftClient.Protocol.Handlers
             SendPacket(packetPalette.GetOutgoingIdByType(packet), packetData);
         }
 
-        private void ProcessChunkBlockEntityData(int chunkX, int chunkZ, Queue<byte> packetData)
+        private void ProcessChunkBlockEntityData(int chunkX, int chunkZ, PacketReader packetData)
         {
-            if (protocolVersion < MC_1_17_Version || packetData.Count == 0)
+            if (protocolVersion < MC_1_17_Version || packetData.RemainingLength == 0)
                 return;
 
             int blockEntityCount = dataTypes.ReadNextVarInt(packetData);
@@ -4028,6 +4021,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <returns>True if login successful</returns>
         public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
+        {
+            return LoginAsync(playerKeyPair, session, isTransfer).GetAwaiter().GetResult();
+        }
+
+        private async Task<bool> LoginAsync(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
         {
             int nextState = isTransfer && protocolVersion >= MC_1_20_6_Version ? 3 : 2;
 
@@ -4106,7 +4104,9 @@ namespace MinecraftClient.Protocol.Handlers
             // 3. Encryption Request - 9. Login Acknowledged
             while (true)
             {
-                var (packetId, packetData) = ReadNextPacket();
+                IncomingPacket packet = await ReadNextPacketAsync(CancellationToken.None);
+                int packetId = packet.PacketId;
+                PacketReader packetData = packet.CreateReader();
 
                 switch (packetId)
                 {
@@ -4129,7 +4129,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_20_6_Version)
                                 shouldAuthetnicate = dataTypes.ReadNextBool(packetData);
 
-                            return StartEncryption(handler.GetUserUuidStr(), handler.GetSessionID(),
+                            return await StartEncryptionAsync(handler.GetUserUuidStr(), handler.GetSessionID(),
                                 Config.Main.General.AccountType, token, serverId,
                                 serverPublicKey, playerKeyPair, session, shouldAuthetnicate);
                         }
@@ -4145,7 +4145,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_20_2_Version)
                                 SendPacket(0x03, new List<byte>());
 
-                            if (!pForge.CompleteForgeHandshake())
+                            if (!await pForge.CompleteForgeHandshakeAsync())
                             {
                                 log.Error($"§8{Translations.error_forge}");
                                 return false;
@@ -4155,7 +4155,8 @@ namespace MinecraftClient.Protocol.Handlers
                             return true; //No need to check session or start encryption
                         }
                     default:
-                        HandlePacket(packetId, packetData);
+                        using (MainThreadExecutionScope.Enter(handler))
+                            HandlePacket(packetId, packetData);
                         break;
                 }
             }
@@ -4165,7 +4166,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Start network encryption. Automatically called by Login() if the server requests encryption.
         /// </summary>
         /// <returns>True if encryption was successful</returns>
-        private bool StartEncryption(string uuid, string sessionID, LoginType type, byte[] token, string serverIDhash,
+        private async Task<bool> StartEncryptionAsync(string uuid, string sessionID, LoginType type, byte[] token, string serverIDhash,
             byte[] serverPublicKey, PlayerKeyPair? playerKeyPair, SessionToken session, bool shouldAuthetnicate)
         {
             var RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
@@ -4182,8 +4183,7 @@ namespace MinecraftClient.Protocol.Handlers
                     && serverIDhash == session.ServerIDhash &&
                     serverPublicKey.SequenceEqual(session.ServerPublicKey))
                 {
-                    session.SessionPreCheckTask.Wait();
-                    if (session.SessionPreCheckTask.Result) // PreCheck Success
+                    if (session.SessionPreCheckTask.IsCompletedSuccessfully && session.SessionPreCheckTask.Result)
                         needCheckSession = false;
                 }
 
@@ -4194,7 +4194,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (needCheckSession)
                 {
                     var serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
-                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash, type))
+                    if (await ProtocolHandler.SessionCheckAsync(uuid, sessionID, serverHash, type))
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
@@ -4244,7 +4244,9 @@ namespace MinecraftClient.Protocol.Handlers
             int loopPrevention = ushort.MaxValue;
             while (true)
             {
-                var (packetId, packetData) = ReadNextPacket();
+                IncomingPacket packet = await ReadNextPacketAsync(CancellationToken.None);
+                int packetId = packet.PacketId;
+                PacketReader packetData = packet.CreateReader();
                 if (packetId < 0 || loopPrevention-- < 0) // Failed to read packet or too many iterations (issue #1150)
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost,
@@ -4295,7 +4297,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             handler.OnLoginSuccess(uuidReceived, userName, playerProperty);
 
-                            if (!pForge.CompleteForgeHandshake())
+                            if (!await pForge.CompleteForgeHandshakeAsync())
                             {
                                 log.Error($"§8{Translations.error_forge_encrypt}");
                                 return false;
@@ -4305,7 +4307,8 @@ namespace MinecraftClient.Protocol.Handlers
                             return true;
                         }
                     default:
-                        HandlePacket(packetId, packetData);
+                        using (MainThreadExecutionScope.Enter(handler))
+                            HandlePacket(packetId, packetData);
                         break;
                 }
             }
@@ -4404,17 +4407,12 @@ namespace MinecraftClient.Protocol.Handlers
                 var statusRequest = DataTypes.GetVarInt(0);
                 socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(statusRequest.Length), statusRequest));
 
-                // Read Response length
-                var packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
-                if (packetLength <= 0)
-                    return false;
-
-                // Read the Packet Id
-                var packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
-                if (dataTypes.ReadNextVarInt(packetData) != 0x00)
+                IncomingPacket statusPacket = socketWrapper.GetNextPacket(-1, dataTypes);
+                if (statusPacket.PacketId != 0x00)
                     return false;
 
                 // Get the Json data
+                var packetData = statusPacket.CreateReader();
                 var result = dataTypes.ReadNextString(packetData);
 
                 if (Config.Logging.DebugMessages)
@@ -4490,15 +4488,12 @@ namespace MinecraftClient.Protocol.Handlers
                     var pingRequest = dataTypes.ConcatBytes(DataTypes.GetVarInt(0x01), DataTypes.GetLong(pingPayload));
                     socketWrapper.SendDataRAW(dataTypes.ConcatBytes(DataTypes.GetVarInt(pingRequest.Length), pingRequest));
 
-                    packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
-                    if (packetLength > 0)
+                    IncomingPacket pongPacket = socketWrapper.GetNextPacket(-1, dataTypes);
+                    if (pongPacket.PacketId == 0x01)
                     {
-                        packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
-                        if (dataTypes.ReadNextVarInt(packetData) == 0x01)
-                        {
-                            long pongPayload = dataTypes.ReadNextLong(packetData);
-                            pingMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - pingPayload;
-                        }
+                        var pongPacketData = pongPacket.CreateReader();
+                        long pongPayload = dataTypes.ReadNextLong(pongPacketData);
+                        pingMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - pingPayload;
                     }
                 }
                 catch

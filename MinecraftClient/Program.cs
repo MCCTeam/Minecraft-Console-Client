@@ -74,7 +74,7 @@ namespace MinecraftClient
         /// <summary>
         /// The main entry point of Minecraft Console Client
         /// </summary>
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             // [SENTRY] Initialize Sentry SDK only if the DSN is not empty
             if (SentryDSN != string.Empty)
@@ -94,7 +94,7 @@ namespace MinecraftClient
                 };
             }
 
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
                 _ = "a".ToLower();
@@ -208,7 +208,7 @@ namespace MinecraftClient
             // Wait for this issue to be fixed before enabling it: https://github.com/Consolonia/Consolonia/issues/602
             // MaybePrintClassicModeTuiRecommendation();
 
-            RunStartupSequence(args);
+            await RunStartupSequenceAsync(args);
         }
 
         /// <summary>
@@ -381,7 +381,10 @@ namespace MinecraftClient
         /// Called from Main() for classic/basic mode, or from TuiConsoleBackend on a
         /// background thread after the Avalonia UI loop has started.
         /// </summary>
-        internal static void RunStartupSequence(string[] args)
+        internal static void RunStartupSequence(string[] args) =>
+            RunStartupSequenceAsync(args).GetAwaiter().GetResult();
+
+        internal static async Task RunStartupSequenceAsync(string[] args)
         {
             //Other command-line arguments
             if (args.Length >= 1)
@@ -574,20 +577,20 @@ namespace MinecraftClient
             if (string.IsNullOrWhiteSpace(InternalConfig.Account.Password) && !skipPassword &&
                 (Config.Main.Advanced.SessionCache == CacheType.none || !SessionCache.Contains(ToLowerIfNeed(InternalConfig.Account.Login))))
             {
-                RequestPassword();
+                await RequestPasswordAsync();
             }
 
             startupargs = args;
-            InitializeClient();
+            await InitializeClientAsync();
         }
 
         /// <summary>
         /// Reduest user to submit password.
         /// </summary>
-        private static void RequestPassword()
+        private static async Task RequestPasswordAsync()
         {
             ConsoleIO.WriteLine(ConsoleIO.BasicIO ? string.Format(Translations.mcc_password_basic_io, InternalConfig.Account.Login) + "\n" : Translations.mcc_password_hidden);
-            string? password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            string? password = await ConsoleIO.ReadPasswordAsync();
             if (string.IsNullOrWhiteSpace(password))
                 InternalConfig.Account.Password = "-";
             else
@@ -597,7 +600,7 @@ namespace MinecraftClient
         /// <summary>
         /// Start a new Client
         /// </summary>
-        private static void InitializeClient()
+        private static async Task InitializeClientAsync()
         {
             // Ensure that we use the provided Minecraft version if we can't connect automatically.
             //
@@ -634,7 +637,9 @@ namespace MinecraftClient
                         {
                             try
                             {
-                                result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                                var refreshResult = await ProtocolHandler.MicrosoftLoginRefreshAsync(session.RefreshToken);
+                                result = refreshResult.Result;
+                                session = refreshResult.Session;
                             }
                             catch (Exception ex)
                             {
@@ -646,7 +651,7 @@ namespace MinecraftClient
                         if (result != ProtocolHandler.LoginResult.Success
                             && string.IsNullOrWhiteSpace(InternalConfig.Account.Password)
                             && !(Config.Main.General.AccountType == LoginType.microsoft))
-                            RequestPassword();
+                            await RequestPasswordAsync();
                     }
                     else ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.mcc_session_valid, session.PlayerName));
                 }
@@ -654,14 +659,16 @@ namespace MinecraftClient
                 if (result != ProtocolHandler.LoginResult.Success)
                 {
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : (Config.Main.General.AccountType == LoginType.microsoft ? "Microsoft" : Config.Main.General.AuthServer.Host)));
-                    result = ProtocolHandler.GetLogin(InternalConfig.Account.Login, InternalConfig.Account.Password, Config.Main.General.AccountType, out session);
+                    var loginResult = await ProtocolHandler.GetLoginAsync(InternalConfig.Account.Login, InternalConfig.Account.Password, Config.Main.General.AccountType);
+                    result = loginResult.Result;
+                    session = loginResult.Session;
                 }
 
                 if (result == ProtocolHandler.LoginResult.Success && Config.Main.Advanced.SessionCache != CacheType.none)
                     SessionCache.Store(loginLower, session);
 
                 if (result == ProtocolHandler.LoginResult.Success)
-                    session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck(Config.Main.General.AccountType));
+                    session.SessionPreCheckTask = session.SessionPreCheckAsync(Config.Main.General.AccountType);
             }
 
             if (result == ProtocolHandler.LoginResult.Success)
@@ -680,7 +687,7 @@ namespace MinecraftClient
 
                 List<string> availableWorlds = new();
                 if (Config.Main.Advanced.MinecraftRealms && !String.IsNullOrEmpty(session.ID))
-                    availableWorlds = ProtocolHandler.RealmsListWorlds(InternalConfig.Username, session.PlayerID, session.ID);
+                    availableWorlds = await ProtocolHandler.RealmsListWorldsAsync(InternalConfig.Username, session.PlayerID, session.ID);
 
                 if (InternalConfig.ServerIP == string.Empty)
                 {
@@ -700,7 +707,7 @@ namespace MinecraftClient
                                 worldId = availableWorlds[worldIndex];
                             if (availableWorlds.Contains(worldId))
                             {
-                                string realmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, InternalConfig.Username, session.PlayerID, session.ID);
+                                string realmsAddress = await ProtocolHandler.GetRealmsWorldServerAddressAsync(worldId, InternalConfig.Username, session.PlayerID, session.ID);
                                 if (realmsAddress != "")
                                 {
                                     addressInput = realmsAddress;
@@ -756,11 +763,15 @@ namespace MinecraftClient
                         ConsoleIO.WriteLine(Translations.mcc_forge);
                     else
                         ConsoleIO.WriteLine(Translations.mcc_retrieve);
-                    if (!ProtocolHandler.GetServerInfo(InternalConfig.ServerIP, InternalConfig.ServerPort, ref protocolversion, ref forgeInfo))
+                    var serverInfo = await ProtocolHandler.GetServerInfoAsync(InternalConfig.ServerIP, InternalConfig.ServerPort, protocolversion);
+                    if (!serverInfo.Success)
                     {
                         HandleFailure(Translations.error_ping, true, ChatBot.DisconnectReason.ConnectionLost);
                         return;
                     }
+
+                    protocolversion = serverInfo.ProtocolVersion;
+                    forgeInfo = serverInfo.ForgeInfo;
                 }
 
                 if ((Config.Main.General.AccountType == LoginType.microsoft || Config.Main.General.AccountType == LoginType.yggdrasil)
@@ -890,30 +901,41 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
         /// <param name="keepAccountAndServerSettings">Optional, keep account and server settings</param>
-        public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
+        public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false, bool announceDelay = true)
         {
             ConsoleIO.Backend?.StopReadThread();
-            new Thread(new ThreadStart(delegate
+            StartLifecycleTask(RestartAsync(delaySeconds, keepAccountAndServerSettings, announceDelay));
+        }
+
+        private static async Task RestartAsync(int delaySeconds, bool keepAccountAndServerSettings, bool announceDelay)
+        {
+            if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
+            if (offlinePrompt is not null)
             {
-                if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt is not null)
-                {
-                    if (ConsoleIO.Backend is not null)
-                        ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
-                    offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
-                }
-                if (delaySeconds > 0)
-                {
+                if (ConsoleIO.Backend is not null)
+                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                offlinePrompt.Item2.Cancel();
+                offlinePrompt.Item1.Join();
+                offlinePrompt = null;
+                ConsoleIO.Reset();
+            }
+            if (delaySeconds > 0)
+            {
+                if (announceDelay)
                     ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
-                    Thread.Sleep(delaySeconds * 1000);
-                }
-                ConsoleIO.WriteLine(Translations.mcc_restart);
-                ReloadSettings(keepAccountAndServerSettings);
-                InitializeClient();
-            })).Start();
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+            }
+            ConsoleIO.WriteLine(Translations.mcc_restart);
+            ReloadSettings(keepAccountAndServerSettings);
+            await InitializeClientAsync();
         }
 
         public static void DoExit(int exitcode = 0)
+        {
+            DoExitAsync(exitcode).GetAwaiter().GetResult();
+        }
+
+        private static Task DoExitAsync(int exitcode = 0)
         {
             WriteBackSettings();
             ConsoleIO.WriteLineFormatted("§a" + string.Format(Translations.config_saving, settingsIniPath));
@@ -932,6 +954,7 @@ namespace MinecraftClient
             if (Config.Main.Advanced.PlayerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
             ConsoleIO.Backend?.Shutdown();
             Environment.Exit(exitcode);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -939,7 +962,26 @@ namespace MinecraftClient
         /// </summary>
         public static void Exit(int exitcode = 0)
         {
-            new Thread(() => { DoExit(exitcode); }).Start();
+            StartLifecycleTask(DoExitAsync(exitcode));
+        }
+
+        private static void StartLifecycleTask(Task lifecycleTask)
+        {
+            _ = ObserveLifecycleTaskAsync(lifecycleTask);
+        }
+
+        private static async Task ObserveLifecycleTaskAsync(Task lifecycleTask)
+        {
+            try
+            {
+                await lifecycleTask;
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+                if (Settings.Config.Logging.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8" + ex);
+            }
         }
 
         /// <summary>

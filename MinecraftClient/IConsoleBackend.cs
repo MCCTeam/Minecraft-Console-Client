@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -56,7 +58,11 @@ namespace MinecraftClient
 
         string RequestImmediateInput();
 
+        Task<string> RequestImmediateInputAsync(CancellationToken cancellationToken);
+
         string? ReadPassword();
+
+        Task<string?> ReadPasswordAsync(CancellationToken cancellationToken);
 
         void ClearInputBuffer();
 

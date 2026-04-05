@@ -71,6 +71,8 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         public required double Distance { get; init; }
     }
 
+    private readonly record struct ContainerOpenState(int InventoryId, Container? Inventory);
+
     private enum InventoryTransferDirection
     {
         Deposit,
@@ -860,6 +862,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult DigBlock(double x, double y, double z, double durationSeconds)
     {
+        return DigBlockAsync(x, y, z, durationSeconds).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> DigBlockAsync(double x, double y, double z, double durationSeconds)
+    {
         if (!IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -921,7 +928,10 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (!accepted)
                 continue;
 
-            if (WaitForBlockChange(client, target, beforeBlock, GetDigVerifyWaitMs(attemptDuration), out afterBlock))
+            (bool blockChanged, Block updatedBlock) =
+                await WaitForBlockChangeAsync(client, target, beforeBlock, GetDigVerifyWaitMs(attemptDuration));
+            afterBlock = updatedBlock;
+            if (blockChanged)
             {
                 changed = true;
                 break;
@@ -1275,6 +1285,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult MoveTo(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
     {
+        return MoveToAsync(x, y, z, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> MoveToAsync(double x, double y, double z, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
+    {
         if (!IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -1302,9 +1317,12 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
         int verifyWaitMs = GetArrivalWaitMs(timeoutMs);
         double tolerance = GetArrivalTolerance(maxOffset, minOffset);
-        Location? finalLocation = null;
-        bool arrived = pathFound && WaitForArrival(client, goal, verifyWaitMs, tolerance, out finalLocation);
-        finalLocation ??= client.InvokeOnMainThread(client.GetCurrentLocation);
+        Location finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+        bool arrived = false;
+        if (pathFound)
+        {
+            (arrived, finalLocation) = await WaitForArrivalAsync(client, goal, verifyWaitMs, tolerance);
+        }
         object resultData = new
         {
             pathFound,
@@ -1313,9 +1331,9 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             verifyWaitMs,
             target = ToCoordinate(goal),
             startLocation = ToCoordinate(startLocation),
-            finalLocation = ToCoordinate(finalLocation.Value),
-            finalDistance = GetDistance(finalLocation.Value, goal),
-            distanceMoved = GetDistance(startLocation, finalLocation.Value),
+            finalLocation = ToCoordinate(finalLocation),
+            finalDistance = GetDistance(finalLocation, goal),
+            distanceMoved = GetDistance(startLocation, finalLocation),
             allowUnsafe,
             allowDirectTeleport,
             maxOffset,
@@ -1330,9 +1348,14 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult MoveToPlayer(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
     {
+        return MoveToPlayerAsync(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> MoveToPlayerAsync(string playerName, bool allowUnsafe, bool allowDirectTeleport, int maxOffset, int minOffset, int timeoutMs)
+    {
         if (!IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
-        return ToMcpResult(game.MoveToPlayer(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
+        return ToMcpResult(await game.MoveToPlayerAsync(playerName, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutMs));
     }
 
     public MccMcpResult LookAt(double x, double y, double z)
@@ -1465,6 +1488,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult OpenContainerAt(int x, int y, int z, int timeoutMs, bool closeCurrent)
     {
+        return OpenContainerAtAsync(x, y, z, timeoutMs, closeCurrent).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> OpenContainerAtAsync(int x, int y, int z, int timeoutMs, bool closeCurrent)
+    {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -1495,10 +1523,15 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             });
         }
 
-        return OpenContainerCore(client, location, state.block, state.activeContainerId, waitMs, closeCurrent);
+        return await OpenContainerCoreAsync(client, location, state.block, state.activeContainerId, waitMs, closeCurrent);
     }
 
     public MccMcpResult CloseContainer(int inventoryId, int timeoutMs)
+    {
+        return CloseContainerAsync(inventoryId, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> CloseContainerAsync(int inventoryId, int timeoutMs)
     {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
@@ -1527,7 +1560,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         }
 
         bool closeAccepted = client.CloseInventory(resolvedInventoryId);
-        bool closed = closeAccepted && WaitForContainerClose(client, resolvedInventoryId, waitMs);
+        bool closed = closeAccepted && await WaitForContainerCloseAsync(client, resolvedInventoryId, waitMs);
         var resultData = new
         {
             success = closeAccepted && closed,
@@ -1566,6 +1599,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult DropInventoryItem(string itemType, int count, int inventoryId, bool preferStack)
     {
+        return DropInventoryItemAsync(itemType, count, inventoryId, preferStack).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> DropInventoryItemAsync(string itemType, int count, int inventoryId, bool preferStack)
+    {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
 
@@ -1587,10 +1625,10 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             });
         }
 
-        return client.InvokeOnMainThread(() =>
+        return await Task.Run(async () =>
         {
-            Dictionary<int, Container> inventories = client.GetInventories();
-            if (!inventories.TryGetValue(inventoryId, out Container? inventory))
+            Container? inventory = client.GetInventory(inventoryId);
+            if (inventory is null)
                 return MccMcpResult.Fail("invalid_state");
 
             int cursorCount = GetCursorItemCount(inventory, parsedItemType);
@@ -1634,7 +1672,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
                 int dropFromSlot = Math.Min(remaining, currentItem.Count);
                 touchedSlots.Add(entry.slot);
-                bool ok = TryDropInventorySlotItems(client, inventoryId, inventory, entry.slot, parsedItemType, dropFromSlot, out int droppedFromSlot);
+                (bool ok, int droppedFromSlot) = await TryDropInventorySlotItemsAsync(client, inventoryId, inventory, entry.slot, parsedItemType, dropFromSlot);
 
                 if (!ok)
                 {
@@ -1700,12 +1738,22 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult DepositContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack)
     {
-        return TransferContainerItem(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
+        return DepositContainerItemAsync(itemType, count, inventoryId, preferLargestStack).GetAwaiter().GetResult();
+    }
+
+    public Task<MccMcpResult> DepositContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack)
+    {
+        return TransferContainerItemAsync(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
     }
 
     public MccMcpResult WithdrawContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack)
     {
-        return TransferContainerItem(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Withdraw);
+        return WithdrawContainerItemAsync(itemType, count, inventoryId, preferLargestStack).GetAwaiter().GetResult();
+    }
+
+    public Task<MccMcpResult> WithdrawContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack)
+    {
+        return TransferContainerItemAsync(itemType, count, inventoryId, preferLargestStack, InventoryTransferDirection.Withdraw);
     }
 
     public MccMcpResult QueryEntities(int maxCount)
@@ -1825,9 +1873,14 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
     public MccMcpResult PickupItems(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs)
     {
+        return PickupItemsAsync(itemType, radius, maxItems, allowUnsafe, timeoutMs).GetAwaiter().GetResult();
+    }
+
+    public async Task<MccMcpResult> PickupItemsAsync(string itemType, double radius, int maxItems, bool allowUnsafe, int timeoutMs)
+    {
         if (!IsCategoryEnabled(t => t.EntityWorld) || !IsCategoryEnabled(t => t.Movement))
             return MccMcpResult.Fail("capability_disabled");
-        return ToMcpResult(game.PickupItems(itemType, radius, maxItems, allowUnsafe, timeoutMs));
+        return ToMcpResult(await game.PickupItemsAsync(itemType, radius, maxItems, allowUnsafe, timeoutMs));
     }
 
     public MccMcpResult GetWorldBlockAt(int x, int y, int z)
@@ -1858,7 +1911,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         });
     }
 
-    private static MccMcpResult OpenContainerCore(McClient client, Location location, Block block, int activeContainerId, int waitMs, bool closeCurrent)
+    private static async Task<MccMcpResult> OpenContainerCoreAsync(McClient client, Location location, Block block, int activeContainerId, int waitMs, bool closeCurrent)
     {
         if (activeContainerId > 0)
         {
@@ -1876,7 +1929,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             }
 
             bool closeAccepted = client.CloseInventory(activeContainerId);
-            bool closed = closeAccepted && WaitForContainerClose(client, activeContainerId, waitMs);
+            bool closed = closeAccepted && await WaitForContainerCloseAsync(client, activeContainerId, waitMs);
             if (!closeAccepted || !closed)
             {
                 return MccMcpResult.Fail("action_incomplete", data: new
@@ -1894,7 +1947,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         int openedInventoryId = 0;
         Container? openedInventory = null;
         bool openAccepted = client.InvokeOnMainThread(() => client.PlaceBlock(location, Direction.Down, Hand.MainHand, lookAtBlock: true));
-        bool opened = openAccepted && WaitForContainerOpen(client, beforeIds, waitMs, out openedInventoryId, out openedInventory);
+        bool opened = openAccepted && await WaitForContainerOpenAsync(client, beforeIds, waitMs, result =>
+        {
+            openedInventoryId = result.InventoryId;
+            openedInventory = result.Inventory;
+        });
         var resultData = new
         {
             success = openAccepted && opened && openedInventory is not null,
@@ -1923,6 +1980,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
     }
 
     private MccMcpResult TransferContainerItem(string itemType, int count, int inventoryId, bool preferLargestStack, InventoryTransferDirection direction)
+    {
+        return TransferContainerItemAsync(itemType, count, inventoryId, preferLargestStack, direction).GetAwaiter().GetResult();
+    }
+
+    private async Task<MccMcpResult> TransferContainerItemAsync(string itemType, int count, int inventoryId, bool preferLargestStack, InventoryTransferDirection direction)
     {
         if (!IsCategoryEnabled(t => t.Inventory))
             return MccMcpResult.Fail("capability_disabled");
@@ -2044,7 +2106,18 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
                 if (direction == InventoryTransferDirection.Withdraw)
                 {
-                    if (!WaitForRangeCount(client, resolvedInventoryId, parsedItemType, sourceStart, sourceEnd, countAfterShift => countAfterShift < beforeSourceCount, DefaultInventoryActionWaitMs, out Container? afterShift, out int afterSourceCount))
+                    Container? afterShift = null;
+                    int afterSourceCount = beforeSourceCount;
+                    if (!await WaitForRangeCountAsync(client, resolvedInventoryId, parsedItemType, sourceStart, sourceEnd, countAfterShift => countAfterShift < beforeSourceCount, DefaultInventoryActionWaitMs, result =>
+                        {
+                            afterShift = result.Inventory;
+                            afterSourceCount = result.ItemCount;
+                        },
+                        onInitialize: () =>
+                        {
+                            afterShift = null;
+                            afterSourceCount = beforeSourceCount;
+                        }))
                     {
                         afterShift = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
                         afterSourceCount = afterShift is null ? beforeSourceCount : CountItemInRange(afterShift, parsedItemType, sourceStart, sourceEnd);
@@ -2054,7 +2127,18 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 }
                 else
                 {
-                    if (!WaitForRangeCount(client, resolvedInventoryId, parsedItemType, targetStart, targetEnd, countAfterShift => countAfterShift > beforeTargetCount, DefaultInventoryActionWaitMs, out Container? afterShift, out int afterTargetCount))
+                    Container? afterShift = null;
+                    int afterTargetCount = beforeTargetCount;
+                    if (!await WaitForRangeCountAsync(client, resolvedInventoryId, parsedItemType, targetStart, targetEnd, countAfterShift => countAfterShift > beforeTargetCount, DefaultInventoryActionWaitMs, result =>
+                        {
+                            afterShift = result.Inventory;
+                            afterTargetCount = result.ItemCount;
+                        },
+                        onInitialize: () =>
+                        {
+                            afterShift = null;
+                            afterTargetCount = beforeTargetCount;
+                        }))
                     {
                         afterShift = client.InvokeOnMainThread(() => client.GetInventory(resolvedInventoryId));
                         afterTargetCount = afterShift is null ? beforeTargetCount : CountItemInRange(afterShift, parsedItemType, targetStart, targetEnd);
@@ -2066,7 +2150,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
                 if (direction == InventoryTransferDirection.Withdraw && movedCount > remaining)
                 {
                     int excessCount = movedCount - remaining;
-                    MccMcpResult returnExcess = TransferContainerItem(parsedItemType.ToString(), excessCount, resolvedInventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
+                    MccMcpResult returnExcess = await TransferContainerItemAsync(parsedItemType.ToString(), excessCount, resolvedInventoryId, preferLargestStack, InventoryTransferDirection.Deposit);
                     if (!returnExcess.Success)
                     {
                         return MccMcpResult.Fail("action_incomplete", data: new
@@ -2087,7 +2171,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             }
             else
             {
-                movedCount = TransferPartialFromSlot(
+                movedCount = await TransferPartialFromSlotAsync(
                     client,
                     resolvedInventoryId,
                     slot,
@@ -2205,10 +2289,8 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return client.GetInventories().Keys.Where(id => id > 0).DefaultIfEmpty(0).Max();
     }
 
-    private static bool WaitForContainerOpen(McClient client, ISet<int> beforeIds, int waitMs, out int inventoryId, out Container? inventory)
+    private static async Task<bool> WaitForContainerOpenAsync(McClient client, ISet<int> beforeIds, int waitMs, Action<ContainerOpenState> onOpened)
     {
-        inventoryId = 0;
-        inventory = null;
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
         while (true)
         {
@@ -2221,19 +2303,18 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
 
             if (state.activeId > 0 && (!beforeIds.Contains(state.activeId) || beforeIds.Count == 0) && state.activeInventory is not null)
             {
-                inventoryId = state.activeId;
-                inventory = state.activeInventory;
+                onOpened(new ContainerOpenState(state.activeId, state.activeInventory));
                 return true;
             }
 
             if (DateTime.UtcNow >= deadline)
                 return false;
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
-    private static bool WaitForContainerClose(McClient client, int inventoryId, int waitMs)
+    private static async Task<bool> WaitForContainerCloseAsync(McClient client, int inventoryId, int waitMs)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
         while (true)
@@ -2245,7 +2326,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (DateTime.UtcNow >= deadline)
                 return false;
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
@@ -2328,20 +2409,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             : 0;
     }
 
-    private static bool TryDropInventorySlotItems(McClient client, int inventoryId, Container inventory, int slotId, ItemType itemType, int dropCount, out int droppedCount)
-    {
-        droppedCount = 0;
-        if (!inventory.Items.TryGetValue(slotId, out Item? currentItem) || currentItem.Type != itemType || currentItem.Count <= 0)
-            return false;
-
-        if (inventoryId == 0 && inventory.IsHotbar(slotId, out int hotbarSlot))
-        {
-            return TryDropHotbarSlotItems(client, slotId, hotbarSlot, itemType, dropCount, currentItem.Count, out droppedCount);
-        }
-
-        return TryDropWindowSlotItems(client, inventoryId, slotId, itemType, dropCount, currentItem.Count, out droppedCount);
-    }
-
     private static int CountItemInRange(Container inventory, ItemType itemType, int startSlot, int endSlot)
     {
         return inventory.Items
@@ -2363,7 +2430,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             .ToArray();
     }
 
-    private static int TransferPartialFromSlot(McClient client, int inventoryId, int sourceSlot, ItemType itemType, int requestedCount, int sourceStart, int sourceEnd, int targetStart, int targetEnd, List<int> touchedTargetSlots)
+    private static async Task<int> TransferPartialFromSlotAsync(McClient client, int inventoryId, int sourceSlot, ItemType itemType, int requestedCount, int sourceStart, int sourceEnd, int targetStart, int targetEnd, List<int> touchedTargetSlots)
     {
         Container? inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
         if (inventory is null || !inventory.Items.TryGetValue(sourceSlot, out Item? sourceItem) || sourceItem.Count <= 0)
@@ -2373,7 +2440,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         if (!client.DoWindowAction(inventoryId, sourceSlot, WindowActionType.LeftClick))
             return 0;
 
-        if (!WaitForCursorItem(client, itemType, DefaultInventoryActionWaitMs, out _))
+        if (!await WaitForCursorItemAsync(client, itemType, DefaultInventoryActionWaitMs))
             return 0;
 
         int moved = 0;
@@ -2392,7 +2459,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (step <= 0 || !PlaceItemsFromCursor(client, inventoryId, targetSlot, step))
                 break;
 
-            if (!WaitForPlacement(client, inventoryId, targetSlot, itemType, beforeTargetCount, beforeCursorCount, step))
+            if (!await WaitForPlacementAsync(client, inventoryId, targetSlot, itemType, beforeTargetCount, beforeCursorCount, step))
                 break;
 
             touchedTargetSlots.Add(targetSlot);
@@ -2409,7 +2476,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (!client.DoWindowAction(inventoryId, returnSlot, WindowActionType.LeftClick))
                 return 0;
 
-            if (!WaitForCursorClear(client, DefaultInventoryActionWaitMs))
+            if (!await WaitForCursorClearAsync(client, DefaultInventoryActionWaitMs))
                 return 0;
         }
 
@@ -2495,27 +2562,27 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return inventory.Items.TryGetValue(slot, out Item? item) && item.Type == itemType ? item.Count : 0;
     }
 
-    private static bool TryDropHotbarSlotItems(McClient client, int slotId, int hotbarSlot, ItemType itemType, int dropCount, int availableInSlot, out int droppedCount)
+    private static async Task<(bool Success, int DroppedCount)> TryDropHotbarSlotItemsAsync(McClient client, int slotId, int hotbarSlot, ItemType itemType, int dropCount, int availableInSlot)
     {
-        droppedCount = 0;
-        byte previousSlot = client.GetCurrentSlot();
+        int droppedCount = 0;
+        byte previousSlot = client.InvokeOnMainThread(client.GetCurrentSlot);
         bool restoreSlot = previousSlot != hotbarSlot;
 
         if (restoreSlot && !client.ChangeSlot((short)hotbarSlot))
-            return false;
+            return (false, 0);
 
         try
         {
             if (dropCount >= availableInSlot)
             {
                 if (!client.DropSelectedItem(dropEntireStack: true))
-                    return false;
+                    return (false, droppedCount);
 
-                if (!WaitForSlotItemCount(client, 0, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs, out _, out _))
-                    return false;
+                if (!await WaitForSlotItemCountAsync(client, 0, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs))
+                    return (false, droppedCount);
 
                 droppedCount = availableInSlot;
-                return true;
+                return (true, droppedCount);
             }
 
             int remaining = dropCount;
@@ -2523,23 +2590,23 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             {
                 Container? currentInventory = client.GetInventory(0);
                 if (currentInventory is null)
-                    return false;
+                    return (false, droppedCount);
 
                 int beforeSlotCount = GetSlotItemCount(currentInventory, slotId, itemType);
                 if (beforeSlotCount <= 0)
                     break;
 
                 if (!client.DropSelectedItem(dropEntireStack: false))
-                    return false;
+                    return (false, droppedCount);
 
-                if (!WaitForSlotItemCount(client, 0, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs, out _, out _))
-                    return false;
+                if (!await WaitForSlotItemCountAsync(client, 0, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs))
+                    return (false, droppedCount);
 
                 remaining--;
                 droppedCount++;
             }
 
-            return remaining == 0;
+            return (remaining == 0, droppedCount);
         }
         finally
         {
@@ -2548,20 +2615,20 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         }
     }
 
-    private static bool TryDropWindowSlotItems(McClient client, int inventoryId, int slotId, ItemType itemType, int dropCount, int availableInSlot, out int droppedCount)
+    private static async Task<(bool Success, int DroppedCount)> TryDropWindowSlotItemsAsync(McClient client, int inventoryId, int slotId, ItemType itemType, int dropCount, int availableInSlot)
     {
-        droppedCount = 0;
+        int droppedCount = 0;
 
         if (dropCount >= availableInSlot)
         {
             if (!client.DoWindowAction(inventoryId, slotId, WindowActionType.DropItemStack))
-                return false;
+                return (false, droppedCount);
 
-            if (!WaitForSlotItemCount(client, inventoryId, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs, out _, out _))
-                return false;
+            if (!await WaitForSlotItemCountAsync(client, inventoryId, slotId, itemType, count => count == 0, DefaultInventoryActionWaitMs))
+                return (false, droppedCount);
 
             droppedCount = availableInSlot;
-            return true;
+            return (true, droppedCount);
         }
 
         int remaining = dropCount;
@@ -2569,42 +2636,54 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         {
             Container? currentInventory = client.GetInventory(inventoryId);
             if (currentInventory is null)
-                return false;
+                return (false, droppedCount);
 
             int beforeSlotCount = GetSlotItemCount(currentInventory, slotId, itemType);
             if (beforeSlotCount <= 0)
                 break;
 
             if (!client.DoWindowAction(inventoryId, slotId, WindowActionType.DropItem))
-                return false;
+                return (false, droppedCount);
 
-            if (!WaitForSlotItemCount(client, inventoryId, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs, out _, out _))
-                return false;
+            if (!await WaitForSlotItemCountAsync(client, inventoryId, slotId, itemType, count => count <= beforeSlotCount - 1, DefaultInventoryActionWaitMs))
+                return (false, droppedCount);
 
             remaining--;
             droppedCount++;
         }
 
-        return remaining == 0;
+        return (remaining == 0, droppedCount);
     }
 
-    private static bool WaitForCursorItem(McClient client, ItemType itemType, int waitMs, out Item? cursorItem)
+    private static Task<(bool Success, int DroppedCount)> TryDropInventorySlotItemsAsync(McClient client, int inventoryId, Container inventory, int slotId, ItemType itemType, int dropCount)
     {
-        cursorItem = null;
+        if (!inventory.Items.TryGetValue(slotId, out Item? currentItem) || currentItem.Type != itemType || currentItem.Count <= 0)
+            return Task.FromResult((false, 0));
+
+        if (inventoryId == 0 && inventory.IsHotbar(slotId, out int hotbarSlot))
+            return TryDropHotbarSlotItemsAsync(client, slotId, hotbarSlot, itemType, dropCount, currentItem.Count);
+
+        return TryDropWindowSlotItemsAsync(client, inventoryId, slotId, itemType, dropCount, currentItem.Count);
+    }
+
+    private readonly record struct InventoryCountState(Container? Inventory, int ItemCount);
+
+    private static async Task<bool> WaitForCursorItemAsync(McClient client, ItemType itemType, int waitMs)
+    {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
         while (true)
         {
-            if (TryGetCursorItem(client, out cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
+            if (TryGetCursorItem(client, out Item? cursorItem) && cursorItem is not null && cursorItem.Type == itemType)
                 return true;
 
             if (DateTime.UtcNow >= deadline)
                 return false;
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
-    private static bool WaitForCursorClear(McClient client, int waitMs)
+    private static async Task<bool> WaitForCursorClearAsync(McClient client, int waitMs)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
         while (true)
@@ -2615,11 +2694,11 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (DateTime.UtcNow >= deadline)
                 return false;
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
-    private static bool WaitForPlacement(McClient client, int inventoryId, int targetSlot, ItemType itemType, int beforeTargetCount, int beforeCursorCount, int placedCount)
+    private static async Task<bool> WaitForPlacementAsync(McClient client, int inventoryId, int targetSlot, ItemType itemType, int beforeTargetCount, int beforeCursorCount, int placedCount)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(DefaultInventoryActionWaitMs);
         while (true)
@@ -2627,7 +2706,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             bool targetUpdated = false;
             bool cursorUpdated = false;
 
-            Container? inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
+            Container? inventory = client.GetInventory(inventoryId);
             if (inventory is not null)
             {
                 int currentTargetCount = GetSlotItemCount(inventory, targetSlot, itemType);
@@ -2649,21 +2728,19 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (DateTime.UtcNow >= deadline)
                 return false;
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
-    private static bool WaitForSlotItemCount(McClient client, int inventoryId, int slotId, ItemType itemType, Func<int, bool> predicate, int waitMs, out Container? inventory, out int itemCount)
+    private static async Task<bool> WaitForSlotItemCountAsync(McClient client, int inventoryId, int slotId, ItemType itemType, Func<int, bool> predicate, int waitMs)
     {
-        inventory = null;
-        itemCount = 0;
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
         while (true)
         {
-            inventory = client.GetInventory(inventoryId);
+            Container? inventory = client.GetInventory(inventoryId);
             if (inventory is not null)
             {
-                itemCount = GetSlotItemCount(inventory, slotId, itemType);
+                int itemCount = GetSlotItemCount(inventory, slotId, itemType);
                 if (predicate(itemCount))
                     return true;
             }
@@ -2671,21 +2748,22 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (DateTime.UtcNow >= deadline)
                 return false;
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
-    private static bool WaitForRangeCount(McClient client, int inventoryId, ItemType itemType, int startSlot, int endSlot, Func<int, bool> predicate, int waitMs, out Container? inventory, out int itemCount)
+    private static async Task<bool> WaitForRangeCountAsync(McClient client, int inventoryId, ItemType itemType, int startSlot, int endSlot, Func<int, bool> predicate, int waitMs, Action<InventoryCountState> onObserved, Action onInitialize)
     {
-        inventory = null;
-        itemCount = 0;
+        onInitialize();
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
         while (true)
         {
-            inventory = client.InvokeOnMainThread(() => client.GetInventory(inventoryId));
+            Container? inventory = client.GetInventory(inventoryId);
+            int itemCount = 0;
             if (inventory is not null)
             {
                 itemCount = CountItemInRange(inventory, itemType, startSlot, endSlot);
+                onObserved(new InventoryCountState(inventory, itemCount));
                 if (predicate(itemCount))
                     return true;
             }
@@ -2693,7 +2771,7 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             if (DateTime.UtcNow >= deadline)
                 return false;
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
@@ -2882,22 +2960,21 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return new string(buffer);
     }
 
-    private static bool WaitForArrival(McClient client, Location goal, int waitMs, double tolerance, out Location? finalLocation)
+    private static async Task<(bool Arrived, Location FinalLocation)> WaitForArrivalAsync(McClient client, Location goal, int waitMs, double tolerance)
     {
-        finalLocation = null;
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
+        Location finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
         while (true)
         {
-            Location location = client.InvokeOnMainThread(client.GetCurrentLocation);
-            finalLocation = location;
-            double distance = GetDistance(location, goal);
+            finalLocation = client.InvokeOnMainThread(client.GetCurrentLocation);
+            double distance = GetDistance(finalLocation, goal);
             if (distance <= tolerance)
-                return true;
+                return (true, finalLocation);
 
             if (DateTime.UtcNow >= deadline)
-                return false;
+                return (false, finalLocation);
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
@@ -2929,21 +3006,21 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
         return Math.Clamp(timeoutMs, MinPathQueryTimeoutMs, MaxPathQueryTimeoutMs);
     }
 
-    private static bool WaitForBlockChange(McClient client, Location target, Block beforeBlock, int waitMs, out Block afterBlock)
+    private static async Task<(bool Changed, Block AfterBlock)> WaitForBlockChangeAsync(McClient client, Location target, Block beforeBlock, int waitMs)
     {
-        afterBlock = beforeBlock;
+        Block afterBlock = beforeBlock;
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
         while (true)
         {
             Block current = client.InvokeOnMainThread(() => client.GetWorld().GetBlock(target));
             afterBlock = current;
             if (!AreEquivalentBlocks(current, beforeBlock))
-                return true;
+                return (true, afterBlock);
 
             if (DateTime.UtcNow >= deadline)
-                return false;
+                return (false, afterBlock);
 
-            Thread.Sleep(ArrivalPollIntervalMs);
+            await Task.Delay(ArrivalPollIntervalMs);
         }
     }
 
@@ -3060,22 +3137,6 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             .OrderBy(item => item.Distance)
             .Take(maxCount)
             .ToArray();
-    }
-
-    private static bool WaitForEntityRemoval(McClient client, int entityId, int waitMs)
-    {
-        DateTime deadline = DateTime.UtcNow.AddMilliseconds(waitMs);
-        while (true)
-        {
-            bool exists = client.InvokeOnMainThread(() => client.GetEntities().ContainsKey(entityId));
-            if (!exists)
-                return true;
-
-            if (DateTime.UtcNow >= deadline)
-                return false;
-
-            Thread.Sleep(ArrivalPollIntervalMs);
-        }
     }
 
     private static int GetInventoryItemCount(McClient client, ItemType itemType)

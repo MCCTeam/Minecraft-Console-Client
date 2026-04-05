@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.PacketPipeline;
 using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -21,6 +23,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private readonly ForgeInfo? forgeInfo = forgeInfo;
         private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
+        private DateTime? pendingServerDataAckAt;
         private bool ForgeEnabled() { return forgeInfo is not null; }
 
         /// <summary>
@@ -41,11 +44,18 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Whether the handshake was successful.</returns>
         public bool CompleteForgeHandshake()
         {
+            return CompleteForgeHandshakeAsync().GetAwaiter().GetResult();
+        }
+
+        public async Task<bool> CompleteForgeHandshakeAsync(CancellationToken cancellationToken = default)
+        {
             if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML)
             {
                 while (fmlHandshakeState != FMLHandshakeClientState.DONE)
                 {
-                    (int packetID, Queue<byte> packetData) = protocol18.ReadNextPacket();
+                    IncomingPacket packet = await protocol18.ReadNextPacketAsync(cancellationToken);
+                    int packetID = packet.PacketId;
+                    PacketReader packetData = packet.CreateReader();
 
                     if (packetID == 0x40) // Disconnect
                     {
@@ -56,10 +66,29 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         // Send back regular packet to the vanilla protocol handler
                         protocol18.HandlePacket(packetID, packetData);
+                        await FlushPendingHandshakeActionsAsync(cancellationToken);
                     }
                 }
             }
             return true;
+        }
+
+        private async Task FlushPendingHandshakeActionsAsync(CancellationToken cancellationToken)
+        {
+            if (!pendingServerDataAckAt.HasValue)
+                return;
+
+            TimeSpan delay = pendingServerDataAckAt.Value - DateTime.UtcNow;
+            if (delay > TimeSpan.Zero)
+                await Task.Delay(delay, cancellationToken);
+
+            if (Settings.Config.Logging.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8" + Translations.forge_accept, acceptnewlines: true);
+
+            SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
+                new byte[] { (byte)FMLHandshakeClientState.WAITINGSERVERDATA });
+
+            pendingServerDataAckAt = null;
         }
 
         /// <summary>
@@ -67,7 +96,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetData">Packet data to read from</param>
         /// <returns>Length from packet data</returns>
-        public int ReadNextVarShort(Queue<byte> packetData)
+        public int ReadNextVarShort(PacketReader packetData)
         {
             if (ForgeEnabled())
             {
@@ -88,7 +117,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">Plugin message data</param>
         /// <param name="currentDimension">Current world dimension</param>
         /// <returns>TRUE if the plugin message was recognized and handled</returns>
-        public bool HandlePluginMessage(string channel, Queue<byte> packetData, ref int currentDimension)
+        public bool HandlePluginMessage(string channel, PacketReader packetData, ref int currentDimension)
         {
             if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML && fmlHandshakeState != FMLHandshakeClientState.DONE)
             {
@@ -145,16 +174,9 @@ namespace MinecraftClient.Protocol.Handlers
                             if (discriminator != FMLHandshakeDiscriminator.ModList)
                                 return false;
 
-                            Thread.Sleep(2000);
-
-                            if (Settings.Config.Logging.DebugMessages)
-                                ConsoleIO.WriteLineFormatted("§8" + Translations.forge_accept, acceptnewlines: true);
                             // Tell the server that yes, we are OK with the mods it has
                             // even though we don't actually care what mods it has.
-
-                            SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
-                                new byte[] { (byte)FMLHandshakeClientState.WAITINGSERVERDATA });
-
+                            pendingServerDataAckAt = DateTime.UtcNow.AddSeconds(2);
                             fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERCOMPLETE;
                             return false;
                         case FMLHandshakeClientState.WAITINGSERVERCOMPLETE:
@@ -224,7 +246,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">Plugin message data</param>
         /// <param name="responseData">Response data to return to server</param>
         /// <returns>TRUE/FALSE depending on whether the packet was understood or not</returns>
-        public bool HandleLoginPluginRequest(string channel, Queue<byte> packetData, ref List<byte> responseData)
+        public bool HandleLoginPluginRequest(string channel, PacketReader packetData, ref List<byte> responseData)
         {
             if (ForgeEnabled() && (forgeInfo!.Version == FMLVersion.FML2 || forgeInfo!.Version == FMLVersion.FML3) && channel == "fml:loginwrapper")
             {
@@ -313,7 +335,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             // FML3 specific, 
                             List<string> dataPackRegistries = new();
-                            if (forgeInfo!.Version == FMLVersion.FML3 && packetData.Count != 0)
+                            if (forgeInfo!.Version == FMLVersion.FML3 && packetData.RemainingLength != 0)
                             {
                                 int dataPackRegistryCount = dataTypes.ReadNextVarInt(packetData);
                                 for (int i = 0; i < dataPackRegistryCount; i++)
