@@ -48,7 +48,7 @@
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.5" />
     <PackageReference Include="Samboy063.Tomlet" Version="6.2.0" />
-    <PackageReference Include="Sentry" Version="6.2.0" />
+    <PackageReference Include="Sentry" Version="6.3.0" />
     <PackageReference Include="SingleFileExtractor.Core" Version="2.3.0" />
 	<PackageReference Include="starksoft.aspen" Version="1.1.8">
 		<NoWarn>NU1701</NoWarn>
