@@ -200,7 +200,12 @@ namespace MinecraftClient.Protocol.Message
         /// <returns>Color code</returns>
         private static string Color2tag(string colorname)
         {
-            return colorname.ToLower() switch
+            string lower = colorname.ToLower();
+
+            if (lower.Length == 7 && lower[0] == '#' && IsHexColor(lower))
+                return "§" + lower;
+
+            return lower switch
             {
 #pragma warning disable format // @formatter:off
 
@@ -225,6 +230,17 @@ namespace MinecraftClient.Protocol.Message
 
 #pragma warning restore format // @formatter:on
             };
+        }
+
+        private static bool IsHexColor(string s)
+        {
+            for (int i = 1; i < s.Length; i++)
+            {
+                char c = s[i];
+                if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')))
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -443,8 +459,8 @@ namespace MinecraftClient.Protocol.Message
             { "italic",        "o" },
         };
 
-        /// <summary>Matches a single color code (§0–§9, §a–§f). Used to strip color when replacing.</summary>
-        private static readonly Regex ColorCodeRegex = new(@"§[0-9a-f]", RegexOptions.Compiled);
+        /// <summary>Matches a single color code (§0-§9, §a-§f) or a hex color (§#rrggbb). Used to strip color when replacing.</summary>
+        private static readonly Regex ColorCodeRegex = new(@"§(?:[0-9a-f]|#[0-9a-f]{6})", RegexOptions.Compiled);
 
         /// <summary>
         /// Use a JSON Object to build the corresponding string

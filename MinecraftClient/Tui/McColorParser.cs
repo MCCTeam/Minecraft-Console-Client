@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
@@ -63,6 +64,19 @@ namespace MinecraftClient.Tui
                     if (i > start)
                         AddRun(tb, text[start..i], currentColor, bold, italic, underline, strikethrough);
 
+                    if (text[i + 1] == '#' && i + 8 <= text.Length
+                        && TryParseHexColor(text.AsSpan(i + 2, 6), out var hexBrush))
+                    {
+                        currentColor = hexBrush;
+                        bold = false;
+                        italic = false;
+                        underline = false;
+                        strikethrough = false;
+                        i += 7;
+                        start = i + 1;
+                        continue;
+                    }
+
                     char code = char.ToLower(text[i + 1]);
 
                     if (ColorMap.TryGetValue(code, out var brush))
@@ -106,6 +120,20 @@ namespace MinecraftClient.Tui
             }
 
             return tb;
+        }
+
+        private static bool TryParseHexColor(ReadOnlySpan<char> hex, out IBrush brush)
+        {
+            if (hex.Length == 6
+                && byte.TryParse(hex[..2], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte r)
+                && byte.TryParse(hex[2..4], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte g)
+                && byte.TryParse(hex[4..6], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte b))
+            {
+                brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+                return true;
+            }
+            brush = Brushes.White;
+            return false;
         }
 
         private static void AddRun(TextBlock tb, string text, IBrush color,
