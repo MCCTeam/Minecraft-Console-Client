@@ -26,9 +26,7 @@ namespace MinecraftClient.Tui
             if (configured > 0)
                 return configured;
 
-            bool isArm = RuntimeInformation.ProcessArchitecture
-                is Architecture.Arm or Architecture.Arm64;
-            return isArm ? 500 : 3000;
+            return 3000;
         }
 
         private readonly ObservableCollection<string> _logLines = new();
