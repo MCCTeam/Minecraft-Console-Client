@@ -19,7 +19,6 @@ namespace MinecraftClient.Tui
         public event EventHandler<ConsoleInputBuffer>? OnInputChange;
 
         private MainTuiView? _view;
-        private volatile bool _readThreadActive;
 
         public bool DisplayUserInput { get; set; } = true;
 
@@ -177,12 +176,10 @@ namespace MinecraftClient.Tui
 
         public void BeginReadThread()
         {
-            _readThreadActive = true;
         }
 
         public void StopReadThread()
         {
-            _readThreadActive = false;
             DismissOverlay();
         }
 

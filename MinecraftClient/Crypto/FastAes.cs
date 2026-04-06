@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -63,16 +63,16 @@ namespace MinecraftClient.Crypto
 
             keys[0] = Unsafe.ReadUnaligned<Vector128<byte>>(ref key[0]);
 
-            MakeRoundKey(keys, 1, 0x01);
-            MakeRoundKey(keys, 2, 0x02);
-            MakeRoundKey(keys, 3, 0x04);
-            MakeRoundKey(keys, 4, 0x08);
-            MakeRoundKey(keys, 5, 0x10);
-            MakeRoundKey(keys, 6, 0x20);
-            MakeRoundKey(keys, 7, 0x40);
-            MakeRoundKey(keys, 8, 0x80);
-            MakeRoundKey(keys, 9, 0x1b);
-            MakeRoundKey(keys, 10, 0x36);
+            ExpandRound(keys, 1, Aes.KeygenAssist(keys[0], 0x01));
+            ExpandRound(keys, 2, Aes.KeygenAssist(keys[1], 0x02));
+            ExpandRound(keys, 3, Aes.KeygenAssist(keys[2], 0x04));
+            ExpandRound(keys, 4, Aes.KeygenAssist(keys[3], 0x08));
+            ExpandRound(keys, 5, Aes.KeygenAssist(keys[4], 0x10));
+            ExpandRound(keys, 6, Aes.KeygenAssist(keys[5], 0x20));
+            ExpandRound(keys, 7, Aes.KeygenAssist(keys[6], 0x40));
+            ExpandRound(keys, 8, Aes.KeygenAssist(keys[7], 0x80));
+            ExpandRound(keys, 9, Aes.KeygenAssist(keys[8], 0x1b));
+            ExpandRound(keys, 10, Aes.KeygenAssist(keys[9], 0x36));
 
             for (int i = 1; i < 10; i++)
             {
@@ -82,13 +82,11 @@ namespace MinecraftClient.Crypto
             return keys;
         }
 
-        private static void MakeRoundKey(Vector128<byte>[] keys, int i, byte rcon)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ExpandRound(Vector128<byte>[] keys, int i, Vector128<byte> assist)
         {
             Vector128<byte> s = keys[i - 1];
-            Vector128<byte> t = keys[i - 1];
-
-            t = Aes.KeygenAssist(t, rcon);
-            t = Sse2.Shuffle(t.AsUInt32(), 0xFF).AsByte();
+            Vector128<byte> t = Sse2.Shuffle(assist.AsUInt32(), 0xFF).AsByte();
 
             s = Sse2.Xor(s, Sse2.ShiftLeftLogical128BitLane(s, 4));
             s = Sse2.Xor(s, Sse2.ShiftLeftLogical128BitLane(s, 8));
