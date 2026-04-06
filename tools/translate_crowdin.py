@@ -262,12 +262,32 @@ _LEAK_FINGERPRINTS_EN = [
 def _split_into_fragments(text: str, min_len: int = 6) -> list[str]:
     """Split translated domain prompt into sentence-level fragments."""
     raw = re.split(r'[。．\.\n！!？?；;：:\u3002]', text)
+    seen: set[str] = set()
     fragments: list[str] = []
     for frag in raw:
         frag = frag.strip()
-        if len(frag) >= min_len:
+        if len(frag) >= min_len and frag not in seen:
+            seen.add(frag)
             fragments.append(frag)
     return fragments
+
+
+def _deduplicate_prompt_translation(text: str) -> str:
+    """Remove duplicate paragraphs from a cached domain prompt translation.
+
+    The API occasionally returns the translation twice (or more) in a single
+    response. We split on blank lines, keep the first occurrence of each
+    paragraph, and rejoin.
+    """
+    paragraphs = text.split("\n")
+    seen: set[str] = set()
+    unique: list[str] = []
+    for para in paragraphs:
+        key = para.strip()
+        if key not in seen:
+            seen.add(key)
+            unique.append(para)
+    return "\n".join(unique).strip()
 
 
 def _char_ngrams(text: str, n: int = 5) -> set[str]:
@@ -300,6 +320,12 @@ def ensure_domain_prompt_cached(
 
     if cache_file.exists():
         text = cache_file.read_text(encoding="utf-8")
+        deduped = _deduplicate_prompt_translation(text)
+        if deduped != text.strip():
+            log.info("  Fixed duplicate content in cache for %s, rewriting",
+                     locale)
+            cache_file.write_text(deduped, encoding="utf-8")
+            text = deduped
         log.info("  Loaded cached domain prompt translation for %s", locale)
     else:
         log.info("  Translating domain prompt into %s for leak detection ...",
@@ -310,6 +336,7 @@ def ensure_domain_prompt_cached(
             model=model,
             api_key=api_key,
         )
+        text = _deduplicate_prompt_translation(text)
         cache_file.write_text(text, encoding="utf-8")
         log.info("  Cached domain prompt translation -> %s", cache_file)
 
