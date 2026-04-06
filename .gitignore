@@ -441,3 +441,6 @@ FodyWeavers.xsd
 /Sentry/
 /downloads/
 server.pid
+
+# Crowdin translation automation working directory
+/.crowdin-translate/
