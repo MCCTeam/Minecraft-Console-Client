@@ -75,7 +75,7 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 
 ## Translating Minecraft Console Client 🌍
 
-To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crowdin.com/project/minecraft-console-client).
 
 ## Building from the source 🏗️
 
