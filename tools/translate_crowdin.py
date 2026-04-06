@@ -640,16 +640,22 @@ def load_existing_translated_ids(xliff_path: Path) -> set[str]:
 # ---------------------------------------------------------------------------
 
 def find_xliff_files(bundle_dir: Path, locales: list[str] | None) -> dict[str, Path]:
-    """Map Crowdin locale -> XLIFF path for the given bundle directory."""
-    result: dict[str, Path] = {}
+    """Map Crowdin locale -> XLIFF path, preserving the order of *locales*.
+
+    When locales is None (all languages) files are ordered by filename.
+    """
+    available: dict[str, Path] = {}
     for xliff_path in sorted(bundle_dir.glob("*.xliff")):
         name = xliff_path.stem
         for locale in LANGUAGE_MAP:
             if name.endswith(f"_{locale}"):
-                if locales is None or locale in locales:
-                    result[locale] = xliff_path
+                available[locale] = xliff_path
                 break
-    return result
+
+    if locales is None:
+        return available
+
+    return {loc: available[loc] for loc in locales if loc in available}
 
 
 def process_language(
@@ -906,7 +912,7 @@ def main() -> None:
     log.info("Found %d language(s) to process: %s",
              len(xliff_files), ", ".join(sorted(xliff_files)))
 
-    for locale, xliff_path in sorted(xliff_files.items()):
+    for locale, xliff_path in xliff_files.items():
         try:
             process_language(
                 locale=locale,
