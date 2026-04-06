@@ -69,7 +69,7 @@ namespace MinecraftClient.Tui
         private static void AddGithub(StackPanel panel)
         {
             var row = new TextBlock();
-            row.Inlines!.Add(Val("Github.com/MCCTeam", Pal.Gray));
+            row.Inlines!.Add(Val("https://github.com/MCCTeam", Pal.Gray));
             panel.Children.Add(row);
         }
 
