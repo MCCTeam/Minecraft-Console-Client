@@ -1993,6 +1993,10 @@ namespace MinecraftClient
                 case "fi-FI":
                     gameLanguage = "fi_fi";
                     break;
+                case "fil":
+                case "fil-PH":
+                    gameLanguage = "fil_ph";
+                    break;
                 case "fo":
                 case "fo-FO":
                     gameLanguage = "fo_fo";
@@ -2105,6 +2109,7 @@ namespace MinecraftClient
                     gameLanguage = "mt_mt";
                     break;
                 case "nb-NO":
+                    gameLanguage = "no_no";
                     break;
                 case "nl":
                 case "nl-NL":
@@ -2117,7 +2122,7 @@ namespace MinecraftClient
                     gameLanguage = "nn_no";
                     break;
                 case "no":
-                    gameLanguage = "no_no‌";
+                    gameLanguage = "no_no";
                     break;
                 case "ns-ZA":
                     break;
@@ -2126,14 +2131,14 @@ namespace MinecraftClient
                     break;
                 case "pl":
                 case "pl-PL":
-                    gameLanguage = "pl_pl‌";
+                    gameLanguage = "pl_pl";
                     break;
                 case "pt":
                 case "pt-PT":
-                    gameLanguage = "pt_pt‌";
+                    gameLanguage = "pt_pt";
                     break;
                 case "pt-BR":
-                    gameLanguage = "pt_br‌";
+                    gameLanguage = "pt_br";
                     break;
                 case "quz-BO":
                     break;
@@ -2143,7 +2148,7 @@ namespace MinecraftClient
                     break;
                 case "ro":
                 case "ro-RO":
-                    gameLanguage = "ro_ro‌";
+                    gameLanguage = "ro_ro";
                     break;
                 case "ru":
                 case "ru-RU":
