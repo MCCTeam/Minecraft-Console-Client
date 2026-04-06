@@ -38,7 +38,7 @@ namespace MinecraftClient
         public const string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/c492375ded5da34b646b8c5c0842a0028bc69cec/2.json";
         public const string TranslationsFile_Website_Download = "https://resources.download.minecraft.net";
 
-        public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
+        public const string TranslationProjectUrl = "https://crowdin.com/project/minecraft-console-client";
         public const int ClientTicksPerSecond = 20;
         public const int ClientTickIntervalMilliseconds = 1000 / ClientTicksPerSecond;
 

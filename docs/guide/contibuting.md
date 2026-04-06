@@ -18,7 +18,7 @@ For now, the project has three main contribution paths:
 
 ## Translations
 
-To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crowdin.com/project/minecraft-console-client).
 
 **It is recommended to translate `MCC in-app text` first.**
 
