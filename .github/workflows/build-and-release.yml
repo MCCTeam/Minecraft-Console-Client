@@ -193,7 +193,7 @@ jobs:
         sed -i -e 's|SentryDSN = "";|SentryDSN = "${{ secrets.SENTRY_DSN }}";|g' ${{ env.project-path }}/Program.cs
 
     - name: Build Target
-      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r ${{ matrix.target }} ${{ env.compile-flags }}
+      run: dotnet publish ${{ env.project-path }}/${{ env.PROJECT }}.csproj -f ${{ env.target-version }} -r ${{ matrix.target }} ${{ env.compile-flags }}
       env:
         DOTNET_NOLOGO: true
 
