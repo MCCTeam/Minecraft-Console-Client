@@ -803,7 +803,7 @@ public sealed class MccGameApi
             {
                 Id = inventory.ID,
                 Type = inventory.Type.ToString(),
-                Title = inventory.Title,
+                Title = inventory.Title ?? string.Empty,
                 SlotCount = inventory.Type.SlotCount(),
                 Slots = slots,
                 Cursor = TryBuildCursorSnapshot(inventory)
@@ -850,7 +850,7 @@ public sealed class MccGameApi
                             {
                                 InventoryId = entry.Key,
                                 InventoryType = inventory.Type.ToString(),
-                                InventoryTitle = inventory.Title,
+                                InventoryTitle = inventory.Title ?? string.Empty,
                                 Slot = pair.Key,
                                 ItemType = pair.Value.Type.ToString(),
                                 TypeLabel = pair.Value.GetTypeString(),
@@ -894,7 +894,7 @@ public sealed class MccGameApi
                 {
                     Id = entry.Key,
                     Type = entry.Value.Type.ToString(),
-                    Title = entry.Value.Title,
+                    Title = entry.Value.Title ?? string.Empty,
                     SlotCount = entry.Value.Type.SlotCount(),
                     NonEmptySlots = entry.Value.Items.Count(item => IsSnapshotInventorySlot(entry.Value, item.Key)),
                     Active = entry.Key > 0 && entry.Key == GetActiveContainerId(client)

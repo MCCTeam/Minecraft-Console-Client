@@ -951,7 +951,7 @@ namespace MinecraftClient
                 offlinePrompt = null;
                 ConsoleIO.Reset();
             }
-            if (Config.Main.Advanced.PlayerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
+            if (Config.Main.Advanced.PlayerHeadAsIcon && OperatingSystem.IsWindows()) { ConsoleIcon.RevertToMCCIcon(); }
             ConsoleIO.Backend?.Shutdown();
             Environment.Exit(exitcode);
         }
