@@ -8,6 +8,9 @@
     <Nullable>enable</Nullable>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Consolonia transitively pulls in Avalonia build tasks; MCC has no XAML resources,
+         so disable the transitive Avalonia compilation to avoid file-lock races in parallel builds. -->
+    <EnableAvaloniaCompilationByDefault>false</EnableAvaloniaCompilationByDefault>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
