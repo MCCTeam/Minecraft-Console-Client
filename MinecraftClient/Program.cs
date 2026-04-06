@@ -54,6 +54,8 @@ namespace MinecraftClient
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static IDisposable? _sentrySdk = null;
         private static bool useMcVersionOnce = false;
+        private static Thread? _restartThread = null;
+        private static readonly object _restartLock = new();
         private static string settingsIniPath = "MinecraftClient.ini";
 
         // [SENTRY]
@@ -892,25 +894,45 @@ namespace MinecraftClient
         /// <param name="keepAccountAndServerSettings">Optional, keep account and server settings</param>
         public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
-            ConsoleIO.Backend?.StopReadThread();
-            new Thread(new ThreadStart(delegate
+            lock (_restartLock)
             {
-                if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt is not null)
+                if (_restartThread is not null && _restartThread.IsAlive
+                    && _restartThread != Thread.CurrentThread)
+                    return;
+
+                ConsoleIO.Backend?.StopReadThread();
+                var thread = new Thread(new ThreadStart(delegate
                 {
-                    if (ConsoleIO.Backend is not null)
-                        ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
-                    offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
-                }
-                if (delaySeconds > 0)
-                {
-                    ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
-                    Thread.Sleep(delaySeconds * 1000);
-                }
-                ConsoleIO.WriteLine(Translations.mcc_restart);
-                ReloadSettings(keepAccountAndServerSettings);
-                InitializeClient();
-            })).Start();
+                    try
+                    {
+                        if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
+                        if (offlinePrompt is not null)
+                        {
+                            if (ConsoleIO.Backend is not null)
+                                ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                            offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
+                        }
+                        if (delaySeconds > 0)
+                        {
+                            ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
+                            Thread.Sleep(delaySeconds * 1000);
+                        }
+                        ConsoleIO.WriteLine(Translations.mcc_restart);
+                        ReloadSettings(keepAccountAndServerSettings);
+                        InitializeClient();
+                    }
+                    finally
+                    {
+                        lock (_restartLock)
+                        {
+                            if (_restartThread == Thread.CurrentThread)
+                                _restartThread = null;
+                        }
+                    }
+                }));
+                _restartThread = thread;
+                thread.Start();
+            }
         }
 
         public static void DoExit(int exitcode = 0)
@@ -951,6 +973,8 @@ namespace MinecraftClient
         /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
         public static void HandleFailure(string? errorMessage = null, bool versionError = false, ChatBot.DisconnectReason? disconnectReason = null)
         {
+            bool autoRelogHandled = false;
+
             if (!string.IsNullOrEmpty(errorMessage))
             {
                 ConsoleIO.Reset();
@@ -967,8 +991,9 @@ namespace MinecraftClient
 
                 if (disconnectReason.HasValue)
                 {
+                    autoRelogHandled = true;
                     if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage))
-                        return; //AutoRelog is triggering a restart of the client
+                        return;
                 }
             }
 
@@ -986,10 +1011,10 @@ namespace MinecraftClient
                     }
                 }
 
-                if (disconnectReason.HasValue)
+                if (!autoRelogHandled && disconnectReason.HasValue)
                 {
                     if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage!))
-                        return; //AutoRelog is triggering a restart of the client, don't turn on the offline prompt
+                        return;
                 }
 
                 if (offlinePrompt is null)
