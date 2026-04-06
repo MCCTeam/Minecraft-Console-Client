@@ -1838,6 +1838,15 @@ namespace MinecraftClient
             }
         }
 
+        /// <summary>
+        /// Map the system CultureInfo name to a Minecraft game language code.
+        /// </summary>
+        /// <remarks>
+        /// Culture name reference (language-COUNTRY):
+        ///   https://learn.microsoft.com/en-us/previous-versions/commerce-server/ee797784(v=cs.20)
+        /// Full LCID / language-tag spec (MS-LCID, includes fil-PH, nb-NO, etc.):
+        ///   https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/70feba9f-294e-491e-b6eb-56532684c37f
+        /// </remarks>
         public static string GetDefaultGameLanguage()
         {
             string gameLanguage = "en_us";
@@ -1993,6 +2002,14 @@ namespace MinecraftClient
                 case "fi-FI":
                     gameLanguage = "fi_fi";
                     break;
+                case "fil":
+                case "fil-PH":
+                    gameLanguage = "fil_ph";
+                    break;
+                case "tl":
+                case "tl-PH":
+                    gameLanguage = "tl_ph";
+                    break;
                 case "fo":
                 case "fo-FO":
                     gameLanguage = "fo_fo";
@@ -2105,6 +2122,7 @@ namespace MinecraftClient
                     gameLanguage = "mt_mt";
                     break;
                 case "nb-NO":
+                    gameLanguage = "no_no";
                     break;
                 case "nl":
                 case "nl-NL":
@@ -2117,7 +2135,7 @@ namespace MinecraftClient
                     gameLanguage = "nn_no";
                     break;
                 case "no":
-                    gameLanguage = "no_no‌";
+                    gameLanguage = "no_no";
                     break;
                 case "ns-ZA":
                     break;
@@ -2126,14 +2144,14 @@ namespace MinecraftClient
                     break;
                 case "pl":
                 case "pl-PL":
-                    gameLanguage = "pl_pl‌";
+                    gameLanguage = "pl_pl";
                     break;
                 case "pt":
                 case "pt-PT":
-                    gameLanguage = "pt_pt‌";
+                    gameLanguage = "pt_pt";
                     break;
                 case "pt-BR":
-                    gameLanguage = "pt_br‌";
+                    gameLanguage = "pt_br";
                     break;
                 case "quz-BO":
                     break;
@@ -2143,7 +2161,7 @@ namespace MinecraftClient
                     break;
                 case "ro":
                 case "ro-RO":
-                    gameLanguage = "ro_ro‌";
+                    gameLanguage = "ro_ro";
                     break;
                 case "ru":
                 case "ru-RU":
