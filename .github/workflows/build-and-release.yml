@@ -73,7 +73,7 @@ jobs:
       uses: crowdin/github-action@v2.4.0
       if: steps.cache-check.outputs.cache-hit != 'true' && steps.crowdin-check.outputs.available == 'true'
       with:
-        upload_sources: false
+        upload_sources: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
         upload_translations: false
         download_translations: true
 
