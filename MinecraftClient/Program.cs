@@ -202,6 +202,11 @@ namespace MinecraftClient
             {
                 ConsoleIO.Backend = new ClassicConsoleBackend();
                 ConsoleIO.Backend.Init();
+
+                // Config deserialization triggers OnSettingUpdate before the backend
+                // exists, so console-specific settings (UseVT100ColorCode, colors, etc.)
+                // are never applied. Re-apply them now that the backend is ready.
+                Config.Console.OnSettingUpdate();
             }
 
             if (!ProcessStartupState(startupState))
@@ -240,6 +245,7 @@ namespace MinecraftClient
 
             ConsoleIO.Backend = new ClassicConsoleBackend();
             ConsoleIO.Backend.Init();
+            Config.Console.OnSettingUpdate();
 
             ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_tui_startup_failed);
             ConsoleIO.WriteLine(exception.ToString());
