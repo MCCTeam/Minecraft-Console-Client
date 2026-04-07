@@ -36,7 +36,6 @@ NS = {"x": XLIFF_NS}
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WORK_DIR = REPO_ROOT / ".crowdin-translate"
 BUNDLES_DIR = WORK_DIR / "bundles"
-DEFAULT_OUTPUT_DIR = WORK_DIR / "translated"
 ERRORS_DIR = WORK_DIR / "errors"
 DOMAIN_PROMPT_CACHE_DIR = WORK_DIR / "domain-prompt-cache"
 
@@ -775,11 +774,13 @@ def process_language(
                             f"source={u.source[:200]}\n")
         log.info("  Error details written to %s", err_path)
 
+    new_success = [u for u in translated_units if u.translated]
+
     if already_done and output_file.exists():
         existing_units = _parse_existing_output(output_file)
-        all_units = existing_units + [u for u in translated_units if u.translated]
+        all_units = existing_units + new_success
     else:
-        all_units = [u for u in translated_units if u.translated]
+        all_units = new_success
 
     if not all_units:
         if interrupted:
@@ -793,8 +794,10 @@ def process_language(
         output_file.write_text(xliff_content, encoding="utf-8")
         log.info("  Written: %s (%d units)", output_file.name, len(all_units))
 
-        if not skip_upload and not interrupted:
+        if not skip_upload and not interrupted and new_success:
             upload_xliff(output_file, crowdin_lang)
+        elif not new_success:
+            log.info("  No new translations this run, skipping upload")
 
     if interrupted:
         raise KeyboardInterrupt
@@ -872,7 +875,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--skip-upload", action="store_true",
                    help="Skip uploading translations to Crowdin")
     p.add_argument("--output-dir", type=Path, default=None,
-                   help=f"Output directory (default: {DEFAULT_OUTPUT_DIR})")
+                   help="Output directory (default: <bundle-dir>/translated/)")
     p.add_argument("--include-docs", action="store_true",
                    help="Include /docs/ files in translation (skipped by default)")
     p.add_argument("-v", "--verbose", action="store_true",
@@ -923,8 +926,12 @@ def main() -> None:
     else:
         bundle_dir = download_bundle(args.bundle_id)
 
-    output_dir = args.output_dir or DEFAULT_OUTPUT_DIR
+    if args.output_dir:
+        output_dir = args.output_dir
+    else:
+        output_dir = bundle_dir / "translated"
     output_dir.mkdir(parents=True, exist_ok=True)
+    log.info("Output directory: %s", output_dir)
 
     exclude_paths: list[str] | None = None if args.include_docs else ["/docs/"]
     if exclude_paths:
