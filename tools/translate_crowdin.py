@@ -141,8 +141,16 @@ class TransUnit:
 # XLIFF parsing
 # ---------------------------------------------------------------------------
 
-def parse_xliff(path: Path, *, exclude_paths: list[str] | None = None) -> list[TransUnit]:
+def parse_xliff(
+    path: Path, *,
+    exclude_paths: list[str] | None = None,
+    include_paths: list[str] | None = None,
+) -> list[TransUnit]:
     """Parse an XLIFF 1.2 file, return trans-units with state=needs-translation.
+
+    include_paths: if set, only keep <file> elements whose ``original``
+    starts with (or equals) one of these prefixes.  Takes priority over
+    exclude_paths.
 
     exclude_paths: skip <file> elements whose ``original`` starts with any
     of these prefixes (e.g. ``["/docs/"]``).
@@ -153,7 +161,12 @@ def parse_xliff(path: Path, *, exclude_paths: list[str] | None = None) -> list[T
 
     for file_elem in root.findall(f"{{{XLIFF_NS}}}file"):
         original = file_elem.get("original", "")
-        if exclude_paths and any(original.startswith(p) for p in exclude_paths):
+        if include_paths:
+            if not any(original == p or original.startswith(p.rstrip("/") + "/")
+                       or original == p.rstrip("/")
+                       for p in include_paths):
+                continue
+        elif exclude_paths and any(original.startswith(p) for p in exclude_paths):
             continue
         finfo = FileInfo(
             file_id=file_elem.get("id", ""),
@@ -695,6 +708,7 @@ def process_language(
     dry_run: bool,
     skip_upload: bool,
     exclude_paths: list[str] | None = None,
+    include_paths: list[str] | None = None,
 ) -> None:
     """Full pipeline for one language."""
     lang_info = LANGUAGE_MAP.get(locale)
@@ -706,7 +720,8 @@ def process_language(
     log.info("=" * 60)
     log.info("Processing %s -> %s", locale, target_lang)
 
-    units = parse_xliff(xliff_path, exclude_paths=exclude_paths)
+    units = parse_xliff(xliff_path, exclude_paths=exclude_paths,
+                        include_paths=include_paths)
     log.info("  Found %d needs-translation entries", len(units))
 
     if not units:
@@ -878,6 +893,10 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Output directory (default: <bundle-dir>/translated/)")
     p.add_argument("--include-docs", action="store_true",
                    help="Include /docs/ files in translation (skipped by default)")
+    p.add_argument("-f", "--files", type=str, default=None,
+                   help="Comma-separated file paths to translate (e.g. "
+                        "/docs/guide/README.md,/MinecraftClient/Resources/Translations/Translations.resx). "
+                        "Overrides --include-docs")
     p.add_argument("-v", "--verbose", action="store_true",
                    help="Enable debug logging")
     return p
@@ -933,9 +952,15 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     log.info("Output directory: %s", output_dir)
 
-    exclude_paths: list[str] | None = None if args.include_docs else ["/docs/"]
-    if exclude_paths:
-        log.info("Excluding XLIFF files under: %s (use --include-docs to include)",
+    include_paths: list[str] | None = None
+    if args.files:
+        include_paths = [f.strip() for f in args.files.split(",")]
+        log.info("Filtering to files: %s", ", ".join(include_paths))
+
+    exclude_paths: list[str] | None = None
+    if not include_paths and not args.include_docs:
+        exclude_paths = ["/docs/"]
+        log.info("Excluding XLIFF files under: %s (use --include-docs or --files to include)",
                  ", ".join(exclude_paths))
 
     xliff_files = find_xliff_files(bundle_dir, locales)
@@ -959,6 +984,7 @@ def main() -> None:
                 dry_run=args.dry_run,
                 skip_upload=args.skip_upload,
                 exclude_paths=exclude_paths,
+                include_paths=include_paths,
             )
         except KeyboardInterrupt:
             log.warning("Interrupted by user. Partial results have been saved.")
