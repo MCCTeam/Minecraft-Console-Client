@@ -1,6 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
-using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
 
 namespace MinecraftClient
 {
@@ -28,27 +26,9 @@ namespace MinecraftClient
             ConsoleInteractive.ConsoleWriter.WriteLine(text);
         }
 
-        private static readonly Regex HexColorRegex = new(@"§#([0-9a-fA-F]{6})", RegexOptions.Compiled);
-
         public void WriteLineFormatted(string text)
         {
-            bool hasHex = text.Contains("§#");
-            if (hasHex)
-                text = ResolveHexColors(text);
             ConsoleInteractive.ConsoleWriter.WriteLineFormatted(text);
-        }
-
-        private static string ResolveHexColors(string text)
-        {
-            var mode = Settings.Config.Console.General.ConsoleColorMode;
-            return HexColorRegex.Replace(text, match =>
-            {
-                ReadOnlySpan<char> hex = match.Groups[1].ValueSpan;
-                byte r = Convert.ToByte(hex[..2].ToString(), 16);
-                byte g = Convert.ToByte(hex[2..4].ToString(), 16);
-                byte b = Convert.ToByte(hex[4..6].ToString(), 16);
-                return ColorHelper.GetColorEscapeCode(r, g, b, foreground: true, mode);
-            });
         }
 
         public void BeginReadThread()
