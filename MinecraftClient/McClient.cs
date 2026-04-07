@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -414,10 +415,13 @@ namespace MinecraftClient
 
             IMinecraftCom oldHandler = handler;
             TcpClient oldClient = client;
+            string resolvedHost = newHost;
+            int resolvedPort = newPort;
 
             try
             {
-                Log.Info($"Initiating a transfer to: {newHost}:{newPort}");
+                ResolveTransferAddress(ref resolvedHost, ref resolvedPort);
+                Log.Info($"Initiating a transfer to: {resolvedHost}:{resolvedPort}");
                 
                 // Unload bots
                 UnloadAllBots();
@@ -429,18 +433,18 @@ namespace MinecraftClient
                 oldHandler.Dispose();
                 oldClient.Close();
 
-                host = newHost;
-                port = newPort;
+                host = resolvedHost;
+                port = resolvedPort;
                 UpdateKeepAlive();
 
                 // Establish new connection
-                client = ProxyHandler.NewTcpClient(newHost, newPort);
+                client = ProxyHandler.NewTcpClient(resolvedHost, resolvedPort);
                 client.ReceiveBufferSize = 1024 * 1024;
                 client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000;
 
                 // Reinitialize the protocol handler
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, null, this);
-                Log.Info($"Connected to {newHost}:{newPort}");
+                Log.Info($"Connected to {resolvedHost}:{resolvedPort}");
 
                 // Retry login process
                 if (handler.Login(playerKeyPair, _sessionToken, isTransfer: true))
@@ -450,7 +454,7 @@ namespace MinecraftClient
                     botsOnHold.Clear();
 
                     UpdateKeepAlive();
-                    Log.Info($"Successfully transferred connection and logged in to {newHost}:{newPort}.");
+                    Log.Info($"Successfully transferred connection and logged in to {resolvedHost}:{resolvedPort}.");
 
                     cmdprompt = new CancellationTokenSource();
                     ConsoleIO.Backend.BeginReadThread();
@@ -465,7 +469,7 @@ namespace MinecraftClient
             }
             catch (Exception ex)
             {
-                Log.Error($"Transfer to {newHost}:{newPort} failed: {ex.Message}");
+                Log.Error($"Transfer to {resolvedHost}:{resolvedPort} failed: {ex.Message}");
 
                 try
                 {
@@ -511,6 +515,20 @@ namespace MinecraftClient
             {
                 Interlocked.Exchange(ref transferInProgress, 0);
             }
+        }
+
+        private static void ResolveTransferAddress(ref string host, ref int port)
+        {
+            if (Config.Main.Advanced.ResolveSrvRecords == MainConfigHelper.MainConfig.AdvancedConfig.ResolveSrvRecordType.no
+                || port != 25565
+                || IPAddress.TryParse(host, out _))
+            {
+                return;
+            }
+
+            ushort resolvedPort = (ushort)port;
+            ProtocolHandler.MinecraftServiceLookup(ref host, ref resolvedPort);
+            port = resolvedPort;
         }
 
         private void ResetStateForTransfer()
