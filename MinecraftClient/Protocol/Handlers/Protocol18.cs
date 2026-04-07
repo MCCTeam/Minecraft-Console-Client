@@ -467,7 +467,19 @@ namespace MinecraftClient.Protocol.Handlers
 
                     // https://wiki.vg/Protocol#Configuration
                     case CurrentState.Configuration:
-                        switch (packetPalette.GetIncomingConfigurationTypeById(packetId))
+                        if (!packetPalette.GetMappingInConfiguration().TryGetValue(packetId, out var configurationPacketType))
+                        {
+                            if (packetPalette.GetMappingIn().ContainsKey(packetId))
+                            {
+                                currentState = CurrentState.Play;
+                                return HandlePlayPackets(packetId, packetData);
+                            }
+
+                            throw new KeyNotFoundException("Configuration Packet ID of 0x" + packetId.ToString("X2") +
+                                                           " doesn't exist!");
+                        }
+
+                        switch (configurationPacketType)
                         {
                             case ConfigurationPacketTypesIn.CookieRequest:
                                 var cookieName = dataTypes.ReadNextString(packetData);
