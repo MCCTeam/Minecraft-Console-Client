@@ -570,7 +570,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
   The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
 
-  Also the instance of MCC is available with `MCC.`.
+  Also the instance of MCC is available with `MCC`.
 
   <div class="custom-container note"><p class="custom-container-title">Note</p>
 
@@ -590,14 +590,6 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
   /set test=Something
   /execif 'test == "Something"' "send Success!"
   ```
-
-  <div class="custom-container note"><p class="custom-container-title">Note</p>
-
-  **You can use single quote (`'`) to wrap your expression if the expression contains double quote (`"`)**
-
-  **Adding back-slash (`\`) before the double quote will also work (`/execif "test == \"Something\"" "send Success!"`)**
-
-  </div>
 
   ```
   /set test2=1
@@ -621,6 +613,12 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
   ```
   /execif "1 == 1" "execmulti send 1 -> send 2 -> send 3"
   ```
+
+- **Note**
+
+  **You can use single quote (`'`) to wrap your expression if the expression contains double quote (`"`)**
+
+  **Adding back-slash (`\`) before the double quote will also work (`/execif "test == \"Something\"" "send Success!"`)**
 
 </details>
 
