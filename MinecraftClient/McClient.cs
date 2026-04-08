@@ -229,6 +229,8 @@ namespace MinecraftClient
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
         private int transferInProgress = 0;
+        private bool consoleReadThreadOwned = false;
+        private bool consoleHandlersAttached = false;
 
         public ILogger Log;
         
@@ -328,10 +330,7 @@ namespace MinecraftClient
 
                         Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
-                        cmdprompt = new CancellationTokenSource();
-                        ConsoleIO.Backend.BeginReadThread();
-                        ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
-                        ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
+                        StartConsoleSession();
                     }
                     else
                     {
@@ -373,9 +372,7 @@ namespace MinecraftClient
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleIO.Backend.StopReadThread();
-                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    StopConsoleSession();
                     Program.HandleFailure();
                 }
 
@@ -393,9 +390,7 @@ namespace MinecraftClient
                 // kick messages and Ignore_Kick_Message is false, or retry limit reached)
                 if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleIO.Backend.StopReadThread();
-                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    StopConsoleSession();
                     Program.HandleFailure();
                 }
 
@@ -456,10 +451,7 @@ namespace MinecraftClient
                     UpdateKeepAlive();
                     Log.Info($"Successfully transferred connection and logged in to {resolvedHost}:{resolvedPort}.");
 
-                    cmdprompt = new CancellationTokenSource();
-                    ConsoleIO.Backend.BeginReadThread();
-                    ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
+                    StartConsoleSession();
                 }
                 else
                 {
@@ -503,9 +495,7 @@ namespace MinecraftClient
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
-                    ConsoleIO.Backend.StopReadThread();
-                    ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                    StopConsoleSession();
                     Program.HandleFailure();
                 }
 
@@ -529,6 +519,40 @@ namespace MinecraftClient
             ushort resolvedPort = (ushort)port;
             ProtocolHandler.MinecraftServiceLookup(ref host, ref resolvedPort);
             port = resolvedPort;
+        }
+
+        private void StartConsoleSession()
+        {
+            cmdprompt = new CancellationTokenSource();
+
+            if (!consoleReadThreadOwned)
+            {
+                ConsoleIO.Backend.BeginReadThread();
+                consoleReadThreadOwned = true;
+            }
+
+            if (!consoleHandlersAttached)
+            {
+                ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
+                ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
+                consoleHandlersAttached = true;
+            }
+        }
+
+        private void StopConsoleSession()
+        {
+            if (consoleHandlersAttached)
+            {
+                ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
+                ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                consoleHandlersAttached = false;
+            }
+
+            if (consoleReadThreadOwned)
+            {
+                ConsoleIO.Backend.StopReadThread();
+                consoleReadThreadOwned = false;
+            }
         }
 
         private void ResetStateForTransfer()
@@ -893,9 +917,7 @@ namespace MinecraftClient
             
             if (!will_restart)
             {
-                ConsoleIO.Backend.StopReadThread();
-                ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
+                StopConsoleSession();
                 Program.HandleFailure(null, false, reason);
             }
         }
