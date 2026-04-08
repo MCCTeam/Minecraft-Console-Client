@@ -32,5 +32,9 @@
   {
     "source": "/docs/guide/*.md",
     "translation": "/docs/l10n/%osx_code%/guide/%original_file_name%"
+  },
+  {
+    "source": "/docs/guide/websocket/*.md",
+    "translation": "/docs/l10n/%osx_code%/guide/websocket/%original_file_name%"
   }
 ]
