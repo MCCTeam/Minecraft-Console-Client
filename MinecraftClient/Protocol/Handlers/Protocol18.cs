@@ -3034,7 +3034,18 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolVersion >= MC_1_20_4_Version)
                         {
                             if (dataTypes.ReadNextBool(packetData)) // Has Number Format
+                            {
                                 numberFormat = dataTypes.ReadNextVarInt(packetData); // Number Format
+                                switch (numberFormat)
+                                {
+                                    case 1: // styled
+                                        dataTypes.ReadNextNbt(packetData); // Styling compound tag
+                                        break;
+                                    case 2: // fixed
+                                        dataTypes.ReadNextChat(packetData); // Content text component
+                                        break;
+                                }
+                            }
                         }
                     }
 
@@ -3055,11 +3066,21 @@ namespace MinecraftClient.Protocol.Handlers
                         objectiveValue2 = dataTypes.ReadNextVarInt(packetData); // Value
 
                         if (dataTypes.ReadNextBool(packetData)) // Has Display Name
-                            objectiveDisplayName3 =
-                                ChatParser.ParseText(dataTypes.ReadNextString(packetData)); // Has Display Name
+                            objectiveDisplayName3 = dataTypes.ReadNextChat(packetData);
 
                         if (dataTypes.ReadNextBool(packetData)) // Has Number Format
+                        {
                             numberFormat2 = dataTypes.ReadNextVarInt(packetData); // Number Format
+                            switch (numberFormat2)
+                            {
+                                case 1: // styled
+                                    dataTypes.ReadNextNbt(packetData); // Styling compound tag
+                                    break;
+                                case 2: // fixed
+                                    dataTypes.ReadNextChat(packetData); // Content text component
+                                    break;
+                            }
+                        }
                     }
                     else
                     {
