@@ -1730,11 +1730,20 @@ namespace MinecraftClient
                 int sx = (int)Math.Floor(location.X);
                 int sy = (int)Math.Floor(location.Y);
                 int sz = (int)Math.Floor(location.Z);
+
+                // If floored Y lands inside a solid block (e.g. player on top of it), step up
+                if (!ctx.CanWalkThrough(sx, sy, sz) && ctx.CanWalkThrough(sx, sy + 1, sz))
+                    sy++;
+
                 int gx = (int)Math.Floor(goal.X);
                 int gy = (int)Math.Floor(goal.Y);
                 int gz = (int)Math.Floor(goal.Z);
 
-                Log.Info($"[Goto] A* search from ({sx},{sy},{sz}) to ({gx},{gy},{gz})...");
+                if (!ctx.CanWalkThrough(gx, gy, gz) && ctx.CanWalkThrough(gx, gy + 1, gz))
+                    gy++;
+
+                Log.Info($"[Goto] A* search from ({sx},{sy},{sz}) to ({gx},{gy},{gz}) " +
+                         $"[raw pos=({location.X:F2},{location.Y:F2},{location.Z:F2})]");
 
                 using var cts = new CancellationTokenSource();
                 var result = finder.Calculate(ctx, sx, sy, sz,
@@ -3293,12 +3302,20 @@ namespace MinecraftClient
 
         /// <summary>
         /// Check if the player has approximately reached a waypoint.
+        /// Uses both horizontal and vertical distance for climb/descend waypoints.
         /// </summary>
         private bool ReachedWaypoint(Location target)
         {
             double dx = target.X - location.X;
             double dz = target.Z - location.Z;
-            return dx * dx + dz * dz < 0.25; // within ~0.5 blocks horizontally
+            double dy = target.Y - location.Y;
+            double horizDistSq = dx * dx + dz * dz;
+
+            // Vertical waypoint (climbing/falling): require reaching target Y level
+            if (horizDistSq < 0.5 && Math.Abs(dy) > 0.8)
+                return false;
+
+            return horizDistSq < 0.25 && Math.Abs(dy) < 0.8;
         }
 
         /// <summary>
@@ -3312,7 +3329,41 @@ namespace MinecraftClient
             double dy = target.Y - location.Y;
             double distSqr = dx * dx + dz * dz;
 
-            if (distSqr < 0.01) return; // Close enough horizontally
+            // Climbing: target is above/below with small horizontal offset
+            if (playerPhysics.OnClimbable && Math.Abs(dy) > 0.5 && distSqr < 1.0)
+            {
+                if (dy > 0)
+                {
+                    physicsInput.Jump = true;
+                    // Push against the wall for HorizontalCollision-triggered climbing
+                    if (distSqr > 0.01)
+                    {
+                        float yaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);
+                        if (yaw < 0) yaw += 360;
+                        playerPhysics.Yaw = yaw;
+                        playerYaw = yaw;
+                        physicsInput.Forward = true;
+                    }
+                    else
+                    {
+                        physicsInput.Forward = true;
+                    }
+                }
+                else
+                {
+                    physicsInput.Sneak = false;
+                }
+                return;
+            }
+
+            // Non-climbing vertical jump
+            if (distSqr < 0.1 && dy > 0.5 && playerPhysics.OnGround)
+            {
+                physicsInput.Jump = true;
+                return;
+            }
+
+            if (distSqr < 0.01) return;
 
             // Calculate yaw to face target
             float targetYaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);

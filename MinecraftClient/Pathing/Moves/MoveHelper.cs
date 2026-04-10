@@ -19,6 +19,10 @@ namespace MinecraftClient.Pathing.Moves
                 return true;
             if (mat.IsLiquid())
                 return false;
+            if (mat.CanBeClimbedOn())
+                return true;
+            if (IsOpenGate(mat))
+                return true;
             if (mat.IsSolid())
                 return false;
             if (mat.CanHarmPlayers())
@@ -37,6 +41,10 @@ namespace MinecraftClient.Pathing.Moves
             if (mat.IsLiquid())
                 return false;
             if (mat.CanHarmPlayers())
+                return false;
+            if (mat.CanBeClimbedOn())
+                return false;
+            if (IsOpenGate(mat))
                 return false;
             return mat.IsSolid();
         }
@@ -64,6 +72,20 @@ namespace MinecraftClient.Pathing.Moves
         public static bool IsWater(Material mat)
         {
             return mat == Material.Water;
+        }
+
+        /// <summary>
+        /// Conservative check for gate-type blocks. Since we cannot read block state
+        /// (open/closed) during planning, treat all fence gates as passable.
+        /// </summary>
+        private static bool IsOpenGate(Material mat)
+        {
+            return mat is Material.AcaciaFenceGate or Material.BirchFenceGate
+                or Material.CrimsonFenceGate or Material.DarkOakFenceGate
+                or Material.JungleFenceGate or Material.MangroveWood
+                or Material.OakFenceGate or Material.SpruceFenceGate
+                or Material.WarpedFenceGate or Material.CherryFenceGate
+                or Material.BambooFenceGate or Material.PaleOakFenceGate;
         }
     }
 }
