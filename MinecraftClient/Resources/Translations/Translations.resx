@@ -1243,6 +1243,15 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.exit.desc" xml:space="preserve">
     <value>disconnect from the server.</value>
   </data>
+  <data name="cmd.goto.desc" xml:space="preserve">
+    <value>navigate to a location using A* pathfinding.</value>
+  </data>
+  <data name="cmd.goto.success" xml:space="preserve">
+    <value>Path found: {0} waypoints, {1} nodes explored in {2}ms{3}</value>
+  </data>
+  <data name="cmd.goto.failed" xml:space="preserve">
+    <value>No path found ({0} nodes explored in {1}ms)</value>
+  </data>
   <data name="cmd.follow.already_following" xml:space="preserve">
     <value>Already following {0}!</value>
   </data>

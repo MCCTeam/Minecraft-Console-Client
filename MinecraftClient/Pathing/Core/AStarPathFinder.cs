@@ -47,6 +47,8 @@ namespace MinecraftClient.Pathing.Core
             moves.Add(new MoveClimb(true));
             moves.Add(new MoveClimb(false));
 
+            moves.Add(new MoveFall());
+
             return [.. moves];
         }
 

@@ -1715,6 +1715,66 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Navigate to a goal using the new A* pathfinder.
+        /// Runs the search, converts the result into the legacy Queue path, and starts movement.
+        /// Returns a description of the result for UI feedback.
+        /// </summary>
+        public (bool success, string message) MoveToAStar(Location goal, long timeoutMs = 5000)
+        {
+            lock (locationLock)
+            {
+                var ctx = new Pathing.Core.CalculationContext(world);
+                var finder = new Pathing.Core.AStarPathFinder();
+                finder.DebugLog = msg => Log.Debug(msg);
+
+                int sx = (int)Math.Floor(location.X);
+                int sy = (int)Math.Floor(location.Y);
+                int sz = (int)Math.Floor(location.Z);
+                int gx = (int)Math.Floor(goal.X);
+                int gy = (int)Math.Floor(goal.Y);
+                int gz = (int)Math.Floor(goal.Z);
+
+                Log.Info($"[Goto] A* search from ({sx},{sy},{sz}) to ({gx},{gy},{gz})...");
+
+                using var cts = new CancellationTokenSource();
+                var result = finder.Calculate(ctx, sx, sy, sz,
+                    new Pathing.Goals.GoalBlock(gx, gy, gz), cts.Token, timeoutMs);
+
+                Log.Info($"[Goto] A* result: {result.Status}, nodes={result.NodesExplored}, " +
+                         $"time={result.ElapsedMs}ms, path length={result.Path.Count}");
+
+                if (result.Status == Pathing.Core.PathStatus.Failed || result.Path.Count < 2)
+                {
+                    return (false, string.Format(Translations.cmd_goto_failed,
+                        result.NodesExplored, result.ElapsedMs));
+                }
+
+                var queue = new Queue<Location>();
+                for (int i = 1; i < result.Path.Count; i++)
+                {
+                    var node = result.Path[i];
+                    queue.Enqueue(new Location(node.X + 0.5, node.Y, node.Z + 0.5));
+                }
+
+                Log.Info($"[Goto] Path waypoints: {queue.Count}");
+                int logCount = 0;
+                foreach (var wp in queue)
+                {
+                    if (logCount < 30 || logCount == queue.Count - 1)
+                        Log.Debug($"[Goto]   wp[{logCount}] = ({wp.X:F1},{wp.Y:F1},{wp.Z:F1})");
+                    logCount++;
+                }
+
+                pathTarget = null;
+                path = queue;
+
+                string statusStr = result.Status == Pathing.Core.PathStatus.Partial ? " (partial)" : "";
+                return (true, string.Format(Translations.cmd_goto_success,
+                    queue.Count, result.NodesExplored, result.ElapsedMs, statusStr));
+            }
+        }
+
+        /// <summary>
         /// Send a chat message or command to the server
         /// </summary>
         /// <param name="text">Text to send to the server</param>

@@ -3502,6 +3502,33 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to navigate to a location using A* pathfinding..
+        /// </summary>
+        internal static string cmd_goto_desc {
+            get {
+                return ResourceManager.GetString("cmd.goto.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path found: {0} waypoints, {1} nodes explored in {2}ms{3}.
+        /// </summary>
+        internal static string cmd_goto_success {
+            get {
+                return ResourceManager.GetString("cmd.goto.success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No path found ({0} nodes explored in {1}ms).
+        /// </summary>
+        internal static string cmd_goto_failed {
+            get {
+                return ResourceManager.GetString("cmd.goto.failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Already following {0}!.
         /// </summary>
         internal static string cmd_follow_already_following {
