@@ -988,7 +988,7 @@ Some messages won't be properly printed without this file.</value>
     <value>Failed to reach the bed position (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) in time (30 seconds). Giving up!</value>
   </data>
   <data name="cmd.bed.found_a_bed_at" xml:space="preserve">
-    <value>Found a bet at (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}).</value>
+    <value>Found a bed at (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}).</value>
   </data>
   <data name="cmd.bed.in" xml:space="preserve">
     <value>Succesfully laid in bed!</value>
