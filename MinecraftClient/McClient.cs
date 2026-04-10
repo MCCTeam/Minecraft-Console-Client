@@ -685,6 +685,7 @@ namespace MinecraftClient
                         playerPhysics.SetPosition(location.X, location.Y, location.Z);
                         playerPhysics.Yaw = playerYaw;
                         playerPhysics.Pitch = playerPitch;
+                        playerPhysics.DebugLog = msg => Log.Debug(msg);
                         physicsInitialized = true;
                     }
 

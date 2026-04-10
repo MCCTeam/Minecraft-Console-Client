@@ -4,9 +4,9 @@ using MinecraftClient.Mapping;
 namespace MinecraftClient.Physics
 {
     /// <summary>
-    /// Core physics tick engine for the player, faithfully replicating vanilla 1.21.11 physics.
+    /// Core physics tick engine for the player, faithfully replicating vanilla 1.21.11+ physics.
     /// Mirrors the combined logic of Entity.move(), LivingEntity.aiStep()/travel()/travelInAir(),
-    /// Player.travel(), and LocalPlayer.aiStep().
+    /// Player.travel(), Player.updatePlayerPose(), and LocalPlayer.aiStep().
     /// </summary>
     public class PlayerPhysics
     {
@@ -33,15 +33,34 @@ namespace MinecraftClient.Physics
         public bool Sneaking;
         public bool CreativeFlying;
         public bool InWater;
+        public bool IsUnderWater;
         public bool InLava;
         public bool OnClimbable;
         public bool HasSlowFalling;
         public bool HasLevitation;
         public int LevitationAmplifier;
 
-        // Player dimensions
-        public double PlayerWidth = PhysicsConsts.PlayerWidth;
-        public double PlayerHeight = PhysicsConsts.PlayerHeight;
+        // --- Pose system (vanilla Player.updatePlayerPose / Avatar.POSES) ---
+        public EntityPose CurrentPose { get; private set; } = EntityPose.Standing;
+        private EntityPose previousPose = EntityPose.Standing;
+
+        public double PlayerWidth => PhysicsConsts.PlayerWidth;
+
+        public double PlayerHeight => CurrentPose switch
+        {
+            EntityPose.Sneaking => PhysicsConsts.PlayerCrouchingHeight,
+            EntityPose.Swimming or EntityPose.FallFlying or EntityPose.SpinAttack
+                => PhysicsConsts.PlayerSwimmingHeight,
+            _ => PhysicsConsts.PlayerStandingHeight
+        };
+
+        public double EyeHeight => CurrentPose switch
+        {
+            EntityPose.Sneaking => PhysicsConsts.PlayerCrouchingEyeHeight,
+            EntityPose.Swimming or EntityPose.FallFlying or EntityPose.SpinAttack
+                => PhysicsConsts.PlayerSwimmingEyeHeight,
+            _ => PhysicsConsts.PlayerStandingEyeHeight
+        };
 
         // Anti-jump-spam
         private int noJumpDelay;
@@ -51,6 +70,11 @@ namespace MinecraftClient.Physics
 
         // Movement speed attribute (base = 0.1 for players)
         public float MovementSpeed = 0.1f;
+
+        /// <summary>
+        /// Debug log callback. Set from McClient to route messages through MCC's logger.
+        /// </summary>
+        public Action<string>? DebugLog;
 
         /// <summary>
         /// Get the player's bounding box at current position
@@ -67,6 +91,9 @@ namespace MinecraftClient.Physics
         {
             TickCount++;
 
+            // Update pose (vanilla Player.updatePlayerPose)
+            UpdatePlayerPose(world);
+
             // Velocity threshold zeroing (LivingEntity.aiStep)
             ZeroTinyVelocity();
 
@@ -81,6 +108,14 @@ namespace MinecraftClient.Physics
 
             if (noJumpDelay > 0)
                 noJumpDelay--;
+
+            // Periodic state dump every 5 seconds (100 ticks)
+            if (DebugLog is not null && TickCount % 100 == 0)
+            {
+                DebugLog($"[Physics] tick={TickCount} pos={Position} vel={DeltaMovement} " +
+                         $"ground={OnGround} pose={CurrentPose} fall={FallDistance:F2} " +
+                         $"water={InWater} underwater={IsUnderWater} swim={IsSwimming()} sneak={Sneaking}");
+            }
         }
 
         /// <summary>
@@ -240,6 +275,9 @@ namespace MinecraftClient.Physics
 
             // Block speed factor (soul sand, honey, etc.)
             ApplyBlockSpeedFactor(world);
+
+            // SlimeBlock.stepOn: slow horizontal movement when walking on slime
+            ApplySlimeStepOn(world);
         }
 
         /// <summary>
@@ -353,12 +391,6 @@ namespace MinecraftClient.Physics
             double resolvedLenSqr = resolved.LengthSqr();
             if (resolvedLenSqr > 1.0E-7 || movement.LengthSqr() - resolvedLenSqr < 1.0E-7)
             {
-                // Fall distance reset via trace (simplified: reset on hitting ground)
-                if (FallDistance != 0.0 && resolvedLenSqr >= 1.0)
-                {
-                    // Simplified: just check vertical collision
-                }
-
                 Position = Position.Add(resolved);
             }
 
@@ -385,12 +417,45 @@ namespace MinecraftClient.Physics
                     blockedZ ? 0 : DeltaMovement.Z);
             }
 
+            // Vanilla: Block.updateEntityMovementAfterFallOn -> SlimeBlock.bounceUp
             if (VerticalCollision)
+                UpdateMovementAfterFallOn(world);
+        }
+
+        /// <summary>
+        /// Vanilla Block.updateEntityMovementAfterFallOn / SlimeBlock.bounceUp.
+        /// Called when vertical collision is detected. Handles slime block bounce.
+        /// </summary>
+        private void UpdateMovementAfterFallOn(World world)
+        {
+            Location belowFeet = new(Position.X, Position.Y - 0.2, Position.Z);
+            Material landedOn = world.GetBlock(belowFeet).Type;
+
+            if (landedOn == Material.SlimeBlock && !IsSuppressingBounce())
             {
-                // Slime block bounce would go here; for now just zero Y
+                double vy = DeltaMovement.Y;
+                if (vy < 0.0)
+                {
+                    // LivingEntity bounce factor = 1.0
+                    DeltaMovement = new Vec3d(DeltaMovement.X, -vy, DeltaMovement.Z);
+                    DebugLog?.Invoke($"[Physics] Slime bounce! vy={vy:F4} -> {-vy:F4} at {Position}");
+                }
+                else
+                {
+                    DeltaMovement = new Vec3d(DeltaMovement.X, 0, DeltaMovement.Z);
+                }
+            }
+            else
+            {
+                // Default: zero vertical velocity
                 DeltaMovement = new Vec3d(DeltaMovement.X, 0, DeltaMovement.Z);
             }
         }
+
+        /// <summary>
+        /// Vanilla Entity.isSuppressingBounce() - sneaking suppresses slime bounce.
+        /// </summary>
+        private bool IsSuppressingBounce() => Sneaking;
 
         /// <summary>
         /// Sneak edge detection: prevent walking off edges while sneaking.
@@ -508,6 +573,26 @@ namespace MinecraftClient.Physics
         }
 
         /// <summary>
+        /// Vanilla SlimeBlock.stepOn: reduces horizontal speed when walking on slime blocks.
+        /// Triggered when vertical velocity is small and player is not sneaking.
+        /// </summary>
+        private void ApplySlimeStepOn(World world)
+        {
+            if (!OnGround) return;
+
+            Location belowFeet = new(Position.X, Position.Y - 0.5000010, Position.Z);
+            if (world.GetBlock(belowFeet).Type != Material.SlimeBlock) return;
+
+            double absDeltaY = Math.Abs(DeltaMovement.Y);
+            if (absDeltaY >= 0.1 || Sneaking) return;
+
+            double scale = 0.4 + absDeltaY * 0.2;
+            DeltaMovement = DeltaMovement.Multiply(scale, 1.0, scale);
+
+            DebugLog?.Invoke($"[Physics] Slime stepOn slowdown: scale={scale:F3}, vel={DeltaMovement}");
+        }
+
+        /// <summary>
         /// Get friction value for a material. Default 0.6, special blocks differ.
         /// </summary>
         public static float GetMaterialFriction(Material mat)
@@ -549,9 +634,83 @@ namespace MinecraftClient.Physics
 
             InWater = feetBlock == Material.Water || headBlock == Material.Water
                       || feetBlock == Material.BubbleColumn;
+            IsUnderWater = headBlock == Material.Water;
             InLava = feetBlock == Material.Lava || headBlock == Material.Lava;
             OnClimbable = feetBlock.CanBeClimbedOn();
         }
+
+        // ==================== Pose System ====================
+
+        /// <summary>
+        /// Vanilla Player.updatePlayerPose().
+        /// Determines the correct pose based on player state and space constraints.
+        /// Forces crawling (Swimming pose on land) when standing/crouching does not fit.
+        /// </summary>
+        private void UpdatePlayerPose(World world)
+        {
+            EntityPose desired = GetDesiredPose();
+            EntityPose actual;
+
+            if (CanPlayerFitWithPose(world, EntityPose.Swimming))
+            {
+                if (CanPlayerFitWithPose(world, desired))
+                    actual = desired;
+                else if (CanPlayerFitWithPose(world, EntityPose.Sneaking))
+                    actual = EntityPose.Sneaking;
+                else
+                    actual = EntityPose.Swimming;
+            }
+            else
+            {
+                actual = desired;
+            }
+
+            if (actual != previousPose)
+            {
+                DebugLog?.Invoke($"[Physics] Pose: {previousPose} -> {actual} (desired={desired}, " +
+                                 $"height={GetHeightForPose(actual):F1}, pos={Position})");
+                previousPose = actual;
+            }
+
+            CurrentPose = actual;
+        }
+
+        /// <summary>
+        /// Vanilla Player.getDesiredPose() -- determines what pose the player wants.
+        /// </summary>
+        private EntityPose GetDesiredPose()
+        {
+            if (IsSwimming())
+                return EntityPose.Swimming;
+            if (Sneaking && !CreativeFlying)
+                return EntityPose.Sneaking;
+            return EntityPose.Standing;
+        }
+
+        /// <summary>
+        /// Vanilla Entity.isSwimming() for players: sprinting underwater and not flying.
+        /// </summary>
+        private bool IsSwimming() => !CreativeFlying && Sprinting && IsUnderWater;
+
+        /// <summary>
+        /// Check if the player can fit at current position with the given pose's dimensions.
+        /// Vanilla Player.canPlayerFitWithinBlocksAndEntitiesWhen(Pose).
+        /// </summary>
+        private bool CanPlayerFitWithPose(World world, EntityPose pose)
+        {
+            double height = GetHeightForPose(pose);
+            Aabb box = Aabb.OfSize(Position.X, Position.Y, Position.Z, PlayerWidth, height);
+            Aabb deflated = box.Deflate(1.0E-7, 1.0E-7, 1.0E-7);
+            return CollisionDetector.NoCollision(world, deflated);
+        }
+
+        private static double GetHeightForPose(EntityPose pose) => pose switch
+        {
+            EntityPose.Sneaking => PhysicsConsts.PlayerCrouchingHeight,
+            EntityPose.Swimming or EntityPose.FallFlying or EntityPose.SpinAttack
+                => PhysicsConsts.PlayerSwimmingHeight,
+            _ => PhysicsConsts.PlayerStandingHeight
+        };
 
         /// <summary>
         /// Set position from server teleport / initial spawn.
