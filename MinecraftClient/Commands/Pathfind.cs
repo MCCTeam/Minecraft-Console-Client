@@ -70,50 +70,32 @@ namespace MinecraftClient.Commands
             {
                 try
                 {
-                    handler.Log.Info($"[Pathfind] Diagnosing blocks around start ({startX},{startY},{startZ}):");
-                    for (int ddx = -1; ddx <= 1; ddx++)
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                    var result = finder.Calculate(ctx, startX, startY, startZ, goalObj, cts.Token, timeoutMs: 10000);
+
+                    handler.Log.Info($"[Pathfind] Result: {result.Status}, {result.Path.Count} nodes, " +
+                        $"{result.NodesExplored} explored, {result.ElapsedMs}ms");
+
+                    if (result.Path.Count > 1)
                     {
-                        for (int ddz = -1; ddz <= 1; ddz++)
+                        handler.Log.Info("[Pathfind] Path waypoints:");
+                        for (int i = 0; i < result.Path.Count; i++)
                         {
-                            int tx = startX + ddx, tz = startZ + ddz;
-                            var below = ctx.GetMaterial(tx, startY - 1, tz);
-                            var body = ctx.GetMaterial(tx, startY, tz);
-                            var head = ctx.GetMaterial(tx, startY + 1, tz);
-                            bool canOn = ctx.CanWalkOn(tx, startY - 1, tz);
-                            bool canThru = ctx.CanWalkThrough(tx, startY, tz);
-                            bool canThruH = ctx.CanWalkThrough(tx, startY + 1, tz);
-                            handler.Log.Info($"  ({tx},{tz}): below={below}(walkOn={canOn}) body={body}(thru={canThru}) head={head}(thru={canThruH})");
+                            var n = result.Path[i];
+                            handler.Log.Info($"  [{i}] ({n.X},{n.Y},{n.Z}) via {n.MoveUsed}");
                         }
+
+                        handler.Log.Info("[Pathfind] Beginning movement along path...");
+                        FollowPath(handler, result);
                     }
-                    handler.Log.Info($"[Pathfind] ChunkLoaded at start: {ctx.IsChunkLoaded(startX, startZ)}");
-                    handler.Log.Info($"[Pathfind] ChunkLoaded at goal: {ctx.IsChunkLoaded(goalX, goalZ)}");
+                    else
+                    {
+                        handler.Log.Warn("[Pathfind] No path found!");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    handler.Log.Warn($"[Pathfind] Diagnostic exception: {ex.Message}");
-                }
-
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var result = finder.Calculate(ctx, startX, startY, startZ, goalObj, cts.Token, timeoutMs: 10000);
-
-                handler.Log.Info($"[Pathfind] Result: {result.Status}, {result.Path.Count} nodes, " +
-                    $"{result.NodesExplored} explored, {result.ElapsedMs}ms");
-
-                if (result.Path.Count > 0)
-                {
-                    handler.Log.Info("[Pathfind] Path waypoints:");
-                    for (int i = 0; i < result.Path.Count; i++)
-                    {
-                        var n = result.Path[i];
-                        handler.Log.Info($"  [{i}] ({n.X},{n.Y},{n.Z}) via {n.MoveUsed}");
-                    }
-
-                    handler.Log.Info("[Pathfind] Beginning movement along path...");
-                    FollowPath(handler, result);
-                }
-                else
-                {
-                    handler.Log.Warn("[Pathfind] No path found!");
+                    handler.Log.Warn($"[Pathfind] Exception: {ex.Message}");
                 }
             });
 
@@ -127,12 +109,12 @@ namespace MinecraftClient.Commands
                 var node = result.Path[i];
                 var target = new Location(node.X + 0.5, node.Y, node.Z + 0.5);
 
-                handler.Log.Info($"[Pathfind] Moving to waypoint [{i}]: ({node.X},{node.Y},{node.Z}) via {node.MoveUsed}");
+                handler.Log.Info($"[Pathfind] Moving to waypoint [{i}/{result.Path.Count - 1}]: ({node.X},{node.Y},{node.Z}) via {node.MoveUsed}");
 
                 bool success = handler.MoveTo(target, allowUnsafe: true, allowDirectTeleport: false, timeout: TimeSpan.FromSeconds(10));
                 if (!success)
                 {
-                    handler.Log.Warn($"[Pathfind] Old pathfinder failed to plan sub-path to ({node.X},{node.Y},{node.Z}), trying direct teleport");
+                    handler.Log.Warn($"[Pathfind] Sub-path failed for waypoint [{i}], using direct move");
                     handler.MoveTo(target, allowUnsafe: true, allowDirectTeleport: true);
                 }
 
@@ -147,9 +129,9 @@ namespace MinecraftClient.Commands
                 var cur = handler.GetCurrentLocation();
                 double dx = cur.X - target.X;
                 double dz = cur.Z - target.Z;
-                double horizDistSq = dx * dx + dz * dz;
+                double horizDist = Math.Sqrt(dx * dx + dz * dz);
 
-                handler.Log.Info($"[Pathfind] Arrived near waypoint [{i}], pos=({cur.X:F2},{cur.Y:F2},{cur.Z:F2}), horizDist={Math.Sqrt(horizDistSq):F2}");
+                handler.Log.Info($"[Pathfind] Waypoint [{i}] done, pos=({cur.X:F2},{cur.Y:F2},{cur.Z:F2}), dist={horizDist:F2}");
             }
 
             handler.Log.Info("[Pathfind] Path execution complete!");
