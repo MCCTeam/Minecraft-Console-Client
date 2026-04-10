@@ -2718,7 +2718,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Found a bet at (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0})..
+        ///   Looks up a localized string similar to Found a bed at (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0})..
         /// </summary>
         internal static string cmd_bed_found_a_bed_at {
             get {
