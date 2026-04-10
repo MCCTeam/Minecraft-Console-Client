@@ -68,6 +68,31 @@ namespace MinecraftClient.Commands
 
             Task.Run(() =>
             {
+                try
+                {
+                    handler.Log.Info($"[Pathfind] Diagnosing blocks around start ({startX},{startY},{startZ}):");
+                    for (int ddx = -1; ddx <= 1; ddx++)
+                    {
+                        for (int ddz = -1; ddz <= 1; ddz++)
+                        {
+                            int tx = startX + ddx, tz = startZ + ddz;
+                            var below = ctx.GetMaterial(tx, startY - 1, tz);
+                            var body = ctx.GetMaterial(tx, startY, tz);
+                            var head = ctx.GetMaterial(tx, startY + 1, tz);
+                            bool canOn = ctx.CanWalkOn(tx, startY - 1, tz);
+                            bool canThru = ctx.CanWalkThrough(tx, startY, tz);
+                            bool canThruH = ctx.CanWalkThrough(tx, startY + 1, tz);
+                            handler.Log.Info($"  ({tx},{tz}): below={below}(walkOn={canOn}) body={body}(thru={canThru}) head={head}(thru={canThruH})");
+                        }
+                    }
+                    handler.Log.Info($"[Pathfind] ChunkLoaded at start: {ctx.IsChunkLoaded(startX, startZ)}");
+                    handler.Log.Info($"[Pathfind] ChunkLoaded at goal: {ctx.IsChunkLoaded(goalX, goalZ)}");
+                }
+                catch (Exception ex)
+                {
+                    handler.Log.Warn($"[Pathfind] Diagnostic exception: {ex.Message}");
+                }
+
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 var result = finder.Calculate(ctx, startX, startY, startZ, goalObj, cts.Token, timeoutMs: 10000);
 

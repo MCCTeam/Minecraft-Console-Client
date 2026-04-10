@@ -96,6 +96,9 @@ namespace MinecraftClient.Pathing.Core
                 current.IsClosed = true;
                 nodesExplored++;
 
+                if (nodesExplored <= 10)
+                    DebugLog?.Invoke($"[A*] Expand #{nodesExplored}: ({current.X},{current.Y},{current.Z}) F={current.FCost:F2} G={current.GCost:F2} H={current.HCost:F2}, openSet={openSet.Count}");
+
                 if (goal.IsInGoal(current.X, current.Y, current.Z))
                 {
                     DebugLog?.Invoke($"[A*] Goal reached! {nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");
@@ -107,6 +110,15 @@ namespace MinecraftClient.Pathing.Core
                 {
                     moveResult.Cost = 0;
                     move.Calculate(ctx, current.X, current.Y, current.Z, ref moveResult);
+
+                    if (nodesExplored <= 2)
+                    {
+                        if (moveResult.IsImpossible)
+                            DebugLog?.Invoke($"[A*]   move {move.Type}({move.XOffset},{move.ZOffset}) from ({current.X},{current.Y},{current.Z}): IMPOSSIBLE");
+                        else
+                            DebugLog?.Invoke($"[A*]   move {move.Type}({move.XOffset},{move.ZOffset}) from ({current.X},{current.Y},{current.Z}): " +
+                                $"-> ({moveResult.DestX},{moveResult.DestY},{moveResult.DestZ}) cost={moveResult.Cost:F2}");
+                    }
 
                     if (moveResult.IsImpossible)
                         continue;
@@ -127,6 +139,8 @@ namespace MinecraftClient.Pathing.Core
 
                     if (nodeMap.TryGetValue(packed, out var neighbor))
                     {
+                        if (nodesExplored <= 2)
+                            DebugLog?.Invoke($"[A*]   EXISTS ({nx},{ny},{nz}) pack={packed} actual=({neighbor.X},{neighbor.Y},{neighbor.Z}) closed={neighbor.IsClosed} tentG={tentativeG:F2} existG={neighbor.GCost:F2}");
                         if (neighbor.IsClosed)
                             continue;
                         if (tentativeG >= neighbor.GCost)
@@ -140,6 +154,8 @@ namespace MinecraftClient.Pathing.Core
                     }
                     else
                     {
+                        if (nodesExplored <= 2)
+                            DebugLog?.Invoke($"[A*]   NEW ({nx},{ny},{nz}) pack={packed} G={tentativeG:F2} H={goal.Heuristic(nx, ny, nz):F2}");
                         neighbor = new PathNode(nx, ny, nz)
                         {
                             GCost = tentativeG,
@@ -155,6 +171,8 @@ namespace MinecraftClient.Pathing.Core
                     double partialScore = neighbor.HCost + neighbor.GCost * 0.5;
                     if (partialScore < bestPartialScore)
                     {
+                        if (nodesExplored <= 3)
+                            DebugLog?.Invoke($"[A*]   partial improved: ({neighbor.X},{neighbor.Y},{neighbor.Z}) score={partialScore:F2} < {bestPartialScore:F2}");
                         bestPartialScore = partialScore;
                         bestPartialNode = neighbor;
                     }

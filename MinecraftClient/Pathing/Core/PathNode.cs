@@ -31,9 +31,11 @@ namespace MinecraftClient.Pathing.Core
 
         public static long Pack(int x, int y, int z)
         {
-            return ((long)(x + 30_000_000) << 36)
-                 | ((long)(z + 30_000_000) << 12)
-                 | (long)((y + 64) & 0xFFF);
+            // 26 bits for X (0..60M), 26 bits for Z (0..60M), 12 bits for Y (-2048..2047)
+            long px = (long)(x + 30_000_000) & 0x3FFFFFF;
+            long pz = (long)(z + 30_000_000) & 0x3FFFFFF;
+            long py = (long)(y + 2048) & 0xFFF;
+            return (px << 38) | (pz << 12) | py;
         }
     }
 }

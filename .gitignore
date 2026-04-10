@@ -444,3 +444,5 @@ server.pid
 
 # Crowdin translation automation working directory
 /.crowdin-translate/
+
+thirdparty/
