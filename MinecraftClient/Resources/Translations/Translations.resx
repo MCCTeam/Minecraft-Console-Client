@@ -1538,6 +1538,12 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="cmd.move.walk" xml:space="preserve">
     <value>Walking from {1} to {0}</value>
   </data>
+  <data name="cmd.pathfind.desc" xml:space="preserve">
+    <value>Use new A* pathfinding to navigate to a location.</value>
+  </data>
+  <data name="cmd.pathfind.started" xml:space="preserve">
+    <value>Pathfinding to ({0}, {1}, {2})...</value>
+  </data>
   <data name="cmd.reco.desc" xml:space="preserve">
     <value>restart and reconnect to the server.</value>
   </data>

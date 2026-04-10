@@ -4586,6 +4586,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use new A* pathfinding to navigate to a location..
+        /// </summary>
+        internal static string cmd_pathfind_desc {
+            get {
+                return ResourceManager.GetString("cmd.pathfind.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pathfinding to ({0}, {1}, {2})....
+        /// </summary>
+        internal static string cmd_pathfind_started {
+            get {
+                return ResourceManager.GetString("cmd.pathfind.started", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to restart and reconnect to the server..
         /// </summary>
         internal static string cmd_reco_desc {
