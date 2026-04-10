@@ -1769,8 +1769,7 @@ namespace MinecraftClient
                 int logCount = 0;
                 foreach (var wp in queue)
                 {
-                    if (logCount < 30 || logCount == queue.Count - 1)
-                        Log.Debug($"[Goto]   wp[{logCount}] = ({wp.X:F1},{wp.Y:F1},{wp.Z:F1})");
+                    Log.Debug($"[Goto]   wp[{logCount}] = ({wp.X:F1},{wp.Y:F1},{wp.Z:F1})");
                     logCount++;
                 }
 
@@ -3269,34 +3268,60 @@ namespace MinecraftClient
         {
             physicsInput.Reset();
 
-            // Still heading toward a target (even if path queue is empty)
+            // Advance waypoints when reached
             if (pathTarget is not null && ReachedWaypoint(pathTarget.Value))
+                AdvanceWaypoint();
+
+            // First target from a fresh path
+            if (pathTarget is null && path is not null && path.Count > 0)
+                AdvanceWaypoint();
+
+            if (pathTarget is not null)
             {
-                // Arrived at current waypoint — advance to next, or finish
+                // Look-ahead: if this is a vertical-only waypoint and the next requires
+                // horizontal movement, merge them once we're close enough vertically.
+                // This handles the ladder-to-platform transition.
                 if (path is not null && path.Count > 0)
                 {
-                    pathTarget = path.Dequeue();
-                    if (Config.Main.Advanced.MoveHeadWhileWalking)
-                        UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
-                }
-                else
-                {
-                    pathTarget = null;
-                    path = null;
-                }
-            }
+                    var target = pathTarget.Value;
+                    double dx = target.X - location.X;
+                    double dz = target.Z - location.Z;
+                    double dy = target.Y - location.Y;
+                    double horizDistSq = dx * dx + dz * dz;
 
-            // Need a first target from a fresh path
-            if (pathTarget is null && path is not null && path.Count > 0)
+                    bool isVerticalWaypoint = horizDistSq < 0.5 && Math.Abs(dy) > 0.3;
+                    if (isVerticalWaypoint)
+                    {
+                        var next = path.Peek();
+                        double ndx = next.X - target.X;
+                        double ndz = next.Z - target.Z;
+                        bool nextIsHorizontal = ndx * ndx + ndz * ndz > 0.3;
+
+                        // Skip to next waypoint early if we're within 1 block of the target Y
+                        // and the next move requires horizontal movement
+                        if (nextIsHorizontal && Math.Abs(dy) < 1.0)
+                        {
+                            AdvanceWaypoint();
+                        }
+                    }
+                }
+
+                SetInputToward(pathTarget.Value);
+            }
+        }
+
+        private void AdvanceWaypoint()
+        {
+            if (path is not null && path.Count > 0)
             {
                 pathTarget = path.Dequeue();
                 if (Config.Main.Advanced.MoveHeadWhileWalking)
                     UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
             }
-
-            if (pathTarget is not null)
+            else
             {
-                SetInputToward(pathTarget.Value);
+                pathTarget = null;
+                path = null;
             }
         }
 
@@ -3363,7 +3388,13 @@ namespace MinecraftClient
                 return;
             }
 
-            if (distSqr < 0.01) return;
+            if (distSqr < 0.01)
+            {
+                // Vertically aligned but need to reach different Y: set Jump when on ground
+                if (dy > 0.3 && playerPhysics.OnGround)
+                    physicsInput.Jump = true;
+                return;
+            }
 
             // Calculate yaw to face target
             float targetYaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);
