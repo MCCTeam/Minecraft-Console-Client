@@ -49,6 +49,19 @@ namespace MinecraftClient.Pathing.Core
 
             moves.Add(new MoveFall());
 
+            foreach (int dx in offsets)
+            {
+                for (int dist = 2; dist <= 3; dist++)
+                    moves.Add(new MoveParkour(dx, 0, dist));
+                moves.Add(new MoveParkour(dx, 0, 2, yDelta: 1));
+            }
+            foreach (int dz in offsets)
+            {
+                for (int dist = 2; dist <= 3; dist++)
+                    moves.Add(new MoveParkour(0, dz, dist));
+                moves.Add(new MoveParkour(0, dz, 2, yDelta: 1));
+            }
+
             return [.. moves];
         }
 

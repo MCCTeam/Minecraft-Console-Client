@@ -80,6 +80,7 @@ namespace MinecraftClient
         private readonly MovementInput physicsInput = new();
         private bool physicsInitialized = false;
         private Location? pathTarget; // Current waypoint for physics-driven pathfinding
+        private Pathing.Execution.PathSegmentManager? pathSegmentManager;
         public enum MovementType { Sneak, Walk, Sprint }
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
         private bool CanSendMessage = false;
@@ -1723,7 +1724,8 @@ namespace MinecraftClient
         {
             lock (locationLock)
             {
-                var ctx = new Pathing.Core.CalculationContext(world);
+                var ctx = new Pathing.Core.CalculationContext(world,
+                    allowParkour: true, allowParkourAscend: true);
                 var finder = new Pathing.Core.AStarPathFinder();
                 finder.DebugLog = msg => Log.Debug(msg);
 
@@ -1731,7 +1733,6 @@ namespace MinecraftClient
                 int sy = (int)Math.Floor(location.Y);
                 int sz = (int)Math.Floor(location.Z);
 
-                // If floored Y lands inside a solid block (e.g. player on top of it), step up
                 if (!ctx.CanWalkThrough(sx, sy, sz) && ctx.CanWalkThrough(sx, sy + 1, sz))
                     sy++;
 
@@ -1746,8 +1747,8 @@ namespace MinecraftClient
                          $"[raw pos=({location.X:F2},{location.Y:F2},{location.Z:F2})]");
 
                 using var cts = new CancellationTokenSource();
-                var result = finder.Calculate(ctx, sx, sy, sz,
-                    new Pathing.Goals.GoalBlock(gx, gy, gz), cts.Token, timeoutMs);
+                var pathGoal = new Pathing.Goals.GoalBlock(gx, gy, gz);
+                var result = finder.Calculate(ctx, sx, sy, sz, pathGoal, cts.Token, timeoutMs);
 
                 Log.Info($"[Goto] A* result: {result.Status}, nodes={result.NodesExplored}, " +
                          $"time={result.ElapsedMs}ms, path length={result.Path.Count}");
@@ -1758,27 +1759,23 @@ namespace MinecraftClient
                         result.NodesExplored, result.ElapsedMs));
                 }
 
-                var queue = new Queue<Location>();
                 for (int i = 1; i < result.Path.Count; i++)
                 {
                     var node = result.Path[i];
-                    queue.Enqueue(new Location(node.X + 0.5, node.Y, node.Z + 0.5));
-                }
-
-                Log.Info($"[Goto] Path waypoints: {queue.Count}");
-                int logCount = 0;
-                foreach (var wp in queue)
-                {
-                    Log.Debug($"[Goto]   wp[{logCount}] = ({wp.X:F1},{wp.Y:F1},{wp.Z:F1})");
-                    logCount++;
+                    Log.Debug($"[Goto]   seg[{i - 1}] = {node.MoveUsed}: ({node.X},{node.Y},{node.Z})");
                 }
 
                 pathTarget = null;
-                path = queue;
+                path = null;
+
+                pathSegmentManager = new Pathing.Execution.PathSegmentManager(
+                    debugLog: msg => Log.Debug(msg),
+                    infoLog: msg => Log.Info(msg));
+                pathSegmentManager.StartNavigation(pathGoal, result);
 
                 string statusStr = result.Status == Pathing.Core.PathStatus.Partial ? " (partial)" : "";
                 return (true, string.Format(Translations.cmd_goto_success,
-                    queue.Count, result.NodesExplored, result.ElapsedMs, statusStr));
+                    result.Path.Count - 1, result.NodesExplored, result.ElapsedMs, statusStr));
             }
         }
 
@@ -3261,26 +3258,30 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Drive the physics engine input based on the current A* path.
-        /// Converts discrete waypoint pathfinding into continuous movement input.
+        /// Drive the physics engine input based on the current path.
+        /// Uses template-based PathSegmentManager when available, falls back to legacy waypoints.
         /// </summary>
         private void UpdatePathfindingInput()
         {
             physicsInput.Reset();
 
-            // Advance waypoints when reached
+            // Template-based execution (new system)
+            if (pathSegmentManager is not null && pathSegmentManager.IsNavigating)
+            {
+                pathSegmentManager.Tick(location, playerPhysics, physicsInput, world);
+                playerYaw = playerPhysics.Yaw;
+                return;
+            }
+
+            // Legacy waypoint-based execution
             if (pathTarget is not null && ReachedWaypoint(pathTarget.Value))
                 AdvanceWaypoint();
 
-            // First target from a fresh path
             if (pathTarget is null && path is not null && path.Count > 0)
                 AdvanceWaypoint();
 
             if (pathTarget is not null)
             {
-                // Look-ahead: if this is a vertical-only waypoint and the next requires
-                // horizontal movement, merge them once we're close enough vertically.
-                // This handles the ladder-to-platform transition.
                 if (path is not null && path.Count > 0)
                 {
                     var target = pathTarget.Value;
@@ -3297,8 +3298,6 @@ namespace MinecraftClient
                         double ndz = next.Z - target.Z;
                         bool nextIsHorizontal = ndx * ndx + ndz * ndz > 0.3;
 
-                        // Skip to next waypoint early if we're within 1 block of the target Y
-                        // and the next move requires horizontal movement
                         if (nextIsHorizontal && Math.Abs(dy) < 1.0)
                         {
                             AdvanceWaypoint();
@@ -3421,7 +3420,14 @@ namespace MinecraftClient
         /// <returns>true if a movement is currently handled</returns>
         public bool ClientIsMoving()
         {
-            return terrainAndMovementsEnabled && locationReceived && path is not null && path.Count > 0;
+            if (terrainAndMovementsEnabled && locationReceived)
+            {
+                if (pathSegmentManager is not null && pathSegmentManager.IsNavigating)
+                    return true;
+                if (path is not null && path.Count > 0)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -3441,6 +3447,9 @@ namespace MinecraftClient
         {
             bool success = ClientIsMoving();
             path = null;
+            pathTarget = null;
+            pathSegmentManager?.Cancel();
+            pathSegmentManager = null;
             return success;
         }
 
