@@ -39,7 +39,19 @@ namespace MinecraftClient.Pathing.Moves.Impl
                 }
 
                 var aboveMat = ctx.GetMaterial(x, destY, z);
-                if (MoveHelper.IsClimbable(aboveMat) || !ctx.GetMaterial(x, destY, z).IsSolid())
+                if (MoveHelper.IsClimbable(aboveMat))
+                {
+                    result.Set(x, destY, z, ActionCosts.LadderUpOne);
+                    return;
+                }
+
+                // Top of climbable: only allow if we can transition to a solid
+                // surface nearby (ladders have wall collision, vines don't).
+                // Check if the destination block itself is walkable-through and
+                // there's solid ground at (x, destY-1, z) -- meaning we can
+                // stand at destY. This handles ladder-tops where the ladder ends
+                // but the block above is air and we can step onto the floor.
+                if (!aboveMat.IsSolid() && ctx.CanWalkOn(x, destY - 1, z))
                 {
                     result.Set(x, destY, z, ActionCosts.LadderUpOne);
                     return;
