@@ -40,6 +40,10 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (horizDistSq < 0.25 && Math.Abs(dy) < 0.5 && physics.OnGround)
                 return TemplateState.Complete;
 
+            // Fail if climbing up instead of descending
+            if (pos.Y > ExpectedStart.Y + 2.0)
+                return TemplateState.Failed;
+
             if (_tickCount > 120)
                 return TemplateState.Failed;
 
@@ -47,6 +51,9 @@ namespace MinecraftClient.Pathing.Execution.Templates
             {
                 physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
                 input.Forward = true;
+                // Don't push into climbable blocks during descent
+                if (physics.OnClimbable)
+                    input.Forward = false;
             }
 
             return TemplateState.InProgress;
