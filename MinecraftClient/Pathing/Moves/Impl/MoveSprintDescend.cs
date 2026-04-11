@@ -46,21 +46,24 @@ namespace MinecraftClient.Pathing.Moves.Impl
             int xAbs = Math.Abs(XOffset);
             int zAbs = Math.Abs(ZOffset);
 
-            // The flight path sweeps through intermediate blocks at current Y.
-            // Check body clearance for all intermediate and destination columns.
-            for (int i = 0; i <= xAbs; i++)
+            // Check body clearance at the destination column and along the flight path.
+            if (!ctx.CanWalkThrough(destX, y, destZ) || !ctx.CanWalkThrough(destX, y + 1, destZ))
             {
-                for (int j = 0; j <= zAbs; j++)
-                {
-                    if (i == 0 && j == 0) continue;
-                    int gx = x + xSign * i;
-                    int gz = z + zSign * j;
-                    if (!ctx.CanWalkThrough(gx, y, gz) || !ctx.CanWalkThrough(gx, y + 1, gz))
-                    {
-                        result.SetImpossible();
-                        return;
-                    }
-                }
+                result.SetImpossible();
+                return;
+            }
+
+            // For cardinal (2,0)/(0,2): check the one intermediate column.
+            // For diagonal (1,1): destination IS one step away, no intermediate.
+            if (xAbs == 2 && zAbs == 0)
+            {
+                if (!ctx.CanWalkThrough(x + xSign, y, z) || !ctx.CanWalkThrough(x + xSign, y + 1, z))
+                { result.SetImpossible(); return; }
+            }
+            else if (xAbs == 0 && zAbs == 2)
+            {
+                if (!ctx.CanWalkThrough(x, y, z + zSign) || !ctx.CanWalkThrough(x, y + 1, z + zSign))
+                { result.SetImpossible(); return; }
             }
 
             // The first step in the primary direction must lack ground (this IS a drop).

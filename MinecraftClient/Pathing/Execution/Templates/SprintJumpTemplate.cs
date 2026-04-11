@@ -18,6 +18,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
         public Location ExpectedEnd { get; }
 
         private readonly double _horizDist;
+        private readonly bool _isDiagonal;
         private int _tickCount;
         private Phase _phase = Phase.Approach;
 
@@ -28,6 +29,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dx = end.X - start.X;
             double dz = end.Z - start.Z;
             _horizDist = Math.Sqrt(dx * dx + dz * dz);
+            _isDiagonal = Math.Abs(dx) > 0.5 && Math.Abs(dz) > 0.5;
         }
 
         public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
@@ -57,10 +59,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         // toward the block edge. Baritone waits until playerFeet is in
                         // the next block (~0.5 blocks from center) for dist >= 4.
                         // For medium jumps (dist 3), wait 0.35 blocks (Baritone: 0.7).
+                        // For short diagonal jumps (<= 3 blocks), jump immediately
+                        // to avoid overshooting the small starting platform.
                         double minApproachSq;
                         if (_horizDist >= 3.5)
                             minApproachSq = 0.25; // 0.5 blocks
-                        else if (_horizDist >= 2.5)
+                        else if (_horizDist >= 2.5 && !_isDiagonal)
                             minApproachSq = 0.12; // ~0.35 blocks
                         else
                             minApproachSq = 0.0;

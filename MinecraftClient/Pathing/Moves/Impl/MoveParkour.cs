@@ -103,32 +103,14 @@ namespace MinecraftClient.Pathing.Moves.Impl
             int xAbs = Math.Abs(XOffset);
             int zAbs = Math.Abs(ZOffset);
 
-            // Check intermediate space for passability (the player's bounding box sweeps
-            // through a rectangle from start to end; check all blocks in that rectangle)
-            for (int i = 0; i <= xAbs; i++)
+            // Check intermediate blocks along the flight path.
+            // Cardinal: check all blocks in the column along the primary axis.
+            // Diagonal: check blocks along the diagonal strip, not the full rectangle.
+            // Player AABB is 0.6 wide, so only blocks near the diagonal line matter.
+            if (!CheckFlightPath(ctx, x, y, z, xSign, zSign, xAbs, zAbs))
             {
-                for (int j = 0; j <= zAbs; j++)
-                {
-                    if (i == 0 && j == 0) continue;
-                    if (i == xAbs && j == zAbs) continue;
-
-                    int gx = x + xSign * i;
-                    int gz = z + zSign * j;
-
-                    if (!ctx.CanWalkThrough(gx, y, gz) ||
-                        !ctx.CanWalkThrough(gx, y + 1, gz) ||
-                        !ctx.CanWalkThrough(gx, y + 2, gz))
-                    {
-                        result.SetImpossible();
-                        return;
-                    }
-
-                    if (_yDelta > 0 && !ctx.CanWalkThrough(gx, y + 3, gz))
-                    {
-                        result.SetImpossible();
-                        return;
-                    }
-                }
+                result.SetImpossible();
+                return;
             }
 
             // Gap check: first block(s) adjacent to start must lack ground.
@@ -153,6 +135,23 @@ namespace MinecraftClient.Pathing.Moves.Impl
             {
                 // Diagonal: the diagonally adjacent block must lack ground
                 if (ctx.CanWalkOn(x + xSign, y - 1, z + zSign))
+                {
+                    result.SetImpossible();
+                    return;
+                }
+            }
+
+            // For diagonal parkour, the player's AABB (0.6 wide) must clear both
+            // cardinal neighbors at the start. A wall on either side will clip the
+            // AABB during the initial sprint, preventing enough X or Z velocity to
+            // reach the target. Require BOTH cardinal exits to be passable.
+            if (xAbs > 0 && zAbs > 0)
+            {
+                bool canExitViaX = ctx.CanWalkThrough(x + xSign, y, z) &&
+                                   ctx.CanWalkThrough(x + xSign, y + 1, z);
+                bool canExitViaZ = ctx.CanWalkThrough(x, y, z + zSign) &&
+                                   ctx.CanWalkThrough(x, y + 1, z + zSign);
+                if (!canExitViaX || !canExitViaZ)
                 {
                     result.SetImpossible();
                     return;
@@ -188,6 +187,85 @@ namespace MinecraftClient.Pathing.Moves.Impl
                 cost = horizDist * ctx.WalkCost + ctx.JumpPenalty;
 
             result.Set(destX, destY, destZ, cost);
+        }
+
+        /// <summary>
+        /// Check body clearance along the flight path from start toward the destination.
+        /// For cardinal moves, checks a straight line. For diagonal moves, checks
+        /// only blocks near the actual diagonal trajectory rather than the full bounding
+        /// rectangle, allowing jumps that pass a wall on one side.
+        /// </summary>
+        private bool CheckFlightPath(
+            CalculationContext ctx, int x, int y, int z,
+            int xSign, int zSign, int xAbs, int zAbs)
+        {
+            if (xAbs == 0 || zAbs == 0)
+            {
+                // Cardinal: single axis, check each block along the line
+                for (int step = 1; step < Math.Max(xAbs, zAbs); step++)
+                {
+                    int gx = x + xSign * (xAbs > 0 ? step : 0);
+                    int gz = z + zSign * (zAbs > 0 ? step : 0);
+                    if (!ClearColumn(ctx, gx, y, gz))
+                        return false;
+                }
+                return true;
+            }
+
+            // Diagonal: walk the diagonal and check each block the AABB touches.
+            // At each step t along the diagonal, the player center is near
+            // (x + t*xSign, z + t*zSign). The AABB extends 0.3 blocks each side,
+            // so check the diagonal cell and one neighbor on each axis-aligned side
+            // only when the trajectory is close to a cell boundary (always for short
+            // diagonals). We enumerate cells by stepping through the longer axis
+            // and computing the corresponding position on the shorter axis.
+            int maxSteps = Math.Max(xAbs, zAbs);
+            for (int step = 1; step < maxSteps; step++)
+            {
+                // Proportional position along each axis
+                double fx = (double)step * xAbs / maxSteps;
+                double fz = (double)step * zAbs / maxSteps;
+
+                int ix = (int)Math.Round(fx);
+                int iz = (int)Math.Round(fz);
+
+                int gx = x + xSign * ix;
+                int gz = z + zSign * iz;
+
+                if (!ClearColumn(ctx, gx, y, gz))
+                    return false;
+
+                // Also check the neighboring cell across the shorter axis when close
+                // to a cell boundary (player AABB overlaps adjacent cell)
+                if (xAbs != zAbs)
+                {
+                    double fracX = fx - Math.Floor(fx);
+                    double fracZ = fz - Math.Floor(fz);
+                    if (fracX > 0.2 && fracX < 0.8 && ix > 0 && ix < xAbs)
+                    {
+                        if (!ClearColumn(ctx, x + xSign * (ix - 1), y, gz))
+                            return false;
+                    }
+                    if (fracZ > 0.2 && fracZ < 0.8 && iz > 0 && iz < zAbs)
+                    {
+                        if (!ClearColumn(ctx, gx, y, z + zSign * (iz - 1)))
+                            return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private bool ClearColumn(CalculationContext ctx, int gx, int y, int gz)
+        {
+            if (!ctx.CanWalkThrough(gx, y, gz) ||
+                !ctx.CanWalkThrough(gx, y + 1, gz) ||
+                !ctx.CanWalkThrough(gx, y + 2, gz))
+                return false;
+            if (_yDelta > 0 && !ctx.CanWalkThrough(gx, y + 3, gz))
+                return false;
+            return true;
         }
 
         public override string ToString()
