@@ -44,6 +44,16 @@ namespace MinecraftClient.Pathing.Core
             moves.Add(new MoveDiagonal(-1, 1));
             moves.Add(new MoveDiagonal(-1, -1));
 
+            // Diagonal ascend/descend: corner jumps and drops
+            foreach (int dx in offsets)
+            {
+                foreach (int dz in offsets)
+                {
+                    moves.Add(new MoveDiagonalAscend(dx, dz));
+                    moves.Add(new MoveDiagonalDescend(dx, dz));
+                }
+            }
+
             moves.Add(new MoveClimb(true));
             moves.Add(new MoveClimb(false));
 

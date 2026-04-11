@@ -54,19 +54,21 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (_tickCount > 200)
                 return TemplateState.Failed;
 
-            physics.Pitch = TemplateHelper.CalculatePitch(dx, dy - 1.62, dz);
+            float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
+            float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
+            physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
             if (physics.OnClimbable)
             {
                 if (horizDistSq > 0.25)
                 {
-                    physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+                    physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
                     input.Forward = true;
                 }
             }
             else if (horizDistSq > 0.01)
             {
-                physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+                physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
                 input.Forward = true;
             }
 

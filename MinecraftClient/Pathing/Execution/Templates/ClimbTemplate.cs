@@ -39,7 +39,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (_tickCount > 120)
                 return TemplateState.Failed;
 
-            physics.Pitch = _goingUp ? -70f : 70f;
+            float targetPitch = _goingUp ? -70f : 70f;
+            physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
             if (physics.OnClimbable)
             {
@@ -48,7 +49,10 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     input.Jump = true;
                     input.Forward = true;
                     if (horizDistSq > 0.01)
-                        physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+                    {
+                        float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
+                        physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+                    }
                 }
                 else
                 {
@@ -58,7 +62,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     // Keep centered horizontally by gently steering if drifting.
                     if (horizDistSq > 0.15)
                     {
-                        physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+                        float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
+                        physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
                         input.Forward = true;
                     }
                 }
@@ -67,7 +72,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
             {
                 if (horizDistSq > 0.01)
                 {
-                    physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+                    float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
+                    physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
                     input.Forward = true;
                 }
             }

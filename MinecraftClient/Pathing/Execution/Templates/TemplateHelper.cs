@@ -5,6 +5,10 @@ namespace MinecraftClient.Pathing.Execution.Templates
 {
     internal static class TemplateHelper
     {
+        private const double EyeHeight = 1.62;
+        private const float MaxYawStepPerTick = 35f;
+        private const float MaxPitchStepPerTick = 25f;
+
         internal static float CalculateYaw(double dx, double dz)
         {
             float yaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);
@@ -13,15 +17,47 @@ namespace MinecraftClient.Pathing.Execution.Templates
         }
 
         /// <summary>
-        /// Calculate the pitch angle (in degrees) to look toward a 3D offset.
-        /// Negative = look up, positive = look down. Clamped to [-90, 90].
-        /// The dy is relative to eye height (~1.62 blocks above feet).
+        /// Calculate the pitch angle to look from current eye position toward
+        /// the target's feet-level Y. dy = targetFeetY - playerFeetY.
         /// </summary>
         internal static float CalculatePitch(double dx, double dy, double dz)
         {
             double horizDist = Math.Sqrt(dx * dx + dz * dz);
+            // Look toward the target's eye level, not feet.
+            // Both player and target are at feet+EyeHeight, so the vertical
+            // difference is just dy (target feet Y - player feet Y).
             float pitch = (float)(-Math.Atan2(dy, horizDist) / Math.PI * 180.0);
             return Math.Clamp(pitch, -90f, 90f);
+        }
+
+        /// <summary>
+        /// Smoothly interpolate yaw toward a target, respecting wrap-around at 0/360.
+        /// </summary>
+        internal static float SmoothYaw(float current, float target, float maxStep = MaxYawStepPerTick)
+        {
+            float delta = target - current;
+            // Normalize to [-180, 180]
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+
+            if (Math.Abs(delta) <= maxStep)
+                return target;
+
+            float result = current + Math.Sign(delta) * maxStep;
+            if (result < 0) result += 360f;
+            if (result >= 360f) result -= 360f;
+            return result;
+        }
+
+        /// <summary>
+        /// Smoothly interpolate pitch toward a target.
+        /// </summary>
+        internal static float SmoothPitch(float current, float target, float maxStep = MaxPitchStepPerTick)
+        {
+            float delta = target - current;
+            if (Math.Abs(delta) <= maxStep)
+                return target;
+            return current + Math.Sign(delta) * maxStep;
         }
 
         internal static double HorizontalDistanceSq(Location a, Location b)

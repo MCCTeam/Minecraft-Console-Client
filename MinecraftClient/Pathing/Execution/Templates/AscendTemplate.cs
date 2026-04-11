@@ -33,8 +33,10 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dy = ExpectedEnd.Y - pos.Y;
             double horizDistSq = dx * dx + dz * dz;
 
-            physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
-            physics.Pitch = TemplateHelper.CalculatePitch(dx, dy - 1.62, dz);
+            float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
+            float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
+            physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+            physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
             input.Forward = true;
             input.Sprint = true;
 
