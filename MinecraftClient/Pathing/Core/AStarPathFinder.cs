@@ -49,17 +49,38 @@ namespace MinecraftClient.Pathing.Core
 
             moves.Add(new MoveFall());
 
+            // Cardinal parkour: 2-4 block sprint jumps along +-X and +-Z
             foreach (int dx in offsets)
             {
+                for (int dist = 2; dist <= 4; dist++)
+                    moves.Add(new MoveParkour(dx * dist, 0));
+                // Ascending: +1Y, dist 2-3 (dist 4 ascend not physically reliable)
                 for (int dist = 2; dist <= 3; dist++)
-                    moves.Add(new MoveParkour(dx, 0, dist));
-                moves.Add(new MoveParkour(dx, 0, 2, yDelta: 1));
+                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: 1));
             }
             foreach (int dz in offsets)
             {
+                for (int dist = 2; dist <= 4; dist++)
+                    moves.Add(new MoveParkour(0, dz * dist));
                 for (int dist = 2; dist <= 3; dist++)
-                    moves.Add(new MoveParkour(0, dz, dist));
-                moves.Add(new MoveParkour(0, dz, 2, yDelta: 1));
+                    moves.Add(new MoveParkour(0, dz * dist, yDelta: 1));
+            }
+
+            // Diagonal parkour: sprint jumps at angles.
+            // Only include combinations with actual distance <= ~3.2 blocks (conservative)
+            foreach (int dx in offsets)
+            {
+                foreach (int dz in offsets)
+                {
+                    // (2,1)/(1,2): sqrt(5) ~ 2.24 blocks
+                    moves.Add(new MoveParkour(dx * 2, dz * 1));
+                    moves.Add(new MoveParkour(dx * 1, dz * 2));
+                    // (2,2): sqrt(8) ~ 2.83 blocks
+                    moves.Add(new MoveParkour(dx * 2, dz * 2));
+                    // (3,1)/(1,3): sqrt(10) ~ 3.16 blocks
+                    moves.Add(new MoveParkour(dx * 3, dz * 1));
+                    moves.Add(new MoveParkour(dx * 1, dz * 3));
+                }
             }
 
             return [.. moves];

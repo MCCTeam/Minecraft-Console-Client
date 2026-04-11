@@ -6,6 +6,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
 {
     /// <summary>
     /// Vertical free fall at the same X,Z. Waits for the player to land at the target Y.
+    /// Supports both solid ground landings and water landings.
     /// </summary>
     public sealed class FallTemplate : IActionTemplate
     {
@@ -30,7 +31,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (!physics.OnGround)
                 _hasFallen = true;
 
+            // Solid ground landing
             if (_hasFallen && physics.OnGround && Math.Abs(dy) < 1.0)
+                return TemplateState.Complete;
+
+            // Water landing
+            if (_hasFallen && physics.InWater && Math.Abs(dy) < 2.0)
                 return TemplateState.Complete;
 
             if (_tickCount > 200)

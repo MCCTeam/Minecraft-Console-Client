@@ -75,6 +75,29 @@ namespace MinecraftClient.Pathing.Moves
         }
 
         /// <summary>
+        /// Can the player safely land on this block? True for solid blocks
+        /// except bottom slabs (which cause glitchy fall damage in vanilla).
+        /// </summary>
+        public static bool CanSafelyLandOn(CalculationContext ctx, int x, int y, int z)
+        {
+            if (!CanWalkOn(ctx, x, y, z))
+                return false;
+            // TODO: detect bottom slabs via BlockShapes and reject them
+            // (Baritone rejects bottom slab landings due to unreliable fall damage)
+            return true;
+        }
+
+        /// <summary>
+        /// Does this block absorb/negate fall damage?
+        /// Water, slime blocks, hay bales, and powder snow reduce or eliminate fall damage.
+        /// </summary>
+        public static bool AbsorbsFallDamage(Material mat)
+        {
+            return mat is Material.Water or Material.SlimeBlock
+                or Material.HayBlock or Material.PowderSnow;
+        }
+
+        /// <summary>
         /// Conservative check for gate-type blocks. Since we cannot read block state
         /// (open/closed) during planning, treat all fence gates as passable.
         /// </summary>

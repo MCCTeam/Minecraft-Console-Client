@@ -1,10 +1,12 @@
+using MinecraftClient.Mapping;
 using MinecraftClient.Pathing.Core;
 
 namespace MinecraftClient.Pathing.Moves.Impl
 {
     /// <summary>
-    /// Straight-down fall at the current X,Z position, for drops greater than MaxFallHeight
-    /// that MoveDescend won't cover. Scans downward for a safe landing.
+    /// Straight-down fall at the current X,Z position.
+    /// Supports water landing and mid-fall ladder/vine grabbing.
+    /// Used for drops where MoveDescend's 1-block horizontal offset doesn't apply.
     /// </summary>
     public sealed class MoveFall : IMove
     {
@@ -28,39 +30,62 @@ namespace MinecraftClient.Pathing.Moves.Impl
                 return;
             }
 
+            double costSoFar = 0;
+            int effectiveStartHeight = y;
+
             for (int fallDist = 1; fallDist <= _maxScanDepth; fallDist++)
             {
                 int landY = y - fallDist;
+                if (landY < -64) break;
 
-                if (ctx.CanWalkOn(x, landY - 1, z))
+                Material ontoMat = ctx.GetMaterial(x, landY, z);
+                int unprotectedFallHeight = fallDist - (y - effectiveStartHeight);
+
+                // Water landing: safe regardless of height
+                if (MoveHelper.IsWater(ontoMat))
                 {
-                    if (!ctx.CanWalkThrough(x, landY, z))
-                    {
-                        result.SetImpossible();
-                        return;
-                    }
-
-                    if (MoveHelper.IsHazardous(ctx.GetMaterial(x, landY - 1, z)))
-                    {
-                        result.SetImpossible();
-                        return;
-                    }
-
-                    double fallDamageThreshold = 3;
-                    double cost = ActionCosts.FallCost(fallDist);
-
-                    if (fallDist > fallDamageThreshold)
-                        cost += (fallDist - fallDamageThreshold) * 5.0;
-
-                    result.Set(x, landY, z, cost);
+                    double waterCost = ActionCosts.FallCost(unprotectedFallHeight) + costSoFar;
+                    result.Set(x, landY, z, waterCost);
                     return;
                 }
 
-                if (!ctx.CanWalkThrough(x, landY, z))
+                // Mid-fall ladder/vine grab (resets effective fall height)
+                if (ctx.AllowLadderGrabDuringFall && unprotectedFallHeight <= 11
+                    && ontoMat.CanBeClimbedOn())
+                {
+                    costSoFar += ActionCosts.FallCost(unprotectedFallHeight - 1);
+                    costSoFar += ActionCosts.LadderDownOne;
+                    effectiveStartHeight = landY;
+                    continue;
+                }
+
+                if (ctx.CanWalkThrough(x, landY, z))
+                    continue;
+
+                // Hit something solid
+                if (!ctx.CanWalkOn(x, landY, z))
                 {
                     result.SetImpossible();
                     return;
                 }
+
+                if (MoveHelper.IsHazardous(ontoMat))
+                {
+                    result.SetImpossible();
+                    return;
+                }
+
+                // Solid landing within safe height
+                if (unprotectedFallHeight <= ctx.MaxFallHeight + 1)
+                {
+                    double cost = ActionCosts.FallCost(unprotectedFallHeight) + costSoFar;
+                    result.Set(x, landY + 1, z, cost);
+                    return;
+                }
+
+                // Too high for safe landing
+                result.SetImpossible();
+                return;
             }
 
             result.SetImpossible();

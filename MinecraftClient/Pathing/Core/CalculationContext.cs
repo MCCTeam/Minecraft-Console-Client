@@ -15,6 +15,8 @@ namespace MinecraftClient.Pathing.Core
         public bool AllowParkourAscend { get; }
         public bool AllowDiagonalDescend { get; }
         public int MaxFallHeight { get; }
+        public int MaxFallHeightWater { get; }
+        public bool AllowLadderGrabDuringFall { get; }
         public double JumpPenalty { get; }
         public double WalkCost { get; }
         public double SprintCost { get; }
@@ -27,6 +29,8 @@ namespace MinecraftClient.Pathing.Core
             bool allowParkourAscend = false,
             bool allowDiagonalDescend = true,
             int maxFallHeight = 3,
+            int maxFallHeightWater = 256,
+            bool allowLadderGrabDuringFall = true,
             double jumpPenalty = ActionCosts.JumpPenalty)
         {
             World = world;
@@ -35,6 +39,8 @@ namespace MinecraftClient.Pathing.Core
             AllowParkourAscend = allowParkourAscend;
             AllowDiagonalDescend = allowDiagonalDescend;
             MaxFallHeight = maxFallHeight;
+            MaxFallHeightWater = maxFallHeightWater;
+            AllowLadderGrabDuringFall = allowLadderGrabDuringFall;
             JumpPenalty = jumpPenalty;
             WalkCost = ActionCosts.WalkOneBlock;
             SprintCost = CanSprint ? ActionCosts.SprintOneBlock : ActionCosts.WalkOneBlock;
