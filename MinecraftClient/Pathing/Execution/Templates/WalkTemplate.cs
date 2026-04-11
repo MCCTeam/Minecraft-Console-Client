@@ -32,16 +32,27 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dz = ExpectedEnd.Z - pos.Z;
             physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
             input.Forward = true;
-            input.Sprint = true;
+
+            if (physics.OnClimbable)
+            {
+                input.Jump = true;
+                input.Sprint = false;
+            }
+            else
+            {
+                input.Sprint = true;
+            }
 
             if (TemplateHelper.IsNear(pos, ExpectedEnd, horizThresholdSq: 0.20))
                 return TemplateState.Complete;
 
             double movedSq = TemplateHelper.HorizontalDistanceSq(pos, _lastPos);
+            int stuckThreshold = physics.OnClimbable ? 80 : 40;
             _stuckTicks = movedSq < 0.0005 ? _stuckTicks + 1 : 0;
             _lastPos = pos;
 
-            if (_stuckTicks > 40 || _tickCount > 100)
+            int tickLimit = physics.OnClimbable ? 160 : 100;
+            if (_stuckTicks > stuckThreshold || _tickCount > tickLimit)
                 return TemplateState.Failed;
 
             return TemplateState.InProgress;
