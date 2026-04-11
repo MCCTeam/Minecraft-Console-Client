@@ -28,6 +28,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
         {
             _tickCount++;
 
+            double dx = ExpectedEnd.X - pos.X;
+            double dz = ExpectedEnd.Z - pos.Z;
+            physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+            input.Forward = true;
+            input.Sprint = true;
+
             if (TemplateHelper.IsNear(pos, ExpectedEnd, horizThresholdSq: 0.20))
                 return TemplateState.Complete;
 
@@ -37,13 +43,6 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             if (_stuckTicks > 40 || _tickCount > 100)
                 return TemplateState.Failed;
-
-            double dx = ExpectedEnd.X - pos.X;
-            double dz = ExpectedEnd.Z - pos.Z;
-            physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
-
-            input.Forward = true;
-            input.Sprint = true;
 
             return TemplateState.InProgress;
         }

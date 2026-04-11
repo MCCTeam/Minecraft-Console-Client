@@ -17,16 +17,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
         private int _tickCount;
         private Phase _phase = Phase.Approach;
-        private readonly int _distance;
 
         public SprintJumpTemplate(Location start, Location end)
         {
             ExpectedStart = start;
             ExpectedEnd = end;
-
-            double dx = Math.Abs(end.X - start.X);
-            double dz = Math.Abs(end.Z - start.Z);
-            _distance = (int)Math.Round(Math.Max(dx, dz));
         }
 
         public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
@@ -57,7 +52,6 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 case Phase.Airborne:
                     if (!physics.OnGround)
                         break;
-                    // Landed
                     _phase = Phase.Landing;
                     goto case Phase.Landing;
 

@@ -33,8 +33,13 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dy = ExpectedEnd.Y - pos.Y;
             double horizDistSq = dx * dx + dz * dz;
 
-            // Complete when close to destination. Sprint bouncing can leave the player
-            // slightly above ground, so we don't require OnGround here.
+            physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+            input.Forward = true;
+            input.Sprint = true;
+
+            if (physics.OnGround && dy > 0.1)
+                input.Jump = true;
+
             if (horizDistSq < 0.25 && Math.Abs(dy) < 0.8)
                 return TemplateState.Complete;
 
@@ -45,13 +50,6 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             if (_stuckTicks > 40 || _tickCount > 80)
                 return TemplateState.Failed;
-
-            physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
-            input.Forward = true;
-            input.Sprint = true;
-
-            if (physics.OnGround && dy > 0.1)
-                input.Jump = true;
 
             return TemplateState.InProgress;
         }
