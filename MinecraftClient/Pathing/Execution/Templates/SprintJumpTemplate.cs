@@ -40,6 +40,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double horizDistSq = dx * dx + dz * dz;
 
             physics.Yaw = TemplateHelper.CalculateYaw(dx, dz);
+            physics.Pitch = TemplateHelper.CalculatePitch(dx, dy - 1.62, dz);
             input.Forward = true;
             input.Sprint = true;
 

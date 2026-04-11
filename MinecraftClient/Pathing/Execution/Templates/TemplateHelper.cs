@@ -12,6 +12,18 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return yaw;
         }
 
+        /// <summary>
+        /// Calculate the pitch angle (in degrees) to look toward a 3D offset.
+        /// Negative = look up, positive = look down. Clamped to [-90, 90].
+        /// The dy is relative to eye height (~1.62 blocks above feet).
+        /// </summary>
+        internal static float CalculatePitch(double dx, double dy, double dz)
+        {
+            double horizDist = Math.Sqrt(dx * dx + dz * dz);
+            float pitch = (float)(-Math.Atan2(dy, horizDist) / Math.PI * 180.0);
+            return Math.Clamp(pitch, -90f, 90f);
+        }
+
         internal static double HorizontalDistanceSq(Location a, Location b)
         {
             double dx = a.X - b.X;

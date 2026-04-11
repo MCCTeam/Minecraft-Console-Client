@@ -3285,6 +3285,9 @@ namespace MinecraftClient
             {
                 pathSegmentManager.Tick(location, playerPhysics, physicsInput, world);
                 playerYaw = playerPhysics.Yaw;
+                playerPitch = playerPhysics.Pitch;
+                _yaw = playerYaw;
+                _pitch = playerPitch;
                 return;
             }
 

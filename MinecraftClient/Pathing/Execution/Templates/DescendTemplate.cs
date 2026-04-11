@@ -54,6 +54,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (_tickCount > 200)
                 return TemplateState.Failed;
 
+            physics.Pitch = TemplateHelper.CalculatePitch(dx, dy - 1.62, dz);
+
             if (physics.OnClimbable)
             {
                 if (horizDistSq > 0.25)

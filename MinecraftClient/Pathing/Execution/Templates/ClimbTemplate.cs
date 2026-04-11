@@ -39,6 +39,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (_tickCount > 120)
                 return TemplateState.Failed;
 
+            physics.Pitch = _goingUp ? -70f : 70f;
+
             if (physics.OnClimbable)
             {
                 if (_goingUp)
