@@ -567,6 +567,8 @@ namespace MinecraftClient
             isUnderSlab = false;
             path = null;
             pathTarget = null;
+            pathSegmentManager?.Cancel();
+            pathSegmentManager = null;
             _yaw = null;
             _pitch = null;
             LastDigPosition = null;
@@ -1716,11 +1718,11 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Navigate to a goal using the new A* pathfinder.
-        /// Runs the search, converts the result into the legacy Queue path, and starts movement.
+        /// Navigate to a goal using the new A* pathfinder and template-based execution.
+        /// Accepts any IGoal for flexible target specification.
         /// Returns a description of the result for UI feedback.
         /// </summary>
-        public (bool success, string message) MoveToAStar(Location goal, long timeoutMs = 5000)
+        public (bool success, string message) NavigateToGoal(Pathing.Goals.IGoal goal, long timeoutMs = 5000)
         {
             lock (locationLock)
             {
@@ -1736,21 +1738,12 @@ namespace MinecraftClient
                 if (!ctx.CanWalkThrough(sx, sy, sz) && ctx.CanWalkThrough(sx, sy + 1, sz))
                     sy++;
 
-                int gx = (int)Math.Floor(goal.X);
-                int gy = (int)Math.Floor(goal.Y);
-                int gz = (int)Math.Floor(goal.Z);
-
-                if (!ctx.CanWalkThrough(gx, gy, gz) && ctx.CanWalkThrough(gx, gy + 1, gz))
-                    gy++;
-
-                Log.Info($"[Goto] A* search from ({sx},{sy},{sz}) to ({gx},{gy},{gz}) " +
-                         $"[raw pos=({location.X:F2},{location.Y:F2},{location.Z:F2})]");
+                Log.Info($"[Navigate] A* search from ({sx},{sy},{sz}) to {goal}");
 
                 using var cts = new CancellationTokenSource();
-                var pathGoal = new Pathing.Goals.GoalBlock(gx, gy, gz);
-                var result = finder.Calculate(ctx, sx, sy, sz, pathGoal, cts.Token, timeoutMs);
+                var result = finder.Calculate(ctx, sx, sy, sz, goal, cts.Token, timeoutMs);
 
-                Log.Info($"[Goto] A* result: {result.Status}, nodes={result.NodesExplored}, " +
+                Log.Info($"[Navigate] A* result: {result.Status}, nodes={result.NodesExplored}, " +
                          $"time={result.ElapsedMs}ms, path length={result.Path.Count}");
 
                 if (result.Status == Pathing.Core.PathStatus.Failed || result.Path.Count < 2)
@@ -1762,7 +1755,7 @@ namespace MinecraftClient
                 for (int i = 1; i < result.Path.Count; i++)
                 {
                     var node = result.Path[i];
-                    Log.Debug($"[Goto]   seg[{i - 1}] = {node.MoveUsed}: ({node.X},{node.Y},{node.Z})");
+                    Log.Debug($"[Navigate]   seg[{i - 1}] = {node.MoveUsed}: ({node.X},{node.Y},{node.Z})");
                 }
 
                 pathTarget = null;
@@ -1771,12 +1764,34 @@ namespace MinecraftClient
                 pathSegmentManager = new Pathing.Execution.PathSegmentManager(
                     debugLog: msg => Log.Debug(msg),
                     infoLog: msg => Log.Info(msg));
-                pathSegmentManager.StartNavigation(pathGoal, result);
+                pathSegmentManager.StartNavigation(goal, result);
 
                 string statusStr = result.Status == Pathing.Core.PathStatus.Partial ? " (partial)" : "";
                 return (true, string.Format(Translations.cmd_goto_success,
                     result.Path.Count - 1, result.NodesExplored, result.ElapsedMs, statusStr));
             }
+        }
+
+        /// <summary>
+        /// Navigate to a block location using the new A* pathfinder and template-based execution.
+        /// Convenience overload that creates a GoalBlock from the location.
+        /// Returns a description of the result for UI feedback.
+        /// </summary>
+        public (bool success, string message) MoveToAStar(Location goal, long timeoutMs = 5000)
+        {
+            int gx = (int)Math.Floor(goal.X);
+            int gy = (int)Math.Floor(goal.Y);
+            int gz = (int)Math.Floor(goal.Z);
+
+            lock (locationLock)
+            {
+                var ctx = new Pathing.Core.CalculationContext(world);
+                if (!ctx.CanWalkThrough(gx, gy, gz) && ctx.CanWalkThrough(gx, gy + 1, gz))
+                    gy++;
+            }
+
+            var pathGoal = new Pathing.Goals.GoalBlock(gx, gy, gz);
+            return NavigateToGoal(pathGoal, timeoutMs);
         }
 
         /// <summary>
@@ -3436,7 +3451,16 @@ namespace MinecraftClient
         /// <returns>Current goal of movement. Location.Zero if not set.</returns>
         public Location GetCurrentMovementGoal()
         {
-            return (ClientIsMoving() || path is null) ? Location.Zero : path.Last();
+            if (pathSegmentManager is not null && pathSegmentManager.IsNavigating)
+            {
+                if (pathSegmentManager.Goal is Pathing.Goals.GoalBlock gb)
+                    return new Location(gb.X + 0.5, gb.Y, gb.Z + 0.5);
+            }
+
+            if (path is not null && path.Count > 0)
+                return path.Last();
+
+            return Location.Zero;
         }
 
         /// <summary>
@@ -3463,7 +3487,7 @@ namespace MinecraftClient
             {
                 case MovementType.Sneak:
                     // https://minecraft.wiki/w/Sneaking#Effects - Sneaking  1.31m/s
-                    Config.Main.Advanced.MovementSpeed = 2;
+                    Config.Main.Advanced.MovementSpeed = 1;
                     break;
                 case MovementType.Walk:
                     // https://minecraft.wiki/w/Walking#Usage - Walking 4.317 m/s

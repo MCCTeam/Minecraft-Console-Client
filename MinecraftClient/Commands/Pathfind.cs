@@ -1,12 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.Mapping;
-using MinecraftClient.Pathing.Core;
-using MinecraftClient.Pathing.Goals;
 using static MinecraftClient.CommandHandler.CmdResult;
 
 namespace MinecraftClient.Commands
@@ -38,7 +33,7 @@ namespace MinecraftClient.Commands
             return r.SetAndReturn(GetCmdDescTranslated());
         }
 
-        private int DoPathfind(CmdResult r, Location goal)
+        private static int DoPathfind(CmdResult r, Location goal)
         {
             McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
@@ -47,94 +42,9 @@ namespace MinecraftClient.Commands
             Location current = handler.GetCurrentLocation();
             goal.ToAbsolute(current);
 
-            int startX = (int)Math.Floor(current.X);
-            int startY = (int)Math.Floor(current.Y);
-            int startZ = (int)Math.Floor(current.Z);
-            int goalX = (int)Math.Floor(goal.X);
-            int goalY = (int)Math.Floor(goal.Y);
-            int goalZ = (int)Math.Floor(goal.Z);
+            var (success, message) = handler.MoveToAStar(goal, timeoutMs: 10000);
 
-            handler.Log.Info($"[Pathfind] Planning from ({startX},{startY},{startZ}) to ({goalX},{goalY},{goalZ})");
-
-            var ctx = new CalculationContext(
-                handler.GetWorld(),
-                canSprint: true,
-                maxFallHeight: 3);
-
-            var finder = new AStarPathFinder();
-            finder.DebugLog = msg => handler.Log.Info(msg);
-
-            var goalObj = new GoalBlock(goalX, goalY, goalZ);
-
-            Task.Run(() =>
-            {
-                try
-                {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                    var result = finder.Calculate(ctx, startX, startY, startZ, goalObj, cts.Token, timeoutMs: 10000);
-
-                    handler.Log.Info($"[Pathfind] Result: {result.Status}, {result.Path.Count} nodes, " +
-                        $"{result.NodesExplored} explored, {result.ElapsedMs}ms");
-
-                    if (result.Path.Count > 1)
-                    {
-                        handler.Log.Info("[Pathfind] Path waypoints:");
-                        for (int i = 0; i < result.Path.Count; i++)
-                        {
-                            var n = result.Path[i];
-                            handler.Log.Info($"  [{i}] ({n.X},{n.Y},{n.Z}) via {n.MoveUsed}");
-                        }
-
-                        handler.Log.Info("[Pathfind] Beginning movement along path...");
-                        FollowPath(handler, result);
-                    }
-                    else
-                    {
-                        handler.Log.Warn("[Pathfind] No path found!");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    handler.Log.Warn($"[Pathfind] Exception: {ex.Message}");
-                }
-            });
-
-            return r.SetAndReturn(Status.Done, string.Format(Translations.cmd_pathfind_started, goalX, goalY, goalZ));
-        }
-
-        private static void FollowPath(McClient handler, PathResult result)
-        {
-            for (int i = 1; i < result.Path.Count; i++)
-            {
-                var node = result.Path[i];
-                var target = new Location(node.X + 0.5, node.Y, node.Z + 0.5);
-
-                handler.Log.Info($"[Pathfind] Moving to waypoint [{i}/{result.Path.Count - 1}]: ({node.X},{node.Y},{node.Z}) via {node.MoveUsed}");
-
-                bool success = handler.MoveTo(target, allowUnsafe: true, allowDirectTeleport: false, timeout: TimeSpan.FromSeconds(10));
-                if (!success)
-                {
-                    handler.Log.Warn($"[Pathfind] Sub-path failed for waypoint [{i}], using direct move");
-                    handler.MoveTo(target, allowUnsafe: true, allowDirectTeleport: true);
-                }
-
-                int maxWaitTicks = 200;
-                int waited = 0;
-                while (handler.ClientIsMoving() && waited < maxWaitTicks)
-                {
-                    Thread.Sleep(50);
-                    waited++;
-                }
-
-                var cur = handler.GetCurrentLocation();
-                double dx = cur.X - target.X;
-                double dz = cur.Z - target.Z;
-                double horizDist = Math.Sqrt(dx * dx + dz * dz);
-
-                handler.Log.Info($"[Pathfind] Waypoint [{i}] done, pos=({cur.X:F2},{cur.Y:F2},{cur.Z:F2}), dist={horizDist:F2}");
-            }
-
-            handler.Log.Info("[Pathfind] Path execution complete!");
+            return r.SetAndReturn(success ? Status.Done : Status.Fail, message);
         }
     }
 }

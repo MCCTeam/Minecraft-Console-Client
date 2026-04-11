@@ -105,7 +105,7 @@ namespace MinecraftClient.Pathing.Moves
         {
             return mat is Material.AcaciaFenceGate or Material.BirchFenceGate
                 or Material.CrimsonFenceGate or Material.DarkOakFenceGate
-                or Material.JungleFenceGate or Material.MangroveWood
+                or Material.JungleFenceGate or Material.MangroveFenceGate
                 or Material.OakFenceGate or Material.SpruceFenceGate
                 or Material.WarpedFenceGate or Material.CherryFenceGate
                 or Material.BambooFenceGate or Material.PaleOakFenceGate;

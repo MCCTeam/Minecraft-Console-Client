@@ -23,6 +23,7 @@ namespace MinecraftClient.Pathing.Execution
 
         public bool IsNavigating => _executor is not null && !_executor.IsComplete;
         public int ReplanCount => _replanCount;
+        public IGoal? Goal => _goal;
 
         public PathSegmentManager(Action<string>? debugLog = null, Action<string>? infoLog = null)
         {
