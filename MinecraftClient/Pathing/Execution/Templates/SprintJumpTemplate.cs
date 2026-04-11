@@ -82,9 +82,9 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     goto case Phase.Landing;
 
                 case Phase.Landing:
-                    // Tolerance scales with jump distance
                     double horizTolerance = _horizDist >= 3.5 ? 3.0 : 2.0;
-                    if (horizDistSq < horizTolerance && Math.Abs(dy) < 1.0)
+                    double vertTolerance = Math.Abs(ExpectedEnd.Y - ExpectedStart.Y) > 0.5 ? 1.5 : 1.0;
+                    if (horizDistSq < horizTolerance && Math.Abs(dy) < vertTolerance)
                         return TemplateState.Complete;
                     return TemplateState.Failed;
             }

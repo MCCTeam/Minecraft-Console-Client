@@ -4,7 +4,9 @@ namespace MinecraftClient.Pathing.Moves.Impl
 {
     /// <summary>
     /// Diagonal walk (1 block in both X and Z, same Y).
-    /// Checks both intermediate cardinal columns for clearance.
+    /// Allows corner walks: if one intermediate cardinal is blocked by a wall
+    /// but the other is clear, the player can hug the open side to cut the
+    /// corner. Both sides blocked is impossible (player AABB too wide).
     /// </summary>
     public sealed class MoveDiagonal : IMove
     {
@@ -36,19 +38,22 @@ namespace MinecraftClient.Pathing.Moves.Impl
                 return;
             }
 
-            if (!ctx.CanWalkThrough(x + XOffset, y, z) || !ctx.CanWalkThrough(x + XOffset, y + 1, z))
+            bool sideX = ctx.CanWalkThrough(x + XOffset, y, z) &&
+                         ctx.CanWalkThrough(x + XOffset, y + 1, z);
+            bool sideZ = ctx.CanWalkThrough(x, y, z + ZOffset) &&
+                         ctx.CanWalkThrough(x, y + 1, z + ZOffset);
+
+            if (!sideX && !sideZ)
             {
                 result.SetImpossible();
                 return;
             }
 
-            if (!ctx.CanWalkThrough(x, y, z + ZOffset) || !ctx.CanWalkThrough(x, y + 1, z + ZOffset))
-            {
-                result.SetImpossible();
-                return;
-            }
+            double cost = ctx.SprintCost * ActionCosts.DiagonalMultiplier;
+            if (!sideX || !sideZ)
+                cost = ctx.WalkCost * ActionCosts.DiagonalMultiplier;
 
-            result.Set(destX, y, destZ, ctx.SprintCost * ActionCosts.DiagonalMultiplier);
+            result.Set(destX, y, destZ, cost);
         }
     }
 }

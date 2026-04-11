@@ -7,6 +7,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
     /// <summary>
     /// Walk off a ledge and drop 1-N blocks to a landing spot.
     /// Walks toward the destination; gravity handles the fall.
+    /// Sprints when the horizontal distance is large (> 1.5 blocks).
     /// Supports solid landings, water landings, and mid-fall vine/ladder grabs.
     /// </summary>
     public sealed class DescendTemplate : IActionTemplate
@@ -16,11 +17,15 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
         private int _tickCount;
         private bool _hasFallen;
+        private readonly bool _needsSprint;
 
         public DescendTemplate(Location start, Location end)
         {
             ExpectedStart = start;
             ExpectedEnd = end;
+            double hdx = end.X - start.X;
+            double hdz = end.Z - start.Z;
+            _needsSprint = (hdx * hdx + hdz * hdz) > 2.25;
         }
 
         public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
@@ -70,6 +75,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
             {
                 physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
                 input.Forward = true;
+                if (_needsSprint)
+                    input.Sprint = true;
             }
 
             return TemplateState.InProgress;

@@ -59,6 +59,16 @@ namespace MinecraftClient.Pathing.Core
 
             moves.Add(new MoveFall());
 
+            // Sprint descend: sprint off ledge, 2 blocks horizontal + 1-3 drop
+            foreach (int dx in offsets)
+            {
+                moves.Add(new MoveSprintDescend(dx * 2, 0));
+                moves.Add(new MoveSprintDescend(dx, dx));
+                moves.Add(new MoveSprintDescend(dx, -dx));
+            }
+            foreach (int dz in offsets)
+                moves.Add(new MoveSprintDescend(0, dz * 2));
+
             // Cardinal parkour: 2-4 block sprint jumps along +-X and +-Z
             foreach (int dx in offsets)
             {
@@ -67,6 +77,13 @@ namespace MinecraftClient.Pathing.Core
                 // Ascending: +1Y, dist 2-3 (dist 4 ascend not physically reliable)
                 for (int dist = 2; dist <= 3; dist++)
                     moves.Add(new MoveParkour(dx * dist, 0, yDelta: 1));
+                // Descending parkour: sprint-jump, land 1-2 blocks lower
+                for (int dist = 2; dist <= 4; dist++)
+                {
+                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: -1));
+                    if (dist <= 3)
+                        moves.Add(new MoveParkour(dx * dist, 0, yDelta: -2));
+                }
             }
             foreach (int dz in offsets)
             {
@@ -74,6 +91,12 @@ namespace MinecraftClient.Pathing.Core
                     moves.Add(new MoveParkour(0, dz * dist));
                 for (int dist = 2; dist <= 3; dist++)
                     moves.Add(new MoveParkour(0, dz * dist, yDelta: 1));
+                for (int dist = 2; dist <= 4; dist++)
+                {
+                    moves.Add(new MoveParkour(0, dz * dist, yDelta: -1));
+                    if (dist <= 3)
+                        moves.Add(new MoveParkour(0, dz * dist, yDelta: -2));
+                }
             }
 
             // Diagonal parkour: sprint jumps at angles.
@@ -90,6 +113,11 @@ namespace MinecraftClient.Pathing.Core
                     // (3,1)/(1,3): sqrt(10) ~ 3.16 blocks
                     moves.Add(new MoveParkour(dx * 3, dz * 1));
                     moves.Add(new MoveParkour(dx * 1, dz * 3));
+
+                    // Diagonal descending parkour
+                    moves.Add(new MoveParkour(dx * 2, dz * 1, yDelta: -1));
+                    moves.Add(new MoveParkour(dx * 1, dz * 2, yDelta: -1));
+                    moves.Add(new MoveParkour(dx * 2, dz * 2, yDelta: -1));
                 }
             }
 

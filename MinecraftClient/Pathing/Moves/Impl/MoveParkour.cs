@@ -6,7 +6,8 @@ namespace MinecraftClient.Pathing.Moves.Impl
 {
     /// <summary>
     /// Sprint jump across a gap in cardinal or diagonal direction.
-    /// Supports horizontal distances of 2-4 blocks and optional +1Y ascent.
+    /// Supports horizontal distances of 2-4 blocks, optional +1Y ascent,
+    /// and -1/-2Y descent (land on a lower platform after the jump).
     /// Based on Baritone's MovementParkour design with diagonal extensions.
     /// </summary>
     public sealed class MoveParkour : IMove
@@ -39,6 +40,12 @@ namespace MinecraftClient.Pathing.Moves.Impl
             }
 
             if (_yDelta > 0 && !ctx.AllowParkourAscend)
+            {
+                result.SetImpossible();
+                return;
+            }
+
+            if (_yDelta < 0 && -_yDelta > ctx.MaxFallHeight)
             {
                 result.SetImpossible();
                 return;
@@ -172,6 +179,9 @@ namespace MinecraftClient.Pathing.Moves.Impl
             double cost;
             if (_yDelta > 0)
                 cost = horizDist * ctx.SprintCost + ctx.JumpPenalty * 2;
+            else if (_yDelta < 0)
+                cost = horizDist * ctx.SprintCost + ctx.JumpPenalty
+                     + ActionCosts.FallCost(-_yDelta);
             else if (horizDist >= 3.5)
                 cost = horizDist * ctx.SprintCost + ctx.JumpPenalty;
             else
