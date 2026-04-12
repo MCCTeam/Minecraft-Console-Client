@@ -51,12 +51,14 @@ Two types of data can be used as input:
 ### Decompiling a new MC version
 
 ```bash
-# Server side (default) — also downloads server.jar into MinecraftOfficial/downloads/<ver>/
-tools/decompile.sh --version 1.21.9
+# Server side (default) — downloads server.jar into $MCC_SERVERS/<ver>-Vanilla/
+tools/decompile.sh --version 1.21.9-Vanilla
 
 # Client side
 tools/decompile.sh --version 1.21.9 --side CLIENT
 ```
+
+For server-side runs, the decompiled source still lands in `MinecraftOfficial/<mc-version>-decompiled/`, while the runnable local server directory becomes `$MCC_SERVERS/<mc-version>-Vanilla/`.
 
 If you keep server assets outside the repo, set `MCC_SERVERS=/path/to/servers` before using `tools/mcc-env.sh` or `tools/start-server.sh`.
 
