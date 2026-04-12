@@ -41,12 +41,12 @@ upsert_property() {
 if [[ ! -f "$PROPS_FILE" ]]; then
     mc-start "$VERSION"
     wait_for_server_ready "$VERSION"
-    mc-stop "$VERSION"
+    mc-stop "$VERSION" --confirm
     wait_for_server_stop "$VERSION"
 fi
 
 if server_running; then
-    mc-stop "$VERSION"
+    mc-stop "$VERSION" --confirm
     wait_for_server_stop "$VERSION"
 fi
 

@@ -136,16 +136,108 @@ _mcc_dotnet_env() {
 # Helper: convert version to tmux session name (dots -> underscores)
 _mc-session() { echo "mc-${1//\./_}"; }
 
+_mc_requires_confirm() {
+  local action="$1"
+  local rerun_command="$2"
+  cat >&2 <<EOF
+Refusing to ${action} without --confirm.
+Keep shared servers running by default. Only stop or reset them when the user explicitly asks, or when you need to switch server versions.
+If you really intend to do this, rerun: ${rerun_command} --confirm
+EOF
+  return 1
+}
+
 # --- Minecraft Server Management ---
 mc-start() { bash "$MCC_REPO/tools/start-server.sh" "${1:-1.20.6}"; }
-mc-stop()  { local v="${1:-1.20.6}"; echo "stop" > "$MCC_SERVERS/$v/stdin.pipe"; }
+mc-stop()  {
+  local v="1.20.6"
+  local version_set=false
+  local confirm=false
+  local -a rerun=(mc-stop)
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --confirm) confirm=true; shift ;;
+      *)
+        if [[ "$version_set" == false ]]; then
+          v="$1"
+          version_set=true
+          rerun+=("$1")
+          shift
+        else
+          echo "mc-stop: unexpected argument: $1" >&2
+          return 1
+        fi
+        ;;
+    esac
+  done
+  if [[ ${#rerun[@]} -eq 1 ]]; then
+    rerun+=("$v")
+  fi
+  if [[ "$confirm" != true ]]; then
+    _mc_requires_confirm "stop shared server '$v'" "${rerun[*]}"
+    return 1
+  fi
+  echo "stop" > "$MCC_SERVERS/$v/stdin.pipe"
+}
 mc-cmd()   { local v="${2:-1.20.6}"; echo "$1" > "$MCC_SERVERS/$v/stdin.pipe"; }
 mc-log()   { local s; s=$(_mc-session "${1:-1.20.6}"); tmux capture-pane -t "$s" -p -S "-${2:-50}"; }
-mc-kill()  { local v="${1:-1.20.6}" s; s=$(_mc-session "$v"); tmux kill-session -t "$s" 2>/dev/null; rm -f "$MCC_SERVERS/$v/stdin.pipe"; echo "Killed $s"; }
+mc-kill()  {
+  local v="1.20.6"
+  local version_set=false
+  local confirm=false
+  local -a rerun=(mc-kill)
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --confirm) confirm=true; shift ;;
+      *)
+        if [[ "$version_set" == false ]]; then
+          v="$1"
+          version_set=true
+          rerun+=("$1")
+          shift
+        else
+          echo "mc-kill: unexpected argument: $1" >&2
+          return 1
+        fi
+        ;;
+    esac
+  done
+  if [[ ${#rerun[@]} -eq 1 ]]; then
+    rerun+=("$v")
+  fi
+  if [[ "$confirm" != true ]]; then
+    _mc_requires_confirm "force-kill shared server '$v'" "${rerun[*]}"
+    return 1
+  fi
+  local s
+  s=$(_mc-session "$v")
+  tmux kill-session -t "$s" 2>/dev/null
+  rm -f "$MCC_SERVERS/$v/stdin.pipe"
+  echo "Killed $s"
+}
 mc-list()  { tmux list-sessions 2>/dev/null | grep "^mc-" || echo "No running MC servers"; }
 mc-wait-ready() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "${1:-1.20.6}" >/dev/null && source "$MCC_REPO/.skills/mcc-integration-testing/scripts/common.sh" && wait_for_server_ready "${1:-1.20.6}" "${2:-60}"; }
 mc-wait-stop() { source "$MCC_REPO/.skills/mcc-integration-testing/scripts/common.sh" && wait_for_server_stop "${1:-1.20.6}" "${2:-60}"; }
-mc-reset-test-env() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" "$@"; }
+mc-reset-test-env() {
+  local confirm=false
+  local -a args=()
+  local -a rerun=(mc-reset-test-env)
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --confirm) confirm=true; shift ;;
+      *)
+        args+=("$1")
+        rerun+=("$1")
+        shift
+        ;;
+    esac
+  done
+  if [[ "$confirm" != true ]]; then
+    _mc_requires_confirm "reset shared server test state" "${rerun[*]}"
+    return 1
+  fi
+  bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" "${args[@]}"
+}
 
 # --- RCON ---
 mc-rcon() { bash "$MCC_REPO/tools/mc-rcon.sh" "$@"; }
@@ -167,9 +259,52 @@ mcc-build-clean() {
   dotnet clean "$(_mcc_repo_root)/MinecraftClient.sln" -c Release
 }
 mcc-run()   {
-  local port="${1:-25565}"
-  shift || true
-  cd "$MCC_REPO" && _mcc_dotnet_env env MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - "localhost:${port}" "$@" 2>&1
+  local session="" username="" port="25565"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-run: --session requires a value" >&2
+          return 1
+        fi
+        session="$1"
+        shift
+        ;;
+      --username)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-run: --username requires a value" >&2
+          return 1
+        fi
+        username="$1"
+        shift
+        ;;
+      --port)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-run: --port requires a value" >&2
+          return 1
+        fi
+        port="$1"
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  local -a args=(--file-input --no-build --port "$port")
+  if [[ -n "$session" ]]; then
+    args+=(--session "$session")
+  fi
+  if [[ -n "$username" ]]; then
+    args+=(--username "$username")
+  fi
+
+  bash "$MCC_REPO/tools/mcc-debug.sh" "${args[@]}"
 }
 mcc-cmd() {
   local session=""
@@ -270,21 +405,52 @@ mcc-reload() {
 
 # --- TUI Mode ---
 mcc-tui()   {
-  local port="${1:-25565}"
-  local cmd_prefix=""
-  shift || true
+  local session="" username="" port="25565"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-tui: --session requires a value" >&2
+          return 1
+        fi
+        session="$1"
+        shift
+        ;;
+      --username)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-tui: --username requires a value" >&2
+          return 1
+        fi
+        username="$1"
+        shift
+        ;;
+      --port)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-tui: --port requires a value" >&2
+          return 1
+        fi
+        port="$1"
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+    esac
+  done
 
-  if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
-    local build_root
-    build_root="$(_mcc_build_root)"
-    mkdir -p "$build_root"
-    cmd_prefix="MCC_BUILD_ROOT='$build_root' "
+  local -a args=(-m tui --no-build --port "$port")
+  if [[ -n "$session" ]]; then
+    args+=(--session "$session")
+  fi
+  if [[ -n "$username" ]]; then
+    args+=(--username "$username")
   fi
 
-  _mcc_dotnet_env tmux new-session -d -s mcc-debug -x 160 -y 50 \
-    "cd '$MCC_REPO' && ${cmd_prefix}dotnet run --project MinecraftClient -c Release -- CursorBot - localhost:${port} $* 2>&1; echo '=== MCC EXITED ==='; sleep 600"
-  echo "TUI mode launched in tmux session 'mcc-debug'"
-  echo "Attach: tmux attach -t mcc-debug"
+  bash "$MCC_REPO/tools/mcc-debug.sh" "${args[@]}"
 }
 
 _mcc_session_log_tail() {

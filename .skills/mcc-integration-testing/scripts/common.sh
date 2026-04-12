@@ -73,7 +73,7 @@ wait_for_server_stop() {
         ((elapsed += 1))
     done
 
-    mc-kill "$version" >/dev/null 2>&1 || true
+    mc-kill "$version" --confirm >/dev/null 2>&1 || true
 
     if ! server_running "$version"; then
         return 0
@@ -104,7 +104,7 @@ remove_stale_stdin_pipe() {
     local version="$1"
     local pipe_path="$MCC_SERVERS/$version/stdin.pipe"
 
-    if [[ -e "$pipe_path" && ! -p "$pipe_path" ]]; then
+    if [[ -e "$pipe_path" ]] && ! server_running "$version"; then
         rm -f "$pipe_path"
     fi
 }

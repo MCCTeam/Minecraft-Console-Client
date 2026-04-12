@@ -37,11 +37,12 @@ SESSION_NAME="mc-${SERVER_DIR//./_}"
 TEST_ROOT="${TMPDIR:-/tmp}/mcc-creative-e2e/${SERVER_DIR//\//_}"
 CFG="$TEST_ROOT/MinecraftClient.$MC_VERSION.ini"
 MCC_SESSION="creative-e2e-${SERVER_DIR//[^a-zA-Z0-9]/_}-${PROFILE}"
-TEST_USERNAME="CursorBot"
+TEST_USERNAME="$(_mcc_resolve_username "$MCC_SESSION")"
 MCC_LOG="$(_mcc_session_log_file "$MCC_SESSION")"
+PID_FILE="$(_mcc_session_pid_file "$MCC_SESSION")"
+MCC_TMUX_SESSION="$(_mcc_tmux_session_name "$MCC_SESSION")"
 SERVER_LOG_FILE="$MCC_SERVERS/$SERVER_DIR/logs/latest.log"
 INPUT_FILE="$(_mcc_session_input_file "$MCC_SESSION")"
-MCC_PID=""
 SERVER_PORT="25565"
 
 mkdir -p "$TEST_ROOT"
@@ -65,12 +66,41 @@ wait_for_file_pattern() {
     return 1
 }
 
+port_is_listening() {
+    local port="$1"
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        return 1
+    fi
+
+    python3 - "$port" <<'PY'
+import socket
+import sys
+
+port = int(sys.argv[1])
+
+for addrinfo in socket.getaddrinfo("localhost", port, 0, socket.SOCK_STREAM):
+    family, socktype, proto, _, sockaddr = addrinfo
+    try:
+        sock = socket.socket(family, socktype, proto)
+        sock.settimeout(0.2)
+        if sock.connect_ex(sockaddr) == 0:
+            sock.close()
+            raise SystemExit(0)
+        sock.close()
+    except OSError:
+        continue
+
+raise SystemExit(1)
+PY
+}
+
 wait_for_rcon_port_free() {
     local timeout="${1:-30}"
     local elapsed=0
 
     while (( elapsed < timeout )); do
-        if ! ss -ltn '( sport = :25575 )' 2>/dev/null | grep -Fq ':25575'; then
+        if ! port_is_listening 25575; then
             return 0
         fi
         sleep 1
@@ -81,17 +111,16 @@ wait_for_rcon_port_free() {
     return 1
 }
 cleanup() {
-    if [[ -n "${MCC_PID:-}" ]] && kill -0 "$MCC_PID" 2>/dev/null; then
-        mcc-cmd --session "$MCC_SESSION" "quit" >/dev/null 2>&1 || true
-        sleep 2
-    fi
+    mcc-cmd --session "$MCC_SESSION" "quit" >/dev/null 2>&1 || true
+    sleep 2
     mcc-kill --session "$MCC_SESSION" >/dev/null 2>&1 || true
 
-    if [[ -p "$MCC_SERVERS/$SERVER_DIR/stdin.pipe" ]]; then
-        echo "stop" > "$MCC_SERVERS/$SERVER_DIR/stdin.pipe" 2>/dev/null || true
+    if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+        tmux send-keys -t "$SESSION_NAME" "stop" C-m >/dev/null 2>&1 || true
         wait_for_server_stop "$SERVER_DIR" 20 >/dev/null 2>&1 || true
     fi
 
+    rm -f "$MCC_SERVERS/$SERVER_DIR/stdin.pipe"
     tmux kill-session -t "$SESSION_NAME" 2>/dev/null || true
     wait_for_rcon_port_free 30 || true
 }
@@ -148,6 +177,27 @@ assert_log_contains() {
     wait_for_file_pattern "$file" "$pattern" "$description" "$timeout"
 }
 
+start_mcc_session() {
+    local -a mcc_args=("$CFG" "$TEST_USERNAME" "-" "localhost:$SERVER_PORT")
+    local mcc_args_cmd
+    mcc_args_cmd="$(printf '%q ' "${mcc_args[@]}")"
+
+    tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
+    rm -f "$PID_FILE"
+    tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
+        "cd '$REPO_ROOT' && printf '%s\n' \"\$\$\" > '$PID_FILE' && exec env MCC_FILE_INPUT=1 MCC_INPUT_FILE='$INPUT_FILE' dotnet run --project MinecraftClient -c Release --no-build -- $mcc_args_cmd > '$MCC_LOG' 2>&1"
+
+    for _ in $(seq 1 25); do
+        if [[ -s "$PID_FILE" ]]; then
+            return 0
+        fi
+        sleep 0.2
+    done
+
+    echo "Failed to capture MCC PID for session $MCC_SESSION" >&2
+    return 1
+}
+
 legacy_server_setup() {
     run_server_command "gamerule sendCommandFeedback true"
     run_server_command "time set day"
@@ -184,7 +234,7 @@ modern_mob_and_effects() {
 }
 
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "$SERVER_DIR" >/dev/null
-bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" --all >/dev/null
+bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" "$SERVER_DIR" >/dev/null
 mcc-reset-session --session "$MCC_SESSION" >/dev/null
 wait_for_rcon_port_free 30 || true
 mkdir -p "$(dirname "$MCC_LOG")" "$(dirname "$INPUT_FILE")"
@@ -202,16 +252,7 @@ prepare_config
 
 : > "$INPUT_FILE"
 
-(
-    cd "$REPO_ROOT"
-    MCC_FILE_INPUT=1 MCC_INPUT_FILE="$INPUT_FILE" dotnet run --project MinecraftClient -c Release --no-build -- \
-        "$CFG" \
-        "$TEST_USERNAME" \
-        - \
-        "localhost:$SERVER_PORT" \
-        > "$MCC_LOG" 2>&1
-) &
-MCC_PID=$!
+start_mcc_session
 
 assert_log_contains "$MCC_LOG" "Server was successfully joined." "MCC join success" 90
 assert_log_contains "$SERVER_LOG_FILE" "$TEST_USERNAME joined the game" "server join entry" 30

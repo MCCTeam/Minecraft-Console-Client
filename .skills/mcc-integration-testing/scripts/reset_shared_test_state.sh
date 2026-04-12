@@ -34,9 +34,7 @@ if [[ $# -eq 0 || "${1:-}" == "--all" ]]; then
 
     while IFS= read -r pipe_path; do
         [[ -z "$pipe_path" ]] && continue
-        if [[ ! -p "$pipe_path" ]]; then
-            rm -f "$pipe_path"
-        fi
+        rm -f "$pipe_path"
     done < <(find "$MCC_SERVERS" -maxdepth 2 -name 'stdin.pipe' 2>/dev/null || true)
 else
     for version in "$@"; do

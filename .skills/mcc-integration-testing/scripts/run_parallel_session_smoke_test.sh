@@ -93,7 +93,7 @@ cleanup() {
     sleep 1
     mcc-kill --session "$SESSION_A" >/dev/null 2>&1 || true
     mcc-kill --session "$SESSION_B" >/dev/null 2>&1 || true
-    mc-stop "$VERSION" >/dev/null 2>&1 || true
+    mc-stop "$VERSION" --confirm >/dev/null 2>&1 || true
     wait_for_server_stop "$VERSION" 20 >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -119,8 +119,10 @@ assert_server_alive() {
 start_file_input_session() {
     local session="$1"
     local username="$2"
+    local port="$3"
     bash "$REPO_ROOT/tools/mcc-debug.sh" \
         --version "$VERSION" \
+        --port "$port" \
         --file-input \
         --no-build \
         --session "$session" \
@@ -145,9 +147,9 @@ if [[ -z "$SERVER_PORT" ]]; then
 fi
 
 echo "Starting MCC session A..."
-start_file_input_session "$SESSION_A" "$USERNAME_A"
+start_file_input_session "$SESSION_A" "$USERNAME_A" "$SERVER_PORT"
 echo "Starting MCC session B..."
-start_file_input_session "$SESSION_B" "$USERNAME_B"
+start_file_input_session "$SESSION_B" "$USERNAME_B" "$SERVER_PORT"
 
 wait_for_file_pattern "$LOG_A" "Server was successfully joined." "session A join success" 90 || fail "Session A failed to join"
 wait_for_file_pattern "$LOG_B" "Server was successfully joined." "session B join success" 90 || fail "Session B failed to join"

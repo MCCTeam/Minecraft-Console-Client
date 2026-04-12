@@ -18,14 +18,15 @@ RUN_ID="$(date +%Y%m%d-%H%M%S)"
 RUN_DIR="$RUN_ROOT/$RUN_ID"
 SERVER_LOG_FILE="$MCC_SERVERS/$VERSION/logs/latest.log"
 SESSION_NAME="full-spectrum-${MC_VERSION//[^a-zA-Z0-9]/_}"
-TEST_USERNAME="CursorBot"
+TEST_USERNAME="$(_mcc_resolve_username "$SESSION_NAME")"
 MCC_LOG="$(_mcc_session_log_file "$SESSION_NAME")"
+PID_FILE="$(_mcc_session_pid_file "$SESSION_NAME")"
+MCC_TMUX_SESSION="$(_mcc_tmux_session_name "$SESSION_NAME")"
 BUILD_LOG="$RUN_DIR/build.log"
 SERVER_TMUX_LOG="$RUN_DIR/server-tmux.log"
 SERVER_FILE_LOG="$RUN_DIR/server-latest.log"
 INPUT_FILE="$(_mcc_session_input_file "$SESSION_NAME")"
 CFG="$RUN_DIR/MinecraftClient.$MC_VERSION.ini"
-MCC_PID=""
 
 mkdir -p "$RUN_DIR"
 
@@ -34,7 +35,7 @@ cleanup() {
     sleep 2
     mcc-kill --session "$SESSION_NAME" >/dev/null 2>&1 || true
 
-    mc-stop "$VERSION" >/dev/null 2>&1 || true
+    mc-stop "$VERSION" --confirm >/dev/null 2>&1 || true
     wait_for_server_stop "$VERSION" 20 >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -132,6 +133,26 @@ run_mcc_command() {
     sleep 2
 }
 
+start_mcc_session() {
+    local -a mcc_args=("$CFG" "$TEST_USERNAME" "-" "localhost:$SERVER_PORT")
+    local mcc_args_cmd
+    mcc_args_cmd="$(printf '%q ' "${mcc_args[@]}")"
+
+    tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
+    rm -f "$PID_FILE"
+    tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
+        "cd '$REPO_ROOT' && printf '%s\n' \"\$\$\" > '$PID_FILE' && exec env MCC_FILE_INPUT=1 MCC_INPUT_FILE='$INPUT_FILE' dotnet run --project MinecraftClient -c Release --no-build -- $mcc_args_cmd > '$MCC_LOG' 2>&1"
+
+    for _ in $(seq 1 25); do
+        if [[ -s "$PID_FILE" ]]; then
+            return 0
+        fi
+        sleep 0.2
+    done
+
+    fail "Failed to capture MCC PID for session $SESSION_NAME"
+}
+
 bash "$SCRIPT_DIR/preflight_test_env.sh" "$VERSION" >/dev/null
 bash "$SCRIPT_DIR/reset_shared_test_state.sh" "$VERSION" >/dev/null
 "$SCRIPT_DIR/ensure_offline_server.sh" "$VERSION"
@@ -140,6 +161,9 @@ echo "Building MCC..."
 mcc-build > "$BUILD_LOG" 2>&1 || fail "mcc-build failed"
 prepare_config
 SERVER_PORT="$(bash "$SCRIPT_DIR/get_server_port.sh" "$VERSION")"
+if [[ -z "$SERVER_PORT" ]]; then
+    fail "Failed to resolve server port"
+fi
 
 mkdir -p "$(dirname "$INPUT_FILE")" "$(dirname "$MCC_LOG")"
 : > "$INPUT_FILE"
@@ -150,12 +174,7 @@ mc-start "$VERSION" >/dev/null
 wait_for_server_ready "$VERSION" || fail "Server did not become ready"
 
 echo "Starting MCC..."
-(
-    cd "$REPO_ROOT"
-    MCC_FILE_INPUT=1 MCC_INPUT_FILE="$INPUT_FILE" \
-        dotnet run --project MinecraftClient -c Release --no-build -- "$CFG" "$TEST_USERNAME" - "localhost:$SERVER_PORT" > "$MCC_LOG" 2>&1
-) &
-MCC_PID=$!
+start_mcc_session
 
 wait_for_file_pattern "$MCC_LOG" "Server was successfully joined." "MCC join success" 90 || fail "MCC failed to join"
 wait_for_server_log_pattern "$TEST_USERNAME joined the game" "server join entry" 30 || fail "Server never logged the join"

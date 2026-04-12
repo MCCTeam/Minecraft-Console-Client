@@ -124,7 +124,7 @@ cleanup() {
         wait "$MCC_PID" 2>/dev/null || true
     fi
 
-    mc-stop "$SERVER_DIR" >/dev/null 2>&1 || true
+    mc-stop "$SERVER_DIR" --confirm >/dev/null 2>&1 || true
     wait_for_server_stop "$SERVER_DIR" 20 >/dev/null 2>&1 || true
     ln -sfn "$RUN_DIR" "$LATEST_LINK"
     write_summary

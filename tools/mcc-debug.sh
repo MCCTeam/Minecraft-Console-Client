@@ -41,6 +41,8 @@ USERNAME=""
 DO_BUILD=true
 DEBUG_ON=false
 FILE_INPUT=false
+BUILD_ROOT="$(_mcc_build_root)"
+BUILD_ROOT_ENV_PREFIX=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -98,6 +100,12 @@ if [[ -z "$USERNAME" ]]; then
     USERNAME="$(_mcc_resolve_username "$SESSION")"
 fi
 
+if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
+    mkdir -p "$BUILD_ROOT"
+    printf -v BUILD_ROOT_QUOTED '%q' "$BUILD_ROOT"
+    BUILD_ROOT_ENV_PREFIX="MCC_BUILD_ROOT=$BUILD_ROOT_QUOTED "
+fi
+
 SESSION_ROOT="$(_mcc_session_root "$SESSION")"
 CFG="$SESSION_ROOT/MinecraftClient.debug.ini"
 MCC_LOG="$(_mcc_session_log_file "$SESSION")"
@@ -118,6 +126,7 @@ echo "  Server:  $VERSION (port $PORT)"
 echo "  Session: $SESSION"
 echo "  User:    $USERNAME"
 echo "  Mode:    $MODE"
+echo "  Build:   $BUILD_ROOT"
 echo "  Root:    $SESSION_ROOT"
 echo "  Config:  $CFG"
 echo "  Log:     $MCC_LOG"
@@ -132,7 +141,7 @@ bash "$PREFLIGHT_SCRIPT" "$VERSION" >/dev/null
 # --- Build ---
 if $DO_BUILD; then
     echo "[1/4] Building MCC..."
-    dotnet build "$REPO_ROOT/MinecraftClient.sln" -c Release -v quiet --nologo
+    _mcc_dotnet_env dotnet build "$REPO_ROOT/MinecraftClient.sln" -c Release -v quiet --nologo
     echo "  Build OK"
 else
     echo "[1/4] Build skipped (--no-build)"
@@ -219,7 +228,7 @@ if [[ "$MODE" == "tui" ]]; then
     # TUI mode: needs a real tty - no pipes or redirects allowed
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
+        "cd '$REPO_ROOT' && ${BUILD_ROOT_ENV_PREFIX}dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
     echo "  TUI mode started in tmux session '$MCC_TMUX_SESSION'"
     echo "  (TUI mode uses a real terminal; log file is not available, use MCC's /debug command)"
@@ -232,7 +241,7 @@ elif $FILE_INPUT; then
     # FileInput mode: run in detached tmux, drive via session-specific input file
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && printf '%s\n' \"\$\$\" > '$PID_FILE' && exec env MCC_FILE_INPUT=1 MCC_INPUT_FILE='$INPUT_FILE' dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD > '$MCC_LOG' 2>&1"
+        "cd '$REPO_ROOT' && printf '%s\n' \"\$\$\" > '$PID_FILE' && exec env ${BUILD_ROOT_ENV_PREFIX}MCC_FILE_INPUT=1 MCC_INPUT_FILE='$INPUT_FILE' dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD > '$MCC_LOG' 2>&1"
 
     for _ in $(seq 1 25); do
         if [[ -s "$PID_FILE" ]]; then
@@ -274,12 +283,13 @@ elif $FILE_INPUT; then
     echo "  Attach (optional): tmux attach -t $MCC_TMUX_SESSION"
     echo "  Stop MCC:      echo 'quit' >> $INPUT_FILE"
     echo "  Stop server:   mc-stop $VERSION"
+    echo "                 shared servers stay up by default; rerun with --confirm only if you really need to stop it"
     echo ""
 else
     # Interactive classic mode: run in tmux (no pipe - ConsoleInteractive also needs tty)
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
+        "cd '$REPO_ROOT' && ${BUILD_ROOT_ENV_PREFIX}dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
     echo "  Classic mode started in tmux session '$MCC_TMUX_SESSION'"
     echo ""
@@ -293,4 +303,4 @@ fi
 echo "Quick commands:"
 echo "  mc-rcon 'op $USERNAME'      # Give operator"
 echo "  mc-rcon 'gamemode creative'  # Creative mode"
-echo "  mc-stop $VERSION             # Stop server"
+echo "  mc-stop $VERSION             # shared server stays up by default; rerun with --confirm only when needed"

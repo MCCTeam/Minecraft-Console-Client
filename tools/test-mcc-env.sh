@@ -93,7 +93,7 @@ assert_eq "debug state" "$input_contents" "session input command is intact"
 mcc-reset-session --session "$session"
 [[ ! -e "$(_mcc_session_root "$session")" ]]
 malformed_log="${TMPDIR:-/tmp}/mcc-env-session-hang-test.log"
-for func in mcc-cmd mcc-reset-session mcc-state mcc-log-mcc; do
+for func in mcc-cmd mcc-reset-session mcc-state mcc-log-mcc mcc-run mcc-tui; do
     set +e
     "$func" --session >"$malformed_log" 2>&1
     status=$?
@@ -105,5 +105,36 @@ for func in mcc-cmd mcc-reset-session mcc-state mcc-log-mcc; do
     fi
     grep -Fq -- "--session requires a value" "$malformed_log"
 done
+
+guard_root="$(mktemp -d "${TMPDIR:-/tmp}/mcc-env-guard.XXXXXX")"
+MCC_SERVERS="$guard_root"
+mkdir -p "$MCC_SERVERS/testver"
+printf 'unchanged\n' > "$MCC_SERVERS/testver/stdin.pipe"
+
+confirm_log="${TMPDIR:-/tmp}/mcc-env-confirm-guard.log"
+for cmd in \
+    "mc-stop testver" \
+    "mc-kill testver" \
+    "mc-reset-test-env testver"
+do
+    set +e
+    eval "$cmd" >"$confirm_log" 2>&1
+    status=$?
+    set -e
+    if [[ $status -eq 0 ]]; then
+        echo "FAIL: $cmd ran without --confirm" >&2
+        cat "$confirm_log" >&2
+        exit 1
+    fi
+    grep -Fq -- "--confirm" "$confirm_log"
+    grep -Fq "Keep shared servers running by default" "$confirm_log"
+done
+
+stdin_contents="$(cat "$MCC_SERVERS/testver/stdin.pipe")"
+assert_eq "unchanged" "$stdin_contents" "mc-stop without confirm does not touch stdin pipe"
+
+: > "$MCC_SERVERS/testver/stdin.pipe"
+mc-stop testver --confirm
+assert_eq "stop" "$(cat "$MCC_SERVERS/testver/stdin.pipe")" "mc-stop with confirm writes to stdin pipe"
 
 echo "PASS"
