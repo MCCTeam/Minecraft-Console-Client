@@ -93,8 +93,11 @@ mc-reset-test-env 1.21.11
 ## Build
 
 ```bash
-dotnet build MinecraftClient.sln -c Release
+source tools/mcc-env.sh
+mcc-build
 ```
+
+Use `mcc-build` for normal local development so any `MCC_BUILD_MODE=tmpfs` routing stays active. Only use raw `dotnet build` when you are intentionally debugging the build system itself.
 
 ## Server management
 
@@ -276,6 +279,7 @@ After `source tools/mcc-env.sh`:
 | `mc-wait-stop VER [SEC]` | Wait for server shutdown, with force-kill fallback |
 | `mc-reset-test-env [--all|VER...]` | Reset shared tmux server state and stale pipes |
 | `mcc-build` | Build MCC |
+| `mcc-publish --rid <RID>` | Publish MCC with the repo's CI-like defaults |
 | `mcc-build-clean` | Clear the current worktree's build output |
 | `mcc-run [--session NAME] [--username NAME] [--port PORT]` | Convenience wrapper for `mcc-debug --file-input --no-build` |
 | `mcc-tui [--session NAME] [--username NAME] [--port PORT]` | Convenience wrapper for `mcc-debug -m tui --no-build` |
