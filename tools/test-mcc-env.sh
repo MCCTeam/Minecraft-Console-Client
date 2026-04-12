@@ -84,5 +84,12 @@ grep -Fq "debug state" "$input_file"
 
 mcc-reset-session --session "$session"
 [[ ! -e "$(_mcc_session_root "$session")" ]]
+malformed_log="${TMPDIR:-/tmp}/mcc-env-session-hang-test.log"
+if mcc-cmd --session >"$malformed_log" 2>&1; then
+    echo "FAIL: --session accepted without value" >&2
+    cat "$malformed_log" >&2
+    exit 1
+fi
+grep -Fq -- "--session requires a value" "$malformed_log"
 
 echo "PASS"

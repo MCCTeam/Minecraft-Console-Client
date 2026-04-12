@@ -161,8 +161,19 @@ mcc-cmd() {
   local command=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --session) session="$2"; shift 2 ;;
-      *) command="$1"; shift ;;
+      --session)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-cmd: --session requires a value" >&2
+          return 1
+        fi
+        session="$1"
+        shift
+        ;;
+      *)
+        command="$1"
+        shift
+        ;;
     esac
   done
 
@@ -194,27 +205,88 @@ _mcc_session_log_tail() {
   local session="$1"
   local log_file
   log_file="$(_mcc_session_log_file "$session")"
+  if [[ -e "$log_file" ]]; then
+    tail -n 30 "$log_file" 2>/dev/null
+  else
+    echo "No MCC log found"
+  fi
+}
+
+_mcc_session_log_follow() {
+  local session="$1"
+  local log_file
+  log_file="$(_mcc_session_log_file "$session")"
   tail -f "$log_file" 2>/dev/null || echo "No MCC log found"
 }
 
 # --- Debug helpers ---
 mcc-debug()   { bash "$MCC_REPO/tools/mcc-debug.sh" "$@"; }
 mcc-log-mcc() {
-  local session="${1:-}"
-  if [[ "$session" == "--session" ]]; then
-    session="${2:-}"
-  fi
+  local session=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-log-mcc: --session requires a value" >&2
+          return 1
+        fi
+        session="$1"
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
   session="$(_mcc_resolve_session "$session")"
+  _mcc_session_log_follow "$session"
+}
+mcc-state() {
+  local session=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-state: --session requires a value" >&2
+          return 1
+        fi
+        session="$1"
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  session="$(_mcc_resolve_session "$session")"
+  mcc-cmd --session "$session" "debug state"
+  sleep 1
   _mcc_session_log_tail "$session"
 }
-mcc-state()   { echo "debug state" >> "$MCC_REPO/mcc_input.txt"; sleep 1; tail -30 "${TMPDIR:-/tmp}/mcc-debug/mcc-debug.log" 2>/dev/null; }
 mcc-preflight() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "$@"; }
 mcc-reset-session() {
   local session=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --session) session="$2"; shift 2 ;;
-      *) echo "Unknown option: $1" >&2; return 1 ;;
+      --session)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-reset-session: --session requires a value" >&2
+          return 1
+        fi
+        session="$1"
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
     esac
   done
 
