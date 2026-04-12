@@ -43,6 +43,19 @@ assert_eq "${TMPDIR:-/tmp}/mcc-debug/demo-branch" "$(_mcc_session_root "demo-bra
 assert_eq "mcc-demo-branch" "$(_mcc_tmux_session_name "demo-branch")" "tmux session name"
 
 MCC_BUILD_MODE=tmpfs
+
+original_repo_root="$MCC_REPO_ROOT"
+fallback_root="$REPO_ROOT/nonexistent-worktree"
+MCC_REPO_ROOT="$fallback_root"
+
+fallback_session="$(_mcc_resolve_session)"
+assert_eq "$(basename "$fallback_root")" "$fallback_session" "session fallback without git"
+
+fallback_build_root="$(_mcc_build_root)"
+assert_regex "^(/dev/shm|/tmp)/mcc-build/$(basename "$fallback_root")\$" "$fallback_build_root" "tmpfs build root fallback"
+
+MCC_REPO_ROOT="$original_repo_root"
+
 build_root="$(_mcc_build_root)"
 assert_regex '^(/dev/shm|/tmp)/mcc-build/.+$' "$build_root" "tmpfs build root"
 

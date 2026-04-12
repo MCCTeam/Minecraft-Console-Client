@@ -26,7 +26,16 @@ _mcc_servers_root() {
 }
 
 _mcc_current_worktree_name() {
-  git -C "$MCC_REPO_ROOT" rev-parse --show-toplevel 2>/dev/null | xargs basename
+  local worktree_root
+  if ! worktree_root="$(git -C "$MCC_REPO_ROOT" rev-parse --show-toplevel 2>/dev/null)"; then
+    return 0
+  fi
+
+  if [[ -z "$worktree_root" ]]; then
+    return 0
+  fi
+
+  basename "$worktree_root"
 }
 
 _mcc_resolve_session() {
