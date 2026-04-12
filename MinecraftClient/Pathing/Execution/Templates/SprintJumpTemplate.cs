@@ -5,10 +5,17 @@ using MinecraftClient.Physics;
 namespace MinecraftClient.Pathing.Execution.Templates
 {
     /// <summary>
-    /// Sprint-jump across a gap. Uses a phase-based state machine:
-    /// Approach -> jump when ready -> Airborne -> Landing check.
-    /// For long jumps (>= 3.5 blocks), delays the jump until the player
-    /// has moved toward the edge of the starting block for maximum distance.
+    /// Jump across a gap. Uses a phase-based state machine:
+    /// Approach -> Jump -> Airborne -> Landing.
+    ///
+    /// All parkour jumps use sprint-jumping (vanilla optimal horizontal distance).
+    /// The key to landing on small platforms is releasing forward/sprint input mid-air
+    /// once the player is close to or past the target, letting drag decelerate them
+    /// onto the block.
+    ///
+    /// During Approach, the template waits for the yaw to be within 5 degrees of
+    /// the target direction before jumping. For medium/long jumps, it also builds
+    /// momentum by sprinting toward the block edge.
     /// </summary>
     public sealed class SprintJumpTemplate : IActionTemplate
     {
@@ -17,22 +24,27 @@ namespace MinecraftClient.Pathing.Execution.Templates
         public Location ExpectedStart { get; }
         public Location ExpectedEnd { get; }
 
+        private readonly PathSegment _segment;
+        private readonly PathSegment? _nextSegment;
         private readonly double _horizDist;
-        private readonly bool _isDiagonal;
         private int _tickCount;
         private Phase _phase = Phase.Approach;
+        private bool _leftGround;
 
-        public SprintJumpTemplate(Location start, Location end)
+        private const float YawToleranceDeg = 5f;
+
+        public SprintJumpTemplate(PathSegment segment, PathSegment? nextSegment)
         {
-            ExpectedStart = start;
-            ExpectedEnd = end;
-            double dx = end.X - start.X;
-            double dz = end.Z - start.Z;
+            _segment = segment;
+            _nextSegment = nextSegment;
+            ExpectedStart = segment.Start;
+            ExpectedEnd = segment.End;
+            double dx = segment.End.X - segment.Start.X;
+            double dz = segment.End.Z - segment.Start.Z;
             _horizDist = Math.Sqrt(dx * dx + dz * dz);
-            _isDiagonal = Math.Abs(dx) > 0.5 && Math.Abs(dz) > 0.5;
         }
 
-        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
+        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
             _tickCount++;
 
@@ -45,52 +57,92 @@ namespace MinecraftClient.Pathing.Execution.Templates
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
             physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
-            input.Forward = true;
-            input.Sprint = true;
 
             switch (_phase)
             {
                 case Phase.Approach:
+                    input.Forward = true;
+                    input.Sprint = true;
+
                     if (physics.OnGround)
                     {
                         double fromStartSq = TemplateHelper.HorizontalDistanceSq(pos, ExpectedStart);
+                        float yawDelta = YawDifference(physics.Yaw, targetYaw);
 
-                        // For long jumps, delay the jump until the player has sprinted
-                        // toward the block edge. Baritone waits until playerFeet is in
-                        // the next block (~0.5 blocks from center) for dist >= 4.
-                        // For medium jumps (dist 3), wait 0.35 blocks (Baritone: 0.7).
-                        // For short diagonal jumps (<= 3 blocks), jump immediately
-                        // to avoid overshooting the small starting platform.
+                        // Build momentum before jumping. Sprint speed is ~5.6 m/s
+                        // (0.28 blocks/tick). More run-up = more airtime distance.
+                        // Standing sprint jump (0t): ~3.6 blocks horizontal
+                        // 2-tick sprint (0.56m):    ~4.3 blocks horizontal
+                        // 4-tick sprint (1.1m):     ~5.0 blocks horizontal
                         double minApproachSq;
-                        if (_horizDist >= 3.5)
-                            minApproachSq = 0.25; // 0.5 blocks
-                        else if (_horizDist >= 2.5 && !_isDiagonal)
-                            minApproachSq = 0.12; // ~0.35 blocks
+                        if (_horizDist >= 5.0)
+                            minApproachSq = 0.64; // 0.8 blocks - 3+ ticks of sprint
+                        else if (_horizDist >= 4.0)
+                            minApproachSq = 0.36; // 0.6 blocks - 2-3 ticks of sprint
+                        else if (_horizDist > 2.5)
+                            minApproachSq = 0.09; // 0.3 blocks - 1-2 ticks of sprint
                         else
                             minApproachSq = 0.0;
 
-                        if (fromStartSq >= minApproachSq)
+                        bool yawAligned = yawDelta < YawToleranceDeg;
+                        bool posReady = fromStartSq >= minApproachSq;
+
+                        if (yawAligned && posReady)
                         {
                             input.Jump = true;
                             _phase = Phase.Airborne;
                         }
                     }
-                    if (_tickCount > 30)
+                    if (_tickCount > 40)
                         return TemplateState.Failed;
                     break;
 
                 case Phase.Airborne:
+                {
                     if (!physics.OnGround)
-                        break;
-                    _phase = Phase.Landing;
-                    goto case Phase.Landing;
+                        _leftGround = true;
+
+                    bool pastTarget = IsPastTarget(pos);
+                    bool releaseInAir = TransitionBrakingPlanner.ShouldReleaseForwardInAir(_segment, _nextSegment, pos, physics);
+
+                    if (releaseInAir || pastTarget)
+                    {
+                        input.Forward = false;
+                        input.Sprint = false;
+                    }
+                    else
+                    {
+                        input.Forward = true;
+                        input.Sprint = true;
+                    }
+
+                    if (_leftGround && physics.OnGround)
+                    {
+                        _phase = Phase.Landing;
+                        goto case Phase.Landing;
+                    }
+                    break;
+                }
 
                 case Phase.Landing:
-                    double horizTolerance = _horizDist >= 3.5 ? 3.0 : 2.0;
+                    TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
+                    TemplateHelper.ApplyDecision(input, decision);
+                    if (decision.HoldBack)
+                        TemplateHelper.FaceSegmentHeading(physics, _segment);
+
+                    double horizToleranceLinear = _horizDist >= 3.5 ? 1.5 : 1.0;
+                    double horizToleranceSq = horizToleranceLinear * horizToleranceLinear;
                     double vertTolerance = Math.Abs(ExpectedEnd.Y - ExpectedStart.Y) > 0.5 ? 1.5 : 1.0;
-                    if (horizDistSq < horizTolerance && Math.Abs(dy) < vertTolerance)
+                    if (_segment.ExitTransition == PathTransitionType.ContinueStraight
+                        && horizDistSq < horizToleranceSq && Math.Abs(dy) < vertTolerance)
                         return TemplateState.Complete;
-                    return TemplateState.Failed;
+
+                    if (_segment.ExitTransition != PathTransitionType.ContinueStraight
+                        && TemplateHelper.IsSettledAtEnd(pos, ExpectedEnd, physics, horizThresholdSq: 0.0025))
+                    {
+                        return TemplateState.Complete;
+                    }
+                    break;
             }
 
             if (pos.Y < ExpectedEnd.Y - 4.0)
@@ -100,6 +152,29 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 return TemplateState.Failed;
 
             return TemplateState.InProgress;
+        }
+
+        private bool IsPastTarget(Location pos)
+        {
+            double dirX = ExpectedEnd.X - ExpectedStart.X;
+            double dirZ = ExpectedEnd.Z - ExpectedStart.Z;
+            double len = Math.Sqrt(dirX * dirX + dirZ * dirZ);
+            if (len < 0.001) return false;
+            dirX /= len;
+            dirZ /= len;
+
+            double relX = pos.X - ExpectedEnd.X;
+            double relZ = pos.Z - ExpectedEnd.Z;
+            double dot = relX * dirX + relZ * dirZ;
+            return dot > 0.0;
+        }
+
+        private static float YawDifference(float current, float target)
+        {
+            float delta = target - current;
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+            return Math.Abs(delta);
         }
     }
 }

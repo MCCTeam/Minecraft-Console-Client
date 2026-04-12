@@ -9,17 +9,17 @@ namespace MinecraftClient.Pathing.Execution
     /// </summary>
     public static class ActionTemplateFactory
     {
-        public static IActionTemplate Create(PathSegment segment)
+        public static IActionTemplate Create(PathSegment segment, PathSegment? nextSegment)
         {
             return segment.MoveType switch
             {
-                MoveType.Traverse => new WalkTemplate(segment.Start, segment.End),
-                MoveType.Diagonal => new WalkTemplate(segment.Start, segment.End),
-                MoveType.Ascend   => new AscendTemplate(segment.Start, segment.End),
-                MoveType.Descend  => new DescendTemplate(segment.Start, segment.End),
-                MoveType.Fall     => new FallTemplate(segment.Start, segment.End),
-                MoveType.Climb    => new ClimbTemplate(segment.Start, segment.End),
-                MoveType.Parkour  => new SprintJumpTemplate(segment.Start, segment.End),
+                MoveType.Traverse => new WalkTemplate(segment, nextSegment),
+                MoveType.Diagonal => new WalkTemplate(segment, nextSegment),
+                MoveType.Ascend   => new AscendTemplate(segment, nextSegment),
+                MoveType.Descend  => new DescendTemplate(segment, nextSegment),
+                MoveType.Fall     => new FallTemplate(segment, nextSegment),
+                MoveType.Climb    => new ClimbTemplate(segment, nextSegment),
+                MoveType.Parkour  => new SprintJumpTemplate(segment, nextSegment),
                 _ => throw new ArgumentException($"Unknown MoveType: {segment.MoveType}")
             };
         }

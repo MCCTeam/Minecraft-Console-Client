@@ -35,7 +35,7 @@ namespace MinecraftClient.Pathing.Execution
         {
             _goal = goal;
             _replanCount = 0;
-            var segments = PathSegment.FromPath(result.Path);
+            var segments = PathSegmentBuilder.FromPath(result.Path);
             _executor = new PathExecutor(segments, _debugLog);
             _infoLog?.Invoke($"[PathMgr] Navigation started: {segments.Count} segments");
         }
@@ -45,7 +45,7 @@ namespace MinecraftClient.Pathing.Execution
             if (_executor is null)
                 return;
 
-            var state = _executor.Tick(pos, physics, input);
+            var state = _executor.Tick(pos, physics, input, world);
 
             switch (state)
             {
@@ -113,7 +113,7 @@ namespace MinecraftClient.Pathing.Execution
                 return;
             }
 
-            var segments = PathSegment.FromPath(result.Path);
+            var segments = PathSegmentBuilder.FromPath(result.Path);
             _executor = new PathExecutor(segments, _debugLog);
             _infoLog?.Invoke($"[PathMgr] Replanned: {segments.Count} segments (replan #{_replanCount})");
         }

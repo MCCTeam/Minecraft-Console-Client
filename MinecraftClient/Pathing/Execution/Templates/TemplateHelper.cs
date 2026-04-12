@@ -1,5 +1,6 @@
 using System;
 using MinecraftClient.Mapping;
+using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution.Templates
 {
@@ -74,6 +75,29 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dz = target.Z - pos.Z;
             double dy = target.Y - pos.Y;
             return dx * dx + dz * dz < horizThresholdSq && Math.Abs(dy) < vertThreshold;
+        }
+
+        internal static void FaceSegmentHeading(PlayerPhysics physics, PathSegment segment)
+        {
+            float headingYaw = CalculateYaw(segment.HeadingX, segment.HeadingZ);
+            physics.Yaw = SmoothYaw(physics.Yaw, headingYaw);
+        }
+
+        internal static void ApplyDecision(MovementInput input, TransitionBrakingDecision decision)
+        {
+            input.Forward = decision.HoldForward;
+            input.Sprint = decision.HoldSprint;
+            input.Back = decision.HoldBack;
+        }
+
+        internal static bool IsSettledAtEnd(Location pos, Location target, PlayerPhysics physics,
+            double horizThresholdSq = 0.0025, double speedThresholdSq = 0.0016)
+        {
+            double dx = target.X - pos.X;
+            double dz = target.Z - pos.Z;
+            double horizontalSpeedSq = physics.DeltaMovement.X * physics.DeltaMovement.X
+                + physics.DeltaMovement.Z * physics.DeltaMovement.Z;
+            return dx * dx + dz * dz <= horizThresholdSq && horizontalSpeedSq <= speedThresholdSq;
         }
     }
 }

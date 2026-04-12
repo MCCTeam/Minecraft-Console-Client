@@ -16,27 +16,30 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private int _tickCount;
         private bool _hasFallen;
 
-        public FallTemplate(Location start, Location end)
+        public FallTemplate(PathSegment segment, PathSegment? nextSegment)
         {
-            ExpectedStart = start;
-            ExpectedEnd = end;
+            ExpectedStart = segment.Start;
+            ExpectedEnd = segment.End;
         }
 
-        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
+        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
             _tickCount++;
 
+            double dx = ExpectedEnd.X - pos.X;
+            double dz = ExpectedEnd.Z - pos.Z;
             double dy = pos.Y - ExpectedEnd.Y;
+            double horizDistSq = dx * dx + dz * dz;
 
             if (!physics.OnGround)
                 _hasFallen = true;
 
-            // Solid ground landing
-            if (_hasFallen && physics.OnGround && Math.Abs(dy) < 1.0)
+            // Solid ground landing near the target XZ
+            if (_hasFallen && physics.OnGround && Math.Abs(dy) < 1.0 && horizDistSq < 1.0)
                 return TemplateState.Complete;
 
-            // Water landing
-            if (_hasFallen && physics.InWater && Math.Abs(dy) < 2.0)
+            // Water landing near the target XZ
+            if (_hasFallen && physics.InWater && Math.Abs(dy) < 2.0 && horizDistSq < 1.5)
                 return TemplateState.Complete;
 
             if (_tickCount > 200)

@@ -17,14 +17,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private readonly bool _goingUp;
         private int _tickCount;
 
-        public ClimbTemplate(Location start, Location end)
+        public ClimbTemplate(PathSegment segment, PathSegment? nextSegment)
         {
-            ExpectedStart = start;
-            ExpectedEnd = end;
-            _goingUp = end.Y > start.Y;
+            ExpectedStart = segment.Start;
+            ExpectedEnd = segment.End;
+            _goingUp = segment.End.Y > segment.Start.Y;
         }
 
-        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
+        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
             _tickCount++;
 

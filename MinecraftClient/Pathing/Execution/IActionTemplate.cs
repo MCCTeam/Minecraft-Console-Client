@@ -20,6 +20,6 @@ namespace MinecraftClient.Pathing.Execution
         Location ExpectedStart { get; }
         Location ExpectedEnd { get; }
 
-        TemplateState Tick(Location currentPos, PlayerPhysics physics, MovementInput input);
+        TemplateState Tick(Location currentPos, PlayerPhysics physics, MovementInput input, World world);
     }
 }

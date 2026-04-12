@@ -15,20 +15,24 @@ namespace MinecraftClient.Pathing.Execution.Templates
         public Location ExpectedStart { get; }
         public Location ExpectedEnd { get; }
 
+        private readonly PathSegment _segment;
+        private readonly PathSegment? _nextSegment;
         private int _tickCount;
         private bool _hasFallen;
         private readonly bool _needsSprint;
 
-        public DescendTemplate(Location start, Location end)
+        public DescendTemplate(PathSegment segment, PathSegment? nextSegment)
         {
-            ExpectedStart = start;
-            ExpectedEnd = end;
-            double hdx = end.X - start.X;
-            double hdz = end.Z - start.Z;
+            _segment = segment;
+            _nextSegment = nextSegment;
+            ExpectedStart = segment.Start;
+            ExpectedEnd = segment.End;
+            double hdx = segment.End.X - segment.Start.X;
+            double hdz = segment.End.Z - segment.Start.Z;
             _needsSprint = (hdx * hdx + hdz * hdz) > 2.25;
         }
 
-        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
+        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
             _tickCount++;
 
@@ -39,14 +43,6 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             if (!physics.OnGround)
                 _hasFallen = true;
-
-            // Completion: landed on ground near destination
-            if (_hasFallen && physics.OnGround && horizDistSq < 0.5 && Math.Abs(dy) < 0.8)
-                return TemplateState.Complete;
-
-            // Completion: already at destination without falling (e.g., single step down)
-            if (horizDistSq < 0.25 && Math.Abs(dy) < 0.5 && physics.OnGround)
-                return TemplateState.Complete;
 
             // Completion: landed in water near destination
             if (_hasFallen && physics.InWater && horizDistSq < 0.5 && Math.Abs(dy) < 2.0)
@@ -63,7 +59,28 @@ namespace MinecraftClient.Pathing.Execution.Templates
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
-            if (physics.OnClimbable)
+            if (physics.OnGround && Math.Abs(dy) < (_hasFallen ? 0.8 : 0.5))
+            {
+                if (horizDistSq > 0.01)
+                    physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+
+                TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
+                TemplateHelper.ApplyDecision(input, decision);
+                if (decision.HoldBack)
+                    TemplateHelper.FaceSegmentHeading(physics, _segment);
+
+                if (_segment.ExitTransition == PathTransitionType.ContinueStraight)
+                {
+                    double completionThreshold = _hasFallen ? 0.5 : 0.25;
+                    if (horizDistSq < completionThreshold)
+                        return TemplateState.Complete;
+                }
+                else if (TemplateHelper.IsSettledAtEnd(pos, ExpectedEnd, physics, horizThresholdSq: 0.0025))
+                {
+                    return TemplateState.Complete;
+                }
+            }
+            else if (physics.OnClimbable)
             {
                 if (horizDistSq > 0.25)
                 {

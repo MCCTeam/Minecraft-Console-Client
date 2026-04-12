@@ -37,16 +37,20 @@ namespace MinecraftClient.Pathing.Execution
             AdvanceToNextSegment();
         }
 
-        public PathExecutorState Tick(Location pos, PlayerPhysics physics, MovementInput input)
+        public PathExecutorState Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
             if (_currentTemplate is null)
+            {
+                input.Reset();
                 return PathExecutorState.Complete;
+            }
 
-            var state = _currentTemplate.Tick(pos, physics, input);
+            var state = _currentTemplate.Tick(pos, physics, input, world);
 
             switch (state)
             {
                 case TemplateState.Complete:
+                    input.Reset();
                     _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} complete " +
                         $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2})");
                     _currentIndex++;
@@ -60,6 +64,7 @@ namespace MinecraftClient.Pathing.Execution
                     return PathExecutorState.InProgress;
 
                 case TemplateState.Failed:
+                    input.Reset();
                     _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} FAILED " +
                         $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2}), " +
                         $"target was ({_currentTemplate.ExpectedEnd.X:F2},{_currentTemplate.ExpectedEnd.Y:F2},{_currentTemplate.ExpectedEnd.Z:F2})");
@@ -75,7 +80,8 @@ namespace MinecraftClient.Pathing.Execution
             if (_currentIndex < _segments.Count)
             {
                 var seg = _segments[_currentIndex];
-                _currentTemplate = ActionTemplateFactory.Create(seg);
+                PathSegment? next = _currentIndex + 1 < _segments.Count ? _segments[_currentIndex + 1] : null;
+                _currentTemplate = ActionTemplateFactory.Create(seg, next);
                 _debugLog?.Invoke($"[PathExec] Starting segment {_currentIndex}/{_segments.Count}: {seg}");
             }
             else

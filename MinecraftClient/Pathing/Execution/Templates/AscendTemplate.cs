@@ -13,18 +13,22 @@ namespace MinecraftClient.Pathing.Execution.Templates
         public Location ExpectedStart { get; }
         public Location ExpectedEnd { get; }
 
+        private readonly PathSegment _segment;
+        private readonly PathSegment? _nextSegment;
         private int _tickCount;
         private Location _lastPos;
         private int _stuckTicks;
 
-        public AscendTemplate(Location start, Location end)
+        public AscendTemplate(PathSegment segment, PathSegment? nextSegment)
         {
-            ExpectedStart = start;
-            ExpectedEnd = end;
-            _lastPos = start;
+            _segment = segment;
+            _nextSegment = nextSegment;
+            ExpectedStart = segment.Start;
+            ExpectedEnd = segment.End;
+            _lastPos = segment.Start;
         }
 
-        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input)
+        public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
             _tickCount++;
 
@@ -43,8 +47,26 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (physics.OnGround && dy > 0.1)
                 input.Jump = true;
 
-            if (horizDistSq < 0.25 && Math.Abs(dy) < 0.8)
+            if (physics.OnGround && Math.Abs(dy) < 0.15)
+            {
+                TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
+                TemplateHelper.ApplyDecision(input, decision);
+                if (decision.HoldBack)
+                    TemplateHelper.FaceSegmentHeading(physics, _segment);
+
+                if (_segment.ExitTransition == PathTransitionType.ContinueStraight && horizDistSq < 0.25)
+                    return TemplateState.Complete;
+
+                if (_segment.ExitTransition != PathTransitionType.ContinueStraight
+                    && TemplateHelper.IsSettledAtEnd(pos, ExpectedEnd, physics, horizThresholdSq: 0.0025))
+                {
+                    return TemplateState.Complete;
+                }
+            }
+            else if (horizDistSq < 0.25 && Math.Abs(dy) < 0.8)
+            {
                 return TemplateState.Complete;
+            }
 
             double movedSq = TemplateHelper.HorizontalDistanceSq(pos, _lastPos);
             double movedY = Math.Abs(pos.Y - _lastPos.Y);
