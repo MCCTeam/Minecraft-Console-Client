@@ -29,6 +29,14 @@ assert_regex() {
     fi
 }
 
+tmpfs_build_base() {
+    if [[ -d /dev/shm && -w /dev/shm ]]; then
+        printf '/dev/shm'
+    else
+        printf '%s' "${TMPDIR:-/tmp}"
+    fi
+}
+
 session="$(_mcc_resolve_session "demo-branch")"
 assert_eq "demo-branch" "$session" "explicit session"
 
@@ -52,11 +60,19 @@ fallback_session="$(_mcc_resolve_session)"
 assert_eq "$(basename "$fallback_root")" "$fallback_session" "session fallback without git"
 
 fallback_build_root="$(_mcc_build_root)"
-assert_regex "^(/dev/shm|/tmp)/mcc-build/$(basename "$fallback_root")\$" "$fallback_build_root" "tmpfs build root fallback"
+tmpfs_base="$(tmpfs_build_base)"
+expected_fallback_root="$tmpfs_base/mcc-build/$(basename "$fallback_root")"
+assert_eq "$expected_fallback_root" "$fallback_build_root" "tmpfs build root fallback"
 
 MCC_REPO_ROOT="$original_repo_root"
 
 build_root="$(_mcc_build_root)"
-assert_regex '^(/dev/shm|/tmp)/mcc-build/.+$' "$build_root" "tmpfs build root"
+expected_prefix="$(tmpfs_build_base)/mcc-build/"
+if [[ "$build_root" != "$expected_prefix"* ]]; then
+    echo "FAIL: tmpfs build root" >&2
+    echo "  expected prefix: $expected_prefix" >&2
+    echo "  actual: $build_root" >&2
+    exit 1
+fi
 
 echo "PASS"
