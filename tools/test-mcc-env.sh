@@ -80,16 +80,23 @@ input_file="$(_mcc_session_input_file "$session")"
 rm -rf "$(_mcc_session_root "$session")"
 
 mcc-cmd --session "$session" "debug state"
-grep -Fq "debug state" "$input_file"
+input_contents="$(cat "$input_file")"
+assert_eq "debug state" "$input_contents" "session input command is intact"
 
 mcc-reset-session --session "$session"
 [[ ! -e "$(_mcc_session_root "$session")" ]]
 malformed_log="${TMPDIR:-/tmp}/mcc-env-session-hang-test.log"
-if mcc-cmd --session >"$malformed_log" 2>&1; then
-    echo "FAIL: --session accepted without value" >&2
-    cat "$malformed_log" >&2
-    exit 1
-fi
-grep -Fq -- "--session requires a value" "$malformed_log"
+for func in mcc-cmd mcc-reset-session mcc-state mcc-log-mcc; do
+    set +e
+    "$func" --session >"$malformed_log" 2>&1
+    status=$?
+    set -e
+    if [[ $status -eq 0 ]]; then
+        echo "FAIL: $func accepted --session without a value" >&2
+        cat "$malformed_log" >&2
+        exit 1
+    fi
+    grep -Fq -- "--session requires a value" "$malformed_log"
+done
 
 echo "PASS"

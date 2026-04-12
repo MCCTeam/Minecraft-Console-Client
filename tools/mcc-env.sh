@@ -158,7 +158,7 @@ mcc-run()   {
 }
 mcc-cmd() {
   local session=""
-  local command=""
+  local -a command_parts=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --session)
@@ -171,17 +171,22 @@ mcc-cmd() {
         shift
         ;;
       *)
-        command="$1"
+        command_parts+=("$1")
         shift
         ;;
     esac
   done
 
-  [[ -n "$command" ]] || { echo "Usage: mcc-cmd [--session NAME] <command>" >&2; return 1; }
+  if [[ ${#command_parts[@]} -eq 0 ]]; then
+    echo "Usage: mcc-cmd [--session NAME] <command>" >&2
+    return 1
+  fi
   session="$(_mcc_resolve_session "$session")"
   local input_file
   input_file="$(_mcc_session_input_file "$session")"
   mkdir -p "$(dirname "$input_file")"
+  local command
+  command="${command_parts[*]}"
   printf '%s\n' "$command" >> "$input_file"
 }
 mcc-kill()  { pkill -f "MinecraftClient" 2>/dev/null && echo "MCC killed" || echo "No MCC process found"; tmux kill-session -t mcc-debug 2>/dev/null || true; }
