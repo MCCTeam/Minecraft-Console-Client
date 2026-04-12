@@ -12,9 +12,105 @@ else
 fi
 
 TOOLS_DIR="$(cd "$(dirname "$_mcc_env_source")" && pwd)"
+MCC_REPO_ROOT="$(cd "$TOOLS_DIR/.." && pwd)"
 unset _mcc_env_source
-export MCC_REPO="$(cd "$TOOLS_DIR/.." && pwd)"
-export MCC_SERVERS="${MCC_SERVERS:-$MCC_REPO/MinecraftOfficial/downloads}"
+export MCC_REPO="$MCC_REPO_ROOT"
+export MCC_SERVERS="${MCC_SERVERS:-$MCC_REPO_ROOT/MinecraftOfficial/downloads}"
+
+_mcc_repo_root() {
+  printf '%s\n' "$MCC_REPO_ROOT"
+}
+
+_mcc_servers_root() {
+  printf '%s\n' "${MCC_SERVERS:-$MCC_REPO_ROOT/MinecraftOfficial/downloads}"
+}
+
+_mcc_current_worktree_name() {
+  git -C "$MCC_REPO_ROOT" rev-parse --show-toplevel 2>/dev/null | xargs basename
+}
+
+_mcc_resolve_session() {
+  local explicit="${1:-}"
+  if [[ -n "$explicit" ]]; then
+    printf '%s\n' "$explicit"
+    return 0
+  fi
+
+  local worktree
+  worktree="$(_mcc_current_worktree_name)"
+  if [[ -n "$worktree" ]]; then
+    printf '%s\n' "$worktree"
+    return 0
+  fi
+
+  basename "$MCC_REPO_ROOT"
+}
+
+_mcc_sha1_short() {
+  if command -v sha1sum >/dev/null 2>&1; then
+    printf '%s' "$1" | sha1sum | awk '{print substr($1, 1, 4)}'
+  else
+    printf '%s' "$1" | shasum -a 1 | awk '{print substr($1, 1, 4)}'
+  fi
+}
+
+_mcc_resolve_username() {
+  local session="$1"
+  local normalized
+  normalized="$(printf '%s' "$session" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_]/_/g')"
+  local candidate="mcc_${normalized}"
+  if (( ${#candidate} <= 16 )); then
+    printf '%s\n' "$candidate"
+    return 0
+  fi
+
+  local hash
+  hash="$(_mcc_sha1_short "$normalized")"
+  printf '%s_%s\n' "${candidate:0:11}" "$hash"
+}
+
+_mcc_session_root() {
+  printf '%s/mcc-debug/%s\n' "${TMPDIR:-/tmp}" "$1"
+}
+
+_mcc_session_log_file() {
+  printf '%s/mcc-debug.log\n' "$(_mcc_session_root "$1")"
+}
+
+_mcc_session_input_file() {
+  printf '%s/mcc_input.txt\n' "$(_mcc_session_root "$1")"
+}
+
+_mcc_session_pid_file() {
+  printf '%s/mcc.pid\n' "$(_mcc_session_root "$1")"
+}
+
+_mcc_session_meta_file() {
+  printf '%s/session.meta\n' "$(_mcc_session_root "$1")"
+}
+
+_mcc_tmux_session_name() {
+  printf 'mcc-%s\n' "$1"
+}
+
+_mcc_build_root() {
+  local worktree
+  worktree="$(_mcc_current_worktree_name)"
+  if [[ -z "$worktree" ]]; then
+    worktree="$(basename "$MCC_REPO_ROOT")"
+  fi
+
+  if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
+    if [[ -d /dev/shm && -w /dev/shm ]]; then
+      printf '/dev/shm/mcc-build/%s\n' "$worktree"
+    else
+      printf '%s/mcc-build/%s\n' "${TMPDIR:-/tmp}" "$worktree"
+    fi
+    return 0
+  fi
+
+  printf '%s\n' "$MCC_REPO_ROOT"
+}
 
 # Helper: convert version to tmux session name (dots -> underscores)
 _mc-session() { echo "mc-${1//\./_}"; }
