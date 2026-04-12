@@ -122,17 +122,15 @@ _mcc_build_root() {
 }
 
 _mcc_dotnet_env() {
-  local -n env_ref="$1"
-  env_ref=()
-
-  if [[ "${MCC_BUILD_MODE:-local}" != "tmpfs" ]]; then
-    return 0
+  if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
+    local build_root
+    build_root="$(_mcc_build_root)"
+    mkdir -p "$build_root"
+    env MCC_BUILD_ROOT="$build_root" "$@"
+    return $?
   fi
 
-  local build_root
-  build_root="$(_mcc_build_root)"
-  mkdir -p "$build_root"
-  env_ref+=("MCC_BUILD_ROOT=$build_root")
+  "$@"
 }
 
 # Helper: convert version to tmux session name (dots -> underscores)
@@ -155,10 +153,8 @@ mc-rcon() { bash "$MCC_REPO/tools/mc-rcon.sh" "$@"; }
 # --- MCC Build/Run ---
 mcc-build() {
   local repo_root
-  local -a dotnet_env
   repo_root="$(_mcc_repo_root)"
-  _mcc_dotnet_env dotnet_env
-  env "${dotnet_env[@]}" dotnet build "$repo_root/MinecraftClient.sln" -c Release
+  _mcc_dotnet_env dotnet build "$repo_root/MinecraftClient.sln" -c Release
 }
 mcc-build-clean() {
   if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
@@ -173,7 +169,7 @@ mcc-build-clean() {
 mcc-run()   {
   local port="${1:-25565}"
   shift || true
-  cd "$MCC_REPO" && MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - "localhost:${port}" "$@" 2>&1
+  cd "$MCC_REPO" && _mcc_dotnet_env env MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - "localhost:${port}" "$@" 2>&1
 }
 mcc-cmd() {
   local session=""
@@ -275,9 +271,18 @@ mcc-reload() {
 # --- TUI Mode ---
 mcc-tui()   {
   local port="${1:-25565}"
+  local cmd_prefix=""
   shift || true
-  tmux new-session -d -s mcc-debug -x 160 -y 50 \
-    "cd '$MCC_REPO' && dotnet run --project MinecraftClient -c Release -- CursorBot - localhost:${port} $* 2>&1; echo '=== MCC EXITED ==='; sleep 600"
+
+  if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
+    local build_root
+    build_root="$(_mcc_build_root)"
+    mkdir -p "$build_root"
+    cmd_prefix="MCC_BUILD_ROOT='$build_root' "
+  fi
+
+  _mcc_dotnet_env tmux new-session -d -s mcc-debug -x 160 -y 50 \
+    "cd '$MCC_REPO' && ${cmd_prefix}dotnet run --project MinecraftClient -c Release -- CursorBot - localhost:${port} $* 2>&1; echo '=== MCC EXITED ==='; sleep 600"
   echo "TUI mode launched in tmux session 'mcc-debug'"
   echo "Attach: tmux attach -t mcc-debug"
 }

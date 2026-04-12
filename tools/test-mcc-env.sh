@@ -75,6 +75,9 @@ if [[ "$build_root" != "$expected_prefix"* ]]; then
     exit 1
 fi
 
+dotnet_env_build_root="$(_mcc_dotnet_env env | awk -F= '$1=="MCC_BUILD_ROOT" { print $2 }')"
+assert_eq "$build_root" "$dotnet_env_build_root" "dotnet env wrapper exports MCC_BUILD_ROOT"
+
 mkdir -p "$build_root/probe"
 mcc-build-clean
 [[ ! -e "$build_root/probe" ]]
