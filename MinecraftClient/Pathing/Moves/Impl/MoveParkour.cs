@@ -1,6 +1,7 @@
 using System;
 using MinecraftClient.Mapping;
 using MinecraftClient.Pathing.Core;
+using MinecraftClient.Pathing.Moves;
 
 namespace MinecraftClient.Pathing.Moves.Impl
 {
@@ -60,6 +61,12 @@ namespace MinecraftClient.Pathing.Moves.Impl
             // Don't parkour from climbable blocks (unreliable jump)
             Material standingOn = ctx.GetMaterial(x, y - 1, z);
             if (standingOn.CanBeClimbedOn())
+            {
+                result.SetImpossible();
+                return;
+            }
+
+            if (!ParkourFeasibility.HasRunUp(ctx, x, y, z, XOffset, ZOffset, _yDelta))
             {
                 result.SetImpossible();
                 return;
@@ -141,33 +148,23 @@ namespace MinecraftClient.Pathing.Moves.Impl
                 }
             }
 
-            // For diagonal parkour, the player's AABB (0.6 wide) must clear both
-            // cardinal neighbors at the start. A wall on either side will clip the
-            // AABB during the initial sprint, preventing enough X or Z velocity to
-            // reach the target. Require BOTH cardinal exits to be passable.
-            if (xAbs > 0 && zAbs > 0)
+            if (!ParkourFeasibility.HasDiagonalShoulderClearance(ctx, x, y, z, XOffset, ZOffset))
             {
-                bool canExitViaX = ctx.CanWalkThrough(x + xSign, y, z) &&
-                                   ctx.CanWalkThrough(x + xSign, y + 1, z);
-                bool canExitViaZ = ctx.CanWalkThrough(x, y, z + zSign) &&
-                                   ctx.CanWalkThrough(x, y + 1, z + zSign);
-                if (!canExitViaX || !canExitViaZ)
-                {
-                    result.SetImpossible();
-                    return;
-                }
+                result.SetImpossible();
+                return;
             }
 
-            // Overshoot safety: after landing, player continues moving.
-            // The block(s) past the destination in the jump direction must be passable.
-            int overX = destX + xSign;
-            int overZ = destZ + zSign;
-            if (!ctx.CanWalkThrough(overX, destY, overZ) ||
-                !ctx.CanWalkThrough(overX, destY + 1, overZ))
+            if (!ParkourFeasibility.HasCardinalSideClearance(ctx, x, y, z, XOffset, ZOffset))
             {
-                // Wall right after landing - risk of collision. Still allow but add cost.
-                // (Baritone rejects this, but we allow with penalty since the template
-                // will decelerate anyway.)
+                result.SetImpossible();
+                return;
+            }
+
+            if (!ParkourFeasibility.HasLandingOvershootClearance(
+                    ctx, destX, destY, destZ, xSign, zSign))
+            {
+                result.SetImpossible();
+                return;
             }
 
             // Cost model following Baritone:

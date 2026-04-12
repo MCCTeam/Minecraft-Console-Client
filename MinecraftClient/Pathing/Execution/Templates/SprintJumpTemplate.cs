@@ -29,6 +29,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private readonly double _horizDist;
         private int _tickCount;
         private Phase _phase = Phase.Approach;
+        private bool _airReleaseCommitted;
         private bool _leftGround;
 
         private const float YawToleranceDeg = 5f;
@@ -103,7 +104,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         _leftGround = true;
 
                     bool pastTarget = IsPastTarget(pos);
-                    bool releaseInAir = TransitionBrakingPlanner.ShouldReleaseForwardInAir(_segment, _nextSegment, pos, physics);
+                    bool releaseInAir = ShouldReleaseInAir(pos, physics, world);
+                    if (_segment.ExitTransition == PathTransitionType.LandingRecovery && releaseInAir)
+                        _airReleaseCommitted = true;
+                    if (_airReleaseCommitted)
+                        releaseInAir = true;
 
                     if (releaseInAir || pastTarget)
                     {
@@ -138,7 +143,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         return TemplateState.Complete;
 
                     if (_segment.ExitTransition != PathTransitionType.ContinueStraight
-                        && TemplateHelper.IsSettledAtEnd(pos, ExpectedEnd, physics, horizThresholdSq: 0.0025))
+                        && physics.OnGround
+                        && TemplateHelper.IsSettledOnTargetBlock(pos, ExpectedEnd, physics))
                     {
                         return TemplateState.Complete;
                     }
@@ -167,6 +173,80 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double relZ = pos.Z - ExpectedEnd.Z;
             double dot = relX * dirX + relZ * dirZ;
             return dot > 0.0;
+        }
+
+        private bool ShouldReleaseInAir(Location pos, PlayerPhysics physics, World world)
+        {
+            if (TransitionBrakingPlanner.ShouldReleaseForwardInAir(_segment, _nextSegment, pos, physics))
+                return true;
+
+            if (_segment.ExitTransition == PathTransitionType.ContinueStraight || physics.OnGround)
+                return false;
+
+            Location? landingIfHolding = PredictLandingPosition(physics, world, holdForward: true, holdSprint: true);
+            Location? landingIfReleased = PredictLandingPosition(physics, world, holdForward: false, holdSprint: false);
+            if (landingIfHolding is null || landingIfReleased is null)
+                return false;
+
+            bool holdingStaysInside = TemplateFootingHelper.IsFootprintInsideTargetBlock(landingIfHolding.Value, ExpectedEnd);
+            bool releasingStaysInside = TemplateFootingHelper.IsFootprintInsideTargetBlock(landingIfReleased.Value, ExpectedEnd);
+
+            if (_segment.ExitTransition == PathTransitionType.LandingRecovery && !holdingStaysInside)
+                return true;
+
+            return !holdingStaysInside && releasingStaysInside;
+        }
+
+        private Location? PredictLandingPosition(PlayerPhysics physics, World world, bool holdForward, bool holdSprint)
+        {
+            PlayerPhysics sim = ClonePhysics(physics);
+            var input = new MovementInput
+            {
+                Forward = holdForward,
+                Sprint = holdSprint
+            };
+
+            for (int tick = 0; tick < 16; tick++)
+            {
+                sim.ApplyInput(input);
+                sim.Tick(world);
+                if (sim.OnGround)
+                    return new Location(sim.Position.X, sim.Position.Y, sim.Position.Z);
+            }
+
+            return null;
+        }
+
+        private static PlayerPhysics ClonePhysics(PlayerPhysics physics)
+        {
+            return new PlayerPhysics
+            {
+                Position = physics.Position,
+                DeltaMovement = physics.DeltaMovement,
+                Yaw = physics.Yaw,
+                Pitch = physics.Pitch,
+                OnGround = physics.OnGround,
+                HorizontalCollision = physics.HorizontalCollision,
+                VerticalCollision = physics.VerticalCollision,
+                VerticalCollisionBelow = physics.VerticalCollisionBelow,
+                FallDistance = physics.FallDistance,
+                StuckSpeedMultiplier = physics.StuckSpeedMultiplier,
+                Xxa = physics.Xxa,
+                Zza = physics.Zza,
+                Yya = physics.Yya,
+                Jumping = physics.Jumping,
+                Sprinting = physics.Sprinting,
+                Sneaking = physics.Sneaking,
+                CreativeFlying = physics.CreativeFlying,
+                InWater = physics.InWater,
+                IsUnderWater = physics.IsUnderWater,
+                InLava = physics.InLava,
+                OnClimbable = physics.OnClimbable,
+                HasSlowFalling = physics.HasSlowFalling,
+                HasLevitation = physics.HasLevitation,
+                LevitationAmplifier = physics.LevitationAmplifier,
+                MovementSpeed = physics.MovementSpeed
+            };
         }
 
         private static float YawDifference(float current, float target)
