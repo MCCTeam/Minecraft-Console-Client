@@ -294,7 +294,6 @@ elif $FILE_INPUT; then
     echo "  Attach (optional): tmux attach -t $MCC_TMUX_SESSION"
     echo "  Stop MCC:      echo 'quit' >> $INPUT_FILE"
     echo "  Stop server:   mc-stop $VERSION"
-    echo "                 shared servers stay up by default; rerun with --confirm only if you really need to stop it"
     echo ""
 else
     # Interactive classic mode: run in tmux (no pipe - ConsoleInteractive also needs tty)
