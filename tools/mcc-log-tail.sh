@@ -18,9 +18,31 @@ SERVER_ONLY=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --session)     SESSION="$2"; shift 2 ;;
-        --server)      SERVER_VER="$2"; shift 2 ;;
-        --server-only) SERVER_ONLY=true; SERVER_VER="$2"; shift 2 ;;
+        --session)
+            if [[ $# -lt 2 ]]; then
+                echo "--session requires a value" >&2
+                exit 1
+            fi
+            SESSION="$2"
+            shift 2
+            ;;
+        --server)
+            if [[ $# -lt 2 ]]; then
+                echo "--server requires a value" >&2
+                exit 1
+            fi
+            SERVER_VER="$2"
+            shift 2
+            ;;
+        --server-only)
+            if [[ $# -lt 2 ]]; then
+                echo "--server-only requires a value" >&2
+                exit 1
+            fi
+            SERVER_ONLY=true
+            SERVER_VER="$2"
+            shift 2
+            ;;
         -h|--help)
             echo "Usage: tools/mcc-log-tail.sh [--session NAME] [--server VER] [--server-only VER]"
             exit 0 ;;

@@ -44,11 +44,47 @@ FILE_INPUT=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -v|--version) VERSION="$2"; shift 2 ;;
-        -m|--mode)    MODE="$2"; shift 2 ;;
-        -p|--port)    PORT="$2"; PORT_SET_BY_USER=true; shift 2 ;;
-        --session)    SESSION="$2"; shift 2 ;;
-        --username)   USERNAME="$2"; shift 2 ;;
+        -v|--version)
+            if [[ $# -lt 2 ]]; then
+                echo "$1 requires a value" >&2
+                exit 1
+            fi
+            VERSION="$2"
+            shift 2
+            ;;
+        -m|--mode)
+            if [[ $# -lt 2 ]]; then
+                echo "$1 requires a value" >&2
+                exit 1
+            fi
+            MODE="$2"
+            shift 2
+            ;;
+        -p|--port)
+            if [[ $# -lt 2 ]]; then
+                echo "$1 requires a value" >&2
+                exit 1
+            fi
+            PORT="$2"
+            PORT_SET_BY_USER=true
+            shift 2
+            ;;
+        --session)
+            if [[ $# -lt 2 ]]; then
+                echo "--session requires a value" >&2
+                exit 1
+            fi
+            SESSION="$2"
+            shift 2
+            ;;
+        --username)
+            if [[ $# -lt 2 ]]; then
+                echo "--username requires a value" >&2
+                exit 1
+            fi
+            USERNAME="$2"
+            shift 2
+            ;;
         --no-build)   DO_BUILD=false; shift ;;
         --debug-on)   DEBUG_ON=true; shift ;;
         --file-input) FILE_INPUT=true; shift ;;
@@ -183,7 +219,7 @@ if [[ "$MODE" == "tui" ]]; then
     # TUI mode: needs a real tty - no pipes or redirects allowed
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- ${MCC_ARGS[*]}; echo '=== MCC EXITED ==='; sleep 600"
+        "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
     echo "  TUI mode started in tmux session '$MCC_TMUX_SESSION'"
     echo "  (TUI mode uses a real terminal; log file is not available, use MCC's /debug command)"
@@ -243,7 +279,7 @@ else
     # Interactive classic mode: run in tmux (no pipe - ConsoleInteractive also needs tty)
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- ${MCC_ARGS[*]}; echo '=== MCC EXITED ==='; sleep 600"
+        "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
     echo "  Classic mode started in tmux session '$MCC_TMUX_SESSION'"
     echo ""

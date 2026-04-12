@@ -210,7 +210,7 @@ mcc-kill()  {
   done
 
   session="$(_mcc_resolve_session "$session")"
-  local pid_file meta_file tmux_session pid
+  local pid_file meta_file tmux_session pid pid_comm pid_args
   local killed=false
   pid_file="$(_mcc_session_pid_file "$session")"
   meta_file="$(_mcc_session_meta_file "$session")"
@@ -219,9 +219,15 @@ mcc-kill()  {
   if [[ -f "$pid_file" ]]; then
     pid="$(tr -cd '0-9' < "$pid_file")"
     if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-      kill "$pid" 2>/dev/null || true
-      echo "Killed MCC PID $pid for session '$session'"
-      killed=true
+      pid_comm="$(ps -p "$pid" -o comm= 2>/dev/null | tr -d '[:space:]')"
+      pid_args="$(ps -p "$pid" -o args= 2>/dev/null || true)"
+      if [[ "$pid_comm" == "MinecraftClient" ]] || { [[ "$pid_comm" == "dotnet" ]] && [[ "$pid_args" == *"MinecraftClient"* ]]; }; then
+        kill "$pid" 2>/dev/null || true
+        echo "Killed MCC PID $pid for session '$session'"
+        killed=true
+      else
+        echo "Refusing to kill PID $pid for session '$session': unexpected process '$pid_comm'"
+      fi
     else
       echo "No live MCC PID found for session '$session' (pid file: $pid_file)"
     fi
