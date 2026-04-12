@@ -277,6 +277,28 @@ PY
     print_summary "3x1 no-run-up rejection"
 }
 
+run_corner_ascend_around_wall() {
+    echo "== Corner ascend around wall smoke =="
+    mc-rcon "fill 188 79 168 194 84 174 air" >/dev/null
+    mc-rcon "setblock 190 79 170 stone" >/dev/null
+    mc-rcon "setblock 191 80 171 stone" >/dev/null
+    mc-rcon "setblock 191 80 170 stone" >/dev/null
+    mc-rcon "setblock 191 81 170 stone" >/dev/null
+    mc-rcon "tp CursorBot 190.5 80 170.5" >/dev/null
+    sleep 2
+
+    local start_line
+    start_line="$(log_line_count)"
+    send_mcc "pathfind 191 81 171"
+    wait_for_navigation "$start_line" 25
+
+    local x y z
+    read -r x y z <<< "$(extract_last_location "$start_line")"
+    echo "  Final location: $x $y $z"
+    assert_close "$x" "$y" "$z" "191.50" "81.00" "171.50" "0.25"
+    print_summary "Corner ascend around wall"
+}
+
 run_mixed_ascend_descend_climb() {
     echo "== Mixed ascend/descend/climb smoke =="
     mc-rcon "fill 170 79 160 178 79 168 stone" >/dev/null
@@ -318,6 +340,7 @@ run_flat_final_stop
 run_parkour_into_turn
 run_side_wall_jump
 run_reject_3x1_gap
+run_corner_ascend_around_wall
 run_mixed_ascend_descend_climb
 
 echo ""
