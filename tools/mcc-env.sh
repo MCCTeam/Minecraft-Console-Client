@@ -189,7 +189,58 @@ mcc-cmd() {
   command="${command_parts[*]}"
   printf '%s\n' "$command" >> "$input_file"
 }
-mcc-kill()  { pkill -f "MinecraftClient" 2>/dev/null && echo "MCC killed" || echo "No MCC process found"; tmux kill-session -t mcc-debug 2>/dev/null || true; }
+mcc-kill()  {
+  local session=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-kill: --session requires a value" >&2
+          return 1
+        fi
+        session="$1"
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  session="$(_mcc_resolve_session "$session")"
+  local pid_file meta_file tmux_session pid
+  local killed=false
+  pid_file="$(_mcc_session_pid_file "$session")"
+  meta_file="$(_mcc_session_meta_file "$session")"
+  tmux_session="$(_mcc_tmux_session_name "$session")"
+
+  if [[ -f "$pid_file" ]]; then
+    pid="$(tr -cd '0-9' < "$pid_file")"
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      kill "$pid" 2>/dev/null || true
+      echo "Killed MCC PID $pid for session '$session'"
+      killed=true
+    else
+      echo "No live MCC PID found for session '$session' (pid file: $pid_file)"
+    fi
+  fi
+
+  if tmux has-session -t "$tmux_session" 2>/dev/null; then
+    tmux kill-session -t "$tmux_session" 2>/dev/null || true
+    echo "Killed tmux session '$tmux_session'"
+    killed=true
+  fi
+
+  if [[ -f "$pid_file" || -f "$meta_file" ]]; then
+    rm -f "$pid_file" "$meta_file"
+  fi
+
+  if [[ "$killed" == false ]]; then
+    echo "No MCC process or tmux session found for session '$session'"
+  fi
+}
 mcc-reload() {
   mcc-kill
   sleep 1

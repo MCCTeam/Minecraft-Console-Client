@@ -16,6 +16,8 @@ Options:
   -v, --version VER     Server directory name (default: 1.21.11-Vanilla)
   -m, --mode MODE       Console mode: classic or tui (default: classic)
   -p, --port PORT       Server port (default: 25565)
+  --session NAME        Session name for scoped runtime artifacts
+  --username NAME       MCC username (default: resolved from session)
   --no-build            Skip dotnet build
   --debug-on            Enable debug messages from the start
   --file-input          Use FileInput mode (classic only; enables mcc-cmd)
@@ -25,6 +27,7 @@ Examples:
   tools/mcc-debug.sh                              # Classic mode, default server
   tools/mcc-debug.sh -m tui                       # TUI mode
   tools/mcc-debug.sh -v 1.21.11-Vanilla --debug-on
+  tools/mcc-debug.sh --session smoke-a --username SmokeA
   tools/mcc-debug.sh --file-input                 # FileInput for script-driven testing
 EOF
 }
@@ -33,6 +36,8 @@ VERSION="1.21.11-Vanilla"
 MODE="classic"
 PORT="25565"
 PORT_SET_BY_USER=false
+SESSION=""
+USERNAME=""
 DO_BUILD=true
 DEBUG_ON=false
 FILE_INPUT=false
@@ -42,6 +47,8 @@ while [[ $# -gt 0 ]]; do
         -v|--version) VERSION="$2"; shift 2 ;;
         -m|--mode)    MODE="$2"; shift 2 ;;
         -p|--port)    PORT="$2"; PORT_SET_BY_USER=true; shift 2 ;;
+        --session)    SESSION="$2"; shift 2 ;;
+        --username)   USERNAME="$2"; shift 2 ;;
         --no-build)   DO_BUILD=false; shift ;;
         --debug-on)   DEBUG_ON=true; shift ;;
         --file-input) FILE_INPUT=true; shift ;;
@@ -50,23 +57,38 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-TEST_ROOT="${TMPDIR:-/tmp}/mcc-debug"
-CFG="$TEST_ROOT/MinecraftClient.debug.ini"
-MCC_LOG="$TEST_ROOT/mcc-debug.log"
-INPUT_FILE="$REPO_ROOT/mcc_input.txt"
+SESSION="$(_mcc_resolve_session "$SESSION")"
+if [[ -z "$USERNAME" ]]; then
+    USERNAME="$(_mcc_resolve_username "$SESSION")"
+fi
+
+SESSION_ROOT="$(_mcc_session_root "$SESSION")"
+CFG="$SESSION_ROOT/MinecraftClient.debug.ini"
+MCC_LOG="$(_mcc_session_log_file "$SESSION")"
+INPUT_FILE="$(_mcc_session_input_file "$SESSION")"
+PID_FILE="$(_mcc_session_pid_file "$SESSION")"
+META_FILE="$(_mcc_session_meta_file "$SESSION")"
+MCC_TMUX_SESSION="$(_mcc_tmux_session_name "$SESSION")"
 SESSION_NAME="mc-${VERSION//\./_}"
 PREPARE_CFG_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh"
 ENSURE_SERVER_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/ensure_offline_server.sh"
 PREFLIGHT_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/preflight_test_env.sh"
 GET_PORT_SCRIPT="$REPO_ROOT/.skills/mcc-integration-testing/scripts/get_server_port.sh"
 
-mkdir -p "$TEST_ROOT"
+mkdir -p "$SESSION_ROOT"
 
 echo "=== MCC Debug Session ==="
 echo "  Server:  $VERSION (port $PORT)"
+echo "  Session: $SESSION"
+echo "  User:    $USERNAME"
 echo "  Mode:    $MODE"
+echo "  Root:    $SESSION_ROOT"
 echo "  Config:  $CFG"
 echo "  Log:     $MCC_LOG"
+echo "  Input:   $INPUT_FILE"
+echo "  PID:     $PID_FILE"
+echo "  Meta:    $META_FILE"
+echo "  Tmux:    $MCC_TMUX_SESSION"
 echo ""
 
 bash "$PREFLIGHT_SCRIPT" "$VERSION" >/dev/null
@@ -82,7 +104,7 @@ fi
 
 # --- Prepare config ---
 echo "[2/4] Preparing config..."
-bash "$PREPARE_CFG_SCRIPT" "$CFG" "${VERSION%-Vanilla}" CursorBot >/dev/null
+bash "$PREPARE_CFG_SCRIPT" "$CFG" "${VERSION%-Vanilla}" "$USERNAME" >/dev/null
 
 if [[ "$MODE" == "tui" ]]; then
     if [[ "$(uname)" == "Darwin" ]]; then
@@ -130,34 +152,55 @@ if ! $PORT_SET_BY_USER; then
     PORT="$(bash "$GET_PORT_SCRIPT" "$VERSION")"
 fi
 
+RUNTIME_MODE="$MODE"
+if $FILE_INPUT; then
+    RUNTIME_MODE="${MODE}-file-input"
+fi
+
+cat > "$META_FILE" <<EOF
+session=$SESSION
+user=$USERNAME
+mode=$RUNTIME_MODE
+config=$CFG
+log=$MCC_LOG
+input=$INPUT_FILE
+pid=$PID_FILE
+tmux=$MCC_TMUX_SESSION
+server_version=$VERSION
+server_port=$PORT
+EOF
+
 # --- Launch MCC ---
 echo "[4/4] Launching MCC in $MODE mode..."
 : > "$INPUT_FILE"
 rm -f "$MCC_LOG"
+rm -f "$PID_FILE"
 
-MCC_ARGS=("$CFG" "CursorBot" "-" "localhost:$PORT")
+MCC_ARGS=("$CFG" "$USERNAME" "-" "localhost:$PORT")
 
 if [[ "$MODE" == "tui" ]]; then
-    # TUI mode: needs a real tty — no pipes or redirects allowed
-    tmux kill-session -t mcc-debug 2>/dev/null || true
-    tmux new-session -d -s mcc-debug -x 160 -y 50 \
+    # TUI mode: needs a real tty - no pipes or redirects allowed
+    tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
+    tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
         "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- ${MCC_ARGS[*]}; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
-    echo "  TUI mode started in tmux session 'mcc-debug'"
+    echo "  TUI mode started in tmux session '$MCC_TMUX_SESSION'"
     echo "  (TUI mode uses a real terminal; log file is not available, use MCC's /debug command)"
     echo ""
-    echo "  Attach:   tmux attach -t mcc-debug"
+    echo "  Attach:   tmux attach -t $MCC_TMUX_SESSION"
     echo "  Detach:   Ctrl+B, D"
-    echo "  Kill MCC: tmux kill-session -t mcc-debug"
+    echo "  Kill MCC: tmux kill-session -t $MCC_TMUX_SESSION"
     echo ""
 elif $FILE_INPUT; then
-    # FileInput mode: run in background, drive via mcc_input.txt
+    # FileInput mode: run in background, drive via session-specific input file
     (
         cd "$REPO_ROOT"
-        MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- "${MCC_ARGS[@]}" > "$MCC_LOG" 2>&1
+        MCC_FILE_INPUT=1 MCC_INPUT_FILE="$INPUT_FILE" dotnet run --project MinecraftClient -c Release --no-build -- "${MCC_ARGS[@]}" > "$MCC_LOG" 2>&1
     ) &
     MCC_PID=$!
+    printf '%s\n' "$MCC_PID" > "$PID_FILE"
     echo "  MCC PID: $MCC_PID"
+    echo "  MCC PID file: $PID_FILE"
     echo ""
 
     sleep 5
@@ -175,25 +218,26 @@ elif $FILE_INPUT; then
     echo ""
     echo "  Send commands: echo 'debug state' >> $INPUT_FILE"
     echo "  Tail log:      tail -f $MCC_LOG"
+    echo "  Metadata:      cat $META_FILE"
     echo "  Stop MCC:      echo 'quit' >> $INPUT_FILE"
     echo "  Stop server:   mc-stop $VERSION"
     echo ""
 else
-    # Interactive classic mode: run in tmux (no pipe — ConsoleInteractive also needs tty)
-    tmux kill-session -t mcc-debug 2>/dev/null || true
-    tmux new-session -d -s mcc-debug -x 160 -y 50 \
+    # Interactive classic mode: run in tmux (no pipe - ConsoleInteractive also needs tty)
+    tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
+    tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
         "cd '$REPO_ROOT' && dotnet run --project MinecraftClient -c Release --no-build -- ${MCC_ARGS[*]}; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
-    echo "  Classic mode started in tmux session 'mcc-debug'"
+    echo "  Classic mode started in tmux session '$MCC_TMUX_SESSION'"
     echo ""
-    echo "  Attach:   tmux attach -t mcc-debug"
+    echo "  Attach:   tmux attach -t $MCC_TMUX_SESSION"
     echo "  Detach:   Ctrl+B, D"
-    echo "  Kill MCC: tmux kill-session -t mcc-debug"
+    echo "  Kill MCC: tmux kill-session -t $MCC_TMUX_SESSION"
     echo "  Note: Use MCC's built-in /debug command or enable LogToFile for log output"
     echo ""
 fi
 
 echo "Quick commands:"
-echo "  mc-rcon 'op CursorBot'      # Give operator"
+echo "  mc-rcon 'op $USERNAME'      # Give operator"
 echo "  mc-rcon 'gamemode creative'  # Creative mode"
 echo "  mc-stop $VERSION             # Stop server"
