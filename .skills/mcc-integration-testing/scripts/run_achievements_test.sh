@@ -37,6 +37,8 @@ fi
 SERVER_DIR="$1"
 MC_VERSION="$2"
 PROFILE="$3"
+SESSION_NAME="achievements-${SERVER_DIR//[^a-zA-Z0-9]/_}-${PROFILE}"
+TEST_USERNAME="$(_mcc_resolve_username "$SESSION_NAME")"
 
 if [[ "$PROFILE" != "legacy" && "$PROFILE" != "modern" ]]; then
     echo "Unsupported profile: $PROFILE" >&2
@@ -55,11 +57,11 @@ COMMAND_LOG="$RUN_DIR/commands.log"
 SUMMARY_ENV="$RUN_DIR/summary.env"
 PROBE_SCRIPT="$RUN_DIR/achievement_probe.cs"
 CFG="$RUN_DIR/MinecraftClient.$MC_VERSION.ini"
-INPUT_FILE="$REPO_ROOT/mcc_input.txt"
+INPUT_FILE="$(_mcc_session_input_file "$SESSION_NAME")"
 SERVER_LOG_FILE="$MCC_SERVERS/$SERVER_DIR/logs/latest.log"
 TARGET_ID="minecraft:story/root"
-TARGET_COMMAND_GRANT="advancement grant CursorBot only minecraft:story/root"
-TARGET_COMMAND_REVOKE="advancement revoke CursorBot only minecraft:story/root"
+TARGET_COMMAND_GRANT="advancement grant $TEST_USERNAME only minecraft:story/root"
+TARGET_COMMAND_REVOKE="advancement revoke $TEST_USERNAME only minecraft:story/root"
 TARGET_TYPE="Modern 🌱"
 PORT="unknown"
 MCC_PID=""
@@ -74,8 +76,8 @@ EXECUTED="yes"
 
 if [[ "$PROFILE" == "legacy" ]]; then
     TARGET_ID="achievement.openInventory"
-    TARGET_COMMAND_GRANT="achievement give achievement.openInventory CursorBot"
-    TARGET_COMMAND_REVOKE="achievement take achievement.openInventory CursorBot"
+    TARGET_COMMAND_GRANT="achievement give achievement.openInventory $TEST_USERNAME"
+    TARGET_COMMAND_REVOKE="achievement take achievement.openInventory $TEST_USERNAME"
     TARGET_TYPE="Legacy 🧱"
 fi
 
@@ -124,7 +126,7 @@ cleanup() {
         wait "$MCC_PID" 2>/dev/null || true
     fi
 
-    mc-stop "$SERVER_DIR" >/dev/null 2>&1 || true
+    mc-stop "$SERVER_DIR" --confirm >/dev/null 2>&1 || true
     wait_for_server_stop "$SERVER_DIR" 20 >/dev/null 2>&1 || true
     ln -sfn "$RUN_DIR" "$LATEST_LINK"
     write_summary
@@ -286,7 +288,7 @@ if [[ ! -d "$MCC_SERVERS/$SERVER_DIR" ]]; then
     fail "Server directory not found: $MCC_SERVERS/$SERVER_DIR"
 fi
 
-bash "$SCRIPT_DIR/prepare_offline_mcc_config.sh" "$CFG" "$MC_VERSION" CursorBot >/dev/null || fail "Failed to prepare temporary MCC config."
+bash "$SCRIPT_DIR/prepare_offline_mcc_config.sh" "$CFG" "$MC_VERSION" "$TEST_USERNAME" >/dev/null || fail "Failed to prepare temporary MCC config."
 PORT="$(bash "$SCRIPT_DIR/get_server_port.sh" "$SERVER_DIR")"
 
 "$SCRIPT_DIR/ensure_offline_server.sh" "$SERVER_DIR"
@@ -296,6 +298,7 @@ if [[ "$PROFILE" == "legacy" && -f "$MCC_SERVERS/$SERVER_DIR/server.properties" 
     sed_in_place 's/^use-native-transport=.*/use-native-transport=false/' "$MCC_SERVERS/$SERVER_DIR/server.properties"
 fi
 
+mkdir -p "$(dirname "$INPUT_FILE")"
 : > "$INPUT_FILE"
 rm -f "$MCC_LOG"
 
@@ -306,9 +309,9 @@ wait_for_server_ready "$SERVER_DIR" || fail "Server did not become ready."
 log_step "Starting MCC for $MC_VERSION"
 (
     cd "$REPO_ROOT"
-    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- \
+    MCC_FILE_INPUT=1 MCC_INPUT_FILE="$INPUT_FILE" dotnet run --project MinecraftClient -c Release --no-build -- \
         "$CFG" \
-        CursorBot \
+        "$TEST_USERNAME" \
         - \
         "localhost:$PORT" \
         "--accounttype=mojang" \
@@ -323,9 +326,9 @@ log_step "Starting MCC for $MC_VERSION"
 MCC_PID=$!
 
 wait_for_file_pattern "$MCC_LOG" "Server was successfully joined." "MCC join success" 90 || fail "MCC failed to join."
-wait_for_file_pattern "$SERVER_LOG_FILE" "CursorBot joined the game" "server join entry" 30 || fail "Server never logged the join."
+wait_for_file_pattern "$SERVER_LOG_FILE" "$TEST_USERNAME joined the game" "server join entry" 30 || fail "Server never logged the join."
 
-run_server_command "op CursorBot"
+run_server_command "op $TEST_USERNAME"
 run_server_command "gamerule sendCommandFeedback true"
 if [[ "$PROFILE" == "modern" ]]; then
     run_server_command "gamerule logAdminCommands true"

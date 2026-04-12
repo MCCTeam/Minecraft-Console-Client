@@ -30,7 +30,7 @@ try
 
     ToolEnvelope initialWorldState = await CallSuccessAsync(client, executed, "mcc_world_state");
     JsonElement initialWorldData = RequireData(initialWorldState);
-    string botName = ReadString(initialWorldData, "username") ?? "CursorBot";
+    string botName = ReadString(initialWorldData, "username") ?? "MCCBot";
     Coordinate initialLocation = ReadCoordinate(initialWorldData, "location");
 
     long setupBaseline = 0;
