@@ -861,7 +861,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_ROOT/tools/mcc-env.sh"
 
-VERSION="${1:-1.21.11}"
+VERSION="${1:-1.21.11-Vanilla}"
 INPUT_FILE="$REPO_ROOT/mcc_input.txt"
 LOG_DIR="${TMPDIR:-/tmp}/mcc-debug"
 LOG_FILE="$LOG_DIR/mcc-template-regressions.log"
@@ -913,7 +913,7 @@ Run:
 ```bash
 dotnet test MinecraftClient.Tests/MinecraftClient.Tests.csproj -v minimal
 dotnet build MinecraftClient.sln -c Release
-bash tools/test-pathing-template-regressions.sh 1.21.11
+bash tools/test-pathing-template-regressions.sh 1.21.11-Vanilla
 ```
 
 Expected:
@@ -975,7 +975,7 @@ Before calling this project done, the implementing agent must have fresh evidenc
 - `ClimbFallTemplateTests` passes
 - full `MinecraftClient.Tests` project passes
 - `dotnet build MinecraftClient.sln -c Release` passes
-- `tools/test-pathing-template-regressions.sh 1.21.11` shows positive runtime evidence for:
+- `tools/test-pathing-template-regressions.sh 1.21.11-Vanilla` shows positive runtime evidence for:
   - flat final stop stays within target block support
   - parkour into L-turn completes without rescue replan
   - accepted 2x1 side-wall jump completes

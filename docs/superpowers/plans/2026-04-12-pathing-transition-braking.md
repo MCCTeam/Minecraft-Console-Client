@@ -1435,7 +1435,7 @@ set -euo pipefail
 
 source "$(dirname "$0")/mcc-env.sh"
 
-VERSION="1.21.11"
+VERSION="1.21.11-Vanilla"
 SESSION="mcc-brake-test"
 CFG="/tmp/mcc-debug/MinecraftClient.debug.ini"
 

@@ -320,7 +320,7 @@ Run:
 
 ```bash
 source tools/mcc-env.sh
-mcc-debug -v 1.21.11 --file-input --no-build
+mcc-debug -v 1.21.11-Vanilla --file-input --no-build
 ls -la /tmp/mcc-debug
 tmux list-sessions | grep '^mcc-debug:'
 ```
@@ -432,8 +432,8 @@ Run:
 
 ```bash
 source tools/mcc-env.sh
-mcc-debug -v 1.21.11 --session smoke-a --username SmokeA --file-input --no-build
-mcc-debug -v 1.21.11 --session smoke-b --username SmokeB --file-input --no-build
+mcc-debug -v 1.21.11-Vanilla --session smoke-a --username SmokeA --file-input --no-build
+mcc-debug -v 1.21.11-Vanilla --session smoke-b --username SmokeB --file-input --no-build
 test -f "$(_mcc_session_log_file smoke-a)"
 test -f "$(_mcc_session_log_file smoke-b)"
 test -f "$(_mcc_session_meta_file smoke-a)"
@@ -602,7 +602,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 source "$REPO_ROOT/tools/mcc-env.sh"
 source "$SCRIPT_DIR/common.sh"
 
-VERSION="${1:-1.21.11}"
+VERSION="${1:-1.21.11-Vanilla}"
 SESSION_A="parallel-a"
 SESSION_B="parallel-b"
 USER_A="ParallelA"
@@ -631,7 +631,7 @@ mc-log "$VERSION" 50 | grep -Fq "$USER_B joined the game"
 
 - [ ] **Step 2: 运行脚本，确认它先因为新参数或旧的共享路径逻辑而失败**
 
-Run: `bash .skills/mcc-integration-testing/scripts/run_parallel_session_smoke_test.sh 1.21.11`
+Run: `bash .skills/mcc-integration-testing/scripts/run_parallel_session_smoke_test.sh 1.21.11-Vanilla`
 
 Expected: FAIL，错误类似 `Unknown option: --session`、固定 `mcc_input.txt` 被共用，或者只有一个客户端会话存活
 
@@ -680,9 +680,9 @@ mkdir -p "$(_mcc_session_root "$SESSION")"
 Run:
 
 ```bash
-bash .skills/mcc-integration-testing/scripts/run_parallel_session_smoke_test.sh 1.21.11
-bash tools/run-creative-e2e.sh 1.21.11 1.21.11 modern
-bash .skills/mcc-integration-testing/scripts/run_full_spectrum_test.sh 1.21.11
+bash .skills/mcc-integration-testing/scripts/run_parallel_session_smoke_test.sh 1.21.11-Vanilla
+bash tools/run-creative-e2e.sh 1.21.11-Vanilla 1.21.11 modern
+bash .skills/mcc-integration-testing/scripts/run_full_spectrum_test.sh 1.21.11-Vanilla
 ```
 
 Expected: 三个脚本都 PASS；并行 smoke test 中一个 session 被 kill 后，另一个 session 和共享服务器继续存活
@@ -722,13 +722,13 @@ git commit -m "test: cover shared server with isolated MCC sessions"
 # worktree A
 cd ~/Minecraft/Minecraft-Console-Client
 source tools/mcc-env.sh
-mc-start 1.21.11
-mcc-debug -v 1.21.11 --file-input
+mc-start 1.21.11-Vanilla
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # worktree B
 cd ~/Minecraft/Minecraft-Console-Client-foo
 source tools/mcc-env.sh
-mcc-debug -v 1.21.11 --file-input
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # Each worktree gets:
 # - its own session
@@ -761,7 +761,7 @@ Run:
 bash tools/test-mcc-env.sh
 source tools/mcc-env.sh && unset MCC_BUILD_MODE && mcc-build
 source tools/mcc-env.sh && export MCC_BUILD_MODE=tmpfs && mcc-build
-bash .skills/mcc-integration-testing/scripts/run_parallel_session_smoke_test.sh 1.21.11
+bash .skills/mcc-integration-testing/scripts/run_parallel_session_smoke_test.sh 1.21.11-Vanilla
 ```
 
 Expected:

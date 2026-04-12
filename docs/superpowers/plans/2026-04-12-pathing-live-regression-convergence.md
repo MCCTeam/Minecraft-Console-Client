@@ -403,7 +403,7 @@ Expected: `Build succeeded.`
 Run:
 
 ```bash
-bash tools/test-pathing-template-regressions.sh 1.21.11
+bash tools/test-pathing-template-regressions.sh 1.21.11-Vanilla
 ```
 
 Expected:

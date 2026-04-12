@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_ROOT/tools/mcc-env.sh"
 
-VERSION="${1:-1.21.11}"
+VERSION="${1:-1.21.11-Vanilla}"
 SESSION="mcc-pathing-template"
 TEST_ROOT="${TMPDIR:-/tmp}/mcc-pathing-template"
 CFG="$TEST_ROOT/MinecraftClient.pathing-template.ini"

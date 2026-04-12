@@ -10,7 +10,7 @@
 - Init submodules first: `git submodule update --init --recursive`
 - Build for local development: `source tools/mcc-env.sh && mcc-build`
 - Publish (matches CI shape): `source tools/mcc-env.sh && mcc-publish --rid <RID>`
-- Run/debug from source: `source tools/mcc-env.sh && mcc-debug -v 1.21.11 --file-input`
+- Run/debug from source: `source tools/mcc-env.sh && mcc-debug -v 1.21.11-Vanilla --file-input`
 - Docs: `cd docs && npm install && npm run docs:dev` or `npm run docs:build`
 - Docker: `cd Docker && docker build -t minecraft-console-client:latest .`
 - Tests: no dedicated test project is present in the main solution.

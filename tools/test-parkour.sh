@@ -5,7 +5,7 @@
 # Prerequisites:
 # - MCC connected with FileInput mode
 # - CursorBot is OP
-# - Server at 1.21.11
+# - Server at 1.21.11-Vanilla
 
 set -euo pipefail
 source "$(dirname "$0")/mcc-env.sh"

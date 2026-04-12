@@ -314,4 +314,3 @@ fi
 echo "Quick commands:"
 echo "  mc-rcon 'op $USERNAME'      # Give operator"
 echo "  mc-rcon 'gamemode creative'  # Creative mode"
-echo "  mc-stop $VERSION             # shared server stays up by default; rerun with --confirm only when needed"

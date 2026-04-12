@@ -458,13 +458,13 @@ Two worktrees can share one local server like this:
 # worktree A
 cd ~/Minecraft/Minecraft-Console-Client
 source tools/mcc-env.sh
-mc-start 1.21.11
-mcc-debug -v 1.21.11 --file-input
+mc-start 1.21.11-Vanilla
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # worktree B
 cd ~/Minecraft/Minecraft-Console-Client-foo
 source tools/mcc-env.sh
-mcc-debug -v 1.21.11 --file-input
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # from each worktree, mcc-* targets that worktree's default session
 mcc-state

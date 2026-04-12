@@ -10,8 +10,8 @@ The `tools/` directory also contains the shell helpers used for day-to-day MCC d
 
 ```bash
 source tools/mcc-env.sh
-mc-start 1.21.11
-mcc-debug -v 1.21.11 --file-input
+mc-start 1.21.11-Vanilla
+mcc-debug -v 1.21.11-Vanilla --file-input
 mcc-cmd "debug state"
 mcc-publish --rid linux-x64
 ```
