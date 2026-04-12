@@ -79,7 +79,7 @@ session="wrapper-smoke"
 input_file="$(_mcc_session_input_file "$session")"
 rm -rf "$(_mcc_session_root "$session")"
 
-mcc-cmd --session "$session" "debug state"
+mcc-cmd --session "$session" debug state
 input_contents="$(cat "$input_file")"
 assert_eq "debug state" "$input_contents" "session input command is intact"
 
