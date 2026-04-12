@@ -22,6 +22,9 @@ namespace MinecraftClient.Pathing.Execution
             double forwardSpeed = Math.Max(0.0, ProjectHorizontalSpeedAlongHeading(physics, current.HeadingX, current.HeadingZ));
             double coastStopDistance = EstimateGroundStopDistance(physics, world, current.HeadingX, current.HeadingZ, applyBackBrake: false);
             double hardBrakeDistance = EstimateGroundStopDistance(physics, world, current.HeadingX, current.HeadingZ, applyBackBrake: true);
+            bool landingNeedsTurnBrake = current.ExitTransition == PathTransitionType.LandingRecovery
+                && next is not null
+                && !HasSameHeading(current, next);
 
             if (current.ExitTransition == PathTransitionType.FinalStop)
             {
@@ -35,7 +38,8 @@ namespace MinecraftClient.Pathing.Execution
                     return TransitionBrakingDecision.CarryMomentum(preserveSprint: false);
             }
 
-            if (current.ExitTransition == PathTransitionType.Turn && remaining <= hardBrakeDistance + TurnBrakeLead)
+            if ((current.ExitTransition == PathTransitionType.Turn || landingNeedsTurnBrake)
+                && remaining <= hardBrakeDistance + TurnBrakeLead)
             {
                 return TransitionBrakingDecision.Brake;
             }
@@ -102,6 +106,11 @@ namespace MinecraftClient.Pathing.Execution
         private static double ProjectHorizontalSpeedAlongHeading(PlayerPhysics physics, int headingX, int headingZ)
         {
             return physics.DeltaMovement.X * headingX + physics.DeltaMovement.Z * headingZ;
+        }
+
+        private static bool HasSameHeading(PathSegment current, PathSegment next)
+        {
+            return current.HeadingX == next.HeadingX && current.HeadingZ == next.HeadingZ;
         }
     }
 }

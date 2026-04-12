@@ -96,6 +96,39 @@ public sealed class TransitionBrakingPlannerTests
         Assert.True(release);
     }
 
+    [Fact]
+    public void Plan_BackBrakes_ForLandingRecovery_WhenNextSegmentTurns()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 108, max: 126);
+        FlatWorldTestBuilder.ClearBox(world, 118, 79, 108, 126, 90, 112);
+        FlatWorldTestBuilder.SetSolid(world, 120, 79, 110);
+        FlatWorldTestBuilder.SetSolid(world, 122, 79, 110);
+        FlatWorldTestBuilder.SetSolid(world, 122, 79, 111);
+
+        var physics = CreatePhysics(0.118, 0.018, onGround: true);
+        var current = new PathSegment
+        {
+            Start = new Location(120.5, 80, 110.5),
+            End = new Location(122.5, 80, 110.5),
+            MoveType = MoveType.Parkour,
+            ExitTransition = PathTransitionType.LandingRecovery,
+            PreserveSprint = false
+        };
+        var next = new PathSegment
+        {
+            Start = new Location(122.5, 80, 110.5),
+            End = new Location(122.5, 80, 111.5),
+            MoveType = MoveType.Traverse,
+            ExitTransition = PathTransitionType.FinalStop
+        };
+
+        TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(current, next, new Location(122.56, 80, 110.68), physics, world);
+
+        Assert.False(decision.HoldForward);
+        Assert.False(decision.HoldSprint);
+        Assert.True(decision.HoldBack);
+    }
+
     private static PlayerPhysics CreatePhysics(double deltaX, double deltaZ, bool onGround)
     {
         return new PlayerPhysics
