@@ -36,9 +36,11 @@ fi
 SESSION_NAME="mc-${SERVER_DIR//./_}"
 TEST_ROOT="${TMPDIR:-/tmp}/mcc-creative-e2e/${SERVER_DIR//\//_}"
 CFG="$TEST_ROOT/MinecraftClient.$MC_VERSION.ini"
-MCC_LOG="$TEST_ROOT/mcc.log"
+MCC_SESSION="creative-e2e-${SERVER_DIR//[^a-zA-Z0-9]/_}-${PROFILE}"
+TEST_USERNAME="CursorBot"
+MCC_LOG="$(_mcc_session_log_file "$MCC_SESSION")"
 SERVER_LOG_FILE="$MCC_SERVERS/$SERVER_DIR/logs/latest.log"
-INPUT_FILE="$REPO_ROOT/mcc_input.txt"
+INPUT_FILE="$(_mcc_session_input_file "$MCC_SESSION")"
 MCC_PID=""
 SERVER_PORT="25565"
 
@@ -80,11 +82,10 @@ wait_for_rcon_port_free() {
 }
 cleanup() {
     if [[ -n "${MCC_PID:-}" ]] && kill -0 "$MCC_PID" 2>/dev/null; then
-        echo "quit" >> "$INPUT_FILE" 2>/dev/null || true
+        mcc-cmd --session "$MCC_SESSION" "quit" >/dev/null 2>&1 || true
         sleep 2
-        kill "$MCC_PID" 2>/dev/null || true
-        wait "$MCC_PID" 2>/dev/null || true
     fi
+    mcc-kill --session "$MCC_SESSION" >/dev/null 2>&1 || true
 
     if [[ -p "$MCC_SERVERS/$SERVER_DIR/stdin.pipe" ]]; then
         echo "stop" > "$MCC_SERVERS/$SERVER_DIR/stdin.pipe" 2>/dev/null || true
@@ -100,7 +101,7 @@ trap cleanup EXIT
 prepare_config() {
     MCC_TEST_ACCOUNT_TYPE=mojang MCC_TEST_PASSWORD=- \
         bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh" \
-        "$REPO_ROOT/MinecraftClient.ini" "$CFG" "$MC_VERSION" CursorBot >/dev/null
+        "$CFG" "$MC_VERSION" "$TEST_USERNAME" >/dev/null
 
     sed_in_place \
         -e "s#^Server = .*#Server = { Host = \"localhost\", Port = $SERVER_PORT }#" \
@@ -115,7 +116,7 @@ prepare_config() {
 send_mcc_command() {
     local command="$1"
     local delay="${2:-2}"
-    echo "$command" >> "$INPUT_FILE"
+    mcc-cmd --session "$MCC_SESSION" "$command"
     sleep "$delay"
 }
 
@@ -151,9 +152,9 @@ legacy_server_setup() {
     run_server_command "gamerule sendCommandFeedback true"
     run_server_command "time set day"
     run_server_command "weather clear"
-    run_server_command "gamemode creative CursorBot"
+    run_server_command "gamemode creative $TEST_USERNAME"
     run_server_command "fill -2 79 -2 2 79 2 stone"
-    run_server_command "tp CursorBot 0 80 0"
+    run_server_command "tp $TEST_USERNAME 0 80 0"
 }
 
 modern_server_setup() {
@@ -161,30 +162,32 @@ modern_server_setup() {
     run_server_command "gamerule logAdminCommands true"
     run_server_command "time set day"
     run_server_command "weather clear"
-    run_server_command "gamemode creative CursorBot"
+    run_server_command "gamemode creative $TEST_USERNAME"
     run_server_command "fill -2 79 -2 2 79 2 stone"
-    run_server_command "tp CursorBot 0 80 0"
+    run_server_command "tp $TEST_USERNAME 0 80 0"
 }
 
 legacy_mob_and_effects() {
     run_server_command "summon Cow 2 80 0"
     run_server_command "summon Zombie 4 80 0"
     run_server_command "summon Pig -2 80 0"
-    run_server_command "effect CursorBot 1 30 1 true"
-    run_server_command "effect CursorBot 10 10 1 true"
+    run_server_command "effect $TEST_USERNAME 1 30 1 true"
+    run_server_command "effect $TEST_USERNAME 10 10 1 true"
 }
 
 modern_mob_and_effects() {
     run_server_command "summon minecraft:cow 2 80 0"
     run_server_command "summon minecraft:zombie 4 80 0"
     run_server_command "summon minecraft:pig -2 80 0"
-    run_server_command "effect give CursorBot minecraft:speed 30 1 true"
-    run_server_command "effect give CursorBot minecraft:regeneration 10 1 true"
+    run_server_command "effect give $TEST_USERNAME minecraft:speed 30 1 true"
+    run_server_command "effect give $TEST_USERNAME minecraft:regeneration 10 1 true"
 }
 
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "$SERVER_DIR" >/dev/null
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh" --all >/dev/null
+mcc-reset-session --session "$MCC_SESSION" >/dev/null
 wait_for_rcon_port_free 30 || true
+mkdir -p "$(dirname "$MCC_LOG")" "$(dirname "$INPUT_FILE")"
 rm -f "$MCC_LOG" "$INPUT_FILE"
 
 bash "$REPO_ROOT/.skills/mcc-integration-testing/scripts/ensure_offline_server.sh" "$SERVER_DIR" >/dev/null
@@ -201,9 +204,9 @@ prepare_config
 
 (
     cd "$REPO_ROOT"
-    MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release --no-build -- \
+    MCC_FILE_INPUT=1 MCC_INPUT_FILE="$INPUT_FILE" dotnet run --project MinecraftClient -c Release --no-build -- \
         "$CFG" \
-        CursorBot \
+        "$TEST_USERNAME" \
         - \
         "localhost:$SERVER_PORT" \
         > "$MCC_LOG" 2>&1
@@ -211,10 +214,10 @@ prepare_config
 MCC_PID=$!
 
 assert_log_contains "$MCC_LOG" "Server was successfully joined." "MCC join success" 90
-assert_log_contains "$SERVER_LOG_FILE" "CursorBot joined the game" "server join entry" 30
+assert_log_contains "$SERVER_LOG_FILE" "$TEST_USERNAME joined the game" "server join entry" 30
 print_phase "CONNECT" "PASS"
 
-run_server_command "op CursorBot"
+run_server_command "op $TEST_USERNAME"
 sleep 1
 
 if [[ "$PROFILE" == "legacy" ]]; then
@@ -237,7 +240,7 @@ assert_log_contains "$SERVER_LOG_FILE" "$cmd_token" "client command on server" 2
 print_phase "SEND" "PASS"
 
 run_server_command "say $broadcast_token"
-run_server_command "tell CursorBot $whisper_token"
+run_server_command "tell $TEST_USERNAME $whisper_token"
 assert_log_contains "$MCC_LOG" "$broadcast_token" "server broadcast in MCC" 20
 assert_log_contains "$MCC_LOG" "$whisper_token" "server whisper in MCC" 20
 print_phase "RECEIVE" "PASS"

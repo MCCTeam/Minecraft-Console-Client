@@ -12,7 +12,7 @@ usage() {
     cat <<'EOF'
 Usage: reset_shared_test_state.sh [--all | <server-dir>...]
 
-Kills shared tmux test sessions and removes stale stdin pipes.
+Kills shared server tmux test sessions and removes stale server stdin pipes.
 EOF
 }
 
@@ -25,8 +25,6 @@ kill_named_session() {
     local session_name="$1"
     tmux kill-session -t "$session_name" 2>/dev/null || true
 }
-
-kill_named_session "mcc-debug"
 
 if [[ $# -eq 0 || "${1:-}" == "--all" ]]; then
     while IFS= read -r session_name; do
@@ -46,5 +44,3 @@ else
         remove_stale_stdin_pipe "$version"
     done
 fi
-
-rm -f "$MCC_REPO/mcc_input.txt"
