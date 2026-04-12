@@ -13,6 +13,7 @@ source tools/mcc-env.sh
 mc-start 1.21.11
 mcc-debug -v 1.21.11 --file-input
 mcc-cmd "debug state"
+mcc-publish --rid linux-x64
 ```
 
 ### Shared server, isolated MCC sessions

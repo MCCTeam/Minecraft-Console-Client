@@ -126,11 +126,44 @@ _mcc_dotnet_env() {
     local build_root
     build_root="$(_mcc_build_root)"
     mkdir -p "$build_root"
-    env MCC_BUILD_ROOT="$build_root" "$@"
+    env MCC_BUILD_ROOT="$build_root" MCC_ALLOW_RAW_DOTNET=1 "$@"
     return $?
   fi
 
-  "$@"
+  MCC_ALLOW_RAW_DOTNET=1 "$@"
+}
+
+_mcc_is_repo_dotnet_build_blocked() {
+  local repo_root cwd
+  repo_root="$(_mcc_repo_root)"
+  cwd="${PWD:-}"
+
+  [[ -n "$repo_root" && -n "$cwd" && "$cwd" == "$repo_root"* ]]
+}
+
+dotnet() {
+  if [[ "${MCC_ALLOW_RAW_DOTNET:-0}" != "1" ]] && _mcc_is_repo_dotnet_build_blocked; then
+    case "${1:-}" in
+      build)
+        cat >&2 <<'EOF'
+[MCC] Raw 'dotnet build' is blocked in this repository.
+[MCC] Use: source tools/mcc-env.sh && mcc-build
+[MCC] If you intentionally need the raw .NET CLI, call it by absolute path to bypass this guard.
+EOF
+        return 64
+        ;;
+      publish)
+        cat >&2 <<'EOF'
+[MCC] Raw 'dotnet publish' is blocked in this repository.
+[MCC] Use: source tools/mcc-env.sh && mcc-publish --rid <RID>
+[MCC] If you intentionally need the raw .NET CLI, call it by absolute path to bypass this guard.
+EOF
+        return 64
+        ;;
+    esac
+  fi
+
+  command dotnet "$@"
 }
 
 # Helper: convert version to tmux session name (dots -> underscores)
@@ -247,6 +280,52 @@ mcc-build() {
   local repo_root
   repo_root="$(_mcc_repo_root)"
   _mcc_dotnet_env dotnet build "$repo_root/MinecraftClient.sln" -c Release
+}
+mcc-publish() {
+  local repo_root rid=""
+  local -a extra_args=()
+
+  repo_root="$(_mcc_repo_root)"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --rid|-r)
+        shift
+        if [[ $# -eq 0 ]]; then
+          echo "mcc-publish: --rid requires a value" >&2
+          return 1
+        fi
+        rid="$1"
+        shift
+        ;;
+      --)
+        shift
+        extra_args+=("$@")
+        break
+        ;;
+      *)
+        extra_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z "$rid" ]]; then
+    echo "mcc-publish: missing required --rid <RID>" >&2
+    echo "mcc-publish: example: mcc-publish --rid linux-x64" >&2
+    return 1
+  fi
+
+  _mcc_dotnet_env dotnet publish "$repo_root/MinecraftClient.sln" \
+    -f net10.0 \
+    -r "$rid" \
+    --self-contained=true \
+    -c Release \
+    -p:UseAppHost=true \
+    -p:IncludeNativeLibrariesForSelfExtract=true \
+    -p:EnableCompressionInSingleFile=true \
+    -p:DebugType=Embedded \
+    "${extra_args[@]}"
 }
 mcc-build-clean() {
   if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then

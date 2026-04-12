@@ -54,6 +54,8 @@ It is built around two layers:
 - repo tools in `tools/`, which do the actual work
 - AI skills in `.skills/`, which tell the agent when and how to use those tools
 
+For agent-driven local development, prefer the `mcc-*` wrappers after `source tools/mcc-env.sh`. They preserve session isolation, temp configs, and optional tmpfs build routing. Do not default to raw `dotnet build` or `dotnet run` for the normal MCC debug loop.
+
 ## Setup
 
 You only do most of this once.
@@ -716,6 +718,7 @@ Typical flow:
 1. Decide whether this should be a standalone `/script` bot or a built-in bot.
 2. Use the authoring skill's references and templates.
 3. Build MCC.
+   Use `mcc-build` instead of raw `dotnet build` so worktree-local temp build output still applies.
 4. Start a local server and join it.
 5. Test the bot behavior through live commands, chat, or event-driven actions.
 6. Make sure cleanup paths such as `OnUnload()` are correct.

@@ -8,16 +8,17 @@
 
 ## Build / Run
 - Init submodules first: `git submodule update --init --recursive`
-- Build: `dotnet build MinecraftClient.sln -c Release`
-- Publish (matches CI shape): `dotnet publish MinecraftClient.sln -f net10.0 -r <RID> --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded`
-- Run from source: `dotnet run --project MinecraftClient -- --help`
+- Build for local development: `source tools/mcc-env.sh && mcc-build`
+- Publish (matches CI shape): `source tools/mcc-env.sh && mcc-publish --rid <RID>`
+- Run/debug from source: `source tools/mcc-env.sh && mcc-debug -v 1.21.11 --file-input`
 - Docs: `cd docs && npm install && npm run docs:dev` or `npm run docs:build`
 - Docker: `cd Docker && docker build -t minecraft-console-client:latest .`
 - Tests: no dedicated test project is present in the main solution.
-- Current state: the solution builds after submodule init, but `dotnet build` emits many analyzer and NuGet vulnerability warnings; treat them as real.
+- Current state: the solution builds after submodule init, but the underlying .NET build emits many analyzer and NuGet vulnerability warnings; treat them as real.
 - Server roots: `tools/` helpers look for server jars under `MinecraftOfficial/downloads/<version>/` by default, but also support an external root via the `MCC_SERVERS` environment variable.
 - Multi-version testing: tmux-based local server sessions are shared state. Run cross-version test matrices sequentially unless you have explicit per-version isolation. A server logging `Done` does not guarantee immediate RCON availability; retry RCON setup commands.
 - Automated test configs: for repeated or matrix test runs, prefer generating a temporary MCC config per run instead of reusing the repo-root `MinecraftClient.ini`, to avoid leaking state between runs.
+- For agent-driven local development, prefer `mcc-build`, `mcc-publish`, `mcc-build-clean`, `mcc-debug`, `mcc-run`, and `mcc-tui` over raw `dotnet build`, `dotnet publish`, or `dotnet run`, so worktree-local temp build routing stays active.
 
 ## Architecture
 - `Program` bootstraps console I/O, TOML config, auth/session state, MC version selection, Forge detection, then creates `McClient`.

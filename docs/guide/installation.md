@@ -131,6 +131,12 @@ If the build succeeds, the published binary `MinecraftClient.exe` will be in `Mi
 
 #### Building using .NET manually without Visual Studio
 
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+If you are following the AI-assisted repo workflow, use WSL or another Unix-style shell and prefer `source tools/mcc-env.sh` followed by `mcc-build`. That path keeps MCC's session and temp-build helpers enabled. The `dotnet` commands below are the low-level manual fallback.
+
+</div>
+
 1. Open the `Minecraft-Console-Client` folder you've cloned or downloaded
 2. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
 3. Install the .NET 10 SDK if you do not already have it. The easiest current option on Windows is:
@@ -148,7 +154,8 @@ dotnet build MinecraftClient.sln -c Release
 5. If you want a release-like published binary that matches the repo's CI workflow, run:
 
 ```bash
-dotnet publish MinecraftClient.sln -f net10.0 -r win-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
+source tools/mcc-env.sh
+mcc-publish --rid win-x64
 ```
 
 6. Verify the SDK installation if needed:
@@ -210,18 +217,26 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 
 5. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
 
-6. Run the following command for a normal local build:
+6. For the repo's normal local development workflow, source the helper environment and build through `mcc-build`:
+
+   ```bash
+   source tools/mcc-env.sh
+   mcc-build
+   ```
+
+7. If you specifically want the low-level manual .NET command instead of the MCC wrapper, run:
 
    ```bash
    dotnet build MinecraftClient.sln -c Release
    ```
 
-7. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
+8. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
 
    - On Linux:
 
      ```bash
-     dotnet publish MinecraftClient.sln -f net10.0 -r linux-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
+     source tools/mcc-env.sh
+     mcc-publish --rid linux-x64
      ```
 
      <div class="custom-container note"><p class="custom-container-title">Note</p>
@@ -233,7 +248,8 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
    - On macOS:
 
      ```bash
-     dotnet publish MinecraftClient.sln -f net10.0 -r osx-x64 --self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded
+     source tools/mcc-env.sh
+     mcc-publish --rid osx-x64
      ```
 
      <div class="custom-container note"><p class="custom-container-title">Note</p>
