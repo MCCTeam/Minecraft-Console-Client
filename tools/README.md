@@ -4,6 +4,38 @@ Scripts for analyzing Minecraft version differences and generating MCC palette f
 
 Requires: Python 3.10+
 
+## Local debug helpers
+
+The `tools/` directory also contains the shell helpers used for day-to-day MCC debugging:
+
+```bash
+source tools/mcc-env.sh
+mc-start 1.21.11
+mcc-debug -v 1.21.11 --file-input
+mcc-cmd "debug state"
+```
+
+### Shared server, isolated MCC sessions
+
+- `mc-*` commands operate on the shared local Minecraft server.
+- `mcc-*` commands operate on one MCC client session.
+- The default `session` is the current worktree name.
+- The default username is derived from `session`, so two worktrees can join the same shared server without kicking each other.
+- `MCC_SERVERS` remains the shared server-root override.
+
+Keep shared servers running by default. Do not stop or reset them unless the user explicitly asks for that, or you need to switch server versions.
+
+### tmpfs build mode
+
+```bash
+source tools/mcc-env.sh
+export MCC_BUILD_MODE=tmpfs
+mcc-build
+mcc-build-clean
+```
+
+When `MCC_BUILD_MODE=tmpfs`, build output goes to `/dev/shm/mcc-build/<worktree>/` on Linux, or `${TMPDIR:-/tmp}/mcc-build/<worktree>/` when `/dev/shm` is unavailable.
+
 ## Data Sources
 
 Two types of data can be used as input:

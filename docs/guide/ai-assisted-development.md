@@ -367,10 +367,16 @@ This gives you the helper functions used by the workflow:
 - `mc-cmd`
 - `mc-log`
 - `mc-rcon`
+- `mc-reset-test-env`
 - `mcc-build`
+- `mcc-build-clean`
 - `mcc-run`
+- `mcc-tui`
 - `mcc-cmd`
+- `mcc-log-mcc`
+- `mcc-state`
 - `mcc-kill`
+- `mcc-debug`
 - `mcc-reload`
 
 </details>
@@ -412,7 +418,7 @@ Then make sure the helper functions are loaded:
 ```bash
 type mc-start
 type mcc-build
-type mcc-run
+type mcc-debug
 ```
 
 </details>
@@ -426,10 +432,54 @@ The moving parts are:
 - a local Minecraft server running in `tmux`
 - `mc-rcon` for server-side commands such as `/op`, `/give`, `/summon`, or gamerule setup
 - MCC started with `MCC_FILE_INPUT=1`
-- `FileInputBot`, which watches `mcc_input.txt` and turns file lines into MCC commands or server chat
+- `FileInputBot`, which watches the session input file under `${TMPDIR:-/tmp}/mcc-debug/<session>/mcc_input.txt`
 - logs from MCC and the local server, which the agent can inspect between runs
 
 The result is simple: the agent can change code, rebuild, start the app, inject commands, and read the result without waiting for a human to sit in the terminal.
+
+## Shared Server, Isolated MCC Sessions
+
+The harness separates shared server state from MCC client state.
+
+- `mc-*` commands operate on the shared local Minecraft server.
+- `mcc-*` commands operate on one MCC client session.
+- The default `session` is the current worktree name.
+- The default username is derived from `session`, so two worktrees can join the same shared server without kicking each other.
+- Session files live under `${TMPDIR:-/tmp}/mcc-debug/<session>/`.
+- `MCC_SERVERS` stays the shared server-root override.
+
+Keep shared servers running by default. Do not stop or reset them unless the user explicitly asks for that, or you need to switch server versions.
+
+Two worktrees can share one local server like this:
+
+```bash
+# worktree A
+cd ~/Minecraft/Minecraft-Console-Client
+source tools/mcc-env.sh
+mc-start 1.21.11
+mcc-debug -v 1.21.11 --file-input
+
+# worktree B
+cd ~/Minecraft/Minecraft-Console-Client-foo
+source tools/mcc-env.sh
+mcc-debug -v 1.21.11 --file-input
+
+# from each worktree, mcc-* targets that worktree's default session
+mcc-state
+```
+
+If you need two MCC sessions from one worktree, pass `--session NAME` explicitly.
+
+### tmpfs build mode
+
+```bash
+source tools/mcc-env.sh
+export MCC_BUILD_MODE=tmpfs
+mcc-build
+mcc-build-clean
+```
+
+When `MCC_BUILD_MODE=tmpfs`, build output goes to `/dev/shm/mcc-build/<worktree>/` on Linux, or `${TMPDIR:-/tmp}/mcc-build/<worktree>/` when `/dev/shm` is unavailable.
 
 ## Repository Tools
 
@@ -438,6 +488,7 @@ These are the repo-level tools that make the workflow practical.
 | Path                                     | Purpose                                                                                                                                   |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `tools/mcc-env.sh`                       | Loads the shell helper functions used for the normal loop.                                                                                |
+| `tools/mcc-debug.sh`                     | Starts a session-scoped MCC debug run with generated config, log, pid, and tmux state.                                                   |
 | `tools/start-server.sh`                  | Starts a local Minecraft server in a named `tmux` session with a FIFO for stdin.                                                          |
 | `tools/mc-rcon.sh`                       | Sends RCON commands to the local server using `python3`.                                                                                  |
 | `tools/decompile.sh`                     | Downloads `MinecraftDecompiler.jar` if needed, decompiles the requested Minecraft version, and fetches `server.jar` for server-side work. |
@@ -453,7 +504,7 @@ There is one more piece worth calling out:
 
 - `MinecraftClient/ChatBots/FileInputBot.cs` is what makes file-driven command injection possible.
 - It is loaded when `MCC_FILE_INPUT=1` is set.
-- `mcc-run` in `tools/mcc-env.sh` already sets that flag for you.
+- `mcc-debug --file-input` and `mcc-run` already set that flag for you.
 
 ## Skills
 
@@ -485,9 +536,12 @@ Some skills also carry their own bundled resources:
 
 This is the core loop you should expect an agent to follow.
 
-### 1. Start the local server
+### 1. Start the local server and resolve the MCC identity
 
 ```bash
+source tools/mcc-env.sh
+SESSION="smoke-a"
+USERNAME="$(_mcc_resolve_username "$SESSION")"
 mc-start 1.20.6
 ```
 
@@ -506,13 +560,7 @@ mcc-build
 ### 3. Run MCC with file input enabled
 
 ```bash
-mcc-run
-```
-
-The raw form looks like this:
-
-```bash
-MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - localhost:25565
+mcc-debug -v 1.20.6 --file-input --session "$SESSION" --no-build
 ```
 
 ### 4. Set up server state through RCON
@@ -520,20 +568,20 @@ MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - 
 Examples:
 
 ```bash
-mc-rcon "op CursorBot"
+mc-rcon "op $USERNAME"
 mc-rcon "gamerule sendCommandFeedback true"
-mc-rcon "give CursorBot diamond_sword 1"
+mc-rcon "give $USERNAME diamond_sword 1"
 mc-rcon "summon minecraft:armor_stand ~ ~ ~"
 ```
 
-### 5. Drive MCC through `mcc_input.txt`
+### 5. Drive MCC through the session input file
 
 Examples:
 
 ```bash
-mcc-cmd "inventory player list"
-mcc-cmd "entity"
-mcc-cmd "/gamemode creative"
+mcc-cmd --session "$SESSION" "inventory player list"
+mcc-cmd --session "$SESSION" "entity"
+mcc-cmd --session "$SESSION" "/gamemode creative"
 ```
 
 Behavior:
@@ -638,12 +686,15 @@ Use skills:
 Typical loop:
 
 ```bash
+source tools/mcc-env.sh
+SESSION="smoke-a"
+USERNAME="$(_mcc_resolve_username "$SESSION")"
 mc-start 1.20.6
 mcc-build
-mcc-run
-mc-rcon "op CursorBot"
-mcc-cmd "inventory player list"
-mcc-cmd "entity"
+mcc-debug -v 1.20.6 --file-input --session "$SESSION" --no-build
+mc-rcon "op $USERNAME"
+mcc-cmd --session "$SESSION" "inventory player list"
+mcc-cmd --session "$SESSION" "entity"
 ```
 
 Then inspect the MCC output, patch the code, and use:
