@@ -121,6 +121,20 @@ _mcc_build_root() {
   printf '%s\n' "$MCC_REPO_ROOT"
 }
 
+_mcc_dotnet_env() {
+  local -n env_ref="$1"
+  env_ref=()
+
+  if [[ "${MCC_BUILD_MODE:-local}" != "tmpfs" ]]; then
+    return 0
+  fi
+
+  local build_root
+  build_root="$(_mcc_build_root)"
+  mkdir -p "$build_root"
+  env_ref+=("MCC_BUILD_ROOT=$build_root")
+}
+
 # Helper: convert version to tmux session name (dots -> underscores)
 _mc-session() { echo "mc-${1//\./_}"; }
 
@@ -141,15 +155,20 @@ mc-rcon() { bash "$MCC_REPO/tools/mc-rcon.sh" "$@"; }
 # --- MCC Build/Run ---
 mcc-build() {
   local repo_root
+  local -a dotnet_env
   repo_root="$(_mcc_repo_root)"
+  _mcc_dotnet_env dotnet_env
+  env "${dotnet_env[@]}" dotnet build "$repo_root/MinecraftClient.sln" -c Release
+}
+mcc-build-clean() {
   if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
     local build_root
     build_root="$(_mcc_build_root)"
-    mkdir -p "$build_root"
-    MCC_BUILD_ROOT="$build_root" dotnet build "$repo_root/MinecraftClient.sln" -c Release
-  else
-    dotnet build "$repo_root/MinecraftClient.sln" -c Release
+    rm -rf "$build_root"
+    return 0
   fi
+
+  dotnet clean "$(_mcc_repo_root)/MinecraftClient.sln" -c Release
 }
 mcc-run()   {
   local port="${1:-25565}"

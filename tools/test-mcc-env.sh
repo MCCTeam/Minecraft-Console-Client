@@ -75,6 +75,10 @@ if [[ "$build_root" != "$expected_prefix"* ]]; then
     exit 1
 fi
 
+mkdir -p "$build_root/probe"
+mcc-build-clean
+[[ ! -e "$build_root/probe" ]]
+
 session="wrapper-smoke"
 input_file="$(_mcc_session_input_file "$session")"
 rm -rf "$(_mcc_session_root "$session")"
