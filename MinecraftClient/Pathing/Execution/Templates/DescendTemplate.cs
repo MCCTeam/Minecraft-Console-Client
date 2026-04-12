@@ -1,5 +1,6 @@
 using System;
 using MinecraftClient.Mapping;
+using MinecraftClient.Pathing.Execution;
 using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution.Templates
@@ -12,6 +13,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
     /// </summary>
     public sealed class DescendTemplate : IActionTemplate
     {
+        private const float PreDropYawToleranceDeg = 12f;
+
         public Location ExpectedStart { get; }
         public Location ExpectedEnd { get; }
 
@@ -61,10 +64,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             if (physics.OnGround && Math.Abs(dy) < (_hasFallen ? 1.0 : 0.6))
             {
-                if (horizDistSq > 0.01)
+                TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
+                if (horizDistSq > 0.01 && !decision.HoldBack)
                     physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
 
-                GroundedSegmentController.Apply(_segment, _nextSegment, pos, physics, input, world);
+                TemplateHelper.ApplyDecision(input, decision);
+                if (decision.HoldBack)
+                    TemplateHelper.FaceSegmentHeading(physics, _segment);
+
                 if (GroundedSegmentController.ShouldComplete(_segment, pos, physics))
                     return TemplateState.Complete;
             }
@@ -79,12 +86,45 @@ namespace MinecraftClient.Pathing.Execution.Templates
             else if (horizDistSq > 0.01)
             {
                 physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
-                input.Forward = true;
-                if (_needsSprint)
-                    input.Sprint = true;
+                if (_hasFallen || YawDifference(physics.Yaw, targetYaw) <= PreDropYawToleranceDeg)
+                {
+                    if (!_hasFallen && !_needsSprint && ShouldCoastOffLedge(pos))
+                    {
+                        // For short descends into a stop or turn, release forward near the lip
+                        // so the landing stays on the intended support instead of overshooting it.
+                    }
+                    else if (!_hasFallen && !_needsSprint)
+                    {
+                        GroundedSegmentController.Apply(_segment, _nextSegment, pos, physics, input, world);
+                    }
+                    else
+                    {
+                        input.Forward = true;
+                        if (_needsSprint)
+                            input.Sprint = true;
+                    }
+                }
             }
 
             return TemplateState.InProgress;
+        }
+
+        private bool ShouldCoastOffLedge(Location pos)
+        {
+            if (_segment.ExitTransition == PathTransitionType.ContinueStraight)
+                return false;
+
+            double remaining = (_segment.End.X - pos.X) * _segment.HeadingX
+                + (_segment.End.Z - pos.Z) * _segment.HeadingZ;
+            return remaining <= 0.55;
+        }
+
+        private static float YawDifference(float current, float target)
+        {
+            float delta = target - current;
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+            return Math.Abs(delta);
         }
     }
 }
