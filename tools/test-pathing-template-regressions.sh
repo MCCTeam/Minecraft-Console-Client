@@ -299,8 +299,33 @@ run_corner_ascend_around_wall() {
     print_summary "Corner ascend around wall"
 }
 
-run_mixed_ascend_descend_climb() {
-    echo "== Mixed ascend/descend/climb smoke =="
+run_wall_adjacent_descend_smoke() {
+    echo "== Wall-adjacent descend smoke =="
+    mc-rcon "fill 198 79 198 204 84 202 air" >/dev/null
+    mc-rcon "fill 201 79 199 203 79 201 stone" >/dev/null
+    mc-rcon "setblock 200 80 200 stone" >/dev/null
+    mc-rcon "setblock 200 80 199 stone" >/dev/null
+    mc-rcon "setblock 201 80 199 stone" >/dev/null
+    mc-rcon "setblock 202 80 199 stone" >/dev/null
+    mc-rcon "setblock 201 81 199 stone" >/dev/null
+    mc-rcon "setblock 202 81 199 stone" >/dev/null
+    mc-rcon "tp CursorBot 200.5 81 200.5" >/dev/null
+    sleep 2
+
+    local start_line
+    start_line="$(log_line_count)"
+    send_mcc "pathfind 201 80 200"
+    wait_for_navigation "$start_line" 25
+
+    local x y z
+    read -r x y z <<< "$(extract_last_location "$start_line")"
+    echo "  Final location: $x $y $z"
+    assert_close "$x" "$y" "$z" "201.50" "80.00" "200.50" "0.25"
+    print_summary "Wall-adjacent descend"
+}
+
+run_ascend_chain_smoke() {
+    echo "== Ascend chain smoke =="
     mc-rcon "fill 170 79 160 178 79 168 stone" >/dev/null
     mc-rcon "fill 170 80 160 178 85 168 air" >/dev/null
     mc-rcon "setblock 175 80 162 stone" >/dev/null
@@ -320,8 +345,8 @@ run_mixed_ascend_descend_climb() {
     send_mcc "pathfind 182 83 162"
     wait_for_navigation "$start_line" 35
 
-    echo "  Mixed route completed (review log for ascend/descend/climb segments)."
-    print_summary "Ascend/Descend/Climb smoke"
+    echo "  Ascend chain completed."
+    print_summary "Ascend chain smoke"
 }
 
 mcc-preflight "$VERSION" >/dev/null
@@ -341,7 +366,8 @@ run_parkour_into_turn
 run_side_wall_jump
 run_reject_3x1_gap
 run_corner_ascend_around_wall
-run_mixed_ascend_descend_climb
+run_wall_adjacent_descend_smoke
+run_ascend_chain_smoke
 
 echo ""
 echo "Pathing template regression suite complete."
