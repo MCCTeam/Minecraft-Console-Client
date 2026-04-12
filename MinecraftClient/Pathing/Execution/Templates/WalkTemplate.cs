@@ -40,22 +40,21 @@ namespace MinecraftClient.Pathing.Execution.Templates
             physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
-            TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
-            TemplateHelper.ApplyDecision(input, decision);
-            if (decision.HoldBack)
-                TemplateHelper.FaceSegmentHeading(physics, _segment);
+            GroundedSegmentController.Apply(_segment, _nextSegment, pos, physics, input, world);
 
-            if (_segment.ExitTransition == PathTransitionType.ContinueStraight && TemplateHelper.IsNear(pos, ExpectedEnd, horizThresholdSq: 0.09))
-                return TemplateState.Complete;
-
-            if (_segment.ExitTransition != PathTransitionType.ContinueStraight && TemplateHelper.IsSettledAtEnd(pos, ExpectedEnd, physics))
+            if (GroundedSegmentController.ShouldComplete(_segment, pos, physics))
                 return TemplateState.Complete;
 
             double movedSq = TemplateHelper.HorizontalDistanceSq(pos, _lastPos);
             _stuckTicks = movedSq < 0.0005 ? _stuckTicks + 1 : 0;
             _lastPos = pos;
 
-            int maxTicks = _segment.ExitTransition == PathTransitionType.ContinueStraight ? 100 : 140;
+            int maxTicks = _segment.ExitTransition switch
+            {
+                PathTransitionType.ContinueStraight => 100,
+                PathTransitionType.PrepareJump => 80,
+                _ => 140
+            };
             if (_stuckTicks > 40 || _tickCount > maxTicks)
                 return TemplateState.Failed;
 

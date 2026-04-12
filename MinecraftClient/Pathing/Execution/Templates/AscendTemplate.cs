@@ -47,25 +47,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (physics.OnGround && dy > 0.1)
                 input.Jump = true;
 
-            if (physics.OnGround && Math.Abs(dy) < 0.15)
+            if (physics.OnGround && Math.Abs(dy) < 0.2)
             {
-                TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
-                TemplateHelper.ApplyDecision(input, decision);
-                if (decision.HoldBack)
-                    TemplateHelper.FaceSegmentHeading(physics, _segment);
-
-                if (_segment.ExitTransition == PathTransitionType.ContinueStraight && horizDistSq < 0.25)
+                GroundedSegmentController.Apply(_segment, _nextSegment, pos, physics, input, world);
+                if (GroundedSegmentController.ShouldComplete(_segment, pos, physics))
                     return TemplateState.Complete;
-
-                if (_segment.ExitTransition != PathTransitionType.ContinueStraight
-                    && TemplateHelper.IsSettledAtEnd(pos, ExpectedEnd, physics, horizThresholdSq: 0.0025))
-                {
-                    return TemplateState.Complete;
-                }
-            }
-            else if (horizDistSq < 0.25 && Math.Abs(dy) < 0.8)
-            {
-                return TemplateState.Complete;
             }
 
             double movedSq = TemplateHelper.HorizontalDistanceSq(pos, _lastPos);

@@ -90,14 +90,57 @@ namespace MinecraftClient.Pathing.Execution.Templates
             input.Back = decision.HoldBack;
         }
 
+        internal static bool HasReachedSegmentEndPlane(Location pos, PathSegment segment, double tolerance = 0.05)
+        {
+            GetNormalizedSegmentDirection(segment, out double dirX, out double dirZ);
+            double relX = pos.X - segment.End.X;
+            double relZ = pos.Z - segment.End.Z;
+            return relX * dirX + relZ * dirZ >= -tolerance;
+        }
+
+        internal static double ProjectHorizontalSpeedAlongSegment(PlayerPhysics physics, PathSegment segment)
+        {
+            GetNormalizedSegmentDirection(segment, out double dirX, out double dirZ);
+            return physics.DeltaMovement.X * dirX + physics.DeltaMovement.Z * dirZ;
+        }
+
+        internal static bool IsSettledOnTargetBlock(Location pos, Location target, PlayerPhysics physics,
+            double speedThresholdSq = 0.0016)
+        {
+            double horizontalSpeedSq = physics.DeltaMovement.X * physics.DeltaMovement.X
+                + physics.DeltaMovement.Z * physics.DeltaMovement.Z;
+            return TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, target)
+                && !TemplateFootingHelper.WillLeaveTargetBlockNextTick(pos, physics, target)
+                && horizontalSpeedSq <= speedThresholdSq;
+        }
+
         internal static bool IsSettledAtEnd(Location pos, Location target, PlayerPhysics physics,
             double horizThresholdSq = 0.0025, double speedThresholdSq = 0.0016)
         {
+            if (IsSettledOnTargetBlock(pos, target, physics, speedThresholdSq))
+                return true;
+
             double dx = target.X - pos.X;
             double dz = target.Z - pos.Z;
             double horizontalSpeedSq = physics.DeltaMovement.X * physics.DeltaMovement.X
                 + physics.DeltaMovement.Z * physics.DeltaMovement.Z;
             return dx * dx + dz * dz <= horizThresholdSq && horizontalSpeedSq <= speedThresholdSq;
+        }
+
+        private static void GetNormalizedSegmentDirection(PathSegment segment, out double dirX, out double dirZ)
+        {
+            dirX = segment.End.X - segment.Start.X;
+            dirZ = segment.End.Z - segment.Start.Z;
+            double len = Math.Sqrt(dirX * dirX + dirZ * dirZ);
+            if (len < 1.0E-6)
+            {
+                dirX = 0.0;
+                dirZ = 0.0;
+                return;
+            }
+
+            dirX /= len;
+            dirZ /= len;
         }
     }
 }

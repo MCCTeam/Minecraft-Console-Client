@@ -59,26 +59,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
-            if (physics.OnGround && Math.Abs(dy) < (_hasFallen ? 0.8 : 0.5))
+            if (physics.OnGround && Math.Abs(dy) < (_hasFallen ? 1.0 : 0.6))
             {
                 if (horizDistSq > 0.01)
                     physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
 
-                TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
-                TemplateHelper.ApplyDecision(input, decision);
-                if (decision.HoldBack)
-                    TemplateHelper.FaceSegmentHeading(physics, _segment);
-
-                if (_segment.ExitTransition == PathTransitionType.ContinueStraight)
-                {
-                    double completionThreshold = _hasFallen ? 0.5 : 0.25;
-                    if (horizDistSq < completionThreshold)
-                        return TemplateState.Complete;
-                }
-                else if (TemplateHelper.IsSettledAtEnd(pos, ExpectedEnd, physics, horizThresholdSq: 0.0025))
-                {
+                GroundedSegmentController.Apply(_segment, _nextSegment, pos, physics, input, world);
+                if (GroundedSegmentController.ShouldComplete(_segment, pos, physics))
                     return TemplateState.Complete;
-                }
             }
             else if (physics.OnClimbable)
             {

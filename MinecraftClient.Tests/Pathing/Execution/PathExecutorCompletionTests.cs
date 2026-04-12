@@ -24,7 +24,8 @@ public sealed class PathExecutorCompletionTests
         var physics = new PlayerPhysics
         {
             Yaw = 270f,
-            Pitch = 0f
+            Pitch = 0f,
+            OnGround = true
         };
         var input = new MovementInput();
         var pos = new Location(1.48, 80, 0.5);
