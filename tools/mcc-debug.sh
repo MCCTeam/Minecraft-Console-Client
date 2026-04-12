@@ -42,7 +42,6 @@ DO_BUILD=true
 DEBUG_ON=false
 FILE_INPUT=false
 BUILD_ROOT="$(_mcc_build_root)"
-BUILD_ROOT_ENV_PREFIX=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -102,8 +101,6 @@ fi
 
 if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
     mkdir -p "$BUILD_ROOT"
-    printf -v BUILD_ROOT_QUOTED '%q' "$BUILD_ROOT"
-    BUILD_ROOT_ENV_PREFIX="MCC_BUILD_ROOT=$BUILD_ROOT_QUOTED "
 fi
 
 SESSION_ROOT="$(_mcc_session_root "$SESSION")"
@@ -224,11 +221,25 @@ rm -f "$PID_FILE"
 MCC_ARGS=("$CFG" "$USERNAME" "-" "localhost:$PORT")
 MCC_ARGS_CMD="$(printf '%q ' "${MCC_ARGS[@]}")"
 
+RUNTIME_APP="$(_mcc_runtime_app_path || true)"
+if [[ -z "$RUNTIME_APP" ]]; then
+    echo "  Failed to find built MCC runtime under $(_mcc_runtime_output_dir)" >&2
+    echo "  Build first with: source tools/mcc-env.sh && mcc-build" >&2
+    exit 1
+fi
+
+if [[ "$RUNTIME_APP" == *.dll ]]; then
+    MCC_LAUNCHER=(dotnet "$RUNTIME_APP")
+else
+    MCC_LAUNCHER=("$RUNTIME_APP")
+fi
+MCC_LAUNCHER_CMD="$(printf '%q ' "${MCC_LAUNCHER[@]}")"
+
 if [[ "$MODE" == "tui" ]]; then
     # TUI mode: needs a real tty - no pipes or redirects allowed
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && ${BUILD_ROOT_ENV_PREFIX}dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
+        "cd '$REPO_ROOT' && $MCC_LAUNCHER_CMD $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
     echo "  TUI mode started in tmux session '$MCC_TMUX_SESSION'"
     echo "  (TUI mode uses a real terminal; log file is not available, use MCC's /debug command)"
@@ -241,7 +252,7 @@ elif $FILE_INPUT; then
     # FileInput mode: run in detached tmux, drive via session-specific input file
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && printf '%s\n' \"\$\$\" > '$PID_FILE' && exec env ${BUILD_ROOT_ENV_PREFIX}MCC_FILE_INPUT=1 MCC_INPUT_FILE='$INPUT_FILE' dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD > '$MCC_LOG' 2>&1"
+        "cd '$REPO_ROOT' && printf '%s\n' \"\$\$\" > '$PID_FILE' && exec env MCC_FILE_INPUT=1 MCC_INPUT_FILE='$INPUT_FILE' $MCC_LAUNCHER_CMD $MCC_ARGS_CMD > '$MCC_LOG' 2>&1"
 
     for _ in $(seq 1 25); do
         if [[ -s "$PID_FILE" ]]; then
@@ -289,7 +300,7 @@ else
     # Interactive classic mode: run in tmux (no pipe - ConsoleInteractive also needs tty)
     tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
     tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
-        "cd '$REPO_ROOT' && ${BUILD_ROOT_ENV_PREFIX}dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
+        "cd '$REPO_ROOT' && $MCC_LAUNCHER_CMD $MCC_ARGS_CMD; echo '=== MCC EXITED ==='; sleep 600"
     echo ""
     echo "  Classic mode started in tmux session '$MCC_TMUX_SESSION'"
     echo ""
