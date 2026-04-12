@@ -646,6 +646,7 @@ Server settings that matter for AI-driven offline testing:
 
 - `eula=true`
 - `online-mode=false`
+- `difficulty=peaceful`
 - `enforce-secure-profile=false`
 - `enable-rcon=true`
 - `rcon.password=test123`
