@@ -75,4 +75,14 @@ if [[ "$build_root" != "$expected_prefix"* ]]; then
     exit 1
 fi
 
+session="wrapper-smoke"
+input_file="$(_mcc_session_input_file "$session")"
+rm -rf "$(_mcc_session_root "$session")"
+
+mcc-cmd --session "$session" "debug state"
+grep -Fq "debug state" "$input_file"
+
+mcc-reset-session --session "$session"
+[[ ! -e "$(_mcc_session_root "$session")" ]]
+
 echo "PASS"

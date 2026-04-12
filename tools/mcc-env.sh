@@ -139,13 +139,40 @@ mc-reset-test-env() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/re
 mc-rcon() { bash "$MCC_REPO/tools/mc-rcon.sh" "$@"; }
 
 # --- MCC Build/Run ---
-mcc-build() { dotnet build "$MCC_REPO/MinecraftClient.sln" -c Release; }
+mcc-build() {
+  local repo_root
+  repo_root="$(_mcc_repo_root)"
+  if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
+    local build_root
+    build_root="$(_mcc_build_root)"
+    mkdir -p "$build_root"
+    MCC_BUILD_ROOT="$build_root" dotnet build "$repo_root/MinecraftClient.sln" -c Release
+  else
+    dotnet build "$repo_root/MinecraftClient.sln" -c Release
+  fi
+}
 mcc-run()   {
   local port="${1:-25565}"
   shift || true
   cd "$MCC_REPO" && MCC_FILE_INPUT=1 dotnet run --project MinecraftClient -c Release -- CursorBot - "localhost:${port}" "$@" 2>&1
 }
-mcc-cmd()   { echo "$1" >> "$MCC_REPO/mcc_input.txt"; }
+mcc-cmd() {
+  local session=""
+  local command=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session) session="$2"; shift 2 ;;
+      *) command="$1"; shift ;;
+    esac
+  done
+
+  [[ -n "$command" ]] || { echo "Usage: mcc-cmd [--session NAME] <command>" >&2; return 1; }
+  session="$(_mcc_resolve_session "$session")"
+  local input_file
+  input_file="$(_mcc_session_input_file "$session")"
+  mkdir -p "$(dirname "$input_file")"
+  printf '%s\n' "$command" >> "$input_file"
+}
 mcc-kill()  { pkill -f "MinecraftClient" 2>/dev/null && echo "MCC killed" || echo "No MCC process found"; tmux kill-session -t mcc-debug 2>/dev/null || true; }
 mcc-reload() {
   mcc-kill
@@ -163,8 +190,35 @@ mcc-tui()   {
   echo "Attach: tmux attach -t mcc-debug"
 }
 
+_mcc_session_log_tail() {
+  local session="$1"
+  local log_file
+  log_file="$(_mcc_session_log_file "$session")"
+  tail -f "$log_file" 2>/dev/null || echo "No MCC log found"
+}
+
 # --- Debug helpers ---
 mcc-debug()   { bash "$MCC_REPO/tools/mcc-debug.sh" "$@"; }
-mcc-log-mcc() { tail -f "${TMPDIR:-/tmp}/mcc-debug/mcc-debug.log" 2>/dev/null || echo "No MCC log found"; }
+mcc-log-mcc() {
+  local session="${1:-}"
+  if [[ "$session" == "--session" ]]; then
+    session="${2:-}"
+  fi
+  session="$(_mcc_resolve_session "$session")"
+  _mcc_session_log_tail "$session"
+}
 mcc-state()   { echo "debug state" >> "$MCC_REPO/mcc_input.txt"; sleep 1; tail -30 "${TMPDIR:-/tmp}/mcc-debug/mcc-debug.log" 2>/dev/null; }
 mcc-preflight() { bash "$MCC_REPO/.skills/mcc-integration-testing/scripts/preflight_test_env.sh" "$@"; }
+mcc-reset-session() {
+  local session=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session) session="$2"; shift 2 ;;
+      *) echo "Unknown option: $1" >&2; return 1 ;;
+    esac
+  done
+
+  session="$(_mcc_resolve_session "$session")"
+  tmux kill-session -t "$(_mcc_tmux_session_name "$session")" 2>/dev/null || true
+  rm -rf "$(_mcc_session_root "$session")"
+}
