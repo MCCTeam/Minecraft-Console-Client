@@ -177,6 +177,7 @@ rm -f "$MCC_LOG"
 rm -f "$PID_FILE"
 
 MCC_ARGS=("$CFG" "$USERNAME" "-" "localhost:$PORT")
+MCC_ARGS_CMD="$(printf '%q ' "${MCC_ARGS[@]}")"
 
 if [[ "$MODE" == "tui" ]]; then
     # TUI mode: needs a real tty - no pipes or redirects allowed
@@ -192,13 +193,28 @@ if [[ "$MODE" == "tui" ]]; then
     echo "  Kill MCC: tmux kill-session -t $MCC_TMUX_SESSION"
     echo ""
 elif $FILE_INPUT; then
-    # FileInput mode: run in background, drive via session-specific input file
-    (
-        cd "$REPO_ROOT"
-        MCC_FILE_INPUT=1 MCC_INPUT_FILE="$INPUT_FILE" dotnet run --project MinecraftClient -c Release --no-build -- "${MCC_ARGS[@]}" > "$MCC_LOG" 2>&1
-    ) &
-    MCC_PID=$!
-    printf '%s\n' "$MCC_PID" > "$PID_FILE"
+    # FileInput mode: run in detached tmux, drive via session-specific input file
+    tmux kill-session -t "$MCC_TMUX_SESSION" 2>/dev/null || true
+    tmux new-session -d -s "$MCC_TMUX_SESSION" -x 160 -y 50 \
+        "cd '$REPO_ROOT' && printf '%s\n' \"\$\$\" > '$PID_FILE' && exec env MCC_FILE_INPUT=1 MCC_INPUT_FILE='$INPUT_FILE' dotnet run --project MinecraftClient -c Release --no-build -- $MCC_ARGS_CMD > '$MCC_LOG' 2>&1"
+
+    for _ in $(seq 1 25); do
+        if [[ -s "$PID_FILE" ]]; then
+            break
+        fi
+        sleep 0.2
+    done
+    if [[ ! -s "$PID_FILE" ]]; then
+        echo "  Failed to capture MCC PID in $PID_FILE"
+        exit 1
+    fi
+
+    MCC_PID="$(tr -cd '0-9' < "$PID_FILE")"
+    if [[ -z "$MCC_PID" ]]; then
+        echo "  Invalid PID content in $PID_FILE"
+        exit 1
+    fi
+
     echo "  MCC PID: $MCC_PID"
     echo "  MCC PID file: $PID_FILE"
     echo ""
@@ -219,6 +235,7 @@ elif $FILE_INPUT; then
     echo "  Send commands: echo 'debug state' >> $INPUT_FILE"
     echo "  Tail log:      tail -f $MCC_LOG"
     echo "  Metadata:      cat $META_FILE"
+    echo "  Attach (optional): tmux attach -t $MCC_TMUX_SESSION"
     echo "  Stop MCC:      echo 'quit' >> $INPUT_FILE"
     echo "  Stop server:   mc-stop $VERSION"
     echo ""
