@@ -28,11 +28,11 @@ if [[ $# -ge 3 && -f "$1" ]]; then
     TEMPLATE_INI="$1"
     OUTPUT_INI="$2"
     MC_VERSION="$3"
-    LOGIN_NAME="${4:-CursorBot}"
+    LOGIN_NAME="${4:-MCCBot}"
 else
     OUTPUT_INI="$1"
     MC_VERSION="$2"
-    LOGIN_NAME="${3:-CursorBot}"
+    LOGIN_NAME="${3:-MCCBot}"
 fi
 
 ACCOUNT_TYPE="${MCC_TEST_ACCOUNT_TYPE:-mojang}"

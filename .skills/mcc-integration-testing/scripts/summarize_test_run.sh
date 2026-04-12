@@ -22,4 +22,4 @@ echo "MCC highlights:"
 grep -E "Server was successfully joined|FileInput|smoke_test_from_mcc_full_spectrum|There are [0-9]+ of a max|health|Creative" "$MCC_LOG" || true
 echo
 echo "Server highlights:"
-grep -E "joined the game|Made CursorBot a server operator|game mode|smoke_test_from_mcc_full_spectrum|summon|particle|playsound|tnt" "$SERVER_LOG" || true
+grep -E "joined the game|Made .* a server operator|game mode|smoke_test_from_mcc_full_spectrum|summon|particle|playsound|tnt" "$SERVER_LOG" || true
