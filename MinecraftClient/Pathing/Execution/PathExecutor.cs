@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MinecraftClient.Mapping;
+using MinecraftClient.Pathing.Execution.Telemetry;
 using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution
@@ -22,18 +23,24 @@ namespace MinecraftClient.Pathing.Execution
         private int _currentIndex;
         private IActionTemplate? _currentTemplate;
         private readonly Action<string>? _debugLog;
+        private readonly IPathExecutionObserver? _observer;
+        private int _segmentTicks;
+        private int _totalTicks;
 
         public bool IsComplete => _currentIndex >= _segments.Count && _currentTemplate is null;
         public int CurrentIndex => _currentIndex;
         public int TotalSegments => _segments.Count;
+        public int TotalTicks => _totalTicks;
         public PathSegment? CurrentSegment =>
             _currentIndex < _segments.Count ? _segments[_currentIndex] : null;
 
-        public PathExecutor(List<PathSegment> segments, Action<string>? debugLog = null)
+        public PathExecutor(List<PathSegment> segments, Action<string>? debugLog = null, IPathExecutionObserver? observer = null)
         {
             _segments = segments;
             _currentIndex = 0;
             _debugLog = debugLog;
+            _observer = observer;
+            _observer?.OnNavigationStarted(segments);
             AdvanceToNextSegment();
         }
 
@@ -45,15 +52,19 @@ namespace MinecraftClient.Pathing.Execution
                 return PathExecutorState.Complete;
             }
 
+            _segmentTicks++;
+            _totalTicks++;
             var state = _currentTemplate.Tick(pos, physics, input, world);
 
             switch (state)
             {
                 case TemplateState.Complete:
                     input.Reset();
+                    _observer?.OnSegmentCompleted(_currentIndex, _segments.Count, _segments[_currentIndex], _segmentTicks, pos);
                     _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} complete " +
                         $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2})");
                     _currentIndex++;
+                    _segmentTicks = 0;
                     if (_currentIndex >= _segments.Count)
                     {
                         _currentTemplate = null;
@@ -65,6 +76,7 @@ namespace MinecraftClient.Pathing.Execution
 
                 case TemplateState.Failed:
                     input.Reset();
+                    _observer?.OnSegmentFailed(_currentIndex, _segments.Count, _segments[_currentIndex], _segmentTicks, pos);
                     _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} FAILED " +
                         $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2}), " +
                         $"target was ({_currentTemplate.ExpectedEnd.X:F2},{_currentTemplate.ExpectedEnd.Y:F2},{_currentTemplate.ExpectedEnd.Z:F2})");
@@ -82,6 +94,7 @@ namespace MinecraftClient.Pathing.Execution
                 var seg = _segments[_currentIndex];
                 PathSegment? next = _currentIndex + 1 < _segments.Count ? _segments[_currentIndex + 1] : null;
                 _currentTemplate = ActionTemplateFactory.Create(seg, next);
+                _observer?.OnSegmentStarted(_currentIndex, _segments.Count, seg);
                 _debugLog?.Invoke($"[PathExec] Starting segment {_currentIndex}/{_segments.Count}: {seg}");
             }
             else

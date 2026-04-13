@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using MinecraftClient.Mapping;
 using MinecraftClient.Pathing.Core;
+using MinecraftClient.Pathing.Execution.Telemetry;
 using MinecraftClient.Pathing.Goals;
 using MinecraftClient.Physics;
 
@@ -20,15 +21,17 @@ namespace MinecraftClient.Pathing.Execution
 
         private readonly Action<string>? _debugLog;
         private readonly Action<string>? _infoLog;
+        private readonly IPathExecutionObserver? _observer;
 
         public bool IsNavigating => _executor is not null && !_executor.IsComplete;
         public int ReplanCount => _replanCount;
         public IGoal? Goal => _goal;
 
-        public PathSegmentManager(Action<string>? debugLog = null, Action<string>? infoLog = null)
+        public PathSegmentManager(Action<string>? debugLog = null, Action<string>? infoLog = null, IPathExecutionObserver? observer = null)
         {
             _debugLog = debugLog;
             _infoLog = infoLog;
+            _observer = observer;
         }
 
         public void StartNavigation(IGoal goal, PathResult result)
@@ -36,7 +39,7 @@ namespace MinecraftClient.Pathing.Execution
             _goal = goal;
             _replanCount = 0;
             var segments = PathSegmentBuilder.FromPath(result.Path);
-            _executor = new PathExecutor(segments, _debugLog);
+            _executor = new PathExecutor(segments, _debugLog, _observer);
             _infoLog?.Invoke($"[PathMgr] Navigation started: {segments.Count} segments");
         }
 
@@ -50,6 +53,7 @@ namespace MinecraftClient.Pathing.Execution
             switch (state)
             {
                 case PathExecutorState.Complete:
+                    _observer?.OnNavigationCompleted(_executor.TotalTicks);
                     _infoLog?.Invoke("[PathMgr] Navigation complete!");
                     _executor = null;
                     _goal = null;
@@ -75,8 +79,10 @@ namespace MinecraftClient.Pathing.Execution
         private void Replan(Location pos, World world)
         {
             _replanCount++;
+            _observer?.OnReplanStarted(_replanCount, pos);
             if (_replanCount > MaxReplans)
             {
+                _observer?.OnReplanFailed(_replanCount, pos);
                 _infoLog?.Invoke($"[PathMgr] Giving up after {MaxReplans} replans.");
                 _executor = null;
                 _goal = null;
@@ -117,6 +123,7 @@ namespace MinecraftClient.Pathing.Execution
 
             if (result.Status == PathStatus.Failed || result.Path.Count < 2)
             {
+                _observer?.OnReplanFailed(_replanCount, pos);
                 _infoLog?.Invoke("[PathMgr] Replan failed -- no path found.");
                 _executor = null;
                 _goal = null;
@@ -124,7 +131,8 @@ namespace MinecraftClient.Pathing.Execution
             }
 
             var segments = PathSegmentBuilder.FromPath(result.Path);
-            _executor = new PathExecutor(segments, _debugLog);
+            _observer?.OnReplanSucceeded(_replanCount, segments);
+            _executor = new PathExecutor(segments, _debugLog, _observer);
             _infoLog?.Invoke($"[PathMgr] Replanned: {segments.Count} segments (replan #{_replanCount})");
         }
     }
