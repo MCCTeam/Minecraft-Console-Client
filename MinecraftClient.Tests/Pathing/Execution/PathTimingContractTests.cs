@@ -44,4 +44,26 @@ public sealed class PathTimingContractTests
 
         PathingContractAssert.TimingMatches(budget, result);
     }
+
+    [Theory]
+    [InlineData("same-move-straight-traverse-chain")]
+    [InlineData("same-move-diagonal-chain")]
+    [InlineData("same-move-ascend-staircase")]
+    [InlineData("same-move-descend-staircase")]
+    [InlineData("same-move-aligned-parkour-chain")]
+    [InlineData("mixed-traverse-turn-parkour-turn-traverse")]
+    [InlineData("mixed-diagonal-ascend-traverse-descend")]
+    [InlineData("mixed-traverse-ascend-parkour-descend")]
+    [InlineData("turn-density-alternating-traverse-diagonal-chain")]
+    [InlineData("speed-carry-repeated-traverse-ascend")]
+    [InlineData("speed-carry-repeated-traverse-descend")]
+    [InlineData("speed-carry-repeated-traverse-parkour")]
+    public void LongRoute_ExecutionStaysWithinBudget(string scenarioId)
+    {
+        PathingExecutionScenario scenario = PathingExecutionScenarioCatalog.Get(scenarioId);
+        PathingTimingBudget budget = PathingContractStore.LoadFromRepositoryRoot().GetTiming(scenarioId);
+        PathingScenarioResult result = PathingScenarioRunner.RunAccepted(scenario);
+
+        PathingContractAssert.TimingMatches(budget, result);
+    }
 }

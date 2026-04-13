@@ -5,33 +5,81 @@
     "segments": [
       {
         "moveType": "Diagonal",
-        "startBlock": { "x": 171, "y": 80, "z": 160 },
-        "endBlock": { "x": 172, "y": 80, "z": 161 }
+        "startBlock": {
+          "x": 171,
+          "y": 80,
+          "z": 160
+        },
+        "endBlock": {
+          "x": 172,
+          "y": 80,
+          "z": 161
+        }
       },
       {
         "moveType": "Diagonal",
-        "startBlock": { "x": 172, "y": 80, "z": 161 },
-        "endBlock": { "x": 173, "y": 80, "z": 162 }
+        "startBlock": {
+          "x": 172,
+          "y": 80,
+          "z": 161
+        },
+        "endBlock": {
+          "x": 173,
+          "y": 80,
+          "z": 162
+        }
       },
       {
         "moveType": "Traverse",
-        "startBlock": { "x": 173, "y": 80, "z": 162 },
-        "endBlock": { "x": 174, "y": 80, "z": 162 }
+        "startBlock": {
+          "x": 173,
+          "y": 80,
+          "z": 162
+        },
+        "endBlock": {
+          "x": 174,
+          "y": 80,
+          "z": 162
+        }
       },
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 174, "y": 80, "z": 162 },
-        "endBlock": { "x": 175, "y": 81, "z": 162 }
+        "startBlock": {
+          "x": 174,
+          "y": 80,
+          "z": 162
+        },
+        "endBlock": {
+          "x": 175,
+          "y": 81,
+          "z": 162
+        }
       },
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 175, "y": 81, "z": 162 },
-        "endBlock": { "x": 176, "y": 82, "z": 162 }
+        "startBlock": {
+          "x": 175,
+          "y": 81,
+          "z": 162
+        },
+        "endBlock": {
+          "x": 176,
+          "y": 82,
+          "z": 162
+        }
       },
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 176, "y": 82, "z": 162 },
-        "endBlock": { "x": 177, "y": 83, "z": 162 }
+        "startBlock": {
+          "x": 176,
+          "y": 82,
+          "z": 162
+        },
+        "endBlock": {
+          "x": 177,
+          "y": 83,
+          "z": 162
+        }
       }
     ]
   },
@@ -41,28 +89,68 @@
     "segments": [
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 340, "y": 80, "z": 340 },
-        "endBlock": { "x": 341, "y": 81, "z": 340 }
+        "startBlock": {
+          "x": 340,
+          "y": 80,
+          "z": 340
+        },
+        "endBlock": {
+          "x": 341,
+          "y": 81,
+          "z": 340
+        }
       },
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 341, "y": 81, "z": 340 },
-        "endBlock": { "x": 342, "y": 82, "z": 340 }
+        "startBlock": {
+          "x": 341,
+          "y": 81,
+          "z": 340
+        },
+        "endBlock": {
+          "x": 342,
+          "y": 82,
+          "z": 340
+        }
       },
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 342, "y": 82, "z": 340 },
-        "endBlock": { "x": 343, "y": 83, "z": 340 }
+        "startBlock": {
+          "x": 342,
+          "y": 82,
+          "z": 340
+        },
+        "endBlock": {
+          "x": 343,
+          "y": 83,
+          "z": 340
+        }
       },
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 343, "y": 83, "z": 340 },
-        "endBlock": { "x": 344, "y": 84, "z": 340 }
+        "startBlock": {
+          "x": 343,
+          "y": 83,
+          "z": 340
+        },
+        "endBlock": {
+          "x": 344,
+          "y": 84,
+          "z": 340
+        }
       },
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 344, "y": 84, "z": 340 },
-        "endBlock": { "x": 345, "y": 85, "z": 340 }
+        "startBlock": {
+          "x": 344,
+          "y": 84,
+          "z": 340
+        },
+        "endBlock": {
+          "x": 345,
+          "y": 85,
+          "z": 340
+        }
       }
     ]
   },
@@ -72,18 +160,42 @@
     "segments": [
       {
         "moveType": "Descend",
-        "startBlock": { "x": 362, "y": 85, "z": 360 },
-        "endBlock": { "x": 364, "y": 83, "z": 360 }
+        "startBlock": {
+          "x": 362,
+          "y": 85,
+          "z": 360
+        },
+        "endBlock": {
+          "x": 364,
+          "y": 83,
+          "z": 360
+        }
       },
       {
         "moveType": "Descend",
-        "startBlock": { "x": 364, "y": 83, "z": 360 },
-        "endBlock": { "x": 366, "y": 81, "z": 360 }
+        "startBlock": {
+          "x": 364,
+          "y": 83,
+          "z": 360
+        },
+        "endBlock": {
+          "x": 366,
+          "y": 81,
+          "z": 360
+        }
       },
       {
         "moveType": "Descend",
-        "startBlock": { "x": 366, "y": 81, "z": 360 },
-        "endBlock": { "x": 367, "y": 80, "z": 360 }
+        "startBlock": {
+          "x": 366,
+          "y": 81,
+          "z": 360
+        },
+        "endBlock": {
+          "x": 367,
+          "y": 80,
+          "z": 360
+        }
       }
     ]
   },
@@ -98,23 +210,55 @@
     "segments": [
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 580, "y": 80, "z": 580 },
-        "endBlock": { "x": 582, "y": 80, "z": 580 }
+        "startBlock": {
+          "x": 580,
+          "y": 80,
+          "z": 580
+        },
+        "endBlock": {
+          "x": 582,
+          "y": 80,
+          "z": 580
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 582, "y": 80, "z": 580 },
-        "endBlock": { "x": 584, "y": 80, "z": 580 }
+        "startBlock": {
+          "x": 582,
+          "y": 80,
+          "z": 580
+        },
+        "endBlock": {
+          "x": 584,
+          "y": 80,
+          "z": 580
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 584, "y": 80, "z": 580 },
-        "endBlock": { "x": 586, "y": 80, "z": 580 }
+        "startBlock": {
+          "x": 584,
+          "y": 80,
+          "z": 580
+        },
+        "endBlock": {
+          "x": 586,
+          "y": 80,
+          "z": 580
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 586, "y": 80, "z": 580 },
-        "endBlock": { "x": 588, "y": 80, "z": 580 }
+        "startBlock": {
+          "x": 586,
+          "y": 80,
+          "z": 580
+        },
+        "endBlock": {
+          "x": 588,
+          "y": 80,
+          "z": 580
+        }
       }
     ]
   },
@@ -124,18 +268,42 @@
     "segments": [
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 600, "y": 80, "z": 600 },
-        "endBlock": { "x": 602, "y": 80, "z": 602 }
+        "startBlock": {
+          "x": 600,
+          "y": 80,
+          "z": 600
+        },
+        "endBlock": {
+          "x": 602,
+          "y": 80,
+          "z": 602
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 602, "y": 80, "z": 602 },
-        "endBlock": { "x": 604, "y": 80, "z": 604 }
+        "startBlock": {
+          "x": 602,
+          "y": 80,
+          "z": 602
+        },
+        "endBlock": {
+          "x": 604,
+          "y": 80,
+          "z": 604
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 604, "y": 80, "z": 604 },
-        "endBlock": { "x": 606, "y": 80, "z": 606 }
+        "startBlock": {
+          "x": 604,
+          "y": 80,
+          "z": 604
+        },
+        "endBlock": {
+          "x": 606,
+          "y": 80,
+          "z": 606
+        }
       }
     ]
   },
@@ -145,18 +313,42 @@
     "segments": [
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 620, "y": 80, "z": 620 },
-        "endBlock": { "x": 622, "y": 80, "z": 620 }
+        "startBlock": {
+          "x": 620,
+          "y": 80,
+          "z": 620
+        },
+        "endBlock": {
+          "x": 622,
+          "y": 80,
+          "z": 620
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 622, "y": 80, "z": 620 },
-        "endBlock": { "x": 624, "y": 80, "z": 621 }
+        "startBlock": {
+          "x": 622,
+          "y": 80,
+          "z": 620
+        },
+        "endBlock": {
+          "x": 624,
+          "y": 80,
+          "z": 621
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 624, "y": 80, "z": 621 },
-        "endBlock": { "x": 626, "y": 80, "z": 622 }
+        "startBlock": {
+          "x": 624,
+          "y": 80,
+          "z": 621
+        },
+        "endBlock": {
+          "x": 626,
+          "y": 80,
+          "z": 622
+        }
       }
     ]
   },
@@ -166,23 +358,55 @@
     "segments": [
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 640, "y": 80, "z": 620 },
-        "endBlock": { "x": 642, "y": 81, "z": 620 }
+        "startBlock": {
+          "x": 640,
+          "y": 80,
+          "z": 620
+        },
+        "endBlock": {
+          "x": 642,
+          "y": 81,
+          "z": 620
+        }
       },
       {
         "moveType": "Descend",
-        "startBlock": { "x": 642, "y": 81, "z": 620 },
-        "endBlock": { "x": 644, "y": 80, "z": 620 }
+        "startBlock": {
+          "x": 642,
+          "y": 81,
+          "z": 620
+        },
+        "endBlock": {
+          "x": 644,
+          "y": 80,
+          "z": 620
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 644, "y": 80, "z": 620 },
-        "endBlock": { "x": 646, "y": 81, "z": 620 }
+        "startBlock": {
+          "x": 644,
+          "y": 80,
+          "z": 620
+        },
+        "endBlock": {
+          "x": 646,
+          "y": 81,
+          "z": 620
+        }
       },
       {
         "moveType": "Descend",
-        "startBlock": { "x": 646, "y": 81, "z": 620 },
-        "endBlock": { "x": 648, "y": 80, "z": 620 }
+        "startBlock": {
+          "x": 646,
+          "y": 81,
+          "z": 620
+        },
+        "endBlock": {
+          "x": 648,
+          "y": 80,
+          "z": 620
+        }
       }
     ]
   },
@@ -192,18 +416,973 @@
     "segments": [
       {
         "moveType": "Ascend",
-        "startBlock": { "x": 680, "y": 80, "z": 620 },
-        "endBlock": { "x": 681, "y": 81, "z": 621 }
+        "startBlock": {
+          "x": 680,
+          "y": 80,
+          "z": 620
+        },
+        "endBlock": {
+          "x": 681,
+          "y": 81,
+          "z": 621
+        }
       },
       {
         "moveType": "Parkour",
-        "startBlock": { "x": 681, "y": 81, "z": 621 },
-        "endBlock": { "x": 683, "y": 81, "z": 623 }
+        "startBlock": {
+          "x": 681,
+          "y": 81,
+          "z": 621
+        },
+        "endBlock": {
+          "x": 683,
+          "y": 81,
+          "z": 623
+        }
       },
       {
         "moveType": "Descend",
-        "startBlock": { "x": 683, "y": 81, "z": 623 },
-        "endBlock": { "x": 684, "y": 80, "z": 624 }
+        "startBlock": {
+          "x": 683,
+          "y": 81,
+          "z": 623
+        },
+        "endBlock": {
+          "x": 684,
+          "y": 80,
+          "z": 624
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "turn-density-alternating-traverse-diagonal-chain",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 460,
+          "y": 80,
+          "z": 460
+        },
+        "endBlock": {
+          "x": 461,
+          "y": 80,
+          "z": 461
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 461,
+          "y": 80,
+          "z": 461
+        },
+        "endBlock": {
+          "x": 462,
+          "y": 80,
+          "z": 462
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 462,
+          "y": 80,
+          "z": 462
+        },
+        "endBlock": {
+          "x": 463,
+          "y": 80,
+          "z": 463
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 463,
+          "y": 80,
+          "z": 463
+        },
+        "endBlock": {
+          "x": 464,
+          "y": 80,
+          "z": 464
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 464,
+          "y": 80,
+          "z": 464
+        },
+        "endBlock": {
+          "x": 465,
+          "y": 80,
+          "z": 465
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 465,
+          "y": 80,
+          "z": 465
+        },
+        "endBlock": {
+          "x": 466,
+          "y": 80,
+          "z": 466
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "mixed-traverse-ascend-parkour-descend",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 440,
+          "y": 80,
+          "z": 440
+        },
+        "endBlock": {
+          "x": 441,
+          "y": 80,
+          "z": 440
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 441,
+          "y": 80,
+          "z": 440
+        },
+        "endBlock": {
+          "x": 442,
+          "y": 81,
+          "z": 440
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 442,
+          "y": 81,
+          "z": 440
+        },
+        "endBlock": {
+          "x": 443,
+          "y": 82,
+          "z": 440
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 443,
+          "y": 82,
+          "z": 440
+        },
+        "endBlock": {
+          "x": 444,
+          "y": 82,
+          "z": 440
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 444,
+          "y": 82,
+          "z": 440
+        },
+        "endBlock": {
+          "x": 446,
+          "y": 82,
+          "z": 440
+        }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": {
+          "x": 446,
+          "y": 82,
+          "z": 440
+        },
+        "endBlock": {
+          "x": 448,
+          "y": 80,
+          "z": 440
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "same-move-aligned-parkour-chain",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 380,
+          "y": 80,
+          "z": 380
+        },
+        "endBlock": {
+          "x": 382,
+          "y": 80,
+          "z": 380
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 382,
+          "y": 80,
+          "z": 380
+        },
+        "endBlock": {
+          "x": 384,
+          "y": 80,
+          "z": 380
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 384,
+          "y": 80,
+          "z": 380
+        },
+        "endBlock": {
+          "x": 386,
+          "y": 80,
+          "z": 380
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 386,
+          "y": 80,
+          "z": 380
+        },
+        "endBlock": {
+          "x": 388,
+          "y": 80,
+          "z": 380
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "mixed-diagonal-ascend-traverse-descend",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 420,
+          "y": 80,
+          "z": 420
+        },
+        "endBlock": {
+          "x": 421,
+          "y": 80,
+          "z": 421
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 421,
+          "y": 80,
+          "z": 421
+        },
+        "endBlock": {
+          "x": 422,
+          "y": 80,
+          "z": 422
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 422,
+          "y": 80,
+          "z": 422
+        },
+        "endBlock": {
+          "x": 423,
+          "y": 81,
+          "z": 422
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 423,
+          "y": 81,
+          "z": 422
+        },
+        "endBlock": {
+          "x": 424,
+          "y": 82,
+          "z": 422
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 424,
+          "y": 82,
+          "z": 422
+        },
+        "endBlock": {
+          "x": 425,
+          "y": 82,
+          "z": 422
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 425,
+          "y": 82,
+          "z": 422
+        },
+        "endBlock": {
+          "x": 426,
+          "y": 82,
+          "z": 422
+        }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": {
+          "x": 426,
+          "y": 82,
+          "z": 422
+        },
+        "endBlock": {
+          "x": 428,
+          "y": 80,
+          "z": 422
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "speed-carry-repeated-traverse-ascend",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 480,
+          "y": 80,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 481,
+          "y": 80,
+          "z": 480
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 481,
+          "y": 80,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 482,
+          "y": 81,
+          "z": 480
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 482,
+          "y": 81,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 483,
+          "y": 81,
+          "z": 480
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 483,
+          "y": 81,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 484,
+          "y": 82,
+          "z": 480
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 484,
+          "y": 82,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 485,
+          "y": 82,
+          "z": 480
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 485,
+          "y": 82,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 486,
+          "y": 83,
+          "z": 480
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 486,
+          "y": 83,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 487,
+          "y": 83,
+          "z": 480
+        }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": {
+          "x": 487,
+          "y": 83,
+          "z": 480
+        },
+        "endBlock": {
+          "x": 488,
+          "y": 84,
+          "z": 480
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "speed-carry-repeated-traverse-descend",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 500,
+          "y": 83,
+          "z": 500
+        },
+        "endBlock": {
+          "x": 501,
+          "y": 83,
+          "z": 500
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 501,
+          "y": 83,
+          "z": 500
+        },
+        "endBlock": {
+          "x": 504,
+          "y": 81,
+          "z": 500
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 504,
+          "y": 81,
+          "z": 500
+        },
+        "endBlock": {
+          "x": 505,
+          "y": 81,
+          "z": 500
+        }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": {
+          "x": 505,
+          "y": 81,
+          "z": 500
+        },
+        "endBlock": {
+          "x": 507,
+          "y": 80,
+          "z": 500
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "speed-carry-repeated-traverse-parkour",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 520,
+          "y": 80,
+          "z": 520
+        },
+        "endBlock": {
+          "x": 521,
+          "y": 80,
+          "z": 520
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 521,
+          "y": 80,
+          "z": 520
+        },
+        "endBlock": {
+          "x": 523,
+          "y": 80,
+          "z": 520
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 523,
+          "y": 80,
+          "z": 520
+        },
+        "endBlock": {
+          "x": 524,
+          "y": 80,
+          "z": 520
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 524,
+          "y": 80,
+          "z": 520
+        },
+        "endBlock": {
+          "x": 526,
+          "y": 80,
+          "z": 520
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 526,
+          "y": 80,
+          "z": 520
+        },
+        "endBlock": {
+          "x": 527,
+          "y": 80,
+          "z": 520
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 527,
+          "y": 80,
+          "z": 520
+        },
+        "endBlock": {
+          "x": 529,
+          "y": 80,
+          "z": 520
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "same-move-diagonal-chain",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 320,
+          "y": 80,
+          "z": 320
+        },
+        "endBlock": {
+          "x": 321,
+          "y": 80,
+          "z": 321
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 321,
+          "y": 80,
+          "z": 321
+        },
+        "endBlock": {
+          "x": 322,
+          "y": 80,
+          "z": 322
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 322,
+          "y": 80,
+          "z": 322
+        },
+        "endBlock": {
+          "x": 323,
+          "y": 80,
+          "z": 323
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 323,
+          "y": 80,
+          "z": 323
+        },
+        "endBlock": {
+          "x": 324,
+          "y": 80,
+          "z": 324
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 324,
+          "y": 80,
+          "z": 324
+        },
+        "endBlock": {
+          "x": 325,
+          "y": 80,
+          "z": 325
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 325,
+          "y": 80,
+          "z": 325
+        },
+        "endBlock": {
+          "x": 326,
+          "y": 80,
+          "z": 326
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 326,
+          "y": 80,
+          "z": 326
+        },
+        "endBlock": {
+          "x": 327,
+          "y": 80,
+          "z": 327
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "same-move-straight-traverse-chain",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 300,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 301,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 301,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 302,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 302,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 303,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 303,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 304,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 304,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 305,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 305,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 306,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 306,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 307,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 307,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 308,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 308,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 309,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 309,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 310,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 310,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 311,
+          "y": 80,
+          "z": 300
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 311,
+          "y": 80,
+          "z": 300
+        },
+        "endBlock": {
+          "x": 312,
+          "y": 80,
+          "z": 300
+        }
+      }
+    ]
+  },
+  {
+    "scenarioId": "mixed-traverse-turn-parkour-turn-traverse",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 400,
+          "y": 80,
+          "z": 400
+        },
+        "endBlock": {
+          "x": 401,
+          "y": 80,
+          "z": 400
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 401,
+          "y": 80,
+          "z": 400
+        },
+        "endBlock": {
+          "x": 402,
+          "y": 80,
+          "z": 401
+        }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": {
+          "x": 402,
+          "y": 80,
+          "z": 401
+        },
+        "endBlock": {
+          "x": 404,
+          "y": 80,
+          "z": 402
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 404,
+          "y": 80,
+          "z": 402
+        },
+        "endBlock": {
+          "x": 405,
+          "y": 80,
+          "z": 402
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 405,
+          "y": 80,
+          "z": 402
+        },
+        "endBlock": {
+          "x": 406,
+          "y": 80,
+          "z": 403
+        }
+      },
+      {
+        "moveType": "Diagonal",
+        "startBlock": {
+          "x": 406,
+          "y": 80,
+          "z": 403
+        },
+        "endBlock": {
+          "x": 407,
+          "y": 80,
+          "z": 404
+        }
+      },
+      {
+        "moveType": "Traverse",
+        "startBlock": {
+          "x": 407,
+          "y": 80,
+          "z": 404
+        },
+        "endBlock": {
+          "x": 408,
+          "y": 80,
+          "z": 404
+        }
       }
     ]
   }
