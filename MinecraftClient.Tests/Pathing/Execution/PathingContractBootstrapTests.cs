@@ -23,4 +23,20 @@ public sealed class PathingContractBootstrapTests
         if (planResult.Status == PathStatus.Success)
             _output.WriteLine(PathingContractBootstrapWriter.WriteTimingFragment(scenarioId, PathingScenarioRunner.RunAccepted(scenario)));
     }
+
+    [Theory]
+    [InlineData("repeated-cardinal-parkour-chain")]
+    [InlineData("repeated-diagonal-parkour-chain")]
+    [InlineData("obstructed-parkour-l-turns")]
+    [InlineData("vertical-jump-mix")]
+    [InlineData("diagonal-vertical-mix")]
+    public void PrintJumpComboContractFragments(string scenarioId)
+    {
+        PathingExecutionScenario scenario = PathingExecutionScenarioCatalog.Get(scenarioId);
+        PathResult planResult = PathingScenarioRunner.PlanOnly(scenario);
+
+        _output.WriteLine(PathingContractBootstrapWriter.WritePlannerFragment(scenarioId, planResult));
+        if (planResult.Status == PathStatus.Success)
+            _output.WriteLine(PathingContractBootstrapWriter.WriteTimingFragment(scenarioId, PathingScenarioRunner.RunAccepted(scenario)));
+    }
 }

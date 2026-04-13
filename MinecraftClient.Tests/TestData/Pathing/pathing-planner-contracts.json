@@ -91,5 +91,120 @@
     "scenarioId": "rejected-3x1-invalid-goal",
     "expectedStatus": "Failed",
     "segments": []
+  },
+  {
+    "scenarioId": "repeated-cardinal-parkour-chain",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 580, "y": 80, "z": 580 },
+        "endBlock": { "x": 582, "y": 80, "z": 580 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 582, "y": 80, "z": 580 },
+        "endBlock": { "x": 584, "y": 80, "z": 580 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 584, "y": 80, "z": 580 },
+        "endBlock": { "x": 586, "y": 80, "z": 580 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 586, "y": 80, "z": 580 },
+        "endBlock": { "x": 588, "y": 80, "z": 580 }
+      }
+    ]
+  },
+  {
+    "scenarioId": "repeated-diagonal-parkour-chain",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 600, "y": 80, "z": 600 },
+        "endBlock": { "x": 602, "y": 80, "z": 602 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 602, "y": 80, "z": 602 },
+        "endBlock": { "x": 604, "y": 80, "z": 604 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 604, "y": 80, "z": 604 },
+        "endBlock": { "x": 606, "y": 80, "z": 606 }
+      }
+    ]
+  },
+  {
+    "scenarioId": "obstructed-parkour-l-turns",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 620, "y": 80, "z": 620 },
+        "endBlock": { "x": 622, "y": 80, "z": 620 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 622, "y": 80, "z": 620 },
+        "endBlock": { "x": 624, "y": 80, "z": 621 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 624, "y": 80, "z": 621 },
+        "endBlock": { "x": 626, "y": 80, "z": 622 }
+      }
+    ]
+  },
+  {
+    "scenarioId": "vertical-jump-mix",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 640, "y": 80, "z": 620 },
+        "endBlock": { "x": 642, "y": 81, "z": 620 }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": { "x": 642, "y": 81, "z": 620 },
+        "endBlock": { "x": 644, "y": 80, "z": 620 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 644, "y": 80, "z": 620 },
+        "endBlock": { "x": 646, "y": 81, "z": 620 }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": { "x": 646, "y": 81, "z": 620 },
+        "endBlock": { "x": 648, "y": 80, "z": 620 }
+      }
+    ]
+  },
+  {
+    "scenarioId": "diagonal-vertical-mix",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Ascend",
+        "startBlock": { "x": 680, "y": 80, "z": 620 },
+        "endBlock": { "x": 681, "y": 81, "z": 621 }
+      },
+      {
+        "moveType": "Parkour",
+        "startBlock": { "x": 681, "y": 81, "z": 621 },
+        "endBlock": { "x": 683, "y": 81, "z": 623 }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": { "x": 683, "y": 81, "z": 623 },
+        "endBlock": { "x": 684, "y": 80, "z": 624 }
+      }
+    ]
   }
 ]

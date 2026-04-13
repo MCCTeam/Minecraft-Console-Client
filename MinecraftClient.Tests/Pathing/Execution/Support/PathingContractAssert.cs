@@ -32,7 +32,7 @@ internal static class PathingContractAssert
     internal static void TimingMatches(PathingTimingBudget budget, PathingScenarioResult result)
     {
         if (!result.Completed)
-            throw new XunitException("navigation did not complete");
+            throw new XunitException($"navigation did not complete\n{Format(result, budget)}");
 
         if (result.ReplanCount != 0)
             throw new XunitException($"expected 0 replans, saw {result.ReplanCount}\n{Format(result, budget)}");
@@ -53,6 +53,7 @@ internal static class PathingContractAssert
     private static string Format(PathingScenarioResult result, PathingTimingBudget budget)
     {
         var sb = new StringBuilder();
+        sb.AppendLine($"completed={result.Completed} replans={result.ReplanCount}");
         sb.AppendLine($"route actual={result.TotalTicks} expected={budget.ExpectedTotalTicks} max={budget.MaxTotalTicks}");
         for (int i = 0; i < result.SegmentRuns.Count; i++)
         {

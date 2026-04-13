@@ -225,4 +225,21 @@ public sealed class PathPlanningContractTests
 
         PathingContractAssert.PlannerMatches(contract, PathSegmentBuilder.FromPath(planResult.Path), planResult);
     }
+
+    [Theory]
+    [InlineData("repeated-cardinal-parkour-chain")]
+    [InlineData("repeated-diagonal-parkour-chain")]
+    [InlineData("obstructed-parkour-l-turns")]
+    [InlineData("vertical-jump-mix")]
+    [InlineData("diagonal-vertical-mix")]
+    public void JumpCombo_PlannerMatchesContract(string scenarioId)
+    {
+        PathingExecutionScenario scenario = PathingExecutionScenarioCatalog.Get(scenarioId);
+        PathResult planResult = PathingScenarioRunner.PlanOnly(scenario);
+
+        PathingContractAssert.PlannerMatches(
+            PathingContractStore.LoadFromRepositoryRoot().GetPlanner(scenarioId),
+            PathSegmentBuilder.FromPath(planResult.Path),
+            planResult);
+    }
 }

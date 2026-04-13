@@ -39,5 +39,57 @@
     "expectedTotalTicks": 0,
     "maxTotalTicks": 0,
     "segments": []
+  },
+  {
+    "scenarioId": "repeated-cardinal-parkour-chain",
+    "expectedTotalTicks": 0,
+    "maxTotalTicks": 2,
+    "segments": [
+      { "moveType": "Parkour", "expectedTicks": 61, "maxTicks": 74 },
+      { "moveType": "Parkour", "expectedTicks": 61, "maxTicks": 74 },
+      { "moveType": "Parkour", "expectedTicks": 61, "maxTicks": 74 },
+      { "moveType": "Parkour", "expectedTicks": 27, "maxTicks": 33 }
+    ]
+  },
+  {
+    "scenarioId": "repeated-diagonal-parkour-chain",
+    "expectedTotalTicks": 20,
+    "maxTotalTicks": 24,
+    "segments": [
+      { "moveType": "Parkour", "expectedTicks": 61, "maxTicks": 74 },
+      { "moveType": "Parkour", "expectedTicks": 61, "maxTicks": 74 },
+      { "moveType": "Parkour", "expectedTicks": 20, "maxTicks": 24 }
+    ]
+  },
+  {
+    "scenarioId": "obstructed-parkour-l-turns",
+    "expectedTotalTicks": 0,
+    "maxTotalTicks": 2,
+    "segments": [
+      { "moveType": "Parkour", "expectedTicks": 27, "maxTicks": 33 },
+      { "moveType": "Parkour", "expectedTicks": 27, "maxTicks": 33 },
+      { "moveType": "Parkour", "expectedTicks": 27, "maxTicks": 33 }
+    ]
+  },
+  {
+    "scenarioId": "vertical-jump-mix",
+    "expectedTotalTicks": 33,
+    "maxTotalTicks": 40,
+    "segments": [
+      { "moveType": "Parkour", "expectedTicks": 13, "maxTicks": 16 },
+      { "moveType": "Descend", "expectedTicks": 201, "maxTicks": 242 },
+      { "moveType": "Parkour", "expectedTicks": 19, "maxTicks": 23 },
+      { "moveType": "Descend", "expectedTicks": 14, "maxTicks": 17 }
+    ]
+  },
+  {
+    "scenarioId": "diagonal-vertical-mix",
+    "expectedTotalTicks": 31,
+    "maxTotalTicks": 38,
+    "segments": [
+      { "moveType": "Ascend", "expectedTicks": 81, "maxTicks": 98 },
+      { "moveType": "Parkour", "expectedTicks": 16, "maxTicks": 20 },
+      { "moveType": "Descend", "expectedTicks": 15, "maxTicks": 18 }
+    ]
   }
 ]

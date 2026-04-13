@@ -29,4 +29,19 @@ public sealed class PathTimingContractTests
 
         PathingContractAssert.TimingMatches(budget, result);
     }
+
+    [Theory]
+    [InlineData("repeated-cardinal-parkour-chain")]
+    [InlineData("repeated-diagonal-parkour-chain")]
+    [InlineData("obstructed-parkour-l-turns")]
+    [InlineData("vertical-jump-mix")]
+    [InlineData("diagonal-vertical-mix")]
+    public void JumpCombo_ExecutionStaysWithinBudget(string scenarioId)
+    {
+        PathingExecutionScenario scenario = PathingExecutionScenarioCatalog.Get(scenarioId);
+        PathingTimingBudget budget = PathingContractStore.LoadFromRepositoryRoot().GetTiming(scenarioId);
+        PathingScenarioResult result = PathingScenarioRunner.RunAccepted(scenario);
+
+        PathingContractAssert.TimingMatches(budget, result);
+    }
 }

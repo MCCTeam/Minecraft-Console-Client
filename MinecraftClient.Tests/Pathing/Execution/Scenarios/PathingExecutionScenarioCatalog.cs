@@ -43,6 +43,51 @@ internal static class PathingExecutionScenarioCatalog
             StartYaw = 270f,
             MaxExecutionTicks = 80
         },
+        "repeated-cardinal-parkour-chain" => new PathingExecutionScenario
+        {
+            Id = scenarioId,
+            BuildWorld = BuildRepeatedCardinalParkourChain,
+            Start = new Location(580.5, 80, 580.5),
+            Goal = new GoalBlock(588, 80, 580),
+            StartYaw = 270f,
+            MaxExecutionTicks = 420
+        },
+        "repeated-diagonal-parkour-chain" => new PathingExecutionScenario
+        {
+            Id = scenarioId,
+            BuildWorld = BuildRepeatedDiagonalParkourChain,
+            Start = new Location(600.5, 80, 600.5),
+            Goal = new GoalBlock(606, 80, 606),
+            StartYaw = 315f,
+            MaxExecutionTicks = 420
+        },
+        "obstructed-parkour-l-turns" => new PathingExecutionScenario
+        {
+            Id = scenarioId,
+            BuildWorld = BuildObstructedParkourLTurns,
+            Start = new Location(620.5, 80, 620.5),
+            Goal = new GoalBlock(626, 80, 622),
+            StartYaw = 270f,
+            MaxExecutionTicks = 420
+        },
+        "vertical-jump-mix" => new PathingExecutionScenario
+        {
+            Id = scenarioId,
+            BuildWorld = BuildVerticalJumpMix,
+            Start = new Location(640.5, 80, 620.5),
+            Goal = new GoalBlock(648, 80, 620),
+            StartYaw = 270f,
+            MaxExecutionTicks = 420
+        },
+        "diagonal-vertical-mix" => new PathingExecutionScenario
+        {
+            Id = scenarioId,
+            BuildWorld = BuildDiagonalVerticalMix,
+            Start = new Location(680.5, 80, 620.5),
+            Goal = new GoalBlock(684, 80, 624),
+            StartYaw = 315f,
+            MaxExecutionTicks = 420
+        },
         _ => throw new ArgumentOutOfRangeException(nameof(scenarioId), scenarioId, null)
     };
 
@@ -86,6 +131,72 @@ internal static class PathingExecutionScenarioCatalog
         World world = FlatWorldTestBuilder.CreateStoneFloor(min: 135, max: 148);
         FlatWorldTestBuilder.ClearBox(world, 140, 80, 135, 148, 85, 140);
         FlatWorldTestBuilder.SetSolid(world, 143, 80, 138);
+        return world;
+    }
+
+    private static World BuildRepeatedCardinalParkourChain()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 578, max: 590);
+        FlatWorldTestBuilder.ClearBox(world, 578, 79, 578, 590, 90, 582);
+        FlatWorldTestBuilder.SetSolid(world, 580, 79, 580);
+        FlatWorldTestBuilder.SetSolid(world, 582, 79, 580);
+        FlatWorldTestBuilder.SetSolid(world, 584, 79, 580);
+        FlatWorldTestBuilder.SetSolid(world, 586, 79, 580);
+        FlatWorldTestBuilder.SetSolid(world, 588, 79, 580);
+        return world;
+    }
+
+    private static World BuildRepeatedDiagonalParkourChain()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 598, max: 608);
+        FlatWorldTestBuilder.ClearBox(world, 598, 79, 598, 608, 90, 608);
+        FlatWorldTestBuilder.SetSolid(world, 600, 79, 600);
+        FlatWorldTestBuilder.SetSolid(world, 602, 79, 602);
+        FlatWorldTestBuilder.SetSolid(world, 604, 79, 604);
+        FlatWorldTestBuilder.SetSolid(world, 606, 79, 606);
+        return world;
+    }
+
+    private static World BuildObstructedParkourLTurns()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 618, max: 628);
+        FlatWorldTestBuilder.ClearBox(world, 618, 79, 618, 628, 90, 624);
+        FlatWorldTestBuilder.SetSolid(world, 620, 79, 620);
+        FlatWorldTestBuilder.SetSolid(world, 622, 79, 620);
+        FlatWorldTestBuilder.SetSolid(world, 622, 79, 621);
+        FlatWorldTestBuilder.SetSolid(world, 624, 79, 621);
+        FlatWorldTestBuilder.SetSolid(world, 624, 79, 622);
+        FlatWorldTestBuilder.SetSolid(world, 626, 79, 622);
+        FlatWorldTestBuilder.SetSolid(world, 620, 80, 621);
+        FlatWorldTestBuilder.SetSolid(world, 620, 81, 621);
+        FlatWorldTestBuilder.SetSolid(world, 622, 80, 622);
+        FlatWorldTestBuilder.SetSolid(world, 622, 81, 622);
+        return world;
+    }
+
+    private static World BuildVerticalJumpMix()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 618, max: 650);
+        FlatWorldTestBuilder.ClearBox(world, 638, 79, 618, 650, 80, 622);
+        FlatWorldTestBuilder.ClearBox(world, 638, 81, 618, 650, 92, 622);
+        FlatWorldTestBuilder.SetSolid(world, 640, 79, 620);
+        FlatWorldTestBuilder.SetSolid(world, 642, 80, 620);
+        FlatWorldTestBuilder.SetSolid(world, 644, 79, 620);
+        FlatWorldTestBuilder.SetSolid(world, 646, 80, 620);
+        FlatWorldTestBuilder.SetSolid(world, 648, 79, 620);
+        return world;
+    }
+
+    private static World BuildDiagonalVerticalMix()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 618, max: 686);
+        FlatWorldTestBuilder.ClearBox(world, 678, 79, 618, 686, 80, 626);
+        FlatWorldTestBuilder.ClearBox(world, 678, 81, 618, 686, 92, 626);
+        FlatWorldTestBuilder.SetSolid(world, 680, 79, 620);
+        FlatWorldTestBuilder.SetSolid(world, 681, 80, 621);
+        FlatWorldTestBuilder.SetSolid(world, 682, 79, 622);
+        FlatWorldTestBuilder.SetSolid(world, 683, 80, 623);
+        FlatWorldTestBuilder.SetSolid(world, 684, 79, 624);
         return world;
     }
 }
