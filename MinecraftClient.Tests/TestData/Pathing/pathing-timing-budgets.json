@@ -11,5 +11,33 @@
       { "moveType": "Ascend", "expectedTicks": 0, "maxTicks": 0 },
       { "moveType": "Ascend", "expectedTicks": 0, "maxTicks": 0 }
     ]
+  },
+  {
+    "scenarioId": "same-move-ascend-staircase",
+    "expectedTotalTicks": 56,
+    "maxTotalTicks": 68,
+    "segments": [
+      { "moveType": "Ascend", "expectedTicks": 11, "maxTicks": 14 },
+      { "moveType": "Ascend", "expectedTicks": 11, "maxTicks": 14 },
+      { "moveType": "Ascend", "expectedTicks": 11, "maxTicks": 14 },
+      { "moveType": "Ascend", "expectedTicks": 11, "maxTicks": 14 },
+      { "moveType": "Ascend", "expectedTicks": 12, "maxTicks": 15 }
+    ]
+  },
+  {
+    "scenarioId": "same-move-descend-staircase",
+    "expectedTotalTicks": 61,
+    "maxTotalTicks": 74,
+    "segments": [
+      { "moveType": "Descend", "expectedTicks": 24, "maxTicks": 29 },
+      { "moveType": "Descend", "expectedTicks": 25, "maxTicks": 30 },
+      { "moveType": "Descend", "expectedTicks": 12, "maxTicks": 15 }
+    ]
+  },
+  {
+    "scenarioId": "rejected-3x1-invalid-goal",
+    "expectedTotalTicks": 0,
+    "maxTotalTicks": 0,
+    "segments": []
   }
 ]

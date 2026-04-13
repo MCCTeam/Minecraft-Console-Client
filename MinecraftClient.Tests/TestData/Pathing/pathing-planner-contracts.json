@@ -34,5 +34,62 @@
         "endBlock": { "x": 177, "y": 83, "z": 162 }
       }
     ]
+  },
+  {
+    "scenarioId": "same-move-ascend-staircase",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Ascend",
+        "startBlock": { "x": 340, "y": 80, "z": 340 },
+        "endBlock": { "x": 341, "y": 81, "z": 340 }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": { "x": 341, "y": 81, "z": 340 },
+        "endBlock": { "x": 342, "y": 82, "z": 340 }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": { "x": 342, "y": 82, "z": 340 },
+        "endBlock": { "x": 343, "y": 83, "z": 340 }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": { "x": 343, "y": 83, "z": 340 },
+        "endBlock": { "x": 344, "y": 84, "z": 340 }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": { "x": 344, "y": 84, "z": 340 },
+        "endBlock": { "x": 345, "y": 85, "z": 340 }
+      }
+    ]
+  },
+  {
+    "scenarioId": "same-move-descend-staircase",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Descend",
+        "startBlock": { "x": 362, "y": 85, "z": 360 },
+        "endBlock": { "x": 364, "y": 83, "z": 360 }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": { "x": 364, "y": 83, "z": 360 },
+        "endBlock": { "x": 366, "y": 81, "z": 360 }
+      },
+      {
+        "moveType": "Descend",
+        "startBlock": { "x": 366, "y": 81, "z": 360 },
+        "endBlock": { "x": 367, "y": 80, "z": 360 }
+      }
+    ]
+  },
+  {
+    "scenarioId": "rejected-3x1-invalid-goal",
+    "expectedStatus": "Failed",
+    "segments": []
   }
 ]

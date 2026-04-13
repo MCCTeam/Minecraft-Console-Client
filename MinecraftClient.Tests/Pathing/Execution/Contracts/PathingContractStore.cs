@@ -116,8 +116,11 @@ public sealed class PathingContractStore
         if (string.IsNullOrWhiteSpace(contract.ScenarioId))
             throw new InvalidDataException("Planner contract has blank scenario id.");
 
-        if (contract.Segments is null || contract.Segments.Count == 0)
-            throw new InvalidDataException($"Planner contract '{contract.ScenarioId}' must contain at least one segment.");
+        if (contract.Segments is null)
+            throw new InvalidDataException($"Planner contract '{contract.ScenarioId}' has null segments.");
+
+        if (contract.ExpectedStatus != PathStatus.Failed && contract.Segments.Count == 0)
+            throw new InvalidDataException($"Planner contract '{contract.ScenarioId}' must contain at least one segment unless the expected status is Failed.");
 
         var normalizedSegments = new List<PathingPlannerSegmentContract>(contract.Segments.Count);
         for (int i = 0; i < contract.Segments.Count; i++)
@@ -134,14 +137,17 @@ public sealed class PathingContractStore
         if (string.IsNullOrWhiteSpace(budget.ScenarioId))
             throw new InvalidDataException("Timing budget has blank scenario id.");
 
-        if (budget.Segments is null || budget.Segments.Count == 0)
-            throw new InvalidDataException($"Timing budget '{budget.ScenarioId}' must contain at least one segment.");
+        if (budget.Segments is null)
+            throw new InvalidDataException($"Timing budget '{budget.ScenarioId}' has null segments.");
 
         if (budget.ExpectedTotalTicks < 0 || budget.MaxTotalTicks < 0)
             throw new InvalidDataException($"Timing budget '{budget.ScenarioId}' total ticks must be nonnegative.");
 
         if (budget.ExpectedTotalTicks > budget.MaxTotalTicks)
             throw new InvalidDataException($"Timing budget '{budget.ScenarioId}' has ExpectedTotalTicks greater than MaxTotalTicks.");
+
+        if (budget.Segments.Count == 0 && (budget.ExpectedTotalTicks != 0 || budget.MaxTotalTicks != 0))
+            throw new InvalidDataException($"Timing budget '{budget.ScenarioId}' must use zero totals when it has no segments.");
 
         var normalizedSegments = new List<PathingSegmentTimingBudget>(budget.Segments.Count);
         for (int i = 0; i < budget.Segments.Count; i++)

@@ -1,4 +1,5 @@
 using MinecraftClient.Pathing.Core;
+using MinecraftClient.Pathing.Execution;
 using MinecraftClient.Tests.Pathing.Execution.Contracts;
 using Xunit;
 
@@ -210,5 +211,18 @@ public sealed class PathPlanningContractTests
             () => PathingContractStore.LoadFromJson(plannerJson, timingJson));
         Assert.Contains("sequence-mismatch", error.Message);
         Assert.Contains("segment 1", error.Message);
+    }
+
+    [Theory]
+    [InlineData("same-move-ascend-staircase")]
+    [InlineData("same-move-descend-staircase")]
+    [InlineData("rejected-3x1-invalid-goal")]
+    public void Scenario_PlannerMatchesContract(string scenarioId)
+    {
+        PathingExecutionScenario scenario = PathingExecutionScenarioCatalog.Get(scenarioId);
+        PathResult planResult = PathingScenarioRunner.PlanOnly(scenario);
+        PathingPlannerContract contract = PathingContractStore.LoadFromRepositoryRoot().GetPlanner(scenarioId);
+
+        PathingContractAssert.PlannerMatches(contract, PathSegmentBuilder.FromPath(planResult.Path), planResult);
     }
 }
