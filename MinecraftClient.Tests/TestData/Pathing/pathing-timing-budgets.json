@@ -1,0 +1,13 @@
+{
+  "manager-accepted-ascend-chain": {
+    "totalBudgetMs": 0,
+    "segments": [
+      { "move": "Diagonal", "budgetMs": 0 },
+      { "move": "Diagonal", "budgetMs": 0 },
+      { "move": "Traverse", "budgetMs": 0 },
+      { "move": "Ascend", "budgetMs": 0 },
+      { "move": "Ascend", "budgetMs": 0 },
+      { "move": "Ascend", "budgetMs": 0 }
+    ]
+  }
+}

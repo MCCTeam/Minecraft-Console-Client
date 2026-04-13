@@ -19,10 +19,55 @@ public sealed class TransitionBrakingPlannerTests
             End = new Location(1.5, 80, 0.5),
             MoveType = MoveType.Traverse,
             ExitTransition = PathTransitionType.ContinueStraight,
+            ExitHints = new PathTransitionHints(1, 0, 0.0, double.PositiveInfinity, false, false, false, false, 8),
             PreserveSprint = true
         };
 
         TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(current, null, new Location(1.05, 80, 0.5), physics, world);
+
+        Assert.True(decision.HoldForward);
+        Assert.True(decision.HoldSprint);
+        Assert.False(decision.HoldBack);
+    }
+
+    [Fact]
+    public void Plan_Brakes_ForTurnEntryRequiringSlowSpeed()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor();
+        var physics = CreatePhysics(0.156, 0.0, onGround: true);
+        var current = new PathSegment
+        {
+            Start = new Location(0.5, 80, 0.5),
+            End = new Location(1.5, 80, 0.5),
+            MoveType = MoveType.Traverse,
+            ExitTransition = PathTransitionType.Turn,
+            ExitHints = new PathTransitionHints(0, 1, 0.0, 0.035, true, true, false, true, 12),
+            PreserveSprint = false
+        };
+
+        TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(current, null, new Location(1.38, 80, 0.5), physics, world);
+
+        Assert.False(decision.HoldForward);
+        Assert.False(decision.HoldSprint);
+        Assert.True(decision.HoldBack);
+    }
+
+    [Fact]
+    public void Plan_Carries_ForPrepareJumpNeedingRunUpSpeed()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor();
+        var physics = CreatePhysics(0.0, 0.0, onGround: true);
+        var current = new PathSegment
+        {
+            Start = new Location(0.5, 80, 0.5),
+            End = new Location(1.5, 80, 0.5),
+            MoveType = MoveType.Traverse,
+            ExitTransition = PathTransitionType.PrepareJump,
+            ExitHints = new PathTransitionHints(1, 0, 0.12, double.PositiveInfinity, false, true, true, false, 10),
+            PreserveSprint = true
+        };
+
+        TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(current, null, new Location(1.02, 80, 0.5), physics, world);
 
         Assert.True(decision.HoldForward);
         Assert.True(decision.HoldSprint);
@@ -40,6 +85,7 @@ public sealed class TransitionBrakingPlannerTests
             End = new Location(1.5, 80, 0.5),
             MoveType = MoveType.Traverse,
             ExitTransition = PathTransitionType.FinalStop,
+            ExitHints = new PathTransitionHints(1, 0, 0.0, 0.03, true, true, false, false, 12),
             PreserveSprint = false
         };
 
@@ -61,6 +107,7 @@ public sealed class TransitionBrakingPlannerTests
             End = new Location(1.5, 80, 0.5),
             MoveType = MoveType.Traverse,
             ExitTransition = PathTransitionType.FinalStop,
+            ExitHints = new PathTransitionHints(1, 0, 0.0, 0.03, true, true, false, false, 12),
             PreserveSprint = false
         };
 
@@ -81,6 +128,7 @@ public sealed class TransitionBrakingPlannerTests
             End = new Location(123.5, 80, 110.5),
             MoveType = MoveType.Parkour,
             ExitTransition = PathTransitionType.Turn,
+            ExitHints = new PathTransitionHints(0, 1, 0.0, 0.035, true, true, false, true, 12),
             PreserveSprint = false
         };
         var next = new PathSegment
@@ -91,7 +139,9 @@ public sealed class TransitionBrakingPlannerTests
             ExitTransition = PathTransitionType.FinalStop
         };
 
-        bool release = TransitionBrakingPlanner.ShouldReleaseForwardInAir(current, next, new Location(123.18, 80.92, 110.5), physics);
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 108, max: 126);
+
+        bool release = TransitionBrakingPlanner.ShouldReleaseForwardInAir(current, next, new Location(123.18, 80.92, 110.5), physics, world);
 
         Assert.True(release);
     }
@@ -112,6 +162,7 @@ public sealed class TransitionBrakingPlannerTests
             End = new Location(122.5, 80, 110.5),
             MoveType = MoveType.Parkour,
             ExitTransition = PathTransitionType.LandingRecovery,
+            ExitHints = new PathTransitionHints(0, 1, 0.0, 0.035, true, true, false, true, 12),
             PreserveSprint = false
         };
         var next = new PathSegment

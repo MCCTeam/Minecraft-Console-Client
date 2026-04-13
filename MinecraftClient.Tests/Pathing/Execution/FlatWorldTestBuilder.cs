@@ -76,6 +76,7 @@ internal static class FlatWorldTestBuilder
 
     public static void SetMaterial(World world, int x, int y, int z, Material material)
     {
+        EnsureChunkColumn(world, x, z);
         world.SetBlock(new Location(x, y, z), new Block(ResolveMaterialId(material)));
     }
 
@@ -96,6 +97,14 @@ internal static class FlatWorldTestBuilder
             BlockShapes.Initialize();
             _defaultsLoaded = true;
         }
+    }
+
+    private static void EnsureChunkColumn(World world, int x, int z)
+    {
+        int chunkX = (int)Math.Floor(x / 16.0);
+        int chunkZ = (int)Math.Floor(z / 16.0);
+        if (world[chunkX, chunkZ] is null)
+            world[chunkX, chunkZ] = new ChunkColumn(24) { FullyLoaded = true };
     }
 
     private static ushort ResolveMaterialId(Material material)
