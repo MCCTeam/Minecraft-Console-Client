@@ -10,8 +10,8 @@ The `tools/` directory also contains the shell helpers used for day-to-day MCC d
 
 ```bash
 source tools/mcc-env.sh
-mc-start 1.21.11
-mcc-debug -v 1.21.11 --file-input
+mc-start 1.21.11-Vanilla
+mcc-debug -v 1.21.11-Vanilla --file-input
 mcc-cmd "debug state"
 mcc-publish --rid linux-x64
 ```
@@ -51,12 +51,14 @@ Two types of data can be used as input:
 ### Decompiling a new MC version
 
 ```bash
-# Server side (default) — also downloads server.jar into MinecraftOfficial/downloads/<ver>/
-tools/decompile.sh --version 1.21.9
+# Server side (default) — downloads server.jar into $MCC_SERVERS/<ver>-Vanilla/
+tools/decompile.sh --version 1.21.9-Vanilla
 
 # Client side
 tools/decompile.sh --version 1.21.9 --side CLIENT
 ```
+
+For server-side runs, the decompiled source still lands in `MinecraftOfficial/<mc-version>-decompiled/`, while the runnable local server directory becomes `$MCC_SERVERS/<mc-version>-Vanilla/`.
 
 If you keep server assets outside the repo, set `MCC_SERVERS=/path/to/servers` before using `tools/mcc-env.sh` or `tools/start-server.sh`.
 

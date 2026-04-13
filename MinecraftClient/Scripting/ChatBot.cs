@@ -1247,12 +1247,42 @@ namespace MinecraftClient.Scripting
         }
 
         /// <summary>
+        /// Navigate to a goal using A* pathfinding with template-based execution.
+        /// Supports GoalBlock, GoalXZ, GoalNear, GoalComposite for flexible targeting.
+        /// </summary>
+        /// <param name="goal">Target goal (GoalBlock, GoalNear, GoalXZ, etc.)</param>
+        /// <param name="timeoutMs">Maximum pathfinding computation time in milliseconds</param>
+        /// <returns>Tuple of (success, descriptive message)</returns>
+        protected (bool success, string message) NavigateTo(Pathing.Goals.IGoal goal, long timeoutMs = 5000)
+        {
+            return Handler.NavigateToGoal(goal, timeoutMs);
+        }
+
+        /// <summary>
         /// Check if the client is currently processing a Movement.
         /// </summary>
         /// <returns>true if a movement is currently handled</returns>
         protected bool ClientIsMoving()
         {
             return Handler.ClientIsMoving();
+        }
+
+        /// <summary>
+        /// Cancel the current movement, stopping both legacy and A* pathfinding.
+        /// </summary>
+        /// <returns>true if there was an active movement that was cancelled</returns>
+        protected bool CancelMovement()
+        {
+            return Handler.CancelMovement();
+        }
+
+        /// <summary>
+        /// Get the current movement goal location.
+        /// Returns Location.Zero if no movement is active.
+        /// </summary>
+        protected Location GetCurrentMovementGoal()
+        {
+            return Handler.GetCurrentMovementGoal();
         }
 
         /// <summary>

@@ -6,13 +6,14 @@
 #   ./tools/decompile.sh --version <ver> [--side SERVER|CLIENT]
 #
 # Examples:
-#   ./tools/decompile.sh --version 1.21.11
+#   ./tools/decompile.sh --version 1.21.11-Vanilla
 #   ./tools/decompile.sh --version 1.21.11 --side CLIENT
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MC_OFFICIAL="$REPO_ROOT/MinecraftOfficial"
+SERVERS_ROOT="${MCC_SERVERS:-$MC_OFFICIAL/downloads}"
 DECOMPILER_JAR="$MC_OFFICIAL/MinecraftDecompiler.jar"
 DECOMPILER_REPO="MaxPixelStudios/MinecraftDecompiler"
 
@@ -27,7 +28,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 --version <ver> [--side SERVER|CLIENT]"
             echo ""
             echo "Options:"
-            echo "  --version <ver>     Minecraft version (e.g. 1.21.11)"
+            echo "  --version <ver>     Minecraft version or local server dir (e.g. 1.21.11 or 1.21.11-Vanilla)"
             echo "  --side <env>        SERVER (default) or CLIENT"
             exit 0
             ;;
@@ -44,6 +45,16 @@ fi
 if [[ "$SIDE" != "SERVER" && "$SIDE" != "CLIENT" ]]; then
     echo "Error: --side must be SERVER or CLIENT (got: $SIDE)"
     exit 1
+fi
+
+MC_VERSION="${VERSION%-Vanilla}"
+if [[ -z "$MC_VERSION" ]]; then
+    MC_VERSION="$VERSION"
+fi
+
+SERVER_DIR_NAME="$VERSION"
+if [[ "$SIDE" == "SERVER" && "$VERSION" != *-Vanilla ]]; then
+    SERVER_DIR_NAME="${MC_VERSION}-Vanilla"
 fi
 
 # --- Ensure MinecraftDecompiler.jar exists ---
@@ -71,11 +82,11 @@ fi
 SIDE_LOWER="$(echo "$SIDE" | tr '[:upper:]' '[:lower:]')"
 
 if [[ "$SIDE" == "SERVER" ]]; then
-    REMAPPED_JAR="$MC_OFFICIAL/remapped_jar/${VERSION}-remapped.jar"
-    DECOMPILED_DIR="$MC_OFFICIAL/${VERSION}-decompiled"
+    REMAPPED_JAR="$MC_OFFICIAL/remapped_jar/${MC_VERSION}-remapped.jar"
+    DECOMPILED_DIR="$MC_OFFICIAL/${MC_VERSION}-decompiled"
 else
-    REMAPPED_JAR="$MC_OFFICIAL/remapped_jar/${VERSION}-${SIDE_LOWER}-remapped.jar"
-    DECOMPILED_DIR="$MC_OFFICIAL/${VERSION}-${SIDE_LOWER}-decompiled"
+    REMAPPED_JAR="$MC_OFFICIAL/remapped_jar/${MC_VERSION}-${SIDE_LOWER}-remapped.jar"
+    DECOMPILED_DIR="$MC_OFFICIAL/${MC_VERSION}-${SIDE_LOWER}-decompiled"
 fi
 
 if [[ -d "$DECOMPILED_DIR" ]]; then
@@ -92,12 +103,12 @@ VERSION_URL=$(curl -sL "$MANIFEST_URL" | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
 for v in data['versions']:
-    if v['id'] == '$VERSION':
+    if v['id'] == '$MC_VERSION':
         print(v['url'])
         break
 ")
 if [[ -z "$VERSION_URL" ]]; then
-    echo "Error: version $VERSION not found in Mojang launcher manifest."
+    echo "Error: version $MC_VERSION not found in Mojang launcher manifest."
     exit 1
 fi
 
@@ -109,9 +120,12 @@ data = json.load(sys.stdin)
 print('true' if '$MAPPING_KEY' in data.get('downloads', {}) else 'false')
 ")
 
-echo "=== Decompiling Minecraft $VERSION ($SIDE) ==="
+echo "=== Decompiling Minecraft $MC_VERSION ($SIDE) ==="
 echo "  Remapped JAR: $REMAPPED_JAR"
 echo "  Decompiled:   $DECOMPILED_DIR"
+if [[ "$SIDE" == "SERVER" ]]; then
+    echo "  Server dir:   $SERVERS_ROOT/$SERVER_DIR_NAME"
+fi
 echo "  Obfuscated:   $HAS_MAPPINGS"
 echo ""
 
@@ -120,7 +134,7 @@ cd "$MC_OFFICIAL"
 if [[ "$HAS_MAPPINGS" == "true" ]]; then
     # Obfuscated version: use --version/--side to auto-download jar + mappings + deobfuscate
     java -jar "$DECOMPILER_JAR" \
-        --version "$VERSION" \
+        --version "$MC_VERSION" \
         --side "$SIDE" \
         --decompile \
         --output "$REMAPPED_JAR" \
@@ -129,14 +143,14 @@ else
     # Unobfuscated version (26.1+): download jar, extract inner jar from bundle, decompile directly.
     # MinecraftDecompiler requires --mapping-path with --input, but unobfuscated versions
     # have no mappings. We use Vineflower directly instead.
-    echo "No Proguard mappings for $VERSION; decompiling without deobfuscation."
+    echo "No Proguard mappings for $MC_VERSION; decompiling without deobfuscation."
 
     JAR_URL=$(echo "$VERSION_META" | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
 print(data['downloads']['${SIDE_LOWER}']['url'])
 ")
-    ORIGINAL_JAR="$MC_OFFICIAL/remapped_jar/${VERSION}-${SIDE_LOWER}-original.jar"
+    ORIGINAL_JAR="$MC_OFFICIAL/remapped_jar/${MC_VERSION}-${SIDE_LOWER}-original.jar"
     if [[ ! -f "$ORIGINAL_JAR" ]]; then
         echo "Downloading ${SIDE_LOWER}.jar ..."
         curl -L -o "$ORIGINAL_JAR" "$JAR_URL"
@@ -175,13 +189,13 @@ echo ""
 echo "=== Done ==="
 echo "Decompiled source: $DECOMPILED_DIR"
 
-# --- For SERVER side, also ensure downloads/<ver>/server.jar exists ---
+# --- For SERVER side, also ensure downloads/<server-dir>/server.jar exists ---
 if [[ "$SIDE" == "SERVER" ]]; then
-    DOWNLOADS_DIR="$MC_OFFICIAL/downloads/$VERSION"
+    DOWNLOADS_DIR="$SERVERS_ROOT/$SERVER_DIR_NAME"
     if [[ ! -f "$DOWNLOADS_DIR/server.jar" ]]; then
         mkdir -p "$DOWNLOADS_DIR"
         echo ""
-        echo "Downloading server.jar for $VERSION into $DOWNLOADS_DIR ..."
+        echo "Downloading server.jar for $MC_VERSION into $DOWNLOADS_DIR ..."
         SERVER_JAR_URL=$(echo "$VERSION_META" | python3 -c "
 import json, sys
 data = json.load(sys.stdin)

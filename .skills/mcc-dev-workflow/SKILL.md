@@ -13,7 +13,7 @@ Use this skill when the task needs a real local server loop, not just code readi
 - Runtime target: `.NET 10` / `net10.0`
 - Environment: Linux, macOS, or WSL with Java, tmux, python3, and dotnet available
 - Default server root after `source tools/mcc-env.sh`: `${MCC_SERVERS:-<repo>/MinecraftOfficial/downloads}`
-- Default validation target when the user does not specify a version: `1.21.11`
+- Default validation target when the user does not specify a server directory: `1.21.11-Vanilla`
 
 ## Console modes
 
@@ -51,13 +51,13 @@ Two worktrees can debug against one shared server like this:
 # worktree A
 cd ~/Minecraft/Minecraft-Console-Client
 source tools/mcc-env.sh
-mc-start 1.21.11
-mcc-debug -v 1.21.11 --file-input
+mc-start 1.21.11-Vanilla
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # worktree B
 cd ~/Minecraft/Minecraft-Console-Client-foo
 source tools/mcc-env.sh
-mcc-debug -v 1.21.11 --file-input
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # from each worktree, mcc-* targets that worktree's default session
 mcc-state
@@ -84,8 +84,8 @@ Before scripted runs, especially on macOS or in a reused tmux environment:
 
 ```bash
 source tools/mcc-env.sh
-mcc-preflight 1.21.11
-mc-reset-test-env 1.21.11
+mcc-preflight 1.21.11-Vanilla
+mc-reset-test-env 1.21.11-Vanilla
 ```
 
 `mcc-preflight` checks Java, tmux, dotnet, python3, and server directories. It also resolves common Homebrew Java paths on macOS. `mc-reset-test-env` clears stale tmux sessions and stale `stdin.pipe` files before they turn into misleading startup failures.
@@ -107,16 +107,16 @@ Interactive shell:
 source tools/mcc-env.sh
 SESSION="$(_mcc_resolve_session)"
 USERNAME="$(_mcc_resolve_username "$SESSION")"
-mc-start 1.21.11
-mc-log 1.21.11 100
+mc-start 1.21.11-Vanilla
+mc-log 1.21.11-Vanilla 100
 mc-rcon "op $USERNAME"
-mc-stop 1.21.11
+mc-stop 1.21.11-Vanilla
 ```
 
 Non-interactive shell:
 
 ```bash
-tools/start-server.sh 1.21.11
+tools/start-server.sh 1.21.11-Vanilla
 tools/mc-rcon.sh "op mcc_smoke_a"
 ```
 
@@ -135,19 +135,19 @@ The `tools/mcc-debug.sh` script handles build, server startup, config preparatio
 source tools/mcc-env.sh
 
 # Classic mode with FileInput (script-driven debugging):
-mcc-debug -v 1.21.11 --file-input
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # Classic mode interactive (attach via tmux):
-mcc-debug -v 1.21.11
+mcc-debug -v 1.21.11-Vanilla
 
 # TUI mode:
-mcc-debug -v 1.21.11 -m tui
+mcc-debug -v 1.21.11-Vanilla -m tui
 
 # With debug messages enabled from start:
-mcc-debug -v 1.21.11 --file-input --debug-on
+mcc-debug -v 1.21.11-Vanilla --file-input --debug-on
 
 # Skip build (already built):
-mcc-debug -v 1.21.11 --file-input --no-build
+mcc-debug -v 1.21.11-Vanilla --file-input --no-build
 ```
 
 ### What mcc-debug.sh does
@@ -202,7 +202,7 @@ For agents calling MCC commands programmatically:
 ```bash
 source tools/mcc-env.sh
 SESSION="smoke-a"
-mcc-debug -v 1.21.11 --file-input --session "$SESSION" --no-build
+mcc-debug -v 1.21.11-Vanilla --file-input --session "$SESSION" --no-build
 
 # Send commands:
 mcc-cmd --session "$SESSION" "debug state"
@@ -215,7 +215,7 @@ mcc-log-mcc --session "$SESSION"
 # Stop:
 mcc-cmd --session "$SESSION" "quit"
 mcc-kill --session "$SESSION"
-mc-stop 1.21.11
+mc-stop 1.21.11-Vanilla
 ```
 
 ### Interactive workflow
@@ -223,7 +223,7 @@ mc-stop 1.21.11
 ```bash
 source tools/mcc-env.sh
 SESSION="live-a"
-mcc-debug -v 1.21.11 --session "$SESSION"
+mcc-debug -v 1.21.11-Vanilla --session "$SESSION"
 
 # In another terminal:
 tmux attach -t "mcc-$SESSION"
@@ -245,7 +245,7 @@ TUI mode runs Consolonia full-screen in a tmux session. Key differences:
 ```bash
 source tools/mcc-env.sh
 SESSION="tui-a"
-mcc-debug -v 1.21.11 -m tui --session "$SESSION" --no-build
+mcc-debug -v 1.21.11-Vanilla -m tui --session "$SESSION" --no-build
 
 # Cannot use mcc-cmd (no FileInput); must use tmux send-keys:
 tmux send-keys -t "mcc-$SESSION" "/debug state" Enter
@@ -330,12 +330,12 @@ If a scripted run fails before MCC joins, check for a harness problem before ass
 ## Typical debug loop
 
 1. `source tools/mcc-env.sh`
-2. `mcc-debug -v 1.21.11 --file-input` (or `-m tui`)
+2. `mcc-debug -v 1.21.11-Vanilla --file-input` (or `-m tui`)
 3. Confirm `Server was successfully joined` in log
 4. `mcc-cmd "debug state"` to verify MCC state
 5. Run test commands
 6. Inspect log output
-7. `mcc-cmd "quit"` and `mc-stop 1.21.11`
+7. `mcc-cmd "quit"` and `mc-stop 1.21.11-Vanilla`
 8. Edit code, rebuild, repeat
 
 ## Debugging tips

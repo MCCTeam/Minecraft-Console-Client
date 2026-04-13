@@ -1,0 +1,263 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using MinecraftClient.Pathing.Goals;
+using MinecraftClient.Pathing.Moves;
+using MinecraftClient.Pathing.Moves.Impl;
+
+namespace MinecraftClient.Pathing.Core
+{
+    public sealed class AStarPathFinder
+    {
+        private readonly IMove[] _allMoves;
+        private readonly int _maxChunkBorderFetch;
+
+        public Action<string>? DebugLog { get; set; }
+
+        public AStarPathFinder(IMove[]? moves = null, int maxChunkBorderFetch = 64)
+        {
+            _allMoves = moves ?? BuildDefaultMoves();
+            _maxChunkBorderFetch = maxChunkBorderFetch;
+        }
+
+        public static IMove[] BuildDefaultMoves()
+        {
+            var moves = new List<IMove>();
+
+            int[] offsets = [1, -1];
+            foreach (int dx in offsets)
+            {
+                moves.Add(new MoveTraverse(dx, 0));
+                moves.Add(new MoveAscend(dx, 0));
+                moves.Add(new MoveDescend(dx, 0));
+            }
+            foreach (int dz in offsets)
+            {
+                moves.Add(new MoveTraverse(0, dz));
+                moves.Add(new MoveAscend(0, dz));
+                moves.Add(new MoveDescend(0, dz));
+            }
+
+            moves.Add(new MoveDiagonal(1, 1));
+            moves.Add(new MoveDiagonal(1, -1));
+            moves.Add(new MoveDiagonal(-1, 1));
+            moves.Add(new MoveDiagonal(-1, -1));
+
+            // Diagonal ascend/descend: corner jumps and drops
+            foreach (int dx in offsets)
+            {
+                foreach (int dz in offsets)
+                {
+                    moves.Add(new MoveDiagonalAscend(dx, dz));
+                    moves.Add(new MoveDiagonalDescend(dx, dz));
+                }
+            }
+
+            moves.Add(new MoveClimb(true));
+            moves.Add(new MoveClimb(false));
+
+            moves.Add(new MoveFall());
+
+            // Sprint descend: sprint off ledge, 2 blocks horizontal + 1-3 drop
+            foreach (int dx in offsets)
+            {
+                moves.Add(new MoveSprintDescend(dx * 2, 0));
+                moves.Add(new MoveSprintDescend(dx, dx));
+                moves.Add(new MoveSprintDescend(dx, -dx));
+            }
+            foreach (int dz in offsets)
+                moves.Add(new MoveSprintDescend(0, dz * 2));
+
+            // Cardinal parkour: 2-4 block sprint jumps along +-X and +-Z
+            foreach (int dx in offsets)
+            {
+                for (int dist = 2; dist <= 4; dist++)
+                    moves.Add(new MoveParkour(dx * dist, 0));
+                // Ascending: +1Y, dist 2-3 (dist 4 ascend not physically reliable)
+                for (int dist = 2; dist <= 3; dist++)
+                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: 1));
+                // Descending parkour: sprint-jump, land 1-2 blocks lower
+                for (int dist = 2; dist <= 4; dist++)
+                {
+                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: -1));
+                    if (dist <= 3)
+                        moves.Add(new MoveParkour(dx * dist, 0, yDelta: -2));
+                }
+            }
+            foreach (int dz in offsets)
+            {
+                for (int dist = 2; dist <= 4; dist++)
+                    moves.Add(new MoveParkour(0, dz * dist));
+                for (int dist = 2; dist <= 3; dist++)
+                    moves.Add(new MoveParkour(0, dz * dist, yDelta: 1));
+                for (int dist = 2; dist <= 4; dist++)
+                {
+                    moves.Add(new MoveParkour(0, dz * dist, yDelta: -1));
+                    if (dist <= 3)
+                        moves.Add(new MoveParkour(0, dz * dist, yDelta: -2));
+                }
+            }
+
+            // Diagonal parkour: sprint jumps at angles.
+            // Only include combinations with actual distance <= ~3.2 blocks (conservative)
+            foreach (int dx in offsets)
+            {
+                foreach (int dz in offsets)
+                {
+                    // (2,1)/(1,2): sqrt(5) ~ 2.24 blocks
+                    moves.Add(new MoveParkour(dx * 2, dz * 1));
+                    moves.Add(new MoveParkour(dx * 1, dz * 2));
+                    // (2,2): sqrt(8) ~ 2.83 blocks
+                    moves.Add(new MoveParkour(dx * 2, dz * 2));
+                    // (3,1)/(1,3): sqrt(10) ~ 3.16 blocks
+                    moves.Add(new MoveParkour(dx * 3, dz * 1));
+                    moves.Add(new MoveParkour(dx * 1, dz * 3));
+
+                    // Diagonal descending parkour
+                    moves.Add(new MoveParkour(dx * 2, dz * 1, yDelta: -1));
+                    moves.Add(new MoveParkour(dx * 1, dz * 2, yDelta: -1));
+                    moves.Add(new MoveParkour(dx * 2, dz * 2, yDelta: -1));
+                }
+            }
+
+            return [.. moves];
+        }
+
+        public PathResult Calculate(
+            CalculationContext ctx,
+            int startX, int startY, int startZ,
+            IGoal goal,
+            CancellationToken ct,
+            long timeoutMs = 5000)
+        {
+            var sw = Stopwatch.StartNew();
+            var openSet = new BinaryHeapOpenSet(4096);
+            var nodeMap = new Dictionary<long, PathNode>(4096);
+
+            var startNode = new PathNode(startX, startY, startZ)
+            {
+                GCost = 0,
+                HCost = goal.Heuristic(startX, startY, startZ),
+                IsOpen = true
+            };
+            openSet.Insert(startNode);
+            nodeMap[startNode.PackedPosition] = startNode;
+
+            int nodesExplored = 0;
+            int unloadedChunkHits = 0;
+            PathNode? bestPartialNode = startNode;
+            double bestPartialScore = startNode.HCost + startNode.GCost * 0.5;
+            MoveResult moveResult = default;
+
+            DebugLog?.Invoke($"[A*] Start ({startX},{startY},{startZ}), goal={goal}");
+
+            while (openSet.Count > 0)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    DebugLog?.Invoke($"[A*] Cancelled after {nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");
+                    break;
+                }
+
+                if (sw.ElapsedMilliseconds > timeoutMs)
+                {
+                    DebugLog?.Invoke($"[A*] Timeout ({timeoutMs}ms) after {nodesExplored} nodes");
+                    break;
+                }
+
+                var current = openSet.RemoveMin();
+                current.IsClosed = true;
+                nodesExplored++;
+
+                if (goal.IsInGoal(current.X, current.Y, current.Z))
+                {
+                    DebugLog?.Invoke($"[A*] Goal reached! {nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");
+                    var path = ReconstructPath(current);
+                    return new PathResult(PathStatus.Success, path, nodesExplored, sw.ElapsedMilliseconds);
+                }
+
+                foreach (var move in _allMoves)
+                {
+                    moveResult.Cost = 0;
+                    move.Calculate(ctx, current.X, current.Y, current.Z, ref moveResult);
+
+                    if (moveResult.IsImpossible)
+                        continue;
+
+                    int nx = moveResult.DestX;
+                    int ny = moveResult.DestY;
+                    int nz = moveResult.DestZ;
+
+                    if (!ctx.IsChunkLoaded(nx, nz))
+                    {
+                        unloadedChunkHits++;
+                        if (unloadedChunkHits > _maxChunkBorderFetch)
+                            continue;
+                    }
+
+                    double tentativeG = current.GCost + moveResult.Cost;
+                    long packed = PathNode.Pack(nx, ny, nz);
+
+                    if (nodeMap.TryGetValue(packed, out var neighbor))
+                    {
+                        if (neighbor.IsClosed)
+                            continue;
+                        if (tentativeG >= neighbor.GCost)
+                            continue;
+
+                        neighbor.GCost = tentativeG;
+                        neighbor.Parent = current;
+                        neighbor.MoveUsed = move.Type;
+                        if (neighbor.IsOpen)
+                            openSet.Update(neighbor);
+                    }
+                    else
+                    {
+                        neighbor = new PathNode(nx, ny, nz)
+                        {
+                            GCost = tentativeG,
+                            HCost = goal.Heuristic(nx, ny, nz),
+                            Parent = current,
+                            MoveUsed = move.Type,
+                            IsOpen = true
+                        };
+                        nodeMap[packed] = neighbor;
+                        openSet.Insert(neighbor);
+                    }
+
+                    double partialScore = neighbor.HCost + neighbor.GCost * 0.5;
+                    if (partialScore < bestPartialScore)
+                    {
+                        bestPartialScore = partialScore;
+                        bestPartialNode = neighbor;
+                    }
+                }
+            }
+
+            if (bestPartialNode is not null && bestPartialNode != startNode)
+            {
+                DebugLog?.Invoke($"[A*] Partial path to ({bestPartialNode.X},{bestPartialNode.Y},{bestPartialNode.Z}), " +
+                    $"{nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");
+                var path = ReconstructPath(bestPartialNode);
+                return new PathResult(PathStatus.Partial, path, nodesExplored, sw.ElapsedMilliseconds);
+            }
+
+            DebugLog?.Invoke($"[A*] Failed, {nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");
+            return PathResult.Fail(nodesExplored, sw.ElapsedMilliseconds);
+        }
+
+        private static List<PathNode> ReconstructPath(PathNode end)
+        {
+            var path = new List<PathNode>();
+            var current = end;
+            while (current is not null)
+            {
+                path.Add(current);
+                current = current.Parent;
+            }
+            path.Reverse();
+            return path;
+        }
+    }
+}

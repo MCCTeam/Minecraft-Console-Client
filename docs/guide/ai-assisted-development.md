@@ -335,12 +335,12 @@ git submodule update --init --recursive
 From the repo root, use the decompiler helper to download the official server jar and create the decompiled source tree:
 
 ```bash
-tools/decompile.sh --version 1.20.6
+tools/decompile.sh --version 1.20.6-Vanilla
 ```
 
 That creates the paths used by the harness and the version-adaptation workflow:
 
-- `$MCC_SERVERS/1.20.6/server.jar`
+- `$MCC_SERVERS/1.20.6-Vanilla/server.jar`
 - `MinecraftOfficial/1.20.6-decompiled/`
 
 If you are doing protocol work, this step is not optional.
@@ -458,13 +458,13 @@ Two worktrees can share one local server like this:
 # worktree A
 cd ~/Minecraft/Minecraft-Console-Client
 source tools/mcc-env.sh
-mc-start 1.21.11
-mcc-debug -v 1.21.11 --file-input
+mc-start 1.21.11-Vanilla
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # worktree B
 cd ~/Minecraft/Minecraft-Console-Client-foo
 source tools/mcc-env.sh
-mcc-debug -v 1.21.11 --file-input
+mcc-debug -v 1.21.11-Vanilla --file-input
 
 # from each worktree, mcc-* targets that worktree's default session
 mcc-state
@@ -544,13 +544,13 @@ This is the core loop you should expect an agent to follow.
 source tools/mcc-env.sh
 SESSION="smoke-a"
 USERNAME="$(_mcc_resolve_username "$SESSION")"
-mc-start 1.20.6
+mc-start 1.20.6-Vanilla
 ```
 
 Check the recent server output:
 
 ```bash
-mc-log 1.20.6
+mc-log 1.20.6-Vanilla
 ```
 
 ### 2. Build MCC
@@ -562,7 +562,7 @@ mcc-build
 ### 3. Run MCC with file input enabled
 
 ```bash
-mcc-debug -v 1.20.6 --file-input --session "$SESSION" --no-build
+mcc-debug -v 1.20.6-Vanilla --file-input --session "$SESSION" --no-build
 ```
 
 ### 4. Set up server state through RCON
@@ -646,6 +646,7 @@ Server settings that matter for AI-driven offline testing:
 
 - `eula=true`
 - `online-mode=false`
+- `difficulty=peaceful`
 - `enforce-secure-profile=false`
 - `enable-rcon=true`
 - `rcon.password=test123`
@@ -664,7 +665,7 @@ The important rule is simple:
 
 The usual order is:
 
-1. `tools/decompile.sh --version <ver>`
+1. `tools/decompile.sh --version <ver>-Vanilla`
 2. generate server reports from `server.jar`
 3. run `tools/diff_registries.py`
 4. regenerate the palettes that actually changed
@@ -691,9 +692,9 @@ Typical loop:
 source tools/mcc-env.sh
 SESSION="smoke-a"
 USERNAME="$(_mcc_resolve_username "$SESSION")"
-mc-start 1.20.6
+mc-start 1.20.6-Vanilla
 mcc-build
-mcc-debug -v 1.20.6 --file-input --session "$SESSION" --no-build
+mcc-debug -v 1.20.6-Vanilla --file-input --session "$SESSION" --no-build
 mc-rcon "op $USERNAME"
 mcc-cmd --session "$SESSION" "inventory player list"
 mcc-cmd --session "$SESSION" "entity"
@@ -736,7 +737,7 @@ Use skills:
 Typical flow:
 
 ```bash
-tools/decompile.sh --version 26.1
+tools/decompile.sh --version 26.1-Vanilla
 ```
 
 Generate server reports:

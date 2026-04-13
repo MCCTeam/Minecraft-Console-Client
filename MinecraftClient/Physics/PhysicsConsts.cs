@@ -1,3 +1,5 @@
+using System;
+
 namespace MinecraftClient.Physics
 {
     /// <summary>
@@ -6,12 +8,19 @@ namespace MinecraftClient.Physics
     /// </summary>
     public static class PhysicsConsts
     {
-        // --- Player dimensions ---
+        // --- Player dimensions per pose (vanilla Avatar.POSES, 26.1) ---
         public const double PlayerWidth = 0.6;
-        public const double PlayerHeight = 1.8;
-        public const double PlayerSneakHeight = 1.5;
-        public const double PlayerSwimHeight = 0.6;
-        public const double PlayerEyeHeight = 1.62;
+        public const double PlayerStandingHeight = 1.8;
+        public const double PlayerStandingEyeHeight = 1.62;
+        public const double PlayerCrouchingHeight = 1.5;
+        public const double PlayerCrouchingEyeHeight = 1.27;
+        public const double PlayerSwimmingHeight = 0.6;
+        public const double PlayerSwimmingEyeHeight = 0.4;
+
+        [Obsolete("Use PlayerStandingHeight instead")]
+        public const double PlayerHeight = PlayerStandingHeight;
+        [Obsolete("Use PlayerStandingEyeHeight instead")]
+        public const double PlayerEyeHeight = PlayerStandingEyeHeight;
 
         // --- Gravity ---
         public const double DefaultGravity = 0.08;

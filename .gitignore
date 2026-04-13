@@ -444,3 +444,6 @@ server.pid
 
 # Crowdin translation automation working directory
 /.crowdin-translate/
+
+# Third-party source code reference files
+ThirdpartyReference/

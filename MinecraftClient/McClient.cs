@@ -80,6 +80,7 @@ namespace MinecraftClient
         private readonly MovementInput physicsInput = new();
         private bool physicsInitialized = false;
         private Location? pathTarget; // Current waypoint for physics-driven pathfinding
+        private Pathing.Execution.PathSegmentManager? pathSegmentManager;
         public enum MovementType { Sneak, Walk, Sprint }
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
         private bool CanSendMessage = false;
@@ -566,6 +567,8 @@ namespace MinecraftClient
             isUnderSlab = false;
             path = null;
             pathTarget = null;
+            pathSegmentManager?.Cancel();
+            pathSegmentManager = null;
             _yaw = null;
             _pitch = null;
             LastDigPosition = null;
@@ -685,6 +688,7 @@ namespace MinecraftClient
                         playerPhysics.SetPosition(location.X, location.Y, location.Z);
                         playerPhysics.Yaw = playerYaw;
                         playerPhysics.Pitch = playerPitch;
+                        playerPhysics.DebugLog = msg => Log.Debug(msg);
                         physicsInitialized = true;
                     }
 
@@ -1711,6 +1715,83 @@ namespace MinecraftClient
                     return path is not null;
                 }
             }
+        }
+
+        /// <summary>
+        /// Navigate to a goal using the new A* pathfinder and template-based execution.
+        /// Accepts any IGoal for flexible target specification.
+        /// Returns a description of the result for UI feedback.
+        /// </summary>
+        public (bool success, string message) NavigateToGoal(Pathing.Goals.IGoal goal, long timeoutMs = 5000)
+        {
+            lock (locationLock)
+            {
+                var ctx = new Pathing.Core.CalculationContext(world,
+                    allowParkour: true, allowParkourAscend: true);
+                var finder = new Pathing.Core.AStarPathFinder();
+                finder.DebugLog = msg => Log.Debug(msg);
+
+                int sx = (int)Math.Floor(location.X);
+                int sy = (int)Math.Floor(location.Y);
+                int sz = (int)Math.Floor(location.Z);
+
+                if (!ctx.CanWalkThrough(sx, sy, sz) && ctx.CanWalkThrough(sx, sy + 1, sz))
+                    sy++;
+
+                Log.Info($"[Navigate] A* search from ({sx},{sy},{sz}) to {goal}");
+
+                using var cts = new CancellationTokenSource();
+                var result = finder.Calculate(ctx, sx, sy, sz, goal, cts.Token, timeoutMs);
+
+                Log.Info($"[Navigate] A* result: {result.Status}, nodes={result.NodesExplored}, " +
+                         $"time={result.ElapsedMs}ms, path length={result.Path.Count}");
+
+                if (result.Status == Pathing.Core.PathStatus.Failed || result.Path.Count < 2)
+                {
+                    return (false, string.Format(Translations.cmd_goto_failed,
+                        result.NodesExplored, result.ElapsedMs));
+                }
+
+                for (int i = 1; i < result.Path.Count; i++)
+                {
+                    var node = result.Path[i];
+                    Log.Debug($"[Navigate]   seg[{i - 1}] = {node.MoveUsed}: ({node.X},{node.Y},{node.Z})");
+                }
+
+                pathTarget = null;
+                path = null;
+
+                pathSegmentManager = new Pathing.Execution.PathSegmentManager(
+                    debugLog: msg => Log.Debug(msg),
+                    infoLog: msg => Log.Info(msg));
+                pathSegmentManager.StartNavigation(goal, result);
+
+                string statusStr = result.Status == Pathing.Core.PathStatus.Partial ? " (partial)" : "";
+                return (true, string.Format(Translations.cmd_goto_success,
+                    result.Path.Count - 1, result.NodesExplored, result.ElapsedMs, statusStr));
+            }
+        }
+
+        /// <summary>
+        /// Navigate to a block location using the new A* pathfinder and template-based execution.
+        /// Convenience overload that creates a GoalBlock from the location.
+        /// Returns a description of the result for UI feedback.
+        /// </summary>
+        public (bool success, string message) MoveToAStar(Location goal, long timeoutMs = 5000)
+        {
+            int gx = (int)Math.Floor(goal.X);
+            int gy = (int)Math.Floor(goal.Y);
+            int gz = (int)Math.Floor(goal.Z);
+
+            lock (locationLock)
+            {
+                var ctx = new Pathing.Core.CalculationContext(world);
+                if (!ctx.CanWalkThrough(gx, gy, gz) && ctx.CanWalkThrough(gx, gy + 1, gz))
+                    gy++;
+            }
+
+            var pathGoal = new Pathing.Goals.GoalBlock(gx, gy, gz);
+            return NavigateToGoal(pathGoal, timeoutMs);
         }
 
         /// <summary>
@@ -3192,52 +3273,91 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Drive the physics engine input based on the current A* path.
-        /// Converts discrete waypoint pathfinding into continuous movement input.
+        /// Drive the physics engine input based on the current path.
+        /// Uses template-based PathSegmentManager when available, falls back to legacy waypoints.
         /// </summary>
         private void UpdatePathfindingInput()
         {
             physicsInput.Reset();
 
-            // Still heading toward a target (even if path queue is empty)
-            if (pathTarget is not null && ReachedWaypoint(pathTarget.Value))
+            // Template-based execution (new system)
+            if (pathSegmentManager is not null && pathSegmentManager.IsNavigating)
             {
-                // Arrived at current waypoint — advance to next, or finish
-                if (path is not null && path.Count > 0)
-                {
-                    pathTarget = path.Dequeue();
-                    if (Config.Main.Advanced.MoveHeadWhileWalking)
-                        UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
-                }
-                else
-                {
-                    pathTarget = null;
-                    path = null;
-                }
+                pathSegmentManager.Tick(location, playerPhysics, physicsInput, world);
+                playerYaw = playerPhysics.Yaw;
+                playerPitch = playerPhysics.Pitch;
+                _yaw = playerYaw;
+                _pitch = playerPitch;
+                return;
             }
 
-            // Need a first target from a fresh path
+            // Legacy waypoint-based execution
+            if (pathTarget is not null && ReachedWaypoint(pathTarget.Value))
+                AdvanceWaypoint();
+
             if (pathTarget is null && path is not null && path.Count > 0)
+                AdvanceWaypoint();
+
+            if (pathTarget is not null)
+            {
+                if (path is not null && path.Count > 0)
+                {
+                    var target = pathTarget.Value;
+                    double dx = target.X - location.X;
+                    double dz = target.Z - location.Z;
+                    double dy = target.Y - location.Y;
+                    double horizDistSq = dx * dx + dz * dz;
+
+                    bool isVerticalWaypoint = horizDistSq < 0.5 && Math.Abs(dy) > 0.3;
+                    if (isVerticalWaypoint)
+                    {
+                        var next = path.Peek();
+                        double ndx = next.X - target.X;
+                        double ndz = next.Z - target.Z;
+                        bool nextIsHorizontal = ndx * ndx + ndz * ndz > 0.3;
+
+                        if (nextIsHorizontal && Math.Abs(dy) < 1.0)
+                        {
+                            AdvanceWaypoint();
+                        }
+                    }
+                }
+
+                SetInputToward(pathTarget.Value);
+            }
+        }
+
+        private void AdvanceWaypoint()
+        {
+            if (path is not null && path.Count > 0)
             {
                 pathTarget = path.Dequeue();
                 if (Config.Main.Advanced.MoveHeadWhileWalking)
                     UpdateLocation(location, pathTarget.Value + new Location(0, 1, 0));
             }
-
-            if (pathTarget is not null)
+            else
             {
-                SetInputToward(pathTarget.Value);
+                pathTarget = null;
+                path = null;
             }
         }
 
         /// <summary>
         /// Check if the player has approximately reached a waypoint.
+        /// Uses both horizontal and vertical distance for climb/descend waypoints.
         /// </summary>
         private bool ReachedWaypoint(Location target)
         {
             double dx = target.X - location.X;
             double dz = target.Z - location.Z;
-            return dx * dx + dz * dz < 0.25; // within ~0.5 blocks horizontally
+            double dy = target.Y - location.Y;
+            double horizDistSq = dx * dx + dz * dz;
+
+            // Vertical waypoint (climbing/falling): require reaching target Y level
+            if (horizDistSq < 0.5 && Math.Abs(dy) > 0.8)
+                return false;
+
+            return horizDistSq < 0.25 && Math.Abs(dy) < 0.8;
         }
 
         /// <summary>
@@ -3251,7 +3371,47 @@ namespace MinecraftClient
             double dy = target.Y - location.Y;
             double distSqr = dx * dx + dz * dz;
 
-            if (distSqr < 0.01) return; // Close enough horizontally
+            // Climbing: target is above/below with small horizontal offset
+            if (playerPhysics.OnClimbable && Math.Abs(dy) > 0.5 && distSqr < 1.0)
+            {
+                if (dy > 0)
+                {
+                    physicsInput.Jump = true;
+                    // Push against the wall for HorizontalCollision-triggered climbing
+                    if (distSqr > 0.01)
+                    {
+                        float yaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);
+                        if (yaw < 0) yaw += 360;
+                        playerPhysics.Yaw = yaw;
+                        playerYaw = yaw;
+                        physicsInput.Forward = true;
+                    }
+                    else
+                    {
+                        physicsInput.Forward = true;
+                    }
+                }
+                else
+                {
+                    physicsInput.Sneak = false;
+                }
+                return;
+            }
+
+            // Non-climbing vertical jump
+            if (distSqr < 0.1 && dy > 0.5 && playerPhysics.OnGround)
+            {
+                physicsInput.Jump = true;
+                return;
+            }
+
+            if (distSqr < 0.01)
+            {
+                // Vertically aligned but need to reach different Y: set Jump when on ground
+                if (dy > 0.3 && playerPhysics.OnGround)
+                    physicsInput.Jump = true;
+                return;
+            }
 
             // Calculate yaw to face target
             float targetYaw = (float)(-Math.Atan2(dx, dz) / Math.PI * 180.0);
@@ -3278,7 +3438,14 @@ namespace MinecraftClient
         /// <returns>true if a movement is currently handled</returns>
         public bool ClientIsMoving()
         {
-            return terrainAndMovementsEnabled && locationReceived && path is not null && path.Count > 0;
+            if (terrainAndMovementsEnabled && locationReceived)
+            {
+                if (pathSegmentManager is not null && pathSegmentManager.IsNavigating)
+                    return true;
+                if (path is not null && path.Count > 0)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -3287,7 +3454,16 @@ namespace MinecraftClient
         /// <returns>Current goal of movement. Location.Zero if not set.</returns>
         public Location GetCurrentMovementGoal()
         {
-            return (ClientIsMoving() || path is null) ? Location.Zero : path.Last();
+            if (pathSegmentManager is not null && pathSegmentManager.IsNavigating)
+            {
+                if (pathSegmentManager.Goal is Pathing.Goals.GoalBlock gb)
+                    return new Location(gb.X + 0.5, gb.Y, gb.Z + 0.5);
+            }
+
+            if (path is not null && path.Count > 0)
+                return path.Last();
+
+            return Location.Zero;
         }
 
         /// <summary>
@@ -3298,6 +3474,9 @@ namespace MinecraftClient
         {
             bool success = ClientIsMoving();
             path = null;
+            pathTarget = null;
+            pathSegmentManager?.Cancel();
+            pathSegmentManager = null;
             return success;
         }
 
@@ -3311,7 +3490,7 @@ namespace MinecraftClient
             {
                 case MovementType.Sneak:
                     // https://minecraft.wiki/w/Sneaking#Effects - Sneaking  1.31m/s
-                    Config.Main.Advanced.MovementSpeed = 2;
+                    Config.Main.Advanced.MovementSpeed = 1;
                     break;
                 case MovementType.Walk:
                     // https://minecraft.wiki/w/Walking#Usage - Walking 4.317 m/s

@@ -121,6 +121,29 @@ _mcc_build_root() {
   printf '%s\n' "$MCC_REPO_ROOT"
 }
 
+_mcc_runtime_output_dir() {
+  printf '%s/MinecraftClient/bin/Release/net10.0\n' "$(_mcc_build_root)"
+}
+
+_mcc_runtime_app_path() {
+  local runtime_dir runtime_host runtime_dll
+  runtime_dir="$(_mcc_runtime_output_dir)"
+  runtime_host="$runtime_dir/MinecraftClient"
+  runtime_dll="$runtime_dir/MinecraftClient.dll"
+
+  if [[ -x "$runtime_host" ]]; then
+    printf '%s\n' "$runtime_host"
+    return 0
+  fi
+
+  if [[ -f "$runtime_dll" ]]; then
+    printf '%s\n' "$runtime_dll"
+    return 0
+  fi
+
+  return 1
+}
+
 _mcc_dotnet_env() {
   if [[ "${MCC_BUILD_MODE:-local}" == "tmpfs" ]]; then
     local build_root

@@ -12,11 +12,11 @@ Systematic workflow for updating Minecraft Console Client to support a new Minec
 - Decompiled server source for both the old and new MC versions in `$MCC_REPO/MinecraftOfficial/<version>-decompiled/`
 - If missing, decompile and download server.jar:
   ```bash
-  $MCC_REPO/tools/decompile.sh --version <ver>
+  $MCC_REPO/tools/decompile.sh --version <ver>-Vanilla
   ```
-  This auto-downloads `MinecraftDecompiler.jar` if needed, produces the decompiled source, and downloads `server.jar` into `$MCC_SERVERS/<ver>/`.
-- `tools/decompile.sh` depends on official mappings. For older versions where it refuses to decompile, fall back to a raw Java decompiler such as `cfr-decompiler` against `$MCC_SERVERS/<ver>/server.jar`. That fallback is good enough for packet inspection and registration order checks even when the output is obfuscated.
-- A test server of the target version in `$MCC_SERVERS/<version>/` (see `mcc-dev-workflow` skill)
+  This auto-downloads `MinecraftDecompiler.jar` if needed, produces the decompiled source under `$MCC_REPO/MinecraftOfficial/<mc-version>-decompiled/`, and downloads `server.jar` into `$MCC_SERVERS/<ver>-Vanilla/`.
+- `tools/decompile.sh` depends on official mappings. For older versions where it refuses to decompile, fall back to a raw Java decompiler such as `cfr-decompiler` against `$MCC_SERVERS/<ver>-Vanilla/server.jar`. That fallback is good enough for packet inspection and registration order checks even when the output is obfuscated.
+- A test server of the target version in `$MCC_SERVERS/<version>-Vanilla/` (see `mcc-dev-workflow` skill)
 
 ## Step 0: Generate Server Reports (CRITICAL since 1.21.9)
 

@@ -1,0 +1,609 @@
+# Startup Config File
+# Please do not record extraneous data in this file as it will be overwritten by MCC.
+# 
+# New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
+# Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download
+[Head]
+"Current Version" = "Development Build"
+"Latest Version" = "GitHub build 414, built on 2026-04-07"
+
+[Main]
+[Main.General]
+Account = { Login = "CursorBot", Password = "-" }
+Server = { Host = "mc.hypixel.net", Port = 25565 } # The address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)
+AccountType = "mojang"
+Method = "mcc"                              # Microsoft Account sign-in method: "mcc" (device code, supports 2FA) OR "browser" (manual browser login).
+AuthUser = ""                               # Yggdrasil authlib multi-user selection.
+[Main.General.AuthServer]                   # authlib-injector authentication server to use for Yggdrasil accounts
+Port = 443                                  # Port to connect on
+AuthlibInjectorAPIPath = "/api/yggdrasil"   # Path component of the authlib-injector API location. Refer to the authlib-injector documentation for more info.
+UseHttps = true                             # Set to false if your authlib-injector server uses plain HTTP (e.g. for local testing without TLS).
+Host = ""                                   # Domain name or IP address
+
+
+# Make sure you understand what each setting does before changing anything!
+[Main.Advanced]
+EnableSentry = true                         # Set to false to opt-out of Sentry error logging.
+Language = "zh_cn"                          # Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html
+LoadMccTranslation = true                   # Load translations applied to MCC when available, turn it off to use English only.
+ConsoleTitle = "%username%@%serverip% - Minecraft Console Client"
+InternalCmdChar = "slash"                   # Use "none", "slash"(/) or "backslash"(\).
+MessageCooldown = 1.0                       # Controls the minimum interval (in seconds) between sending each message to the server.
+MaxChatMessageLength = 0                    # Override the maximum chat message length. Set to 0 to use the default (100 for 1.10 and below, 256 for 1.11+). WARNING: Setting this incorrectly may cause you to be kicked from the server.
+BotOwners = [ "player1", "player2", ]       # Set the owner of the bot. /!\ Server admins can impersonate owners!
+MinecraftVersion = "CursorBot"                   # Use "auto" or "1.X.X" values. Allows to skip server info retrieval.
+EnableForge = "no"                          # Use "auto", "no" or "force". Force-enabling only works for MC 1.13+.
+BrandInfo = "mcc"                           # Use "mcc", "vanilla" or "none". This is how MCC identifies itself to the server.
+ChatbotLogFile = ""                         # Leave empty for no logfile.
+PrivateMsgsCmdName = "tell"                 # For remote control of the bot.
+ShowSystemMessages = true                   # System messages for server ops.
+ShowXPBarMessages = true                    # Messages displayed above xp bar, set this to false in case of xp bar spam.
+ShowChatLinks = true                        # Decode links embedded in chat messages and show them in console.
+ShowInventoryLayout = true                  # Show inventory layout as ASCII art in inventory command.
+ShowEffectNamesInTUI = false                # Show full effect names and levels in the TUI status bar instead of compact effect icons only.
+ShowGithubStarReminder = true               # Show a GitHub star reminder on startup. Set to false to hide it.
+TerrainAndMovements = true                  # Uses more ram, cpu, bandwidth but allows you to move around.
+MoveHeadWhileWalking = true                 # Enable head movement while walking to avoid anti-cheat triggers.
+MovementSpeed = 2                           # A movement speed higher than 2 may be considered cheating.
+TemporaryFixBadpacket = false               # Temporary fix for Badpacket issue on some servers. Need to enable "TerrainAndMovements" first.
+InventoryHandling = true                    # Toggle inventory handling.
+EntityHandling = true                       # Toggle entity handling.
+SessionCache = "disk"                       # How to retain session tokens. Use "none", "memory" or "disk".
+ProfileKeyCache = "disk"                    # How to retain profile key. Use "none", "memory" or "disk".
+ResolveSrvRecords = "fast"                  # Use "no", "fast" (5s timeout), or "yes". Required for joining some servers.
+PlayerHeadAsIcon = true                     # Only works on Windows XP-8 or Windows 10 with old console.
+ExitOnFailure = false                       # Whether to exit directly when an error occurs, for using MCC in non-interactive scripts.
+CacheScript = true                          # Cache compiled scripts for faster load on low-end devices.
+Timestamps = false                          # Prepend timestamps to chat messages.
+AutoRespawn = true                         # Toggle auto respawn if client player was dead (make sure your spawn point is safe).
+MinecraftRealms = false                     # Enable support for joining Minecraft Realms worlds.
+TcpTimeout = 30                             # Customize the TCP connection timeout with the server. (in seconds)
+EnableEmoji = true                          # If turned off, the emoji will be replaced with a simpler character (for /chunk status).
+MinTerminalWidth = 16                       # The minimum width used when calculating the image size from the width of the terminal.
+MinTerminalHeight = 10                      # The minimum height to use when calculating the image size from the height of the terminal.
+IgnoreInvalidPlayerName = true              # Ignore invalid player name
+# AccountList: It allows a fast account switching without directly using the credentials
+# Usage examples: "/tell <mybot> reco Player2", "/connect <serverip> Player1"
+[Main.Advanced.AccountList]
+AccountNikename1 = { Login = "playerone@email.com", Password = "thepassword" }
+AccountNikename2 = { Login = "TestBot", Password = "-" }
+
+# ServerList: It allows an easier and faster server switching with short aliases instead of full server IP
+# Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
+# Usage examples: "/tell <mybot> connect Server1", "/connect Server2"
+[Main.Advanced.ServerList]
+ServerAlias1 = { Host = "mc.awesomeserver.com" }
+ServerAlias2 = { Host = "192.168.1.27", Port = 12345 }
+
+
+
+# Chat signature related settings (affects minecraft 1.19+)
+[Signature]
+LoginWithSecureProfile = true               # Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with "enforce-secure-profile=true"
+SignChat = true                             # Whether to sign the chat send from MCC
+SignMessageInCommand = true                 # Whether to sign the messages contained in the commands sent by MCC. For example, the message in "/msg" and "/me"
+MarkLegallySignedMsg = true                 # Use green  color block to mark chat with legitimate signatures
+MarkModifiedMsg = true                      # Use yellow color block to mark chat that have been modified by the server.
+MarkIllegallySignedMsg = true               # Use red    color block to mark chat without legitimate signature
+MarkSystemMessage = true                    # Use gray   color block to mark system message (always without signature)
+ShowModifiedChat = true                     # Set to true to display messages modified by the server, false to display the original signed messages
+ShowIllegalSignedChat = true                # Whether to display chat and messages in commands without legal signatures
+
+# This setting affects only the messages in the console.
+[Logging]
+DebugMessages = true                        # Please enable this before submitting bug reports. Thanks!
+ChatMessages = true                         # Show server chat messages.
+InfoMessages = true                         # Informative messages. (i.e Most of the message from MCC)
+WarningMessages = true                      # Show warning messages.
+ErrorMessages = true                        # Show error messages.
+ChatFilterRegex = ".*"                      # Regex for filtering chat message.
+DebugFilterRegex = ".*"                     # Regex for filtering debug message.
+FilterMode = "disable"                      # "disable" or "blacklist" OR "whitelist". Blacklist hide message match regex. Whitelist show message match regex.
+LogToFile = false                           # Write log messages to file.
+LogFile = "console-log.txt"                 # Log file name.
+PrependTimestamp = false                    # Prepend timestamp to messages in log file.
+SaveColorCodes = false                      # Keep color codes in the saved text.(look like "§b")
+
+[Console]
+[Console.General]
+ConsoleMode = "classic"                     # Console mode: "classic" for the standard terminal, "tui" for a pseudo-graphical full-screen interface.
+ConsoleColorMode = "vt100_4bit"             # Use "disable", "legacy_4bit", "vt100_4bit", "vt100_8bit" or "vt100_24bit". If a garbled code like "←[0m" appears on the terminal, you can try switching to "legacy_4bit" mode, or just disable it.
+Display_Icon_Banner = true                  # Whether to display the MCC startup icon banner.
+Display_Input = true                        # You can use "Ctrl+P" to print out the current input and cursor position.
+History_Input_Records = 32                  # Maximum number of input history records to keep.
+TUI_Log_Scrollback = 0                      # Maximum log lines kept in TUI mode scrollback. Set to 0 for automatic.
+
+# The settings for command completion suggestions.
+# Custom colors are only available when using "vt100_24bit" color mode.
+[Console.CommandSuggestion]
+Enable = true                               # Whether to display command suggestions in the console.
+Enable_Color = true
+Use_Basic_Arrow = false                     # Enable this option if the arrows in the command suggestions are not displayed properly in your terminal.
+Max_Suggestion_Width = 30
+Max_Displayed_Suggestions = 10
+Text_Color = "#f8fafc"
+Text_Background_Color = "#64748b"
+Highlight_Text_Color = "#334155"
+Highlight_Text_Background_Color = "#fde047"
+Tooltip_Color = "#7dd3fc"
+Highlight_Tooltip_Color = "#3b82f6"
+Arrow_Symbol_Color = "#d1d5db"
+
+# Settings for the TUI minimap overlay that shows terrain and entities.
+[Console.Minimap]
+Enabled = true                              # Whether the minimap is visible on startup in TUI mode.
+Zoom = 2                                    # Blocks per pixel, 1-16. 1 = closest (1:1), 16 = farthest (16 blocks per pixel).
+Width = 40                                  # Map width in pixels (characters). Range 10-120, default 40.
+Height = 40                                 # Map height in pixels (must be even, uses half-block chars). Range 4-80, default 40.
+Position = "top_right"                      # Minimap position: "top_left", "top_right", "center", "bottom_left", or "bottom_right".
+ShowPlayerNames = false                     # Show player names on the minimap.
+ShowHostileNames = false                    # Show hostile mob names on the minimap.
+ShowNeutralNames = false                    # Show neutral mob names on the minimap.
+ShowPassiveNames = false                    # Show passive mob names on the minimap.
+RefreshInterval = 1000                      # Minimap refresh interval in milliseconds (100-5000).
+CaveMode = "auto"                           # Cave rendering mode: "auto" (detect ceiling), "on" (always cave view), "off" (always surface view).
+
+# Settings for the /tab command and live TUI tab overlay.
+[Console.TabList]
+ShowTeams = false                           # Show a separate team column in /tab output. Disabled by default for a more vanilla-like player list.
+
+
+[AppVar]
+# can be used in some other fields as %yourvar%
+# %username%, %login%, %serverip%, %serverport%, %datetime% and %players% are reserved read-only variables.
+[AppVar.VarStirng]
+your_var = "your_value"
+"your var 2" = "your value 2"
+
+
+# Connect to a server via a proxy instead of connecting directly
+# If Mojang session services are blocked on your network, set Enabled_Login=true to login using proxy.
+# If the connection to the Minecraft game server is blocked by the firewall, set Enabled_Ingame=true to use a proxy to connect to the game server.
+# /!\ Make sure your server rules allow Proxies or VPNs before setting enabled=true, or you may face consequences!
+[Proxy]
+Enabled_Update = false                      # Whether to download MCC updates via proxy.
+Enabled_Login = false                       # Whether to connect to the login server through a proxy.
+Enabled_Ingame = false                      # Whether to connect to the game server through a proxy.
+Server = { Host = "0.0.0.0", Port = 8080 }  # Proxy server must allow HTTPS for login, and non-443 ports for playing.
+Proxy_Type = "HTTP"                         # Supported types: "HTTP", "SOCKS4", "SOCKS4a", "SOCKS5".
+Username = ""                               # Only required for password-protected proxies.
+Password = ""                               # Only required for password-protected proxies.
+
+# Settings below are sent to the server and only affect server-side things like your skin.
+[MCSettings]
+Enabled = true                              # If disabled, settings below are not sent to the server.
+Locale = "zh_CN"                            # Use any language implemented in Minecraft.
+RenderDistance = 8                          # Value range: [0 - 255].
+Difficulty = "peaceful"                     # MC 1.7- difficulty. "peaceful", "easy", "normal", "difficult".
+ChatMode = "enabled"                        # Use "enabled", "commands", or "disabled". Allows to mute yourself...
+ChatColors = true                           # Allows disabling chat colors server-side.
+MainHand = "left"                           # MC 1.9+ main hand. "left" or "right".
+[MCSettings.Skin]
+Cape = true
+Hat = true
+Jacket = false
+Sleeve_Left = false
+Sleeve_Right = false
+Pants_Left = false
+Pants_Right = false
+
+
+# MCC does it best to detect chat messages, but some server have unusual chat formats
+# When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section
+[ChatFormat]
+Builtins = true                             # MCC support for common message formats. Set "false" to avoid conflicts with custom formats.
+UserDefined = false                         # Whether to use the custom regular expressions below for detection.
+Public = "^<([a-zA-Z0-9_]+)> (.+)$"
+Private = "^([a-zA-Z0-9_]+) whispers to you: (.+)$"
+TeleportRequest = '^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$'
+
+# =============================== #
+#  Minecraft Console Client Bots  #
+# =============================== #
+[ChatBot]
+# Get alerted when specified words are detected in chat
+# Useful for moderating your server or detecting when someone is talking to you
+[ChatBot.Alerts]
+Enabled = false
+Beep_Enabled = true                         # Play a beep sound when a word is detected in addition to highlighting.
+Trigger_By_Words = false                    # Triggers an alert after receiving a specified keyword.
+Trigger_By_Rain = false                     # Trigger alerts when it rains and when it stops.
+Trigger_By_Thunderstorm = false             # Triggers alerts at the beginning and end of thunderstorms.
+Log_To_File = false                         # Log alerts info a file.
+Log_File = "alerts-log.txt"                 # The name of a file where alers logs will be written.
+# List of words/strings to alert you on.
+Matches = [ "Yourname", " whispers ", "-> me", "admin", ".com", ]
+# List of words/strings to NOT alert you on.
+Excludes = [ "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is", ]
+
+# Send a command on a regular or random basis or make the bot walk around randomly to avoid automatic AFK disconnection
+# /!\ Make sure your server rules do not forbid anti-AFK mechanisms!
+# /!\ Make sure you keep the bot in an enclosure to prevent it wandering off if you're using terrain handling! (Recommended size 5x5x5)
+[ChatBot.AntiAFK]
+Enabled = false
+Delay = { min = 60.0, max = 60.0 }          # The time interval for execution. (in seconds)
+Command = "/ping"                           # Command to send to the server.
+Use_Sneak = false                           # Whether to sneak when sending the command.
+Use_Terrain_Handling = false                # Use terrain handling to enable the bot to move around.
+Walk_Range = 5                              # The range the bot can move around randomly (Note: the bigger the range, the slower the bot will be)
+Walk_Retries = 20                           # How many times can the bot fail trying to move before using the command method.
+
+# Automatically attack hostile mobs around you
+# You need to enable Entity Handling to use this bot
+# /!\ Make sure server rules allow your planned use of AutoAttack
+# /!\ SERVER PLUGINS may consider AutoAttack to be a CHEAT MOD and TAKE ACTION AGAINST YOUR ACCOUNT so DOUBLE CHECK WITH SERVER RULES!
+[ChatBot.AutoAttack]
+Enabled = false
+Mode = "single"                             # "single" or "multi". single target one mob per attack. multi target all mobs in range per attack
+Priority = "distance"                       # "health" or "distance". Only needed when using single mode
+Cooldown_Time = { Custom = false, value = 1.0 } # How long to wait between each attack. Set "Custom = false" to let MCC calculate it.
+Interaction = "Attack"                      # Possible values: "Interact", "Attack" (default), "InteractAt" (Interact and Attack).
+Attack_Range = 4.0                          # Capped between 1 to 4
+Attack_Hostile = true                       # Allow attacking hostile mobs.
+Attack_Passive = false                      # Allow attacking passive mobs.
+List_Mode = "whitelist"                     # Wether to treat the entities list as a "whitelist" or as a "blacklist".
+Entites_List = [ "Zombie", "Cow", ]         # All entity types can be found here: https://mccteam.github.io/r/entity/#L15
+
+# Automatically craft items in your inventory
+# See https://mccteam.github.io/g/bots/#auto-craft for how to use
+# You need to enable Inventory Handling to use this bot
+# You should also enable Terrain and Movements if you need to use a crafting table
+[ChatBot.AutoCraft]
+Enabled = false
+CraftingTable = { X = 123.0, Y = 65.0, Z = 456.0 } # Location of the crafting table if you intended to use it. Terrain and movements must be enabled.
+OnFailure = "abort"                         # What to do on crafting failure, "abort" or "wait".
+# Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
+# Recipes.Type: crafting table type: "player" or "table"
+# Recipes.Result: the resulting item
+# Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
+# For the naming of the items, please see: https://mccteam.github.io/r/item/#L12
+
+[[ChatBot.AutoCraft.Recipes]]
+Name = "Recipe-Name-1"
+Type = "player"
+Result = "StoneBricks"
+Slots = [ "Stone", "Stone", "Stone", "Stone", ]
+
+[[ChatBot.AutoCraft.Recipes]]
+Name = "Recipe-Name-2"
+Type = "table"
+Result = "StoneBricks"
+Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]
+
+
+# Auto-digging blocks.
+# You need to enable Terrain Handling to use this bot
+# You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
+# Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
+# For the naming of the block, please see https://mccteam.github.io/r/block/#L15
+[ChatBot.AutoDig]
+Enabled = false
+Auto_Tool_Switch = false                    # Automatically switch to the appropriate tool.
+Durability_Limit = 2                        # Will not use tools with less durability than this. Set to zero to disable this feature.
+Drop_Low_Durability_Tools = false           # Whether to drop the current tool when its durability is too low.
+Mode = "lookat"                             # "lookat", "fixedpos" or "both". Digging the block being looked at, the block in a fixed position, or the block that needs to be all met.
+# The position of the blocks when using "fixedpos" or "both" mode.
+Locations = [
+	{ x = 123.5, y = 64.0, z = 234.5 },
+	{ x = 124.5, y = 63.0, z = 235.5 },
+]
+Location_Order = "distance"                 # "distance" or "index", When using the "fixedpos" mode, the blocks are determined by distance to the player, or by the order in the list.
+Auto_Start_Delay = 3.0                      # How many seconds to wait after entering the game to start digging automatically, set to -1 to disable automatic start.
+Dig_Timeout = 60.0                          # Mining a block for more than "Dig_Timeout" seconds will be considered a timeout.
+Log_Block_Dig = true                        # Whether to output logs when digging blocks.
+List_Type = "whitelist"                     # Wether to treat the blocks list as a "whitelist" or as a "blacklist".
+Blocks = [ "Cobblestone", "Stone", ]
+
+# Automatically drop items in inventory
+# You need to enable Inventory Handling to use this bot
+# See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12
+[ChatBot.AutoDrop]
+Enabled = false
+Mode = "include"                            # "include", "exclude" or "everything". Include: drop item IN the list. Exclude: drop item NOT IN the list
+Items = [ "Cobblestone", "Dirt", ]
+
+# Automatically eat food when your Hunger value is low
+# You need to enable Inventory Handling to use this bot
+[ChatBot.AutoEat]
+Enabled = false
+Threshold = 6
+
+# Automatically catch fish using a fishing rod
+# Guide: https://mccteam.github.io/g/bots/#auto-fishing
+# You can use "/fish" to control the bot manually.
+# /!\ Make sure server rules allow automated farming before using this bot
+[ChatBot.AutoFishing]
+Enabled = true
+Antidespawn = false                         # Keep it as false if you have not changed it before.
+Mainhand = true                             # Use the mainhand or the offhand to hold the rod.
+Auto_Start = true                           # Whether to start fishing automatically after entering a world.
+Cast_Delay = 0.4                            # How soon to re-cast after successful fishing.
+Fishing_Delay = 3.0                         # How long after entering the game to start fishing (seconds).
+Fishing_Timeout = 300.0                     # Fishing timeout (seconds). Timeout will trigger a re-cast.
+Durability_Limit = 2.0                      # Will not use rods with less durability than this (full durability is 64). Set to zero to disable this feature.
+Auto_Rod_Switch = true                      # Switch to a new rod from inventory after the current rod is unavailable.
+Stationary_Threshold = 0.001                # Hook movement in the X and Z axis less than this value will be considered stationary.
+Hook_Threshold = 0.2                        # A "stationary" hook that moves above this threshold in the Y-axis will be considered to have caught a fish.
+Enable_Velocity_Detection = true            # Enable fish bite detection using fishing bobber velocity packets.
+Velocity_Hook_Threshold = -0.2              # Velocity Y threshold (blocks/tick). Values below this are treated as a bite. Keep this value negative.
+Enable_Sound_Detection = true               # Enable fish bite detection using splash sounds near the fishing bobber.
+Sound_Distance = 5.0                        # Maximum distance (blocks) between splash sound and bobber to treat it as a bite.
+Detection_Warmup = 1.0                      # Delay (seconds) after bobber spawn before bite detection starts. Helps ignore cast-entry splash/motion.
+Log_Fish_Bobber = false                     # Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet.
+Enable_Move = false                         # This allows the player to change position/facing after each fish caught.
+# It will move in order "1->2->3->4->3->2->1->2->..." and can change position or facing or both each time. It is recommended to change the facing only.
+
+[[ChatBot.AutoFishing.Movements]]
+facing = { yaw = 12.34, pitch = -23.45 }
+
+[[ChatBot.AutoFishing.Movements]]
+XYZ = { x = 123.45, y = 64.0, z = -654.32 }
+facing = { yaw = -25.14, pitch = 36.25 }
+
+[[ChatBot.AutoFishing.Movements]]
+XYZ = { x = -1245.63, y = 63.5, z = 1.2 }
+
+
+# Automatically relog when disconnected by server, for example because the server is restating
+# /!\ Use Ignore_Kick_Message=true at own risk! Server staff might not appreciate if you auto-relog on manual kicks
+[ChatBot.AutoRelog]
+Enabled = true
+Delay = { min = 3.0, max = 3.0 }            # The delay time before joining the server. (in seconds)
+Retries = 2147483647                        # Retries when failing to relog to the server. use -1 for unlimited retries.
+Ignore_Kick_Message = true                  # When set to true, autorelog will reconnect regardless of kick messages.
+# If the kickout message matches any of the strings, then autorelog will be triggered.
+Kick_Messages = [ "connection has been lost", "server is restarting", "server is full", "too many people", ]
+
+# Run commands or send messages automatically when a specified pattern is detected in chat
+# Server admins can spoof chat messages (/nick, /tellraw) so keep this in mind when implementing AutoRespond rules
+# /!\ This bot may get spammy depending on your rules, although the global messagecooldown setting can help you avoiding accidental spam
+[ChatBot.AutoRespond]
+Enabled = false
+Matches_File = "matches.ini"
+Match_Colors = false                        # Do not remove colors from text (Note: Your matches will have to include color codes (ones using the § character) in order to work)
+
+# Logs chat messages in a file on disk.
+[ChatBot.ChatLog]
+Enabled = false
+Add_DateTime = true
+Log_File = "chatlog-%username%-%serverip%.txt"
+Filter = "messages"
+
+# This bot allows you to send and recieve messages and commands via a Discord channel.
+# For Setup you can either use the documentation or read here (Documentation has images).
+# Documentation: https://mccteam.github.io/g/bots/#discord-bridge
+# Setup:
+# First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
+# /!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
+# When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
+# Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
+# Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
+# This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
+# Once you've invited the bot, go to your Discord client and go to Settings -> Advanced and Enable "Developer Mode".
+# Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
+# Then right click on a channel where you want to interact with the bot and again right click -> "Copy ID", pase the copied id here in "ChannelId".
+# And for the end, send a message in the channel, right click on your nick and again right click -> "Copy ID", then paste the id here in "OwnersIds".
+# How to use:
+# To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+# To send a message, simply type it out and hit enter.
+[ChatBot.DiscordBridge]
+Enabled = false
+Token = "your bot token here"               # Your Discord Bot token.
+GuildId = 1018553894831403028               # The ID of a server/guild where you have invited the bot to.
+ChannelId = 1018565295654326364             # The ID of a channel where you want to interact with the MCC using the bot.
+OwnersIds = [ 978757810781323276, ]         # A list of IDs of people you want to be able to interact with the MCC using the bot.
+Message_Send_Timeout = 3                    # How long to wait (in seconds) if a message can not be sent to discord before canceling the task (minimum 1 second).
+Allow_Other_Bot_Messages = false            # When enabled, messages from other Discord bots in the channel will be relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.
+Relay_All_Messages = false                  # When enabled, all text received from the Minecraft server (including system messages, join/leave notifications, etc.) will be relayed to Discord, not just player chat and private messages.
+Message_Aggregation_Interval = 3.0          # Interval in seconds to aggregate messages before sending them to Discord. When set to 0, messages are sent immediately one by one. When set to a value like 1.0, messages received within that interval are batched into a single Discord message. Useful for reducing Discord API rate limits.
+# Message formats
+# Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+# For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+# For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html
+PrivateMessageFormat = "**[Private Message]** {username}: {message}"
+PublicMessageFormat = "{username}: {message}"
+TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!"
+
+# Automatically farms crops for you (plants, breaks and bonemeals them).
+# Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
+# Usage: "/farmer start" command and "/farmer stop" command.
+# NOTE: This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues like not being able to bonemeal carrots/potatoes sometimes.
+# or bot jumps onto the farm land and breaks it (this happens rarely but still happens). We are looking forward at improving this.
+# It is recommended to keep the farming area walled off and flat to avoid the bot jumping.
+# Also, if you have your farmland that is one block high, make it 2 or more blocks high so the bot does not fall through, as it can happen sometimes when the bot reconnects.
+# The bot also does not pickup all items if they fly off to the side, we have a plan to implement this option in the future as well as drop off and bonemeal refill chest(s).
+[ChatBot.Farmer]
+Enabled = false
+Delay_Between_Tasks = 1.0                   # Delay between tasks in seconds (Minimum 1 second)
+
+# Enabled you to make the bot follow you
+# NOTE: This is an experimental feature, the bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you
+# It's similar to making animals follow you when you're holding food in your hand.
+# This is due to a slow pathfinding algorithm, we're working on getting a better one
+# You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite,
+# this might clog the thread for terain handling) and thus slow the bot even more.
+# /!\ Make sure server rules allow an option like this in the rules of the server before using this bot
+[ChatBot.FollowPlayer]
+Enabled = false
+Update_Limit = 1.5                          # The rate at which the bot does calculations (in seconds) (You can tweak this if you feel the bot is too slow)
+Stop_At_Distance = 3.0                      # Do not follow the player if he is in the range of 3 blocks (prevents the bot from pushing a player in an infinite loop)
+
+# A small game to demonstrate chat interactions. Players can guess mystery words one letter at a time.
+# You need to have ChatFormat working correctly and add yourself in botowners to start the game with /tell <bot username> start
+# /!\ This bot may get a bit spammy if many players are interacting with it
+[ChatBot.HangmanGame]
+Enabled = false
+English = true
+FileWords_EN = "hangman-en.txt"
+FileWords_FR = "hangman-fr.txt"
+
+# Relay messages between players and servers, like a mail plugin
+# This bot can store messages when the recipients are offline, and send them when they join the server
+# /!\ Server admins can spoof PMs (/tellraw, /nick) so enable this bot only if you trust server admins
+[ChatBot.Mailer]
+Enabled = false
+DatabaseFile = "MailerDatabase.ini"
+IgnoreListFile = "MailerIgnoreList.ini"
+PublicInteractions = false
+MaxMailsPerPlayer = 10
+MaxDatabaseSize = 10000
+MailRetentionDays = 30
+
+# Allows you to render maps in the console and into images (which can be then sent to Discord using Discord Bridge Chat Bot)
+# This is useful for solving captchas which use maps
+# The maps are rendered into Rendered_Maps folder if the Save_To_File is enabled.
+# NOTE:
+# If some servers have a very short time for solving captchas, enabe Auto_Render_On_Update to see them immediatelly in the console.
+# /!\ Make sure server rules allow bots to be used on the server, or you risk being punished.
+[ChatBot.Map]
+Enabled = true
+Render_In_Console = true                    # Whether to render the map in the console.
+Save_To_File = false                        # Whether to store the rendered map as a file (You need this setting if you want to get a map on Discord using Discord Bridge).
+Auto_Render_On_Update = false               # Automatically render the map once it is received or updated from/by the server
+Delete_All_On_Unload = true                 # Delete all rendered maps on unload/reload or when you launch the MCC again.
+Notify_On_First_Update = true               # Get a notification when you have gotten a map from the server for the first time
+Rasize_Rendered_Image = false               # Resize an rendered image, this is useful when images that are rendered are small and when are being sent to Discord.
+Resize_To = 512                             # The size that a rendered image should be resized to, in pixels (eg. 512).
+# Send a rendered map (saved to a file) to a Discord or a Telegram channel via the Discord or Telegram Bride chat bot (The Discord/Telegram Bridge chat bot must be enabled and configured!)
+# You need to enable Save_To_File in order for this to work.
+# We also recommend turning on resizing.
+Send_Rendered_To_Discord = false
+Send_Rendered_To_Telegram = false
+
+# Log the list of players periodically into a textual file.
+[ChatBot.PlayerListLogger]
+Enabled = false
+File = "playerlog.txt"
+Delay = 60.0                                # (In seconds)
+
+# Send MCC console commands to your bot through server PMs (/tell)
+# You need to have ChatFormat working correctly and add yourself in botowners to use the bot
+# /!\ Server admins can spoof PMs (/tellraw, /nick) so enable RemoteControl only if you trust server admins
+[ChatBot.RemoteControl]
+Enabled = false
+AutoTpaccept = true
+AutoTpaccept_Everyone = false
+
+# Enable recording of the game (/replay start) and replay it later using the Replay Mod (https://www.replaymod.com/)
+# Please note that due to technical limitations, the client player (you) will not be shown in the replay file
+# /!\ You SHOULD use /replay stop or exit the program gracefully with /quit OR THE REPLAY FILE MAY GET CORRUPT!
+[ChatBot.ReplayCapture]
+Enabled = false
+Backup_Interval = 300.0                     # How long should replay file be auto-saved, in seconds. Use -1 to disable.
+
+# Schedule commands and scripts to launch on various events such as server join, date/time or time interval
+# See https://mccteam.github.io/g/bots/#script-scheduler for more info
+[ChatBot.ScriptScheduler]
+Enabled = false
+
+[[ChatBot.ScriptScheduler.TaskList]]
+Task_Name = "Task Name 1"
+Trigger_On_First_Login = false
+Trigger_On_Login = false
+Trigger_On_Times = { Enable = true, Times = [ 14:00:00, ] }
+Trigger_On_Interval = { Enable = true, MinTime = 3.6, MaxTime = 4.8 }
+Action = "send /hello"
+
+[[ChatBot.ScriptScheduler.TaskList]]
+Task_Name = "Task Name 2"
+Trigger_On_First_Login = false
+Trigger_On_Login = true
+Trigger_On_Times = { Enable = false, Times = [ ] }
+Trigger_On_Interval = { Enable = false, MinTime = 1.0, MaxTime = 10.0 }
+Action = "send /login pass"
+
+
+# This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
+# /!\ NOTE: You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.
+# -----------------------------------------------------------
+# Setup:
+# First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
+# Click on "Start" button and read the bot reply, then type "/newbot", the Botfather will guide you through the bot creation.
+# Once you create the bot, copy the API key that you have gotten, and put it into the "Token" field of "ChatBot.TelegramBridge" section (this section).
+# /!\ Do not share this token with anyone else as it will give them the control over your bot. Save it securely.
+# Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
+# Click on "Start" button and type and send the following command ".chatid" to obtain the chat id. 
+# Copy the chat id number (eg. 2627844670) and paste it in the "ChannelId" field and add it to the "Authorized_Chat_Ids" field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
+# Now you can use the bot using it's DM.
+# /!\ If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!
+# /!\ An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!
+# -----------------------------------------------------------
+# NOTE: If you want to recieve messages to a group channel instead, make the channel temporarely public, invite the bot to it and make it an administrator, then set the channel to private if you want.
+# Then set the "ChannelId" field to the @ of your channel (you must include the @ in the settings, eg. "@mysupersecretchannel"), this is the username you can see in the invite link of the channel.
+# /!\ Only include the username with @ prefix, do not include the rest of the link. Example if you have "https://t.me/mysupersecretchannel", the "ChannelId" will be "@mysupersecretchannel".
+# /!\ Note that you will not be able to send messages to the client from a group channel!
+# -----------------------------------------------------------
+# How to use the bot:
+# To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+# To send a message, simply type it out and hit enter.
+[ChatBot.TelegramBridge]
+Enabled = false
+Token = "your bot token here"               # Your Telegram Bot token.
+ChannelId = ""                              # An ID of a channel where you want to interact with the MCC using the bot.
+Authorized_Chat_Ids = [ ]                   # A list of Chat IDs that are allowed to send messages and execute commands. To get an id of your chat DM with the bot use ".chatid" bot command in Telegram.
+Message_Send_Timeout = 3                    # How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).
+# Message formats
+# Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+# For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+# For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html
+PrivateMessageFormat = "*(Private Message)* {username}: {message}"
+PublicMessageFormat = "{username}: {message}"
+TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!"
+
+# A Chat Bot that collects items on the ground
+[ChatBot.ItemsCollector]
+Enabled = false
+Collect_All_Item_Types = true               # If set to true, the bot will collect all items, regardless of their type. If you want to use the whitelisted item types, disable this by setting it to false
+Items_Whitelist = [ "Diamond", "NetheriteIngot", ] # In this list you can specify which items the bot will collect. To enable this, set the Collect_All_Item_Types to false. (NOTE: This does not prevent the bot from accidentally picking up other items, it only goes to positions where it finds the whitelisted items)\nYou can see the list of item types here: https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs
+Delay_Between_Tasks = 300                   # Delay in milliseconds between bot scanning items (Recommended: 300-500)
+Collection_Radius = 30.0                    # The radius in which bot will look for items to collect (Default: 30)
+Always_Return_To_Start = true               # If set to true, the bot will return to it's starting position after there are no items to collect
+Prioritize_Clusters = false                 # If set to true, the bot will go after clustered items instead for the closest ones
+
+# Show a Discord Rich Presence status with your current Minecraft session info.
+# Setup:
+# 1. Go to https://discord.com/developers/applications and log in with your Discord account.
+# 2. Click "New Application", give it a name (e.g. "MCC") and confirm.
+# 3. On the application page, copy the "Application ID" and paste it in the "ApplicationId" field below.
+# 4. (Optional) Go to "Rich Presence" -> "Art Assets" to upload custom images for LargeImageKey/SmallImageKey.
+# Note: This does NOT require a Bot Token, only an Application ID. Discord must be running on the same machine as MCC.
+[ChatBot.DiscordRpc]
+Enabled = false
+ApplicationId = ""                          # Your Discord Application ID. Create one at https://discord.com/developers/applications
+PresenceDetails = "Playing on {server_host}:{server_port}" # The top line of the Rich Presence display. Supports placeholders.
+PresenceState = "{dimension} - HP: {health}/{max_health}" # The second line of the Rich Presence display. Supports placeholders.
+LargeImageKey = "mcc_icon"                  # The key of the large image asset uploaded to your Discord application.
+LargeImageText = "Minecraft Console Client" # Tooltip text for the large image. Supports placeholders.
+SmallImageKey = ""                          # The key of the small image asset uploaded to your Discord application (leave empty to hide).
+SmallImageText = ""                         # Tooltip text for the small image. Supports placeholders.
+ShowServerAddress = true                    # Show the server address (host and port) in the Discord presence. When disabled, {server_host} and {server_port} are masked.
+ShowCoordinates = true                      # Show the player coordinates in the Discord presence. When disabled, {x}, {y}, {z} are masked.
+ShowHealth = true                           # Show health and food level in the Discord presence. When disabled, {health}, {max_health}, {food} are masked.
+ShowDimension = true                        # Show the current dimension in the Discord presence. When disabled, {dimension} is masked.
+ShowGamemode = true                         # Show the current gamemode in the Discord presence. When disabled, {gamemode} is masked.
+ShowElapsedTime = true                      # Show elapsed session time in the Discord presence.
+ShowPlayerCount = true                      # Show the online player count as a party size in the Discord presence.
+UpdateIntervalSeconds = 10                  # How often (in seconds) to refresh the Discord presence. Minimum: 1
+
+# Host an embedded MCP server while connected to Minecraft. Disabled by default.
+[ChatBot.McpServer]
+Enabled = false                             # Enable the built-in embedded MCP server bot. Server starts only after game join and stops on disconnect.
+# Embedded MCP HTTP transport settings.
+[ChatBot.McpServer.Transport]
+BindHost = "127.0.0.1"                      # IP/host to bind the embedded MCP HTTP listener to. Default is loopback only.
+Port = 33333                                # TCP port for the embedded MCP HTTP listener.
+Route = "/mcp"                              # Route prefix where MCP endpoints are exposed.
+RequireAuthToken = false                    # Require Bearer token authentication for MCP endpoint requests.
+AuthTokenEnvVar = "MCC_MCP_AUTH_TOKEN"      # Environment variable name containing the MCP auth token when auth is required.
+
+# Enable or disable MCP tool categories.
+[ChatBot.McpServer.Capabilities]
+SessionStatus = true                        # Allow session and status inspection tools.
+ChatAndCommands = true                      # Allow chat and internal command tools.
+Movement = true                             # Allow movement and view-control tools.
+Inventory = true                            # Allow inventory read and action tools.
+EntityWorld = true                          # Allow entity and world inspection tools.
+
+
+
+

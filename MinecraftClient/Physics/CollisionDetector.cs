@@ -23,8 +23,8 @@ namespace MinecraftClient.Physics
             var colliders = CollectBlockColliders(world, entityBox.ExpandTowards(movement));
             Vec3d resolved = CollideWithShapes(movement, entityBox, colliders);
 
-            bool blockedX = movement.X != resolved.X;
-            bool blockedZ = movement.Z != resolved.Z;
+            bool blockedX = Math.Abs(movement.X - resolved.X) > 1.0E-5;
+            bool blockedZ = Math.Abs(movement.Z - resolved.Z) > 1.0E-5;
             bool blockedY = movement.Y != resolved.Y;
             bool hitGroundDuringMove = blockedY && movement.Y < 0.0;
 
@@ -59,7 +59,7 @@ namespace MinecraftClient.Physics
 
         /// <summary>
         /// Collide movement against a list of shapes using axis-separated resolution.
-        /// Matches Entity.collideWithShapes() — processes axes in order of smallest movement first.
+        /// Matches Entity.collideWithShapes() with vanilla's axis ordering (Y first, then larger horizontal axis).
         /// </summary>
         private static Vec3d CollideWithShapes(Vec3d movement, Aabb entityBox, List<Aabb> colliders)
         {
@@ -82,31 +82,14 @@ namespace MinecraftClient.Physics
         }
 
         /// <summary>
-        /// Get axis processing order: Y first if moving down, otherwise smallest absolute movement first.
-        /// Vanilla uses Direction.axisStepOrder(Vec3) which returns axes sorted by absolute movement.
+        /// Get axis processing order matching vanilla Direction.Axis.axisStepOrder(Vec3):
+        /// Y is always first, then the larger horizontal axis, then the smaller.
         /// </summary>
         private static int[] GetAxisStepOrder(Vec3d movement)
         {
-            double absX = Math.Abs(movement.X);
-            double absY = Math.Abs(movement.Y);
-            double absZ = Math.Abs(movement.Z);
-
-            if (absX > absZ)
-            {
-                if (absZ > absY)
-                    return new[] { 1, 2, 0 }; // Y Z X
-                if (absX > absY)
-                    return new[] { 1, 0, 2 }; // Y X Z
-                return new[] { 0, 1, 2 }; // X Y Z
-            }
-            else
-            {
-                if (absX > absY)
-                    return new[] { 1, 0, 2 }; // Y X Z
-                if (absZ > absY)
-                    return new[] { 1, 2, 0 }; // Y Z X
-                return new[] { 2, 1, 0 }; // Z Y X
-            }
+            return Math.Abs(movement.X) < Math.Abs(movement.Z)
+                ? [1, 2, 0]   // Y Z X
+                : [1, 0, 2];  // Y X Z
         }
 
         /// <summary>

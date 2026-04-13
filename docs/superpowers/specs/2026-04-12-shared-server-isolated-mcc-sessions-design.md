@@ -199,8 +199,8 @@ Expected defaults:
 Example commands:
 
 ```bash
-mcc-debug -v 1.21.11 --session alice-a --username AliceA --file-input
-mcc-debug -v 1.21.11 --session alice-b --username AliceB --file-input
+mcc-debug -v 1.21.11-Vanilla --session alice-a --username AliceA --file-input
+mcc-debug -v 1.21.11-Vanilla --session alice-b --username AliceB --file-input
 mcc-cmd --session alice-a "debug state"
 mcc-log-mcc --session alice-b
 mcc-kill --session alice-a
@@ -266,7 +266,7 @@ When possible, the error should print the resolved repo root, shared server root
 ### Manual Verification Matrix
 
 1. Build from two different worktrees at the same time and confirm isolated output roots.
-2. Start one shared `1.21.11` server and confirm only one `mc-1_21_11` session exists.
+2. Start one shared `1.21.11-Vanilla` server and confirm only one `mc-1_21_11-Vanilla` session exists.
 3. Launch two MCC sessions from two different worktrees without explicit usernames and confirm distinct derived usernames.
 4. Join both clients to the shared server and confirm neither client disconnects the other.
 5. Send different commands through each session's input file and confirm only the intended client responds.

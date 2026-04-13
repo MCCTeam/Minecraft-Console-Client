@@ -82,6 +82,26 @@ mkdir -p "$build_root/probe"
 mcc-build-clean
 [[ ! -e "$build_root/probe" ]]
 
+runtime_dir="$(_mcc_runtime_output_dir)"
+mkdir -p "$runtime_dir"
+printf '#!/usr/bin/env bash\n' > "$runtime_dir/MinecraftClient"
+chmod +x "$runtime_dir/MinecraftClient"
+printf '' > "$runtime_dir/MinecraftClient.dll"
+assert_eq "$runtime_dir/MinecraftClient" "$(_mcc_runtime_app_path)" "runtime apphost preferred"
+
+rm -f "$runtime_dir/MinecraftClient"
+assert_eq "$runtime_dir/MinecraftClient.dll" "$(_mcc_runtime_app_path)" "runtime dll fallback"
+
+rm -f "$runtime_dir/MinecraftClient.dll"
+set +e
+_mcc_runtime_app_path >/dev/null 2>&1
+status=$?
+set -e
+if [[ $status -eq 0 ]]; then
+    echo "FAIL: runtime app path resolved without runtime artifacts" >&2
+    exit 1
+fi
+
 session="wrapper-smoke"
 input_file="$(_mcc_session_input_file "$session")"
 rm -rf "$(_mcc_session_root "$session")"

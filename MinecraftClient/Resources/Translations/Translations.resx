@@ -1243,6 +1243,15 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.exit.desc" xml:space="preserve">
     <value>disconnect from the server.</value>
   </data>
+  <data name="cmd.goto.desc" xml:space="preserve">
+    <value>navigate to a location using A* pathfinding.</value>
+  </data>
+  <data name="cmd.goto.success" xml:space="preserve">
+    <value>Path found: {0} waypoints, {1} nodes explored in {2}ms{3}</value>
+  </data>
+  <data name="cmd.goto.failed" xml:space="preserve">
+    <value>No path found ({0} nodes explored in {1}ms)</value>
+  </data>
   <data name="cmd.follow.already_following" xml:space="preserve">
     <value>Already following {0}!</value>
   </data>
@@ -1537,6 +1546,12 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   </data>
   <data name="cmd.move.walk" xml:space="preserve">
     <value>Walking from {1} to {0}</value>
+  </data>
+  <data name="cmd.pathfind.desc" xml:space="preserve">
+    <value>Use new A* pathfinding to navigate to a location.</value>
+  </data>
+  <data name="cmd.pathfind.started" xml:space="preserve">
+    <value>Pathfinding to ({0}, {1}, {2})...</value>
   </data>
   <data name="cmd.reco.desc" xml:space="preserve">
     <value>restart and reconnect to the server.</value>
