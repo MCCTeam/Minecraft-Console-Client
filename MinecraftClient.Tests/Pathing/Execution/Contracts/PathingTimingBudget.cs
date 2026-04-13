@@ -3,9 +3,12 @@ using MinecraftClient.Pathing.Core;
 namespace MinecraftClient.Tests.Pathing.Execution.Contracts;
 
 public sealed record PathingSegmentTimingBudget(
-    MoveType Move,
-    int BudgetMs);
+    MoveType MoveType,
+    int ExpectedTicks,
+    int MaxTicks);
 
 public sealed record PathingTimingBudget(
-    int TotalBudgetMs,
-    PathingSegmentTimingBudget[] Segments);
+    string ScenarioId,
+    int ExpectedTotalTicks,
+    int MaxTotalTicks,
+    IReadOnlyList<PathingSegmentTimingBudget> Segments);

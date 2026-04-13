@@ -1,37 +1,38 @@
-{
-  "manager-accepted-ascend-chain": {
+[
+  {
+    "scenarioId": "manager-accepted-ascend-chain",
     "expectedStatus": "Success",
     "segments": [
       {
-        "move": "Diagonal",
-        "from": { "x": 171, "y": 80, "z": 160 },
-        "to": { "x": 172, "y": 80, "z": 161 }
+        "moveType": "Diagonal",
+        "startBlock": { "x": 171, "y": 80, "z": 160 },
+        "endBlock": { "x": 172, "y": 80, "z": 161 }
       },
       {
-        "move": "Diagonal",
-        "from": { "x": 172, "y": 80, "z": 161 },
-        "to": { "x": 173, "y": 80, "z": 162 }
+        "moveType": "Diagonal",
+        "startBlock": { "x": 172, "y": 80, "z": 161 },
+        "endBlock": { "x": 173, "y": 80, "z": 162 }
       },
       {
-        "move": "Traverse",
-        "from": { "x": 173, "y": 80, "z": 162 },
-        "to": { "x": 174, "y": 80, "z": 162 }
+        "moveType": "Traverse",
+        "startBlock": { "x": 173, "y": 80, "z": 162 },
+        "endBlock": { "x": 174, "y": 80, "z": 162 }
       },
       {
-        "move": "Ascend",
-        "from": { "x": 174, "y": 80, "z": 162 },
-        "to": { "x": 175, "y": 81, "z": 162 }
+        "moveType": "Ascend",
+        "startBlock": { "x": 174, "y": 80, "z": 162 },
+        "endBlock": { "x": 175, "y": 81, "z": 162 }
       },
       {
-        "move": "Ascend",
-        "from": { "x": 175, "y": 81, "z": 162 },
-        "to": { "x": 176, "y": 82, "z": 162 }
+        "moveType": "Ascend",
+        "startBlock": { "x": 175, "y": 81, "z": 162 },
+        "endBlock": { "x": 176, "y": 82, "z": 162 }
       },
       {
-        "move": "Ascend",
-        "from": { "x": 176, "y": 82, "z": 162 },
-        "to": { "x": 177, "y": 83, "z": 162 }
+        "moveType": "Ascend",
+        "startBlock": { "x": 176, "y": 82, "z": 162 },
+        "endBlock": { "x": 177, "y": 83, "z": 162 }
       }
     ]
   }
-}
+]
