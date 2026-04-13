@@ -258,7 +258,56 @@ The new regression harness in `tools/test-pathing-template-regressions.sh` codif
 4. A 3×1 no-run-up rejection to prevent non-executable plans from sneaking through.
 5. Mixed ascend/descend/climb smoke cases so that both vertical transitions and ladder climbs respect the reliable support requirement.
 
+## Deterministic live route contract
+
+For the short-route and long-route `1.21.11-Vanilla` live harnesses, accepted routes must complete with all of the following:
+
+- `A* result: Success`
+- `0 replan`
+- `0` template segment failures
+- final position inside the intended goal support block
+- `PathMgr` reporting `Navigation complete!`
+
+For rejection scenarios, the requirement is stricter:
+
+- `A* result: Failed` or `No path found`
+- no navigation start
+- no executor-driven `replan`
+
+Residual speed carried from one movement to the next inside a route is expected and must not be normalized away just to satisfy the harness. The route is only considered reliable if that natural speed carry still produces `0 replan`.
+
+## Baritone Reference Notes For Zero-Replan Work
+
+MCC can borrow specific ideas from the local Baritone reference under `ThirdpartyReference/baritone/`, but not its looser success semantics.
+
+Borrow:
+
+- landing-aware completion, where movement logic keeps controlling after touchdown instead of failing immediately
+- next-movement-aware descend and ascend handoff behavior
+- conservative parkour admissibility, especially around run-up, overshoot, and blocked landing shapes
+- executor timeout and movement-stuck heuristics as diagnostic input, not as acceptance criteria
+
+Do not borrow:
+
+- `GoalBlock` occupancy semantics as a substitute for deterministic execution quality
+- executor repath tolerance as proof that a movement is reliable
+- any behavior that lets accepted deterministic harness routes succeed only by falling back to `replan`
+
+For this work, Baritone is a movement-control reference, not a correctness oracle. MCC's accepted live routes must still finish with `0 replan` in the deterministic harness.
+
 Keeping the rule explicit here reminds future contributors that the planner should never promise a move that physically cannot finish with block contact.
+
+## Regression Harness Workflow
+
+The scripts in `tools/` now match the `mcc-dev-workflow` defaults: they call
+`source tools/mcc-env.sh`, rely on a shared `mc-*` server running `1.21.11-Vanilla`,
+and launch MCC through `mcc-build`, `mcc-debug`, and `mcc-cmd` wrappers. The
+harnesses reuse the existing server session instead of stopping and restarting
+it, which keeps shared test infrastructure stable and honors the instruction to
+keep `mc-*` servers running unless another version or explicit reset is required.
+When editing or extending the harness, preserve the `mcc-*` invocation pattern
+and the existing log/tail helpers so the scripts stay compatible with the updated
+workflow.
 
 ## References
 
