@@ -35,7 +35,9 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dx = ExpectedEnd.X - pos.X;
             double dz = ExpectedEnd.Z - pos.Z;
             double dy = ExpectedEnd.Y - pos.Y;
-            float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
+            float targetYaw = TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment)
+                ? TemplateHelper.GetExitHeadingYaw(_segment)
+                : TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
             physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);

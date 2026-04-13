@@ -12,27 +12,9 @@ namespace MinecraftClient.Pathing.Execution
             var segments = new List<PathSegment>(Math.Max(0, nodes.Count - 1));
             for (int i = 1; i < nodes.Count; i++)
             {
-                PathSegment? next = null;
-                if (i + 1 < nodes.Count)
-                {
-                    var nextNode = nodes[i + 1];
-                    var curr = nodes[i];
-                    next = new PathSegment
-                    {
-                        Start = new Location(curr.X + 0.5, curr.Y, curr.Z + 0.5),
-                        End = new Location(nextNode.X + 0.5, nextNode.Y, nextNode.Z + 0.5),
-                        MoveType = nextNode.MoveUsed
-                    };
-                }
-
-                var prev = nodes[i - 1];
-                var currNode = nodes[i];
-                var current = new PathSegment
-                {
-                    Start = new Location(prev.X + 0.5, prev.Y, prev.Z + 0.5),
-                    End = new Location(currNode.X + 0.5, currNode.Y, currNode.Z + 0.5),
-                    MoveType = currNode.MoveUsed
-                };
+                PathSegment current = CreatePreview(nodes[i - 1], nodes[i]);
+                PathSegment? next = i + 1 < nodes.Count ? CreatePreview(nodes[i], nodes[i + 1]) : null;
+                PathSegment? nextNext = i + 2 < nodes.Count ? CreatePreview(nodes[i + 1], nodes[i + 2]) : null;
 
                 PathTransitionType exitTransition = Classify(current, next);
                 segments.Add(new PathSegment
@@ -41,6 +23,7 @@ namespace MinecraftClient.Pathing.Execution
                     End = current.End,
                     MoveType = current.MoveType,
                     ExitTransition = exitTransition,
+                    ExitHints = BuildHints(current, next, nextNext, exitTransition),
                     PreserveSprint = exitTransition is PathTransitionType.ContinueStraight or PathTransitionType.PrepareJump
                 });
             }
@@ -62,6 +45,91 @@ namespace MinecraftClient.Pathing.Execution
                 return PathTransitionType.ContinueStraight;
 
             return PathTransitionType.Turn;
+        }
+
+        private static PathSegment CreatePreview(PathNode start, PathNode end)
+        {
+            return new PathSegment
+            {
+                Start = new Location(start.X + 0.5, start.Y, start.Z + 0.5),
+                End = new Location(end.X + 0.5, end.Y, end.Z + 0.5),
+                MoveType = end.MoveUsed
+            };
+        }
+
+        private static PathTransitionHints BuildHints(PathSegment current, PathSegment? next, PathSegment? nextNext,
+            PathTransitionType exitTransition)
+        {
+            if (next is null)
+            {
+                return new PathTransitionHints(
+                    DesiredHeadingX: current.HeadingX,
+                    DesiredHeadingZ: current.HeadingZ,
+                    MinExitSpeed: 0.0,
+                    MaxExitSpeed: 0.02,
+                    RequireStableFooting: true,
+                    RequireGrounded: true,
+                    RequireJumpReady: false,
+                    AllowAirBrake: false,
+                    HorizonTicks: 12);
+            }
+
+            if (next.MoveType is MoveType.Parkour or MoveType.Ascend)
+            {
+                return new PathTransitionHints(
+                    DesiredHeadingX: next.HeadingX,
+                    DesiredHeadingZ: next.HeadingZ,
+                    MinExitSpeed: next.MoveType == MoveType.Parkour ? 0.10 : 0.0,
+                    MaxExitSpeed: double.PositiveInfinity,
+                    RequireStableFooting: false,
+                    RequireGrounded: true,
+                    RequireJumpReady: true,
+                    AllowAirBrake: false,
+                    HorizonTicks: 10);
+            }
+
+            bool turning = current.HeadingX != next.HeadingX || current.HeadingZ != next.HeadingZ;
+            bool nextImmediatelyJumps = nextNext is not null
+                && nextNext.MoveType is (MoveType.Parkour or MoveType.Ascend);
+
+            if (turning)
+            {
+                return new PathTransitionHints(
+                    DesiredHeadingX: next.HeadingX,
+                    DesiredHeadingZ: next.HeadingZ,
+                    MinExitSpeed: nextImmediatelyJumps ? 0.05 : 0.0,
+                    MaxExitSpeed: nextImmediatelyJumps ? 0.16 : 0.05,
+                    RequireStableFooting: !nextImmediatelyJumps,
+                    RequireGrounded: true,
+                    RequireJumpReady: nextImmediatelyJumps,
+                    AllowAirBrake: true,
+                    HorizonTicks: 12);
+            }
+
+            if (exitTransition == PathTransitionType.LandingRecovery)
+            {
+                return new PathTransitionHints(
+                    DesiredHeadingX: next.HeadingX,
+                    DesiredHeadingZ: next.HeadingZ,
+                    MinExitSpeed: 0.03,
+                    MaxExitSpeed: double.PositiveInfinity,
+                    RequireStableFooting: false,
+                    RequireGrounded: true,
+                    RequireJumpReady: false,
+                    AllowAirBrake: true,
+                    HorizonTicks: 12);
+            }
+
+            return new PathTransitionHints(
+                DesiredHeadingX: next.HeadingX,
+                DesiredHeadingZ: next.HeadingZ,
+                MinExitSpeed: 0.06,
+                MaxExitSpeed: double.PositiveInfinity,
+                RequireStableFooting: false,
+                RequireGrounded: false,
+                RequireJumpReady: false,
+                AllowAirBrake: false,
+                HorizonTicks: 8);
         }
     }
 }

@@ -131,6 +131,22 @@ namespace MinecraftClient.Pathing.Core
             CancellationToken ct,
             long timeoutMs = 5000)
         {
+            if (goal.IsInGoal(startX, startY, startZ))
+            {
+                DebugLog?.Invoke($"[A*] Already in goal at ({startX},{startY},{startZ})");
+                return new PathResult(
+                    PathStatus.Success,
+                    [new PathNode(startX, startY, startZ)],
+                    nodesExplored: 0,
+                    elapsedMs: 0);
+            }
+
+            if (!IsGoalReachableFootPosition(ctx, goal))
+            {
+                DebugLog?.Invoke($"[A*] Goal {goal} is not a reachable foot position");
+                return PathResult.Fail(nodesExplored: 0, elapsedMs: 0);
+            }
+
             var sw = Stopwatch.StartNew();
             var openSet = new BinaryHeapOpenSet(4096);
             var nodeMap = new Dictionary<long, PathNode>(4096);
@@ -258,6 +274,22 @@ namespace MinecraftClient.Pathing.Core
             }
             path.Reverse();
             return path;
+        }
+
+        private static bool IsGoalReachableFootPosition(CalculationContext ctx, IGoal goal)
+        {
+            if (goal is not GoalBlock blockGoal)
+                return true;
+
+            if (!ctx.IsChunkLoaded(blockGoal.X, blockGoal.Z))
+                return true;
+
+            if (blockGoal.Y == int.MinValue)
+                return false;
+
+            return ctx.CanWalkOn(blockGoal.X, blockGoal.Y - 1, blockGoal.Z)
+                && ctx.CanWalkThrough(blockGoal.X, blockGoal.Y, blockGoal.Z)
+                && ctx.CanWalkThrough(blockGoal.X, blockGoal.Y + 1, blockGoal.Z);
         }
     }
 }

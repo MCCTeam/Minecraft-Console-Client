@@ -83,6 +83,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
             physics.Yaw = SmoothYaw(physics.Yaw, headingYaw);
         }
 
+        internal static void FaceExitHeading(PlayerPhysics physics, PathSegment segment)
+        {
+            float headingYaw = GetExitHeadingYaw(segment);
+            physics.Yaw = SmoothYaw(physics.Yaw, headingYaw);
+        }
+
         internal static void ApplyDecision(MovementInput input, TransitionBrakingDecision decision)
         {
             input.Forward = decision.HoldForward;
@@ -104,6 +110,45 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return physics.DeltaMovement.X * dirX + physics.DeltaMovement.Z * dirZ;
         }
 
+        internal static double ProjectHorizontalSpeedAlongHint(PlayerPhysics physics, PathSegment segment)
+        {
+            GetExitHeading(segment, out int headingX, out int headingZ);
+            return ProjectHorizontalSpeedAlongHeading(physics, headingX, headingZ);
+        }
+
+        internal static double ProjectHorizontalSpeedAlongHeading(PlayerPhysics physics, int headingX, int headingZ)
+        {
+            if (headingX == 0 && headingZ == 0)
+                return GetHorizontalSpeed(physics);
+
+            return physics.DeltaMovement.X * headingX + physics.DeltaMovement.Z * headingZ;
+        }
+
+        internal static double GetHorizontalSpeed(PlayerPhysics physics)
+        {
+            return Math.Sqrt(physics.DeltaMovement.X * physics.DeltaMovement.X
+                + physics.DeltaMovement.Z * physics.DeltaMovement.Z);
+        }
+
+        internal static double RemainingDistanceAlongSegment(Location pos, PathSegment segment)
+        {
+            double dx = segment.End.X - pos.X;
+            double dz = segment.End.Z - pos.Z;
+            return dx * segment.HeadingX + dz * segment.HeadingZ;
+        }
+
+        internal static bool ShouldBiasTowardExitHeading(Location pos, PathSegment segment, double distanceThreshold = 0.35)
+        {
+            GetExitHeading(segment, out int headingX, out int headingZ);
+            if ((headingX == 0 && headingZ == 0)
+                || (headingX == segment.HeadingX && headingZ == segment.HeadingZ))
+            {
+                return false;
+            }
+
+            return RemainingDistanceAlongSegment(pos, segment) <= distanceThreshold;
+        }
+
         internal static bool IsSettledOnTargetBlock(Location pos, Location target, PlayerPhysics physics,
             double speedThresholdSq = 0.0016)
         {
@@ -120,11 +165,88 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (IsSettledOnTargetBlock(pos, target, physics, speedThresholdSq))
                 return true;
 
-            double dx = target.X - pos.X;
-            double dz = target.Z - pos.Z;
             double horizontalSpeedSq = physics.DeltaMovement.X * physics.DeltaMovement.X
                 + physics.DeltaMovement.Z * physics.DeltaMovement.Z;
-            return dx * dx + dz * dz <= horizThresholdSq && horizontalSpeedSq <= speedThresholdSq;
+            if (horizontalSpeedSq > speedThresholdSq)
+                return false;
+
+            if (TemplateFootingHelper.IsCenterInsideTargetBlock(pos, target)
+                && !TemplateFootingHelper.WillCenterLeaveTargetBlockNextTick(pos, physics, target))
+            {
+                return true;
+            }
+
+            double dx = target.X - pos.X;
+            double dz = target.Z - pos.Z;
+            return dx * dx + dz * dz <= horizThresholdSq;
+        }
+
+        internal static double HeadingPenaltyDegrees(float yaw, PathSegment segment)
+        {
+            GetExitHeading(segment, out int headingX, out int headingZ);
+            return HeadingPenaltyDegrees(yaw, headingX, headingZ);
+        }
+
+        internal static double HeadingPenaltyDegrees(float yaw, int headingX, int headingZ)
+        {
+            if (headingX == 0 && headingZ == 0)
+                return 0.0;
+
+            float targetYaw = CalculateYaw(headingX, headingZ);
+            float delta = targetYaw - yaw;
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+            return Math.Abs(delta);
+        }
+
+        internal static float GetExitHeadingYaw(PathSegment segment)
+        {
+            GetExitHeading(segment, out int headingX, out int headingZ);
+            return CalculateYaw(headingX, headingZ);
+        }
+
+        internal static void GetExitHeading(PathSegment segment, out int headingX, out int headingZ)
+        {
+            headingX = segment.ExitHints.DesiredHeadingX;
+            headingZ = segment.ExitHints.DesiredHeadingZ;
+
+            if (headingX == 0 && headingZ == 0)
+            {
+                headingX = segment.HeadingX;
+                headingZ = segment.HeadingZ;
+            }
+        }
+
+        internal static PlayerPhysics ClonePhysicsForPlanning(PlayerPhysics physics)
+        {
+            return new PlayerPhysics
+            {
+                Position = physics.Position,
+                DeltaMovement = physics.DeltaMovement,
+                Yaw = physics.Yaw,
+                Pitch = physics.Pitch,
+                OnGround = physics.OnGround,
+                HorizontalCollision = physics.HorizontalCollision,
+                VerticalCollision = physics.VerticalCollision,
+                VerticalCollisionBelow = physics.VerticalCollisionBelow,
+                FallDistance = physics.FallDistance,
+                StuckSpeedMultiplier = physics.StuckSpeedMultiplier,
+                Xxa = physics.Xxa,
+                Zza = physics.Zza,
+                Yya = physics.Yya,
+                Jumping = physics.Jumping,
+                Sprinting = physics.Sprinting,
+                Sneaking = physics.Sneaking,
+                CreativeFlying = physics.CreativeFlying,
+                InWater = physics.InWater,
+                IsUnderWater = physics.IsUnderWater,
+                InLava = physics.InLava,
+                OnClimbable = physics.OnClimbable,
+                HasSlowFalling = physics.HasSlowFalling,
+                HasLevitation = physics.HasLevitation,
+                LevitationAmplifier = physics.LevitationAmplifier,
+                MovementSpeed = physics.MovementSpeed
+            };
         }
 
         private static void GetNormalizedSegmentDirection(PathSegment segment, out double dirX, out double dirZ)

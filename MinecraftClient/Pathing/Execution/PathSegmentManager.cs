@@ -105,6 +105,16 @@ namespace MinecraftClient.Pathing.Execution
             using var cts = new CancellationTokenSource();
             var result = finder.Calculate(ctx, sx, sy, sz, _goal, cts.Token, 3000);
 
+            bool alreadyInGoal = _goal.IsInGoal(sx, sy, sz)
+                || (result.Path.Count == 1 && _goal.IsInGoal(result.Path[0].X, result.Path[0].Y, result.Path[0].Z));
+            if (alreadyInGoal)
+            {
+                _infoLog?.Invoke("[PathMgr] Navigation complete!");
+                _executor = null;
+                _goal = null;
+                return;
+            }
+
             if (result.Status == PathStatus.Failed || result.Path.Count < 2)
             {
                 _infoLog?.Invoke("[PathMgr] Replan failed -- no path found.");

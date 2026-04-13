@@ -29,7 +29,6 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private readonly double _horizDist;
         private int _tickCount;
         private Phase _phase = Phase.Approach;
-        private bool _airReleaseCommitted;
         private bool _leftGround;
 
         private const float YawToleranceDeg = 5f;
@@ -80,7 +79,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
                             minApproachSq = 0.64; // 0.8 blocks - 3+ ticks of sprint
                         else if (_horizDist >= 4.0)
                             minApproachSq = 0.36; // 0.6 blocks - 2-3 ticks of sprint
-                        else if (_horizDist > 2.5)
+                        else if (_horizDist > 3.5)
                             minApproachSq = 0.09; // 0.3 blocks - 1-2 ticks of sprint
                         else
                             minApproachSq = 0.0;
@@ -104,15 +103,27 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         _leftGround = true;
 
                     bool pastTarget = IsPastTarget(pos);
+                    bool biasTowardExitInAir = _segment.ExitTransition == PathTransitionType.LandingRecovery
+                        ? TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment, distanceThreshold: 1.5)
+                        : TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment);
+                    if (biasTowardExitInAir)
+                        TemplateHelper.FaceExitHeading(physics, _segment);
+
+                    bool lookaheadAirBrake = TransitionBrakingPlanner.ShouldReleaseForwardInAir(
+                        _segment, _nextSegment, pos, physics, world);
                     bool releaseInAir = ShouldReleaseInAir(pos, physics, world);
-                    if (_segment.ExitTransition == PathTransitionType.LandingRecovery && releaseInAir)
-                        _airReleaseCommitted = true;
-                    if (_airReleaseCommitted)
-                        releaseInAir = true;
+                    bool earlySoftBrake = _segment.ExitTransition == PathTransitionType.LandingRecovery
+                        && lookaheadAirBrake
+                        && !releaseInAir;
 
                     if (releaseInAir || pastTarget)
                     {
                         input.Forward = false;
+                        input.Sprint = false;
+                    }
+                    else if (earlySoftBrake)
+                    {
+                        input.Forward = true;
                         input.Sprint = false;
                     }
                     else
@@ -134,6 +145,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     TemplateHelper.ApplyDecision(input, decision);
                     if (decision.HoldBack)
                         TemplateHelper.FaceSegmentHeading(physics, _segment);
+                    else if (TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment))
+                        TemplateHelper.FaceExitHeading(physics, _segment);
 
                     double horizToleranceLinear = _horizDist >= 3.5 ? 1.5 : 1.0;
                     double horizToleranceSq = horizToleranceLinear * horizToleranceLinear;
@@ -144,7 +157,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
                     if (_segment.ExitTransition != PathTransitionType.ContinueStraight
                         && physics.OnGround
-                        && TemplateHelper.IsSettledOnTargetBlock(pos, ExpectedEnd, physics))
+                        && (TemplateHelper.IsSettledOnTargetBlock(pos, ExpectedEnd, physics)
+                            || IsSettledOnTurnEntryStrip(pos, physics)))
                     {
                         return TemplateState.Complete;
                     }
@@ -177,11 +191,15 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
         private bool ShouldReleaseInAir(Location pos, PlayerPhysics physics, World world)
         {
-            if (TransitionBrakingPlanner.ShouldReleaseForwardInAir(_segment, _nextSegment, pos, physics))
-                return true;
-
             if (_segment.ExitTransition == PathTransitionType.ContinueStraight || physics.OnGround)
                 return false;
+
+            bool plannerWantsRelease = TransitionBrakingPlanner.ShouldReleaseForwardInAir(
+                _segment, _nextSegment, pos, physics, world);
+            double remaining = TemplateHelper.RemainingDistanceAlongSegment(pos, _segment);
+            bool centeredOverLandingBlock = remaining <= 1.2;
+            if (plannerWantsRelease && centeredOverLandingBlock)
+                return true;
 
             Location? landingIfHolding = PredictLandingPosition(physics, world, holdForward: true, holdSprint: true);
             Location? landingIfReleased = PredictLandingPosition(physics, world, holdForward: false, holdSprint: false);
@@ -191,15 +209,17 @@ namespace MinecraftClient.Pathing.Execution.Templates
             bool holdingStaysInside = TemplateFootingHelper.IsFootprintInsideTargetBlock(landingIfHolding.Value, ExpectedEnd);
             bool releasingStaysInside = TemplateFootingHelper.IsFootprintInsideTargetBlock(landingIfReleased.Value, ExpectedEnd);
 
-            if (_segment.ExitTransition == PathTransitionType.LandingRecovery && !holdingStaysInside)
+            if (plannerWantsRelease && releasingStaysInside)
+            {
                 return true;
+            }
 
             return !holdingStaysInside && releasingStaysInside;
         }
 
         private Location? PredictLandingPosition(PlayerPhysics physics, World world, bool holdForward, bool holdSprint)
         {
-            PlayerPhysics sim = ClonePhysics(physics);
+            PlayerPhysics sim = TemplateHelper.ClonePhysicsForPlanning(physics);
             var input = new MovementInput
             {
                 Forward = holdForward,
@@ -217,36 +237,19 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return null;
         }
 
-        private static PlayerPhysics ClonePhysics(PlayerPhysics physics)
+        private bool IsSettledOnTurnEntryStrip(Location pos, PlayerPhysics physics)
         {
-            return new PlayerPhysics
-            {
-                Position = physics.Position,
-                DeltaMovement = physics.DeltaMovement,
-                Yaw = physics.Yaw,
-                Pitch = physics.Pitch,
-                OnGround = physics.OnGround,
-                HorizontalCollision = physics.HorizontalCollision,
-                VerticalCollision = physics.VerticalCollision,
-                VerticalCollisionBelow = physics.VerticalCollisionBelow,
-                FallDistance = physics.FallDistance,
-                StuckSpeedMultiplier = physics.StuckSpeedMultiplier,
-                Xxa = physics.Xxa,
-                Zza = physics.Zza,
-                Yya = physics.Yya,
-                Jumping = physics.Jumping,
-                Sprinting = physics.Sprinting,
-                Sneaking = physics.Sneaking,
-                CreativeFlying = physics.CreativeFlying,
-                InWater = physics.InWater,
-                IsUnderWater = physics.IsUnderWater,
-                InLava = physics.InLava,
-                OnClimbable = physics.OnClimbable,
-                HasSlowFalling = physics.HasSlowFalling,
-                HasLevitation = physics.HasLevitation,
-                LevitationAmplifier = physics.LevitationAmplifier,
-                MovementSpeed = physics.MovementSpeed
-            };
+            if (_segment.ExitTransition != PathTransitionType.LandingRecovery || _nextSegment is null)
+                return false;
+
+            if (_segment.HeadingX == _nextSegment.HeadingX && _segment.HeadingZ == _nextSegment.HeadingZ)
+                return false;
+
+            double horizontalSpeedSq = physics.DeltaMovement.X * physics.DeltaMovement.X
+                + physics.DeltaMovement.Z * physics.DeltaMovement.Z;
+            return TemplateFootingHelper.IsCenterInsideSupportStrip(pos, ExpectedEnd, _nextSegment.End)
+                && !TemplateFootingHelper.WillCenterLeaveSupportStripNextTick(pos, physics, ExpectedEnd, _nextSegment.End)
+                && horizontalSpeedSq <= 0.0016;
         }
 
         private static float YawDifference(float current, float target)

@@ -66,7 +66,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
             {
                 TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
                 if (horizDistSq > 0.01 && !decision.HoldBack)
-                    physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+                {
+                    float groundedYaw = TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment)
+                        ? TemplateHelper.GetExitHeadingYaw(_segment)
+                        : targetYaw;
+                    physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, groundedYaw);
+                }
 
                 TemplateHelper.ApplyDecision(input, decision);
                 if (decision.HoldBack)
@@ -99,9 +104,19 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     }
                     else
                     {
-                        input.Forward = true;
-                        if (_needsSprint)
-                            input.Sprint = true;
+                        TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
+                        if (_segment.ExitHints.AllowAirBrake)
+                        {
+                            TemplateHelper.ApplyDecision(input, decision);
+                            if (decision.HoldForward && _needsSprint)
+                                input.Sprint = true;
+                        }
+                        else
+                        {
+                            input.Forward = true;
+                            if (_needsSprint)
+                                input.Sprint = true;
+                        }
                     }
                 }
             }
@@ -116,7 +131,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             double remaining = (_segment.End.X - pos.X) * _segment.HeadingX
                 + (_segment.End.Z - pos.Z) * _segment.HeadingZ;
-            return remaining <= 0.55;
+            return remaining <= 0.55
+                && TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, _segment.End);
         }
 
         private static float YawDifference(float current, float target)

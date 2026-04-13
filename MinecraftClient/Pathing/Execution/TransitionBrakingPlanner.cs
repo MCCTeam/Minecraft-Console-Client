@@ -1,5 +1,6 @@
 using System;
 using MinecraftClient.Mapping;
+using MinecraftClient.Pathing.Execution.Templates;
 using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution
@@ -15,39 +16,61 @@ namespace MinecraftClient.Pathing.Execution
 
         public static TransitionBrakingDecision Plan(PathSegment current, PathSegment? next, Location pos, PlayerPhysics physics, World world)
         {
-            if (current.ExitTransition is PathTransitionType.ContinueStraight or PathTransitionType.PrepareJump)
-                return TransitionBrakingDecision.CarryMomentum(current.PreserveSprint);
-
-            double remaining = RemainingDistanceAlongSegment(current, pos);
-            double forwardSpeed = Math.Max(0.0, ProjectHorizontalSpeedAlongHeading(physics, current.HeadingX, current.HeadingZ));
-            double coastStopDistance = EstimateGroundStopDistance(physics, world, current.HeadingX, current.HeadingZ, applyBackBrake: false);
-            double hardBrakeDistance = EstimateGroundStopDistance(physics, world, current.HeadingX, current.HeadingZ, applyBackBrake: true);
-            bool landingNeedsTurnBrake = current.ExitTransition == PathTransitionType.LandingRecovery
+            if (physics.OnGround
+                && current.ExitTransition == PathTransitionType.LandingRecovery
                 && next is not null
-                && !HasSameHeading(current, next);
-
-            if (current.ExitTransition == PathTransitionType.FinalStop)
+                && !HasSameHeading(current, next))
             {
-                if (remaining < 0.0)
+                double remaining = RemainingDistanceAlongSegment(current, pos);
+                double forwardSpeed = Math.Max(0.0,
+                    ProjectHorizontalSpeedAlongHeading(physics, current.HeadingX, current.HeadingZ));
+                double maxExitSpeed = !double.IsPositiveInfinity(current.ExitHints.MaxExitSpeed)
+                    ? current.ExitHints.MaxExitSpeed
+                    : 0.035;
+                double coastStopDistance = EstimateGroundStopDistance(
+                    physics, world, current.HeadingX, current.HeadingZ, applyBackBrake: false);
+                double hardBrakeDistance = EstimateGroundStopDistance(
+                    physics, world, current.HeadingX, current.HeadingZ, applyBackBrake: true);
+
+                if (TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, current.End)
+                    && forwardSpeed <= maxExitSpeed)
+                {
+                    return TransitionBrakingDecision.Coast;
+                }
+
+                if (remaining < 0.0 && forwardSpeed > maxExitSpeed)
                     return TransitionBrakingDecision.Brake;
 
-                if (forwardSpeed > GroundSpeedThreshold && remaining <= hardBrakeDistance + FinalBrakeLead)
+                if (forwardSpeed > GroundSpeedThreshold && remaining <= hardBrakeDistance + TurnBrakeLead)
                     return TransitionBrakingDecision.Brake;
 
-                if (forwardSpeed <= GroundSpeedThreshold && remaining > 0.0)
-                    return TransitionBrakingDecision.CarryMomentum(preserveSprint: false);
+                if (remaining <= coastStopDistance + FinalStopLead)
+                    return TransitionBrakingDecision.Coast;
             }
 
-            if ((current.ExitTransition == PathTransitionType.Turn || landingNeedsTurnBrake)
-                && remaining <= hardBrakeDistance + TurnBrakeLead)
+            TransitionInputProfile profile;
+            if (physics.OnGround)
             {
-                return TransitionBrakingDecision.Brake;
+                profile = TransitionLookaheadEvaluator.ChooseGroundProfile(current, pos, physics, world);
+            }
+            else
+            {
+                if (!current.ExitHints.AllowAirBrake)
+                    return TransitionBrakingDecision.CarryMomentum(current.PreserveSprint);
+
+                profile = TransitionLookaheadEvaluator.ChooseAirProfile(current, pos, physics, world);
             }
 
-            if (remaining <= coastStopDistance + FinalStopLead)
-                return TransitionBrakingDecision.Coast;
-
-            return TransitionBrakingDecision.CarryMomentum(current.PreserveSprint);
+            return profile switch
+            {
+                TransitionInputProfile.Carry => TransitionBrakingDecision.CarryMomentum(current.PreserveSprint),
+                TransitionInputProfile.Coast => TransitionBrakingDecision.Coast,
+                TransitionInputProfile.Brake => TransitionBrakingDecision.Brake,
+                TransitionInputProfile.AirHoldForward => TransitionBrakingDecision.CarryMomentum(current.PreserveSprint),
+                TransitionInputProfile.AirRelease => TransitionBrakingDecision.Coast,
+                TransitionInputProfile.AirBrake => TransitionBrakingDecision.Brake,
+                _ => TransitionBrakingDecision.Coast
+            };
         }
 
         public static bool ShouldReleaseForwardInAir(PathSegment current, PathSegment? next, Location pos, PlayerPhysics physics)
@@ -59,6 +82,15 @@ namespace MinecraftClient.Pathing.Execution
             double forwardSpeed = Math.Max(0.0, ProjectHorizontalSpeedAlongHeading(physics, current.HeadingX, current.HeadingZ));
 
             return remaining <= forwardSpeed + AirReleaseLead;
+        }
+
+        public static bool ShouldReleaseForwardInAir(PathSegment current, PathSegment? next, Location pos, PlayerPhysics physics, World world)
+        {
+            if (!current.ExitHints.AllowAirBrake)
+                return false;
+
+            TransitionInputProfile profile = TransitionLookaheadEvaluator.ChooseAirProfile(current, pos, physics, world);
+            return profile is TransitionInputProfile.AirRelease or TransitionInputProfile.AirBrake;
         }
 
         public static double EstimateGroundStopDistance(PlayerPhysics physics, World world, int headingX, int headingZ, bool applyBackBrake)
