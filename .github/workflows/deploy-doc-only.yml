@@ -73,7 +73,7 @@ jobs:
         ACCESS_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
         TARGET_REPO: MCCTeam/MCCTeam.github.io
         TARGET_BRANCH: master
-        BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
+        BUILD_SCRIPT: export NODE_OPTIONS=--max-old-space-size=8192 && yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
         BUILD_DIR: docs/.vuepress/dist
         COMMIT_MESSAGE: Build from ${{ github.sha }}
         CNAME: https://mccteam.github.io
