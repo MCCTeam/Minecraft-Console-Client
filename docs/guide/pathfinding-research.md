@@ -258,6 +258,25 @@ The new regression harness in `tools/test-pathing-template-regressions.sh` codif
 4. A 3×1 no-run-up rejection to prevent non-executable plans from sneaking through.
 5. Mixed ascend/descend/climb smoke cases so that both vertical transitions and ladder climbs respect the reliable support requirement.
 
+## Deterministic pathing contract
+
+Accepted sterile routes must satisfy all of the following:
+
+- planner result is `Success`
+- planner result is not `Partial`
+- navigation completes with `0` replans
+- total route ticks stay within the checked-in route budget
+- every executed segment stays within its checked-in tick budget
+
+Rejected sterile routes must fail during planning and must never start navigation.
+
+The checked-in contract files live here:
+
+- `MinecraftClient.Tests/TestData/Pathing/pathing-planner-contracts.json`
+- `MinecraftClient.Tests/TestData/Pathing/pathing-timing-budgets.json`
+
+For unit tests, `PathingContractAssert` reports planner mismatches, replans, route totals, and per-segment tick overruns directly in the xUnit failure. For live runs, `tools/pathing_contract_report.py` reads the `[PathMetric]` lines emitted by MCC and prints the same route-level and segment-level view, so the offline and live harnesses fail for the same reasons.
+
 ## Deterministic live route contract
 
 For the short-route and long-route `1.21.11-Vanilla` live harnesses, accepted routes must complete with all of the following:
