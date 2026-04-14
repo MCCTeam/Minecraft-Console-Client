@@ -38,6 +38,10 @@ def _select_boundary_case(
             for case in reachable:
                 if case.gap_blocks == preferred_gap:
                     return case
+    if family == "ceiling" and subfamily == "headhitter":
+        for case in reachable:
+            if case.gap_blocks == 3 and case.ceiling_height == 2.0:
+                return case
     return reachable[0]
 
 

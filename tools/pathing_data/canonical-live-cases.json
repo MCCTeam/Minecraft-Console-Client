@@ -25,7 +25,7 @@
     }
   },
   {
-    "case_id": "ceiling-headhitter-sprint-mm12-gap3-ceil1p8125",
+    "case_id": "ceiling-headhitter-sprint-mm12-gap3-ceil2p0",
     "bucket_id": "ceiling:headhitter:sprint:boundary",
     "family": "ceiling",
     "subfamily": "headhitter",
@@ -36,7 +36,7 @@
     "world_recipe_id": "ceiling-headhitter",
     "gap_blocks": 3,
     "delta_y": 0.0,
-    "ceiling_height": 1.8125,
+    "ceiling_height": 2.0,
     "wall_width": null,
     "start": {
       "x": 100.5,
