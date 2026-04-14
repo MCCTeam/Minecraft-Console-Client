@@ -1,0 +1,4 @@
+[PathMetric] routeStart segments=4
+[PathMetric] segmentComplete index=0 move=Parkour ticks=17
+[PathMetric] segmentComplete index=1 move=Parkour ticks=16
+[PathMetric] routeComplete totalTicks=70 replans=0
