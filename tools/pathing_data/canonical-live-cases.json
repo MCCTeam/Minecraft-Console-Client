@@ -1,0 +1,327 @@
+[
+  {
+    "case_id": "ceiling-headhitter-sprint-mm12-gap1-ceil4p0",
+    "bucket_id": "ceiling:headhitter:sprint:easy",
+    "family": "ceiling",
+    "subfamily": "headhitter",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "easy",
+    "expected_result": "pass",
+    "world_recipe_id": "ceiling-headhitter",
+    "gap_blocks": 1,
+    "delta_y": 0.0,
+    "ceiling_height": 4.0,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 102.0,
+      "y": 80.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "ceiling-headhitter-sprint-mm12-gap3-ceil1p8125",
+    "bucket_id": "ceiling:headhitter:sprint:boundary",
+    "family": "ceiling",
+    "subfamily": "headhitter",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "boundary",
+    "expected_result": "pass",
+    "world_recipe_id": "ceiling-headhitter",
+    "gap_blocks": 3,
+    "delta_y": 0.0,
+    "ceiling_height": 1.8125,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 104.0,
+      "y": 80.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "ceiling-headhitter-sprint-mm12-gap4-ceil2p0",
+    "bucket_id": "ceiling:headhitter:sprint:reject",
+    "family": "ceiling",
+    "subfamily": "headhitter",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "reject",
+    "expected_result": "reject",
+    "world_recipe_id": "ceiling-headhitter",
+    "gap_blocks": 4,
+    "delta_y": 0.0,
+    "ceiling_height": 2.0,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 105.0,
+      "y": 80.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-ascend-sprint-mm12-gap0-dy1p0",
+    "bucket_id": "linear:ascend:sprint:easy",
+    "family": "linear",
+    "subfamily": "ascend",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "easy",
+    "expected_result": "pass",
+    "world_recipe_id": "linear-ascend",
+    "gap_blocks": 0,
+    "delta_y": 1.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 101.0,
+      "y": 81.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-ascend-sprint-mm12-gap5-dy1p0",
+    "bucket_id": "linear:ascend:sprint:boundary",
+    "family": "linear",
+    "subfamily": "ascend",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "boundary",
+    "expected_result": "pass",
+    "world_recipe_id": "linear-ascend",
+    "gap_blocks": 5,
+    "delta_y": 1.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 106.0,
+      "y": 81.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-ascend-sprint-mm12-gap6-dy1p0",
+    "bucket_id": "linear:ascend:sprint:reject",
+    "family": "linear",
+    "subfamily": "ascend",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "reject",
+    "expected_result": "reject",
+    "world_recipe_id": "linear-ascend",
+    "gap_blocks": 6,
+    "delta_y": 1.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 107.0,
+      "y": 81.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-descend-sprint-mm12-gap0-dym2p0",
+    "bucket_id": "linear:descend:sprint:easy",
+    "family": "linear",
+    "subfamily": "descend",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "easy",
+    "expected_result": "pass",
+    "world_recipe_id": "linear-descend",
+    "gap_blocks": 0,
+    "delta_y": -2.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 101.0,
+      "y": 78.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-descend-sprint-mm12-gap7-dym1p0",
+    "bucket_id": "linear:descend:sprint:boundary",
+    "family": "linear",
+    "subfamily": "descend",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "boundary",
+    "expected_result": "pass",
+    "world_recipe_id": "linear-descend",
+    "gap_blocks": 7,
+    "delta_y": -1.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 108.0,
+      "y": 79.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-flat-sprint-mm12-gap0-dy0p0",
+    "bucket_id": "linear:flat:sprint:easy",
+    "family": "linear",
+    "subfamily": "flat",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "easy",
+    "expected_result": "pass",
+    "world_recipe_id": "linear-flat",
+    "gap_blocks": 0,
+    "delta_y": 0.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 101.0,
+      "y": 80.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-flat-sprint-mm12-gap6-dy0p0",
+    "bucket_id": "linear:flat:sprint:boundary",
+    "family": "linear",
+    "subfamily": "flat",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "boundary",
+    "expected_result": "pass",
+    "world_recipe_id": "linear-flat",
+    "gap_blocks": 6,
+    "delta_y": 0.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 107.0,
+      "y": 80.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "linear-flat-sprint-mm12-gap7-dy0p0",
+    "bucket_id": "linear:flat:sprint:reject",
+    "family": "linear",
+    "subfamily": "flat",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "reject",
+    "expected_result": "reject",
+    "world_recipe_id": "linear-flat",
+    "gap_blocks": 7,
+    "delta_y": 0.0,
+    "ceiling_height": null,
+    "wall_width": null,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 108.0,
+      "y": 80.0,
+      "z": 100.0
+    }
+  },
+  {
+    "case_id": "neo-neo-sprint-mm12-wall1",
+    "bucket_id": "neo:neo:sprint:easy",
+    "family": "neo",
+    "subfamily": "neo",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "easy",
+    "expected_result": "pass",
+    "world_recipe_id": "neo-wall",
+    "gap_blocks": null,
+    "delta_y": 0.0,
+    "ceiling_height": null,
+    "wall_width": 1,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 102.0,
+      "y": 80.0,
+      "z": 101.0
+    }
+  },
+  {
+    "case_id": "neo-neo-sprint-mm12-wall4",
+    "bucket_id": "neo:neo:sprint:boundary",
+    "family": "neo",
+    "subfamily": "neo",
+    "movement_mode": "sprint",
+    "momentum_ticks": 12,
+    "difficulty_band": "boundary",
+    "expected_result": "pass",
+    "world_recipe_id": "neo-wall",
+    "gap_blocks": null,
+    "delta_y": 0.0,
+    "ceiling_height": null,
+    "wall_width": 4,
+    "start": {
+      "x": 100.5,
+      "y": 80.0,
+      "z": 100.5
+    },
+    "goal": {
+      "x": 102.0,
+      "y": 80.0,
+      "z": 104.0
+    }
+  }
+]

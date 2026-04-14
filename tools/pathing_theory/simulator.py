@@ -14,7 +14,7 @@ def build_theory_cases() -> list[TheoryCase]:
         (True, "sprint", 0),
         (True, "sprint", 12),
     ]:
-        for gap in range(0, 7):
+        for gap in range(0, 8):
             for delta_y in [0.0, 1.0, -1.0, -2.0]:
                 ok, landing_x, needed_x = can_reach_gap(
                     gap_blocks=gap,

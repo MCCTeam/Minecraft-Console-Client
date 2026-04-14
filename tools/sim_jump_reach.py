@@ -17,6 +17,13 @@ Usage:
 
 import argparse
 import csv
+from pathlib import Path
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from tools.pathing_theory.canonical import build_canonical_live_cases
 from tools.pathing_theory.primitives import (
     PLAYER_WIDTH,
     can_reach_gap,
@@ -24,6 +31,7 @@ from tools.pathing_theory.primitives import (
     get_landing,
     simulate_jump,
 )
+from tools.pathing_theory.renderers import write_theory_artifacts
 from tools.pathing_theory.simulator import build_theory_cases
 
 
@@ -202,7 +210,16 @@ def main():
                         help="Print per-tick trajectory data")
     parser.add_argument("--csv", type=str, default=None,
                         help="Export results to CSV file")
+    parser.add_argument("--write-artifacts", type=str, default=None,
+                        help="Write tracked theory artifacts to a directory")
     args = parser.parse_args()
+
+    if args.write_artifacts:
+        cases = build_theory_cases()
+        canonical_cases = build_canonical_live_cases(cases)
+        write_theory_artifacts(cases, canonical_cases, Path(args.write_artifacts))
+        print(f"Wrote theory artifacts to {args.write_artifacts}")
+        return
 
     results = analyze_all(verbose=args.verbose)
 
