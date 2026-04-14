@@ -36,6 +36,11 @@ def write_theory_artifacts(
     lines = [
         "# Theory Matrix",
         "",
+        "## Canonical live coverage",
+        "",
+        "This file is generated from `tools/sim_jump_reach.py` and is the first-wave authority",
+        "for theory-aligned linear, neo, and headhitter live suites.",
+        "",
         "| family | subfamily | movement_mode | case_id | expected_reachable | margin |",
         "| --- | --- | --- | --- | --- | --- |",
     ]

@@ -277,6 +277,28 @@ The checked-in contract files live here:
 
 For unit tests, `PathingContractAssert` reports planner mismatches, replans, route totals, and per-segment tick overruns directly in the xUnit failure. For live runs, `tools/pathing_contract_report.py` reads the `[PathMetric]` lines emitted by MCC and prints the same route-level and segment-level view, so the offline and live harnesses fail for the same reasons.
 
+## Theory-Aligned Regression Workflow
+
+The first-wave theory authority now comes from `tools/sim_jump_reach.py`, which writes:
+
+- `tools/pathing_data/theory-matrix.json`
+- `tools/pathing_data/theory-matrix.csv`
+- `tools/pathing_data/theory-matrix.md`
+- `tools/pathing_data/canonical-live-cases.json`
+
+Regenerate them with:
+
+```bash
+python3 tools/sim_jump_reach.py --write-artifacts tools/pathing_data
+```
+
+The theory-aligned live suites read the canonical manifest instead of embedding their own pass and reject expectations:
+
+- `tools/test-parkour.sh`
+- `tools/test-pathing-theory-neo-ceiling.sh`
+
+That split matters. The theory matrix stays broad and machine-readable. The canonical manifest stays small enough to run live, and the shell suites only need to care about case setup, execution, and recording the outcome.
+
 ## Deterministic live route contract
 
 For the short-route and long-route `1.21.11-Vanilla` live harnesses, accepted routes must complete with all of the following:
