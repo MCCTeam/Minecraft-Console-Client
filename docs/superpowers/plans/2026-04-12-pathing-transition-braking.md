@@ -1489,7 +1489,7 @@ mc-start "$VERSION" >/dev/null
 
 if ! tmux has-session -t "$SESSION" 2>/dev/null; then
     tmux new-session -d -s "$SESSION" -x 160 -y 50 \
-        "cd '$MCC_REPO' && dotnet run --project MinecraftClient -c Release --no-build -- '$CFG' CursorBot - localhost:25565; echo '=== MCC EXITED ==='; sleep 600"
+        "cd '$MCC_REPO' && dotnet run --project MinecraftClient -c Release --no-build -- '$CFG' MCCBot - localhost:25565; echo '=== MCC EXITED ==='; sleep 600"
     sleep 5
 fi
 
@@ -1500,7 +1500,7 @@ sleep 1
 echo "== Flat final stop =="
 mc-rcon "fill 95 79 95 115 79 105 stone" >/dev/null
 mc-rcon "fill 95 80 95 115 85 105 air" >/dev/null
-mc-rcon "tp CursorBot 100.5 80 100.5" >/dev/null
+mc-rcon "tp MCCBot 100.5 80 100.5" >/dev/null
 sleep 2
 send_mcc "/goto 103 80 100"
 sleep 5
@@ -1514,7 +1514,7 @@ mc-rcon "fill 118 79 108 126 79 112 air" >/dev/null
 mc-rcon "setblock 120 79 110 stone" >/dev/null
 mc-rcon "setblock 123 79 110 stone" >/dev/null
 mc-rcon "setblock 123 79 111 stone" >/dev/null
-mc-rcon "tp CursorBot 120.5 80 110.5" >/dev/null
+mc-rcon "tp MCCBot 120.5 80 110.5" >/dev/null
 sleep 2
 send_mcc "/goto 123 80 111"
 sleep 6

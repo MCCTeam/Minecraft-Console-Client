@@ -72,11 +72,11 @@ run_test() {
 
     mcc-cmd "respawn" 2>/dev/null || true
     sleep 0.5
-    mc-rcon "gamemode creative CursorBot" >/dev/null 2>&1
+    mc-rcon "gamemode creative MCCBot" >/dev/null 2>&1
     sleep 0.3
-    mc-rcon "tp CursorBot ${start_x}.5 ${start_y} ${start_z}.5" >/dev/null 2>&1
+    mc-rcon "tp MCCBot ${start_x}.5 ${start_y} ${start_z}.5" >/dev/null 2>&1
     sleep 2
-    mc-rcon "gamemode survival CursorBot" >/dev/null 2>&1
+    mc-rcon "gamemode survival MCCBot" >/dev/null 2>&1
     sleep 1
 
     : > "$LOG"

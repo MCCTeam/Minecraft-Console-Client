@@ -372,7 +372,7 @@ git commit -m "fix: align sprint jump landing recovery with turn braking"
 # - run_short_descend_into_turn
 # Each function must:
 # 1. build the exact world with mc-rcon
-# 2. teleport CursorBot
+# 2. teleport MCCBot
 # 3. send the pathfind command
 # 4. fail immediately on any "[PathExec] Segment .* FAILED"
 # 5. assert the final location or assert explicit planner rejection
