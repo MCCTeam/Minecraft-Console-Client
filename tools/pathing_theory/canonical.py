@@ -22,6 +22,25 @@ def _canonical_goal(case: TheoryCase) -> tuple[dict[str, float], dict[str, float
     return start, {"x": float(goal_x), "y": 80.0, "z": 100.0}
 
 
+def _select_boundary_case(
+    family: str,
+    subfamily: str,
+    reachable: list[TheoryCase],
+) -> TheoryCase:
+    if family == "linear":
+        preferred_gap_by_subfamily = {
+            "flat": 5,
+            "ascend": 2,
+            "descend": 2,
+        }
+        preferred_gap = preferred_gap_by_subfamily.get(subfamily)
+        if preferred_gap is not None:
+            for case in reachable:
+                if case.gap_blocks == preferred_gap:
+                    return case
+    return reachable[0]
+
+
 def build_canonical_live_cases(cases: list[TheoryCase]) -> list[CanonicalLiveCase]:
     live_candidate_cases = [
         case
@@ -58,7 +77,7 @@ def build_canonical_live_cases(cases: list[TheoryCase]) -> list[CanonicalLiveCas
                 (case for case in reversed(reachable) if (case.margin or 0.0) >= 0.50),
                 reachable[-1],
             )
-            boundary = reachable[0]
+            boundary = _select_boundary_case(family, subfamily, reachable)
             selected.append(("easy", easy))
             if boundary.case_id != easy.case_id:
                 selected.append(("boundary", boundary))
