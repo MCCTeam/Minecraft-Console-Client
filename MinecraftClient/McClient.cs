@@ -1763,7 +1763,8 @@ namespace MinecraftClient
 
                 pathSegmentManager = new Pathing.Execution.PathSegmentManager(
                     debugLog: msg => Log.Debug(msg),
-                    infoLog: msg => Log.Info(msg));
+                    infoLog: msg => Log.Info(msg),
+                    observer: new Pathing.Execution.Telemetry.PathExecutionLogObserver(msg => Log.Debug(msg)));
                 pathSegmentManager.StartNavigation(goal, result);
 
                 string statusStr = result.Status == Pathing.Core.PathStatus.Partial ? " (partial)" : "";

@@ -11,6 +11,8 @@ USERNAME="CursorBot"
 
 SESSION_ROOT="$(_mcc_session_root "$SESSION")"
 LOG="$(_mcc_session_log_file "$SESSION")"
+PLANNER_CONTRACTS="$REPO_ROOT/MinecraftClient.Tests/TestData/Pathing/pathing-planner-contracts.json"
+TIMING_BUDGETS="$REPO_ROOT/MinecraftClient.Tests/TestData/Pathing/pathing-timing-budgets.json"
 
 cleanup() {
     mcc-kill --session "$SESSION" >/dev/null 2>&1 || true
@@ -248,14 +250,15 @@ set_stone() {
 }
 
 run_accepted_route() {
-    local label="$1"
-    local start_x="$2"
-    local start_y="$3"
-    local start_z="$4"
-    local goal_x="$5"
-    local goal_y="$6"
-    local goal_z="$7"
-    local timeout="${8:-45}"
+    local scenario_id="$1"
+    local label="$2"
+    local start_x="$3"
+    local start_y="$4"
+    local start_z="$5"
+    local goal_x="$6"
+    local goal_y="$7"
+    local goal_z="$8"
+    local timeout="${9:-45}"
 
     prepare_independent_route "$label" "$start_x" "$start_y" "$start_z"
     capture_debug_state_before_route "$label"
@@ -266,6 +269,12 @@ run_accepted_route() {
     wait_for_navigation "$start_line" "$timeout"
     assert_no_partial_since "$start_line"
     assert_no_replans_since "$start_line"
+    python3 "$REPO_ROOT/tools/pathing_contract_report.py" \
+        --scenario-id "$scenario_id" \
+        --log-file "$LOG" \
+        --from-line "$start_line" \
+        --planner-contracts "$PLANNER_CONTRACTS" \
+        --timing-budgets "$TIMING_BUDGETS"
     capture_debug_state_after_route "$label"
 
     local x y z
@@ -290,7 +299,7 @@ run_same_move_routes() {
     fill_box 298 79 298 314 79 302 air
     fill_box 298 80 298 314 90 302 air
     fill_box 300 79 300 312 79 300 stone
-    run_accepted_route "Same move - straight traverse chain" "300.5" "80" "300.5" "312" "80.00" "300"
+    run_accepted_route "same-move-straight-traverse-chain" "Same move - straight traverse chain" "300.5" "80" "300.5" "312" "80.00" "300"
 
     fill_box 318 79 318 330 79 330 air
     fill_box 318 80 318 330 90 330 air
@@ -302,7 +311,7 @@ run_same_move_routes() {
     set_stone 325 79 325
     set_stone 326 79 326
     set_stone 327 79 327
-    run_accepted_route "Same move - diagonal chain" "320.5" "80" "320.5" "327" "80.00" "327"
+    run_accepted_route "same-move-diagonal-chain" "Same move - diagonal chain" "320.5" "80" "320.5" "327" "80.00" "327"
 
     fill_box 338 79 338 347 85 342 air
     fill_box 338 80 338 347 90 342 air
@@ -312,7 +321,7 @@ run_same_move_routes() {
     fill_box 343 82 339 343 82 341 stone
     fill_box 344 83 339 344 83 341 stone
     fill_box 345 84 339 345 84 341 stone
-    run_accepted_route "Same move - ascend staircase" "340.5" "80" "340.5" "345" "85.00" "340"
+    run_accepted_route "same-move-ascend-staircase" "Same move - ascend staircase" "340.5" "80" "340.5" "345" "85.00" "340"
 
     fill_box 360 79 358 369 85 362 air
     fill_box 360 80 358 369 90 362 air
@@ -322,7 +331,7 @@ run_same_move_routes() {
     fill_box 365 81 359 365 81 361 stone
     fill_box 366 80 359 366 80 361 stone
     fill_box 367 79 359 367 79 361 stone
-    run_accepted_route "Same move - descend staircase" "362.5" "85" "360.5" "367" "80.00" "360"
+    run_accepted_route "same-move-descend-staircase" "Same move - descend staircase" "362.5" "85" "360.5" "367" "80.00" "360"
 
     fill_box 378 79 378 390 79 382 air
     fill_box 378 80 378 390 90 382 air
@@ -331,7 +340,7 @@ run_same_move_routes() {
     set_stone 384 79 380
     set_stone 386 79 380
     set_stone 388 79 380
-    run_accepted_route "Same move - aligned parkour chain" "380.5" "80" "380.5" "388" "80.00" "380"
+    run_accepted_route "same-move-aligned-parkour-chain" "Same move - aligned parkour chain" "380.5" "80" "380.5" "388" "80.00" "380"
 }
 
 run_mixed_move_routes() {
@@ -351,7 +360,7 @@ run_mixed_move_routes() {
     set_stone 406 79 404
     set_stone 407 79 404
     set_stone 408 79 404
-    run_accepted_route "Mixed - traverse turn parkour turn traverse" "400.5" "80" "400.5" "408" "80.00" "404"
+    run_accepted_route "mixed-traverse-turn-parkour-turn-traverse" "Mixed - traverse turn parkour turn traverse" "400.5" "80" "400.5" "408" "80.00" "404"
 
     fill_box 418 79 418 430 82 424 air
     fill_box 418 80 418 430 92 424 air
@@ -364,7 +373,7 @@ run_mixed_move_routes() {
     set_stone 426 81 422
     set_stone 427 80 422
     set_stone 428 79 422
-    run_accepted_route "Mixed - diagonal ascend traverse descend" "420.5" "80" "420.5" "428" "80.00" "422"
+    run_accepted_route "mixed-diagonal-ascend-traverse-descend" "Mixed - diagonal ascend traverse descend" "420.5" "80" "420.5" "428" "80.00" "422"
 
     fill_box 438 79 438 450 82 442 air
     fill_box 438 80 438 450 92 442 air
@@ -376,7 +385,7 @@ run_mixed_move_routes() {
     set_stone 446 81 440
     set_stone 447 80 440
     set_stone 448 79 440
-    run_accepted_route "Mixed - traverse ascend parkour descend" "440.5" "80" "440.5" "448" "80.00" "440"
+    run_accepted_route "mixed-traverse-ascend-parkour-descend" "Mixed - traverse ascend parkour descend" "440.5" "80" "440.5" "448" "80.00" "440"
 }
 
 run_turn_density_routes() {
@@ -394,7 +403,7 @@ run_turn_density_routes() {
     set_stone 465 79 464
     set_stone 465 79 465
     set_stone 466 79 466
-    run_accepted_route "Turn density - alternating traverse diagonal chain" "460.5" "80" "460.5" "466" "80.00" "466"
+    run_accepted_route "turn-density-alternating-traverse-diagonal-chain" "Turn density - alternating traverse diagonal chain" "460.5" "80" "460.5" "466" "80.00" "466"
 }
 
 run_speed_carry_routes() {
@@ -411,7 +420,7 @@ run_speed_carry_routes() {
     set_stone 486 82 480
     set_stone 487 82 480
     set_stone 488 83 480
-    run_accepted_route "Speed carry - repeated traverse ascend" "480.5" "80" "480.5" "488" "84.00" "480"
+    run_accepted_route "speed-carry-repeated-traverse-ascend" "Speed carry - repeated traverse ascend" "480.5" "80" "480.5" "488" "84.00" "480"
 
     fill_box 498 79 498 510 82 502 air
     fill_box 498 80 498 510 94 502 air
@@ -423,7 +432,7 @@ run_speed_carry_routes() {
     set_stone 505 80 500
     set_stone 506 79 500
     set_stone 507 79 500
-    run_accepted_route "Speed carry - repeated traverse descend" "500.5" "83" "500.5" "507" "80.00" "500"
+    run_accepted_route "speed-carry-repeated-traverse-descend" "Speed carry - repeated traverse descend" "500.5" "83" "500.5" "507" "80.00" "500"
 
     fill_box 518 79 518 532 79 522 air
     fill_box 518 80 518 532 90 522 air
@@ -434,7 +443,7 @@ run_speed_carry_routes() {
     set_stone 526 79 520
     set_stone 527 79 520
     set_stone 529 79 520
-    run_accepted_route "Speed carry - repeated traverse parkour" "520.5" "80" "520.5" "529" "80.00" "520"
+    run_accepted_route "speed-carry-repeated-traverse-parkour" "Speed carry - repeated traverse parkour" "520.5" "80" "520.5" "529" "80.00" "520"
 }
 
 start_mcc

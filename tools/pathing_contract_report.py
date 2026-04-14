@@ -111,19 +111,22 @@ def validate_report(
     if report.total_ticks > timing_budget["maxTotalTicks"]:
         raise SystemExit(
             f"Route exceeded budget for {scenario_id}: actual={report.total_ticks} "
-            f"max={timing_budget['maxTotalTicks']}"
+            f"max={timing_budget['maxTotalTicks']}\n"
+            f"{render_report(scenario_id, report, timing_budget)}"
         )
 
     for expected, actual in zip(expected_timing_segments, report.segments, strict=True):
         if actual.move != expected["moveType"]:
             raise SystemExit(
                 f"Timing move mismatch for {scenario_id} segment {actual.index}: "
-                f"expected {expected['moveType']}, saw {actual.move}"
+                f"expected {expected['moveType']}, saw {actual.move}\n"
+                f"{render_report(scenario_id, report, timing_budget)}"
             )
         if actual.ticks > expected["maxTicks"]:
             raise SystemExit(
                 f"Segment {actual.index} slow for {scenario_id}: move={actual.move} "
-                f"actual={actual.ticks} max={expected['maxTicks']}"
+                f"actual={actual.ticks} max={expected['maxTicks']}\n"
+                f"{render_report(scenario_id, report, timing_budget)}"
             )
 
 

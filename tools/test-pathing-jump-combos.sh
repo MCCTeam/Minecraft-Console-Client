@@ -11,6 +11,8 @@ USERNAME="CursorBot"
 
 SESSION_ROOT="$(_mcc_session_root "$SESSION")"
 LOG="$(_mcc_session_log_file "$SESSION")"
+PLANNER_CONTRACTS="$REPO_ROOT/MinecraftClient.Tests/TestData/Pathing/pathing-planner-contracts.json"
+TIMING_BUDGETS="$REPO_ROOT/MinecraftClient.Tests/TestData/Pathing/pathing-timing-budgets.json"
 
 PASSED_CASES=()
 FAILED_CASES=()
@@ -251,14 +253,15 @@ set_stone() {
 }
 
 run_accepted_route() {
-    local label="$1"
-    local start_x="$2"
-    local start_y="$3"
-    local start_z="$4"
-    local goal_x="$5"
-    local goal_y="$6"
-    local goal_z="$7"
-    local timeout="${8:-45}"
+    local scenario_id="$1"
+    local label="$2"
+    local start_x="$3"
+    local start_y="$4"
+    local start_z="$5"
+    local goal_x="$6"
+    local goal_y="$7"
+    local goal_z="$8"
+    local timeout="${9:-45}"
 
     prepare_independent_route "$label" "$start_x" "$start_y" "$start_z"
     capture_debug_state_before_route "$label"
@@ -269,6 +272,12 @@ run_accepted_route() {
     wait_for_navigation "$start_line" "$timeout"
     assert_no_partial_since "$start_line"
     assert_no_replans_since "$start_line"
+    python3 "$REPO_ROOT/tools/pathing_contract_report.py" \
+        --scenario-id "$scenario_id" \
+        --log-file "$LOG" \
+        --from-line "$start_line" \
+        --planner-contracts "$PLANNER_CONTRACTS" \
+        --timing-budgets "$TIMING_BUDGETS"
     capture_debug_state_after_route "$label"
 
     local x y z
@@ -318,7 +327,7 @@ scenario_repeated_cardinal_parkour() {
     set_stone 584 79 580
     set_stone 586 79 580
     set_stone 588 79 580
-    run_accepted_route "Repeated jump - cardinal parkour chain" "580.5" "80" "580.5" "588" "80.00" "580"
+    run_accepted_route "repeated-cardinal-parkour-chain" "Repeated jump - cardinal parkour chain" "580.5" "80" "580.5" "588" "80.00" "580"
 }
 
 scenario_repeated_diagonal_parkour() {
@@ -328,7 +337,7 @@ scenario_repeated_diagonal_parkour() {
     set_stone 602 79 602
     set_stone 604 79 604
     set_stone 606 79 606
-    run_accepted_route "Repeated jump - diagonal parkour chain" "600.5" "80" "600.5" "606" "80.00" "606"
+    run_accepted_route "repeated-diagonal-parkour-chain" "Repeated jump - diagonal parkour chain" "600.5" "80" "600.5" "606" "80.00" "606"
 }
 
 scenario_obstructed_parkour_turn_mix() {
@@ -344,7 +353,7 @@ scenario_obstructed_parkour_turn_mix() {
     set_stone 620 81 621
     set_stone 622 80 622
     set_stone 622 81 622
-    run_accepted_route "Obstructed jump mix - repeated parkour L-turns" "620.5" "80" "620.5" "626" "80.00" "622"
+    run_accepted_route "obstructed-parkour-l-turns" "Obstructed jump mix - repeated parkour L-turns" "620.5" "80" "620.5" "626" "80.00" "622"
 }
 
 scenario_parkour_ascend_descend_chain() {
@@ -355,7 +364,7 @@ scenario_parkour_ascend_descend_chain() {
     set_stone 644 79 620
     set_stone 646 80 620
     set_stone 648 79 620
-    run_accepted_route "Vertical jump mix - parkour ascend descend chain" "640.5" "80" "620.5" "648" "80.00" "620"
+    run_accepted_route "vertical-jump-mix" "Vertical jump mix - parkour ascend descend chain" "640.5" "80" "620.5" "648" "80.00" "620"
 }
 
 scenario_diagonal_ascend_descend_chain() {
@@ -366,7 +375,7 @@ scenario_diagonal_ascend_descend_chain() {
     set_stone 682 79 622
     set_stone 683 80 623
     set_stone 684 79 624
-    run_accepted_route "Diagonal vertical mix - ascend descend chain" "680.5" "80" "620.5" "684" "80.00" "624"
+    run_accepted_route "diagonal-vertical-mix" "Diagonal vertical mix - ascend descend chain" "680.5" "80" "620.5" "684" "80.00" "624"
 }
 
 start_mcc

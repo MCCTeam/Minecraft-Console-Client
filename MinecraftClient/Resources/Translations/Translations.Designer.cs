@@ -3527,6 +3527,78 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.goto.failed", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] routeStart segments={0}.
+        /// </summary>
+        internal static string pathing_metric_route_start {
+            get {
+                return ResourceManager.GetString("pathing.metric.route_start", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] segmentStart index={0} total={1} move={2} transition={3}.
+        /// </summary>
+        internal static string pathing_metric_segment_start {
+            get {
+                return ResourceManager.GetString("pathing.metric.segment_start", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] segmentComplete index={0} total={1} move={2} ticks={3} x={4:F2} y={5:F2} z={6:F2}.
+        /// </summary>
+        internal static string pathing_metric_segment_complete {
+            get {
+                return ResourceManager.GetString("pathing.metric.segment_complete", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] segmentFailed index={0} total={1} move={2} ticks={3} x={4:F2} y={5:F2} z={6:F2}.
+        /// </summary>
+        internal static string pathing_metric_segment_failed {
+            get {
+                return ResourceManager.GetString("pathing.metric.segment_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] routeComplete totalTicks={0}.
+        /// </summary>
+        internal static string pathing_metric_route_complete {
+            get {
+                return ResourceManager.GetString("pathing.metric.route_complete", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] replanStart count={0} x={1:F2} y={2:F2} z={3:F2}.
+        /// </summary>
+        internal static string pathing_metric_replan_start {
+            get {
+                return ResourceManager.GetString("pathing.metric.replan_start", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] replanSuccess count={0} segments={1}.
+        /// </summary>
+        internal static string pathing_metric_replan_success {
+            get {
+                return ResourceManager.GetString("pathing.metric.replan_success", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [PathMetric] replanFailed count={0} x={1:F2} y={2:F2} z={3:F2}.
+        /// </summary>
+        internal static string pathing_metric_replan_failed {
+            get {
+                return ResourceManager.GetString("pathing.metric.replan_failed", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Already following {0}!.
