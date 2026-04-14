@@ -77,6 +77,8 @@ export default defineUserConfig({
   // set site base to default value
   base: '/',
 
+  pagePatterns: ['**/*.md', '!.vuepress', '!node_modules', '!superpowers'],
+
   // extra tags in `<head>`
   head: headConfig,
 

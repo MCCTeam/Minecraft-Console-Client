@@ -423,6 +423,7 @@ FodyWeavers.xsd
 
 /docs/l10n/
 /docs/.vuepress/public/MCC-README/
+/docs/superpowers/
 
 # Floder to store the decompiled Minecraft official source code
 /MinecraftOfficial/
