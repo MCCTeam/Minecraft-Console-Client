@@ -430,7 +430,7 @@ public sealed class GroundedTemplateConvergenceTests
     }
 
     [Fact]
-    public void WalkTemplate_PrepareJump_FreezeForTurn_SnapsExitHeadingImmediately()
+    public void WalkTemplate_PrepareJump_AtRunUpBlock_CompletesImmediatelyAfterSnapAlignment()
     {
         World world = FlatWorldTestBuilder.CreateStoneFloor();
         var current = new PathSegment
@@ -466,9 +466,53 @@ public sealed class GroundedTemplateConvergenceTests
 
         Assert.Equal(TemplateState.Complete, state);
         Assert.InRange(physics.Yaw, -0.1f, 0.1f);
+        Assert.True(input.Forward);
+        Assert.True(input.Sprint);
+    }
+
+    [Fact]
+    public void AscendTemplate_PrepareJump_HandoffTurn_SnapsExitHeadingAndClearsMovementInput()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 338, max: 344);
+        FlatWorldTestBuilder.ClearBox(world, 340, 80, 338, 344, 84, 342);
+        FlatWorldTestBuilder.FillSolid(world, 341, 80, 339, 341, 80, 341);
+        FlatWorldTestBuilder.FillSolid(world, 342, 81, 339, 342, 81, 341);
+
+        var segment = new PathSegment
+        {
+            Start = new Location(340.5, 80, 340.5),
+            End = new Location(341.5, 81, 340.5),
+            MoveType = MoveType.Ascend,
+            ExitTransition = PathTransitionType.PrepareJump,
+            ExitHints = new PathTransitionHints(1, 0, 0.10, double.PositiveInfinity, false, true, true, false, 10),
+            PreserveSprint = true
+        };
+        var next = new PathSegment
+        {
+            Start = new Location(341.5, 81, 340.5),
+            End = new Location(342.5, 82, 340.5),
+            MoveType = MoveType.Ascend,
+            ExitTransition = PathTransitionType.FinalStop
+        };
+
+        var template = new AscendTemplate(segment, next);
+        var physics = new PlayerPhysics
+        {
+            Position = new Vec3d(341.5, 81.0, 340.5),
+            DeltaMovement = Vec3d.Zero,
+            OnGround = true,
+            MovementSpeed = 0.1f,
+            Yaw = 180f,
+            Pitch = 0f
+        };
+        var input = new MovementInput();
+
+        TemplateState state = template.Tick(new Location(341.5, 81, 340.5), physics, input, world);
+
+        Assert.Equal(TemplateState.Complete, state);
+        Assert.InRange(physics.Yaw, 269.9f, 270.1f);
         Assert.False(input.Forward);
         Assert.False(input.Sprint);
-        Assert.False(input.Back);
     }
 
     [Fact]
