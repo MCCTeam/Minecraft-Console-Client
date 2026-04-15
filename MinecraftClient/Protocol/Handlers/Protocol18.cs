@@ -624,7 +624,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 break;
 
                             case ConfigurationPacketTypesIn.CodeOfConduct:
-                                dataTypes.ReadNextString(packetData);
+                                dataTypes.ReadNextString(packetData); // Code of conduct text
                                 SendPacket(ConfigurationPacketTypesOut.AcceptCodeOfConduct, new List<byte>());
                                 break;
 
