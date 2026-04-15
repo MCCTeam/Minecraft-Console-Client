@@ -148,6 +148,61 @@ public sealed class GroundedTemplateConvergenceTests
     }
 
     [Fact]
+    public void WalkTemplate_PrepareJump_SnapsYawImmediatelyDuringRunUp()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor();
+        var current = new PathSegment
+        {
+            Start = new Location(0.5, 80, 0.5),
+            End = new Location(1.5, 80, 0.5),
+            MoveType = MoveType.Traverse,
+            ExitTransition = PathTransitionType.PrepareJump,
+            ExitHints = new PathTransitionHints(1, 0, 0.10, double.PositiveInfinity, false, true, true, false, 10),
+            PreserveSprint = true
+        };
+        var next = new PathSegment
+        {
+            Start = new Location(1.5, 80, 0.5),
+            End = new Location(3.5, 80, 0.5),
+            MoveType = MoveType.Parkour,
+            ExitTransition = PathTransitionType.FinalStop
+        };
+
+        var template = new WalkTemplate(current, next);
+        var physics = TemplateSimulationRunner.CreateGroundedPhysics(current.Start, yaw: 90f);
+        var input = new MovementInput();
+
+        TemplateState state = template.Tick(current.Start, physics, input, world);
+
+        Assert.Equal(TemplateState.InProgress, state);
+        Assert.InRange(physics.Yaw, 269.9f, 270.1f);
+        Assert.True(input.Forward);
+        Assert.True(input.Sprint);
+    }
+
+    [Fact]
+    public void WalkTemplate_FinalStop_RetainsSmoothYawOutsideJumpEntry()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor();
+        var segment = new PathSegment
+        {
+            Start = new Location(0.5, 80, 0.5),
+            End = new Location(1.5, 80, 0.5),
+            MoveType = MoveType.Traverse,
+            ExitTransition = PathTransitionType.FinalStop
+        };
+
+        var template = new WalkTemplate(segment, null);
+        var physics = TemplateSimulationRunner.CreateGroundedPhysics(segment.Start, yaw: 90f);
+        var input = new MovementInput();
+
+        TemplateState state = template.Tick(segment.Start, physics, input, world);
+
+        Assert.Equal(TemplateState.InProgress, state);
+        Assert.InRange(physics.Yaw, 124.9f, 125.1f);
+    }
+
+    [Fact]
     public void AscendTemplate_DiagonalPrepareJump_WithPlannerHints_CompletesOnRunUpBlock()
     {
         World world = FlatWorldTestBuilder.CreateStoneFloor(min: -1, max: 6);
