@@ -216,19 +216,6 @@
           "z": 580
         },
         "endBlock": {
-          "x": 582,
-          "y": 80,
-          "z": 580
-        }
-      },
-      {
-        "moveType": "Parkour",
-        "startBlock": {
-          "x": 582,
-          "y": 80,
-          "z": 580
-        },
-        "endBlock": {
           "x": 584,
           "y": 80,
           "z": 580
@@ -238,19 +225,6 @@
         "moveType": "Parkour",
         "startBlock": {
           "x": 584,
-          "y": 80,
-          "z": 580
-        },
-        "endBlock": {
-          "x": 586,
-          "y": 80,
-          "z": 580
-        }
-      },
-      {
-        "moveType": "Parkour",
-        "startBlock": {
-          "x": 586,
           "y": 80,
           "z": 580
         },
@@ -370,23 +344,10 @@
         }
       },
       {
-        "moveType": "Descend",
+        "moveType": "Parkour",
         "startBlock": {
           "x": 642,
           "y": 81,
-          "z": 620
-        },
-        "endBlock": {
-          "x": 644,
-          "y": 80,
-          "z": 620
-        }
-      },
-      {
-        "moveType": "Parkour",
-        "startBlock": {
-          "x": 644,
-          "y": 80,
           "z": 620
         },
         "endBlock": {
@@ -635,19 +596,6 @@
           "z": 380
         },
         "endBlock": {
-          "x": 382,
-          "y": 80,
-          "z": 380
-        }
-      },
-      {
-        "moveType": "Parkour",
-        "startBlock": {
-          "x": 382,
-          "y": 80,
-          "z": 380
-        },
-        "endBlock": {
           "x": 384,
           "y": 80,
           "z": 380
@@ -657,19 +605,6 @@
         "moveType": "Parkour",
         "startBlock": {
           "x": 384,
-          "y": 80,
-          "z": 380
-        },
-        "endBlock": {
-          "x": 386,
-          "y": 80,
-          "z": 380
-        }
-      },
-      {
-        "moveType": "Parkour",
-        "startBlock": {
-          "x": 386,
           "y": 80,
           "z": 380
         },

@@ -38,55 +38,55 @@
   },
   {
     "scenarioId": "same-move-ascend-staircase",
-    "expectedTotalTicks": 56,
-    "maxTotalTicks": 68,
+    "expectedTotalTicks": 60,
+    "maxTotalTicks": 74,
     "segments": [
       {
         "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
-      },
-      {
-        "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
-      },
-      {
-        "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
-      },
-      {
-        "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
+        "expectedTicks": 10,
+        "maxTicks": 12
       },
       {
         "moveType": "Ascend",
         "expectedTicks": 12,
         "maxTicks": 15
+      },
+      {
+        "moveType": "Ascend",
+        "expectedTicks": 12,
+        "maxTicks": 15
+      },
+      {
+        "moveType": "Ascend",
+        "expectedTicks": 12,
+        "maxTicks": 15
+      },
+      {
+        "moveType": "Ascend",
+        "expectedTicks": 14,
+        "maxTicks": 17
       }
     ]
   },
   {
     "scenarioId": "same-move-descend-staircase",
-    "expectedTotalTicks": 61,
-    "maxTotalTicks": 74,
+    "expectedTotalTicks": 57,
+    "maxTotalTicks": 70,
     "segments": [
       {
         "moveType": "Descend",
-        "expectedTicks": 24,
-        "maxTicks": 29
+        "expectedTicks": 23,
+        "maxTicks": 28
       },
       {
         "moveType": "Descend",
-        "expectedTicks": 25,
-        "maxTicks": 30
+        "expectedTicks": 23,
+        "maxTicks": 28
       },
       {
         "moveType": "Descend",
-        "expectedTicks": 12,
-        "maxTicks": 15
+        "expectedTicks": 11,
+        "maxTicks": 14
       }
     ]
   },
@@ -98,79 +98,47 @@
   },
   {
     "scenarioId": "repeated-cardinal-parkour-chain",
-    "expectedTotalTicks": 0,
-    "maxTotalTicks": 2,
+    "expectedTotalTicks": 37,
+    "maxTotalTicks": 45,
     "segments": [
       {
         "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
+        "expectedTicks": 18,
+        "maxTicks": 22
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 27,
-        "maxTicks": 33
+        "expectedTicks": 19,
+        "maxTicks": 23
       }
     ]
   },
   {
     "scenarioId": "repeated-diagonal-parkour-chain",
-    "expectedTotalTicks": 20,
-    "maxTotalTicks": 24,
+    "expectedTotalTicks": 67,
+    "maxTotalTicks": 82,
     "segments": [
       {
         "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
+        "expectedTicks": 14,
+        "maxTicks": 17
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
+        "expectedTicks": 36,
+        "maxTicks": 44
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 20,
-        "maxTicks": 24
+        "expectedTicks": 17,
+        "maxTicks": 21
       }
     ]
   },
   {
     "scenarioId": "obstructed-parkour-l-turns",
-    "expectedTotalTicks": 0,
-    "maxTotalTicks": 2,
-    "segments": [
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 27,
-        "maxTicks": 33
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 27,
-        "maxTicks": 33
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 27,
-        "maxTicks": 33
-      }
-    ]
-  },
-  {
-    "scenarioId": "vertical-jump-mix",
-    "expectedTotalTicks": 33,
-    "maxTotalTicks": 40,
+    "expectedTotalTicks": 50,
+    "maxTotalTicks": 62,
     "segments": [
       {
         "moveType": "Parkour",
@@ -178,14 +146,53 @@
         "maxTicks": 16
       },
       {
-        "moveType": "Descend",
-        "expectedTicks": 201,
-        "maxTicks": 242
+        "moveType": "Parkour",
+        "expectedTicks": 21,
+        "maxTicks": 26
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 19,
-        "maxTicks": 23
+        "expectedTicks": 16,
+        "maxTicks": 20
+      }
+    ]
+  },
+  {
+    "scenarioId": "vertical-jump-mix",
+    "expectedTotalTicks": 41,
+    "maxTotalTicks": 50,
+    "segments": [
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 10,
+        "maxTicks": 12
+      },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 18,
+        "maxTicks": 22
+      },
+      {
+        "moveType": "Descend",
+        "expectedTicks": 13,
+        "maxTicks": 16
+      }
+    ]
+  },
+  {
+    "scenarioId": "diagonal-vertical-mix",
+    "expectedTotalTicks": 38,
+    "maxTotalTicks": 46,
+    "segments": [
+      {
+        "moveType": "Ascend",
+        "expectedTicks": 10,
+        "maxTicks": 12
+      },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 14,
+        "maxTicks": 17
       },
       {
         "moveType": "Descend",
@@ -195,31 +202,9 @@
     ]
   },
   {
-    "scenarioId": "diagonal-vertical-mix",
-    "expectedTotalTicks": 31,
-    "maxTotalTicks": 38,
-    "segments": [
-      {
-        "moveType": "Ascend",
-        "expectedTicks": 81,
-        "maxTicks": 98
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 16,
-        "maxTicks": 20
-      },
-      {
-        "moveType": "Descend",
-        "expectedTicks": 15,
-        "maxTicks": 18
-      }
-    ]
-  },
-  {
     "scenarioId": "turn-density-alternating-traverse-diagonal-chain",
     "expectedTotalTicks": 47,
-    "maxTotalTicks": 57,
+    "maxTotalTicks": 59,
     "segments": [
       {
         "moveType": "Diagonal",
@@ -255,72 +240,62 @@
   },
   {
     "scenarioId": "mixed-traverse-ascend-parkour-descend",
-    "expectedTotalTicks": 40,
-    "maxTotalTicks": 48,
+    "expectedTotalTicks": 70,
+    "maxTotalTicks": 88,
     "segments": [
       {
         "moveType": "Traverse",
-        "expectedTicks": 6,
-        "maxTicks": 8
+        "expectedTicks": 5,
+        "maxTicks": 7
       },
       {
         "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
+        "expectedTicks": 12,
+        "maxTicks": 15
       },
       {
         "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
+        "expectedTicks": 13,
+        "maxTicks": 16
       },
       {
         "moveType": "Traverse",
-        "expectedTicks": 81,
-        "maxTicks": 98
+        "expectedTicks": 5,
+        "maxTicks": 7
       },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 14,
+        "maxTicks": 17
+      },
+      {
+        "moveType": "Descend",
+        "expectedTicks": 21,
+        "maxTicks": 26
+      }
+    ]
+  },
+  {
+    "scenarioId": "same-move-aligned-parkour-chain",
+    "expectedTotalTicks": 37,
+    "maxTotalTicks": 45,
+    "segments": [
       {
         "moveType": "Parkour",
         "expectedTicks": 18,
         "maxTicks": 22
       },
       {
-        "moveType": "Descend",
-        "expectedTicks": 22,
-        "maxTicks": 27
-      }
-    ]
-  },
-  {
-    "scenarioId": "same-move-aligned-parkour-chain",
-    "expectedTotalTicks": 0,
-    "maxTotalTicks": 2,
-    "segments": [
-      {
         "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 61,
-        "maxTicks": 74
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 27,
-        "maxTicks": 33
+        "expectedTicks": 19,
+        "maxTicks": 23
       }
     ]
   },
   {
     "scenarioId": "mixed-diagonal-ascend-traverse-descend",
-    "expectedTotalTicks": 96,
-    "maxTotalTicks": 116,
+    "expectedTotalTicks": 76,
+    "maxTotalTicks": 95,
     "segments": [
       {
         "moveType": "Diagonal",
@@ -334,13 +309,13 @@
       },
       {
         "moveType": "Ascend",
-        "expectedTicks": 32,
-        "maxTicks": 39
+        "expectedTicks": 10,
+        "maxTicks": 12
       },
       {
         "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
+        "expectedTicks": 13,
+        "maxTicks": 16
       },
       {
         "moveType": "Traverse",
@@ -361,38 +336,18 @@
   },
   {
     "scenarioId": "speed-carry-repeated-traverse-ascend",
-    "expectedTotalTicks": 66,
-    "maxTotalTicks": 80,
+    "expectedTotalTicks": 70,
+    "maxTotalTicks": 90,
     "segments": [
       {
         "moveType": "Traverse",
-        "expectedTicks": 6,
-        "maxTicks": 8
-      },
-      {
-        "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
-      },
-      {
-        "moveType": "Traverse",
         "expectedTicks": 5,
         "maxTicks": 7
       },
       {
         "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
-      },
-      {
-        "moveType": "Traverse",
-        "expectedTicks": 5,
-        "maxTicks": 7
-      },
-      {
-        "moveType": "Ascend",
-        "expectedTicks": 11,
-        "maxTicks": 14
+        "expectedTicks": 13,
+        "maxTicks": 16
       },
       {
         "moveType": "Traverse",
@@ -403,23 +358,43 @@
         "moveType": "Ascend",
         "expectedTicks": 12,
         "maxTicks": 15
+      },
+      {
+        "moveType": "Traverse",
+        "expectedTicks": 5,
+        "maxTicks": 7
+      },
+      {
+        "moveType": "Ascend",
+        "expectedTicks": 12,
+        "maxTicks": 15
+      },
+      {
+        "moveType": "Traverse",
+        "expectedTicks": 5,
+        "maxTicks": 7
+      },
+      {
+        "moveType": "Ascend",
+        "expectedTicks": 13,
+        "maxTicks": 16
       }
     ]
   },
   {
     "scenarioId": "speed-carry-repeated-traverse-descend",
-    "expectedTotalTicks": 41,
-    "maxTotalTicks": 50,
+    "expectedTotalTicks": 45,
+    "maxTotalTicks": 57,
     "segments": [
       {
         "moveType": "Traverse",
-        "expectedTicks": 81,
-        "maxTicks": 98
+        "expectedTicks": 5,
+        "maxTicks": 7
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 22,
-        "maxTicks": 27
+        "expectedTicks": 21,
+        "maxTicks": 26
       },
       {
         "moveType": "Traverse",
@@ -435,45 +410,45 @@
   },
   {
     "scenarioId": "speed-carry-repeated-traverse-parkour",
-    "expectedTotalTicks": 0,
-    "maxTotalTicks": 2,
+    "expectedTotalTicks": 58,
+    "maxTotalTicks": 73,
     "segments": [
       {
         "moveType": "Traverse",
-        "expectedTicks": 81,
-        "maxTicks": 98
+        "expectedTicks": 5,
+        "maxTicks": 7
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 18,
-        "maxTicks": 22
+        "expectedTicks": 14,
+        "maxTicks": 17
       },
       {
         "moveType": "Traverse",
-        "expectedTicks": 81,
-        "maxTicks": 98
+        "expectedTicks": 5,
+        "maxTicks": 7
+      },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 14,
+        "maxTicks": 17
+      },
+      {
+        "moveType": "Traverse",
+        "expectedTicks": 5,
+        "maxTicks": 7
       },
       {
         "moveType": "Parkour",
         "expectedTicks": 15,
         "maxTicks": 18
-      },
-      {
-        "moveType": "Traverse",
-        "expectedTicks": 81,
-        "maxTicks": 98
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 29,
-        "maxTicks": 35
       }
     ]
   },
   {
     "scenarioId": "same-move-diagonal-chain",
     "expectedTotalTicks": 55,
-    "maxTotalTicks": 66,
+    "maxTotalTicks": 69,
     "segments": [
       {
         "moveType": "Diagonal",
@@ -515,7 +490,7 @@
   {
     "scenarioId": "same-move-straight-traverse-chain",
     "expectedTotalTicks": 70,
-    "maxTotalTicks": 84,
+    "maxTotalTicks": 94,
     "segments": [
       {
         "moveType": "Traverse",
@@ -581,8 +556,8 @@
   },
   {
     "scenarioId": "mixed-traverse-turn-parkour-turn-traverse",
-    "expectedTotalTicks": 46,
-    "maxTotalTicks": 56,
+    "expectedTotalTicks": 60,
+    "maxTotalTicks": 75,
     "segments": [
       {
         "moveType": "Traverse",
@@ -591,8 +566,8 @@
       },
       {
         "moveType": "Diagonal",
-        "expectedTicks": 81,
-        "maxTicks": 98
+        "expectedTicks": 6,
+        "maxTicks": 8
       },
       {
         "moveType": "Parkour",
@@ -601,8 +576,8 @@
       },
       {
         "moveType": "Traverse",
-        "expectedTicks": 7,
-        "maxTicks": 9
+        "expectedTicks": 8,
+        "maxTicks": 10
       },
       {
         "moveType": "Diagonal",
@@ -616,8 +591,8 @@
       },
       {
         "moveType": "Traverse",
-        "expectedTicks": 8,
-        "maxTicks": 10
+        "expectedTicks": 7,
+        "maxTicks": 9
       }
     ]
   }

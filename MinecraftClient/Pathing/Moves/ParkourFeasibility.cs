@@ -15,7 +15,10 @@ internal static class ParkourFeasibility
         int yDelta)
     {
         double horiz = Math.Sqrt(xOffset * xOffset + zOffset * zOffset);
-        double threshold = yDelta > 0 ? 2.5 : 3.5;
+        if (yDelta <= 0)
+            return true;
+
+        double threshold = 2.5;
         if (horiz < threshold)
             return true;
 

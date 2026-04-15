@@ -150,6 +150,8 @@ public sealed class PathingContractStore
             throw new InvalidDataException($"Timing budget '{budget.ScenarioId}' must use zero totals when it has no segments.");
 
         var normalizedSegments = new List<PathingSegmentTimingBudget>(budget.Segments.Count);
+        int expectedSegmentTicksSum = 0;
+        int maxSegmentTicksSum = 0;
         for (int i = 0; i < budget.Segments.Count; i++)
         {
             PathingSegmentTimingBudget segment = budget.Segments[i];
@@ -159,7 +161,21 @@ public sealed class PathingContractStore
             if (segment.ExpectedTicks > segment.MaxTicks)
                 throw new InvalidDataException($"Timing budget '{budget.ScenarioId}' segment {i} has ExpectedTicks greater than MaxTicks.");
 
+            expectedSegmentTicksSum = checked(expectedSegmentTicksSum + segment.ExpectedTicks);
+            maxSegmentTicksSum = checked(maxSegmentTicksSum + segment.MaxTicks);
             normalizedSegments.Add(segment);
+        }
+
+        if (budget.ExpectedTotalTicks != expectedSegmentTicksSum)
+        {
+            throw new InvalidDataException(
+                $"Timing budget '{budget.ScenarioId}' ExpectedTotalTicks mismatch. Total={budget.ExpectedTotalTicks}, segmentSum={expectedSegmentTicksSum}.");
+        }
+
+        if (budget.MaxTotalTicks != maxSegmentTicksSum)
+        {
+            throw new InvalidDataException(
+                $"Timing budget '{budget.ScenarioId}' MaxTotalTicks mismatch. Total={budget.MaxTotalTicks}, segmentSum={maxSegmentTicksSum}.");
         }
 
         return budget with { Segments = normalizedSegments.AsReadOnly() };

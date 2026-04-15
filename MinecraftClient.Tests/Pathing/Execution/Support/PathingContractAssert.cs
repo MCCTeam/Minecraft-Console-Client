@@ -62,7 +62,26 @@ internal static class PathingContractAssert
             sb.AppendLine($"seg[{i}] move={actual.MoveType} actual={actual.ElapsedTicks} expected={expected.ExpectedTicks} max={expected.MaxTicks}");
         }
 
+        if (result.InfoLogs.Count > 0)
+        {
+            sb.AppendLine("info tail:");
+            AppendTail(sb, result.InfoLogs, maxLines: 8);
+        }
+
+        if (result.DebugLogs.Count > 0)
+        {
+            sb.AppendLine("debug tail:");
+            AppendTail(sb, result.DebugLogs, maxLines: 12);
+        }
+
         return sb.ToString();
+    }
+
+    private static void AppendTail(StringBuilder sb, IReadOnlyList<string> lines, int maxLines)
+    {
+        int start = Math.Max(0, lines.Count - maxLines);
+        for (int i = start; i < lines.Count; i++)
+            sb.AppendLine(lines[i]);
     }
 
     private static PathingBlock ToBlock(Location location) =>

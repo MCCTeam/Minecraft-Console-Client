@@ -87,6 +87,49 @@ public sealed class PathPlanningContractTests
     }
 
     [Fact]
+    public void LoadFromJson_RejectsTimingBudget_WhenTotalsDoNotMatchSegments()
+    {
+        const string plannerJson = """
+[
+  {
+    "scenarioId": "totals-mismatch",
+    "expectedStatus": "Success",
+    "segments": [
+      {
+        "moveType": "Traverse",
+        "startBlock": { "x": 0, "y": 80, "z": 0 },
+        "endBlock": { "x": 1, "y": 80, "z": 0 }
+      },
+      {
+        "moveType": "Ascend",
+        "startBlock": { "x": 1, "y": 80, "z": 0 },
+        "endBlock": { "x": 2, "y": 81, "z": 0 }
+      }
+    ]
+  }
+]
+""";
+        const string timingJson = """
+[
+  {
+    "scenarioId": "totals-mismatch",
+    "expectedTotalTicks": 1,
+    "maxTotalTicks": 2,
+    "segments": [
+      { "moveType": "Traverse", "expectedTicks": 2, "maxTicks": 3 },
+      { "moveType": "Ascend", "expectedTicks": 3, "maxTicks": 4 }
+    ]
+  }
+]
+""";
+
+        InvalidDataException error = Assert.Throws<InvalidDataException>(
+            () => PathingContractStore.LoadFromJson(plannerJson, timingJson));
+        Assert.Contains("totals-mismatch", error.Message);
+        Assert.Contains("ExpectedTotalTicks mismatch", error.Message);
+    }
+
+    [Fact]
     public void LoadFromJson_Rejects_WhenPlannerAndTimingScenarioSetsMismatch()
     {
         const string plannerJson = """
@@ -214,25 +257,26 @@ public sealed class PathPlanningContractTests
     }
 
     [Theory]
+    [InlineData("manager-accepted-ascend-chain")]
     [InlineData("same-move-ascend-staircase")]
     [InlineData("same-move-descend-staircase")]
     [InlineData("rejected-3x1-invalid-goal")]
-    public void Scenario_PlannerMatchesContract(string scenarioId)
-    {
-        PathingExecutionScenario scenario = PathingExecutionScenarioCatalog.Get(scenarioId);
-        PathResult planResult = PathingScenarioRunner.PlanOnly(scenario);
-        PathingPlannerContract contract = PathingContractStore.LoadFromRepositoryRoot().GetPlanner(scenarioId);
-
-        PathingContractAssert.PlannerMatches(contract, PathSegmentBuilder.FromPath(planResult.Path), planResult);
-    }
-
-    [Theory]
     [InlineData("repeated-cardinal-parkour-chain")]
     [InlineData("repeated-diagonal-parkour-chain")]
     [InlineData("obstructed-parkour-l-turns")]
     [InlineData("vertical-jump-mix")]
     [InlineData("diagonal-vertical-mix")]
-    public void JumpCombo_PlannerMatchesContract(string scenarioId)
+    [InlineData("turn-density-alternating-traverse-diagonal-chain")]
+    [InlineData("mixed-traverse-ascend-parkour-descend")]
+    [InlineData("same-move-aligned-parkour-chain")]
+    [InlineData("mixed-diagonal-ascend-traverse-descend")]
+    [InlineData("speed-carry-repeated-traverse-ascend")]
+    [InlineData("speed-carry-repeated-traverse-descend")]
+    [InlineData("speed-carry-repeated-traverse-parkour")]
+    [InlineData("same-move-diagonal-chain")]
+    [InlineData("same-move-straight-traverse-chain")]
+    [InlineData("mixed-traverse-turn-parkour-turn-traverse")]
+    public void Scenario_PlannerMatchesContract(string scenarioId)
     {
         PathingExecutionScenario scenario = PathingExecutionScenarioCatalog.Get(scenarioId);
         PathResult planResult = PathingScenarioRunner.PlanOnly(scenario);

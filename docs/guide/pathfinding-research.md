@@ -317,6 +317,8 @@ For rejection scenarios, the requirement is stricter:
 
 Residual speed carried from one movement to the next inside a route is expected and must not be normalized away just to satisfy the harness. The route is only considered reliable if that natural speed carry still produces `0 replan`.
 
+Independent live-route cases must reset position, yaw, and pitch to the scenario start state before each run. Cross-case orientation residue is harness noise, not valid pathing difficulty.
+
 ## Baritone Reference Notes For Zero-Replan Work
 
 MCC can borrow specific ideas from the local Baritone reference under `ThirdpartyReference/baritone/`, but not its looser success semantics.

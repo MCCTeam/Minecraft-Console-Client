@@ -160,11 +160,13 @@ prepare_independent_route() {
     local start_x="$2"
     local start_y="$3"
     local start_z="$4"
+    local start_yaw="${5:-270}"
+    local start_pitch="${6:-0}"
 
     echo ""
     echo "Preparing independent route: $label"
     mc-rcon "effect clear $USERNAME" >/dev/null 2>&1 || true
-    mc-rcon "tp $USERNAME $start_x $start_y $start_z" >/dev/null
+    mc-rcon "tp $USERNAME $start_x $start_y $start_z $start_yaw $start_pitch" >/dev/null
     wait_for_location_in_block "$start_x" "$start_y" "$start_z" 10
 }
 
@@ -289,7 +291,7 @@ run_flat_final_stop() {
     echo "== Flat final stop =="
     mc-rcon "fill 95 79 95 115 79 105 stone" >/dev/null
     mc-rcon "fill 95 80 95 115 85 105 air" >/dev/null
-    prepare_independent_route "Flat final stop" "100.5" "80" "100.5"
+    prepare_independent_route "Flat final stop" "100.5" "80" "100.5" "270"
     capture_debug_state_before_route "Flat final stop"
     local start_line
     start_line="$(log_line_count)"
@@ -315,7 +317,7 @@ run_parkour_into_turn() {
     mc-rcon "setblock 122 79 111 stone" >/dev/null
     mc-rcon "setblock 120 80 111 stone" >/dev/null
     mc-rcon "setblock 120 81 111 stone" >/dev/null
-    prepare_independent_route "Parkour into L-turn" "120.5" "80" "110.5"
+    prepare_independent_route "Parkour into L-turn" "120.5" "80" "110.5" "270"
     capture_debug_state_before_route "Parkour into L-turn"
     local start_line
     start_line="$(log_line_count)"
@@ -342,7 +344,7 @@ run_side_wall_jump() {
     mc-rcon "setblock 132 81 126 stone" >/dev/null
     mc-rcon "setblock 133 80 126 stone" >/dev/null
     mc-rcon "setblock 133 81 126 stone" >/dev/null
-    prepare_independent_route "Rejected 2x1 side-wall jump" "131.5" "80" "127.5"
+    prepare_independent_route "Rejected 2x1 side-wall jump" "131.5" "80" "127.5" "270"
     capture_debug_state_before_route "Rejected 2x1 side-wall jump"
     local start_line
     start_line="$(log_line_count)"
@@ -365,7 +367,7 @@ run_reject_3x1_gap() {
     mc-rcon "fill 140 79 135 148 79 140 stone" >/dev/null
     mc-rcon "fill 140 80 135 148 85 140 air" >/dev/null
     mc-rcon "setblock 143 80 138 stone" >/dev/null
-    prepare_independent_route "Rejected 3x1 no-run-up gap" "141.5" "80" "138.5"
+    prepare_independent_route "Rejected 3x1 no-run-up gap" "141.5" "80" "138.5" "270"
     capture_debug_state_before_route "Rejected 3x1 gap"
     local start_line
     start_line="$(log_line_count)"
@@ -390,7 +392,7 @@ run_corner_ascend_around_wall() {
     mc-rcon "setblock 191 80 171 stone" >/dev/null
     mc-rcon "setblock 191 80 170 stone" >/dev/null
     mc-rcon "setblock 191 81 170 stone" >/dev/null
-    prepare_independent_route "Corner ascend around wall" "190.5" "80" "170.5"
+    prepare_independent_route "Corner ascend around wall" "190.5" "80" "170.5" "315"
     capture_debug_state_before_route "Corner ascend around wall"
     local start_line
     start_line="$(log_line_count)"
@@ -417,7 +419,7 @@ run_wall_adjacent_descend_smoke() {
     mc-rcon "setblock 202 80 199 stone" >/dev/null
     mc-rcon "setblock 201 81 199 stone" >/dev/null
     mc-rcon "setblock 202 81 199 stone" >/dev/null
-    prepare_independent_route "Wall-adjacent descend" "200.5" "81" "200.5"
+    prepare_independent_route "Wall-adjacent descend" "200.5" "81" "200.5" "270"
     capture_debug_state_before_route "Wall-adjacent descend"
     local start_line
     start_line="$(log_line_count)"
@@ -441,7 +443,7 @@ run_ascend_chain_smoke() {
     mc-rcon "setblock 175 80 162 stone" >/dev/null
     mc-rcon "setblock 176 81 162 stone" >/dev/null
     mc-rcon "setblock 177 82 162 stone" >/dev/null
-    prepare_independent_route "Ascend chain smoke" "171.5" "80" "160.5"
+    prepare_independent_route "Ascend chain smoke" "171.5" "80" "160.5" "315"
     capture_debug_state_before_route "Ascend chain smoke"
     local start_line
     start_line="$(log_line_count)"

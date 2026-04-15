@@ -142,11 +142,13 @@ prepare_independent_route() {
     local start_x="$2"
     local start_y="$3"
     local start_z="$4"
+    local start_yaw="${5:-270}"
+    local start_pitch="${6:-0}"
 
     echo ""
     echo "Preparing independent route: $label"
     mc-rcon "effect clear $USERNAME" >/dev/null 2>&1 || true
-    mc-rcon "tp $USERNAME $start_x $start_y $start_z" >/dev/null
+    mc-rcon "tp $USERNAME $start_x $start_y $start_z $start_yaw $start_pitch" >/dev/null
     wait_for_location_in_block "$start_x" "$start_y" "$start_z" 10
 }
 
@@ -240,7 +242,7 @@ run_flat_final_stop() {
     echo "== Flat final stop =="
     mc-rcon "fill 95 79 95 115 79 105 stone" >/dev/null
     mc-rcon "fill 95 80 95 115 85 105 air" >/dev/null
-    prepare_independent_route "Flat final stop" "100.5" "80" "100.5"
+    prepare_independent_route "Flat final stop" "100.5" "80" "100.5" "270"
     capture_debug_state_before_route "Flat final stop"
     local start_line
     start_line="$(log_line_count)"
@@ -263,7 +265,7 @@ run_parkour_into_turn() {
     mc-rcon "setblock 120 79 110 stone" >/dev/null
     mc-rcon "setblock 123 79 110 stone" >/dev/null
     mc-rcon "setblock 123 79 111 stone" >/dev/null
-    prepare_independent_route "Parkour into turn" "120.5" "80" "110.5"
+    prepare_independent_route "Parkour into turn" "120.5" "80" "110.5" "270"
     capture_debug_state_before_route "Parkour into turn"
     local start_line
     start_line="$(log_line_count)"

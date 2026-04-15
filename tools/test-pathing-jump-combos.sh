@@ -183,11 +183,13 @@ prepare_independent_route() {
     local start_x="$2"
     local start_y="$3"
     local start_z="$4"
+    local start_yaw="${5:-270}"
+    local start_pitch="${6:-0}"
 
     echo ""
     echo "Preparing independent route: $label"
     mc-rcon "effect clear $USERNAME" >/dev/null 2>&1 || true
-    mc-rcon "tp $USERNAME $start_x $start_y $start_z" >/dev/null
+    mc-rcon "tp $USERNAME $start_x $start_y $start_z $start_yaw $start_pitch" >/dev/null
     wait_for_location_in_block "$start_x" "$start_y" "$start_z" 10
 }
 
@@ -261,9 +263,11 @@ run_accepted_route() {
     local goal_x="$6"
     local goal_y="$7"
     local goal_z="$8"
-    local timeout="${9:-45}"
+    local start_yaw="${9:-270}"
+    local start_pitch="${10:-0}"
+    local timeout="${11:-45}"
 
-    prepare_independent_route "$label" "$start_x" "$start_y" "$start_z"
+    prepare_independent_route "$label" "$start_x" "$start_y" "$start_z" "$start_yaw" "$start_pitch"
     capture_debug_state_before_route "$label"
 
     local start_line
@@ -327,7 +331,7 @@ scenario_repeated_cardinal_parkour() {
     set_stone 584 79 580
     set_stone 586 79 580
     set_stone 588 79 580
-    run_accepted_route "repeated-cardinal-parkour-chain" "Repeated jump - cardinal parkour chain" "580.5" "80" "580.5" "588" "80.00" "580"
+    run_accepted_route "repeated-cardinal-parkour-chain" "Repeated jump - cardinal parkour chain" "580.5" "80" "580.5" "588" "80.00" "580" "270"
 }
 
 scenario_repeated_diagonal_parkour() {
@@ -337,7 +341,7 @@ scenario_repeated_diagonal_parkour() {
     set_stone 602 79 602
     set_stone 604 79 604
     set_stone 606 79 606
-    run_accepted_route "repeated-diagonal-parkour-chain" "Repeated jump - diagonal parkour chain" "600.5" "80" "600.5" "606" "80.00" "606"
+    run_accepted_route "repeated-diagonal-parkour-chain" "Repeated jump - diagonal parkour chain" "600.5" "80" "600.5" "606" "80.00" "606" "315"
 }
 
 scenario_obstructed_parkour_turn_mix() {
@@ -353,7 +357,7 @@ scenario_obstructed_parkour_turn_mix() {
     set_stone 620 81 621
     set_stone 622 80 622
     set_stone 622 81 622
-    run_accepted_route "obstructed-parkour-l-turns" "Obstructed jump mix - repeated parkour L-turns" "620.5" "80" "620.5" "626" "80.00" "622"
+    run_accepted_route "obstructed-parkour-l-turns" "Obstructed jump mix - repeated parkour L-turns" "620.5" "80" "620.5" "626" "80.00" "622" "270"
 }
 
 scenario_parkour_ascend_descend_chain() {
@@ -364,7 +368,7 @@ scenario_parkour_ascend_descend_chain() {
     set_stone 644 79 620
     set_stone 646 80 620
     set_stone 648 79 620
-    run_accepted_route "vertical-jump-mix" "Vertical jump mix - parkour ascend descend chain" "640.5" "80" "620.5" "648" "80.00" "620"
+    run_accepted_route "vertical-jump-mix" "Vertical jump mix - parkour ascend descend chain" "640.5" "80" "620.5" "648" "80.00" "620" "270"
 }
 
 scenario_diagonal_ascend_descend_chain() {
@@ -375,7 +379,7 @@ scenario_diagonal_ascend_descend_chain() {
     set_stone 682 79 622
     set_stone 683 80 623
     set_stone 684 79 624
-    run_accepted_route "diagonal-vertical-mix" "Diagonal vertical mix - ascend descend chain" "680.5" "80" "620.5" "684" "80.00" "624"
+    run_accepted_route "diagonal-vertical-mix" "Diagonal vertical mix - ascend descend chain" "680.5" "80" "620.5" "684" "80.00" "624" "315"
 }
 
 start_mcc
