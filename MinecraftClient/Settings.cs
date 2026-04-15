@@ -1362,6 +1362,9 @@ namespace MinecraftClient
                         case "datetime":
                             varData = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                             return true;
+                        case "date":
+                            varData = DateTime.Now.ToString("yyyy-MM-dd");
+                            return true;
                         case "players":
                             varData = string.Join(", ", McClient.Instance?.GetOnlinePlayers() ?? []);
                             return true;

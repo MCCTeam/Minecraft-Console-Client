@@ -1082,7 +1082,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
   <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-  **`%username%`, `%login%`, `%serverip%`, `%serverport%`, `%datetime%`, `%players%` are reserved read-only variables**
+  **`%username%`, `%login%`, `%serverip%`, `%serverport%`, `%datetime%`, `%date%`, `%players%` are reserved read-only variables**
 
   </div>
 
