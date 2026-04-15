@@ -1,4 +1,5 @@
 using MinecraftClient.Mapping;
+using MinecraftClient.Pathing.Core;
 using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution.Templates
@@ -9,6 +10,20 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
         internal static void Apply(PathSegment segment, PathSegment? nextSegment, Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
+            if (segment.ExitTransition == PathTransitionType.PrepareJump
+                && segment.ExitHints.RequireJumpReady
+                && physics.OnGround
+                && TemplateFootingHelper.IsCenterInsideTargetBlock(pos, segment.End)
+                && IsReadyToFreezeForTurn(segment, pos)
+                && TemplateHelper.HeadingPenaltyDegrees(physics.Yaw, segment) > 8.0)
+            {
+                input.Forward = false;
+                input.Sprint = false;
+                input.Back = false;
+                TemplateHelper.FaceExitHeading(physics, segment, YawAlignmentMode.Snap);
+                return;
+            }
+
             if (TemplateHelper.ShouldBiasTowardExitHeading(pos, segment))
                 TemplateHelper.FaceExitHeading(physics, segment);
 
@@ -49,11 +64,19 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (segment.ExitTransition == PathTransitionType.PrepareJump
                 && physics.OnGround
                 && segment.ExitHints.RequireJumpReady
-                && segment.ExitHints.MinExitSpeed <= 0.0
-                && TemplateFootingHelper.IsCenterInsideTargetBlock(pos, segment.End)
-                && TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= 0.30)
+                && TemplateFootingHelper.IsCenterInsideTargetBlock(pos, segment.End))
             {
-                return true;
+                if (segment.MoveType == MoveType.Ascend)
+                    return true;
+
+                if (segment.MoveType == MoveType.Parkour
+                    || (segment.HeadingX != 0 && segment.HeadingZ != 0))
+                {
+                    return TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= 0.30;
+                }
+
+                if (segment.MoveType is not MoveType.Parkour)
+                    return true;
             }
 
             if (exitSpeed < segment.ExitHints.MinExitSpeed)
@@ -85,6 +108,20 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 PathTransitionType.FinalStop => physics.OnGround && TemplateHelper.IsSettledAtEnd(pos, segment.End, physics),
                 _ => physics.OnGround && TemplateHelper.IsSettledOnTargetBlock(pos, segment.End, physics)
             };
+        }
+
+        private static bool IsReadyToFreezeForTurn(PathSegment segment, Location pos)
+        {
+            if (segment.MoveType == MoveType.Ascend)
+                return true;
+
+            if (segment.MoveType == MoveType.Parkour
+                || (segment.HeadingX != 0 && segment.HeadingZ != 0))
+            {
+                return TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= 0.30;
+            }
+
+            return true;
         }
     }
 }

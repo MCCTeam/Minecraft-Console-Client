@@ -18,6 +18,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private int _tickCount;
         private Location _lastPos;
         private int _stuckTicks;
+        private bool _initiatedJump;
 
         public AscendTemplate(PathSegment segment, PathSegment? nextSegment)
         {
@@ -37,15 +38,34 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dy = ExpectedEnd.Y - pos.Y;
             double horizDistSq = dx * dx + dz * dz;
 
+            bool groundedPrepareJumpHandoff = physics.OnGround
+                && Math.Abs(dy) < 0.2
+                && _segment.ExitTransition == PathTransitionType.PrepareJump
+                && _segment.ExitHints.RequireJumpReady
+                && TemplateFootingHelper.IsCenterInsideTargetBlock(pos, _segment.End);
+
             float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
-            physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+            bool snapYawForJumpCommit = !_initiatedJump && !groundedPrepareJumpHandoff;
+            physics.Yaw = TemplateHelper.AlignYaw(
+                physics.Yaw,
+                targetYaw,
+                snapYawForJumpCommit ? YawAlignmentMode.Snap : YawAlignmentMode.Smooth);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
-            input.Forward = true;
-            input.Sprint = true;
+            float headingPenalty = YawDifference(physics.Yaw, targetYaw);
+            bool headingReady = headingPenalty <= 8.0;
+            bool turnInPlace = !_initiatedJump && !headingReady;
+            input.Forward = !turnInPlace;
+            input.Sprint = !turnInPlace;
 
-            if (physics.OnGround && dy > 0.1)
+            bool diagonalAscend = _segment.HeadingX != 0 && _segment.HeadingZ != 0;
+            bool jumpReady = headingReady
+                && (diagonalAscend || TemplateHelper.RemainingDistanceAlongSegment(pos, _segment) <= 1.05);
+            if (physics.OnGround && dy > 0.1 && jumpReady)
+            {
                 input.Jump = true;
+                _initiatedJump = true;
+            }
 
             if (physics.OnGround && Math.Abs(dy) < 0.2)
             {
@@ -63,6 +83,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 return TemplateState.Failed;
 
             return TemplateState.InProgress;
+        }
+
+        private static float YawDifference(float current, float target)
+        {
+            float delta = target - current;
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+            return Math.Abs(delta);
         }
     }
 }
