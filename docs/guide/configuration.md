@@ -503,6 +503,18 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `true`
 
+#### `ShowEffectMessages`
+
+- **Description:**
+
+  This setting controls whether MCC prints messages when one of your active effects is gained or expires.
+
+  Set it to `false` if a beacon or another repeated effect source is spamming the console.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
 #### `ShowEffectNamesInTUI`
 
 - **Description:**

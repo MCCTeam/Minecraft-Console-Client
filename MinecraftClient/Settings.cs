@@ -817,6 +817,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.Advanced.show_inventory_layout$")]
                     public bool ShowInventoryLayout = true;
 
+                    [TomlInlineComment("$Main.Advanced.show_effect_messages$")]
+                    public bool ShowEffectMessages = true;
+
                     [TomlInlineComment("$Main.Advanced.show_effect_names_in_tui$")]
                     public bool ShowEffectNamesInTUI = false;
 
