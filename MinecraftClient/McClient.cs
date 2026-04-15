@@ -741,7 +741,7 @@ namespace MinecraftClient
                     if (!playerEffects.Remove(effect, out var effectData))
                         continue;
 
-                    ConsoleIO.WriteLine(string.Format(Translations.bot_effect_expired, effectData.GetDisplayName()));
+                    AnnouncePlayerEffectExpired(effectData);
 
                     if (entities.TryGetValue(playerEntityID, out var playerEntity))
                         playerEntity.ActiveEffects.Remove(effect);
@@ -3830,6 +3830,33 @@ namespace MinecraftClient
             DispatchBotEvent(bot => bot.OnEntitySpawn(entity));
         }
 
+        private static bool ShouldAnnouncePlayerEffectGain(EffectData effectData, EffectData? previousPlayerEffect)
+        {
+            if (!Config.Main.Advanced.ShowEffectMessages)
+                return false;
+
+            return previousPlayerEffect is null
+                || previousPlayerEffect.IsExpired
+                || previousPlayerEffect.Amplifier != effectData.Amplifier;
+        }
+
+        private static void AnnouncePlayerEffectGain(EffectData effectData)
+        {
+            if (!Config.Main.Advanced.ShowEffectMessages)
+                return;
+
+            ConsoleIO.WriteLine(string.Format(Translations.bot_effect_gained,
+                effectData.GetDisplayNameWithArticle(), effectData.GetInitialDurationText()));
+        }
+
+        private static void AnnouncePlayerEffectExpired(EffectData effectData)
+        {
+            if (!Config.Main.Advanced.ShowEffectMessages)
+                return;
+
+            ConsoleIO.WriteLine(string.Format(Translations.bot_effect_expired, effectData.GetDisplayName()));
+        }
+
         /// <summary>
         /// Called when an entity effects
         /// </summary>
@@ -3849,16 +3876,8 @@ namespace MinecraftClient
                 playerEffects.TryGetValue(effect, out var previousPlayerEffect);
                 playerEffects[effect] = effectData;
 
-                bool shouldAnnounceEffectGain = previousPlayerEffect is null
-                    || previousPlayerEffect.Amplifier != amplifier
-                    || (effectData.IsInfinite && !previousPlayerEffect.IsInfinite)
-                    || (!effectData.IsInfinite && duration > previousPlayerEffect.RemainingTicks + 20);
-
-                if (shouldAnnounceEffectGain)
-                {
-                    ConsoleIO.WriteLine(string.Format(Translations.bot_effect_gained,
-                        effectData.GetDisplayNameWithArticle(), effectData.GetInitialDurationText()));
-                }
+                if (ShouldAnnouncePlayerEffectGain(effectData, previousPlayerEffect))
+                    AnnouncePlayerEffectGain(effectData);
             }
 
             if (entity is not null)
@@ -3886,7 +3905,7 @@ namespace MinecraftClient
                 removedEffectData ??= playerEffectData;
 
             if (entityid == playerEntityID && removedEffectData is not null)
-                ConsoleIO.WriteLine(string.Format(Translations.bot_effect_expired, removedEffectData.GetDisplayName()));
+                AnnouncePlayerEffectExpired(removedEffectData);
 
             if (entity is not null)
                 DispatchBotEvent(bot => bot.OnRemoveEntityEffect(entity, effect));
