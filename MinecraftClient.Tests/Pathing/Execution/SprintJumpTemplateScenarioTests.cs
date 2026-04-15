@@ -61,35 +61,6 @@ public sealed class SprintJumpTemplateScenarioTests
     }
 
     [Fact]
-    public void SprintJumpTemplate_Approach_SnapsYawImmediatelyFromOppositeYaw()
-    {
-        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 0, max: 16);
-        FlatWorldTestBuilder.ClearBox(world, 0, 79, 0, 4, 82, 1);
-        FlatWorldTestBuilder.SetSolid(world, 0, 79, 0);
-        FlatWorldTestBuilder.SetSolid(world, 2, 79, 0);
-
-        var segment = new PathSegment
-        {
-            Start = new Location(0.5, 80, 0.5),
-            End = new Location(2.5, 80, 0.5),
-            MoveType = MoveType.Parkour,
-            ExitTransition = PathTransitionType.FinalStop
-        };
-
-        var template = new SprintJumpTemplate(segment, null);
-        var physics = TemplateSimulationRunner.CreateGroundedPhysics(segment.Start, yaw: 90f);
-        var input = new MovementInput();
-
-        TemplateState state = template.Tick(segment.Start, physics, input, world);
-
-        Assert.Equal(TemplateState.InProgress, state);
-        Assert.InRange(physics.Yaw, 269.9f, 270.1f);
-        Assert.True(input.Forward);
-        Assert.True(input.Sprint);
-        Assert.True(input.Jump);
-    }
-
-    [Fact]
     public void SprintJumpTemplate_TwoBlockGap_FinalStop_CompletesFromOppositeYawWithinTwentyTicks()
     {
         World world = FlatWorldTestBuilder.CreateStoneFloor(min: 0, max: 16);

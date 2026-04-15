@@ -35,17 +35,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dx = ExpectedEnd.X - pos.X;
             double dz = ExpectedEnd.Z - pos.Z;
             double dy = ExpectedEnd.Y - pos.Y;
-            bool snapYawForJumpEntry = physics.OnGround
-                && _segment.ExitTransition == PathTransitionType.PrepareJump
-                && _segment.ExitHints.RequireJumpReady;
             float targetYaw = TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment)
                 ? TemplateHelper.GetExitHeadingYaw(_segment)
                 : TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
-            physics.Yaw = TemplateHelper.AlignYaw(
-                physics.Yaw,
-                targetYaw,
-                snapYawForJumpEntry ? YawAlignmentMode.Snap : YawAlignmentMode.Smooth);
+            physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
             GroundedSegmentController.Apply(_segment, _nextSegment, pos, physics, input, world);

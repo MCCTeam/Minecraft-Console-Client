@@ -6,6 +6,8 @@ def _world_recipe_id(case: TheoryCase) -> str:
         return f"linear-{case.subfamily}"
     if case.family == "neo":
         return "neo-wall"
+    if case.family == "sidewall":
+        return f"sidewall-{case.subfamily}"
     return "ceiling-headhitter"
 
 
@@ -18,6 +20,14 @@ def _canonical_goal(case: TheoryCase) -> tuple[dict[str, float], dict[str, float
     if case.family == "neo":
         goal_z = 100 + (case.wall_width or 1)
         return start, {"x": 102.0, "y": 80.0, "z": float(goal_z)}
+    if case.family == "sidewall":
+        goal_y = 80.0 + (case.delta_y or 0.0)
+        goal_x = 100 + (case.gap_blocks or 0) + 1
+        wall_z_offset = 100 + 1 + (case.wall_offset or 0)
+        return (
+            {"x": 100.5, "y": 80.0, "z": 100.5},
+            {"x": float(goal_x), "y": goal_y, "z": 100.0},
+        )
     goal_x = 100 + (case.gap_blocks or 0) + 1
     return start, {"x": float(goal_x), "y": 80.0, "z": 100.0}
 
@@ -27,7 +37,7 @@ def _select_boundary_case(
     subfamily: str,
     reachable: list[TheoryCase],
 ) -> TheoryCase:
-    if family == "linear":
+    if family in {"linear", "sidewall"}:
         preferred_gap_by_subfamily = {
             "flat": 5,
             "ascend": 2,
@@ -105,6 +115,7 @@ def build_canonical_live_cases(cases: list[TheoryCase]) -> list[CanonicalLiveCas
                     delta_y=case.delta_y,
                     ceiling_height=case.ceiling_height,
                     wall_width=case.wall_width,
+                    wall_offset=case.wall_offset,
                     start=start,
                     goal=goal,
                 )

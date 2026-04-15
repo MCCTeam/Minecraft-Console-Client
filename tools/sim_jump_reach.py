@@ -23,10 +23,15 @@ import sys
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+from tools.pathing_theory.capabilities import (
+    build_momentum_capability_bands,
+    format_momentum_capability_lines,
+)
 from tools.pathing_theory.canonical import build_canonical_live_cases
 from tools.pathing_theory.primitives import (
     PLAYER_WIDTH,
     can_reach_gap,
+    can_reach_gap_with_side_wall,
     get_apex,
     get_landing,
     simulate_jump,
@@ -179,28 +184,65 @@ def analyze_all(verbose: bool = False) -> list[dict]:
         else:
             print(f"    {ceil:>7.4f}b {'N/A':>12}")
 
-    # --- Part 6: Verbose ---
+    # --- Part 6: Side-wall jumps ---
+    print(f"\n[6] Side-Wall Jump Feasibility (Sprint, 12t momentum)")
+    print(f"    Wall parallel to jump direction, flush with platform edge (wo=0)")
+    print(f"    Yaw sweep 0-10 deg, worst-case used.")
+    print()
+
+    dy_values_sw = [1.0, 0.0, -1.0, -2.0]
+    header_sw = f"    {'Gap':>4}"
+    for dy in dy_values_sw:
+        sign = "+" if dy > 0 else ""
+        header_sw += f"  {sign}{dy:>5.1f}(L)  {sign}{dy:>5.1f}(W)"
+    print(header_sw)
+    print(f"    {'----':>4}" + " ---------- ----------" * len(dy_values_sw))
+
+    for gap in range(0, 7):
+        row = f"    {gap:>4}"
+        for dy in dy_values_sw:
+            ok_lin, _, _ = can_reach_gap(gap, dy, sprint=True, momentum_ticks=12)
+            ok_sw, _, _ = can_reach_gap_with_side_wall(
+                gap, dy, wall_offset=0, sprint=True, momentum_ticks=12,
+            )
+            lin_str = "YES" if ok_lin else "no"
+            sw_str = "YES" if ok_sw else "no"
+            marker = " " if ok_lin == ok_sw else "*"
+            row += f"  {lin_str:>6}     {sw_str:>6}{marker}"
+        print(row)
+
+    print()
+    print("    L=linear (no wall), W=wall (wo=0), *=reachability differs")
+
+    # --- Part 7: Verbose ---
     if verbose:
         for label, sp in [("Sprint", True), ("Walk", False)]:
             print(f"\n[V] {label} Jump Trajectory (12t momentum, flat)")
-            print(f"    {'Tick':>4} {'X':>10} {'Y':>10} {'VX':>10} {'VY':>10} {'Gnd':>5}")
+            print(f"    {'Tick':>4} {'X':>10} {'Y':>10} {'Z':>10} {'VX':>10} {'VY':>10} {'VZ':>10} {'Gnd':>5}")
             traj = simulate_jump(sprint=sp, momentum_ticks=12, landing_y=0.0)
             for s in traj:
                 g = "G" if s.on_ground else ""
-                print(f"    {s.tick:>4} {s.x:>10.4f} {s.y:>10.4f} "
-                      f"{s.vx:>10.6f} {s.vy:>10.6f} {g:>5}")
+                print(f"    {s.tick:>4} {s.x:>10.4f} {s.y:>10.4f} {s.z:>10.4f} "
+                      f"{s.vx:>10.6f} {s.vy:>10.6f} {s.vz:>10.6f} {g:>5}")
 
-        # +1 ascending sprint jump
-        print(f"\n[V] Sprint +1 Ascending Trajectory (12t mm, gap=1)")
-        print(f"    {'Tick':>4} {'X':>10} {'Y':>10} {'VX':>10} {'VY':>10} {'Gnd':>5}")
-        traj = simulate_jump(sprint=True, momentum_ticks=12,
-                             landing_y=1.0, landing_x_start=1.5)
+        print(f"\n[V] Sprint flat with side wall (12t mm, yaw=10, wo=0)")
+        print(f"    {'Tick':>4} {'X':>10} {'Y':>10} {'Z':>10} {'VX':>10} {'VY':>10} {'VZ':>10} {'Gnd':>5}")
+        traj = simulate_jump(sprint=True, momentum_ticks=12, landing_y=0.0,
+                             landing_x_start=4.5, landing_width=1.0,
+                             yaw_degrees=10.0, wall_z=1.0, start_z=0.5)
         for s in traj:
             g = "G" if s.on_ground else ""
-            print(f"    {s.tick:>4} {s.x:>10.4f} {s.y:>10.4f} "
-                  f"{s.vx:>10.6f} {s.vy:>10.6f} {g:>5}")
+            print(f"    {s.tick:>4} {s.x:>10.4f} {s.y:>10.4f} {s.z:>10.4f} "
+                  f"{s.vx:>10.6f} {s.vy:>10.6f} {s.vz:>10.6f} {g:>5}")
 
     return results
+
+
+def list_momentum_capabilities() -> None:
+    cases = build_theory_cases()
+    bands = build_momentum_capability_bands(cases)
+    for line in format_momentum_capability_lines(bands):
+        print(line)
 
 
 def main():
@@ -212,13 +254,25 @@ def main():
                         help="Export results to CSV file")
     parser.add_argument("--write-artifacts", type=str, default=None,
                         help="Write tracked theory artifacts to a directory")
+    parser.add_argument("--list-capabilities", action="store_true",
+                        help="List compressed mm breakpoint capabilities")
     args = parser.parse_args()
 
     if args.write_artifacts:
         cases = build_theory_cases()
         canonical_cases = build_canonical_live_cases(cases)
-        write_theory_artifacts(cases, canonical_cases, Path(args.write_artifacts))
+        capability_bands = build_momentum_capability_bands(cases)
+        write_theory_artifacts(
+            cases,
+            canonical_cases,
+            capability_bands,
+            Path(args.write_artifacts),
+        )
         print(f"Wrote theory artifacts to {args.write_artifacts}")
+        return
+
+    if args.list_capabilities:
+        list_momentum_capabilities()
         return
 
     results = analyze_all(verbose=args.verbose)

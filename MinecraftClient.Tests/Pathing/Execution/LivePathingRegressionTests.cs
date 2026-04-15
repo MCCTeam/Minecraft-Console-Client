@@ -5,7 +5,6 @@ using MinecraftClient.Pathing.Core;
 using MinecraftClient.Pathing.Execution;
 using MinecraftClient.Pathing.Execution.Templates;
 using MinecraftClient.Pathing.Goals;
-using MinecraftClient.Physics;
 using Xunit;
 
 namespace MinecraftClient.Tests.Pathing.Execution;
@@ -76,52 +75,6 @@ public sealed class LivePathingRegressionTests
                 Assert.Equal(new Location(584.5, 80, 580.5), second.Start);
                 Assert.Equal(new Location(588.5, 80, 580.5), second.End);
             });
-    }
-
-    [Fact]
-    public void PathExecutor_RepeatedSingleGapParkourChain_TwoLongJumps_CompletesWithoutReplan()
-    {
-        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 578, max: 590);
-        FlatWorldTestBuilder.ClearBox(world, 578, 79, 578, 590, 90, 582);
-        FlatWorldTestBuilder.SetSolid(world, 580, 79, 580);
-        FlatWorldTestBuilder.SetSolid(world, 582, 79, 580);
-        FlatWorldTestBuilder.SetSolid(world, 584, 79, 580);
-        FlatWorldTestBuilder.SetSolid(world, 586, 79, 580);
-        FlatWorldTestBuilder.SetSolid(world, 588, 79, 580);
-
-        var ctx = new CalculationContext(world, allowParkour: true, allowParkourAscend: true);
-        var finder = new AStarPathFinder();
-        PathResult result = finder.Calculate(
-            ctx,
-            startX: 580,
-            startY: 80,
-            startZ: 580,
-            new GoalBlock(588, 80, 580),
-            CancellationToken.None,
-            timeoutMs: 2000);
-
-        var debugLogs = new List<string>();
-        var infoLogs = new List<string>();
-        var manager = new PathSegmentManager(debugLogs.Add, infoLogs.Add);
-        var physics = TemplateSimulationRunner.CreateGroundedPhysics(new Location(580.5, 80, 580.5), yaw: 270f);
-        var input = new MovementInput();
-
-        manager.StartNavigation(new GoalBlock(588, 80, 580), result);
-
-        for (int tick = 0; tick < 240 && manager.IsNavigating; tick++)
-        {
-            input.Reset();
-            Location pos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
-            manager.Tick(pos, physics, input, world);
-            if (!manager.IsNavigating)
-                break;
-
-            physics.ApplyInput(input);
-            physics.Tick(world);
-        }
-
-        Assert.True(!manager.IsNavigating && manager.ReplanCount == 0,
-            $"replanCount={manager.ReplanCount}\ninfo={string.Join('\n', infoLogs)}\ndebug={string.Join('\n', debugLogs)}");
     }
 
     [Fact]

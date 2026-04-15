@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+mcc_cmd_live() {
+    if [[ -n "${SESSION:-}" ]]; then
+        mcc-cmd --session "$SESSION" "$1"
+    else
+        mcc-cmd "$1"
+    fi
+}
+
 manifest_cases_for_query() {
     local manifest_path="$1"
     local family_csv="$2"
@@ -64,41 +72,42 @@ run_test() {
     local name="$1"
     local start_x="$2" start_y="$3" start_z="$4"
     local dest_x="$5" dest_y="$6" dest_z="$7"
+    local username="${USERNAME:-MCCBot}"
 
     TEST_NUM=$((TEST_NUM + 1))
     echo ""
     echo "=== TEST $TEST_NUM: $name ==="
     echo "  Start: ($start_x, $start_y, $start_z) -> Dest: ($dest_x, $dest_y, $dest_z)"
 
-    mcc-cmd "respawn" 2>/dev/null || true
+    mcc_cmd_live "respawn" 2>/dev/null || true
     sleep 0.5
-    mc-rcon "gamemode creative MCCBot" >/dev/null 2>&1
+    mc-rcon "gamemode creative $username" >/dev/null 2>&1
     sleep 0.3
-    mc-rcon "tp MCCBot ${start_x}.5 ${start_y} ${start_z}.5" >/dev/null 2>&1
+    mc-rcon "tp $username ${start_x}.5 ${start_y} ${start_z}.5" >/dev/null 2>&1
     sleep 2
-    mc-rcon "gamemode survival MCCBot" >/dev/null 2>&1
+    mc-rcon "gamemode survival $username" >/dev/null 2>&1
     sleep 1
 
     : > "$LOG"
     sleep 0.5
 
-    mcc-cmd "pathfind $dest_x $dest_y $dest_z"
+    mcc_cmd_live "pathfind $dest_x $dest_y $dest_z"
     sleep 8
 
     local a_star_result
-    a_star_result=$(grep -a '\[A\*\]' "$LOG" | head -3 | sed 's/\x1b\[[0-9;]*m//g')
+    a_star_result=$(grep -a '\[A\*\]' "$LOG" | head -3 | sed 's/\x1b\[[0-9;]*m//g' || true)
 
     local path_exec
-    path_exec=$(grep -a '\[PathExec\]' "$LOG" | sed 's/\x1b\[[0-9;]*m//g')
+    path_exec=$(grep -a '\[PathExec\]' "$LOG" | sed 's/\x1b\[[0-9;]*m//g' || true)
 
     local path_mgr
-    path_mgr=$(grep -a '\[PathMgr\]' "$LOG" | sed 's/\x1b\[[0-9;]*m//g')
+    path_mgr=$(grep -a '\[PathMgr\]' "$LOG" | sed 's/\x1b\[[0-9;]*m//g' || true)
 
     local nav_segs
-    nav_segs=$(grep -a '\[Navigate\].*seg' "$LOG" | sed 's/\x1b\[[0-9;]*m//g')
+    nav_segs=$(grep -a '\[Navigate\].*seg' "$LOG" | sed 's/\x1b\[[0-9;]*m//g' || true)
 
     local physics_line
-    physics_line=$(grep -a '\[Physics\]' "$LOG" | tail -1 | sed 's/\x1b\[[0-9;]*m//g')
+    physics_line=$(grep -a '\[Physics\]' "$LOG" | tail -1 | sed 's/\x1b\[[0-9;]*m//g' || true)
 
     local result="invalid_live_case"
     if echo "$path_mgr" | grep -q "complete"; then

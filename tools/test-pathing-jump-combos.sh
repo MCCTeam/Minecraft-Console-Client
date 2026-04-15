@@ -6,8 +6,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_ROOT/tools/mcc-env.sh"
 
 VERSION="${1:-1.21.11-Vanilla}"
-SESSION="mcc-pathing-jump-combos"
-USERNAME="MCCBot"
+SESSION="${SESSION:-mcc-pathing-jump-combos}"
+USERNAME="${USERNAME:-MCCBot}"
 
 SESSION_ROOT="$(_mcc_session_root "$SESSION")"
 LOG="$(_mcc_session_log_file "$SESSION")"

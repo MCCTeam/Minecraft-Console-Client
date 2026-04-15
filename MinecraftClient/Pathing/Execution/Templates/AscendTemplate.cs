@@ -46,11 +46,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
-            bool snapYawForJumpCommit = !_initiatedJump && !groundedPrepareJumpHandoff;
-            physics.Yaw = TemplateHelper.AlignYaw(
-                physics.Yaw,
-                targetYaw,
-                snapYawForJumpCommit ? YawAlignmentMode.Snap : YawAlignmentMode.Smooth);
+            if (!groundedPrepareJumpHandoff)
+                physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
             float headingPenalty = YawDifference(physics.Yaw, targetYaw);
             bool headingReady = headingPenalty <= 8.0;

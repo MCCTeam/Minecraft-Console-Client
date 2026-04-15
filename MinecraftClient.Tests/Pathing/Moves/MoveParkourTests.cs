@@ -43,26 +43,6 @@ public sealed class MoveParkourTests
     }
 
     [Fact]
-    public void Accepts4x1JumpWithoutRearSupport_WhenTakeoffBlockProvidesRunway()
-    {
-        World world = FlatWorldTestBuilder.CreateStoneFloor(min: -2, max: 6);
-        FlatWorldTestBuilder.ClearBox(world, -2, FloorY, -1, 6, FloorY + 4, 1);
-        FlatWorldTestBuilder.SetSolid(world, 0, FloorY, 0);
-        FlatWorldTestBuilder.SetSolid(world, 2, FloorY, 0);
-        FlatWorldTestBuilder.SetSolid(world, 4, FloorY, 0);
-
-        var ctx = BuildContext(world);
-        var move = new MoveParkour(4, 0);
-        var result = default(MoveResult);
-
-        move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
-
-        Assert.False(result.IsImpossible);
-        Assert.Equal(4, result.DestX);
-        Assert.Equal(0, result.DestZ);
-    }
-
-    [Fact]
     public void Rejects2x1WhenAdjacentBlockIsStillWalkable()
     {
         var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);

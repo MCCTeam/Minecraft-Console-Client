@@ -31,7 +31,6 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private Phase _phase = Phase.Approach;
         private bool _leftGround;
         private bool _carriedGroundEntry;
-        private bool _airBrakeLatched;
 
         private const float YawToleranceDeg = 5f;
 
@@ -57,10 +56,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
-            YawAlignmentMode yawMode = _phase == Phase.Approach
-                ? YawAlignmentMode.Snap
-                : YawAlignmentMode.Smooth;
-            physics.Yaw = TemplateHelper.AlignYaw(physics.Yaw, targetYaw, yawMode);
+            physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
             switch (_phase)
@@ -139,14 +135,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         && lookaheadAirBrake
                         && !releaseInAir;
 
-                    if (_segment.ExitTransition == PathTransitionType.FinalStop
-                        && _horizDist <= 2.5
-                        && (releaseInAir || pastTarget))
-                    {
-                        _airBrakeLatched = true;
-                    }
-
-                    if (_airBrakeLatched || releaseInAir || pastTarget)
+                    if (releaseInAir || pastTarget)
                     {
                         input.Forward = false;
                         input.Sprint = false;

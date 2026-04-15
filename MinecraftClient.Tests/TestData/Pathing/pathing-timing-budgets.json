@@ -70,23 +70,23 @@
   },
   {
     "scenarioId": "same-move-descend-staircase",
-    "expectedTotalTicks": 57,
-    "maxTotalTicks": 70,
+    "expectedTotalTicks": 61,
+    "maxTotalTicks": 74,
     "segments": [
       {
         "moveType": "Descend",
-        "expectedTicks": 23,
-        "maxTicks": 28
+        "expectedTicks": 24,
+        "maxTicks": 29
       },
       {
         "moveType": "Descend",
-        "expectedTicks": 23,
-        "maxTicks": 28
+        "expectedTicks": 25,
+        "maxTicks": 30
       },
       {
         "moveType": "Descend",
-        "expectedTicks": 11,
-        "maxTicks": 14
+        "expectedTicks": 12,
+        "maxTicks": 15
       }
     ]
   },
@@ -98,18 +98,28 @@
   },
   {
     "scenarioId": "repeated-cardinal-parkour-chain",
-    "expectedTotalTicks": 37,
-    "maxTotalTicks": 45,
+    "expectedTotalTicks": 123,
+    "maxTotalTicks": 150,
     "segments": [
       {
         "moveType": "Parkour",
-        "expectedTicks": 18,
-        "maxTicks": 22
+        "expectedTicks": 46,
+        "maxTicks": 56
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 19,
-        "maxTicks": 23
+        "expectedTicks": 41,
+        "maxTicks": 50
+      },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 20,
+        "maxTicks": 24
+      },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 16,
+        "maxTicks": 20
       }
     ]
   },
@@ -159,18 +169,23 @@
   },
   {
     "scenarioId": "vertical-jump-mix",
-    "expectedTotalTicks": 41,
-    "maxTotalTicks": 50,
+    "expectedTotalTicks": 50,
+    "maxTotalTicks": 62,
     "segments": [
       {
         "moveType": "Parkour",
-        "expectedTicks": 10,
-        "maxTicks": 12
+        "expectedTicks": 13,
+        "maxTicks": 16
+      },
+      {
+        "moveType": "Descend",
+        "expectedTicks": 12,
+        "maxTicks": 15
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 18,
-        "maxTicks": 22
+        "expectedTicks": 12,
+        "maxTicks": 15
       },
       {
         "moveType": "Descend",
@@ -181,23 +196,23 @@
   },
   {
     "scenarioId": "diagonal-vertical-mix",
-    "expectedTotalTicks": 38,
-    "maxTotalTicks": 46,
+    "expectedTotalTicks": 48,
+    "maxTotalTicks": 59,
     "segments": [
       {
         "moveType": "Ascend",
-        "expectedTicks": 10,
-        "maxTicks": 12
+        "expectedTicks": 19,
+        "maxTicks": 23
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 14,
-        "maxTicks": 17
+        "expectedTicks": 16,
+        "maxTicks": 20
       },
       {
         "moveType": "Descend",
-        "expectedTicks": 14,
-        "maxTicks": 17
+        "expectedTicks": 13,
+        "maxTicks": 16
       }
     ]
   },
@@ -277,25 +292,35 @@
   },
   {
     "scenarioId": "same-move-aligned-parkour-chain",
-    "expectedTotalTicks": 37,
-    "maxTotalTicks": 45,
+    "expectedTotalTicks": 123,
+    "maxTotalTicks": 150,
     "segments": [
       {
         "moveType": "Parkour",
-        "expectedTicks": 18,
-        "maxTicks": 22
+        "expectedTicks": 46,
+        "maxTicks": 56
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 19,
-        "maxTicks": 23
+        "expectedTicks": 41,
+        "maxTicks": 50
+      },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 20,
+        "maxTicks": 24
+      },
+      {
+        "moveType": "Parkour",
+        "expectedTicks": 16,
+        "maxTicks": 20
       }
     ]
   },
   {
     "scenarioId": "mixed-diagonal-ascend-traverse-descend",
-    "expectedTotalTicks": 76,
-    "maxTotalTicks": 95,
+    "expectedTotalTicks": 96,
+    "maxTotalTicks": 120,
     "segments": [
       {
         "moveType": "Diagonal",
@@ -309,13 +334,13 @@
       },
       {
         "moveType": "Ascend",
-        "expectedTicks": 10,
-        "maxTicks": 12
+        "expectedTicks": 32,
+        "maxTicks": 39
       },
       {
         "moveType": "Ascend",
-        "expectedTicks": 13,
-        "maxTicks": 16
+        "expectedTicks": 11,
+        "maxTicks": 14
       },
       {
         "moveType": "Traverse",

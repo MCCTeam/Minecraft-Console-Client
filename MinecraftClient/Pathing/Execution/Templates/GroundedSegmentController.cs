@@ -20,7 +20,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 input.Forward = false;
                 input.Sprint = false;
                 input.Back = false;
-                TemplateHelper.FaceExitHeading(physics, segment, YawAlignmentMode.Snap);
+                TemplateHelper.FaceExitHeading(physics, segment);
                 return;
             }
 

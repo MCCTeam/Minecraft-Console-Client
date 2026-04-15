@@ -6,9 +6,11 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_ROOT/tools/mcc-env.sh"
 source "$REPO_ROOT/tools/pathing_live_common.sh"
 
+SESSION="${SESSION:-$(_mcc_resolve_session)}"
+USERNAME="${USERNAME:-MCCBot}"
 MANIFEST="$REPO_ROOT/tools/pathing_data/canonical-live-cases.json"
-RESULTS_FILE="${RESULTS_FILE:-/tmp/mcc-debug/pathing-live-results.jsonl}"
-LOG="/tmp/mcc-debug/mcc-debug.log"
+RESULTS_FILE="${RESULTS_FILE:-$(_mcc_session_root "$SESSION")/pathing-live-results.jsonl}"
+LOG="$(_mcc_session_log_file "$SESSION")"
 RESULTS=""
 TEST_NUM=0
 LAST_RESULT="invalid_live_case"
