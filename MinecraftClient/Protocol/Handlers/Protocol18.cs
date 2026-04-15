@@ -623,6 +623,11 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                                 break;
 
+                            case ConfigurationPacketTypesIn.CodeOfConduct:
+                                dataTypes.ReadNextString(packetData); // Code of conduct text
+                                SendPacket(ConfigurationPacketTypesOut.AcceptCodeOfConduct, new List<byte>());
+                                break;
+
                             case ConfigurationPacketTypesIn.ServerLinks:
                                 var cfgLinksCount = dataTypes.ReadNextVarInt(packetData);
                                 for (var i = 0; i < cfgLinksCount; i++)
