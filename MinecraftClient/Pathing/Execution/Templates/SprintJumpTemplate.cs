@@ -30,6 +30,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private int _tickCount;
         private Phase _phase = Phase.Approach;
         private bool _leftGround;
+        private bool _carriedGroundEntry;
+        private bool _airBrakeLatched;
 
         private const float YawToleranceDeg = 5f;
 
@@ -55,19 +57,25 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
-            physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+            YawAlignmentMode yawMode = _phase == Phase.Approach
+                ? YawAlignmentMode.Snap
+                : YawAlignmentMode.Smooth;
+            physics.Yaw = TemplateHelper.AlignYaw(physics.Yaw, targetYaw, yawMode);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
             switch (_phase)
             {
                 case Phase.Approach:
-                    input.Forward = true;
-                    input.Sprint = true;
-
                     if (physics.OnGround)
                     {
+                        if (_tickCount == 1 && TemplateHelper.GetHorizontalSpeed(physics) > 0.02)
+                            _carriedGroundEntry = true;
+
                         double fromStartSq = TemplateHelper.HorizontalDistanceSq(pos, ExpectedStart);
                         float yawDelta = YawDifference(physics.Yaw, targetYaw);
+                        bool turnInPlace = yawDelta > 35f;
+                        input.Forward = !turnInPlace;
+                        input.Sprint = !turnInPlace;
 
                         // Build momentum before jumping. Sprint speed is ~5.6 m/s
                         // (0.28 blocks/tick). More run-up = more airtime distance.
@@ -84,6 +92,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         else
                             minApproachSq = 0.0;
 
+                        if (_carriedGroundEntry
+                            && _segment.ExitTransition == PathTransitionType.FinalStop
+                            && _horizDist <= 2.5
+                            && GetLateralOffsetFromSegmentLine(pos) > 0.20)
+                        {
+                            input.Sprint = false;
+                        }
+
                         bool yawAligned = yawDelta < YawToleranceDeg;
                         bool posReady = fromStartSq >= minApproachSq;
 
@@ -92,6 +108,13 @@ namespace MinecraftClient.Pathing.Execution.Templates
                             input.Jump = true;
                             _phase = Phase.Airborne;
                         }
+                    }
+                    else
+                    {
+                        float yawDelta = YawDifference(physics.Yaw, targetYaw);
+                        bool turnInPlace = yawDelta > 35f;
+                        input.Forward = !turnInPlace;
+                        input.Sprint = !turnInPlace;
                     }
                     if (_tickCount > 40)
                         return TemplateState.Failed;
@@ -116,7 +139,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         && lookaheadAirBrake
                         && !releaseInAir;
 
-                    if (releaseInAir || pastTarget)
+                    if (_segment.ExitTransition == PathTransitionType.FinalStop
+                        && _horizDist <= 2.5
+                        && (releaseInAir || pastTarget))
+                    {
+                        _airBrakeLatched = true;
+                    }
+
+                    if (_airBrakeLatched || releaseInAir || pastTarget)
                     {
                         input.Forward = false;
                         input.Sprint = false;
@@ -147,6 +177,13 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         TemplateHelper.FaceSegmentHeading(physics, _segment);
                     else if (TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment))
                         TemplateHelper.FaceExitHeading(physics, _segment);
+
+                    if (_segment.ExitTransition == PathTransitionType.PrepareJump
+                        && physics.OnGround
+                        && GroundedSegmentController.ShouldComplete(_segment, pos, physics))
+                    {
+                        return TemplateState.Complete;
+                    }
 
                     double horizToleranceLinear = _horizDist >= 3.5 ? 1.5 : 1.0;
                     double horizToleranceSq = horizToleranceLinear * horizToleranceLinear;
@@ -187,6 +224,22 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double relZ = pos.Z - ExpectedEnd.Z;
             double dot = relX * dirX + relZ * dirZ;
             return dot > 0.0;
+        }
+
+        private double GetLateralOffsetFromSegmentLine(Location pos)
+        {
+            double dirX = ExpectedEnd.X - ExpectedStart.X;
+            double dirZ = ExpectedEnd.Z - ExpectedStart.Z;
+            double len = Math.Sqrt(dirX * dirX + dirZ * dirZ);
+            if (len < 0.001)
+                return 0.0;
+
+            dirX /= len;
+            dirZ /= len;
+
+            double relX = pos.X - ExpectedStart.X;
+            double relZ = pos.Z - ExpectedStart.Z;
+            return Math.Abs((-dirZ * relX) + (dirX * relZ));
         }
 
         private bool ShouldReleaseInAir(Location pos, PlayerPhysics physics, World world)

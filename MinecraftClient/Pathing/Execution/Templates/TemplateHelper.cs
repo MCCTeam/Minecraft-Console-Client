@@ -4,6 +4,12 @@ using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution.Templates
 {
+    internal enum YawAlignmentMode
+    {
+        Smooth,
+        Snap
+    }
+
     internal static class TemplateHelper
     {
         private const double EyeHeight = 1.62;
@@ -50,6 +56,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return result;
         }
 
+        internal static float AlignYaw(float current, float target, YawAlignmentMode mode, float maxStep = MaxYawStepPerTick)
+        {
+            target = NormalizeYaw(target);
+            return mode == YawAlignmentMode.Snap
+                ? target
+                : SmoothYaw(current, target, maxStep);
+        }
+
         /// <summary>
         /// Smoothly interpolate pitch toward a target.
         /// </summary>
@@ -77,16 +91,18 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return dx * dx + dz * dz < horizThresholdSq && Math.Abs(dy) < vertThreshold;
         }
 
-        internal static void FaceSegmentHeading(PlayerPhysics physics, PathSegment segment)
+        internal static void FaceSegmentHeading(PlayerPhysics physics, PathSegment segment,
+            YawAlignmentMode mode = YawAlignmentMode.Smooth)
         {
             float headingYaw = CalculateYaw(segment.HeadingX, segment.HeadingZ);
-            physics.Yaw = SmoothYaw(physics.Yaw, headingYaw);
+            physics.Yaw = AlignYaw(physics.Yaw, headingYaw, mode);
         }
 
-        internal static void FaceExitHeading(PlayerPhysics physics, PathSegment segment)
+        internal static void FaceExitHeading(PlayerPhysics physics, PathSegment segment,
+            YawAlignmentMode mode = YawAlignmentMode.Smooth)
         {
             float headingYaw = GetExitHeadingYaw(segment);
-            physics.Yaw = SmoothYaw(physics.Yaw, headingYaw);
+            physics.Yaw = AlignYaw(physics.Yaw, headingYaw, mode);
         }
 
         internal static void ApplyDecision(MovementInput input, TransitionBrakingDecision decision)
@@ -187,6 +203,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return HeadingPenaltyDegrees(yaw, headingX, headingZ);
         }
 
+        internal static bool ShouldTurnInPlaceBeforeAdvancing(float yaw, PathSegment segment, double maxAdvanceHeadingPenalty = 35.0)
+        {
+            return HeadingPenaltyDegrees(yaw, segment) > maxAdvanceHeadingPenalty;
+        }
+
         internal static double HeadingPenaltyDegrees(float yaw, int headingX, int headingZ)
         {
             if (headingX == 0 && headingZ == 0)
@@ -215,6 +236,13 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 headingX = segment.HeadingX;
                 headingZ = segment.HeadingZ;
             }
+        }
+
+        private static float NormalizeYaw(float yaw)
+        {
+            while (yaw < 0f) yaw += 360f;
+            while (yaw >= 360f) yaw -= 360f;
+            return yaw;
         }
 
         internal static PlayerPhysics ClonePhysicsForPlanning(PlayerPhysics physics)
