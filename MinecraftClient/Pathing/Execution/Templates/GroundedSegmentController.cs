@@ -7,6 +7,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
     internal static class GroundedSegmentController
     {
         private const double FinalStopFastCompleteSpeed = 0.08;
+        private const double PrepareJumpHandoffDistance = 0.40;
 
         internal static void Apply(PathSegment segment, PathSegment? nextSegment, Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
@@ -39,11 +40,16 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 return false;
 
             if (segment.ExitTransition == PathTransitionType.ContinueStraight
-                && physics.OnGround
-                && TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, segment.End)
-                && !TemplateFootingHelper.WillLeaveTargetBlockNextTick(pos, physics, segment.End))
+                && physics.OnGround)
             {
-                return true;
+                if (TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, segment.End)
+                    && !TemplateFootingHelper.WillLeaveTargetBlockNextTick(pos, physics, segment.End))
+                {
+                    return true;
+                }
+
+                if (TemplateHelper.IsSettledAtEnd(pos, segment.End, physics))
+                    return true;
             }
 
             if (segment.ExitTransition == PathTransitionType.FinalStop
@@ -69,14 +75,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 if (segment.MoveType == MoveType.Ascend)
                     return true;
 
-                if (segment.MoveType == MoveType.Parkour
-                    || (segment.HeadingX != 0 && segment.HeadingZ != 0))
-                {
-                    return TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= 0.30;
-                }
+                double handoffDistance = segment.MoveType == MoveType.Parkour
+                    ? 0.55
+                    : PrepareJumpHandoffDistance;
 
-                if (segment.MoveType is not MoveType.Parkour)
-                    return true;
+                return TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= handoffDistance;
             }
 
             if (exitSpeed < segment.ExitHints.MinExitSpeed)
@@ -84,6 +87,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             if (exitSpeed > segment.ExitHints.MaxExitSpeed)
                 return false;
+
+            if (segment.ExitTransition == PathTransitionType.LandingRecovery
+                && physics.OnGround
+                && !segment.ExitHints.RequireStableFooting
+                && TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, segment.End))
+            {
+                return true;
+            }
 
             if (segment.ExitHints.RequireStableFooting)
             {
@@ -118,7 +129,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (segment.MoveType == MoveType.Parkour
                 || (segment.HeadingX != 0 && segment.HeadingZ != 0))
             {
-                return TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= 0.30;
+                return TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= PrepareJumpHandoffDistance;
             }
 
             return true;
