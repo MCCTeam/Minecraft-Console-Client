@@ -521,7 +521,7 @@ cooldown: {6}</value>
     <value>The Farmer bot needs Terrain Handling in order to work, please enable it!</value>
   </data>
   <data name="bot.farmer.not_implemented" xml:space="preserve">
-    <value>Not implemented bellow 1.13!</value>
+    <value>Not implemented below 1.8!</value>
   </data>
   <data name="bot.farmer.radius" xml:space="preserve">
     <value>Radius</value>

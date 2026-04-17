@@ -73,7 +73,7 @@ namespace MinecraftClient.ChatBots
 
         public override void Initialize()
         {
-            if (GetProtocolVersion() < Protocol18Handler.MC_1_13_Version)
+            if (GetProtocolVersion() < Protocol18Handler.MC_1_8_Version)
             {
                 LogToConsole(Translations.bot_farmer_not_implemented);
                 return;
@@ -626,6 +626,9 @@ namespace MinecraftClient.ChatBots
         {
             var protocolVersion = GetProtocolVersion();
 
+            if (protocolVersion < Protocol18Handler.MC_1_13_Version)
+                return IsLegacyCropFullyGrown(block, cropType);
+
             switch (cropType)
             {
                 case CropType.Beetroot:
@@ -779,6 +782,21 @@ namespace MinecraftClient.ChatBots
             }
 
             return false;
+        }
+
+        private static bool IsLegacyCropFullyGrown(Block block, CropType cropType)
+        {
+            return cropType switch
+            {
+                CropType.Beetroot => block.BlockId == 207 && block.BlockMeta >= 3,
+                CropType.Carrot => block.BlockId == 141 && block.BlockMeta >= 7,
+                CropType.Melon => block.BlockId == 105 && block.BlockMeta >= 7,
+                CropType.NetherWart => block.BlockId == 115 && block.BlockMeta >= 3,
+                CropType.Pumpkin => block.BlockId == 104 && block.BlockMeta >= 7,
+                CropType.Potato => block.BlockId == 142 && block.BlockMeta >= 7,
+                CropType.Wheat => block.BlockId == 59 && block.BlockMeta >= 7,
+                _ => false
+            };
         }
 
         // Yoinked from ReinforceZwei's AutoTree and adapted to search the whole of inventory in additon to the hotbar

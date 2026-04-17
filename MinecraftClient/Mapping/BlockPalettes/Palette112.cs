@@ -183,6 +183,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
             { 173, Material.CoalBlock },
             { 174, Material.PackedIce },
             { 175, Material.TallGrass },                     // DoublePlant
+            { 207, Material.Beetroots },                     // BeetrootBlock
         };
 
         protected override Dictionary<int, Material> GetDict()

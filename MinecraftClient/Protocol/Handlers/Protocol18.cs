@@ -5506,6 +5506,7 @@ namespace MinecraftClient.Protocol.Handlers
                         packet.Add(0); // cursorY
                         packet.Add(0); // cursorZ
 
+                        SendPacket(PacketTypesOut.PlayerBlockPlacement, packet);
                         return true;
                     case < MC_1_14_Version:
                         packet.AddRange(dataTypes.GetLocation(location));

@@ -1016,7 +1016,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
   <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-  **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`**
+  **The [Inventory Handling](configuration.md#inventoryhandling) is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
 
   </div>
 
@@ -1063,7 +1063,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
   <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-  **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
+  **The [Inventory Handling](configuration.md#inventoryhandling) is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
 
   </div>
 
@@ -1298,7 +1298,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
   <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-  **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
+  **The [Inventory Handling](configuration.md#inventoryhandling) is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
 
   </div>
 
