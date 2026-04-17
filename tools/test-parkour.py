@@ -13,11 +13,16 @@ Options:
     --list-cases            Print test matrix and exit
     --dry-run               Build courses only, do not navigate
     --filter PATTERN        Hierarchical filter (see examples below)
-    --username NAME         MCC username (default: MCCBot)
+    --username NAME         MCC username base (default: MCCBot)
     --rcon-port PORT        RCON port (default: 25575)
     --rcon-password PASS    RCON password (default: test123)
     --wait SECONDS          Seconds to wait per navigation (default: 15)
     --results PATH          Write JSONL results to PATH
+    --parallel N            Run N MCC instances in parallel (default: 6)
+    --version VER           MC server version for auto-launching MCC
+                            (default: 1.21.11-Vanilla)
+    --server-port PORT      MC server port for auto-launched clients
+                            (default: 25565)
 
 Filter examples:
     --filter linear                     All linear tests
@@ -28,11 +33,9 @@ Filter examples:
     --filter ceiling                    All ceiling tests
     --filter ceiling/headhitter/ceil2.5 Ceiling with height 2.5
     --filter linear-flat-gap4           Exact case_id match
+    --filter sidewall/flat/wo0          Sidewall flat with wall_offset=0
 
-    Multiple filters: --filter linear,neo
-
-Note: sidewall family is excluded by default (identical max_reach to linear,
-wall does not affect A* block-level pathfinding).
+    Multiple filters: --filter linear,sidewall
 """
 
 from __future__ import annotations
@@ -41,11 +44,15 @@ import argparse
 import json
 import math
 import os
+import queue
 import re
 import socket
 import struct
+import subprocess
 import sys
+import threading
 import time
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -54,17 +61,45 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 CAPABILITIES_PATH = REPO_ROOT / "tools" / "pathing_data" / "momentum-capabilities.json"
 
 SEGMENTS = 3
-CLEAR_MARGIN = 7
+CLEAR_PADDING = 8   # air padding on each side of a course in Z
+Y_CLEAR_HALF = 30   # clear 30 blocks above and below floor in Y
 LINEAR_RUNWAY = 4
 SIDEWALL_RUNWAY = 2
 
-CEILING_HEIGHTS_TO_TEST = [2.0, 2.5, 4.0]
+CEILING_HEIGHTS_TO_TEST = [2, 3, 4]
 
-# Families whose A* max_reach is identical to linear (wall doesn't affect
-# pathfinder block-level decisions).  Excluded from the default matrix.
-SKIP_FAMILIES = {"sidewall"}
+SKIP_FAMILIES: set[str] = set()
 
-NEO_LANDING_GAP = 3  # blocks between wall-end and next wall-start (1 air + platform + 1 air)
+NEO_MAX_WALL_WIDTH = 3  # theoretical max passable width; 4 is the first reject
+POLL_INTERVAL_SECONDS = 0.25
+TURN_STALL_MIN_SAMPLES = 4
+TURN_STALL_WINDOW_MAX_TRAVEL = 0.35
+TURN_STALL_MIN_CUMULATIVE_YAW = 180.0
+TURN_STALL_MIN_PER_STEP_YAW = 35.0
+
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*m")
+ENTITY_POS_RE = re.compile(r"\[\s*(-?[\d.]+)d,\s*(-?[\d.]+)d,\s*(-?[\d.]+)d\]")
+ENTITY_ROT_RE = re.compile(r"\[\s*(-?[\d.]+)f,\s*(-?[\d.]+)f\]")
+DEBUG_STATE_LOCATION_RE = re.compile(
+    r"Location\s*:?\s*(?P<x>-?[\d.]+),\s*(?P<y>-?[\d.]+),\s*(?P<z>-?[\d.]+)"
+)
+DEBUG_STATE_ON_GROUND_RE = re.compile(r"OnGround\s*:?\s*(?P<value>true|false)", re.IGNORECASE)
+ROUTE_COMPLETE_RE = re.compile(
+    r"\[PathMetric\] routeComplete totalTicks=(?P<ticks>\d+)(?: replans=(?P<replans>\d+))?"
+)
+SEGMENT_COMPLETE_RE = re.compile(
+    r"\[PathMetric\] segmentComplete .* x=(?P<x>-?[\d.]+) y=(?P<y>-?[\d.]+) z=(?P<z>-?[\d.]+)"
+)
+SEGMENT_FAILED_RE = re.compile(
+    r"\[PathMetric\] segmentFailed .* x=(?P<x>-?[\d.]+) y=(?P<y>-?[\d.]+) z=(?P<z>-?[\d.]+)"
+)
+REPLAN_START_RE = re.compile(r"\[PathMetric\] replanStart count=(?P<count>\d+)")
+
+REJECT_PATTERNS = (
+    "failed to compute a safe path",
+    "not a reachable",
+    "no path",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -138,13 +173,25 @@ class MccClient:
         with self.log_file.open("w") as f:
             f.truncate(0)
 
+    def log_length(self) -> int:
+        if not self.log_file.exists():
+            return 0
+        return self.log_file.stat().st_size
+
     def read_log(self) -> str:
         if not self.log_file.exists():
             return ""
-        return self.log_file.read_text(errors="replace")
+        return self.log_file.read_text(errors="replace").replace("\x00", "")
+
+    def read_log_from(self, offset: int) -> str:
+        if not self.log_file.exists():
+            return ""
+        with self.log_file.open("rb") as f:
+            f.seek(offset)
+            return f.read().decode(errors="replace").replace("\x00", "")
 
     def strip_ansi(self, text: str) -> str:
-        return re.sub(r"\x1b\[[0-9;]*m", "", text)
+        return ANSI_ESCAPE_RE.sub("", text)
 
 
 # ---------------------------------------------------------------------------
@@ -213,7 +260,21 @@ def derive_test_matrix(caps: list[dict]) -> list[TestCase]:
     for key, max_reach in sorted(grouped.items()):
         family, subfamily, dy, ceil, wo, metric = key
 
+        if family == "neo":
+            max_reach = min(max_reach, NEO_MAX_WALL_WIDTH)
+
         for value in range(0, max_reach + 2):
+            if family == "neo" and value == 0:
+                continue
+
+            if family == "ceiling" and value == 0:
+                continue
+
+            if family == "sidewall":
+                wt = (wo or 0) + 1
+                if value <= wt:
+                    continue
+
             expected = "pass" if value <= max_reach else "reject"
 
             qualifier_parts = []
@@ -343,27 +404,86 @@ class CourseLayout:
 
 
 class WorldBuilder:
+    Z_START = 100
+
     def __init__(self, rcon: RconClient, base_x: int = 100, base_y: int = 80):
         self.rcon = rcon
         self.base_x = base_x
         self.base_y = base_y
-        self._z_cursor = 100
+        self._z_cursor = self.Z_START
 
     def allocate_z(self, width: int = 1) -> int:
-        z = self._z_cursor
-        self._z_cursor += width + 2 * CLEAR_MARGIN + 5
+        """Allocate a Z band for a course.
+
+        Layout: [CLEAR_PADDING] [course width] ...
+        Adjacent courses share the padding between them: the trailing
+        padding of course N is the leading padding of course N+1.
+        """
+        z = self._z_cursor + CLEAR_PADDING
+        self._z_cursor = z + width
         return z
 
-    def clear_area(self, x1: int, y1: int, z1: int, x2: int, y2: int, z2: int) -> None:
-        dx = x2 - x1
-        dz = z2 - z1
-        # MC fill command has a 32768-block limit per call; chunk if needed
-        chunk_size = 48
-        for cx in range(x1, x2 + 1, chunk_size):
-            for cz in range(z1, z2 + 1, chunk_size):
-                ex = min(cx + chunk_size - 1, x2)
-                ez = min(cz + chunk_size - 1, z2)
-                self.rcon.command(f"fill {cx} {y1} {cz} {ex} {y2} {ez} air")
+    def reset_z(self) -> None:
+        self._z_cursor = self.Z_START
+
+    def compute_z_extent(self, cases: list) -> int:
+        """Dry-run Z allocation to find the final Z cursor value."""
+        saved = self._z_cursor
+        for case in cases:
+            width = self._course_z_width(case)
+            self.allocate_z(width)
+        end = self._z_cursor + CLEAR_PADDING
+        self._z_cursor = saved
+        return end
+
+    def _course_z_width(self, case: TestCase) -> int:
+        if case.family == "sidewall":
+            gap = case.gap_or_wall
+            return gap * SEGMENTS + 5
+        elif case.family == "neo":
+            return 5
+        else:
+            return 1
+
+    def forceload_region(self, z_end: int) -> None:
+        """Force-load all chunks covering the test region."""
+        x_min = self.base_x - 20
+        x_max = self.base_x + 40
+        z_min = self.Z_START - CLEAR_PADDING
+        z_max = z_end
+        cx_min = x_min >> 4
+        cx_max = x_max >> 4
+        cz_min = z_min >> 4
+        cz_max = z_max >> 4
+        for cx in range(cx_min, cx_max + 1):
+            self.rcon.command(
+                f"forceload add {cx * 16} {cz_min * 16} {cx * 16 + 15} {cz_max * 16 + 15}"
+            )
+        print(f"  Force-loaded chunks: X=[{cx_min},{cx_max}] Z=[{cz_min},{cz_max}]")
+
+    def forceload_remove(self) -> None:
+        self.rcon.command("forceload remove all")
+
+    def clear_entire_region(self, z_end: int) -> None:
+        """Clear the full test region from Z_START to z_end."""
+        x_min = self.base_x - 20
+        x_max = self.base_x + 40
+        y_min = self.base_y - 1 - Y_CLEAR_HALF
+        y_max = self.base_y - 1 + Y_CLEAR_HALF
+        z_min = self.Z_START - CLEAR_PADDING
+        z_max = z_end
+        print(f"  Clearing region: X=[{x_min},{x_max}] Y=[{y_min},{y_max}] Z=[{z_min},{z_max}]")
+        self._fill_volume(x_min, y_min, z_min, x_max, y_max, z_max, "air")
+
+    def _fill_volume(self, x1: int, y1: int, z1: int,
+                     x2: int, y2: int, z2: int, block: str) -> None:
+        """Fill a volume respecting MC's 32768-block-per-call limit."""
+        dx = x2 - x1 + 1
+        dy = y2 - y1 + 1
+        max_z_per_call = max(1, 32768 // (dx * dy))
+        for cz in range(z1, z2 + 1, max_z_per_call):
+            ez = min(cz + max_z_per_call - 1, z2)
+            self.rcon.command(f"fill {x1} {y1} {cz} {x2} {y2} {ez} {block}")
 
     def set_block(self, x: int, y: int, z: int, block: str = "stone") -> None:
         self.rcon.command(f"setblock {x} {y} {z} {block}")
@@ -371,6 +491,14 @@ class WorldBuilder:
     def fill_blocks(self, x1: int, y1: int, z1: int, x2: int, y2: int, z2: int,
                     block: str = "stone") -> None:
         self.rcon.command(f"fill {x1} {y1} {z1} {x2} {y2} {z2} {block}")
+
+    def _make_layout(self, bx: int, by: int, bz: int,
+                     end_x: int, end_y: int, end_z: int) -> CourseLayout:
+        return CourseLayout(
+            start_x=bx, start_y=by, start_z=bz,
+            end_x=end_x, end_y=end_y, end_z=end_z,
+            clear_min=(0, 0, 0), clear_max=(0, 0, 0),
+        )
 
     def build_linear_route(self, case: TestCase) -> CourseLayout:
         gap = case.gap_or_wall
@@ -380,21 +508,7 @@ class WorldBuilder:
         bz = self.allocate_z()
         floor_y = by - 1
 
-        platform_stride = gap + 1
-        total_x = LINEAR_RUNWAY + SEGMENTS * platform_stride + 2
-
-        max_dy_extent = int(abs(dy) * SEGMENTS) + 2
-        x_min = bx - CLEAR_MARGIN
-        x_max = bx + total_x + CLEAR_MARGIN
-        y_min = min(floor_y, floor_y + int(dy * SEGMENTS)) - CLEAR_MARGIN
-        y_max = max(floor_y, floor_y + int(dy * SEGMENTS)) + CLEAR_MARGIN
-        z_min = bz - CLEAR_MARGIN
-        z_max = bz + CLEAR_MARGIN
-
-        self.clear_area(x_min, y_min, z_min, x_max, y_max, z_max)
-
-        for rx in range(LINEAR_RUNWAY):
-            self.set_block(bx + rx, floor_y, bz)
+        self.fill_blocks(bx, floor_y, bz, bx + LINEAR_RUNWAY - 1, floor_y, bz)
 
         last_x = bx + LINEAR_RUNWAY - 1
         last_y = floor_y
@@ -406,151 +520,116 @@ class WorldBuilder:
             last_x = plat_x
             last_y = plat_y
 
-        return CourseLayout(
-            start_x=bx, start_y=by, start_z=bz,
-            end_x=last_x, end_y=last_y + 1, end_z=bz,
-            clear_min=(x_min, y_min, z_min),
-            clear_max=(x_max, y_max, z_max),
-        )
+        return self._make_layout(bx, by, bz, last_x, last_y + 1, bz)
 
     def build_neo_route(self, case: TestCase) -> CourseLayout:
-        """Neo jump: player must jump around a wall to reach the next platform.
+        """Neo jump: wall blocks the +X path, player detours via +Z.
 
-        Layout (top view, each segment):
-            [Runway/Platform at Z=cur_z]
-            [Wall: 1 block in X, wall_width blocks in Z, 4 blocks tall]
-            [1 block air gap]
-            [Landing platform]
-            [1 block air gap]
-            [Next wall...]
+        Top view of one segment (wall_width=3):
 
-        The wall runs along Z starting from the current Z.  The player
-        jumps around the wall edge in the +Z direction to reach the landing.
+            Z ^
+              |
+          bz+1|  ...(detour: player jumps to Z+1 in air, past wall, back)...
+              |
+          bz  |  [Runway]  [W][W][W]  [Land][Land]  [W][W][W] ...
+              |  X=0..3    X=4..6      X=7..8        X=9..11
+              +----------------------------------------------> X
+
+        The wall is wall_width blocks in X, 1 block in Z (at Z=bz), 8 tall.
+        2-block landing gap between consecutive walls.
         """
         wall_width = case.gap_or_wall
         bx = self.base_x
         by = self.base_y
-        bz = self.allocate_z(width=(wall_width + NEO_LANDING_GAP) * SEGMENTS + 10)
+        bz = self.allocate_z(width=5)
         floor_y = by - 1
 
-        z_extent = SEGMENTS * (wall_width + NEO_LANDING_GAP) + 10
-        total_x = LINEAR_RUNWAY + SEGMENTS * 2 + 5
+        cur_x = bx
 
-        x_min = bx - CLEAR_MARGIN
-        x_max = bx + total_x + CLEAR_MARGIN
-        y_min = floor_y - CLEAR_MARGIN
-        y_max = floor_y + CLEAR_MARGIN
-        z_min = bz - CLEAR_MARGIN
-        z_max = bz + z_extent + CLEAR_MARGIN
-
-        self.clear_area(x_min, y_min, z_min, x_max, y_max, z_max)
-
-        # Runway
-        for rx in range(LINEAR_RUNWAY):
-            self.set_block(bx + rx, floor_y, bz)
-
-        seg_x = bx + LINEAR_RUNWAY - 1
-        cur_z = bz
+        self.fill_blocks(bx, floor_y, bz, bx + LINEAR_RUNWAY - 1, floor_y, bz)
+        cur_x += LINEAR_RUNWAY - 1
 
         for seg in range(SEGMENTS):
-            wall_x = seg_x + 1
-
+            wall_start_x = cur_x + 1
+            wall_end_x = wall_start_x + wall_width - 1
             if wall_width > 0:
-                wall_z_start = cur_z
-                wall_z_end = cur_z + wall_width - 1
-                self.fill_blocks(wall_x, floor_y, wall_z_start,
-                                 wall_x, floor_y + 3, wall_z_end)
+                self.fill_blocks(wall_start_x, floor_y, bz,
+                                 wall_end_x, floor_y + 7, bz)
 
-            # Landing: 1 block of air, then platform, then 1 block of air
-            landing_z = cur_z + wall_width + 1  # 1 air gap after wall
-            self.set_block(wall_x + 1, floor_y, landing_z)
+            land_x1 = wall_end_x + 1
+            land_x2 = land_x1 + 1
+            self.set_block(land_x1, floor_y, bz)
+            self.set_block(land_x2, floor_y, bz)
 
-            seg_x = wall_x + 1
-            cur_z = landing_z + 2  # 1 air gap after landing before next wall
+            cur_x = land_x2
 
-        end_x = seg_x
-        end_z = cur_z - 2  # last landing position
-
-        return CourseLayout(
-            start_x=bx, start_y=by, start_z=bz,
-            end_x=end_x, end_y=by, end_z=end_z,
-            clear_min=(x_min, y_min, z_min),
-            clear_max=(x_max, y_max, z_max),
-        )
+        return self._make_layout(bx, by, bz, cur_x, by, bz)
 
     def build_sidewall_route(self, case: TestCase) -> CourseLayout:
-        """Sidewall jump: platforms along a massive wall face.
+        """Around-the-wall jump (绕墙跳).
 
-        The wall is directly behind the platforms (Z+1), tall and thick,
-        constraining backward movement.  Player jumps between 1x1 platforms
-        that are at different X offsets and Y heights along the wall.
+        Parameters:
+          gap_or_wall = gap  : Z-distance between start and target platforms
+          wall_offset = wall_thickness (1 or 2): Z-depth of the wall
+          delta_y: Y-offset of target relative to start (+1, 0, -1, -2)
 
-        Layout (side view, looking from -Z toward +Z / toward the wall):
+        Top view (one segment, gap=3, wall_thickness=1, dy=+1):
 
-            [=== MASSIVE WALL (Z=bz+1 to bz+6, full height) ===]
-            |                                                    |
-            |    [P3] at X+2*stride, Y+2*dy                     |
-            |                                                    |
-            |         [P2] at X+stride, Y+dy                    |
-            |                                                    |
-            | [Start/Runway] at X, Y                             |
-            [====================================================]
-                              (open air below/in front)
+            Z ^
+              |
+          bz+3|  [Target]  X=bx-1, Y=floor_y+dy
+              |
+          bz+2|  (air)
+              |
+          bz+1|  (air)
+              |
+          bz  |  [Start]   X=bx       [WALL] X=bx-1, Z=bz..bz+wt-1, 8 tall
+              +-------> X
 
-        Wall_offset controls distance from platform to wall:
-          wo=0: wall at Z=bz+1 (directly behind)
-          wo=1: wall at Z=bz+2 (1 block gap)
+        The wall is at X=bx-1 (one block to -X of start), starts at same
+        Z as the start platform, extends wt blocks in +Z, and is 8 tall.
+        The target is at X=bx-1, Z=bz+gap, Y=floor_y+dy.
+        Player must jump from start, around the wall's -X edge,
+        and land on the target.
         """
         gap = case.gap_or_wall
-        dy = case.delta_y
-        wo = case.wall_offset if case.wall_offset is not None else 0
+        dy = int(case.delta_y)
+        wt = (case.wall_offset or 0) + 1  # wall_offset=0 -> 1 thick, =1 -> 2 thick
         bx = self.base_x
         by = self.base_y
-        bz = self.allocate_z(width=8 + wo)
         floor_y = by - 1
 
-        platform_stride = gap + 1
-        total_x = SIDEWALL_RUNWAY + SEGMENTS * platform_stride + 2
+        total_z = gap * SEGMENTS + 5
+        bz = self.allocate_z(width=total_z)
 
-        x_min = bx - CLEAR_MARGIN
-        x_max = bx + total_x + CLEAR_MARGIN
-        y_min = min(floor_y, floor_y + int(dy * SEGMENTS)) - CLEAR_MARGIN
-        y_max = max(floor_y, floor_y + int(dy * SEGMENTS)) + CLEAR_MARGIN
-        z_min = bz - CLEAR_MARGIN
-        z_max = bz + 8 + wo + CLEAR_MARGIN
+        cur_x = bx
+        cur_y = floor_y
+        cur_z = bz
 
-        self.clear_area(x_min, y_min, z_min, x_max, y_max, z_max)
-
-        # Runway (shorter than linear -- 2 blocks like the reference image)
-        for rx in range(SIDEWALL_RUNWAY):
-            self.set_block(bx + rx, floor_y, bz)
-
-        last_x = bx + SIDEWALL_RUNWAY - 1
-        last_y = floor_y
+        # Starting platform with 2-block runway in -Z direction
+        self.fill_blocks(cur_x, cur_y, cur_z - 2, cur_x, cur_y, cur_z)
 
         for seg in range(SEGMENTS):
-            plat_x = last_x + gap + 1
-            plat_y = last_y + int(dy)
-            self.set_block(plat_x, plat_y, bz)
-            last_x = plat_x
-            last_y = plat_y
+            wall_x = cur_x - 1
+            wall_z_start = cur_z
+            wall_z_end = cur_z + wt - 1
+            wall_y_low = min(cur_y, cur_y + dy) - 1
+            wall_y_high = max(cur_y, cur_y + dy) + 7
 
-        # Massive wall behind the platforms
-        wall_z_start = bz + 1 + wo
-        wall_z_end = bz + 6 + wo  # 6 blocks thick
-        wall_y_low = min(floor_y, last_y) - 2
-        wall_y_high = max(floor_y, last_y) + 5
-        wall_x_start = bx - 1
-        wall_x_end = last_x + 1
-        self.fill_blocks(wall_x_start, wall_y_low, wall_z_start,
-                         wall_x_end, wall_y_high, wall_z_end)
+            self.fill_blocks(wall_x, wall_y_low, wall_z_start,
+                             wall_x, wall_y_high, wall_z_end)
 
-        return CourseLayout(
-            start_x=bx, start_y=by, start_z=bz,
-            end_x=last_x, end_y=last_y + 1, end_z=bz,
-            clear_min=(x_min, y_min, z_min),
-            clear_max=(x_max, y_max, z_max),
-        )
+            land_x = cur_x - 1
+            land_y = cur_y + dy
+            land_z = cur_z + gap
+
+            self.set_block(land_x, land_y, land_z)
+
+            cur_x = land_x
+            cur_y = land_y
+            cur_z = land_z
+
+        return self._make_layout(bx, by, bz, cur_x, cur_y + 1, cur_z)
 
     def build_ceiling_route(self, case: TestCase) -> CourseLayout:
         gap = case.gap_or_wall
@@ -560,21 +639,7 @@ class WorldBuilder:
         bz = self.allocate_z()
         floor_y = by - 1
 
-        platform_stride = gap + 1
-        total_x = LINEAR_RUNWAY + SEGMENTS * platform_stride + 2
-
-        x_min = bx - CLEAR_MARGIN
-        x_max = bx + total_x + CLEAR_MARGIN
-        ceil_y = floor_y + int(ceil_height) + 1
-        y_min = floor_y - CLEAR_MARGIN
-        y_max = ceil_y + CLEAR_MARGIN
-        z_min = bz - CLEAR_MARGIN
-        z_max = bz + CLEAR_MARGIN
-
-        self.clear_area(x_min, y_min, z_min, x_max, y_max, z_max)
-
-        for rx in range(LINEAR_RUNWAY):
-            self.set_block(bx + rx, floor_y, bz)
+        self.fill_blocks(bx, floor_y, bz, bx + LINEAR_RUNWAY - 1, floor_y, bz)
 
         last_x = bx + LINEAR_RUNWAY - 1
         for seg in range(SEGMENTS):
@@ -582,15 +647,10 @@ class WorldBuilder:
             self.set_block(plat_x, floor_y, bz)
             last_x = plat_x
 
-        ceil_block_y = floor_y + math.ceil(ceil_height)
+        ceil_block_y = floor_y + 1 + int(ceil_height)
         self.fill_blocks(bx - 1, ceil_block_y, bz - 1, last_x + 1, ceil_block_y, bz + 1)
 
-        return CourseLayout(
-            start_x=bx, start_y=by, start_z=bz,
-            end_x=last_x, end_y=by, end_z=bz,
-            clear_min=(x_min, y_min, z_min),
-            clear_max=(x_max, y_max, z_max),
-        )
+        return self._make_layout(bx, by, bz, last_x, by, bz)
 
     def build(self, case: TestCase) -> CourseLayout:
         if case.family == "linear":
@@ -608,12 +668,46 @@ class WorldBuilder:
 # Test execution
 # ---------------------------------------------------------------------------
 
+@dataclass(frozen=True)
+class NavigationSample:
+    x: float
+    y: float
+    z: float
+    yaw: float
+
+
+@dataclass
+class LiveMetrics:
+    route_start_count: int = 0
+    route_complete_count: int = 0
+    navigation_complete_count: int = 0
+    segment_failed_count: int = 0
+    replan_count: int = 0
+    replan_failed_count: int = 0
+    planner_reject_count: int = 0
+    generic_fail_count: int = 0
+    final_metric_position: tuple[float, float, float] | None = None
+    total_ticks: int | None = None
+    turn_stall_count: int = 0
+
+
 @dataclass
 class TestResult:
     case: TestCase
     outcome: str  # "pass", "reject", "fail", "invalid_live_case"
     matched_expected: bool
+    replan_count: int = 0
+    turn_stall_count: int = 0
+    near_goal: bool | None = None
+    final_position: tuple[float, float, float] | None = None
+    total_ticks: int | None = None
     log_excerpt: str = ""
+
+
+@dataclass(frozen=True)
+class DebugStateSnapshot:
+    location: tuple[float, float, float]
+    on_ground: bool | None
 
 
 def resolve_session() -> str:
@@ -626,6 +720,301 @@ def resolve_session() -> str:
     return Path.cwd().name
 
 
+def make_parallel_run_token() -> str:
+    return uuid.uuid4().hex[:10]
+
+
+def build_worker_session_name(run_token: str, worker_id: int) -> str:
+    return f"parkour-{run_token}-{worker_id}"
+
+
+def build_case_session_name(run_token: str, worker_id: int, case_index: int) -> str:
+    return f"parkour-{run_token}-{worker_id}-c{case_index}"
+
+
+def build_case_username(base_username: str, worker_id: int, case_index: int) -> str:
+    return f"{base_username}{worker_id}c{case_index}"
+
+
+def parse_entity_position(text: str) -> tuple[float, float, float] | None:
+    match = ENTITY_POS_RE.search(text)
+    if not match:
+        return None
+    return float(match.group(1)), float(match.group(2)), float(match.group(3))
+
+
+def parse_entity_rotation(text: str) -> tuple[float, float] | None:
+    match = ENTITY_ROT_RE.search(text)
+    if not match:
+        return None
+    return float(match.group(1)), float(match.group(2))
+
+
+def parse_debug_state_location(text: str) -> tuple[float, float, float] | None:
+    snapshot = parse_debug_state_snapshot(text)
+    if snapshot is None:
+        return None
+    return snapshot.location
+
+
+def parse_debug_state_snapshot(text: str) -> DebugStateSnapshot | None:
+    clean_text = ANSI_ESCAPE_RE.sub("", text).replace("\x00", "")
+    blocks = [block for block in clean_text.split("=== MCC Debug State ===") if block.strip()]
+    if not blocks:
+        return None
+
+    block = blocks[-1]
+    location_match = DEBUG_STATE_LOCATION_RE.search(block)
+    if location_match is None:
+        return None
+
+    on_ground_match = DEBUG_STATE_ON_GROUND_RE.search(block)
+    return DebugStateSnapshot(
+        location=(
+            float(location_match.group("x")),
+            float(location_match.group("y")),
+            float(location_match.group("z")),
+        ),
+        on_ground=None if on_ground_match is None else on_ground_match.group("value").lower() == "true",
+    )
+
+
+def is_near_expected_position(
+    actual: tuple[float, float, float],
+    expected: tuple[float, float, float],
+    horiz_tolerance: float = 0.18,
+    vert_tolerance: float = 0.05,
+) -> bool:
+    return (
+        abs(actual[0] - expected[0]) <= horiz_tolerance
+        and abs(actual[2] - expected[2]) <= horiz_tolerance
+        and math.floor(actual[1]) == math.floor(expected[1])
+        and abs(actual[1] - expected[1]) <= vert_tolerance
+    )
+
+
+def wait_for_local_start_sync(
+    mcc: MccClient,
+    expected_position: tuple[float, float, float],
+    timeout_seconds: float = 8.0,
+    stable_reads_required: int = 3,
+) -> bool:
+    log_offset = mcc.log_length()
+    deadline = time.monotonic() + timeout_seconds
+    stable_reads = 0
+    last_snapshot: DebugStateSnapshot | None = None
+
+    while time.monotonic() < deadline:
+        mcc.send("debug state")
+        time.sleep(0.25)
+
+        snapshot = parse_debug_state_snapshot(mcc.read_log_from(log_offset))
+        if snapshot is None:
+            time.sleep(0.15)
+            continue
+
+        if is_near_expected_position(snapshot.location, expected_position) and snapshot.on_ground is True:
+            if (
+                last_snapshot is None
+                or last_snapshot.on_ground is not True
+                or is_near_expected_position(
+                    snapshot.location,
+                    last_snapshot.location,
+                    horiz_tolerance=0.08,
+                    vert_tolerance=0.08,
+                )
+            ):
+                stable_reads += 1
+            else:
+                stable_reads = 1
+
+            last_snapshot = snapshot
+            if stable_reads >= stable_reads_required:
+                return True
+        else:
+            stable_reads = 0
+            last_snapshot = snapshot
+
+        time.sleep(0.15)
+
+    return False
+
+
+def get_player_sample(rcon: RconClient, username: str) -> NavigationSample | None:
+    try:
+        pos = parse_entity_position(rcon.command(f"data get entity {username} Pos"))
+        rotation = parse_entity_rotation(rcon.command(f"data get entity {username} Rotation"))
+    except Exception:
+        return None
+
+    if pos is None or rotation is None:
+        return None
+
+    return NavigationSample(
+        x=pos[0],
+        y=pos[1],
+        z=pos[2],
+        yaw=rotation[0],
+    )
+
+
+def normalize_yaw_delta(previous_yaw: float, current_yaw: float) -> float:
+    delta = (current_yaw - previous_yaw + 180.0) % 360.0 - 180.0
+    return abs(delta)
+
+
+def horizontal_distance(a: NavigationSample, b: NavigationSample) -> float:
+    return math.hypot(a.x - b.x, a.z - b.z)
+
+
+def count_turn_stalls(samples: list[NavigationSample]) -> int:
+    if len(samples) < TURN_STALL_MIN_SAMPLES:
+        return 0
+
+    count = 0
+    window_start = 0
+    while window_start <= len(samples) - TURN_STALL_MIN_SAMPLES:
+        base = samples[window_start]
+        cumulative_yaw = 0.0
+        large_swings = 0
+        matched = False
+
+        for idx in range(window_start + 1, len(samples)):
+            sample = samples[idx]
+            if horizontal_distance(base, sample) > TURN_STALL_WINDOW_MAX_TRAVEL:
+                break
+
+            yaw_delta = normalize_yaw_delta(samples[idx - 1].yaw, sample.yaw)
+            cumulative_yaw += yaw_delta
+            if yaw_delta >= TURN_STALL_MIN_PER_STEP_YAW:
+                large_swings += 1
+
+            sample_count = idx - window_start + 1
+            if (
+                sample_count >= TURN_STALL_MIN_SAMPLES
+                and large_swings >= TURN_STALL_MIN_SAMPLES - 1
+                and cumulative_yaw >= TURN_STALL_MIN_CUMULATIVE_YAW
+            ):
+                count += 1
+                window_start = idx + 1
+                matched = True
+                break
+
+        if not matched:
+            window_start += 1
+
+    return count
+
+
+def parse_live_metrics(text: str) -> LiveMetrics:
+    metrics = LiveMetrics()
+    clean_text = ANSI_ESCAPE_RE.sub("", text).replace("\x00", "")
+
+    for raw_line in clean_text.splitlines():
+        line = raw_line.strip()
+        lower = line.lower()
+
+        if "[PathMetric] routeStart" in line:
+            metrics.route_start_count += 1
+
+        if "[PathMgr] Navigation complete!" in line:
+            metrics.navigation_complete_count += 1
+
+        route_match = ROUTE_COMPLETE_RE.search(line)
+        if route_match:
+            metrics.route_complete_count += 1
+            metrics.total_ticks = int(route_match.group("ticks"))
+            replans = route_match.group("replans")
+            if replans is not None:
+                metrics.replan_count = max(metrics.replan_count, int(replans))
+
+        replan_match = REPLAN_START_RE.search(line)
+        if replan_match:
+            metrics.replan_count = max(metrics.replan_count, int(replan_match.group("count")))
+
+        segment_complete_match = SEGMENT_COMPLETE_RE.search(line)
+        if segment_complete_match:
+            metrics.final_metric_position = (
+                float(segment_complete_match.group("x")),
+                float(segment_complete_match.group("y")),
+                float(segment_complete_match.group("z")),
+            )
+
+        segment_failed_match = SEGMENT_FAILED_RE.search(line)
+        if segment_failed_match:
+            metrics.segment_failed_count += 1
+            metrics.final_metric_position = (
+                float(segment_failed_match.group("x")),
+                float(segment_failed_match.group("y")),
+                float(segment_failed_match.group("z")),
+            )
+
+        if "replan failed" in lower or "giving up" in lower:
+            metrics.replan_failed_count += 1
+
+        planner_reject_line = (
+            any(pattern in lower for pattern in REJECT_PATTERNS)
+            or ("[a*]" in lower and "failed" in lower)
+            or ("a* result: failed" in lower)
+        )
+        if planner_reject_line:
+            metrics.planner_reject_count += 1
+
+        if (
+            "failed" in lower
+            and "replan failed" not in lower
+            and "failed to compute a safe path" not in lower
+            and not planner_reject_line
+        ):
+            metrics.generic_fail_count += 1
+
+    return metrics
+
+
+def has_terminal_metrics(metrics: LiveMetrics) -> bool:
+    return (
+        metrics.route_complete_count > 0
+        or metrics.segment_failed_count > 0
+        or metrics.replan_failed_count > 0
+        or (metrics.planner_reject_count > 0 and metrics.route_start_count == 0)
+    )
+
+
+def is_near_goal(
+    position: tuple[float, float, float] | None,
+    layout: CourseLayout,
+) -> bool | None:
+    if position is None:
+        return None
+
+    px, py, pz = position
+    goal_x = layout.end_x + 0.5
+    goal_y = float(layout.end_y)
+    goal_z = layout.end_z + 0.5
+    return (
+        abs(px - goal_x) <= 1.25
+        and abs(pz - goal_z) <= 1.25
+        and abs(py - goal_y) <= 2.0
+    )
+
+
+def classify_outcome(metrics: LiveMetrics, near_goal: bool | None) -> str:
+    if metrics.segment_failed_count > 0 or metrics.replan_failed_count > 0 or metrics.generic_fail_count > 0:
+        return "fail"
+
+    if metrics.route_complete_count > 0 or metrics.navigation_complete_count > 0:
+        if metrics.replan_count > 0 or metrics.turn_stall_count > 0:
+            return "fail"
+        if near_goal is False:
+            return "fail"
+        return "pass"
+
+    if metrics.planner_reject_count > 0 and metrics.route_start_count == 0:
+        return "reject"
+
+    return "invalid_live_case"
+
+
 def run_single_test(
     case: TestCase,
     layout: CourseLayout,
@@ -634,59 +1023,99 @@ def run_single_test(
     username: str,
     wait_seconds: int = 15,
 ) -> TestResult:
-    rcon.command(f"gamemode creative {username}")
-    time.sleep(0.3)
-    rcon.command(f"tp {username} {layout.start_x}.5 {layout.start_y} {layout.start_z}.5")
-    time.sleep(1)
-    rcon.command(f"gamemode survival {username}")
-    time.sleep(0.5)
+    expected_start_position = (
+        layout.start_x + 0.5,
+        float(layout.start_y),
+        layout.start_z + 0.5,
+    )
+    start_synced = False
+    for _attempt in range(2):
+        rcon.command(f"gamemode creative {username}")
+        rcon.command(f"tp {username} {layout.start_x}.5 {layout.start_y} {layout.start_z}.5")
+        time.sleep(2)
+        rcon.command(f"gamemode survival {username}")
+        time.sleep(0.5)
+        if wait_for_local_start_sync(mcc, expected_start_position):
+            start_synced = True
+            break
+        time.sleep(0.5)
 
-    mcc.clear_log()
-    time.sleep(0.3)
+    log_offset = mcc.log_length()
 
+    if not start_synced:
+        return TestResult(
+            case=case,
+            outcome="invalid_live_case",
+            matched_expected=False,
+            log_excerpt=(
+                "  Harness: local MCC position did not stabilize at test start "
+                f"goal=({expected_start_position[0]:.1f},{expected_start_position[1]:.1f},{expected_start_position[2]:.1f})"
+            ),
+        )
+
+    mcc.send(f"send ===== TEST: {case.case_id} (expect: {case.expected}) =====")
+    time.sleep(0.2)
     mcc.send(f"goto {layout.end_x} {layout.end_y} {layout.end_z}")
-    time.sleep(wait_seconds)
+    deadline = time.monotonic() + wait_seconds
+    settle_deadline: float | None = None
+    samples: list[NavigationSample] = []
+    metrics = LiveMetrics()
 
-    raw_log = mcc.read_log()
+    while time.monotonic() < deadline:
+        sample = get_player_sample(rcon, username)
+        if sample is not None:
+            samples.append(sample)
+
+        log = mcc.strip_ansi(mcc.read_log_from(log_offset))
+        metrics = parse_live_metrics(log)
+        if has_terminal_metrics(metrics):
+            if settle_deadline is None:
+                settle_deadline = time.monotonic() + 0.5
+            elif time.monotonic() >= settle_deadline:
+                break
+
+        time.sleep(POLL_INTERVAL_SECONDS)
+
+    raw_log = mcc.read_log_from(log_offset)
     log = mcc.strip_ansi(raw_log)
     all_lines = log.splitlines()
+    metrics = parse_live_metrics(log)
+    metrics.turn_stall_count = count_turn_stalls(samples)
 
     a_star_lines = [l for l in all_lines if "[A*]" in l][:3]
     path_mgr_lines = [l for l in all_lines if "[PathMgr]" in l]
-    path_exec_lines = [l for l in all_lines if "[PathExec]" in l]
-    move_lines = [l for l in all_lines if "FileInput" in l or "path" in l.lower()
-                  or "move" in l.lower() or "navigate" in l.lower()]
 
-    outcome = "invalid_live_case"
-    full_text = log.lower()
-    mgr_text = "\n".join(path_mgr_lines)
-    astar_text = "\n".join(a_star_lines)
-    exec_text = "\n".join(path_exec_lines)
+    sampled_position = None
+    if samples:
+        last_sample = samples[-1]
+        sampled_position = (last_sample.x, last_sample.y, last_sample.z)
 
-    if "navigation complete" in full_text:
-        outcome = "pass"
-    elif "complete" in mgr_text.lower():
-        outcome = "pass"
-    elif "failed to compute a safe path" in full_text:
-        outcome = "reject"
-    elif "not a reachable" in full_text:
-        outcome = "reject"
-    elif "no path" in full_text:
-        outcome = "reject"
-    elif "Failed" in astar_text:
-        outcome = "reject"
-    elif "Replan failed" in mgr_text or "Giving up" in mgr_text:
-        outcome = "fail"
-    elif "FAILED" in exec_text:
-        outcome = "fail"
-    elif "failed" in full_text:
-        outcome = "fail"
+    if metrics.route_complete_count > 0 and metrics.final_metric_position is not None:
+        final_position = metrics.final_metric_position
+    else:
+        final_position = sampled_position or metrics.final_metric_position
+
+    near_goal = is_near_goal(final_position, layout)
+    outcome = classify_outcome(metrics, near_goal)
 
     excerpt_lines = []
     if a_star_lines:
         excerpt_lines.append(f"  A*: {a_star_lines[0]}")
     if path_mgr_lines:
         excerpt_lines.append(f"  Mgr: {path_mgr_lines[-1]}")
+    excerpt_lines.append(
+        f"  Metrics: routes={metrics.route_complete_count} replans={metrics.replan_count} "
+        f"turn_stalls={metrics.turn_stall_count} ticks={metrics.total_ticks}"
+    )
+    if final_position is not None:
+        px, py, pz = final_position
+        goal_x = layout.end_x + 0.5
+        goal_y = float(layout.end_y)
+        goal_z = layout.end_z + 0.5
+        excerpt_lines.append(
+            f"  Pos: ({px:.1f},{py:.1f},{pz:.1f}) goal=({goal_x:.1f},{goal_y:.1f},{goal_z:.1f}) "
+            f"near={near_goal}"
+        )
     relevant = [l for l in all_lines if "path" in l.lower() or "move" in l.lower()
                 or "navigate" in l.lower() or "A*" in l]
     if not excerpt_lines and relevant:
@@ -696,6 +1125,11 @@ def run_single_test(
         case=case,
         outcome=outcome,
         matched_expected=(outcome == case.expected),
+        replan_count=metrics.replan_count,
+        turn_stall_count=metrics.turn_stall_count,
+        near_goal=near_goal,
+        final_position=final_position,
+        total_ticks=metrics.total_ticks,
         log_excerpt="\n".join(excerpt_lines),
     )
 
@@ -707,6 +1141,248 @@ def run_single_test(
 def should_skip(case: TestCase, failed_groups: set[tuple]) -> bool:
     """Skip this case if its group already had a failure at a smaller gap."""
     return case.group_key() in failed_groups
+
+
+def result_to_record(result: TestResult, worker_id: int | None = None) -> dict[str, object]:
+    record: dict[str, object] = {
+        "case_id": result.case.case_id,
+        "family": result.case.family,
+        "subfamily": result.case.subfamily,
+        "gap_or_wall": result.case.gap_or_wall,
+        "expected": result.case.expected,
+        "outcome": result.outcome,
+        "matched": result.matched_expected,
+        "replan_count": result.replan_count,
+        "turn_stall_count": result.turn_stall_count,
+        "near_goal": result.near_goal,
+        "total_ticks": result.total_ticks,
+        "final_position": list(result.final_position) if result.final_position is not None else None,
+    }
+    if worker_id is not None:
+        record["worker"] = worker_id
+    return record
+
+
+# ---------------------------------------------------------------------------
+# Parallel worker infrastructure
+# ---------------------------------------------------------------------------
+
+@dataclass
+class WorkerContext:
+    worker_id: int
+    username: str
+    session: str
+    rcon: RconClient
+    mcc: MccClient
+
+
+_print_lock = threading.Lock()
+
+
+def _tprint(*args: object, **kwargs: object) -> None:
+    """Thread-safe print."""
+    with _print_lock:
+        print(*args, **kwargs)
+
+
+def _launch_one_mcc(worker_id: int, username: str, session: str,
+                     version: str, server_port: int) -> None:
+    """Start one MCC instance via mcc-debug. Blocks until mcc-debug returns."""
+    mcc_env_sh = REPO_ROOT / "tools" / "mcc-env.sh"
+    shell_cmd = (
+        f"source {mcc_env_sh} && "
+        f"mcc-debug --session {session} --username {username} "
+        f"--file-input -v {version} -p {server_port} "
+        f"--no-build --debug-on"
+    )
+    result = subprocess.run(["bash", "-c", shell_cmd],
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        _tprint(f"  [W{worker_id}] ERROR launching MCC:")
+        if result.stdout.strip():
+            _tprint(f"    stdout: {result.stdout.strip()}")
+        if result.stderr.strip():
+            _tprint(f"    stderr: {result.stderr.strip()}")
+        raise RuntimeError(f"Failed to launch worker {worker_id}")
+
+
+def _wait_for_join(mcc: MccClient, timeout: float = 30) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        log = mcc.read_log()
+        if "Server was successfully joined" in log:
+            return True
+        time.sleep(1)
+    return False
+
+
+def launch_worker_context(
+    worker_id: int,
+    username: str,
+    session: str,
+    version: str,
+    server_port: int,
+    rcon_port: int,
+    rcon_password: str,
+) -> WorkerContext | None:
+    _tprint(f"  [W{worker_id}] Launching: session={session} username={username}")
+    try:
+        _launch_one_mcc(worker_id, username, session, version, server_port)
+    except RuntimeError:
+        _tprint(f"  [W{worker_id}] Failed to launch, exiting case.")
+        return None
+
+    rcon = RconClient(port=rcon_port, password=rcon_password)
+    rcon.connect()
+    mcc = MccClient(session)
+
+    if _wait_for_join(mcc):
+        _tprint(f"  [W{worker_id}] {username} connected to server.")
+    else:
+        _tprint(f"  [W{worker_id}] WARNING: {username} join not confirmed "
+                "(continuing anyway)")
+
+    try:
+        admin_rcon = RconClient(port=rcon_port, password=rcon_password)
+        admin_rcon.connect()
+        admin_rcon.command(f"op {username}")
+        admin_rcon.close()
+    except Exception:
+        pass
+
+    mcc.send("debug on")
+    time.sleep(2)
+
+    return WorkerContext(
+        worker_id=worker_id,
+        username=username,
+        session=session,
+        rcon=rcon,
+        mcc=mcc,
+    )
+
+
+def worker_loop(
+    worker_id: int,
+    base_username: str,
+    run_token: str,
+    version: str,
+    server_port: int,
+    rcon_port: int,
+    rcon_password: str,
+    group_queue: queue.Queue,
+    all_results: list[TestResult],
+    results_lock: threading.Lock,
+    wait_seconds: int,
+    results_path: Path | None,
+    workers_registry: list[WorkerContext],
+    registry_lock: threading.Lock,
+    skipped_counter: list[int],
+) -> None:
+    """Run assigned groups while launching a fresh MCC session for each case."""
+    local_results: list[TestResult] = []
+    local_skipped = 0
+    failed_groups: set[tuple] = set()
+    case_counter = 0
+
+    while True:
+        try:
+            group_key, items = group_queue.get_nowait()
+        except queue.Empty:
+            break
+
+        for case, layout in items:
+            if case.group_key() in failed_groups:
+                local_skipped += 1
+                _tprint(f"  [W{worker_id}] {case.case_id} -- SKIPPED")
+                continue
+
+            case_counter += 1
+            session = build_case_session_name(run_token, worker_id, case_counter)
+            username = build_case_username(base_username, worker_id, case_counter)
+            _tprint(f"  [W{worker_id}] {case.case_id} (expect: {case.expected})"
+                    f"  route=({layout.start_x},{layout.start_y},{layout.start_z})"
+                    f" -> ({layout.end_x},{layout.end_y},{layout.end_z})")
+
+            ctx = launch_worker_context(
+                worker_id=worker_id,
+                username=username,
+                session=session,
+                version=version,
+                server_port=server_port,
+                rcon_port=rcon_port,
+                rcon_password=rcon_password,
+            )
+
+            if ctx is None:
+                result = TestResult(
+                    case=case,
+                    outcome="invalid_live_case",
+                    matched_expected=False,
+                    log_excerpt="  Harness: failed to launch fresh MCC worker session",
+                )
+            else:
+                try:
+                    result = run_single_test(
+                        case, layout, ctx.rcon, ctx.mcc, ctx.username, wait_seconds,
+                    )
+                finally:
+                    cleanup_workers([ctx])
+
+            local_results.append(result)
+
+            status = "OK" if result.matched_expected else "MISMATCH"
+            _tprint(f"  [W{worker_id}] {case.case_id}: "
+                    f"{result.outcome} [{status}]")
+            if result.log_excerpt:
+                _tprint(result.log_excerpt)
+
+            if result.outcome in ("reject", "fail") and case.expected == "pass":
+                failed_groups.add(case.group_key())
+                _tprint(f"  [W{worker_id}] >> Group failed -- "
+                        f"skipping larger values")
+
+            if results_path:
+                with results_lock:
+                    with results_path.open("a") as f:
+                        f.write(json.dumps(result_to_record(result, worker_id)) + "\n")
+
+        group_queue.task_done()
+
+    with results_lock:
+        all_results.extend(local_results)
+        skipped_counter[0] += local_skipped
+
+    _tprint(f"  [W{worker_id}] Finished: {len(local_results)} tests, "
+            f"{local_skipped} skipped")
+
+
+def cleanup_workers(workers: list[WorkerContext]) -> None:
+    """Shut down all MCC instances."""
+    for w in workers:
+        try:
+            w.mcc.send("quit")
+        except Exception:
+            pass
+        w.rcon.close()
+
+    time.sleep(2)
+
+    for w in workers:
+        tmux_session = f"mcc-{w.session}"
+        subprocess.run(
+            ["tmux", "kill-session", "-t", tmux_session],
+            capture_output=True,
+        )
+
+    # Clean up pid/meta files
+    tmpdir = os.environ.get("TMPDIR", "/tmp")
+    for w in workers:
+        session_root = Path(tmpdir) / "mcc-debug" / w.session
+        for f in ["mcc.pid", "session.meta"]:
+            fpath = session_root / f
+            if fpath.exists():
+                fpath.unlink()
 
 
 # ---------------------------------------------------------------------------
@@ -727,11 +1403,18 @@ def main() -> None:
                         help="Comma-separated hierarchical filters")
     parser.add_argument("--rcon-port", type=int, default=25575)
     parser.add_argument("--rcon-password", type=str, default="test123")
-    parser.add_argument("--username", type=str, default="MCCBot")
+    parser.add_argument("--username", type=str, default="MCCBot",
+                        help="MCC username (base name when --parallel > 1)")
     parser.add_argument("--wait", type=int, default=15,
                         help="Seconds to wait for navigation per test")
     parser.add_argument("--results", type=str, default=None,
                         help="Path for JSONL results output")
+    parser.add_argument("--parallel", type=int, default=6,
+                        help="Number of parallel MCC instances (default: 6)")
+    parser.add_argument("--version", type=str, default="1.21.11-Vanilla",
+                        help="MC server version for auto-launching MCC")
+    parser.add_argument("--server-port", type=int, default=25565,
+                        help="MC server port for auto-launched clients")
     args = parser.parse_args()
 
     caps = load_capabilities(CAPABILITIES_PATH)
@@ -775,25 +1458,77 @@ def main() -> None:
 
     if args.dry_run:
         print("=== DRY RUN: building worlds only ===")
-        for case in all_cases:
+        rcon.command(f"gamemode creative {args.username}")
+
+        z_end = builder.compute_z_extent(all_cases)
+        builder.forceload_region(z_end)
+        print("  Clearing entire test region...")
+        builder.clear_entire_region(z_end)
+
+        for i, case in enumerate(all_cases, 1):
             layout = builder.build(case)
             print(f"  {case.case_id}: start=({layout.start_x},{layout.start_y},{layout.start_z})"
                   f" end=({layout.end_x},{layout.end_y},{layout.end_z})")
+
+        builder.forceload_remove()
+        rcon.command(f"tp {args.username} {builder.base_x}.5 "
+                     f"{builder.base_y + 5} {builder.Z_START + CLEAR_PADDING}.5")
         rcon.close()
         print(f"\nBuilt {len(all_cases)} courses.")
         return
-
-    session = resolve_session()
-    mcc = MccClient(session)
 
     results_path = Path(args.results) if args.results else None
     if results_path:
         results_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Phase 1: Clear region and build all courses up front
     print("=" * 60)
-    print("  MCC Full-Coverage Parkour Test Suite")
+    print("  Phase 1: Building all courses")
     print("=" * 60)
-    print(f"  Cases: {len(all_cases)}")
+
+    rcon.command(f"gamemode creative {args.username}")
+
+    z_end = builder.compute_z_extent(all_cases)
+    builder.forceload_region(z_end)
+    print("  Clearing entire test region...")
+    builder.clear_entire_region(z_end)
+
+    layouts: list[tuple[TestCase, CourseLayout]] = []
+    for i, case in enumerate(all_cases, 1):
+        layout = builder.build(case)
+        layouts.append((case, layout))
+        print(f"  [{i}/{len(all_cases)}] {case.case_id}: "
+              f"({layout.start_x},{layout.start_y},{layout.start_z}) -> "
+              f"({layout.end_x},{layout.end_y},{layout.end_z})")
+
+    print(f"\n  Built {len(layouts)} courses.")
+
+    # Phase 2: Run tests
+    n_parallel = args.parallel
+    try:
+        if n_parallel > 1:
+            _run_parallel(layouts, rcon, args, results_path, n_parallel)
+        else:
+            _run_serial(layouts, rcon, args, results_path)
+    finally:
+        builder.forceload_remove()
+
+
+def _run_serial(
+    layouts: list[tuple[TestCase, CourseLayout]],
+    rcon: RconClient,
+    args: argparse.Namespace,
+    results_path: Path | None,
+) -> None:
+    """Original serial test execution path."""
+    session = resolve_session()
+    mcc = MccClient(session)
+
+    print()
+    print("=" * 60)
+    print("  Phase 2: Running tests (serial)")
+    print("=" * 60)
+    print(f"  Cases: {len(layouts)}")
     print(f"  Username: {args.username}")
     print(f"  Session: {session}")
     print(f"  Wait: {args.wait}s per test")
@@ -803,15 +1538,13 @@ def main() -> None:
     failed_groups: set[tuple] = set()
     skipped = 0
 
-    for i, case in enumerate(all_cases, 1):
+    for i, (case, layout) in enumerate(layouts, 1):
         if should_skip(case, failed_groups):
             skipped += 1
-            print(f"  [{i}/{len(all_cases)}] {case.case_id} -- SKIPPED (group already failed)")
+            print(f"  [{i}/{len(layouts)}] {case.case_id} -- SKIPPED (group already failed)")
             continue
 
-        print(f"\n--- [{i}/{len(all_cases)}] {case.case_id} (expect: {case.expected}) ---")
-
-        layout = builder.build(case)
+        print(f"\n--- [{i}/{len(layouts)}] {case.case_id} (expect: {case.expected}) ---")
         print(f"  Route: ({layout.start_x},{layout.start_y},{layout.start_z}) -> "
               f"({layout.end_x},{layout.end_y},{layout.end_z})")
 
@@ -825,8 +1558,6 @@ def main() -> None:
         if result.log_excerpt:
             print(result.log_excerpt)
 
-        # Stop-at-first-failure: only trigger on definitive navigation
-        # failures (reject/fail), not on setup issues (invalid_live_case).
         if result.outcome in ("reject", "fail") and case.expected == "pass":
             failed_groups.add(case.group_key())
             print(f"  >> Group failed at {case.family}/{case.subfamily} "
@@ -834,18 +1565,79 @@ def main() -> None:
 
         if results_path:
             with results_path.open("a") as f:
-                f.write(json.dumps({
-                    "case_id": case.case_id,
-                    "family": case.family,
-                    "subfamily": case.subfamily,
-                    "gap_or_wall": case.gap_or_wall,
-                    "expected": case.expected,
-                    "outcome": result.outcome,
-                    "matched": result.matched_expected,
-                }) + "\n")
+                f.write(json.dumps(result_to_record(result)) + "\n")
+
+    rcon.close()
+    _print_summary(results, skipped)
+
+
+def _run_parallel(
+    layouts: list[tuple[TestCase, CourseLayout]],
+    rcon: RconClient,
+    args: argparse.Namespace,
+    results_path: Path | None,
+    n_parallel: int,
+) -> None:
+    """Parallel test execution with streaming worker launch.
+
+    Each worker thread handles its own lifecycle: launch MCC, wait for join,
+    op/debug-on, then immediately start pulling work from the shared queue.
+    No need to wait for all workers before starting tests.
+    """
+    # Group cases by group_key for atomic distribution
+    groups: dict[tuple, list[tuple[TestCase, CourseLayout]]] = {}
+    for case, layout in layouts:
+        groups.setdefault(case.group_key(), []).append((case, layout))
+
+    group_q: queue.Queue = queue.Queue()
+    for key, items in groups.items():
+        group_q.put((key, items))
+
+    print()
+    print("=" * 60)
+    print(f"  Launching {n_parallel} workers ({len(groups)} groups, "
+          f"{len(layouts)} cases)")
+    print("=" * 60)
+    print(f"  Wait: {args.wait}s per test")
+    print()
+
+    all_results: list[TestResult] = []
+    results_lock = threading.Lock()
+    workers_registry: list[WorkerContext] = []
+    registry_lock = threading.Lock()
+    threads: list[threading.Thread] = []
+    skipped_counter = [0]
+    run_token = make_parallel_run_token()
+
+    for i in range(1, n_parallel + 1):
+        t = threading.Thread(
+            target=worker_loop,
+            args=(i, args.username, run_token, args.version, args.server_port,
+                  args.rcon_port, args.rcon_password,
+                  group_q, all_results, results_lock,
+                  args.wait, results_path,
+                  workers_registry, registry_lock, skipped_counter),
+            daemon=True,
+        )
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
 
     rcon.close()
 
+    print()
+    print("=" * 60)
+    print("  Cleanup")
+    print("=" * 60)
+    cleanup_workers(workers_registry)
+    print("  All workers stopped.")
+
+    _print_summary(all_results, skipped=skipped_counter[0])
+
+
+def _print_summary(results: list[TestResult], skipped: int) -> None:
     print("\n" + "=" * 60)
     print("  SUMMARY")
     print("=" * 60)
