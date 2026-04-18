@@ -15,6 +15,7 @@ namespace MinecraftClient.Pathing.Core
 
         public PathNode? Parent;
         public MoveType MoveUsed;
+        public ParkourProfile ParkourProfile;
 
         public int HeapIndex;
         public bool IsOpen;

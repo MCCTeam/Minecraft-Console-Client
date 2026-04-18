@@ -55,6 +55,21 @@ public sealed class MoveParkourTests
     }
 
     [Fact]
+    public void Accepts2x1Gap_TagsDefaultParkourProfile()
+    {
+        var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
+        world.SetBlock(new Location(1, FloorY, 0), Block.Air);
+        var ctx = BuildContext(world);
+        var move = new MoveParkour(2, 0);
+        var result = default(MoveResult);
+
+        move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
+
+        Assert.False(result.IsImpossible);
+        Assert.Equal(ParkourProfile.Default, result.ParkourProfile);
+    }
+
+    [Fact]
     public void Rejects2x1WhenAdjacentBlockIsStillWalkable()
     {
         var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);

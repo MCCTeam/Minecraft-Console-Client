@@ -49,6 +49,22 @@ public sealed class PathSegmentBuilderTests
         Assert.True(segments[0].PreserveSprint);
     }
 
+    [Fact]
+    public void FromPath_CopiesParkourProfile_ToRuntimeSegment()
+    {
+        var start = new PathNode(100, 80, 100);
+        var end = new PathNode(99, 80, 102)
+        {
+            MoveUsed = MoveType.Parkour,
+            ParkourProfile = ParkourProfile.Sidewall
+        };
+
+        List<PathSegment> segments = PathSegmentBuilder.FromPath([start, end]);
+
+        Assert.Single(segments);
+        Assert.Equal(ParkourProfile.Sidewall, segments[0].ParkourProfile);
+    }
+
     private static List<PathNode> BuildNodes(params (int x, int y, int z, MoveType moveUsed)[] raw)
     {
         var result = new List<PathNode>(raw.Length);

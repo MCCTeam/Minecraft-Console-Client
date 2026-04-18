@@ -207,7 +207,7 @@ namespace MinecraftClient.Pathing.Moves.Impl
             else
                 cost = horizDist * ctx.WalkCost + ctx.JumpPenalty;
 
-            result.Set(destX, destY, destZ, cost);
+            result.Set(destX, destY, destZ, cost, ParkourProfile.Default);
         }
 
         /// <summary>

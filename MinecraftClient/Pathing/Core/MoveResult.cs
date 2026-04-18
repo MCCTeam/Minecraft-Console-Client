@@ -9,18 +9,21 @@ namespace MinecraftClient.Pathing.Core
         public int DestY;
         public int DestZ;
         public double Cost;
+        public ParkourProfile ParkourProfile;
 
-        public void Set(int x, int y, int z, double cost)
+        public void Set(int x, int y, int z, double cost, ParkourProfile parkourProfile = ParkourProfile.None)
         {
             DestX = x;
             DestY = y;
             DestZ = z;
             Cost = cost;
+            ParkourProfile = parkourProfile;
         }
 
         public void SetImpossible()
         {
             Cost = ActionCosts.CostInf;
+            ParkourProfile = ParkourProfile.None;
         }
 
         public readonly bool IsImpossible => Cost >= ActionCosts.CostInf;

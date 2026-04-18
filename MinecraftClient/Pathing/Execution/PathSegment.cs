@@ -9,6 +9,7 @@ namespace MinecraftClient.Pathing.Execution
         public required Location Start { get; init; }
         public required Location End { get; init; }
         public required MoveType MoveType { get; init; }
+        public ParkourProfile ParkourProfile { get; init; } = ParkourProfile.None;
         public PathTransitionType ExitTransition { get; init; } = PathTransitionType.FinalStop;
         public PathTransitionHints ExitHints { get; init; } = PathTransitionHints.Default;
         public bool PreserveSprint { get; init; }

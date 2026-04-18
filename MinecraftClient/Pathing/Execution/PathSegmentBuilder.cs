@@ -22,6 +22,7 @@ namespace MinecraftClient.Pathing.Execution
                     Start = current.Start,
                     End = current.End,
                     MoveType = current.MoveType,
+                    ParkourProfile = current.ParkourProfile,
                     ExitTransition = exitTransition,
                     ExitHints = BuildHints(current, next, nextNext, exitTransition),
                     PreserveSprint = exitTransition is PathTransitionType.ContinueStraight or PathTransitionType.PrepareJump
@@ -53,7 +54,8 @@ namespace MinecraftClient.Pathing.Execution
             {
                 Start = new Location(start.X + 0.5, start.Y, start.Z + 0.5),
                 End = new Location(end.X + 0.5, end.Y, end.Z + 0.5),
-                MoveType = end.MoveUsed
+                MoveType = end.MoveUsed,
+                ParkourProfile = end.ParkourProfile
             };
         }
 
