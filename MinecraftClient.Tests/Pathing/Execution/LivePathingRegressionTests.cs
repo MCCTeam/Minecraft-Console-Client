@@ -207,6 +207,35 @@ public sealed class LivePathingRegressionTests
         Assert.Empty(PathSegmentBuilder.FromPath(result.Path));
     }
 
+    [Theory]
+    [MemberData(nameof(SidewallParkourScenarioBuilder.AcceptedCases), MemberType = typeof(SidewallParkourScenarioBuilder))]
+    public void AStar_SidewallAcceptedCases_PlanThroughAllThreeJumps(string scenarioId, int gap, int deltaY, int wallOffset)
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create(scenarioId, gap, deltaY, wallOffset);
+        PathResult result = PathingScenarioRunner.PlanOnly(scenario);
+        List<PathSegment> segments = PathSegmentBuilder.FromPath(result.Path);
+
+        Assert.Equal(PathStatus.Success, result.Status);
+        Assert.Equal(3, segments.FindAll(segment => segment.MoveType == MoveType.Parkour).Count);
+        Assert.All(
+            segments.Where(segment => segment.MoveType == MoveType.Parkour),
+            segment => Assert.Equal(ParkourProfile.Sidewall, segment.ParkourProfile));
+        Assert.Equal(scenario.Goal.X + 0.5, segments[^1].End.X);
+        Assert.Equal(scenario.Goal.Y, segments[^1].End.Y);
+        Assert.Equal(scenario.Goal.Z + 0.5, segments[^1].End.Z);
+    }
+
+    [Theory]
+    [MemberData(nameof(SidewallParkourScenarioBuilder.RejectedCases), MemberType = typeof(SidewallParkourScenarioBuilder))]
+    public void AStar_SidewallRejectedCases_RejectBeforeExecution(string scenarioId, int gap, int deltaY, int wallOffset)
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create(scenarioId, gap, deltaY, wallOffset);
+        PathResult result = PathingScenarioRunner.PlanOnly(scenario);
+
+        Assert.Equal(PathStatus.Failed, result.Status);
+        Assert.Empty(PathSegmentBuilder.FromPath(result.Path));
+    }
+
     [Fact]
     public void AStar_LiveCoordinateLinearDescendGap3DyMinus2_PlansThroughAllThreeJumps()
     {

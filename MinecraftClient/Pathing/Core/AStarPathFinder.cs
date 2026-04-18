@@ -96,6 +96,30 @@ namespace MinecraftClient.Pathing.Core
                     moves.Add(new MoveParkour(0, dz * dist, yDelta: -2));
             }
 
+            // Sidewall parkour: dominant-axis sprint jumps with a one-block lateral offset.
+            foreach (int dx in offsets)
+            {
+                foreach (int dz in offsets)
+                {
+                    foreach (int distance in new[] { 2, 3, 4, 5 })
+                    {
+                        moves.Add(new MoveSidewallParkour(dx, dz * distance));
+                        moves.Add(new MoveSidewallParkour(dx * distance, dz));
+
+                        if (distance <= 3)
+                        {
+                            moves.Add(new MoveSidewallParkour(dx, dz * distance, yDelta: 1));
+                            moves.Add(new MoveSidewallParkour(dx * distance, dz, yDelta: 1));
+                        }
+
+                        moves.Add(new MoveSidewallParkour(dx, dz * distance, yDelta: -1));
+                        moves.Add(new MoveSidewallParkour(dx * distance, dz, yDelta: -1));
+                        moves.Add(new MoveSidewallParkour(dx, dz * distance, yDelta: -2));
+                        moves.Add(new MoveSidewallParkour(dx * distance, dz, yDelta: -2));
+                    }
+                }
+            }
+
             // Diagonal parkour: sprint jumps at angles.
             // Only include combinations with actual distance <= ~3.2 blocks (conservative)
             foreach (int dx in offsets)
