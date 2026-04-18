@@ -13,26 +13,40 @@ public static class SidewallParkourScenarioBuilder
 
     public static IEnumerable<object[]> AcceptedCases()
     {
-        yield return ["sidewall-flat-gap2-wo0", 2, 0, 0];
-        yield return ["sidewall-flat-gap3-wo1", 3, 0, 1];
         yield return ["sidewall-ascend-gap2-dy+1-wo0", 2, 1, 0];
+        yield return ["sidewall-ascend-gap3-dy+1-wo0", 3, 1, 0];
         yield return ["sidewall-ascend-gap3-dy+1-wo1", 3, 1, 1];
-        yield return ["sidewall-descend-gap2-dy-1-wo0", 2, -1, 0];
-        yield return ["sidewall-descend-gap3-dy-1-wo1", 3, -1, 1];
         yield return ["sidewall-descend-gap2-dy-2-wo0", 2, -2, 0];
+        yield return ["sidewall-descend-gap3-dy-2-wo0", 3, -2, 0];
+        yield return ["sidewall-descend-gap4-dy-2-wo0", 4, -2, 0];
+        yield return ["sidewall-descend-gap5-dy-2-wo0", 5, -2, 0];
         yield return ["sidewall-descend-gap3-dy-2-wo1", 3, -2, 1];
+        yield return ["sidewall-descend-gap4-dy-2-wo1", 4, -2, 1];
+        yield return ["sidewall-descend-gap5-dy-2-wo1", 5, -2, 1];
+        yield return ["sidewall-descend-gap2-dy-1-wo0", 2, -1, 0];
+        yield return ["sidewall-descend-gap3-dy-1-wo0", 3, -1, 0];
+        yield return ["sidewall-descend-gap4-dy-1-wo0", 4, -1, 0];
+        yield return ["sidewall-descend-gap5-dy-1-wo0", 5, -1, 0];
+        yield return ["sidewall-descend-gap3-dy-1-wo1", 3, -1, 1];
+        yield return ["sidewall-descend-gap4-dy-1-wo1", 4, -1, 1];
+        yield return ["sidewall-descend-gap5-dy-1-wo1", 5, -1, 1];
+        yield return ["sidewall-flat-gap2-wo0", 2, 0, 0];
+        yield return ["sidewall-flat-gap3-wo0", 3, 0, 0];
+        yield return ["sidewall-flat-gap4-wo0", 4, 0, 0];
+        yield return ["sidewall-flat-gap3-wo1", 3, 0, 1];
+        yield return ["sidewall-flat-gap4-wo1", 4, 0, 1];
     }
 
     public static IEnumerable<object[]> RejectedCases()
     {
-        yield return ["sidewall-flat-gap5-wo0", 5, 0, 0];
-        yield return ["sidewall-flat-gap5-wo1", 5, 0, 1];
         yield return ["sidewall-ascend-gap4-dy+1-wo0", 4, 1, 0];
         yield return ["sidewall-ascend-gap4-dy+1-wo1", 4, 1, 1];
-        yield return ["sidewall-descend-gap6-dy-1-wo0", 6, -1, 0];
-        yield return ["sidewall-descend-gap6-dy-1-wo1", 6, -1, 1];
         yield return ["sidewall-descend-gap6-dy-2-wo0", 6, -2, 0];
         yield return ["sidewall-descend-gap6-dy-2-wo1", 6, -2, 1];
+        yield return ["sidewall-descend-gap6-dy-1-wo0", 6, -1, 0];
+        yield return ["sidewall-descend-gap6-dy-1-wo1", 6, -1, 1];
+        yield return ["sidewall-flat-gap5-wo0", 5, 0, 0];
+        yield return ["sidewall-flat-gap5-wo1", 5, 0, 1];
     }
 
     internal static PathingExecutionScenario Create(string scenarioId, int gap, int deltaY, int wallOffset, int maxExecutionTicks = 700)
