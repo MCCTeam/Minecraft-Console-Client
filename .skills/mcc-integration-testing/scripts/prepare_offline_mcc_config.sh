@@ -14,6 +14,20 @@ Usage:
 EOF
 }
 
+normalize_output_ini() {
+    local raw_output_ini="$1"
+    local spill_dir
+
+    if [[ "$raw_output_ini" == *.ini || "$raw_output_ini" == */* ]]; then
+        printf '%s\n' "$raw_output_ini"
+        return 0
+    fi
+
+    spill_dir="${MCC_CONFIG_SPILL_DIR:-$REPO_ROOT/.tmp/mcc-config-spill}"
+    mkdir -p "$spill_dir"
+    printf '%s/%s.ini\n' "$spill_dir" "$raw_output_ini"
+}
+
 if [[ $# -lt 2 || $# -gt 4 ]]; then
     usage
     exit 1
@@ -29,11 +43,21 @@ if [[ $# -ge 3 && "$2" == *.ini ]]; then
     OUTPUT_INI="$2"
     MC_VERSION="$3"
     LOGIN_NAME="${4:-MCCBot}"
+elif [[ $# -eq 4 && "$1" == *.ini && -f "$1" ]]; then
+    TEMPLATE_INI="$1"
+    OUTPUT_INI="$2"
+    MC_VERSION="$3"
+    LOGIN_NAME="$4"
+elif [[ $# -eq 4 ]]; then
+    usage
+    exit 1
 else
     OUTPUT_INI="$1"
     MC_VERSION="$2"
     LOGIN_NAME="${3:-MCCBot}"
 fi
+
+OUTPUT_INI="$(normalize_output_ini "$OUTPUT_INI")"
 
 ACCOUNT_TYPE="${MCC_TEST_ACCOUNT_TYPE:-mojang}"
 PASSWORD_VALUE="${MCC_TEST_PASSWORD-}"

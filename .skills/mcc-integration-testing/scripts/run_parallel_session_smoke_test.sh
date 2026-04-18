@@ -93,8 +93,6 @@ cleanup() {
     sleep 1
     mcc-kill --session "$SESSION_A" >/dev/null 2>&1 || true
     mcc-kill --session "$SESSION_B" >/dev/null 2>&1 || true
-    mc-stop "$VERSION" --confirm >/dev/null 2>&1 || true
-    wait_for_server_stop "$VERSION" 20 >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 

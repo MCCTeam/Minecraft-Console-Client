@@ -34,9 +34,6 @@ cleanup() {
     mcc-cmd --session "$SESSION_NAME" "quit" >/dev/null 2>&1 || true
     sleep 2
     mcc-kill --session "$SESSION_NAME" >/dev/null 2>&1 || true
-
-    mc-stop "$VERSION" --confirm >/dev/null 2>&1 || true
-    wait_for_server_stop "$VERSION" 20 >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 

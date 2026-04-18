@@ -1,3 +1,4 @@
+import os
 import subprocess
 import tempfile
 import unittest
@@ -7,6 +8,55 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class PathingLiveScriptTests(unittest.TestCase):
+    def test_prepare_offline_config_redirects_bare_output_name_into_spill_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            template_ini = temp_path / "template.ini"
+            template_ini.write_text(
+                "\n".join(
+                    [
+                        "[Main.General]",
+                        'Account = { Login = "OldBot", Password = "" }',
+                        'AccountType = "microsoft"',
+                        "",
+                        "[Main.Advanced]",
+                        'MinecraftVersion = "auto"',
+                        "TerrainAndMovements = false",
+                        "InventoryHandling = false",
+                        "EntityHandling = false",
+                        "AutoRespawn = false",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            spill_dir = temp_path / ".tmp" / "mcc-config-spill"
+
+            result = subprocess.run(
+                [
+                    "bash",
+                    str(REPO_ROOT / ".skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh"),
+                    str(template_ini),
+                    "1.21.11",
+                    "1.21.11",
+                    "MCCBot1",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                cwd=temp_path,
+                env={
+                    **os.environ,
+                    **{"MCC_CONFIG_SPILL_DIR": str(spill_dir)},
+                },
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse((temp_path / "1.21.11").exists())
+            redirected_path = spill_dir / "1.21.11.ini"
+            self.assertTrue(redirected_path.exists())
+            self.assertEqual(Path(result.stdout.strip()), redirected_path)
+
     def test_prepare_offline_config_treats_existing_output_ini_as_output_not_template(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
             temp_path = Path(tempdir)
@@ -51,6 +101,18 @@ class PathingLiveScriptTests(unittest.TestCase):
             self.assertIn('Account = { Login = "MCCBot1", Password = "-" }', content)
             self.assertIn('AccountType = "mojang"', content)
             self.assertIn('MinecraftVersion = "1.21.11"', content)
+
+    def test_shared_integration_scripts_do_not_stop_servers_in_cleanup(self) -> None:
+        scripts = [
+            REPO_ROOT / ".skills/mcc-integration-testing/scripts/run_full_spectrum_test.sh",
+            REPO_ROOT / ".skills/mcc-integration-testing/scripts/run_parallel_session_smoke_test.sh",
+            REPO_ROOT / ".skills/mcc-integration-testing/scripts/run_achievements_test.sh",
+        ]
+
+        for script in scripts:
+            content = script.read_text(encoding="utf-8")
+            self.assertNotIn("mc-stop", content, script.name)
+            self.assertNotIn("wait_for_server_stop", content, script.name)
 
     def test_test_parkour_lists_all_families(self) -> None:
         result = subprocess.run(
