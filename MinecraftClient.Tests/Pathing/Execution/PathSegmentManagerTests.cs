@@ -1,6 +1,7 @@
 using MinecraftClient.Mapping;
 using MinecraftClient.Pathing.Core;
 using MinecraftClient.Pathing.Execution;
+using MinecraftClient.Pathing.Execution.Templates;
 using MinecraftClient.Pathing.Goals;
 using MinecraftClient.Physics;
 using Xunit;
@@ -224,6 +225,95 @@ public sealed class PathSegmentManagerTests
             $"replanCount={manager.ReplanCount}\ninfo={string.Join('\n', infoLogs)}\ndebug={string.Join('\n', debugLogs)}");
     }
 
+    [Theory]
+    [MemberData(nameof(LinearParkourScenarioBuilder.AcceptedCases), MemberType = typeof(LinearParkourScenarioBuilder))]
+    public void Tick_LinearAcceptedChain_CompletesWithoutReplan(string scenarioId, int gap, int deltaY)
+    {
+        PathingExecutionScenario scenario = LinearParkourScenarioBuilder.Create(scenarioId, gap, deltaY);
+        World world = scenario.BuildWorld();
+        var debugLogs = new List<string>();
+        var infoLogs = new List<string>();
+        var observer = new RecordingPathExecutionObserver();
+        var manager = new PathSegmentManager(debugLogs.Add, infoLogs.Add, observer);
+        var physics = TemplateSimulationRunner.CreateGroundedPhysics(scenario.Start, scenario.StartYaw);
+        var input = new MovementInput();
+        var recentTrace = new Queue<string>();
+
+        PathResult planResult = PathingScenarioRunner.PlanOnly(scenario);
+        manager.StartNavigation(scenario.Goal, planResult);
+
+        for (int tick = 0; tick < scenario.MaxExecutionTicks && manager.IsNavigating; tick++)
+        {
+            input.Reset();
+            Location pos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+            manager.Tick(pos, physics, input, world);
+            recentTrace.Enqueue(
+                $"tick={tick} pos={pos} vel={physics.DeltaMovement} yaw={physics.Yaw:F1} onGround={physics.OnGround} " +
+                $"input(F={input.Forward},B={input.Back},J={input.Jump},S={input.Sprint})");
+            if (recentTrace.Count > 60)
+                recentTrace.Dequeue();
+
+            if (!manager.IsNavigating)
+                break;
+
+            physics.ApplyInput(input);
+            physics.Tick(world);
+        }
+
+        Location finalPosition = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+        Location goalLocation = new(scenario.Goal.X + 0.5, scenario.Goal.Y, scenario.Goal.Z + 0.5);
+
+        Assert.True(
+            !manager.IsNavigating
+                && manager.Goal is null
+                && observer.ReplanCount == 0
+                && TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPosition, goalLocation),
+            $"scenario={scenarioId} completed={!manager.IsNavigating && manager.Goal is null} replans={observer.ReplanCount} final={finalPosition} " +
+            $"goal={goalLocation} planStatus={planResult.Status}\ninfo={string.Join('\n', infoLogs)}\ndebug={string.Join('\n', debugLogs)}\ntrace={string.Join('\n', recentTrace)}");
+    }
+
+    [Fact]
+    public void Tick_LinearFlatGap2_CompletesWithoutReplan()
+    {
+        AssertLinearScenarioCompletesWithoutReplan("linear-flat-gap2", gap: 2, deltaY: 0);
+    }
+
+    [Fact]
+    public void Tick_LinearAscendGap2DyPlus1_CompletesWithoutReplan()
+    {
+        AssertLinearScenarioCompletesWithoutReplan("linear-ascend-gap2-dy+1", gap: 2, deltaY: 1);
+    }
+
+    [Fact]
+    public void Tick_LinearAscendGap3DyPlus1_CompletesWithoutReplan()
+    {
+        AssertLinearScenarioRejected("linear-ascend-gap3-dy+1", gap: 3, deltaY: 1);
+    }
+
+    [Fact]
+    public void Tick_LinearDescendGap2DyMinus1_CompletesWithoutReplan()
+    {
+        AssertLinearScenarioCompletesWithoutReplan("linear-descend-gap2-dy-1", gap: 2, deltaY: -1);
+    }
+
+    [Fact]
+    public void Tick_LinearDescendGap3DyMinus2_CompletesWithoutReplan()
+    {
+        AssertLinearScenarioCompletesWithoutReplan("linear-descend-gap3-dy-2", gap: 3, deltaY: -2);
+    }
+
+    [Fact]
+    public void Tick_LinearDescendGap5DyMinus1_CompletesWithoutReplan()
+    {
+        AssertLinearScenarioRejected("linear-descend-gap5-dy-1", gap: 5, deltaY: -1);
+    }
+
+    [Fact]
+    public void Tick_LinearDescendGap5DyMinus2_CompletesWithoutReplan()
+    {
+        AssertLinearScenarioRejected("linear-descend-gap5-dy-2", gap: 5, deltaY: -2);
+    }
+
     private static List<PathNode> BuildNodes(params (int x, int y, int z, MoveType moveUsed)[] raw)
     {
         var result = new List<PathNode>(raw.Length);
@@ -236,5 +326,37 @@ public sealed class PathSegmentManagerTests
         }
 
         return result;
+    }
+
+    private static void AssertLinearScenarioCompletesWithoutReplan(string scenarioId, int gap, int deltaY)
+    {
+        PathingExecutionScenario scenario = LinearParkourScenarioBuilder.Create(scenarioId, gap, deltaY);
+        PathingScenarioResult result = PathingScenarioRunner.RunAccepted(scenario);
+        Location goalLocation = new(scenario.Goal.X + 0.5, scenario.Goal.Y, scenario.Goal.Z + 0.5);
+
+        Assert.True(
+            result.Completed
+                && result.ReplanCount == 0
+                && TemplateFootingHelper.IsFootprintInsideTargetBlock(result.FinalPosition, goalLocation),
+            $"scenario={scenarioId} completed={result.Completed} replans={result.ReplanCount} final={result.FinalPosition} " +
+            $"goal={goalLocation} planStatus={result.PlanResult.Status}\ninfo={string.Join('\n', result.InfoLogs)}\ndebug={string.Join('\n', result.DebugLogs)}");
+    }
+
+    private static void AssertLinearScenarioRejected(string scenarioId, int gap, int deltaY)
+    {
+        PathingExecutionScenario scenario = LinearParkourScenarioBuilder.Create(scenarioId, gap, deltaY);
+        PathResult result = PathingScenarioRunner.PlanOnly(scenario);
+        var infoLogs = new List<string>();
+        var manager = new PathSegmentManager(infoLog: infoLogs.Add);
+
+        manager.StartNavigation(scenario.Goal, result);
+
+        Assert.True(
+            result.Status == PathStatus.Failed
+                && !manager.IsNavigating
+                && manager.Goal is null
+                && manager.ReplanCount == 0
+                && infoLogs.Exists(log => log.Contains("no path found", StringComparison.OrdinalIgnoreCase)),
+            $"scenario={scenarioId} planStatus={result.Status}\npath={string.Join('\n', PathSegmentBuilder.FromPath(result.Path))}\ninfo={string.Join('\n', infoLogs)}");
     }
 }

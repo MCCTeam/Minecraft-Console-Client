@@ -21,6 +21,7 @@ namespace MinecraftClient.Pathing.Core
         public double WalkCost { get; }
         public double SprintCost { get; }
         public double SneakCost { get; }
+        public MoveType PreviousMoveType { get; internal set; }
 
         public CalculationContext(
             World world,

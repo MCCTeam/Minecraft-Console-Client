@@ -154,6 +154,11 @@ namespace MinecraftClient
         public string GetUserUuidStr() { return uuidStr; }
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
+        public bool GetLocalOnGround()
+        {
+            Location current = GetCurrentLocation();
+            return physicsInitialized ? playerPhysics.OnGround : Movement.IsOnGround(world, current);
+        }
         public float GetYaw() { return playerYaw; }
         public int GetSequenceId() { return sequenceId; }
         public float GetPitch() { return playerPitch; }

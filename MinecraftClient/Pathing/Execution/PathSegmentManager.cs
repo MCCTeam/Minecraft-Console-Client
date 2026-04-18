@@ -38,6 +38,14 @@ namespace MinecraftClient.Pathing.Execution
         {
             _goal = goal;
             _replanCount = 0;
+            if (result.Status == PathStatus.Failed || result.Path.Count < 2)
+            {
+                _infoLog?.Invoke("[PathMgr] Navigation rejected -- no path found.");
+                _executor = null;
+                _goal = null;
+                return;
+            }
+
             var segments = PathSegmentBuilder.FromPath(result.Path);
             _executor = new PathExecutor(segments, _debugLog, _observer);
             _infoLog?.Invoke($"[PathMgr] Navigation started: {segments.Count} segments");
@@ -53,6 +61,19 @@ namespace MinecraftClient.Pathing.Execution
             switch (state)
             {
                 case PathExecutorState.Complete:
+                    if (_goal is not null)
+                    {
+                        int px = (int)Math.Floor(pos.X);
+                        int py = (int)Math.Floor(pos.Y);
+                        int pz = (int)Math.Floor(pos.Z);
+                        if (!_goal.IsInGoal(px, py, pz))
+                        {
+                            _infoLog?.Invoke("[PathMgr] Planned route ended before reaching goal, replanning...");
+                            Replan(pos, world);
+                            break;
+                        }
+                    }
+
                     _observer?.OnNavigationCompleted(_executor.TotalTicks);
                     _infoLog?.Invoke("[PathMgr] Navigation complete!");
                     _executor = null;

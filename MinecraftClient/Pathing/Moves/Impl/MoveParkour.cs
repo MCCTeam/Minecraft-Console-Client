@@ -58,6 +58,24 @@ namespace MinecraftClient.Pathing.Moves.Impl
                 return;
             }
 
+            bool cardinal = (XOffset == 0) != (ZOffset == 0);
+            if (cardinal)
+            {
+                int distance = Math.Max(Math.Abs(XOffset), Math.Abs(ZOffset));
+                int maxDistance = _yDelta switch
+                {
+                    > 0 => 3,
+                    < 0 => 5,
+                    _ => 5,
+                };
+
+                if (distance > maxDistance)
+                {
+                    result.SetImpossible();
+                    return;
+                }
+            }
+
             // Don't parkour from climbable blocks (unreliable jump)
             Material standingOn = ctx.GetMaterial(x, y - 1, z);
             if (standingOn.CanBeClimbedOn())
@@ -100,6 +118,12 @@ namespace MinecraftClient.Pathing.Moves.Impl
 
             if (!ctx.CanWalkThrough(destX, destY, destZ) ||
                 !ctx.CanWalkThrough(destX, destY + 1, destZ))
+            {
+                result.SetImpossible();
+                return;
+            }
+
+            if (ParkourFeasibility.HasIntermediateLandingConflict(ctx, x, y, z, XOffset, ZOffset, _yDelta))
             {
                 result.SetImpossible();
                 return;

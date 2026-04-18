@@ -67,7 +67,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
                 if (horizDistSq > 0.01 && !decision.HoldBack)
                 {
-                    float groundedYaw = TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment)
+                    bool onOrPastTarget = TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd)
+                        || TemplateHelper.HasReachedSegmentEndPlane(pos, _segment);
+                    float groundedYaw = onOrPastTarget
+                        ? TemplateHelper.GetExitHeadingYaw(_segment)
+                        : TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment)
                         ? TemplateHelper.GetExitHeadingYaw(_segment)
                         : targetYaw;
                     physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, groundedYaw);
@@ -90,8 +94,16 @@ namespace MinecraftClient.Pathing.Execution.Templates
             }
             else if (horizDistSq > 0.01)
             {
-                physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
-                if (_hasFallen || YawDifference(physics.Yaw, targetYaw) <= PreDropYawToleranceDeg)
+                bool onOrPastTarget = TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd)
+                    || TemplateHelper.HasReachedSegmentEndPlane(pos, _segment);
+                bool biasTowardExitInAir = onOrPastTarget
+                    || (_hasFallen && TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment, distanceThreshold: 1.5));
+                float airborneYaw = biasTowardExitInAir
+                    ? TemplateHelper.GetExitHeadingYaw(_segment)
+                    : targetYaw;
+
+                physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, airborneYaw);
+                if (_hasFallen || YawDifference(physics.Yaw, airborneYaw) <= PreDropYawToleranceDeg)
                 {
                     if (!_hasFallen && !_needsSprint && ShouldCoastOffLedge(pos))
                     {

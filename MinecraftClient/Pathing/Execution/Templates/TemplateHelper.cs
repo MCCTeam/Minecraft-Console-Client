@@ -137,6 +137,17 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return dx * segment.HeadingX + dz * segment.HeadingZ;
         }
 
+        internal static double LateralOffsetFromSegmentLine(Location pos, PathSegment segment)
+        {
+            GetNormalizedSegmentDirection(segment, out double dirX, out double dirZ);
+            if (dirX == 0.0 && dirZ == 0.0)
+                return 0.0;
+
+            double relX = pos.X - segment.Start.X;
+            double relZ = pos.Z - segment.Start.Z;
+            return Math.Abs((-dirZ * relX) + (dirX * relZ));
+        }
+
         internal static bool ShouldBiasTowardExitHeading(Location pos, PathSegment segment, double distanceThreshold = 0.35)
         {
             GetExitHeading(segment, out int headingX, out int headingZ);

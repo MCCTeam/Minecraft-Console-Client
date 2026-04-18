@@ -1,5 +1,6 @@
 using System;
 using MinecraftClient.Mapping;
+using MinecraftClient.Pathing.Core;
 using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution.Templates
@@ -31,6 +32,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private Phase _phase = Phase.Approach;
         private bool _leftGround;
         private bool _carriedGroundEntry;
+        private bool _releaseForwardLatched;
 
         private const float YawToleranceDeg = 5f;
 
@@ -53,10 +55,19 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dz = ExpectedEnd.Z - pos.Z;
             double dy = ExpectedEnd.Y - pos.Y;
             double horizDistSq = dx * dx + dz * dz;
+            bool prepareJumpTouchdown = _phase == Phase.Airborne && _leftGround && physics.OnGround;
+            bool groundedPrepareJumpHandoff = (_phase == Phase.Landing || prepareJumpTouchdown)
+                && physics.OnGround
+                && _segment.ExitTransition == PathTransitionType.PrepareJump
+                && _segment.ExitHints.RequireJumpReady
+                && (TemplateFootingHelper.IsCenterInsideTargetBlock(pos, _segment.End)
+                    || TemplateHelper.HasReachedSegmentEndPlane(pos, _segment));
 
             float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
-            physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+            physics.Yaw = groundedPrepareJumpHandoff
+                ? TemplateHelper.SmoothYaw(physics.Yaw, TemplateHelper.GetExitHeadingYaw(_segment))
+                : TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
             switch (_phase)
@@ -67,38 +78,49 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         if (_tickCount == 1 && TemplateHelper.GetHorizontalSpeed(physics) > 0.02)
                             _carriedGroundEntry = true;
 
-                        double fromStartSq = TemplateHelper.HorizontalDistanceSq(pos, ExpectedStart);
+                        double approachProgress = ((pos.X - ExpectedStart.X) * _segment.HeadingX)
+                            + ((pos.Z - ExpectedStart.Z) * _segment.HeadingZ);
                         float yawDelta = YawDifference(physics.Yaw, targetYaw);
                         bool turnInPlace = yawDelta > 35f;
                         input.Forward = !turnInPlace;
                         input.Sprint = !turnInPlace;
+
+                        bool carriedShortFinalStopJump = _carriedGroundEntry
+                            && _segment.ExitTransition == PathTransitionType.FinalStop
+                            && _horizDist <= 2.5;
+                        bool carriedDescendingFinalStopJump = _carriedGroundEntry
+                            && _segment.ExitTransition == PathTransitionType.FinalStop
+                            && ExpectedEnd.Y < ExpectedStart.Y
+                            && _horizDist <= 3.5;
+                        bool carriedDescendingParkourJump = _carriedGroundEntry
+                            && _segment.ExitTransition == PathTransitionType.PrepareJump
+                            && ExpectedEnd.Y < ExpectedStart.Y
+                            && _horizDist <= 3.5;
+                        if (carriedShortFinalStopJump || carriedDescendingFinalStopJump || carriedDescendingParkourJump)
+                            input.Sprint = false;
 
                         // Build momentum before jumping. Sprint speed is ~5.6 m/s
                         // (0.28 blocks/tick). More run-up = more airtime distance.
                         // Standing sprint jump (0t): ~3.6 blocks horizontal
                         // 2-tick sprint (0.56m):    ~4.3 blocks horizontal
                         // 4-tick sprint (1.1m):     ~5.0 blocks horizontal
-                        double minApproachSq;
-                        if (_horizDist >= 5.0)
-                            minApproachSq = 0.64; // 0.8 blocks - 3+ ticks of sprint
+                        double minApproachDistance;
+                        bool carriedLongDescendingJump = _carriedGroundEntry
+                            && ExpectedEnd.Y < ExpectedStart.Y
+                            && _horizDist >= 5.0;
+                        if (carriedLongDescendingJump)
+                            minApproachDistance = 0.8; // use nearly the full landing block to preserve long-jump carry
+                        else if (_horizDist >= 5.0)
+                            minApproachDistance = 0.8; // 3+ ticks of sprint
                         else if (_horizDist >= 4.0)
-                            minApproachSq = 0.36; // 0.6 blocks - 2-3 ticks of sprint
+                            minApproachDistance = 0.6; // 2-3 ticks of sprint
                         else if (_horizDist > 3.5)
-                            minApproachSq = 0.09; // 0.3 blocks - 1-2 ticks of sprint
+                            minApproachDistance = 0.3; // 1-2 ticks of sprint
                         else
-                            minApproachSq = 0.0;
-
-                        if (_carriedGroundEntry
-                            && _segment.ExitTransition == PathTransitionType.FinalStop
-                            && _horizDist <= 2.5
-                            && GetLateralOffsetFromSegmentLine(pos) > 0.20)
-                        {
-                            input.Sprint = false;
-                        }
+                            minApproachDistance = 0.0;
 
                         bool yawAligned = yawDelta < YawToleranceDeg;
-                        bool posReady = fromStartSq >= minApproachSq;
-
+                        bool posReady = approachProgress >= minApproachDistance;
                         if (yawAligned && posReady)
                         {
                             input.Jump = true;
@@ -122,20 +144,25 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         _leftGround = true;
 
                     bool pastTarget = IsPastTarget(pos);
+                    bool parkourOnOrPastTarget = _segment.MoveType == MoveType.Parkour
+                        && (TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd)
+                            || TemplateHelper.HasReachedSegmentEndPlane(pos, _segment)
+                            || pastTarget);
                     bool biasTowardExitInAir = _segment.ExitTransition == PathTransitionType.LandingRecovery
                         ? TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment, distanceThreshold: 1.5)
                         : TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment);
-                    if (biasTowardExitInAir)
+                    if (parkourOnOrPastTarget || biasTowardExitInAir)
                         TemplateHelper.FaceExitHeading(physics, _segment);
 
                     bool lookaheadAirBrake = TransitionBrakingPlanner.ShouldReleaseForwardInAir(
                         _segment, _nextSegment, pos, physics, world);
                     bool releaseInAir = ShouldReleaseInAir(pos, physics, world);
+                    _releaseForwardLatched |= releaseInAir;
                     bool earlySoftBrake = _segment.ExitTransition == PathTransitionType.LandingRecovery
                         && lookaheadAirBrake
                         && !releaseInAir;
 
-                    if (releaseInAir || pastTarget)
+                    if (_releaseForwardLatched || pastTarget)
                     {
                         input.Forward = false;
                         input.Sprint = false;
@@ -148,7 +175,8 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     else
                     {
                         input.Forward = true;
-                        input.Sprint = true;
+                        input.Sprint = !(_segment.ExitTransition == PathTransitionType.FinalStop
+                            && ExpectedEnd.Y < ExpectedStart.Y);
                     }
 
                     if (_leftGround && physics.OnGround)
@@ -160,15 +188,36 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 }
 
                 case Phase.Landing:
-                    TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
-                    TemplateHelper.ApplyDecision(input, decision);
-                    if (decision.HoldBack)
-                        TemplateHelper.FaceSegmentHeading(physics, _segment);
-                    else if (TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment))
+                    bool descendingPrepareJump = _segment.ExitTransition == PathTransitionType.PrepareJump
+                        && ExpectedEnd.Y < ExpectedStart.Y;
+                    bool descendingPrepareJumpOnSupport = descendingPrepareJump
+                        && physics.OnGround
+                        && TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, _segment.End);
+                    bool descendingPrepareJumpPastSupport = descendingPrepareJump
+                        && physics.OnGround
+                        && TemplateHelper.HasReachedSegmentEndPlane(pos, _segment)
+                        && !descendingPrepareJumpOnSupport;
+
+                    if (descendingPrepareJumpPastSupport)
+                    {
+                        input.Forward = false;
+                        input.Sprint = false;
+                        input.Back = true;
                         TemplateHelper.FaceExitHeading(physics, _segment);
+                    }
+                    else
+                    {
+                        TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
+                        TemplateHelper.ApplyDecision(input, decision);
+                        if (decision.HoldBack)
+                            TemplateHelper.FaceSegmentHeading(physics, _segment);
+                        else if (TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment))
+                            TemplateHelper.FaceExitHeading(physics, _segment);
+                    }
 
                     if (_segment.ExitTransition == PathTransitionType.PrepareJump
                         && physics.OnGround
+                        && (!descendingPrepareJump || descendingPrepareJumpOnSupport)
                         && GroundedSegmentController.ShouldComplete(_segment, pos, physics))
                     {
                         return TemplateState.Complete;
@@ -236,6 +285,17 @@ namespace MinecraftClient.Pathing.Execution.Templates
             if (_segment.ExitTransition == PathTransitionType.ContinueStraight || physics.OnGround)
                 return false;
 
+            bool heuristicFinalStopRelease = _segment.ExitTransition == PathTransitionType.FinalStop
+                && ShouldReleaseByRemainingLead(pos, physics);
+            if (heuristicFinalStopRelease)
+                return true;
+
+            bool heuristicDescendingPrepareJumpRelease = _segment.ExitTransition == PathTransitionType.PrepareJump
+                && ExpectedEnd.Y < ExpectedStart.Y
+                && ShouldReleaseByRemainingLead(pos, physics);
+            if (heuristicDescendingPrepareJumpRelease)
+                return true;
+
             bool plannerWantsRelease = TransitionBrakingPlanner.ShouldReleaseForwardInAir(
                 _segment, _nextSegment, pos, physics, world);
             double remaining = TemplateHelper.RemainingDistanceAlongSegment(pos, _segment);
@@ -257,6 +317,16 @@ namespace MinecraftClient.Pathing.Execution.Templates
             }
 
             return !holdingStaysInside && releasingStaysInside;
+        }
+
+        private bool ShouldReleaseByRemainingLead(Location pos, PlayerPhysics physics)
+        {
+            double remaining = TemplateHelper.RemainingDistanceAlongSegment(pos, _segment);
+            double forwardSpeed = Math.Max(0.0,
+                TemplateHelper.ProjectHorizontalSpeedAlongHeading(physics, _segment.HeadingX, _segment.HeadingZ));
+            double dropHeight = Math.Max(0.0, ExpectedStart.Y - ExpectedEnd.Y);
+            double releaseLead = 0.14 + (Math.Max(0.0, dropHeight - 1.0) * 0.20);
+            return remaining <= forwardSpeed + releaseLead;
         }
 
         private Location? PredictLandingPosition(PlayerPhysics physics, World world, bool holdForward, bool holdSprint)

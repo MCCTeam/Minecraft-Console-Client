@@ -529,14 +529,21 @@ namespace MinecraftClient.Physics
         /// </summary>
         private float GetFrictionInfluencedSpeed(float friction)
         {
+            float effectiveSpeed = GetEffectiveMovementSpeed();
             if (OnGround)
             {
-                return MovementSpeed * (PhysicsConsts.GroundAccelerationFactor / (friction * friction * friction));
+                return effectiveSpeed * (PhysicsConsts.GroundAccelerationFactor / (friction * friction * friction));
             }
             else
             {
-                return CreativeFlying ? MovementSpeed * 0.1f : PhysicsConsts.AirAcceleration;
+                return CreativeFlying ? effectiveSpeed * 0.1f : effectiveSpeed * 0.2f;
             }
+        }
+
+        private float GetEffectiveMovementSpeed()
+        {
+            // Vanilla applies a transient +30% total movement-speed modifier while sprinting.
+            return Sprinting ? MovementSpeed * 1.3f : MovementSpeed;
         }
 
         /// <summary>

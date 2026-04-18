@@ -2394,6 +2394,9 @@ Logging in...</value>
   <data name="cmd.debug.state_location" xml:space="preserve">
     <value>Location</value>
   </data>
+  <data name="cmd.debug.state_on_ground" xml:space="preserve">
+    <value>OnGround</value>
+  </data>
   <data name="cmd.debug.state_tps" xml:space="preserve">
     <value>TPS</value>
   </data>

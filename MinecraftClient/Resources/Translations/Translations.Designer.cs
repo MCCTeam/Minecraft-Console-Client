@@ -6789,6 +6789,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OnGround.
+        /// </summary>
+        internal static string cmd_debug_state_on_ground {
+            get {
+                return ResourceManager.GetString("cmd.debug.state_on_ground", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to TPS.
         /// </summary>
         internal static string cmd_debug_state_tps {

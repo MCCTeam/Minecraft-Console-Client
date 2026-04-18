@@ -69,34 +69,31 @@ namespace MinecraftClient.Pathing.Core
             foreach (int dz in offsets)
                 moves.Add(new MoveSprintDescend(0, dz * 2));
 
-            // Cardinal parkour: 2-4 block sprint jumps along +-X and +-Z
+            // Cardinal parkour: long sprint jumps along +-X and +-Z.
+            // Longer distances remain gated by MoveParkour feasibility and available runway/carry.
             foreach (int dx in offsets)
             {
-                for (int dist = 2; dist <= 4; dist++)
+                for (int dist = 2; dist <= 5; dist++)
                     moves.Add(new MoveParkour(dx * dist, 0));
-                // Ascending: +1Y, dist 2-3 (dist 4 ascend not physically reliable)
+                // Ascending cardinal parkour tops out at offset 3.
                 for (int dist = 2; dist <= 3; dist++)
                     moves.Add(new MoveParkour(dx * dist, 0, yDelta: 1));
-                // Descending parkour: sprint-jump, land 1-2 blocks lower
-                for (int dist = 2; dist <= 4; dist++)
-                {
+                // Descending cardinal parkour tops out at offset 5.
+                for (int dist = 2; dist <= 5; dist++)
                     moves.Add(new MoveParkour(dx * dist, 0, yDelta: -1));
-                    if (dist <= 3)
-                        moves.Add(new MoveParkour(dx * dist, 0, yDelta: -2));
-                }
+                for (int dist = 2; dist <= 5; dist++)
+                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: -2));
             }
             foreach (int dz in offsets)
             {
-                for (int dist = 2; dist <= 4; dist++)
+                for (int dist = 2; dist <= 5; dist++)
                     moves.Add(new MoveParkour(0, dz * dist));
                 for (int dist = 2; dist <= 3; dist++)
                     moves.Add(new MoveParkour(0, dz * dist, yDelta: 1));
-                for (int dist = 2; dist <= 4; dist++)
-                {
+                for (int dist = 2; dist <= 5; dist++)
                     moves.Add(new MoveParkour(0, dz * dist, yDelta: -1));
-                    if (dist <= 3)
-                        moves.Add(new MoveParkour(0, dz * dist, yDelta: -2));
-                }
+                for (int dist = 2; dist <= 5; dist++)
+                    moves.Add(new MoveParkour(0, dz * dist, yDelta: -2));
             }
 
             // Diagonal parkour: sprint jumps at angles.
@@ -162,6 +159,7 @@ namespace MinecraftClient.Pathing.Core
 
             int nodesExplored = 0;
             int unloadedChunkHits = 0;
+            bool searchAborted = false;
             PathNode? bestPartialNode = startNode;
             double bestPartialScore = startNode.HCost + startNode.GCost * 0.5;
             MoveResult moveResult = default;
@@ -172,12 +170,14 @@ namespace MinecraftClient.Pathing.Core
             {
                 if (ct.IsCancellationRequested)
                 {
+                    searchAborted = true;
                     DebugLog?.Invoke($"[A*] Cancelled after {nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");
                     break;
                 }
 
                 if (sw.ElapsedMilliseconds > timeoutMs)
                 {
+                    searchAborted = true;
                     DebugLog?.Invoke($"[A*] Timeout ({timeoutMs}ms) after {nodesExplored} nodes");
                     break;
                 }
@@ -195,6 +195,7 @@ namespace MinecraftClient.Pathing.Core
 
                 foreach (var move in _allMoves)
                 {
+                    ctx.PreviousMoveType = current.MoveUsed;
                     moveResult.Cost = 0;
                     move.Calculate(ctx, current.X, current.Y, current.Z, ref moveResult);
 
@@ -251,7 +252,9 @@ namespace MinecraftClient.Pathing.Core
                 }
             }
 
-            if (bestPartialNode is not null && bestPartialNode != startNode)
+            if (bestPartialNode is not null
+                && bestPartialNode != startNode
+                && (searchAborted || unloadedChunkHits > 0))
             {
                 DebugLog?.Invoke($"[A*] Partial path to ({bestPartialNode.X},{bestPartialNode.Y},{bestPartialNode.Z}), " +
                     $"{nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");

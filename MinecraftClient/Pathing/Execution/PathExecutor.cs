@@ -52,39 +52,57 @@ namespace MinecraftClient.Pathing.Execution
                 return PathExecutorState.Complete;
             }
 
-            _segmentTicks++;
             _totalTicks++;
-            var state = _currentTemplate.Tick(pos, physics, input, world);
-
-            switch (state)
+            int sameTickAdvanceCount = 0;
+            while (_currentTemplate is not null)
             {
-                case TemplateState.Complete:
-                    input.Reset();
-                    _observer?.OnSegmentCompleted(_currentIndex, _segments.Count, _segments[_currentIndex], _segmentTicks, pos);
-                    _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} complete " +
-                        $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2})");
-                    _currentIndex++;
-                    _segmentTicks = 0;
-                    if (_currentIndex >= _segments.Count)
-                    {
-                        _currentTemplate = null;
-                        _debugLog?.Invoke("[PathExec] All segments complete!");
-                        return PathExecutorState.Complete;
-                    }
-                    AdvanceToNextSegment();
-                    return PathExecutorState.InProgress;
+                _segmentTicks++;
+                var state = _currentTemplate.Tick(pos, physics, input, world);
 
-                case TemplateState.Failed:
-                    input.Reset();
-                    _observer?.OnSegmentFailed(_currentIndex, _segments.Count, _segments[_currentIndex], _segmentTicks, pos);
-                    _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} FAILED " +
-                        $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2}), " +
-                        $"target was ({_currentTemplate.ExpectedEnd.X:F2},{_currentTemplate.ExpectedEnd.Y:F2},{_currentTemplate.ExpectedEnd.Z:F2})");
-                    return PathExecutorState.Failed;
+                switch (state)
+                {
+                    case TemplateState.Complete:
+                        _observer?.OnSegmentCompleted(_currentIndex, _segments.Count, _segments[_currentIndex], _segmentTicks, pos);
+                        _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} complete " +
+                            $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2})");
+                        _currentIndex++;
+                        _segmentTicks = 0;
+                        if (_currentIndex >= _segments.Count)
+                        {
+                            input.Reset();
+                            _currentTemplate = null;
+                            _debugLog?.Invoke("[PathExec] All segments complete!");
+                            return PathExecutorState.Complete;
+                        }
 
-                default:
-                    return PathExecutorState.InProgress;
+                        AdvanceToNextSegment();
+
+                        // Do not waste the handoff tick when the next segment needs to issue
+                        // a jump or braking input immediately.
+                        sameTickAdvanceCount++;
+                        if (sameTickAdvanceCount > _segments.Count)
+                        {
+                            input.Reset();
+                            _debugLog?.Invoke("[PathExec] Excessive same-tick segment advances; aborting.");
+                            return PathExecutorState.Failed;
+                        }
+                        continue;
+
+                    case TemplateState.Failed:
+                        input.Reset();
+                        _observer?.OnSegmentFailed(_currentIndex, _segments.Count, _segments[_currentIndex], _segmentTicks, pos);
+                        _debugLog?.Invoke($"[PathExec] Segment {_currentIndex} FAILED " +
+                            $"({_segments[_currentIndex].MoveType}) at ({pos.X:F2},{pos.Y:F2},{pos.Z:F2}), " +
+                            $"target was ({_currentTemplate.ExpectedEnd.X:F2},{_currentTemplate.ExpectedEnd.Y:F2},{_currentTemplate.ExpectedEnd.Z:F2})");
+                        return PathExecutorState.Failed;
+
+                    default:
+                        return PathExecutorState.InProgress;
+                }
             }
+
+            input.Reset();
+            return PathExecutorState.Complete;
         }
 
         private void AdvanceToNextSegment()

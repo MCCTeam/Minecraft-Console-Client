@@ -78,6 +78,7 @@ namespace MinecraftClient.Commands
 
             var loc = handler.GetCurrentLocation();
             sb.AppendLine($"§7{Translations.cmd_debug_state_location,-10}§f{loc.X:F2}, {loc.Y:F2}, {loc.Z:F2}");
+            sb.AppendLine($"§7{Translations.cmd_debug_state_on_ground,-10}§f{(handler.GetLocalOnGround() ? "true" : "false")}");
 
             sb.AppendLine($"§7{Translations.cmd_debug_state_tps,-10}§f{handler.GetServerTPS():F1}");
 

@@ -15,8 +15,20 @@ internal static class ParkourFeasibility
         int yDelta)
     {
         double horiz = Math.Sqrt(xOffset * xOffset + zOffset * zOffset);
-        double threshold = yDelta > 0 ? 2.5 : 3.5;
+        bool carriedEntry = ctx.PreviousMoveType is MoveType.Parkour or MoveType.Descend;
+        double threshold = yDelta switch
+        {
+            > 0 when carriedEntry => 4.5,
+            > 0 => 2.5,
+            < 0 when carriedEntry => 5.5,
+            < 0 => 3.5,
+            _ when carriedEntry => 5.5,
+            _ => 3.5,
+        };
         if (horiz < threshold)
+            return true;
+
+        if (carriedEntry && yDelta < 0)
             return true;
 
         int backX = x - Math.Sign(xOffset);
@@ -94,6 +106,42 @@ internal static class ParkourFeasibility
         }
 
         return true;
+    }
+
+    public static bool HasIntermediateLandingConflict(
+        CalculationContext ctx,
+        int x,
+        int y,
+        int z,
+        int xOffset,
+        int zOffset,
+        int yDelta)
+    {
+        if (yDelta >= 0)
+            return false;
+
+        bool cardinal = (xOffset == 0) != (zOffset == 0);
+        int distance = Math.Max(Math.Abs(xOffset), Math.Abs(zOffset));
+        if (!cardinal || distance < 6)
+            return false;
+
+        int destY = y + yDelta;
+        int xSign = Math.Sign(xOffset);
+        int zSign = Math.Sign(zOffset);
+
+        for (int step = 1; step < distance; step++)
+        {
+            int gx = x + (xOffset != 0 ? xSign * step : 0);
+            int gz = z + (zOffset != 0 ? zSign * step : 0);
+
+            for (int candidateY = y - 1; candidateY >= destY; candidateY--)
+            {
+                if (ctx.CanWalkOn(gx, candidateY - 1, gz) && IsColumnPassable(ctx, gx, candidateY, gz))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool IsColumnPassable(CalculationContext ctx, int x, int y, int z)

@@ -11,6 +11,30 @@ namespace MinecraftClient.Tests.Pathing.Execution;
 public sealed class GroundedTemplateConvergenceTests
 {
     [Fact]
+    public void PlayerPhysics_SprintingGroundTravel_IsFasterThanWalking()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: -2, max: 16);
+        var walking = TemplateSimulationRunner.CreateGroundedPhysics(new Location(0.5, 80, 0.5), yaw: 270f);
+        var sprinting = TemplateSimulationRunner.CreateGroundedPhysics(new Location(0.5, 80, 0.5), yaw: 270f);
+
+        for (int tick = 0; tick < 8; tick++)
+        {
+            walking.ApplyInput(new MovementInput { Forward = true });
+            walking.Tick(world);
+
+            sprinting.ApplyInput(new MovementInput { Forward = true, Sprint = true });
+            sprinting.Tick(world);
+        }
+
+        double walkingTravel = walking.Position.X - 0.5;
+        double sprintingTravel = sprinting.Position.X - 0.5;
+
+        Assert.True(
+            sprintingTravel > walkingTravel + 0.05,
+            $"walkingTravel={walkingTravel:F4} sprintingTravel={sprintingTravel:F4} walkVel={walking.DeltaMovement} sprintVel={sprinting.DeltaMovement}");
+    }
+
+    [Fact]
     public void WalkTemplate_FinalStop_Completes_WhenFootprintStaysInsideTargetBlock()
     {
         World world = FlatWorldTestBuilder.CreateStoneFloor();
@@ -539,6 +563,151 @@ public sealed class GroundedTemplateConvergenceTests
 
         Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}");
         Assert.True(TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segment.End));
+    }
+
+    [Fact]
+    public void DescendTemplate_LandingRecovery_ChainCarry_CompletesBeforeSettling()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: 360, max: 369);
+        FlatWorldTestBuilder.ClearBox(world, 360, 79, 358, 369, 85, 362);
+        FlatWorldTestBuilder.FillSolid(world, 362, 79, 360, 363, 79, 360);
+        FlatWorldTestBuilder.SetSolid(world, 364, 77, 360);
+        FlatWorldTestBuilder.SetSolid(world, 365, 75, 360);
+        FlatWorldTestBuilder.SetSolid(world, 366, 73, 360);
+
+        var segment = new PathSegment
+        {
+            Start = new Location(363.5, 80, 360.5),
+            End = new Location(364.5, 78, 360.5),
+            MoveType = MoveType.Descend,
+            ExitTransition = PathTransitionType.LandingRecovery,
+            ExitHints = new PathTransitionHints(1, 0, 0.03, double.PositiveInfinity, false, true, false, true, 12)
+        };
+        var next = new PathSegment
+        {
+            Start = new Location(364.5, 78, 360.5),
+            End = new Location(365.5, 76, 360.5),
+            MoveType = MoveType.Descend,
+            ExitTransition = PathTransitionType.LandingRecovery,
+            ExitHints = new PathTransitionHints(1, 0, 0.03, double.PositiveInfinity, false, true, false, true, 12)
+        };
+
+        var template = new DescendTemplate(segment, next);
+        var physics = TemplateSimulationRunner.CreateGroundedPhysics(segment.Start, yaw: 270f);
+        var input = new MovementInput();
+        var trace = new List<string>();
+        TemplateState state = TemplateState.InProgress;
+        Location finalPos = segment.Start;
+
+        for (int tick = 0; tick < 160; tick++)
+        {
+            input.Reset();
+            Location pos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+            state = template.Tick(pos, physics, input, world);
+            trace.Add(
+                $"tick={tick} state={state} pos={pos} vel={physics.DeltaMovement} onGround={physics.OnGround} " +
+                $"input(F={input.Forward},B={input.Back},S={input.Sprint})");
+
+            if (state != TemplateState.InProgress)
+            {
+                finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+                break;
+            }
+
+            physics.ApplyInput(input);
+            physics.Tick(world);
+            finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+        }
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
+        Assert.True(TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segment.End), $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
+        Assert.True(physics.DeltaMovement.X >= 0.03, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
+    }
+
+    [Fact]
+    public void DescendTemplate_LandingRecovery_ShortChain_DoesNotSwingYawAfterPassingEndPlane()
+    {
+        static bool HasReachedSegmentEndPlane(Location pos, PathSegment segment, double tolerance = 0.05)
+        {
+            double dirX = Math.Sign(segment.End.X - segment.Start.X);
+            double dirZ = Math.Sign(segment.End.Z - segment.Start.Z);
+            double relX = pos.X - segment.End.X;
+            double relZ = pos.Z - segment.End.Z;
+            return relX * dirX + relZ * dirZ >= -tolerance;
+        }
+
+        static double HeadingPenaltyDegrees(float yaw, PathSegment segment)
+        {
+            float targetYaw = (float)(-Math.Atan2(segment.HeadingX, segment.HeadingZ) / Math.PI * 180.0);
+            if (targetYaw < 0f)
+                targetYaw += 360f;
+
+            float delta = targetYaw - yaw;
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+            return Math.Abs(delta);
+        }
+
+        World world = FlatWorldTestBuilder.CreateStoneFloor(floorY: 0, min: -2, max: 10);
+        FlatWorldTestBuilder.ClearBox(world, -2, 1, -2, 10, 90, 2);
+        FlatWorldTestBuilder.FillSolid(world, 0, 79, 0, 3, 79, 0);
+        FlatWorldTestBuilder.SetSolid(world, 4, 77, 0);
+        FlatWorldTestBuilder.SetSolid(world, 5, 75, 0);
+        FlatWorldTestBuilder.SetSolid(world, 6, 73, 0);
+
+        var segment = new PathSegment
+        {
+            Start = new Location(4.5, 78, 0.5),
+            End = new Location(5.5, 76, 0.5),
+            MoveType = MoveType.Descend,
+            ExitTransition = PathTransitionType.LandingRecovery,
+            ExitHints = new PathTransitionHints(1, 0, 0.03, double.PositiveInfinity, false, true, false, true, 12)
+        };
+        var next = new PathSegment
+        {
+            Start = new Location(5.5, 76, 0.5),
+            End = new Location(6.5, 74, 0.5),
+            MoveType = MoveType.Descend,
+            ExitTransition = PathTransitionType.LandingRecovery,
+            ExitHints = new PathTransitionHints(1, 0, 0.03, double.PositiveInfinity, false, true, false, true, 12)
+        };
+
+        var template = new DescendTemplate(segment, next);
+        var physics = TemplateSimulationRunner.CreateGroundedPhysics(segment.Start, yaw: 270f);
+        var input = new MovementInput();
+        var trace = new List<string>();
+        double maxHeadingPenaltyPastEnd = 0.0;
+        TemplateState state = TemplateState.InProgress;
+        Location finalPos = segment.Start;
+
+        for (int tick = 0; tick < 120; tick++)
+        {
+            input.Reset();
+            Location pos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+            state = template.Tick(pos, physics, input, world);
+            bool pastEnd = HasReachedSegmentEndPlane(pos, segment);
+            if (!physics.OnGround && pastEnd)
+                maxHeadingPenaltyPastEnd = Math.Max(maxHeadingPenaltyPastEnd, HeadingPenaltyDegrees(physics.Yaw, segment));
+
+            trace.Add(
+                $"tick={tick} state={state} pos={pos} yaw={physics.Yaw:F1} vel={physics.DeltaMovement} " +
+                $"onGround={physics.OnGround} pastEnd={pastEnd} input(F={input.Forward},B={input.Back},S={input.Sprint})");
+
+            if (state != TemplateState.InProgress)
+            {
+                finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+                break;
+            }
+
+            physics.ApplyInput(input);
+            physics.Tick(world);
+            finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+        }
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
+        Assert.True(
+            maxHeadingPenaltyPastEnd <= 35.0,
+            $"maxHeadingPenaltyPastEnd={maxHeadingPenaltyPastEnd:F1} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
     }
 
     [Fact]
