@@ -1,5 +1,8 @@
 import importlib.util
+import queue
 import sys
+import threading
+import tempfile
 import unittest
 from unittest import mock
 from pathlib import Path
@@ -16,6 +19,20 @@ spec.loader.exec_module(module)
 
 
 class ParkourMetricsTests(unittest.TestCase):
+    class FakeRcon:
+        def __init__(self, responses: list[str | Exception]) -> None:
+            self._responses = list(responses)
+            self.commands: list[str] = []
+
+        def command(self, cmd: str) -> str:
+            self.commands.append(cmd)
+            if not self._responses:
+                return "ok"
+            response = self._responses.pop(0)
+            if isinstance(response, Exception):
+                raise response
+            return response
+
     class FakeMccClient:
         def __init__(self, logs: list[str]) -> None:
             self._logs = logs
@@ -118,6 +135,14 @@ class ParkourMetricsTests(unittest.TestCase):
         )
 
         self.assertEqual(module.classify_outcome(metrics, near_goal=True), "fail")
+
+    def test_classify_outcome_prefers_harness_error(self) -> None:
+        metrics = module.LiveMetrics(route_complete_count=1, navigation_complete_count=1)
+
+        self.assertEqual(
+            module.classify_outcome(metrics, near_goal=True, error_kind="harness_rcon_unavailable"),
+            "harness_rcon_unavailable",
+        )
 
     def test_classify_outcome_planner_reject_stays_reject(self) -> None:
         metrics = module.LiveMetrics(planner_reject_count=1)
@@ -239,6 +264,247 @@ class ParkourMetricsTests(unittest.TestCase):
 
         self.assertTrue(synced)
         self.assertEqual(client.sent_commands, ["debug state"] * 6)
+
+    def test_wait_for_rcon_ready_retries_until_list_succeeds(self) -> None:
+        rcon = self.FakeRcon(
+            [
+                ConnectionRefusedError("not ready"),
+                TimeoutError("still not ready"),
+                "There are 0 of a max of 20 players online",
+            ]
+        )
+
+        clock_ticks = [0]
+
+        def fake_monotonic() -> float:
+            clock_ticks[0] += 1
+            return clock_ticks[0] * 0.1
+
+        with mock.patch.object(module.time, "sleep", lambda _seconds: None):
+            with mock.patch.object(module.time, "monotonic", side_effect=fake_monotonic):
+                ready = module.wait_for_rcon_ready(
+                    rcon,
+                    timeout_seconds=1.0,
+                    poll_interval=0.1,
+                )
+
+        self.assertTrue(ready)
+        self.assertEqual(rcon.commands, ["list", "list", "list"])
+
+    def test_connect_rcon_with_retry_retries_initial_connect(self) -> None:
+        events: list[str] = []
+        attempts = {"count": 0}
+
+        class FakeClient:
+            def connect(self) -> None:
+                attempts["count"] += 1
+                events.append(f"connect-{attempts['count']}")
+                if attempts["count"] < 3:
+                    raise ConnectionRefusedError("server not ready")
+
+        def fake_factory(*_args, **_kwargs) -> FakeClient:
+            return FakeClient()
+
+        clock_ticks = [0]
+
+        def fake_monotonic() -> float:
+            clock_ticks[0] += 1
+            return clock_ticks[0] * 0.1
+
+        with mock.patch.object(module.time, "sleep", lambda _seconds: None):
+            with mock.patch.object(module.time, "monotonic", side_effect=fake_monotonic):
+                client = module.connect_rcon_with_retry(
+                    host="localhost",
+                    port=25575,
+                    password="test123",
+                    timeout_seconds=1.0,
+                    poll_interval=0.1,
+                    client_factory=fake_factory,
+                )
+
+        self.assertIsNotNone(client)
+        self.assertEqual(events, ["connect-1", "connect-2", "connect-3"])
+
+    def test_make_skip_result_records_skip_reason(self) -> None:
+        case = module.TestCase(
+            case_id="linear-flat-gap4",
+            family="linear",
+            subfamily="flat",
+            gap_or_wall=4,
+            delta_y=0.0,
+            ceiling_height=None,
+            wall_offset=None,
+            expected="pass",
+        )
+
+        result = module.make_skip_result(case, "group_failed_earlier")
+
+        self.assertEqual(result.outcome, "skipped")
+        self.assertEqual(result.skip_reason, "group_failed_earlier")
+        self.assertEqual(result.error_kind, None)
+        self.assertFalse(result.matched_expected)
+
+    def test_result_to_record_includes_session_paths_and_duration(self) -> None:
+        case = module.TestCase(
+            case_id="linear-flat-gap1",
+            family="linear",
+            subfamily="flat",
+            gap_or_wall=1,
+            delta_y=0.0,
+            ceiling_height=None,
+            wall_offset=None,
+            expected="pass",
+        )
+        result = module.TestResult(
+            case=case,
+            outcome="pass",
+            matched_expected=True,
+            replan_count=0,
+            turn_stall_count=0,
+            near_goal=True,
+            final_position=(109.5, 80.0, 200.5),
+            total_ticks=42,
+            session="parkour-run123-2",
+            log_path="/tmp/parkour-runs/run123/workers/2/worker.log",
+            event_log_path="/tmp/parkour-runs/run123/events.jsonl",
+            duration_ms=4200,
+            error_kind=None,
+            skip_reason=None,
+        )
+
+        record = module.result_to_record(result, worker_id=2)
+
+        self.assertEqual(record["worker"], 2)
+        self.assertEqual(record["session"], "parkour-run123-2")
+        self.assertEqual(record["log_path"], "/tmp/parkour-runs/run123/workers/2/worker.log")
+        self.assertEqual(record["event_log_path"], "/tmp/parkour-runs/run123/events.jsonl")
+        self.assertEqual(record["duration_ms"], 4200)
+        self.assertEqual(record["skip_reason"], None)
+        self.assertEqual(record["error_kind"], None)
+
+    def test_summarize_results_groups_outcomes_by_family(self) -> None:
+        summary = module.summarize_results(
+            [
+                {"family": "linear", "outcome": "pass", "matched": True},
+                {"family": "linear", "outcome": "reject", "matched": True},
+                {"family": "linear", "outcome": "skipped", "matched": False},
+                {"family": "neo", "outcome": "reject", "matched": False},
+            ]
+        )
+
+        self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["matched"], 2)
+        self.assertEqual(summary["families"]["linear"]["outcomes"]["pass"], 1)
+        self.assertEqual(summary["families"]["linear"]["outcomes"]["skipped"], 1)
+        self.assertEqual(summary["families"]["neo"]["mismatches"], 1)
+
+    def test_write_summary_files_persists_json_and_markdown(self) -> None:
+        summary = {
+            "total": 4,
+            "matched": 2,
+            "mismatched": 2,
+            "families": {
+                "linear": {
+                    "total": 3,
+                    "matched": 2,
+                    "mismatches": 1,
+                    "outcomes": {"pass": 1, "reject": 1, "skipped": 1},
+                }
+            },
+        }
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            run_dir = Path(tempdir)
+            module.write_summary_files(run_dir, summary)
+
+            summary_json = run_dir / "summary.json"
+            summary_md = run_dir / "summary.md"
+
+            self.assertTrue(summary_json.exists())
+            self.assertTrue(summary_md.exists())
+            self.assertIn('"total": 4', summary_json.read_text(encoding="utf-8"))
+            self.assertIn("linear", summary_md.read_text(encoding="utf-8"))
+
+    def test_append_jsonl_record_writes_to_all_requested_paths(self) -> None:
+        record = {"case_id": "linear-flat-gap1", "outcome": "pass"}
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            base = Path(tempdir)
+            path1 = base / "results-a.jsonl"
+            path2 = base / "results-b.jsonl"
+
+            module.append_jsonl_record([path1, path2], record)
+
+            self.assertEqual(path1.read_text(encoding="utf-8"), path2.read_text(encoding="utf-8"))
+            self.assertIn('"case_id": "linear-flat-gap1"', path1.read_text(encoding="utf-8"))
+
+    def test_worker_loop_reuses_one_worker_context_for_multiple_cases(self) -> None:
+        case1 = module.TestCase(
+            case_id="linear-flat-gap1",
+            family="linear",
+            subfamily="flat",
+            gap_or_wall=1,
+            delta_y=0.0,
+            ceiling_height=None,
+            wall_offset=None,
+            expected="pass",
+        )
+        case2 = module.TestCase(
+            case_id="linear-flat-gap2",
+            family="linear",
+            subfamily="flat",
+            gap_or_wall=2,
+            delta_y=0.0,
+            ceiling_height=None,
+            wall_offset=None,
+            expected="pass",
+        )
+        layout1 = module.CourseLayout(100, 80, 200, 109, 80, 200, (0, 0, 0), (0, 0, 0))
+        layout2 = module.CourseLayout(100, 80, 210, 112, 80, 210, (0, 0, 0), (0, 0, 0))
+        group_q: queue.Queue = queue.Queue()
+        group_q.put((case1.group_key(), [(case1, layout1)]))
+        group_q.put((case2.group_key(), [(case2, layout2)]))
+
+        fake_ctx = module.WorkerContext(
+            worker_id=1,
+            username="MCCBot1",
+            session="parkour-run123-1",
+            rcon=mock.Mock(),
+            mcc=mock.Mock(),
+        )
+        all_results: list[module.TestResult] = []
+        skipped_counter = [0]
+
+        def make_result(case: module.TestCase, *_args, **_kwargs) -> module.TestResult:
+            return module.TestResult(case=case, outcome="pass", matched_expected=True)
+
+        with mock.patch.object(module, "launch_worker_context", return_value=fake_ctx) as launch_mock:
+            with mock.patch.object(module, "reset_worker_state", create=True, return_value=True) as reset_mock:
+                with mock.patch.object(module, "run_single_test", side_effect=make_result) as run_mock:
+                    with mock.patch.object(module, "cleanup_workers") as cleanup_mock:
+                        module.worker_loop(
+                            worker_id=1,
+                            base_username="MCCBot",
+                            run_token="run123",
+                            version="1.21.11-Vanilla",
+                            server_port=25565,
+                            rcon_port=25575,
+                            rcon_password="test123",
+                            group_queue=group_q,
+                            all_results=all_results,
+                            results_lock=threading.Lock(),
+                            wait_seconds=15,
+                            results_paths=[],
+                            workers_registry=[],
+                            registry_lock=threading.Lock(),
+                            skipped_counter=skipped_counter,
+                        )
+
+        self.assertEqual(launch_mock.call_count, 1)
+        self.assertEqual(reset_mock.call_count, 2)
+        self.assertEqual(run_mock.call_count, 2)
+        cleanup_mock.assert_not_called()
+        self.assertEqual(len(all_results), 2)
 
 
 if __name__ == "__main__":

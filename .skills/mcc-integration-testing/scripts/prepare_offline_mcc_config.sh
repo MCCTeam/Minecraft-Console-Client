@@ -24,7 +24,7 @@ OUTPUT_INI=""
 MC_VERSION=""
 LOGIN_NAME=""
 
-if [[ $# -ge 3 && -f "$1" ]]; then
+if [[ $# -ge 3 && "$2" == *.ini ]]; then
     TEMPLATE_INI="$1"
     OUTPUT_INI="$2"
     MC_VERSION="$3"

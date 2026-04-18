@@ -55,7 +55,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CAPABILITIES_PATH = REPO_ROOT / "tools" / "pathing_data" / "momentum-capabilities.json"
@@ -151,6 +151,35 @@ class RconClient:
         while len(data) < length:
             data += self._sock.recv(length - len(data))
         return data
+
+
+def connect_rcon_with_retry(
+    host: str = "localhost",
+    port: int = 25575,
+    password: str = "test123",
+    timeout_seconds: float = 20.0,
+    poll_interval: float = 0.5,
+    client_factory: Callable[..., RconClient] | None = None,
+) -> RconClient:
+    deadline = time.monotonic() + timeout_seconds
+    last_error: Exception | None = None
+
+    while time.monotonic() < deadline:
+        client = client_factory(host=host, port=port, password=password) if client_factory else RconClient(host=host, port=port, password=password)
+        try:
+            client.connect()
+            return client
+        except Exception as exc:
+            last_error = exc
+            try:
+                client.close()
+            except Exception:
+                pass
+            time.sleep(poll_interval)
+
+    if last_error is not None:
+        raise RuntimeError(f"RCON unavailable on {host}:{port}") from last_error
+    raise RuntimeError(f"RCON unavailable on {host}:{port}")
 
 
 # ---------------------------------------------------------------------------
@@ -702,6 +731,12 @@ class TestResult:
     final_position: tuple[float, float, float] | None = None
     total_ticks: int | None = None
     log_excerpt: str = ""
+    session: str | None = None
+    log_path: str | None = None
+    event_log_path: str | None = None
+    duration_ms: int | None = None
+    error_kind: str | None = None
+    skip_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -730,6 +765,10 @@ def build_worker_session_name(run_token: str, worker_id: int) -> str:
 
 def build_case_session_name(run_token: str, worker_id: int, case_index: int) -> str:
     return f"parkour-{run_token}-{worker_id}-c{case_index}"
+
+
+def build_worker_username(base_username: str, worker_id: int) -> str:
+    return f"{base_username}{worker_id}"
 
 
 def build_case_username(base_username: str, worker_id: int, case_index: int) -> str:
@@ -980,6 +1019,21 @@ def has_terminal_metrics(metrics: LiveMetrics) -> bool:
     )
 
 
+def wait_for_rcon_ready(
+    rcon: RconClient,
+    timeout_seconds: float = 20.0,
+    poll_interval: float = 0.5,
+) -> bool:
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        try:
+            rcon.command("list")
+            return True
+        except Exception:
+            time.sleep(poll_interval)
+    return False
+
+
 def is_near_goal(
     position: tuple[float, float, float] | None,
     layout: CourseLayout,
@@ -998,7 +1052,14 @@ def is_near_goal(
     )
 
 
-def classify_outcome(metrics: LiveMetrics, near_goal: bool | None) -> str:
+def classify_outcome(
+    metrics: LiveMetrics,
+    near_goal: bool | None,
+    error_kind: str | None = None,
+) -> str:
+    if error_kind is not None:
+        return error_kind
+
     if metrics.segment_failed_count > 0 or metrics.replan_failed_count > 0 or metrics.generic_fail_count > 0:
         return "fail"
 
@@ -1023,35 +1084,8 @@ def run_single_test(
     username: str,
     wait_seconds: int = 15,
 ) -> TestResult:
-    expected_start_position = (
-        layout.start_x + 0.5,
-        float(layout.start_y),
-        layout.start_z + 0.5,
-    )
-    start_synced = False
-    for _attempt in range(2):
-        rcon.command(f"gamemode creative {username}")
-        rcon.command(f"tp {username} {layout.start_x}.5 {layout.start_y} {layout.start_z}.5")
-        time.sleep(2)
-        rcon.command(f"gamemode survival {username}")
-        time.sleep(0.5)
-        if wait_for_local_start_sync(mcc, expected_start_position):
-            start_synced = True
-            break
-        time.sleep(0.5)
-
+    start_time = time.monotonic()
     log_offset = mcc.log_length()
-
-    if not start_synced:
-        return TestResult(
-            case=case,
-            outcome="invalid_live_case",
-            matched_expected=False,
-            log_excerpt=(
-                "  Harness: local MCC position did not stabilize at test start "
-                f"goal=({expected_start_position[0]:.1f},{expected_start_position[1]:.1f},{expected_start_position[2]:.1f})"
-            ),
-        )
 
     mcc.send(f"send ===== TEST: {case.case_id} (expect: {case.expected}) =====")
     time.sleep(0.2)
@@ -1131,6 +1165,9 @@ def run_single_test(
         final_position=final_position,
         total_ticks=metrics.total_ticks,
         log_excerpt="\n".join(excerpt_lines),
+        session=mcc.session,
+        log_path=str(mcc.log_file),
+        duration_ms=int((time.monotonic() - start_time) * 1000),
     )
 
 
@@ -1141,6 +1178,33 @@ def run_single_test(
 def should_skip(case: TestCase, failed_groups: set[tuple]) -> bool:
     """Skip this case if its group already had a failure at a smaller gap."""
     return case.group_key() in failed_groups
+
+
+def make_skip_result(case: TestCase, reason: str) -> TestResult:
+    return TestResult(
+        case=case,
+        outcome="skipped",
+        matched_expected=False,
+        skip_reason=reason,
+    )
+
+
+def make_harness_result(
+    case: TestCase,
+    error_kind: str,
+    log_excerpt: str,
+    session: str | None = None,
+    log_path: str | None = None,
+) -> TestResult:
+    return TestResult(
+        case=case,
+        outcome=error_kind,
+        matched_expected=False,
+        log_excerpt=log_excerpt,
+        session=session,
+        log_path=log_path,
+        error_kind=error_kind,
+    )
 
 
 def result_to_record(result: TestResult, worker_id: int | None = None) -> dict[str, object]:
@@ -1157,10 +1221,106 @@ def result_to_record(result: TestResult, worker_id: int | None = None) -> dict[s
         "near_goal": result.near_goal,
         "total_ticks": result.total_ticks,
         "final_position": list(result.final_position) if result.final_position is not None else None,
+        "session": result.session,
+        "log_path": result.log_path,
+        "event_log_path": result.event_log_path,
+        "duration_ms": result.duration_ms,
+        "error_kind": result.error_kind,
+        "skip_reason": result.skip_reason,
     }
     if worker_id is not None:
         record["worker"] = worker_id
     return record
+
+
+def summarize_results(records: list[dict[str, object]]) -> dict[str, object]:
+    summary: dict[str, object] = {
+        "total": len(records),
+        "matched": sum(1 for r in records if bool(r.get("matched"))),
+        "mismatched": sum(1 for r in records if not bool(r.get("matched"))),
+        "families": {},
+    }
+
+    families: dict[str, dict[str, object]] = {}
+    for record in records:
+        family = str(record.get("family", "unknown"))
+        outcome = str(record.get("outcome", "unknown"))
+        matched = bool(record.get("matched"))
+        family_summary = families.setdefault(
+            family,
+            {
+                "total": 0,
+                "matched": 0,
+                "mismatches": 0,
+                "outcomes": {},
+            },
+        )
+        family_summary["total"] = int(family_summary["total"]) + 1
+        if matched:
+            family_summary["matched"] = int(family_summary["matched"]) + 1
+        else:
+            family_summary["mismatches"] = int(family_summary["mismatches"]) + 1
+        outcomes = family_summary["outcomes"]
+        assert isinstance(outcomes, dict)
+        outcomes[outcome] = int(outcomes.get(outcome, 0)) + 1
+
+    summary["families"] = families
+    return summary
+
+
+def create_run_dir(base_dir: Path | None = None) -> Path:
+    root = base_dir or (Path(os.environ.get("TMPDIR", "/tmp")) / "parkour-runs")
+    timestamp = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+    run_dir = root / f"{timestamp}-{make_parallel_run_token()}"
+    run_dir.mkdir(parents=True, exist_ok=False)
+    return run_dir
+
+
+def write_summary_files(run_dir: Path, summary: dict[str, object]) -> None:
+    run_dir.mkdir(parents=True, exist_ok=True)
+    summary_json = run_dir / "summary.json"
+    summary_md = run_dir / "summary.md"
+
+    summary_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    lines = [
+        "# Parkour Summary",
+        "",
+        f"- Total: {summary.get('total', 0)}",
+        f"- Matched: {summary.get('matched', 0)}",
+        f"- Mismatched: {summary.get('mismatched', 0)}",
+        "",
+        "## Families",
+        "",
+    ]
+
+    families = summary.get("families", {})
+    if isinstance(families, dict):
+        for family, family_summary in sorted(families.items()):
+            lines.append(f"### {family}")
+            if isinstance(family_summary, dict):
+                lines.append(f"- Total: {family_summary.get('total', 0)}")
+                lines.append(f"- Matched: {family_summary.get('matched', 0)}")
+                lines.append(f"- Mismatches: {family_summary.get('mismatches', 0)}")
+                outcomes = family_summary.get("outcomes", {})
+                if isinstance(outcomes, dict):
+                    for outcome, count in sorted(outcomes.items()):
+                        lines.append(f"- {outcome}: {count}")
+            lines.append("")
+
+    summary_md.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+def append_jsonl_record(paths: list[Path], record: dict[str, object]) -> None:
+    payload = json.dumps(record) + "\n"
+    seen: set[Path] = set()
+    for path in paths:
+        if path in seen:
+            continue
+        seen.add(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as f:
+            f.write(payload)
 
 
 # ---------------------------------------------------------------------------
@@ -1232,8 +1392,7 @@ def launch_worker_context(
         _tprint(f"  [W{worker_id}] Failed to launch, exiting case.")
         return None
 
-    rcon = RconClient(port=rcon_port, password=rcon_password)
-    rcon.connect()
+    rcon = connect_rcon_with_retry(port=rcon_port, password=rcon_password, timeout_seconds=10.0)
     mcc = MccClient(session)
 
     if _wait_for_join(mcc):
@@ -1262,6 +1421,37 @@ def launch_worker_context(
     )
 
 
+def register_worker_context(
+    ctx: WorkerContext,
+    workers_registry: list[WorkerContext],
+    registry_lock: threading.Lock,
+) -> None:
+    with registry_lock:
+        workers_registry.append(ctx)
+
+
+def reset_worker_state(ctx: WorkerContext, layout: CourseLayout) -> bool:
+    expected_start_position = (
+        layout.start_x + 0.5,
+        float(layout.start_y),
+        layout.start_z + 0.5,
+    )
+
+    for _attempt in range(2):
+        ctx.rcon.command(f"gamemode creative {ctx.username}")
+        ctx.rcon.command(
+            f"tp {ctx.username} {layout.start_x}.5 {layout.start_y} {layout.start_z}.5"
+        )
+        time.sleep(2)
+        ctx.rcon.command(f"gamemode survival {ctx.username}")
+        time.sleep(0.5)
+        if wait_for_local_start_sync(ctx.mcc, expected_start_position):
+            return True
+        time.sleep(0.5)
+
+    return False
+
+
 def worker_loop(
     worker_id: int,
     base_username: str,
@@ -1274,20 +1464,45 @@ def worker_loop(
     all_results: list[TestResult],
     results_lock: threading.Lock,
     wait_seconds: int,
-    results_path: Path | None,
+    results_paths: list[Path],
     workers_registry: list[WorkerContext],
     registry_lock: threading.Lock,
     skipped_counter: list[int],
 ) -> None:
-    """Run assigned groups while launching a fresh MCC session for each case."""
+    """Run assigned groups while reusing one MCC session per worker."""
     local_results: list[TestResult] = []
     local_skipped = 0
     failed_groups: set[tuple] = set()
-    case_counter = 0
+    worker_session = build_worker_session_name(run_token, worker_id)
+    worker_username = build_worker_username(base_username, worker_id)
+    ctx: WorkerContext | None = None
+
+    def write_result(result: TestResult) -> None:
+        with results_lock:
+            append_jsonl_record(results_paths, result_to_record(result, worker_id))
+
+    def ensure_worker() -> WorkerContext | None:
+        nonlocal ctx
+        if ctx is not None:
+            return ctx
+
+        launched = launch_worker_context(
+            worker_id=worker_id,
+            username=worker_username,
+            session=worker_session,
+            version=version,
+            server_port=server_port,
+            rcon_port=rcon_port,
+            rcon_password=rcon_password,
+        )
+        if launched is not None:
+            ctx = launched
+            register_worker_context(ctx, workers_registry, registry_lock)
+        return ctx
 
     while True:
         try:
-            group_key, items = group_queue.get_nowait()
+            _, items = group_queue.get_nowait()
         except queue.Empty:
             break
 
@@ -1295,39 +1510,67 @@ def worker_loop(
             if case.group_key() in failed_groups:
                 local_skipped += 1
                 _tprint(f"  [W{worker_id}] {case.case_id} -- SKIPPED")
+                skipped = make_skip_result(case, "group_failed_earlier")
+                local_results.append(skipped)
+                write_result(skipped)
                 continue
 
-            case_counter += 1
-            session = build_case_session_name(run_token, worker_id, case_counter)
-            username = build_case_username(base_username, worker_id, case_counter)
             _tprint(f"  [W{worker_id}] {case.case_id} (expect: {case.expected})"
                     f"  route=({layout.start_x},{layout.start_y},{layout.start_z})"
                     f" -> ({layout.end_x},{layout.end_y},{layout.end_z})")
 
-            ctx = launch_worker_context(
-                worker_id=worker_id,
-                username=username,
-                session=session,
-                version=version,
-                server_port=server_port,
-                rcon_port=rcon_port,
-                rcon_password=rcon_password,
-            )
-
-            if ctx is None:
-                result = TestResult(
-                    case=case,
-                    outcome="invalid_live_case",
-                    matched_expected=False,
-                    log_excerpt="  Harness: failed to launch fresh MCC worker session",
+            current_ctx = ensure_worker()
+            if current_ctx is None:
+                result = make_harness_result(
+                    case,
+                    error_kind="harness_worker_launch_failed",
+                    log_excerpt="  Harness: failed to launch worker session",
+                    session=worker_session,
                 )
             else:
+                reset_ok = False
                 try:
-                    result = run_single_test(
-                        case, layout, ctx.rcon, ctx.mcc, ctx.username, wait_seconds,
+                    reset_ok = reset_worker_state(current_ctx, layout)
+                except Exception:
+                    reset_ok = False
+
+                if not reset_ok:
+                    cleanup_workers([current_ctx])
+                    ctx = None
+                    current_ctx = ensure_worker()
+                    if current_ctx is not None:
+                        try:
+                            reset_ok = reset_worker_state(current_ctx, layout)
+                        except Exception:
+                            reset_ok = False
+
+                if current_ctx is None:
+                    result = make_harness_result(
+                        case,
+                        error_kind="harness_worker_launch_failed",
+                        log_excerpt="  Harness: failed to relaunch worker session",
+                        session=worker_session,
                     )
-                finally:
-                    cleanup_workers([ctx])
+                elif not reset_ok:
+                    result = make_harness_result(
+                        case,
+                        error_kind="harness_start_sync_failed",
+                        log_excerpt=(
+                            "  Harness: local MCC position did not stabilize at test start "
+                            f"goal=({layout.start_x + 0.5:.1f},{float(layout.start_y):.1f},{layout.start_z + 0.5:.1f})"
+                        ),
+                        session=current_ctx.session,
+                        log_path=str(current_ctx.mcc.log_file),
+                    )
+                else:
+                    result = run_single_test(
+                        case,
+                        layout,
+                        current_ctx.rcon,
+                        current_ctx.mcc,
+                        current_ctx.username,
+                        wait_seconds,
+                    )
 
             local_results.append(result)
 
@@ -1342,10 +1585,7 @@ def worker_loop(
                 _tprint(f"  [W{worker_id}] >> Group failed -- "
                         f"skipping larger values")
 
-            if results_path:
-                with results_lock:
-                    with results_path.open("a") as f:
-                        f.write(json.dumps(result_to_record(result, worker_id)) + "\n")
+            write_result(result)
 
         group_queue.task_done()
 
@@ -1447,8 +1687,15 @@ def main() -> None:
             print(f"    {c.case_id:<50} {metric}={c.gap_or_wall}  [{marker}]{q}")
         return
 
-    rcon = RconClient(port=args.rcon_port, password=args.rcon_password)
-    rcon.connect()
+    try:
+        rcon = connect_rcon_with_retry(
+            port=args.rcon_port,
+            password=args.rcon_password,
+            timeout_seconds=30.0,
+        )
+    except Exception as exc:
+        print(f"Harness error: RCON unavailable on localhost:{args.rcon_port}: {exc}")
+        sys.exit(2)
 
     rcon.command("difficulty peaceful")
     rcon.command("gamerule doMobSpawning false")
@@ -1477,14 +1724,22 @@ def main() -> None:
         print(f"\nBuilt {len(all_cases)} courses.")
         return
 
-    results_path = Path(args.results) if args.results else None
-    if results_path:
-        results_path.parent.mkdir(parents=True, exist_ok=True)
+    run_dir = create_run_dir()
+    canonical_results_path = run_dir / "results.jsonl"
+    results_paths = [canonical_results_path]
+    if args.results:
+        results_paths.append(Path(args.results))
+    for path in results_paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
 
     # Phase 1: Clear region and build all courses up front
     print("=" * 60)
     print("  Phase 1: Building all courses")
     print("=" * 60)
+    print(f"  Run artifacts: {run_dir}")
+    print(f"  Results JSONL: {canonical_results_path}")
+    if args.results:
+        print(f"  External Results JSONL: {Path(args.results)}")
 
     rcon.command(f"gamemode creative {args.username}")
 
@@ -1507,9 +1762,9 @@ def main() -> None:
     n_parallel = args.parallel
     try:
         if n_parallel > 1:
-            _run_parallel(layouts, rcon, args, results_path, n_parallel)
+            _run_parallel(layouts, rcon, args, results_paths, run_dir, n_parallel)
         else:
-            _run_serial(layouts, rcon, args, results_path)
+            _run_serial(layouts, rcon, args, results_paths, run_dir)
     finally:
         builder.forceload_remove()
 
@@ -1518,7 +1773,8 @@ def _run_serial(
     layouts: list[tuple[TestCase, CourseLayout]],
     rcon: RconClient,
     args: argparse.Namespace,
-    results_path: Path | None,
+    results_paths: list[Path],
+    run_dir: Path,
 ) -> None:
     """Original serial test execution path."""
     session = resolve_session()
@@ -1537,20 +1793,42 @@ def _run_serial(
     results: list[TestResult] = []
     failed_groups: set[tuple] = set()
     skipped = 0
+    serial_ctx = WorkerContext(
+        worker_id=0,
+        username=args.username,
+        session=session,
+        rcon=rcon,
+        mcc=mcc,
+    )
 
     for i, (case, layout) in enumerate(layouts, 1):
         if should_skip(case, failed_groups):
             skipped += 1
             print(f"  [{i}/{len(layouts)}] {case.case_id} -- SKIPPED (group already failed)")
+            skipped_result = make_skip_result(case, "group_failed_earlier")
+            results.append(skipped_result)
+            append_jsonl_record(results_paths, result_to_record(skipped_result))
             continue
 
         print(f"\n--- [{i}/{len(layouts)}] {case.case_id} (expect: {case.expected}) ---")
         print(f"  Route: ({layout.start_x},{layout.start_y},{layout.start_z}) -> "
               f"({layout.end_x},{layout.end_y},{layout.end_z})")
 
-        result = run_single_test(
-            case, layout, rcon, mcc, args.username, args.wait,
-        )
+        if reset_worker_state(serial_ctx, layout):
+            result = run_single_test(
+                case, layout, rcon, mcc, args.username, args.wait,
+            )
+        else:
+            result = make_harness_result(
+                case,
+                error_kind="harness_start_sync_failed",
+                log_excerpt=(
+                    "  Harness: local MCC position did not stabilize at test start "
+                    f"goal=({layout.start_x + 0.5:.1f},{float(layout.start_y):.1f},{layout.start_z + 0.5:.1f})"
+                ),
+                session=session,
+                log_path=str(mcc.log_file),
+            )
         results.append(result)
 
         status = "OK" if result.matched_expected else "MISMATCH"
@@ -1563,19 +1841,18 @@ def _run_serial(
             print(f"  >> Group failed at {case.family}/{case.subfamily} "
                   f"gap/wall={case.gap_or_wall} -- skipping larger values")
 
-        if results_path:
-            with results_path.open("a") as f:
-                f.write(json.dumps(result_to_record(result)) + "\n")
+        append_jsonl_record(results_paths, result_to_record(result))
 
     rcon.close()
-    _print_summary(results, skipped)
+    _print_summary(results, skipped, run_dir)
 
 
 def _run_parallel(
     layouts: list[tuple[TestCase, CourseLayout]],
     rcon: RconClient,
     args: argparse.Namespace,
-    results_path: Path | None,
+    results_paths: list[Path],
+    run_dir: Path,
     n_parallel: int,
 ) -> None:
     """Parallel test execution with streaming worker launch.
@@ -1615,7 +1892,7 @@ def _run_parallel(
             args=(i, args.username, run_token, args.version, args.server_port,
                   args.rcon_port, args.rcon_password,
                   group_q, all_results, results_lock,
-                  args.wait, results_path,
+                  args.wait, results_paths,
                   workers_registry, registry_lock, skipped_counter),
             daemon=True,
         )
@@ -1634,20 +1911,23 @@ def _run_parallel(
     cleanup_workers(workers_registry)
     print("  All workers stopped.")
 
-    _print_summary(all_results, skipped=skipped_counter[0])
+    _print_summary(all_results, skipped=skipped_counter[0], run_dir=run_dir)
 
 
-def _print_summary(results: list[TestResult], skipped: int) -> None:
+def _print_summary(results: list[TestResult], skipped: int, run_dir: Path) -> None:
     print("\n" + "=" * 60)
     print("  SUMMARY")
     print("=" * 60)
 
     passed = [r for r in results if r.matched_expected]
     failed = [r for r in results if not r.matched_expected]
+    summary = summarize_results([result_to_record(r) for r in results])
+    write_summary_files(run_dir, summary)
 
     print(f"\n  {len(passed)}/{len(results)} matched expectations")
     if skipped:
         print(f"  {skipped} cases skipped (stop-at-first-failure)")
+    print(f"  Summary dir: {run_dir}")
 
     if failed:
         print(f"\n  MISMATCHES ({len(failed)}):")
