@@ -8,57 +8,57 @@ public sealed class SidewallParkourScenarioBuilderTests
     [Fact]
     public void AcceptedCases_MatchLiveSidewallMatrix()
     {
-        string[] caseIds = SidewallParkourScenarioBuilder.AcceptedCases()
-            .Select(static c => Assert.IsType<string>(c[0]))
+        (string Id, int Gap, int DeltaY, int WallOffset)[] cases = SidewallParkourScenarioBuilder.AcceptedCases()
+            .Select(static c => AssertCase(c))
             .ToArray();
 
         Assert.Equal(
         [
-            "sidewall-ascend-gap2-dy+1-wo0",
-            "sidewall-ascend-gap3-dy+1-wo0",
-            "sidewall-ascend-gap3-dy+1-wo1",
-            "sidewall-descend-gap2-dy-2-wo0",
-            "sidewall-descend-gap3-dy-2-wo0",
-            "sidewall-descend-gap4-dy-2-wo0",
-            "sidewall-descend-gap5-dy-2-wo0",
-            "sidewall-descend-gap3-dy-2-wo1",
-            "sidewall-descend-gap4-dy-2-wo1",
-            "sidewall-descend-gap5-dy-2-wo1",
-            "sidewall-descend-gap2-dy-1-wo0",
-            "sidewall-descend-gap3-dy-1-wo0",
-            "sidewall-descend-gap4-dy-1-wo0",
-            "sidewall-descend-gap5-dy-1-wo0",
-            "sidewall-descend-gap3-dy-1-wo1",
-            "sidewall-descend-gap4-dy-1-wo1",
-            "sidewall-descend-gap5-dy-1-wo1",
-            "sidewall-flat-gap2-wo0",
-            "sidewall-flat-gap3-wo0",
-            "sidewall-flat-gap4-wo0",
-            "sidewall-flat-gap3-wo1",
-            "sidewall-flat-gap4-wo1",
+            ("sidewall-ascend-gap2-dy+1-wo0", 2, 1, 0),
+            ("sidewall-ascend-gap3-dy+1-wo0", 3, 1, 0),
+            ("sidewall-ascend-gap3-dy+1-wo1", 3, 1, 1),
+            ("sidewall-descend-gap2-dy-2-wo0", 2, -2, 0),
+            ("sidewall-descend-gap3-dy-2-wo0", 3, -2, 0),
+            ("sidewall-descend-gap4-dy-2-wo0", 4, -2, 0),
+            ("sidewall-descend-gap5-dy-2-wo0", 5, -2, 0),
+            ("sidewall-descend-gap3-dy-2-wo1", 3, -2, 1),
+            ("sidewall-descend-gap4-dy-2-wo1", 4, -2, 1),
+            ("sidewall-descend-gap5-dy-2-wo1", 5, -2, 1),
+            ("sidewall-descend-gap2-dy-1-wo0", 2, -1, 0),
+            ("sidewall-descend-gap3-dy-1-wo0", 3, -1, 0),
+            ("sidewall-descend-gap4-dy-1-wo0", 4, -1, 0),
+            ("sidewall-descend-gap5-dy-1-wo0", 5, -1, 0),
+            ("sidewall-descend-gap3-dy-1-wo1", 3, -1, 1),
+            ("sidewall-descend-gap4-dy-1-wo1", 4, -1, 1),
+            ("sidewall-descend-gap5-dy-1-wo1", 5, -1, 1),
+            ("sidewall-flat-gap2-wo0", 2, 0, 0),
+            ("sidewall-flat-gap3-wo0", 3, 0, 0),
+            ("sidewall-flat-gap4-wo0", 4, 0, 0),
+            ("sidewall-flat-gap3-wo1", 3, 0, 1),
+            ("sidewall-flat-gap4-wo1", 4, 0, 1),
         ],
-        caseIds);
+        cases);
     }
 
     [Fact]
     public void RejectedCases_MatchLiveSidewallMatrix()
     {
-        string[] caseIds = SidewallParkourScenarioBuilder.RejectedCases()
-            .Select(static c => Assert.IsType<string>(c[0]))
+        (string Id, int Gap, int DeltaY, int WallOffset)[] cases = SidewallParkourScenarioBuilder.RejectedCases()
+            .Select(static c => AssertCase(c))
             .ToArray();
 
         Assert.Equal(
         [
-            "sidewall-ascend-gap4-dy+1-wo0",
-            "sidewall-ascend-gap4-dy+1-wo1",
-            "sidewall-descend-gap6-dy-2-wo0",
-            "sidewall-descend-gap6-dy-2-wo1",
-            "sidewall-descend-gap6-dy-1-wo0",
-            "sidewall-descend-gap6-dy-1-wo1",
-            "sidewall-flat-gap5-wo0",
-            "sidewall-flat-gap5-wo1",
+            ("sidewall-ascend-gap4-dy+1-wo0", 4, 1, 0),
+            ("sidewall-ascend-gap4-dy+1-wo1", 4, 1, 1),
+            ("sidewall-descend-gap6-dy-2-wo0", 6, -2, 0),
+            ("sidewall-descend-gap6-dy-2-wo1", 6, -2, 1),
+            ("sidewall-descend-gap6-dy-1-wo0", 6, -1, 0),
+            ("sidewall-descend-gap6-dy-1-wo1", 6, -1, 1),
+            ("sidewall-flat-gap5-wo0", 5, 0, 0),
+            ("sidewall-flat-gap5-wo1", 5, 0, 1),
         ],
-        caseIds);
+        cases);
     }
 
     [Fact]
@@ -86,6 +86,34 @@ public sealed class SidewallParkourScenarioBuilderTests
         Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 78, 101)).Type);
         Assert.Equal(Material.Air, world.GetBlock(new Location(99, 78, 102)).Type);
         Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 79, 103)).Type);
+    }
+
+    [Fact]
+    public void BuildWorld_AscendGap3Wo1_RaisesWallsAndLandingsAcrossSegments()
+    {
+        World world = SidewallParkourScenarioBuilder.BuildWorld(gap: 3, deltaY: 1, wallOffset: 1);
+
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 78, 100)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 87, 101)).Type);
+        Assert.Equal(Material.Air, world.GetBlock(new Location(99, 88, 100)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 80, 103)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(98, 79, 103)).Type);
+        Assert.Equal(Material.Air, world.GetBlock(new Location(98, 78, 103)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(97, 82, 109)).Type);
+    }
+
+    [Fact]
+    public void BuildWorld_DescendGap5Wo1_LowersWallsAndLandingsAcrossSegments()
+    {
+        World world = SidewallParkourScenarioBuilder.BuildWorld(gap: 5, deltaY: -2, wallOffset: 1);
+
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 76, 100)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 86, 101)).Type);
+        Assert.Equal(Material.Air, world.GetBlock(new Location(99, 75, 100)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(99, 77, 105)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(98, 74, 105)).Type);
+        Assert.Equal(Material.Air, world.GetBlock(new Location(98, 73, 105)).Type);
+        Assert.Equal(Material.Stone, world.GetBlock(new Location(97, 73, 115)).Type);
     }
 
     [Fact]
@@ -134,5 +162,16 @@ public sealed class SidewallParkourScenarioBuilderTests
         Assert.Equal(74, scenario.Goal.Y);
         Assert.Equal(115, scenario.Goal.Z);
         Assert.Equal(0f, scenario.StartYaw);
+    }
+
+    private static (string Id, int Gap, int DeltaY, int WallOffset) AssertCase(object[] values)
+    {
+        Assert.Equal(4, values.Length);
+
+        return (
+            Assert.IsType<string>(values[0]),
+            Assert.IsType<int>(values[1]),
+            Assert.IsType<int>(values[2]),
+            Assert.IsType<int>(values[3]));
     }
 }
