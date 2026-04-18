@@ -226,6 +226,7 @@ namespace MinecraftClient.Pathing.Core
                         neighbor.GCost = tentativeG;
                         neighbor.Parent = current;
                         neighbor.MoveUsed = move.Type;
+                        neighbor.ParkourProfile = moveResult.ParkourProfile;
                         if (neighbor.IsOpen)
                             openSet.Update(neighbor);
                     }
@@ -237,6 +238,7 @@ namespace MinecraftClient.Pathing.Core
                             HCost = goal.Heuristic(nx, ny, nz),
                             Parent = current,
                             MoveUsed = move.Type,
+                            ParkourProfile = moveResult.ParkourProfile,
                             IsOpen = true
                         };
                         nodeMap[packed] = neighbor;

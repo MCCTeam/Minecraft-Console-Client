@@ -132,6 +132,20 @@ public sealed class LivePathingRegressionTests
         Assert.Equal(scenario.Goal.Z + 0.5, segments[^1].End.Z);
     }
 
+    [Fact]
+    public void AStar_LinearFlatGapFourChain_TagsParkourSegmentsAsDefaultProfile()
+    {
+        PathingExecutionScenario scenario = LinearParkourScenarioBuilder.Create("linear-flat-gap4", gap: 4, deltaY: 0);
+        PathResult result = PathingScenarioRunner.PlanOnly(scenario);
+        List<PathSegment> segments = PathSegmentBuilder.FromPath(result.Path);
+
+        Assert.Equal(PathStatus.Success, result.Status);
+        Assert.Equal(3, segments.Count(segment => segment.MoveType == MoveType.Parkour));
+        Assert.All(
+            segments.Where(segment => segment.MoveType == MoveType.Parkour),
+            segment => Assert.Equal(ParkourProfile.Default, segment.ParkourProfile));
+    }
+
     [Theory]
     [InlineData("linear-ascend-gap2-dy+1", 2, 1)]
     [InlineData("linear-descend-gap4-dy-1", 4, -1)]
