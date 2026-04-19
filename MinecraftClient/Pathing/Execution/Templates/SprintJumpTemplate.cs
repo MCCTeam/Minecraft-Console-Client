@@ -33,6 +33,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private bool _leftGround;
         private bool _carriedGroundEntry;
         private bool _releaseForwardLatched;
+        private readonly SidewallParkourController? _sidewallController;
 
         private const float YawToleranceDeg = 5f;
 
@@ -45,11 +46,17 @@ namespace MinecraftClient.Pathing.Execution.Templates
             double dx = segment.End.X - segment.Start.X;
             double dz = segment.End.Z - segment.Start.Z;
             _horizDist = Math.Sqrt(dx * dx + dz * dz);
+
+            if (segment.ParkourProfile == ParkourProfile.Sidewall)
+                _sidewallController = new SidewallParkourController(segment, nextSegment);
         }
 
         public TemplateState Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
         {
             _tickCount++;
+
+            if (_sidewallController is not null)
+                return _sidewallController.Tick(pos, physics, input, world);
 
             double dx = ExpectedEnd.X - pos.X;
             double dz = ExpectedEnd.Z - pos.Z;
@@ -119,10 +126,17 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         else
                             minApproachDistance = 0.0;
 
-                        bool yawAligned = yawDelta < YawToleranceDeg;
                         bool posReady = approachProgress >= minApproachDistance;
-                        if (yawAligned && posReady)
+                        // Baritone snaps rotation to the exact target every tick and
+                        // the server accepts it without disconnection. For our smooth
+                        // yaw model we only need it at the takeoff tick: snap yaw the
+                        // moment we are positionally ready, so the jump vector is
+                        // aligned regardless of how many ticks we had to turn. This
+                        // prevents mis-jumps when the approach was short and the
+                        // 35 deg/tick smoothing had not finished by the jump tick.
+                        if (posReady)
                         {
+                            physics.Yaw = targetYaw;
                             input.Jump = true;
                             _phase = Phase.Airborne;
                         }
@@ -134,7 +148,10 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         input.Forward = !turnInPlace;
                         input.Sprint = !turnInPlace;
                     }
-                    if (_tickCount > 40)
+                    // Widen the approach/run-up budget. With snap-to-target yaw the
+                    // player aligns in a single tick, but servers may still need a few
+                    // extra ticks of sprint acceleration on long jumps.
+                    if (_tickCount > 80)
                         return TemplateState.Failed;
                     break;
 
@@ -237,16 +254,41 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     {
                         return TemplateState.Complete;
                     }
+
+                    // Baritone-style lenient success: the moment the player is standing
+                    // on the target block (floor center matches), the jump is done. We
+                    // keep the stricter settle checks above as the primary path because
+                    // they capture momentum continuity for downstream segments, but the
+                    // lenient check prevents spurious failures when the player touches
+                    // down slightly off-center or with a small residual slide.
+                    if (_segment.ExitTransition != PathTransitionType.ContinueStraight
+                        && physics.OnGround
+                        && LandedInsideTargetBlock(pos))
+                    {
+                        return TemplateState.Complete;
+                    }
                     break;
             }
 
             if (pos.Y < ExpectedEnd.Y - 4.0)
                 return TemplateState.Failed;
 
-            if (_tickCount > 60)
+            // Baritone's MAX_TICKS_AWAY is 200 ticks (10 seconds) before it gives up
+            // on a single movement. Short 60-tick windows were too tight for jumps
+            // that include a run-up, a long airtime, and landing drag settling.
+            if (_tickCount > 200)
                 return TemplateState.Failed;
 
             return TemplateState.InProgress;
+        }
+
+        private bool LandedInsideTargetBlock(Location pos)
+        {
+            if (!TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd))
+                return false;
+
+            // Floor Y must match the target block. Accept anywhere within the block.
+            return Math.Floor(pos.Y + 1.0E-4) == Math.Floor(ExpectedEnd.Y + 1.0E-4);
         }
 
         private bool IsPastTarget(Location pos)

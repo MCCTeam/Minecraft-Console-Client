@@ -6,9 +6,9 @@ namespace MinecraftClient.Tests.Pathing.Execution;
 
 internal static class TemplateSimulationRunner
 {
-    internal static PlayerPhysics CreateGroundedPhysics(Location start, float yaw)
+    internal static PlayerPhysics CreateGroundedPhysics(Location start, float yaw, int initialMomentumTicks = 0)
     {
-        return new PlayerPhysics
+        var physics = new PlayerPhysics
         {
             Position = new Vec3d(start.X, start.Y, start.Z),
             DeltaMovement = Vec3d.Zero,
@@ -17,6 +17,11 @@ internal static class TemplateSimulationRunner
             Yaw = yaw,
             Pitch = 0f
         };
+
+        if (initialMomentumTicks > 0)
+            ApplyInitialGroundMomentum(physics, initialMomentumTicks);
+
+        return physics;
     }
 
     internal static TemplateState Run(IActionTemplate template, PlayerPhysics physics, World world, int maxTicks, out Location finalPos)
@@ -38,5 +43,33 @@ internal static class TemplateSimulationRunner
 
         finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
         return state;
+    }
+
+    private static void ApplyInitialGroundMomentum(PlayerPhysics physics, int ticks)
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor();
+        var seeded = new PlayerPhysics
+        {
+            Position = new Vec3d(0.5, 80, 0.5),
+            DeltaMovement = Vec3d.Zero,
+            OnGround = true,
+            MovementSpeed = physics.MovementSpeed,
+            Yaw = physics.Yaw,
+            Pitch = physics.Pitch
+        };
+        var input = new MovementInput
+        {
+            Forward = true,
+            Sprint = true
+        };
+
+        for (int tick = 0; tick < ticks; tick++)
+        {
+            seeded.ApplyInput(input);
+            seeded.Tick(world);
+        }
+
+        physics.DeltaMovement = seeded.DeltaMovement;
+        physics.Sprinting = true;
     }
 }

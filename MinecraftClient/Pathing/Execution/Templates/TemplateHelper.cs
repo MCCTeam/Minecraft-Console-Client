@@ -1,5 +1,6 @@
 using System;
 using MinecraftClient.Mapping;
+using MinecraftClient.Pathing.Core;
 using MinecraftClient.Physics;
 
 namespace MinecraftClient.Pathing.Execution.Templates
@@ -9,6 +10,11 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private const double EyeHeight = 1.62;
         private const float MaxYawStepPerTick = 35f;
         private const float MaxPitchStepPerTick = 25f;
+
+        // Callers that want to force an immediate alignment (e.g. right before
+        // firing a jump so the takeoff vector matches the target) can use these
+        // "snap" overloads instead of SmoothYaw/SmoothPitch.
+        internal static float SnapStep => 360f;
 
         internal static float CalculateYaw(double dx, double dz)
         {
@@ -89,6 +95,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
             physics.Yaw = SmoothYaw(physics.Yaw, headingYaw);
         }
 
+        internal static void FaceExitHeading(PlayerPhysics physics, PathSegment segment, PathSegment? nextSegment)
+        {
+            float headingYaw = GetExitHeadingYaw(segment, nextSegment);
+            physics.Yaw = SmoothYaw(physics.Yaw, headingYaw);
+        }
+
         internal static void ApplyDecision(MovementInput input, TransitionBrakingDecision decision)
         {
             input.Forward = decision.HoldForward;
@@ -137,6 +149,73 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return dx * segment.HeadingX + dz * segment.HeadingZ;
         }
 
+        internal static void GetApproachHeading(PathSegment segment, out int headingX, out int headingZ)
+        {
+            if (segment.ParkourProfile == ParkourProfile.Sidewall)
+            {
+                double dx = Math.Abs(segment.End.X - segment.Start.X);
+                double dz = Math.Abs(segment.End.Z - segment.Start.Z);
+
+                if (dx > dz)
+                {
+                    headingX = segment.HeadingX;
+                    headingZ = 0;
+                }
+                else
+                {
+                    headingX = 0;
+                    headingZ = segment.HeadingZ;
+                }
+
+                if (headingX != 0 || headingZ != 0)
+                    return;
+            }
+
+            headingX = segment.HeadingX;
+            headingZ = segment.HeadingZ;
+        }
+
+        internal static float GetApproachYaw(PathSegment segment)
+        {
+            GetApproachHeading(segment, out int headingX, out int headingZ);
+            return CalculateYaw(headingX, headingZ);
+        }
+
+        internal static double ProgressAlongApproach(Location pos, PathSegment segment)
+        {
+            GetApproachHeading(segment, out int headingX, out int headingZ);
+            return ((pos.X - segment.Start.X) * headingX) + ((pos.Z - segment.Start.Z) * headingZ);
+        }
+
+        internal static float GetSidewallTakeoffYaw(PathSegment segment)
+        {
+            float approachYaw = GetApproachYaw(segment);
+            float targetYaw = CalculateYaw(segment.End.X - segment.Start.X, segment.End.Z - segment.Start.Z);
+
+            double major = Math.Max(Math.Abs(segment.End.X - segment.Start.X), Math.Abs(segment.End.Z - segment.Start.Z));
+            float blend = major switch
+            {
+                <= 2.0 => 0.55f,
+                <= 3.0 => 0.52f,
+                <= 4.0 => 0.50f,
+                _ => 0.48f
+            };
+
+            if (major >= 4.0)
+                blend += 0.04f;
+
+            if (segment.End.Y > segment.Start.Y)
+                blend = Math.Max(0.40f, blend - 0.06f);
+            else if (segment.End.Y < segment.Start.Y)
+            {
+                blend = Math.Min(0.62f, blend + 0.06f);
+                if (major <= 2.0)
+                    blend = Math.Min(0.66f, blend + 0.05f);
+            }
+
+            return InterpolateYaw(approachYaw, targetYaw, blend);
+        }
+
         internal static double LateralOffsetFromSegmentLine(Location pos, PathSegment segment)
         {
             GetNormalizedSegmentDirection(segment, out double dirX, out double dirZ);
@@ -151,6 +230,18 @@ namespace MinecraftClient.Pathing.Execution.Templates
         internal static bool ShouldBiasTowardExitHeading(Location pos, PathSegment segment, double distanceThreshold = 0.35)
         {
             GetExitHeading(segment, out int headingX, out int headingZ);
+            if ((headingX == 0 && headingZ == 0)
+                || (headingX == segment.HeadingX && headingZ == segment.HeadingZ))
+            {
+                return false;
+            }
+
+            return RemainingDistanceAlongSegment(pos, segment) <= distanceThreshold;
+        }
+
+        internal static bool ShouldBiasTowardExitHeading(Location pos, PathSegment segment, PathSegment? nextSegment, double distanceThreshold = 0.35)
+        {
+            GetExitHeading(segment, nextSegment, out int headingX, out int headingZ);
             if ((headingX == 0 && headingZ == 0)
                 || (headingX == segment.HeadingX && headingZ == segment.HeadingZ))
             {
@@ -221,6 +312,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
             return CalculateYaw(headingX, headingZ);
         }
 
+        internal static float GetExitHeadingYaw(PathSegment segment, PathSegment? nextSegment)
+        {
+            GetExitHeading(segment, nextSegment, out int headingX, out int headingZ);
+            return CalculateYaw(headingX, headingZ);
+        }
+
         internal static void GetExitHeading(PathSegment segment, out int headingX, out int headingZ)
         {
             headingX = segment.ExitHints.DesiredHeadingX;
@@ -231,6 +328,20 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 headingX = segment.HeadingX;
                 headingZ = segment.HeadingZ;
             }
+        }
+
+        internal static void GetExitHeading(PathSegment segment, PathSegment? nextSegment, out int headingX, out int headingZ)
+        {
+            if (nextSegment is not null
+                && nextSegment.MoveType == MoveType.Parkour
+                && nextSegment.ParkourProfile == ParkourProfile.Sidewall)
+            {
+                GetApproachHeading(nextSegment, out headingX, out headingZ);
+                if (headingX != 0 || headingZ != 0)
+                    return;
+            }
+
+            GetExitHeading(segment, out headingX, out headingZ);
         }
 
         internal static PlayerPhysics ClonePhysicsForPlanning(PlayerPhysics physics)
@@ -279,6 +390,18 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             dirX /= len;
             dirZ /= len;
+        }
+
+        private static float InterpolateYaw(float from, float to, float factor)
+        {
+            float delta = to - from;
+            while (delta > 180f) delta -= 360f;
+            while (delta < -180f) delta += 360f;
+
+            float result = from + (delta * factor);
+            while (result < 0f) result += 360f;
+            while (result >= 360f) result -= 360f;
+            return result;
         }
     }
 }

@@ -33,6 +33,8 @@ namespace MinecraftClient.Pathing.Execution
         public int TotalTicks => _totalTicks;
         public PathSegment? CurrentSegment =>
             _currentIndex < _segments.Count ? _segments[_currentIndex] : null;
+        public PathSegment? LastSegment =>
+            _segments.Count > 0 ? _segments[^1] : null;
 
         public PathExecutor(List<PathSegment> segments, Action<string>? debugLog = null, IPathExecutionObserver? observer = null)
         {
