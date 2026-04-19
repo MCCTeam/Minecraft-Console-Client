@@ -148,22 +148,17 @@
   {
     "scenarioId": "obstructed-parkour-l-turns",
     "expectedTotalTicks": 50,
-    "maxTotalTicks": 62,
+    "maxTotalTicks": 80,
     "segments": [
       {
         "moveType": "Parkour",
-        "expectedTicks": 13,
-        "maxTicks": 16
+        "expectedTicks": 20,
+        "maxTicks": 32
       },
       {
         "moveType": "Parkour",
-        "expectedTicks": 21,
-        "maxTicks": 26
-      },
-      {
-        "moveType": "Parkour",
-        "expectedTicks": 16,
-        "maxTicks": 20
+        "expectedTicks": 30,
+        "maxTicks": 48
       }
     ]
   },

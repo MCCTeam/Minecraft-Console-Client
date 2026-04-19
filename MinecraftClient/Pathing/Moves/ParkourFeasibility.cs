@@ -69,6 +69,47 @@ internal static class ParkourFeasibility
         return IsColumnPassable(ctx, backX, y, backZ);
     }
 
+    public static bool TryGetRequiredStaticEntryRunupSteps(
+        MoveType previousMoveType,
+        int xOffset,
+        int zOffset,
+        int yDelta,
+        out int requiredSteps)
+    {
+        requiredSteps = 0;
+
+        if (previousMoveType is MoveType.Parkour or MoveType.Descend)
+            return false;
+
+        int major = Math.Max(Math.Abs(xOffset), Math.Abs(zOffset));
+        if (yDelta == -1 && major == 5)
+        {
+            requiredSteps = 1;
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool HasPreparedRunup(
+        EntryPreparationState state,
+        int x,
+        int y,
+        int z,
+        int forwardX,
+        int forwardZ,
+        int requiredSteps)
+    {
+        return state.Kind == EntryPreparationKind.SidewallRunup
+            && state.IsPrepared
+            && state.OriginX == x
+            && state.OriginY == y
+            && state.OriginZ == z
+            && state.ForwardX == forwardX
+            && state.ForwardZ == forwardZ
+            && state.RequiredSteps == requiredSteps;
+    }
+
     public static bool HasDiagonalShoulderClearance(
         CalculationContext ctx,
         int x,
@@ -199,6 +240,21 @@ internal static class ParkourFeasibility
 
         bool carriedEntry = ctx.PreviousMoveType is MoveType.Parkour or MoveType.Descend;
         if (carriedEntry)
+            return true;
+
+        // Cold-start sprint-jump reaches ~3.1-3.5 blocks horizontally without
+        // any pre-existing momentum, so short sidewall jumps remain feasible
+        // from a lone overhang block even when no 2-block runway is available
+        // behind the start (matches the staircase/step-pyramid cases seen in
+        // the wild, and Baritone's MomentumBehavior.ALLOWED contract).
+        double horiz = Math.Sqrt((xOffset * xOffset) + (zOffset * zOffset));
+        double coldStartReach = yDelta switch
+        {
+            > 0 => 2.5,
+            < 0 => 3.3,
+            _ => 3.2,
+        };
+        if (horiz <= coldStartReach)
             return true;
 
         for (int i = 1; i <= 2; i++)

@@ -321,26 +321,13 @@
         "endBlock": {
           "x": 622,
           "y": 80,
-          "z": 620
-        }
-      },
-      {
-        "moveType": "Parkour",
-        "startBlock": {
-          "x": 622,
-          "y": 80,
-          "z": 620
-        },
-        "endBlock": {
-          "x": 624,
-          "y": 80,
           "z": 621
         }
       },
       {
         "moveType": "Parkour",
         "startBlock": {
-          "x": 624,
+          "x": 622,
           "y": 80,
           "z": 621
         },

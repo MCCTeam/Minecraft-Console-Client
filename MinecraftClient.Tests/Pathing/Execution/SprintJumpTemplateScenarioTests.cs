@@ -640,7 +640,278 @@ public sealed class SprintJumpTemplateScenarioTests
         Assert.True(input.Jump);
     }
 
+    [Fact]
+    public void SprintJumpTemplate_SidewallFlatGap2_FinalStop_CompletesInsideLandingBlock()
+    {
+        World world = SidewallParkourScenarioBuilder.BuildWorld(gap: 2, deltaY: 0, wallOffset: 0);
+        var segment = new PathSegment
+        {
+            Start = new Location(100.5, 80, 100.5),
+            End = new Location(99.5, 80, 102.5),
+            MoveType = MoveType.Parkour,
+            ParkourProfile = ParkourProfile.Sidewall,
+            ExitTransition = PathTransitionType.FinalStop
+        };
+
+        var physics = TemplateSimulationRunner.CreateGroundedPhysics(segment.Start, yaw: 0f);
+        PathSegment[] segments = [segment];
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(
+            state == TemplateState.Complete,
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segment}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segment.End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segment}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallFlatGap2_SecondPrepareJump_CompletesFromChainCarry()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-flat-gap2-wo0", gap: 2, deltaY: 0, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 0);
+
+        TemplateState state = RunSegment(segments, index: 1, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[1]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[1].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[1]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallFlatGap3Wo1_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-flat-gap3-wo1", gap: 3, deltaY: 0, wallOffset: 1);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallFlatGap4Wo0_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-flat-gap4-wo0", gap: 4, deltaY: 0, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallFlatGap3Wo1_SecondPrepareJump_CompletesFromChainCarry()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-flat-gap3-wo1", gap: 3, deltaY: 0, wallOffset: 1);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 0);
+
+        TemplateState state = RunSegment(segments, index: 1, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[1]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[1].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[1]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallAscendGap3Wo1_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-ascend-gap3-dy+1-wo1", gap: 3, deltaY: 1, wallOffset: 1);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap2DyMinus1Wo0_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap2-dy-1-wo0", gap: 2, deltaY: -1, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap2DyMinus2Wo0_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap2-dy-2-wo0", gap: 2, deltaY: -2, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap2DyMinus1Wo0_FinalStop_CompletesFromChainCarry()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap2-dy-1-wo0", gap: 2, deltaY: -1, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 1);
+
+        TemplateState state = RunSegment(segments, index: 2, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[2].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap2DyMinus2Wo0_FinalStop_CompletesFromChainCarry()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap2-dy-2-wo0", gap: 2, deltaY: -2, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 1);
+
+        TemplateState state = RunSegment(segments, index: 2, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[2].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap5DyMinus1Wo0_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap5-dy-1-wo0", gap: 5, deltaY: -1, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap5DyMinus1Wo1_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap5-dy-1-wo1", gap: 5, deltaY: -1, wallOffset: 1);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap5DyMinus2Wo0_FirstPrepareJump_CompletesFromStart()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap5-dy-2-wo0", gap: 5, deltaY: -2, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        TemplateState state = RunSegment(segments, index: 0, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[0].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[0]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap5DyMinus2Wo0_FinalStop_CompletesFromChainCarry()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap5-dy-2-wo0", gap: 5, deltaY: -2, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 1);
+
+        TemplateState state = RunSegment(segments, index: 2, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[2].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap3DyMinus1Wo0_FinalStop_CompletesFromChainCarry()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap3-dy-1-wo0", gap: 3, deltaY: -1, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 1);
+
+        TemplateState state = RunSegment(segments, index: 2, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[2].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallFlatGap2_FinalStop_CompletesFromChainCarry()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-flat-gap2-wo0", gap: 2, deltaY: 0, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 1);
+
+        TemplateState state = RunSegment(segments, index: 2, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[2].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+    }
+
+    [Fact]
+    public void SprintJumpTemplate_SidewallDescendGap4DyMinus1Wo0_FinalStop_CompletesInsideLandingBlock()
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create("sidewall-descend-gap4-dy-1-wo0", gap: 4, deltaY: -1, wallOffset: 0);
+        (World world, List<PathSegment> segments, PlayerPhysics physics) = BuildPlannedScenario(scenario);
+
+        RunSegmentsThrough(segments, world, physics, lastCompletedIndex: 1);
+
+        TemplateState state = RunSegment(segments, index: 2, physics, world, out Location finalPos, out string trace);
+
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, segments[2].End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement} segment={segments[2]}\n{trace}");
+    }
+
     private static (World World, List<PathSegment> Segments, PlayerPhysics Physics) BuildPlannedLinearScenario(PathingExecutionScenario scenario)
+    {
+        return BuildPlannedScenario(scenario);
+    }
+
+    private static (World World, List<PathSegment> Segments, PlayerPhysics Physics) BuildPlannedScenario(PathingExecutionScenario scenario)
     {
         PathResult planResult = PathingScenarioRunner.PlanOnly(scenario);
 
@@ -685,7 +956,7 @@ public sealed class SprintJumpTemplateScenarioTests
             state = template.Tick(pos, physics, input, world);
             tail.Enqueue(
                 $"tick={tick} state={state} pos={pos} vel={physics.DeltaMovement} yaw={physics.Yaw:F1} onGround={physics.OnGround} " +
-                $"input(F={input.Forward},B={input.Back},J={input.Jump},S={input.Sprint})");
+                $"input(F={input.Forward},B={input.Back},L={input.Left},R={input.Right},J={input.Jump},S={input.Sprint})");
             if (tail.Count > 40)
                 tail.Dequeue();
 

@@ -10,5 +10,6 @@ internal sealed record PathingExecutionScenario
     public required Location Start { get; init; }
     public required GoalBlock Goal { get; init; }
     public required float StartYaw { get; init; }
+    public int InitialMomentumTicks { get; init; }
     public required int MaxExecutionTicks { get; init; }
 }

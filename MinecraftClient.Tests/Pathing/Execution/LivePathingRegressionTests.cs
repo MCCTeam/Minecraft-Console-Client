@@ -146,6 +146,27 @@ public sealed class LivePathingRegressionTests
             segment => Assert.Equal(ParkourProfile.Default, segment.ParkourProfile));
     }
 
+    [Fact]
+    public void AStar_LinearFlatGap4_DoesNotInsertRunupSetupSegments()
+    {
+        PathingExecutionScenario scenario = LinearParkourScenarioBuilder.Create("linear-flat-gap4", gap: 4, deltaY: 0);
+        PathResult result = PathingScenarioRunner.PlanOnly(scenario);
+        List<PathSegment> segments = PathSegmentBuilder.FromPath(result.Path);
+
+        Assert.Equal(PathStatus.Success, result.Status);
+        int firstParkourIndex = segments.FindIndex(segment => segment.MoveType == MoveType.Parkour);
+
+        Assert.Equal(3, firstParkourIndex);
+        Assert.All(
+            segments.Take(firstParkourIndex),
+            segment =>
+            {
+                Assert.Equal(MoveType.Traverse, segment.MoveType);
+                Assert.True(segment.End.X > segment.Start.X, segment.ToString());
+            });
+        Assert.Equal(new Location(3.5, 80, 0.5), segments[firstParkourIndex - 1].End);
+    }
+
     [Theory]
     [InlineData("linear-ascend-gap2-dy+1", 2, 1)]
     [InlineData("linear-descend-gap4-dy-1", 4, -1)]
@@ -223,6 +244,30 @@ public sealed class LivePathingRegressionTests
         Assert.Equal(scenario.Goal.X + 0.5, segments[^1].End.X);
         Assert.Equal(scenario.Goal.Y, segments[^1].End.Y);
         Assert.Equal(scenario.Goal.Z + 0.5, segments[^1].End.Z);
+    }
+
+    [Theory]
+    [InlineData("sidewall-descend-gap5-dy-1-wo0", 5, 0)]
+    [InlineData("sidewall-descend-gap5-dy-1-wo1", 5, 1)]
+    public void AStar_SidewallLongDescendStaticEntry_PrependsExplicitRunupTraverses(string scenarioId, int gap, int wallOffset)
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create(
+            scenarioId,
+            gap,
+            deltaY: -1,
+            wallOffset);
+        PathResult result = PathingScenarioRunner.PlanOnly(scenario);
+        List<PathSegment> segments = PathSegmentBuilder.FromPath(result.Path);
+
+        Assert.Equal(PathStatus.Success, result.Status);
+
+        int firstParkourIndex = segments.FindIndex(segment => segment.MoveType == MoveType.Parkour);
+        Assert.True(firstParkourIndex >= 2, string.Join('\n', segments));
+        Assert.All(
+            segments.Take(firstParkourIndex),
+            segment => Assert.Equal(MoveType.Traverse, segment.MoveType));
+        Assert.Equal(new Location(100.5, 80, 100.5), segments[firstParkourIndex - 1].End);
+        Assert.Equal(ParkourProfile.Sidewall, segments[firstParkourIndex].ParkourProfile);
     }
 
     [Theory]

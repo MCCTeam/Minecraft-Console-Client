@@ -22,6 +22,7 @@ namespace MinecraftClient.Pathing.Core
         public double SprintCost { get; }
         public double SneakCost { get; }
         public MoveType PreviousMoveType { get; internal set; }
+        public EntryPreparationState CurrentEntryPreparation { get; internal set; }
 
         public CalculationContext(
             World world,

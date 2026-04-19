@@ -226,6 +226,22 @@ public sealed class PathSegmentManagerTests
     }
 
     [Theory]
+    [MemberData(nameof(SidewallParkourScenarioBuilder.AcceptedCases), MemberType = typeof(SidewallParkourScenarioBuilder))]
+    public void Tick_SidewallAcceptedCases_CompletesWithoutReplan(string scenarioId, int gap, int deltaY, int wallOffset)
+    {
+        PathingExecutionScenario scenario = SidewallParkourScenarioBuilder.Create(scenarioId, gap, deltaY, wallOffset);
+        PathingScenarioResult result = PathingScenarioRunner.RunAccepted(scenario);
+        Location goalLocation = new(scenario.Goal.X + 0.5, scenario.Goal.Y, scenario.Goal.Z + 0.5);
+
+        Assert.True(
+            result.Completed
+                && result.ReplanCount == 0
+                && TemplateFootingHelper.IsFootprintInsideTargetBlock(result.FinalPosition, goalLocation),
+            $"scenario={scenarioId} completed={result.Completed} replans={result.ReplanCount} final={result.FinalPosition} " +
+            $"goal={goalLocation} planStatus={result.PlanResult.Status}\ninfo={string.Join('\n', result.InfoLogs)}\ndebug={string.Join('\n', result.DebugLogs)}");
+    }
+
+    [Theory]
     [MemberData(nameof(LinearParkourScenarioBuilder.AcceptedCases), MemberType = typeof(LinearParkourScenarioBuilder))]
     public void Tick_LinearAcceptedChain_CompletesWithoutReplan(string scenarioId, int gap, int deltaY)
     {
