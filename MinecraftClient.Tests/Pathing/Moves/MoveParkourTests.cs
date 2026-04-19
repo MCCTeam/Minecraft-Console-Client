@@ -31,7 +31,7 @@ public sealed class MoveParkourTests
         var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
         world.SetBlock(new Location(-1, FloorY, 0), Block.Air);
         var ctx = BuildContext(world);
-        var move = new MoveParkour(3, 0);
+        var move = MoveJump.Parkour(3, 0);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -45,7 +45,7 @@ public sealed class MoveParkourTests
         var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
         world.SetBlock(new Location(1, FloorY, 0), Block.Air);
         var ctx = BuildContext(world);
-        var move = new MoveParkour(2, 0);
+        var move = MoveJump.Parkour(2, 0);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -60,7 +60,7 @@ public sealed class MoveParkourTests
         var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
         world.SetBlock(new Location(1, FloorY, 0), Block.Air);
         var ctx = BuildContext(world);
-        var move = new MoveParkour(2, 0);
+        var move = MoveJump.Parkour(2, 0);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -74,7 +74,7 @@ public sealed class MoveParkourTests
     {
         var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
         var ctx = BuildContext(world);
-        var move = new MoveParkour(2, 0);
+        var move = MoveJump.Parkour(2, 0);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -95,7 +95,7 @@ public sealed class MoveParkourTests
         FlatWorldTestBuilder.SetSolid(world, 2, FloorY + 2, -1);
 
         var ctx = BuildContext(world);
-        var move = new MoveParkour(2, 0);
+        var move = MoveJump.Parkour(2, 0);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -110,7 +110,7 @@ public sealed class MoveParkourTests
         world.SetBlock(new Location(1, FloorY + 1, 0), new Block(1));
         world.SetBlock(new Location(1, FloorY + 2, 0), new Block(1));
         var ctx = BuildContext(world);
-        var move = new MoveParkour(1, 1);
+        var move = MoveJump.Parkour(1, 1);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -128,7 +128,7 @@ public sealed class MoveParkourTests
 
         var ctx = BuildContext(world);
         SetPreviousMoveType(ctx, MoveType.Parkour);
-        var move = new MoveParkour(4, 0, yDelta: -1);
+        var move = MoveJump.Parkour(4, 0, yDelta: -1);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -147,7 +147,7 @@ public sealed class MoveParkourTests
         FlatWorldTestBuilder.SetSolid(world, 4, FloorY + 1, 0);
 
         var ctx = BuildContext(world);
-        var move = new MoveParkour(4, 0, yDelta: 1);
+        var move = MoveJump.Parkour(4, 0, yDelta: 1);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -164,7 +164,7 @@ public sealed class MoveParkourTests
         FlatWorldTestBuilder.SetSolid(world, 6, FloorY - 1, 0);
 
         var ctx = BuildContext(world);
-        var move = new MoveParkour(6, 0, yDelta: -1);
+        var move = MoveJump.Parkour(6, 0, yDelta: -1);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -181,7 +181,7 @@ public sealed class MoveParkourTests
         FlatWorldTestBuilder.SetSolid(world, 6, FloorY - 2, 0);
 
         var ctx = BuildContext(world);
-        var move = new MoveParkour(6, 0, yDelta: -2);
+        var move = MoveJump.Parkour(6, 0, yDelta: -2);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -199,7 +199,7 @@ public sealed class MoveParkourTests
 
         var ctx = BuildContext(world);
         SetPreviousMoveType(ctx, MoveType.Parkour);
-        var move = new MoveParkour(6, 0, yDelta: -1);
+        var move = MoveJump.Parkour(6, 0, yDelta: -1);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
@@ -217,11 +217,66 @@ public sealed class MoveParkourTests
 
         var ctx = BuildContext(world);
         SetPreviousMoveType(ctx, MoveType.Parkour);
-        var move = new MoveParkour(6, 0, yDelta: -2);
+        var move = MoveJump.Parkour(6, 0, yDelta: -2);
         var result = default(MoveResult);
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
 
         Assert.True(result.IsImpossible);
+    }
+
+    // Diagonal ascending parkour: +1 block up with diagonal offset, covers
+    // the corner-step-up case seen in stepped pyramids where a straight
+    // MoveSidewallParkour would demand an adjacent wall that isn't present.
+    // Short (sqrt(5)) ascends work from a lone overhang block because a
+    // cold-start sprint jump reaches ~2.5 blocks horizontally; longer
+    // diagonals such as (2,2) require a runway and are exercised separately.
+    [Theory]
+    [InlineData(2, 1)]
+    [InlineData(1, 2)]
+    public void AcceptsDiagonalAscendingParkour_FromLoneStart(int dx, int dz)
+    {
+        var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
+        FlatWorldTestBuilder.ClearBox(world, -5, FloorY, -5, 10, FloorY + 5, 10);
+
+        FlatWorldTestBuilder.SetSolid(world, 0, FloorY, 0);
+        int destFloorY = FloorY + 1;
+        FlatWorldTestBuilder.SetSolid(world, dx, destFloorY, dz);
+
+        var ctx = BuildContext(world);
+        var move = MoveJump.Parkour(dx, dz, yDelta: 1);
+        var result = default(MoveResult);
+
+        move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
+
+        Assert.False(result.IsImpossible, $"diagonal ascend ({dx},{dz},+1) should plan from lone start");
+        Assert.Equal(dx, result.DestX);
+        Assert.Equal(destFloorY + 1, result.DestY);
+        Assert.Equal(dz, result.DestZ);
+    }
+
+    [Fact]
+    public void AcceptsDiagonalAscendingParkour_2x2_WithRunway()
+    {
+        var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
+        FlatWorldTestBuilder.ClearBox(world, -5, FloorY, -5, 10, FloorY + 5, 10);
+
+        // Diagonal runway behind the jump (opposite the jump direction)
+        // so HasRunUp's back-step check at (-1,-1) succeeds.
+        FlatWorldTestBuilder.SetSolid(world, -1, FloorY, -1);
+        FlatWorldTestBuilder.SetSolid(world, 0, FloorY, 0);
+        int destFloorY = FloorY + 1;
+        FlatWorldTestBuilder.SetSolid(world, 2, destFloorY, 2);
+
+        var ctx = BuildContext(world);
+        var move = MoveJump.Parkour(2, 2, yDelta: 1);
+        var result = default(MoveResult);
+
+        move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
+
+        Assert.False(result.IsImpossible, "(2,2,+1) should plan with a straight runway behind the jump");
+        Assert.Equal(2, result.DestX);
+        Assert.Equal(destFloorY + 1, result.DestY);
+        Assert.Equal(2, result.DestZ);
     }
 }

@@ -10,15 +10,71 @@ namespace MinecraftClient.Pathing.Core
 {
     public sealed class AStarPathFinder
     {
+        private readonly record struct NodeKey(long PackedPosition, EntryPreparationState EntryPreparation);
+
         private readonly IMove[] _allMoves;
+        private readonly IMoveExpander[] _expanders;
+        private readonly int _totalExpanderCapacity;
         private readonly int _maxChunkBorderFetch;
 
         public Action<string>? DebugLog { get; set; }
 
         public AStarPathFinder(IMove[]? moves = null, int maxChunkBorderFetch = 64)
+            : this(BuildExpanders(moves), moves ?? BuildDefaultMoves(), maxChunkBorderFetch)
         {
-            _allMoves = moves ?? BuildDefaultMoves();
+        }
+
+        public AStarPathFinder(IMoveExpander[] expanders, int maxChunkBorderFetch = 64)
+            : this(expanders, System.Array.Empty<IMove>(), maxChunkBorderFetch)
+        {
+        }
+
+        private AStarPathFinder(IMoveExpander[] expanders, IMove[] allMoves, int maxChunkBorderFetch)
+        {
+            _expanders = expanders;
+            _allMoves = allMoves;
             _maxChunkBorderFetch = maxChunkBorderFetch;
+
+            int total = 0;
+            for (int i = 0; i < expanders.Length; i++)
+                total += expanders[i].MaxNeighbors;
+            _totalExpanderCapacity = total;
+        }
+
+        private static IMoveExpander[] BuildExpanders(IMove[]? explicitMoves)
+        {
+            if (explicitMoves is null)
+            {
+                return BuildDefaultExpanders();
+            }
+
+            // Caller supplied a specific move set (e.g. tests). Wrap it as a
+            // legacy expander so the old API keeps working.
+            return [new LegacyMoveExpander(explicitMoves)];
+        }
+
+        public static IMoveExpander[] BuildDefaultExpanders()
+        {
+            IMove[] legacyMoves =
+            [
+                new MoveDescend(1, 0),
+                new MoveDescend(-1, 0),
+                new MoveDescend(0, 1),
+                new MoveDescend(0, -1),
+                new MoveSprintDescend(2, 0),
+                new MoveSprintDescend(-2, 0),
+                new MoveSprintDescend(0, 2),
+                new MoveSprintDescend(0, -2),
+                new MoveSprintDescend(1, 1),
+                new MoveSprintDescend(1, -1),
+                new MoveSprintDescend(-1, 1),
+                new MoveSprintDescend(-1, -1),
+                new MoveClimb(true),
+                new MoveClimb(false),
+                new MoveFall(),
+            ];
+
+            return [new JumpExpander(), new LegacyMoveExpander(legacyMoves)];
         }
 
         public static IMove[] BuildDefaultMoves()
@@ -26,121 +82,119 @@ namespace MinecraftClient.Pathing.Core
             var moves = new List<IMove>();
 
             int[] offsets = [1, -1];
+
+            // ---- jump family (all unified as MoveJump with a JumpDescriptor) ----
+
+            // Cardinal walk + 1-block ascend
             foreach (int dx in offsets)
             {
-                moves.Add(new MoveTraverse(dx, 0));
-                moves.Add(new MoveAscend(dx, 0));
-                moves.Add(new MoveDescend(dx, 0));
+                moves.Add(MoveJump.Traverse(dx, 0));
+                moves.Add(MoveJump.Ascend(dx, 0));
             }
             foreach (int dz in offsets)
             {
-                moves.Add(new MoveTraverse(0, dz));
-                moves.Add(new MoveAscend(0, dz));
-                moves.Add(new MoveDescend(0, dz));
+                moves.Add(MoveJump.Traverse(0, dz));
+                moves.Add(MoveJump.Ascend(0, dz));
             }
 
-            moves.Add(new MoveDiagonal(1, 1));
-            moves.Add(new MoveDiagonal(1, -1));
-            moves.Add(new MoveDiagonal(-1, 1));
-            moves.Add(new MoveDiagonal(-1, -1));
-
-            // Diagonal ascend/descend: corner jumps and drops
+            // Diagonal walk + diagonal ascend/descend (corner cases)
             foreach (int dx in offsets)
             {
                 foreach (int dz in offsets)
                 {
-                    moves.Add(new MoveDiagonalAscend(dx, dz));
-                    moves.Add(new MoveDiagonalDescend(dx, dz));
+                    moves.Add(MoveJump.Diagonal(dx, dz));
+                    moves.Add(MoveJump.DiagonalAscend(dx, dz));
+                    moves.Add(MoveJump.DiagonalDescend(dx, dz));
                 }
             }
 
-            moves.Add(new MoveClimb(true));
-            moves.Add(new MoveClimb(false));
-
-            moves.Add(new MoveFall());
-
-            // Sprint descend: sprint off ledge, 2 blocks horizontal + 1-3 drop
-            foreach (int dx in offsets)
-            {
-                moves.Add(new MoveSprintDescend(dx * 2, 0));
-                moves.Add(new MoveSprintDescend(dx, dx));
-                moves.Add(new MoveSprintDescend(dx, -dx));
-            }
-            foreach (int dz in offsets)
-                moves.Add(new MoveSprintDescend(0, dz * 2));
-
-            // Cardinal parkour: long sprint jumps along +-X and +-Z.
-            // Longer distances remain gated by MoveParkour feasibility and available runway/carry.
+            // Cardinal parkour (flat / +1 ascend / -1 -2 descend)
             foreach (int dx in offsets)
             {
                 for (int dist = 2; dist <= 5; dist++)
-                    moves.Add(new MoveParkour(dx * dist, 0));
-                // Ascending cardinal parkour tops out at offset 3.
+                    moves.Add(MoveJump.Parkour(dx * dist, 0));
                 for (int dist = 2; dist <= 3; dist++)
-                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: 1));
-                // Descending cardinal parkour tops out at offset 5.
+                    moves.Add(MoveJump.Parkour(dx * dist, 0, yDelta: 1));
                 for (int dist = 2; dist <= 5; dist++)
-                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: -1));
+                    moves.Add(MoveJump.Parkour(dx * dist, 0, yDelta: -1));
                 for (int dist = 2; dist <= 5; dist++)
-                    moves.Add(new MoveParkour(dx * dist, 0, yDelta: -2));
+                    moves.Add(MoveJump.Parkour(dx * dist, 0, yDelta: -2));
             }
             foreach (int dz in offsets)
             {
                 for (int dist = 2; dist <= 5; dist++)
-                    moves.Add(new MoveParkour(0, dz * dist));
+                    moves.Add(MoveJump.Parkour(0, dz * dist));
                 for (int dist = 2; dist <= 3; dist++)
-                    moves.Add(new MoveParkour(0, dz * dist, yDelta: 1));
+                    moves.Add(MoveJump.Parkour(0, dz * dist, yDelta: 1));
                 for (int dist = 2; dist <= 5; dist++)
-                    moves.Add(new MoveParkour(0, dz * dist, yDelta: -1));
+                    moves.Add(MoveJump.Parkour(0, dz * dist, yDelta: -1));
                 for (int dist = 2; dist <= 5; dist++)
-                    moves.Add(new MoveParkour(0, dz * dist, yDelta: -2));
+                    moves.Add(MoveJump.Parkour(0, dz * dist, yDelta: -2));
             }
 
-            // Sidewall parkour: dominant-axis sprint jumps with a one-block lateral offset.
+            // Diagonal parkour (flat + diagonal ascending/descending)
+            foreach (int dx in offsets)
+            {
+                foreach (int dz in offsets)
+                {
+                    moves.Add(MoveJump.Parkour(dx * 2, dz * 1));
+                    moves.Add(MoveJump.Parkour(dx * 1, dz * 2));
+                    moves.Add(MoveJump.Parkour(dx * 2, dz * 2));
+                    moves.Add(MoveJump.Parkour(dx * 3, dz * 1));
+                    moves.Add(MoveJump.Parkour(dx * 1, dz * 3));
+
+                    moves.Add(MoveJump.Parkour(dx * 2, dz * 1, yDelta: -1));
+                    moves.Add(MoveJump.Parkour(dx * 1, dz * 2, yDelta: -1));
+                    moves.Add(MoveJump.Parkour(dx * 2, dz * 2, yDelta: -1));
+
+                    moves.Add(MoveJump.Parkour(dx * 2, dz * 1, yDelta: 1));
+                    moves.Add(MoveJump.Parkour(dx * 1, dz * 2, yDelta: 1));
+                    moves.Add(MoveJump.Parkour(dx * 2, dz * 2, yDelta: 1));
+                }
+            }
+
+            // Sidewall parkour (dominant-axis sprint jumps using an inner wall)
             foreach (int dx in offsets)
             {
                 foreach (int dz in offsets)
                 {
                     foreach (int distance in new[] { 2, 3, 4, 5 })
                     {
-                        moves.Add(new MoveSidewallParkour(dx, dz * distance));
-                        moves.Add(new MoveSidewallParkour(dx * distance, dz));
+                        moves.Add(MoveJump.Sidewall(dx, dz * distance));
+                        moves.Add(MoveJump.Sidewall(dx * distance, dz));
 
                         if (distance <= 3)
                         {
-                            moves.Add(new MoveSidewallParkour(dx, dz * distance, yDelta: 1));
-                            moves.Add(new MoveSidewallParkour(dx * distance, dz, yDelta: 1));
+                            moves.Add(MoveJump.Sidewall(dx, dz * distance, yDelta: 1));
+                            moves.Add(MoveJump.Sidewall(dx * distance, dz, yDelta: 1));
                         }
 
-                        moves.Add(new MoveSidewallParkour(dx, dz * distance, yDelta: -1));
-                        moves.Add(new MoveSidewallParkour(dx * distance, dz, yDelta: -1));
-                        moves.Add(new MoveSidewallParkour(dx, dz * distance, yDelta: -2));
-                        moves.Add(new MoveSidewallParkour(dx * distance, dz, yDelta: -2));
+                        moves.Add(MoveJump.Sidewall(dx, dz * distance, yDelta: -1));
+                        moves.Add(MoveJump.Sidewall(dx * distance, dz, yDelta: -1));
+                        moves.Add(MoveJump.Sidewall(dx, dz * distance, yDelta: -2));
+                        moves.Add(MoveJump.Sidewall(dx * distance, dz, yDelta: -2));
                     }
                 }
             }
 
-            // Diagonal parkour: sprint jumps at angles.
-            // Only include combinations with actual distance <= ~3.2 blocks (conservative)
+            // ---- dynamic-landing family (kept separate: variable landing depth) ----
             foreach (int dx in offsets)
             {
-                foreach (int dz in offsets)
-                {
-                    // (2,1)/(1,2): sqrt(5) ~ 2.24 blocks
-                    moves.Add(new MoveParkour(dx * 2, dz * 1));
-                    moves.Add(new MoveParkour(dx * 1, dz * 2));
-                    // (2,2): sqrt(8) ~ 2.83 blocks
-                    moves.Add(new MoveParkour(dx * 2, dz * 2));
-                    // (3,1)/(1,3): sqrt(10) ~ 3.16 blocks
-                    moves.Add(new MoveParkour(dx * 3, dz * 1));
-                    moves.Add(new MoveParkour(dx * 1, dz * 3));
-
-                    // Diagonal descending parkour
-                    moves.Add(new MoveParkour(dx * 2, dz * 1, yDelta: -1));
-                    moves.Add(new MoveParkour(dx * 1, dz * 2, yDelta: -1));
-                    moves.Add(new MoveParkour(dx * 2, dz * 2, yDelta: -1));
-                }
+                moves.Add(new MoveDescend(dx, 0));
+                moves.Add(new MoveSprintDescend(dx * 2, 0));
+                moves.Add(new MoveSprintDescend(dx, dx));
+                moves.Add(new MoveSprintDescend(dx, -dx));
             }
+            foreach (int dz in offsets)
+            {
+                moves.Add(new MoveDescend(0, dz));
+                moves.Add(new MoveSprintDescend(0, dz * 2));
+            }
+
+            // ---- vertical / free fall ----
+            moves.Add(new MoveClimb(true));
+            moves.Add(new MoveClimb(false));
+            moves.Add(new MoveFall());
 
             return [.. moves];
         }
@@ -170,7 +224,7 @@ namespace MinecraftClient.Pathing.Core
 
             var sw = Stopwatch.StartNew();
             var openSet = new BinaryHeapOpenSet(4096);
-            var nodeMap = new Dictionary<long, PathNode>(4096);
+            var nodeMap = new Dictionary<NodeKey, PathNode>(4096);
 
             var startNode = new PathNode(startX, startY, startZ)
             {
@@ -179,14 +233,19 @@ namespace MinecraftClient.Pathing.Core
                 IsOpen = true
             };
             openSet.Insert(startNode);
-            nodeMap[startNode.PackedPosition] = startNode;
+            nodeMap[new NodeKey(startNode.PackedPosition, startNode.EntryPreparation)] = startNode;
 
             int nodesExplored = 0;
             int unloadedChunkHits = 0;
             bool searchAborted = false;
             PathNode? bestPartialNode = startNode;
             double bestPartialScore = startNode.HCost + startNode.GCost * 0.5;
-            MoveResult moveResult = default;
+
+            // Per-node scratch buffer for IMoveExpander output. Size = sum of
+            // MaxNeighbors across all expanders so no expander can overflow.
+            Span<MoveNeighbor> neighborBuffer = _totalExpanderCapacity <= 512
+                ? stackalloc MoveNeighbor[_totalExpanderCapacity]
+                : new MoveNeighbor[_totalExpanderCapacity];
 
             DebugLog?.Invoke($"[A*] Start ({startX},{startY},{startZ}), goal={goal}");
 
@@ -217,63 +276,73 @@ namespace MinecraftClient.Pathing.Core
                     return new PathResult(PathStatus.Success, path, nodesExplored, sw.ElapsedMilliseconds);
                 }
 
-                foreach (var move in _allMoves)
+                ctx.PreviousMoveType = current.MoveUsed;
+                ctx.CurrentEntryPreparation = current.EntryPreparation;
+
+                int bufferOffset = 0;
+                for (int ex = 0; ex < _expanders.Length; ex++)
                 {
-                    ctx.PreviousMoveType = current.MoveUsed;
-                    moveResult.Cost = 0;
-                    move.Calculate(ctx, current.X, current.Y, current.Z, ref moveResult);
+                    IMoveExpander expander = _expanders[ex];
+                    Span<MoveNeighbor> slot = neighborBuffer.Slice(bufferOffset, expander.MaxNeighbors);
+                    int produced = expander.Expand(ctx, current.X, current.Y, current.Z, slot);
+                    bufferOffset += expander.MaxNeighbors;
 
-                    if (moveResult.IsImpossible)
-                        continue;
-
-                    int nx = moveResult.DestX;
-                    int ny = moveResult.DestY;
-                    int nz = moveResult.DestZ;
-
-                    if (!ctx.IsChunkLoaded(nx, nz))
+                    for (int i = 0; i < produced; i++)
                     {
-                        unloadedChunkHits++;
-                        if (unloadedChunkHits > _maxChunkBorderFetch)
-                            continue;
-                    }
+                        MoveNeighbor emitted = slot[i];
+                        int nx = emitted.DestX;
+                        int ny = emitted.DestY;
+                        int nz = emitted.DestZ;
 
-                    double tentativeG = current.GCost + moveResult.Cost;
-                    long packed = PathNode.Pack(nx, ny, nz);
-
-                    if (nodeMap.TryGetValue(packed, out var neighbor))
-                    {
-                        if (neighbor.IsClosed)
-                            continue;
-                        if (tentativeG >= neighbor.GCost)
-                            continue;
-
-                        neighbor.GCost = tentativeG;
-                        neighbor.Parent = current;
-                        neighbor.MoveUsed = move.Type;
-                        neighbor.ParkourProfile = moveResult.ParkourProfile;
-                        if (neighbor.IsOpen)
-                            openSet.Update(neighbor);
-                    }
-                    else
-                    {
-                        neighbor = new PathNode(nx, ny, nz)
+                        if (!ctx.IsChunkLoaded(nx, nz))
                         {
-                            GCost = tentativeG,
-                            HCost = goal.Heuristic(nx, ny, nz),
-                            Parent = current,
-                            MoveUsed = move.Type,
-                            ParkourProfile = moveResult.ParkourProfile,
-                            IsOpen = true
-                        };
-                        nodeMap[packed] = neighbor;
-                        openSet.Insert(neighbor);
-                    }
+                            unloadedChunkHits++;
+                            if (unloadedChunkHits > _maxChunkBorderFetch)
+                                continue;
+                        }
 
-                    double partialScore = neighbor.HCost + neighbor.GCost * 0.5;
-                    if (partialScore < bestPartialScore)
-                    {
-                        bestPartialScore = partialScore;
-                        bestPartialNode = neighbor;
+                        double tentativeG = current.GCost + emitted.Cost;
+                        EntryPreparationState nextPreparation = ResolveEntryPreparation(
+                            current, emitted.MoveType, emitted.DestX, emitted.DestY, emitted.DestZ);
+                        var key = new NodeKey(PathNode.Pack(nx, ny, nz), nextPreparation);
+
+                        if (nodeMap.TryGetValue(key, out var neighbor))
+                        {
+                            if (neighbor.IsClosed)
+                                continue;
+                            if (tentativeG >= neighbor.GCost)
+                                continue;
+
+                            neighbor.GCost = tentativeG;
+                            neighbor.Parent = current;
+                            neighbor.MoveUsed = emitted.MoveType;
+                            neighbor.ParkourProfile = emitted.ParkourProfile;
+                            neighbor.EntryPreparation = nextPreparation;
+                            if (neighbor.IsOpen)
+                                openSet.Update(neighbor);
+                        }
+                        else
+                        {
+                            neighbor = new PathNode(nx, ny, nz)
+                            {
+                                GCost = tentativeG,
+                                HCost = goal.Heuristic(nx, ny, nz),
+                                Parent = current,
+                                MoveUsed = emitted.MoveType,
+                                ParkourProfile = emitted.ParkourProfile,
+                                EntryPreparation = nextPreparation,
+                                IsOpen = true
+                            };
+                            nodeMap[key] = neighbor;
+                            openSet.Insert(neighbor);
+                        }
+
+                        double partialScore = neighbor.HCost + neighbor.GCost * 0.5;
+                        if (partialScore < bestPartialScore)
+                        {
+                            bestPartialScore = partialScore;
+                            bestPartialNode = neighbor;
+                        }
                     }
                 }
             }
@@ -290,6 +359,118 @@ namespace MinecraftClient.Pathing.Core
 
             DebugLog?.Invoke($"[A*] Failed, {nodesExplored} nodes, {sw.ElapsedMilliseconds}ms");
             return PathResult.Fail(nodesExplored, sw.ElapsedMilliseconds);
+        }
+
+        private EntryPreparationState ResolveEntryPreparation(
+            PathNode current, MoveType moveType, int destX, int destY, int destZ)
+        {
+            EntryPreparationState advanced = AdvanceExistingPreparation(current, moveType, destX, destY, destZ);
+            if (!advanced.IsNone)
+                return advanced;
+
+            if (TryStartSidewallRunupPreparation(current, moveType, destX, destY, destZ, out EntryPreparationState started))
+                return started;
+
+            return EntryPreparationState.None;
+        }
+
+        private static EntryPreparationState AdvanceExistingPreparation(
+            PathNode current, MoveType moveType, int destX, int destY, int destZ)
+        {
+            EntryPreparationState state = current.EntryPreparation;
+            if (state.IsNone)
+                return EntryPreparationState.None;
+
+            if (moveType != MoveType.Traverse || destY != current.Y)
+                return EntryPreparationState.None;
+
+            int stepX = destX - current.X;
+            int stepZ = destZ - current.Z;
+
+            if (state.BackwardSteps < state.RequiredSteps
+                && stepX == -state.ForwardX
+                && stepZ == -state.ForwardZ)
+            {
+                return state.AdvanceBackward();
+            }
+
+            if (state.BackwardSteps == state.RequiredSteps
+                && state.ReturnSteps < state.RequiredSteps
+                && stepX == state.ForwardX
+                && stepZ == state.ForwardZ)
+            {
+                EntryPreparationState nextState = state.AdvanceReturn();
+                if (nextState.IsPrepared
+                    && (destX != state.OriginX
+                        || destY != state.OriginY
+                        || destZ != state.OriginZ))
+                {
+                    return EntryPreparationState.None;
+                }
+
+                return nextState;
+            }
+
+            return EntryPreparationState.None;
+        }
+
+        private static bool TryStartSidewallRunupPreparation(
+            PathNode current, MoveType moveType, int destX, int destY, int destZ, out EntryPreparationState state)
+        {
+            state = EntryPreparationState.None;
+
+            if (!current.EntryPreparation.IsNone
+                || moveType != MoveType.Traverse
+                || destY != current.Y)
+            {
+                return false;
+            }
+
+            int stepX = destX - current.X;
+            int stepZ = destZ - current.Z;
+
+            ReadOnlySpan<JumpDescriptor> descriptors = JumpExpander.Descriptors;
+            for (int i = 0; i < descriptors.Length; i++)
+            {
+                JumpDescriptor candidate = descriptors[i];
+                if (candidate.Flavor != JumpFlavor.Sidewall)
+                    continue;
+
+                if (!ParkourFeasibility.TryGetRequiredStaticEntryRunupSteps(
+                        current.MoveUsed,
+                        candidate.XOffset,
+                        candidate.ZOffset,
+                        candidate.YDelta,
+                        out int requiredSteps))
+                {
+                    continue;
+                }
+
+                ParkourFeasibility.GetSidewallAxes(
+                    candidate.XOffset,
+                    candidate.ZOffset,
+                    out int forwardX,
+                    out int forwardZ,
+                    out _,
+                    out _);
+
+                if (stepX != -forwardX || stepZ != -forwardZ)
+                    continue;
+
+                state = new EntryPreparationState(
+                    EntryPreparationKind.SidewallRunup,
+                    current.X,
+                    current.Y,
+                    current.Z,
+                    forwardX,
+                    forwardZ,
+                    (byte)requiredSteps,
+                    BackwardSteps: 1,
+                    ReturnSteps: 0);
+                return true;
+            }
+
+            return false;
         }
 
         private static List<PathNode> ReconstructPath(PathNode end)
