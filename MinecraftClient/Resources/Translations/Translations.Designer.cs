@@ -3529,6 +3529,42 @@ namespace MinecraftClient {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Planning path in background (budget: {0}ms)... result will appear in the log.
+        /// </summary>
+        internal static string cmd_goto_planning {
+            get {
+                return ResourceManager.GetString("cmd.goto.planning", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to toggle verbose pathing diagnostics (full plan dump, failure trace).
+        /// </summary>
+        internal static string cmd_pathdiag_desc {
+            get {
+                return ResourceManager.GetString("cmd.pathdiag.desc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pathing diagnostics enabled. Run /pathdiag off to disable.
+        /// </summary>
+        internal static string cmd_pathdiag_enabled {
+            get {
+                return ResourceManager.GetString("cmd.pathdiag.enabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pathing diagnostics disabled.
+        /// </summary>
+        internal static string cmd_pathdiag_disabled {
+            get {
+                return ResourceManager.GetString("cmd.pathdiag.disabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to [PathMetric] routeStart segments={0}.
         /// </summary>
         internal static string pathing_metric_route_start {

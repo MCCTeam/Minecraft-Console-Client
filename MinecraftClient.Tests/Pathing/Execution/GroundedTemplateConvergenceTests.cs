@@ -798,4 +798,92 @@ public sealed class GroundedTemplateConvergenceTests
         Assert.True(input.Back, $"decision={decision} input(F={input.Forward},B={input.Back},S={input.Sprint})");
         Assert.False(input.Forward, $"decision={decision} input(F={input.Forward},B={input.Back},S={input.Sprint})");
     }
+
+    /// <summary>
+    /// Bug 2.1 regression: an island diagonal Ascend (heading (-X,+Z,+Y)) is
+    /// reached after a preceding cardinal Traverse has built up pure +Z ground
+    /// momentum.  Without the execution-layer brake the perpendicular momentum
+    /// survives takeoff, collides with the +Z shoulder wall of the target
+    /// block, and the bot lands outside the target footprint.  The template
+    /// must release Forward/Sprint (and engage Back when the perpendicular
+    /// dominates) for a few ground ticks so friction can decay the misaligned
+    /// component before the jump fires, and the final landing must be inside
+    /// the target block.
+    /// </summary>
+    [Fact]
+    public void AscendTemplate_IslandDiagonalFromCardinalMomentum_BrakesPerpBeforeJumpAndLandsInsideTarget()
+    {
+        // Build a small island layout at y=79 floor:
+        //   source block (0,79,0) stands on (0,78,0)
+        //   target block (-1,80,1) stands on (-1,79,1); approach is diagonal (-X,+Z)
+        //   the +Z shoulder relative to the target (-1,80,2) is solid at head
+        //   height so any over-travel along +Z bonks a wall (matches the live
+        //   case where perpendicular momentum pushed past the target)
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: -4, max: 4);
+        FlatWorldTestBuilder.ClearBox(world, -4, 79, -4, 4, 84, 4);
+        FlatWorldTestBuilder.SetSolid(world, 0, 79, 0);
+        FlatWorldTestBuilder.SetSolid(world, -1, 80, 1);
+        FlatWorldTestBuilder.SetSolid(world, -1, 81, 2);
+        FlatWorldTestBuilder.SetSolid(world, -1, 80, 2);
+
+        var ascend = new PathSegment
+        {
+            Start = new Location(0.5, 80, 0.5),
+            End = new Location(-0.5, 81, 1.5),
+            MoveType = MoveType.Ascend,
+            ExitTransition = PathTransitionType.FinalStop,
+            PreserveSprint = true
+        };
+
+        var template = new AscendTemplate(ascend, null);
+
+        // Seed pure +Z cardinal momentum at the source block center: this is
+        // the perpendicular axis relative to the diagonal (-X,+Z) / sqrt(2)
+        // heading; without the brake gate the bot would take off carrying it.
+        var physics = new PlayerPhysics
+        {
+            Position = new Vec3d(0.5, 80, 0.5),
+            DeltaMovement = new Vec3d(0.0, 0.0, 0.22),
+            OnGround = true,
+            Sprinting = true,
+            MovementSpeed = 0.1f,
+            Yaw = 0f,
+            Pitch = 0f
+        };
+
+        var input = new MovementInput();
+        TemplateState state = TemplateState.InProgress;
+        Location finalPos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+        bool sawBrakeTick = false;
+        var trace = new List<string>();
+        for (int tick = 0; tick < 120; tick++)
+        {
+            input.Reset();
+            Location pos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+            state = template.Tick(pos, physics, input, world);
+            if (physics.OnGround && !input.Forward && !input.Jump)
+                sawBrakeTick = true;
+            if (tick < 24 || state != TemplateState.InProgress)
+            {
+                trace.Add(
+                    $"tick={tick} state={state} pos={pos} yaw={physics.Yaw:F1} vel={physics.DeltaMovement} " +
+                    $"onGround={physics.OnGround} input(F={input.Forward},B={input.Back},J={input.Jump},S={input.Sprint})");
+            }
+            if (state != TemplateState.InProgress)
+            {
+                finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+                break;
+            }
+
+            physics.ApplyInput(input);
+            physics.Tick(world);
+            finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+        }
+
+        Assert.True(sawBrakeTick, "expected at least one ground tick where Forward was released to decay perpendicular momentum");
+        Assert.True(state == TemplateState.Complete, $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
+        Assert.True(
+            TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, ascend.End),
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
+    }
 }

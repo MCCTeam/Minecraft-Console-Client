@@ -20,6 +20,20 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private const double EdgeCloseDistance = 1.2;
         private const double LateralAlignmentTolerance = 0.2;
 
+        // Diagonal-ascend velocity alignment constants.  Live-server
+        // regression: when A* routes through an "island" diagonal 1-block
+        // riser whose preceding segment delivered axis-aligned ground
+        // momentum (e.g. a cardinal Traverse along +Z landing at the foot of
+        // a -X+Z+Y riser), the 1-tick sprint-jump boost cannot redirect the
+        // perpendicular component onto the diagonal and the bot overshoots
+        // the target along the cardinal axis.  Before firing Jump we hold
+        // Forward/Sprint off for up to a small window so ground friction can
+        // decay the perpendicular component; if we have not aligned within
+        // the window we take off anyway so the bot never stalls on the
+        // source block indefinitely.
+        private const double DiagonalTakeoffMaxPerpVelocity = 0.08;
+        private const int DiagonalTakeoffMaxBrakeTicks = 6;
+
         public Location ExpectedStart { get; }
         public Location ExpectedEnd { get; }
 
@@ -29,6 +43,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private Location _lastPos;
         private int _stuckTicks;
         private bool _initiatedJump;
+        private int _diagonalBrakeTicks;
 
         public AscendTemplate(PathSegment segment, PathSegment? nextSegment)
         {
@@ -57,7 +72,16 @@ namespace MinecraftClient.Pathing.Execution.Templates
             float targetYaw = TemplateHelper.CalculateYaw(dx, dz);
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
             if (!groundedPrepareJumpHandoff)
-                physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+            {
+                // Snap yaw on the first tick so we don't drift sideways while
+                // rotating from a stale orientation (e.g. after a teleport or a
+                // sharp turn transition). The Ascend template also already gates
+                // forward input on headingReady below, but snapping removes one
+                // source of wasted ticks for narrow 1-block staircases.
+                physics.Yaw = _tickCount == 1
+                    ? targetYaw
+                    : TemplateHelper.SmoothYaw(physics.Yaw, targetYaw);
+            }
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
             float headingPenalty = YawDifference(physics.Yaw, targetYaw);
             bool headingReady = headingPenalty <= 8.0;
@@ -75,15 +99,67 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 bool laterallyAligned = sideDist <= LateralAlignmentTolerance;
 
                 bool jumpReady;
-                if (HasHeadBonkClear(world))
+                if (diagonalAscend)
+                {
+                    // Diagonal Ascend only reaches this path when the search
+                    // layer has cleared the move (cardinal split not
+                    // feasible). The source-center to target-center distance
+                    // is ~sqrt(2) blocks, so the cardinal closeToEdge /
+                    // sideDist gates below never fire and would stall the
+                    // jump indefinitely; the bot must leap from the source
+                    // block center as soon as its heading is aligned with
+                    // the diagonal AND the horizontal velocity is close to
+                    // the diagonal direction. If the bot arrives with strong
+                    // cardinal momentum from a preceding Traverse (the
+                    // common case for wall-shoulder islands), fire one or
+                    // more ground ticks with Forward/Sprint released so
+                    // friction can decay the perpendicular component before
+                    // takeoff. Without this the preserved cardinal momentum
+                    // leaks the landing footprint off the target block.
+                    if (!headingReady)
+                    {
+                        jumpReady = false;
+                    }
+                    else
+                    {
+                        double diagLen = Math.Sqrt(
+                            (double)_segment.HeadingX * _segment.HeadingX
+                            + (double)_segment.HeadingZ * _segment.HeadingZ);
+                        double dirX = _segment.HeadingX / diagLen;
+                        double dirZ = _segment.HeadingZ / diagLen;
+                        double vx = physics.DeltaMovement.X;
+                        double vz = physics.DeltaMovement.Z;
+                        double perpMag = Math.Abs(vx * dirZ - vz * dirX);
+                        if (perpMag > DiagonalTakeoffMaxPerpVelocity
+                            && _diagonalBrakeTicks < DiagonalTakeoffMaxBrakeTicks)
+                        {
+                            // Suppress this tick's acceleration so vanilla
+                            // ground friction (~0.546/tick) alone decays the
+                            // perpendicular component, and nudge the back
+                            // input if the velocity is dominantly in the
+                            // perpendicular direction - the back-input vector
+                            // is along -yaw which is the reverse of the
+                            // diagonal, cancelling the perpendicular faster
+                            // than friction alone for high-speed entries.
+                            input.Forward = false;
+                            input.Sprint = false;
+                            double along = vx * dirX + vz * dirZ;
+                            if (perpMag > Math.Abs(along))
+                                input.Back = true;
+                            _diagonalBrakeTicks++;
+                            jumpReady = false;
+                        }
+                        else
+                        {
+                            jumpReady = true;
+                        }
+                    }
+                }
+                else if (HasHeadBonkClear(world))
                 {
                     // Vertical head-room above the source block is clear, so starting the
                     // jump early is safe and actually makes the short hop more reliable
                     // (matches Baritone's "headBonkClear" shortcut).
-                    jumpReady = headingReady;
-                }
-                else if (diagonalAscend)
-                {
                     jumpReady = headingReady;
                 }
                 else

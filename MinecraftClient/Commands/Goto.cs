@@ -42,7 +42,10 @@ namespace MinecraftClient.Commands
             Location current = handler.GetCurrentLocation();
             goal.ToAbsolute(current);
 
-            var (success, message) = handler.MoveToAStar(goal);
+            // The A* search runs on a background task (see NavigateToGoal), so
+            // a generous budget no longer blocks the 20 TPS tick loop. Matches
+            // Baritone's multi-second default budget for interactive goto.
+            var (success, message) = handler.MoveToAStar(goal, timeoutMs: 15000);
 
             return r.SetAndReturn(success ? Status.Done : Status.Fail, message);
         }

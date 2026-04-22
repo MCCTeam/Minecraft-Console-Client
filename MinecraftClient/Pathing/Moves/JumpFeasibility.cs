@@ -165,6 +165,27 @@ internal static class JumpFeasibility
             return;
         }
 
+        // Baritone-parity gate (MovementDiagonal.cost @197-200): when either
+        // cardinal shoulder also has solid ground below (i.e. the bot could
+        // walk that way first and then do a plain cardinal Ascend), refuse
+        // the diagonal Ascend.  Executing a diagonal Ascend requires the
+        // bot's ground-speed momentum to already point along the diagonal at
+        // the moment of takeoff; when the preceding segment is a cardinal
+        // Walk the momentum is axis-aligned and the 2-tick yaw/input rotation
+        // during the handoff cannot redirect enough horizontal motion, so the
+        // bot consistently overshoots the target block.  Forcing A* to spend
+        // the extra ~0.4 cost of a cardinal Walk + cardinal Ascend pair
+        // eliminates that execution failure while still leaving true "only
+        // reachable diagonally" setups (no cardinal floor support) on the
+        // table for scenarios that explicitly test the diagonal Step graph.
+        bool cardinalWalkableViaX = pathViaX && ctx.CanWalkOn(x + dx, y - 1, z);
+        bool cardinalWalkableViaZ = pathViaZ && ctx.CanWalkOn(x, y - 1, z + dz);
+        if (cardinalWalkableViaX || cardinalWalkableViaZ)
+        {
+            result.SetImpossible();
+            return;
+        }
+
         double diagCost = ctx.SprintCost * ActionCosts.DiagonalMultiplier + ctx.JumpPenalty;
         result.Set(destX, destY, destZ, diagCost);
     }

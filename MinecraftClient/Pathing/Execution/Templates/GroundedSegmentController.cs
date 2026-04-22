@@ -25,13 +25,36 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 return;
             }
 
-            if (TemplateHelper.ShouldBiasTowardExitHeading(pos, segment))
-                TemplateHelper.FaceExitHeading(physics, segment);
-
+            // Compute the braking decision first so rotation and input stay
+            // consistent.  Applying the exit-heading bias while we are still
+            // braking causes the Back input (which acts opposite to yaw) to
+            // push the bot perpendicular to the segment line, which on narrow
+            // 1-block walkways turns into a side-off-the-edge step.  Stay on
+            // the segment heading for as long as we are braking and only let
+            // the bias rotate us once the brake has released.
             TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(segment, nextSegment, pos, physics, world);
             TemplateHelper.ApplyDecision(input, decision);
             if (decision.HoldBack)
+            {
                 TemplateHelper.FaceSegmentHeading(physics, segment);
+                return;
+            }
+
+            // On stable-footing Turn exits (the next segment is a walk-like
+            // move, not a jump) the next template snaps yaw instantly on
+            // its first tick, so pre-rotating here is unnecessary.  On
+            // narrow 1-block walkways the bias combined with along-segment
+            // momentum pushes the bot perpendicular to the walkway and
+            // walks it off the edge (the bot sprint-drifts diagonally
+            // while yaw rotates ~45 deg mid-stride).  For Turn exits into
+            // a jump (RequireJumpReady) we still need to align yaw before
+            // takeoff, so keep the bias there.
+            bool suppressBiasForSafeTurn = segment.ExitTransition == PathTransitionType.Turn
+                && segment.ExitHints.RequireStableFooting
+                && !segment.ExitHints.RequireJumpReady;
+            if (!suppressBiasForSafeTurn
+                && TemplateHelper.ShouldBiasTowardExitHeading(pos, segment))
+                TemplateHelper.FaceExitHeading(physics, segment);
         }
 
         internal static bool ShouldComplete(PathSegment segment, Location pos, PlayerPhysics physics)
@@ -61,8 +84,26 @@ namespace MinecraftClient.Pathing.Execution.Templates
             }
 
             double exitSpeed = TemplateHelper.ProjectHorizontalSpeedAlongHint(physics, segment);
-            bool headingReady = TemplateHelper.HeadingPenaltyDegrees(physics.Yaw, segment)
-                <= (segment.ExitHints.RequireJumpReady ? 8.0 : 15.0);
+            // On Turn exits we deliberately do NOT pre-rotate yaw toward the
+            // next segment's heading (see Apply() above).  The next segment's
+            // template snaps yaw on its first tick, so measuring heading
+            // readiness against the exit heading here would deadlock the
+            // handoff (bot is still facing segment heading, would never pass
+            // the 15 deg gate).  Measure against segment heading for Turn
+            // exits with stable footing where yaw will be snapped anyway.
+            bool headingReady;
+            if (segment.ExitTransition == PathTransitionType.Turn
+                && segment.ExitHints.RequireStableFooting
+                && !segment.ExitHints.RequireJumpReady)
+            {
+                headingReady = TemplateHelper.HeadingPenaltyDegrees(physics.Yaw, segment.HeadingX, segment.HeadingZ) <= 25.0
+                    || TemplateHelper.HeadingPenaltyDegrees(physics.Yaw, segment) <= 15.0;
+            }
+            else
+            {
+                headingReady = TemplateHelper.HeadingPenaltyDegrees(physics.Yaw, segment)
+                    <= (segment.ExitHints.RequireJumpReady ? 8.0 : 15.0);
+            }
 
             if (!headingReady)
                 return false;

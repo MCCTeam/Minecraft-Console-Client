@@ -284,7 +284,16 @@ internal static class ParkourFeasibility
         int major = Math.Max(Math.Abs(xOffset), Math.Abs(zOffset));
         int insideWallDepth = 0;
 
-        for (int step = 0; step < 2; step++)
+        // Probe up to MaxProbeDepth cells along the forward axis at the lateral
+        // column to measure how thick the inner wall is. A 1- or 2-thick wall
+        // was the original supported case; thicker walls (3) still let the
+        // sidewall arc play out because the wall only provides lateral support
+        // during the sprint-jump — the player brushes the wall longer but the
+        // forward reach is unchanged. Walls thicker than MaxProbeDepth are
+        // rejected because they either bury the landing column or leave no
+        // open air for the arc to complete.
+        const int MaxProbeDepth = 3;
+        for (int step = 0; step < MaxProbeDepth; step++)
         {
             int wx = x + lateralX + (forwardX * step);
             int wz = z + lateralZ + (forwardZ * step);
@@ -293,7 +302,7 @@ internal static class ParkourFeasibility
             insideWallDepth++;
         }
 
-        if (insideWallDepth is < 1 or > 2)
+        if (insideWallDepth is < 1 or > MaxProbeDepth)
             return false;
 
         for (int step = 1; step <= major; step++)

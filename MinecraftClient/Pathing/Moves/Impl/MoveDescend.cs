@@ -35,6 +35,19 @@ namespace MinecraftClient.Pathing.Moves.Impl
                 return;
             }
 
+            // The landing feet column must also be passable. Without this, a descend
+            // into a column whose y-1 block is solid (e.g. a 2-block thick platform top
+            // where (destX,y-1) is stone and (destX,y-2) is also stone) would be
+            // accepted: the solid y-2 floor satisfies CanWalkOn, the y/y+1 body space
+            // satisfies the step, but physically the bot just walks onto the solid
+            // y-1 block at the same feet level and the Descend template waits forever
+            // for a drop that can never happen -- producing an infinite replan loop.
+            if (!ctx.CanWalkThrough(destX, y - 1, destZ))
+            {
+                result.SetImpossible();
+                return;
+            }
+
             // Don't descend from ladder/vine (unreliable)
             Material fromDown = ctx.GetMaterial(x, y - 1, z);
             if (fromDown.CanBeClimbedOn())

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MinecraftClient.Mapping;
@@ -33,12 +35,26 @@ namespace MinecraftClient.Pathing.Execution
         private PathExecutor? _nextExecutor;
         private IGoal? _goal;
         private int _replanCount;
+        private bool _isInitialPlan;
 
         private Task<PathResult>? _pendingReplan;
         private CancellationTokenSource? _pendingReplanCts;
         private Task<PathResult>? _pendingLookahead;
         private CancellationTokenSource? _pendingLookaheadCts;
         private (int x, int y, int z)? _pendingLookaheadAnchor;
+
+        /// <summary>
+        /// Set to true to emit Info-level diagnostic traces (full path node dump,
+        /// failing-segment context, recent position tail) on every plan/replan
+        /// event. Users enable this via <c>/pathdiag on</c> when reporting pathing
+        /// bugs so the default log level stays quiet.
+        /// </summary>
+        public static bool DiagnosticsEnabled { get; set; }
+
+        private const int DiagnosticsTailSize = 64;
+        private readonly Queue<string> _diagnosticsTail = new(DiagnosticsTailSize + 1);
+        private PathResult? _lastPlan;
+        private int _lastObservedSegmentIndex = -1;
 
         public bool IsNavigating =>
             (_executor is not null && !_executor.IsComplete)
@@ -61,6 +77,7 @@ namespace MinecraftClient.Pathing.Execution
             _nextExecutor = null;
             _goal = goal;
             _replanCount = 0;
+            _isInitialPlan = false;
             if (result.Status == PathStatus.Failed || result.Path.Count < 2)
             {
                 _infoLog?.Invoke("[PathMgr] Navigation rejected -- no path found.");
@@ -71,7 +88,51 @@ namespace MinecraftClient.Pathing.Execution
 
             var segments = PathSegmentBuilder.FromPath(result.Path);
             _executor = new PathExecutor(segments, _debugLog, _observer);
+            _lastObservedSegmentIndex = -1;
             _infoLog?.Invoke($"[PathMgr] Navigation started: {segments.Count} segments");
+        }
+
+        /// <summary>
+        /// Kicks off the initial A* search on a background task and returns
+        /// immediately. The main tick loop drains the task via
+        /// <see cref="DrainPendingReplan"/>, installing the executor when the
+        /// plan completes. Use this from interactive entry points (e.g.
+        /// <c>/goto</c>) so the 20 TPS tick loop never blocks on a long A*
+        /// search -- a complex climb can take the full planning budget
+        /// (several seconds) and freezing the tick causes the player to
+        /// desync, stop sending keep-alives, and miss chunk updates.
+        /// </summary>
+        public void StartNavigationAsync(IGoal goal, Location startPos, World world, long timeoutMs)
+        {
+            ArgumentNullException.ThrowIfNull(goal);
+            ArgumentNullException.ThrowIfNull(world);
+
+            CancelPendingTasks();
+            _executor = null;
+            _nextExecutor = null;
+            _goal = goal;
+            _replanCount = 0;
+            _isInitialPlan = true;
+
+            int sx = (int)Math.Floor(startPos.X);
+            int sy = (int)Math.Floor(startPos.Y);
+            int sz = (int)Math.Floor(startPos.Z);
+
+            var ctx = new CalculationContext(world, allowParkour: true, allowParkourAscend: true);
+            if (!ctx.CanWalkThrough(sx, sy, sz) && ctx.CanWalkThrough(sx, sy + 1, sz))
+                sy++;
+
+            _debugLog?.Invoke($"[PathMgr] Initial plan kicked off from ({sx},{sy},{sz}) to {goal}");
+
+            _pendingReplanCts = new CancellationTokenSource();
+            CancellationToken token = _pendingReplanCts.Token;
+            Action<string>? debugLog = _debugLog;
+            long budget = timeoutMs;
+            _pendingReplan = Task.Run(() =>
+            {
+                var finder = new AStarPathFinder { DebugLog = debugLog };
+                return finder.Calculate(ctx, sx, sy, sz, goal, token, budget);
+            }, token);
         }
 
         public void Tick(Location pos, PlayerPhysics physics, MovementInput input, World world)
@@ -93,6 +154,9 @@ namespace MinecraftClient.Pathing.Execution
                 return;
             }
 
+            if (DiagnosticsEnabled)
+                RecordDiagnosticsSample(pos, physics);
+
             var state = _executor.Tick(pos, physics, input, world);
 
             switch (state)
@@ -102,6 +166,8 @@ namespace MinecraftClient.Pathing.Execution
                     break;
 
                 case PathExecutorState.Failed:
+                    if (DiagnosticsEnabled)
+                        EmitSegmentFailureDiagnostics(pos);
                     _infoLog?.Invoke("[PathMgr] Segment failed, replanning...");
                     // The prepared next path assumes we finished the current segment
                     // cleanly, so drop it when we fail.
@@ -113,6 +179,64 @@ namespace MinecraftClient.Pathing.Execution
                 case PathExecutorState.InProgress:
                     MaybeStartLookahead(world);
                     break;
+            }
+        }
+
+        private void RecordDiagnosticsSample(Location pos, PlayerPhysics physics)
+        {
+            if (_executor is null)
+                return;
+            int segIdx = _executor.CurrentIndex;
+            PathSegment? seg = _executor.CurrentSegment;
+            string segStr = seg is null
+                ? "none"
+                : $"seg{segIdx}/{_executor.TotalSegments} {seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1})";
+
+            // Emit an Info-level transition event whenever the executor steps to a
+            // new segment so the caller can reconstruct the full execution timeline
+            // without relying on the bounded tail buffer. Resets on plan install.
+            if (segIdx != _lastObservedSegmentIndex)
+            {
+                _lastObservedSegmentIndex = segIdx;
+                _infoLog?.Invoke(
+                    $"[PathDiag] seg->{segIdx}/{_executor.TotalSegments} pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) yaw={physics.Yaw:F1} vy={physics.DeltaMovement.Y:F3} og={physics.OnGround} " +
+                    (seg is null ? "none" : $"{seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1}) exit={seg.ExitTransition}"));
+            }
+
+            _diagnosticsTail.Enqueue(
+                $"pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) yaw={physics.Yaw:F1} vy={physics.DeltaMovement.Y:F3} vx={physics.DeltaMovement.X:F3} vz={physics.DeltaMovement.Z:F3} og={physics.OnGround} {segStr}");
+            while (_diagnosticsTail.Count > DiagnosticsTailSize)
+                _diagnosticsTail.Dequeue();
+        }
+
+        private void EmitSegmentFailureDiagnostics(Location pos)
+        {
+            if (_executor is null)
+                return;
+            PathSegment? seg = _executor.CurrentSegment;
+            int segIdx = _executor.CurrentIndex;
+            _infoLog?.Invoke($"[PathDiag] Failure context: pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) failingSeg={segIdx}/{_executor.TotalSegments} " +
+                             (seg is null ? "seg=<none>" : $"seg={seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1}) exit={seg.ExitTransition}"));
+            if (_diagnosticsTail.Count > 0)
+            {
+                _infoLog?.Invoke($"[PathDiag] Recent tick trace (last {_diagnosticsTail.Count}):");
+                int i = 0;
+                foreach (string line in _diagnosticsTail)
+                    _infoLog?.Invoke($"[PathDiag]   t-{_diagnosticsTail.Count - i++ - 1}: {line}");
+            }
+        }
+
+        private void EmitPathDumpDiagnostics(string label, PathResult result, int startIdx = 0)
+        {
+            if (!DiagnosticsEnabled)
+                return;
+            _infoLog?.Invoke($"[PathDiag] {label}: {result.Path.Count} waypoints, status={result.Status}, nodes={result.NodesExplored}, time={result.ElapsedMs}ms");
+            int count = result.Path.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var node = result.Path[i];
+                string move = i == 0 ? "Start" : node.MoveUsed.ToString();
+                _infoLog?.Invoke($"[PathDiag]   [{startIdx + i:D2}] {move,-22} ({node.X},{node.Y},{node.Z})");
             }
         }
 
@@ -254,10 +378,16 @@ namespace MinecraftClient.Pathing.Execution
             _pendingReplanCts = null;
             cts?.Dispose();
 
+            bool isInitial = _isInitialPlan;
+            _isInitialPlan = false;
+
             if (task.IsFaulted || task.IsCanceled)
             {
-                _infoLog?.Invoke("[PathMgr] Replan task failed or was cancelled.");
-                _observer?.OnReplanFailed(_replanCount, pos);
+                _infoLog?.Invoke(isInitial
+                    ? "[PathMgr] Initial plan failed or was cancelled."
+                    : "[PathMgr] Replan task failed or was cancelled.");
+                if (!isInitial)
+                    _observer?.OnReplanFailed(_replanCount, pos);
                 _goal = null;
                 _executor = null;
                 _nextExecutor = null;
@@ -283,8 +413,11 @@ namespace MinecraftClient.Pathing.Execution
 
             if (result.Status == PathStatus.Failed || result.Path.Count < 2)
             {
-                _observer?.OnReplanFailed(_replanCount, pos);
-                _infoLog?.Invoke("[PathMgr] Replan failed -- no path found.");
+                if (!isInitial)
+                    _observer?.OnReplanFailed(_replanCount, pos);
+                _infoLog?.Invoke(isInitial
+                    ? $"[PathMgr] No path found (nodes={result.NodesExplored}, time={result.ElapsedMs}ms)."
+                    : "[PathMgr] Replan failed -- no path found.");
                 _executor = null;
                 _nextExecutor = null;
                 _goal = null;
@@ -292,10 +425,25 @@ namespace MinecraftClient.Pathing.Execution
             }
 
             var segments = PathSegmentBuilder.FromPath(result.Path);
-            _observer?.OnReplanSucceeded(_replanCount, segments);
-            _executor = new PathExecutor(segments, _debugLog, _observer);
-            _nextExecutor = null;
-            _infoLog?.Invoke($"[PathMgr] Replanned: {segments.Count} segments (replan #{_replanCount})");
+            _lastPlan = result;
+            _diagnosticsTail.Clear();
+            _lastObservedSegmentIndex = -1;
+            if (isInitial)
+            {
+                _executor = new PathExecutor(segments, _debugLog, _observer);
+                _nextExecutor = null;
+                string partial = result.Status == PathStatus.Partial ? " (partial)" : "";
+                _infoLog?.Invoke($"[PathMgr] Navigation started: {segments.Count} segments, nodes={result.NodesExplored}, time={result.ElapsedMs}ms{partial}");
+                EmitPathDumpDiagnostics("Initial plan", result);
+            }
+            else
+            {
+                _observer?.OnReplanSucceeded(_replanCount, segments);
+                _executor = new PathExecutor(segments, _debugLog, _observer);
+                _nextExecutor = null;
+                _infoLog?.Invoke($"[PathMgr] Replanned: {segments.Count} segments (replan #{_replanCount})");
+                EmitPathDumpDiagnostics($"Replan #{_replanCount} plan", result);
+            }
         }
 
         private void MaybeStartLookahead(World world)

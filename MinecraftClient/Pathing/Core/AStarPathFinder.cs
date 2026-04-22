@@ -429,33 +429,48 @@ namespace MinecraftClient.Pathing.Core
             int stepX = destX - current.X;
             int stepZ = destZ - current.Z;
 
-            ReadOnlySpan<JumpDescriptor> descriptors = JumpExpander.Descriptors;
-            for (int i = 0; i < descriptors.Length; i++)
+            // Sidewall candidates are generated dynamically by JumpExpander's
+            // cardinal probe now, so we probe each cardinal forward direction
+            // directly instead of scanning a descriptor table. The only shape
+            // TryGetRequiredStaticEntryRunupSteps flags as needing a static
+            // runup today is (major=5, minor=1, yDelta=-1) -- we use that
+            // canonical shape as the query (lateral=+1 is arbitrary; the
+            // helper only looks at yDelta and major).
+            ReadOnlySpan<(int fx, int fz)> forwards =
+            [
+                (1, 0),
+                (-1, 0),
+                (0, 1),
+                (0, -1),
+            ];
+
+            for (int i = 0; i < forwards.Length; i++)
             {
-                JumpDescriptor candidate = descriptors[i];
-                if (candidate.Flavor != JumpFlavor.Sidewall)
+                (int forwardX, int forwardZ) = forwards[i];
+                if (stepX != -forwardX || stepZ != -forwardZ)
                     continue;
+
+                int xOffset, zOffset;
+                if (forwardX != 0)
+                {
+                    xOffset = forwardX * 5;
+                    zOffset = 1;
+                }
+                else
+                {
+                    xOffset = 1;
+                    zOffset = forwardZ * 5;
+                }
 
                 if (!ParkourFeasibility.TryGetRequiredStaticEntryRunupSteps(
                         current.MoveUsed,
-                        candidate.XOffset,
-                        candidate.ZOffset,
-                        candidate.YDelta,
+                        xOffset,
+                        zOffset,
+                        yDelta: -1,
                         out int requiredSteps))
                 {
                     continue;
                 }
-
-                ParkourFeasibility.GetSidewallAxes(
-                    candidate.XOffset,
-                    candidate.ZOffset,
-                    out int forwardX,
-                    out int forwardZ,
-                    out _,
-                    out _);
-
-                if (stepX != -forwardX || stepZ != -forwardZ)
-                    continue;
 
                 state = new EntryPreparationState(
                     EntryPreparationKind.SidewallRunup,

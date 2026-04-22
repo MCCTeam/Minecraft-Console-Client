@@ -62,13 +62,46 @@ namespace MinecraftClient.Pathing.Execution.Templates
             float targetPitch = TemplateHelper.CalculatePitch(dx, dy, dz);
             physics.Pitch = TemplateHelper.SmoothPitch(physics.Pitch, targetPitch);
 
+            // Snap yaw on the first tick to avoid a few ticks of sideways drift
+            // when the bot enters this segment with a stale orientation (e.g.
+            // just after a teleport or after a turn). Ledge-adjacent descends
+            // cannot tolerate drift without falling off the wrong side.
+            if (_tickCount == 1)
+                physics.Yaw = targetYaw;
+
             if (physics.OnGround && Math.Abs(dy) < (_hasFallen ? 1.0 : 0.6))
             {
                 TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
+                bool onOrPastTarget = TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd)
+                    || TemplateHelper.HasReachedSegmentEndPlane(pos, _segment);
+
+                // Fallback: after a diagonal descend landing the bot can end
+                // up on a support block that is not yet the target block
+                // (footprint still off the landing column).  The braking
+                // planner reads "remaining <= coastStop + lead" and returns
+                // Coast, which zeroes every input - if the bot has already
+                // come to rest this means the segment hangs forever and the
+                // pathing manager replans.  When we are stopped, not inside
+                // the target block, and not being asked to brake, walk
+                // toward the target instead of coasting so the landing
+                // resolves in one tick-window.
+                if (!decision.HoldBack
+                    && !TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd)
+                    && horizDistSq > 0.01
+                    && TemplateHelper.GetHorizontalSpeed(physics) < 0.03)
+                {
+                    float walkYaw = TemplateHelper.CalculateYaw(dx, dz);
+                    physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, walkYaw);
+                    input.Forward = true;
+                    input.Sprint = _needsSprint;
+
+                    if (GroundedSegmentController.ShouldComplete(_segment, pos, physics))
+                        return TemplateState.Complete;
+                    return TemplateState.InProgress;
+                }
+
                 if (horizDistSq > 0.01 && !decision.HoldBack)
                 {
-                    bool onOrPastTarget = TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd)
-                        || TemplateHelper.HasReachedSegmentEndPlane(pos, _segment);
                     float groundedYaw = onOrPastTarget
                         ? TemplateHelper.GetExitHeadingYaw(_segment)
                         : TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment)
@@ -96,8 +129,27 @@ namespace MinecraftClient.Pathing.Execution.Templates
             {
                 bool onOrPastTarget = TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd)
                     || TemplateHelper.HasReachedSegmentEndPlane(pos, _segment);
-                bool biasTowardExitInAir = onOrPastTarget
-                    || (_hasFallen && TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment, distanceThreshold: 1.5));
+                // Airborne bias toward the exit heading is only safe when
+                // the bot has effectively finished the current segment's
+                // horizontal travel: either the footprint is inside the
+                // landing block, or the vertical drop is small enough that
+                // lateral drift cannot miss the 1x1 landing column.  For
+                // multi-block drops the bot is in the air for 8+ ticks;
+                // rotating yaw mid-fall (e.g. after crossing the end plane
+                // but still 1-2 blocks above landing) pushes sprint/walk
+                // momentum perpendicular to the segment and drifts the bot
+                // off the landing column into the void.  Keep yaw pointed
+                // at the landing center through the whole fall on multi-Y
+                // descends; GroundedSegmentController rotates yaw once the
+                // bot is actually standing on the landing column.
+                double segmentYDrop = _segment.Start.Y - _segment.End.Y;
+                bool isSingleStepDescend = segmentYDrop <= 1.0;
+                bool footInsideTarget = TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd);
+                bool biasTowardExitInAir = footInsideTarget
+                    || (isSingleStepDescend
+                        && (onOrPastTarget
+                            || (_hasFallen
+                                && TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment, distanceThreshold: 1.5))));
                 float airborneYaw = biasTowardExitInAir
                     ? TemplateHelper.GetExitHeadingYaw(_segment)
                     : targetYaw;
@@ -117,7 +169,30 @@ namespace MinecraftClient.Pathing.Execution.Templates
                     else
                     {
                         TransitionBrakingDecision decision = TransitionBrakingPlanner.Plan(_segment, _nextSegment, pos, physics, world);
-                        if (_segment.ExitHints.AllowAirBrake)
+                        // Multi-block descend overshoot guard: when the
+                        // fall spans 2+ Y blocks, sprint momentum will
+                        // carry the bot roughly one extra horizontal
+                        // block past the planned landing.  If the next
+                        // segment prepares a jump (PrepareJump exit) the
+                        // bot MUST land inside the planned 1x1 landing
+                        // column so the jump takeoff has a valid footing;
+                        // overshooting drops into the void or onto a
+                        // block 1-2 tiers below, breaking the jump.
+                        // Once airborne and past the landing end-plane,
+                        // release forward input so sprint momentum decays
+                        // via air drag over the final 1-2 ticks of fall,
+                        // pulling the bot back into the landing column.
+                        bool riskyOvershoot = _hasFallen
+                            && segmentYDrop >= 2.0
+                            && onOrPastTarget
+                            && _segment.ExitTransition == PathTransitionType.PrepareJump;
+                        if (riskyOvershoot)
+                        {
+                            input.Forward = false;
+                            input.Sprint = false;
+                            input.Back = true;
+                        }
+                        else if (_segment.ExitHints.AllowAirBrake)
                         {
                             TemplateHelper.ApplyDecision(input, decision);
                             if (decision.HoldForward && _needsSprint)

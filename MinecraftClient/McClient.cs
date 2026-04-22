@@ -1724,58 +1724,33 @@ namespace MinecraftClient
 
         /// <summary>
         /// Navigate to a goal using the new A* pathfinder and template-based execution.
-        /// Accepts any IGoal for flexible target specification.
-        /// Returns a description of the result for UI feedback.
+        /// The A* search runs on a background task so the 20 TPS tick loop is
+        /// never blocked; the caller sees a "planning started" acknowledgement
+        /// and the real result is logged when
+        /// <see cref="Pathing.Execution.PathSegmentManager"/> installs the plan
+        /// on a subsequent tick.
         /// </summary>
         public (bool success, string message) NavigateToGoal(Pathing.Goals.IGoal goal, long timeoutMs = 5000)
         {
+            Location startPos;
             lock (locationLock)
             {
-                var ctx = new Pathing.Core.CalculationContext(world,
-                    allowParkour: true, allowParkourAscend: true);
-                var finder = new Pathing.Core.AStarPathFinder();
-                finder.DebugLog = msg => Log.Debug(msg);
-
-                int sx = (int)Math.Floor(location.X);
-                int sy = (int)Math.Floor(location.Y);
-                int sz = (int)Math.Floor(location.Z);
-
-                if (!ctx.CanWalkThrough(sx, sy, sz) && ctx.CanWalkThrough(sx, sy + 1, sz))
-                    sy++;
-
-                Log.Info($"[Navigate] A* search from ({sx},{sy},{sz}) to {goal}");
-
-                using var cts = new CancellationTokenSource();
-                var result = finder.Calculate(ctx, sx, sy, sz, goal, cts.Token, timeoutMs);
-
-                Log.Info($"[Navigate] A* result: {result.Status}, nodes={result.NodesExplored}, " +
-                         $"time={result.ElapsedMs}ms, path length={result.Path.Count}");
-
-                if (result.Status == Pathing.Core.PathStatus.Failed || result.Path.Count < 2)
-                {
-                    return (false, string.Format(Translations.cmd_goto_failed,
-                        result.NodesExplored, result.ElapsedMs));
-                }
-
-                for (int i = 1; i < result.Path.Count; i++)
-                {
-                    var node = result.Path[i];
-                    Log.Debug($"[Navigate]   seg[{i - 1}] = {node.MoveUsed}: ({node.X},{node.Y},{node.Z})");
-                }
-
-                pathTarget = null;
-                path = null;
-
-                pathSegmentManager = new Pathing.Execution.PathSegmentManager(
-                    debugLog: msg => Log.Debug(msg),
-                    infoLog: msg => Log.Info(msg),
-                    observer: new Pathing.Execution.Telemetry.PathExecutionLogObserver(msg => Log.Debug(msg)));
-                pathSegmentManager.StartNavigation(goal, result);
-
-                string statusStr = result.Status == Pathing.Core.PathStatus.Partial ? " (partial)" : "";
-                return (true, string.Format(Translations.cmd_goto_success,
-                    result.Path.Count - 1, result.NodesExplored, result.ElapsedMs, statusStr));
+                startPos = location;
             }
+
+            Log.Info($"[Navigate] A* search from ({(int)Math.Floor(startPos.X)},{(int)Math.Floor(startPos.Y)},{(int)Math.Floor(startPos.Z)}) to {goal}");
+
+            pathTarget = null;
+            path = null;
+
+            pathSegmentManager?.Cancel();
+            pathSegmentManager = new Pathing.Execution.PathSegmentManager(
+                debugLog: msg => Log.Debug(msg),
+                infoLog: msg => Log.Info(msg),
+                observer: new Pathing.Execution.Telemetry.PathExecutionLogObserver(msg => Log.Debug(msg)));
+            pathSegmentManager.StartNavigationAsync(goal, startPos, world, timeoutMs);
+
+            return (true, string.Format(Translations.cmd_goto_planning, timeoutMs));
         }
 
         /// <summary>

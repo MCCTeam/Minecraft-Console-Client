@@ -1252,6 +1252,18 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.goto.failed" xml:space="preserve">
     <value>No path found ({0} nodes explored in {1}ms)</value>
   </data>
+  <data name="cmd.goto.planning" xml:space="preserve">
+    <value>Planning path in background (budget: {0}ms)... result will appear in the log.</value>
+  </data>
+  <data name="cmd.pathdiag.desc" xml:space="preserve">
+    <value>toggle verbose pathing diagnostics (full plan dump, failure trace).</value>
+  </data>
+  <data name="cmd.pathdiag.enabled" xml:space="preserve">
+    <value>Pathing diagnostics enabled. Run /pathdiag off to disable.</value>
+  </data>
+  <data name="cmd.pathdiag.disabled" xml:space="preserve">
+    <value>Pathing diagnostics disabled.</value>
+  </data>
   <data name="pathing.metric.route_start" xml:space="preserve">
     <value>[PathMetric] routeStart segments={0}</value>
   </data>
