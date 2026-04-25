@@ -62,11 +62,31 @@ internal static class ParkourFeasibility
         if (carriedEntry && yDelta < 0)
             return true;
 
-        int backX = x - Math.Sign(xOffset);
-        int backZ = z - Math.Sign(zOffset);
-        if (!ctx.CanWalkOn(backX, y - 1, backZ))
-            return false;
-        return IsColumnPassable(ctx, backX, y, backZ);
+        int xSign = Math.Sign(xOffset);
+        int zSign = Math.Sign(zOffset);
+
+        // Long flat sprint parkour (5 c2c, horiz~5) requires the player to be
+        // launched at full vanilla sprint velocity (~12 momentum ticks). A
+        // standing-jump cold start only reaches gap=3 (=4 c2c). When the
+        // previous move is not a momentum-carrying Parkour/Descend, one back
+        // block of runway is not enough to spin sprint up; demand at least
+        // two aligned back blocks so the executor has a real run-up window.
+        // tools/sim_jump_reach.py "Standing sprint jump (0t momentum)" matrix
+        // shows gap=4 dy=0 is unreachable, while 12t-momentum gap=4 reaches
+        // 5.1075 m.
+        int requiredBackBlocks = (yDelta == 0 && !carriedEntry && horiz >= 4.5) ? 2 : 1;
+
+        for (int i = 1; i <= requiredBackBlocks; i++)
+        {
+            int backX = x - xSign * i;
+            int backZ = z - zSign * i;
+            if (!ctx.CanWalkOn(backX, y - 1, backZ))
+                return false;
+            if (!IsColumnPassable(ctx, backX, y, backZ))
+                return false;
+        }
+
+        return true;
     }
 
     public static bool TryGetRequiredStaticEntryRunupSteps(

@@ -123,12 +123,14 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 return TemplateHelper.RemainingDistanceAlongSegment(pos, segment) <= handoffDistance;
             }
 
-            if (exitSpeed < segment.ExitHints.MinExitSpeed)
-                return false;
-
-            if (exitSpeed > segment.ExitHints.MaxExitSpeed)
-                return false;
-
+            // LandingRecovery accepts a fully-decelerated handoff: once the bot
+            // has reached the target block on the ground, the segment has done
+            // its job. Apply this before the MinExitSpeed gate so a Descend
+            // that lands and naturally settles to zero speed (e.g. when the
+            // following segment is a fresh Traverse rather than a chained
+            // Parkour) can hand off cleanly. Without this early-out the bot
+            // would idle inside the destination block until the segment timed
+            // out, triggering an unnecessary replan.
             if (segment.ExitTransition == PathTransitionType.LandingRecovery
                 && physics.OnGround
                 && !segment.ExitHints.RequireStableFooting
@@ -136,6 +138,12 @@ namespace MinecraftClient.Pathing.Execution.Templates
             {
                 return true;
             }
+
+            if (exitSpeed < segment.ExitHints.MinExitSpeed)
+                return false;
+
+            if (exitSpeed > segment.ExitHints.MaxExitSpeed)
+                return false;
 
             if (segment.ExitHints.RequireStableFooting)
             {
