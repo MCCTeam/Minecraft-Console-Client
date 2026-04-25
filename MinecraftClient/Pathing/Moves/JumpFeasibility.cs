@@ -242,7 +242,18 @@ internal static class JumpFeasibility
         bool pathViaZ = ctx.CanWalkThrough(x, y, z + dz) &&
                         ctx.CanWalkThrough(x, y + 1, z + dz);
 
-        if (!pathViaX && !pathViaZ)
+        // A diagonal Step descend forces the player off the corner of the
+        // current standing block. Vanilla axis-separated collision resolves
+        // -X and -Z movement independently: when ONE cardinal shoulder is
+        // blocked by a wall, the matching velocity component is zeroed and
+        // the bot slides along the open axis only. If the open-axis column
+        // (e.g. (x, y-1, z+dz) when only pathViaZ is clear) lacks a floor,
+        // the bot falls straight down past the intended landing block at
+        // (x+dx, y-2, z+dz) into whatever solid surface lies further below
+        // — exactly the multi-block fall-through observed on the 251→244
+        // route around (249,136,207). Require BOTH shoulder columns to be
+        // passable so the bot can actually clear the corner diagonally.
+        if (!pathViaX || !pathViaZ)
         {
             result.SetImpossible();
             return;

@@ -47,13 +47,27 @@ internal static class ParkourFeasibility
     {
         double horiz = Math.Sqrt(xOffset * xOffset + zOffset * zOffset);
         bool carriedEntry = ctx.PreviousMoveType is MoveType.Parkour or MoveType.Descend;
+
+        // Sprint-momentum carry semantics for flat (yDelta == 0) parkour:
+        //   * Parkour-carry: the previous move's airborne sprint is preserved
+        //     cleanly through landing, so a chained 5 c2c flat parkour can
+        //     fire immediately from the takeoff edge.
+        //   * Descend-carry: the previous Descend often overshoots the
+        //     takeoff block by ~0.5 m (the bot lands inside the takeoff
+        //     block but already past the leading edge), eating the runway
+        //     the SprintJumpTemplate needs to spin sprint back up. In
+        //     practice this lets the bot launch with sub-12-tick momentum
+        //     and short-fall the 5 c2c gap by ~0.7 m. Treat Descend-carry
+        //     as a cold start for flat run-up so the planner inserts an
+        //     explicit traverse runway or picks a shorter parkour.
+        bool parkourCarry = ctx.PreviousMoveType == MoveType.Parkour;
         double threshold = yDelta switch
         {
             > 0 when carriedEntry => 4.5,
             > 0 => 2.5,
             < 0 when carriedEntry => 5.5,
             < 0 => 3.5,
-            _ when carriedEntry => 5.5,
+            _ when parkourCarry => 5.5,
             _ => 3.5,
         };
         if (horiz < threshold)
@@ -67,14 +81,14 @@ internal static class ParkourFeasibility
 
         // Long flat sprint parkour (5 c2c, horiz~5) requires the player to be
         // launched at full vanilla sprint velocity (~12 momentum ticks). A
-        // standing-jump cold start only reaches gap=3 (=4 c2c). When the
-        // previous move is not a momentum-carrying Parkour/Descend, one back
-        // block of runway is not enough to spin sprint up; demand at least
-        // two aligned back blocks so the executor has a real run-up window.
+        // standing-jump cold start only reaches gap=3 (=4 c2c). Without a
+        // clean Parkour-carry, one back block of runway is not enough to
+        // spin sprint up; demand at least two aligned back blocks so the
+        // executor has a real run-up window.
         // tools/sim_jump_reach.py "Standing sprint jump (0t momentum)" matrix
         // shows gap=4 dy=0 is unreachable, while 12t-momentum gap=4 reaches
         // 5.1075 m.
-        int requiredBackBlocks = (yDelta == 0 && !carriedEntry && horiz >= 4.5) ? 2 : 1;
+        int requiredBackBlocks = (yDelta == 0 && !parkourCarry && horiz >= 4.5) ? 2 : 1;
 
         for (int i = 1; i <= requiredBackBlocks; i++)
         {
