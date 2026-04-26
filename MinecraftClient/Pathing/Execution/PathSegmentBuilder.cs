@@ -94,20 +94,21 @@ namespace MinecraftClient.Pathing.Execution
             bool nextImmediatelyJumps = nextNext is not null
                 && nextNext.MoveType is (MoveType.Parkour or MoveType.Ascend);
 
-            if (turning)
-            {
-                return new PathTransitionHints(
-                    DesiredHeadingX: next.HeadingX,
-                    DesiredHeadingZ: next.HeadingZ,
-                    MinExitSpeed: nextImmediatelyJumps ? 0.05 : 0.0,
-                    MaxExitSpeed: nextImmediatelyJumps ? 0.16 : 0.05,
-                    RequireStableFooting: !nextImmediatelyJumps,
-                    RequireGrounded: true,
-                    RequireJumpReady: nextImmediatelyJumps,
-                    AllowAirBrake: true,
-                    HorizonTicks: 12);
-            }
-
+            // LandingRecovery (current is Descend/Parkour/Fall) takes precedence
+            // over the turning branch even when heading changes between current
+            // and next. The turning branch demands RequireStableFooting=true,
+            // which forces the GroundedSegmentController completion gate to wait
+            // for IsSettledOnTargetBlock (footprint inside, won't leave next
+            // tick, horizontal speed^2 <= 0.0016). After a multi-block diagonal
+            // Descend the bot lands inside the target block already carrying
+            // ~0.02 m/tick of residual momentum that the planner can't shed
+            // cleanly: the per-tick yaw bias toward the next segment's heading
+            // pulls the bot off-axis, the bot slides off the target block, the
+            // template re-targets the centre, and so on for ~60 ticks until
+            // momentum decays. The LandingRecovery shortcut in
+            // GroundedSegmentController.ShouldComplete (!RequireStableFooting +
+            // footprint inside target) bypasses the speed gate cleanly the
+            // moment the bot reaches the landing column.
             if (exitTransition == PathTransitionType.LandingRecovery)
             {
                 return new PathTransitionHints(
@@ -118,6 +119,20 @@ namespace MinecraftClient.Pathing.Execution
                     RequireStableFooting: false,
                     RequireGrounded: true,
                     RequireJumpReady: false,
+                    AllowAirBrake: true,
+                    HorizonTicks: 12);
+            }
+
+            if (turning)
+            {
+                return new PathTransitionHints(
+                    DesiredHeadingX: next.HeadingX,
+                    DesiredHeadingZ: next.HeadingZ,
+                    MinExitSpeed: nextImmediatelyJumps ? 0.05 : 0.0,
+                    MaxExitSpeed: nextImmediatelyJumps ? 0.16 : 0.05,
+                    RequireStableFooting: !nextImmediatelyJumps,
+                    RequireGrounded: true,
+                    RequireJumpReady: nextImmediatelyJumps,
                     AllowAirBrake: true,
                     HorizonTicks: 12);
             }

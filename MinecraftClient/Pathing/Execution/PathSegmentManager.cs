@@ -51,10 +51,12 @@ namespace MinecraftClient.Pathing.Execution
         /// </summary>
         public static bool DiagnosticsEnabled { get; set; }
 
-        private const int DiagnosticsTailSize = 64;
+        private const int DiagnosticsTailSize = 200;
+        private const int SlowSegmentDumpTickThreshold = 25;
         private readonly Queue<string> _diagnosticsTail = new(DiagnosticsTailSize + 1);
         private PathResult? _lastPlan;
         private int _lastObservedSegmentIndex = -1;
+        private int _ticksSinceSegmentStart;
 
         public bool IsNavigating =>
             (_executor is not null && !_executor.IsComplete)
@@ -89,6 +91,7 @@ namespace MinecraftClient.Pathing.Execution
             var segments = PathSegmentBuilder.FromPath(result.Path);
             _executor = new PathExecutor(segments, _debugLog, _observer);
             _lastObservedSegmentIndex = -1;
+            _ticksSinceSegmentStart = 0;
             _infoLog?.Invoke($"[PathMgr] Navigation started: {segments.Count} segments");
         }
 
@@ -197,10 +200,31 @@ namespace MinecraftClient.Pathing.Execution
             // without relying on the bounded tail buffer. Resets on plan install.
             if (segIdx != _lastObservedSegmentIndex)
             {
+                if (_lastObservedSegmentIndex >= 0
+                    && _ticksSinceSegmentStart >= SlowSegmentDumpTickThreshold)
+                {
+                    _infoLog?.Invoke(
+                        $"[PathDiag] Slow segment {_lastObservedSegmentIndex}/{_executor.TotalSegments} took {_ticksSinceSegmentStart} ticks, dumping last {Math.Min(_diagnosticsTail.Count, _ticksSinceSegmentStart)} ticks:");
+                    int toDump = Math.Min(_diagnosticsTail.Count, _ticksSinceSegmentStart);
+                    int skipCount = _diagnosticsTail.Count - toDump;
+                    int i = 0;
+                    foreach (string line in _diagnosticsTail)
+                    {
+                        if (i++ < skipCount)
+                            continue;
+                        _infoLog?.Invoke($"[PathDiag]   t-{toDump - (i - skipCount)}: {line}");
+                    }
+                }
+
                 _lastObservedSegmentIndex = segIdx;
+                _ticksSinceSegmentStart = 0;
                 _infoLog?.Invoke(
                     $"[PathDiag] seg->{segIdx}/{_executor.TotalSegments} pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) yaw={physics.Yaw:F1} vy={physics.DeltaMovement.Y:F3} og={physics.OnGround} " +
                     (seg is null ? "none" : $"{seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1}) exit={seg.ExitTransition}"));
+            }
+            else
+            {
+                _ticksSinceSegmentStart++;
             }
 
             _diagnosticsTail.Enqueue(
@@ -428,6 +452,7 @@ namespace MinecraftClient.Pathing.Execution
             _lastPlan = result;
             _diagnosticsTail.Clear();
             _lastObservedSegmentIndex = -1;
+            _ticksSinceSegmentStart = 0;
             if (isInitial)
             {
                 _executor = new PathExecutor(segments, _debugLog, _observer);
