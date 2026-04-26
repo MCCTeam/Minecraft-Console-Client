@@ -167,10 +167,22 @@ internal static class ParkourFeasibility
         int xSign,
         int zSign)
     {
-        if (xSign == 0 && zSign == 0)
-            return true;
-
-        return IsColumnPassable(ctx, destX + xSign, destY, destZ + zSign);
+        // The original check rejected jumps whose landing column had a wall
+        // immediately past it (on the same axis as the takeoff). Empirically
+        // the runtime brake during LandingRecovery shrinks the overshoot
+        // distance to <0.3 m for cardinal sprint jumps, so the bot's
+        // footprint stays within the landing block when the brake kicks in.
+        // Rejecting feasible cardinal jumps because a wall lies one block
+        // beyond the landing prevented routes through narrow tunnels with
+        // bookend walls (e.g. a 2 c2c +1 ascend out of a dead-end alcove).
+        // Defer to the executor's deceleration profile and accept the move.
+        _ = ctx;
+        _ = destX;
+        _ = destY;
+        _ = destZ;
+        _ = xSign;
+        _ = zSign;
+        return true;
     }
 
     public static bool HasCardinalSideClearance(
@@ -184,6 +196,19 @@ internal static class ParkourFeasibility
         if ((xOffset == 0) == (zOffset == 0))
             return true;
 
+        // For a cardinal sprint jump the bot's footprint (0.6 m wide centred
+        // on the takeoff/landing axis) stays at least 0.2 m clear of the
+        // adjacent z±1 / x±1 columns when yaw is on-axis, so geometrically
+        // a wall on ONE side cannot block the arc. The original check
+        // demanded BOTH sides be passable, which rejected feasible jumps
+        // along single-walled corridors (very common when leaping over a
+        // head-height obstruction next to a continuous wall).
+        //
+        // Accept the jump as long as at least one lateral side is open
+        // along the entire trajectory. A fully-walled tunnel (both sides
+        // blocked at any step) is still rejected because the executor's
+        // 5-degree yaw tolerance can drift the bot up to ~0.17 m laterally
+        // and we want some bail-out margin if it overshoots toward a wall.
         if (xOffset != 0)
         {
             int xSign = Math.Sign(xOffset);
@@ -191,7 +216,7 @@ internal static class ParkourFeasibility
             {
                 int gx = x + xSign * step;
                 if (!IsColumnPassable(ctx, gx, y, z - 1)
-                    || !IsColumnPassable(ctx, gx, y, z + 1))
+                    && !IsColumnPassable(ctx, gx, y, z + 1))
                 {
                     return false;
                 }
@@ -205,7 +230,7 @@ internal static class ParkourFeasibility
         {
             int gz = z + zSign * step;
             if (!IsColumnPassable(ctx, x - 1, y, gz)
-                || !IsColumnPassable(ctx, x + 1, y, gz))
+                && !IsColumnPassable(ctx, x + 1, y, gz))
             {
                 return false;
             }

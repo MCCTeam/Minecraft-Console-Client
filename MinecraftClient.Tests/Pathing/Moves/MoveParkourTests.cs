@@ -83,8 +83,16 @@ public sealed class MoveParkourTests
     }
 
     [Fact]
-    public void Rejects2x1GapWhenSideWallNarrowsLanding()
+    public void Accepts2x1GapWithSingleSideWall()
     {
+        // Cardinal 2 c2c flat parkour with a wall along ONE lateral side
+        // (z=-1) and clear air on the other (z=+1). The bot's footprint at
+        // z=0.5 stays z=[0.2,0.8], so the z=-1 wall (occupies z=[-1,0]) is
+        // 0.2 m clear of the bot under on-axis yaw. The previous check
+        // rejected this for safety; the relaxed gate accepts as long as at
+        // least one lateral side is passable. Mirrors the live scenario
+        // where breaking a head-height obstruction in a corridor leaves a
+        // jump-over-the-gap option as the only reachable route.
         var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
         FlatWorldTestBuilder.ClearBox(world, -1, FloorY, -2, 4, FloorY + 4, 2);
         FlatWorldTestBuilder.SetSolid(world, 0, FloorY, 0);
@@ -100,7 +108,78 @@ public sealed class MoveParkourTests
 
         move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
 
+        Assert.False(result.IsImpossible);
+        Assert.Equal(2, result.DestX);
+        Assert.Equal(FloorY + 1, result.DestY);
+        Assert.Equal(0, result.DestZ);
+    }
+
+    [Fact]
+    public void Rejects2x1GapInsideFullyWalledTunnel()
+    {
+        // Cardinal 2 c2c parkour with walls on BOTH lateral sides at body
+        // and head height. With no lateral bail-out margin, an executor
+        // yaw drift of >5 degrees during the arc can clip a wall, so the
+        // planner still rejects this shape. Guards against accidentally
+        // turning the relaxed-gate into "accept everything cardinal".
+        var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
+        FlatWorldTestBuilder.ClearBox(world, -1, FloorY, -2, 4, FloorY + 4, 2);
+        FlatWorldTestBuilder.SetSolid(world, 0, FloorY, 0);
+        FlatWorldTestBuilder.SetSolid(world, 2, FloorY, 0);
+        FlatWorldTestBuilder.SetSolid(world, 1, FloorY + 1, -1);
+        FlatWorldTestBuilder.SetSolid(world, 1, FloorY + 2, -1);
+        FlatWorldTestBuilder.SetSolid(world, 2, FloorY + 1, -1);
+        FlatWorldTestBuilder.SetSolid(world, 2, FloorY + 2, -1);
+        FlatWorldTestBuilder.SetSolid(world, 1, FloorY + 1, 1);
+        FlatWorldTestBuilder.SetSolid(world, 1, FloorY + 2, 1);
+        FlatWorldTestBuilder.SetSolid(world, 2, FloorY + 1, 1);
+        FlatWorldTestBuilder.SetSolid(world, 2, FloorY + 2, 1);
+
+        var ctx = BuildContext(world);
+        var move = MoveJump.Parkour(2, 0);
+        var result = default(MoveResult);
+
+        move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
+
         Assert.True(result.IsImpossible);
+    }
+
+    [Fact]
+    public void Accepts2x0Plus1AscendOverHeadObstructionGap()
+    {
+        // Live regression: bot at (256,127,225) with floor (256,126,225) and
+        // a head-height stone at (255,128,225). After breaking the stone,
+        // the bot should plan a +1 ascend cardinal sprint jump straight to
+        // (254,128,225). One lateral side (z=224) is a continuous wall, the
+        // other (z=226) is open. The gap column (255,*,225) and the cell
+        // beyond the landing (253,128,225) used to be rejected by
+        // HasCardinalSideClearance and HasLandingOvershootClearance.
+        var world = FlatWorldTestBuilder.CreateStoneFloor(FloorY);
+        FlatWorldTestBuilder.ClearBox(world, -2, FloorY, -2, 4, FloorY + 4, 2);
+
+        FlatWorldTestBuilder.SetSolid(world, 0, FloorY, 0);
+        FlatWorldTestBuilder.SetSolid(world, -2, FloorY + 1, 0);
+
+        FlatWorldTestBuilder.SetSolid(world, -3, FloorY + 1, 0);
+        FlatWorldTestBuilder.SetSolid(world, -3, FloorY + 2, 0);
+        FlatWorldTestBuilder.SetSolid(world, -3, FloorY + 3, 0);
+
+        for (int dx = -3; dx <= 1; dx++)
+        {
+            FlatWorldTestBuilder.SetSolid(world, dx, FloorY + 1, -1);
+            FlatWorldTestBuilder.SetSolid(world, dx, FloorY + 2, -1);
+        }
+
+        var ctx = BuildContext(world);
+        var move = MoveJump.Parkour(-2, 0, yDelta: 1);
+        var result = default(MoveResult);
+
+        move.Calculate(ctx, 0, FloorY + 1, 0, ref result);
+
+        Assert.False(result.IsImpossible, "+1 ascend cardinal 2 c2c should plan past a single-side wall and a wall-bookended landing");
+        Assert.Equal(-2, result.DestX);
+        Assert.Equal(FloorY + 2, result.DestY);
+        Assert.Equal(0, result.DestZ);
     }
 
     [Fact]
