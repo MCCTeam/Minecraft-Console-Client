@@ -886,4 +886,121 @@ public sealed class GroundedTemplateConvergenceTests
             TemplateFootingHelper.IsFootprintInsideTargetBlock(finalPos, ascend.End),
             $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
     }
+
+    /// <summary>
+    /// Live regression: B->A route segment 9/41 Ascend (243.5,97,181.5)->
+    /// (244.5,98,182.5) exit=Turn, fed by a Descend->PrepareJump handoff.
+    /// The Ascend starts mid-air with cardinal +Z momentum and yaw aimed
+    /// at the diagonal target. Without a post-landing completion shortcut
+    /// the bot lands hot (footprint partially outside target) and the
+    /// AscendTemplate top-level yaw smoothing toward targetYaw fights the
+    /// GroundedSegmentController exit-heading rotation, oscillating yaw
+    /// each tick until the bot drifts off the 1-block landing's edge and
+    /// the segment fails. With the shortcut the segment completes the
+    /// instant the bot lands with center inside the target column, which
+    /// hands off cleanly to the next template (Traverse) that snaps yaw
+    /// on its first tick.
+    /// </summary>
+    [Fact]
+    public void AscendTemplate_TurnExit_FromCarriedAirMomentum_CompletesOnTargetColumnLanding()
+    {
+        World world = FlatWorldTestBuilder.CreateStoneFloor(min: -4, max: 6);
+        FlatWorldTestBuilder.ClearBox(world, -4, 80, -4, 6, 86, 6);
+        // Source block (0,79,0) is the Descend's landing column; the bot
+        // arrives mid-jump above it.
+        FlatWorldTestBuilder.SetSolid(world, 0, 79, 0);
+        // Target block (1,80,1) (NE diagonal +1y) is the Ascend's landing.
+        FlatWorldTestBuilder.SetSolid(world, 1, 80, 1);
+        // Next-segment landing column (Traverse east from target).
+        FlatWorldTestBuilder.SetSolid(world, 2, 80, 1);
+        // Walkable shoulder block beneath the bot's overshooting +Z
+        // footprint so the bot doesn't drop into a 2-block hole on
+        // landing (matches the live world geometry where a wide platform
+        // existed at the target's elevation).
+        FlatWorldTestBuilder.SetSolid(world, 1, 80, 2);
+
+        var ascend = new PathSegment
+        {
+            Start = new Location(0.5, 80, 0.5),
+            End = new Location(1.5, 81, 1.5),
+            MoveType = MoveType.Ascend,
+            ExitTransition = PathTransitionType.Turn,
+            ExitHints = new PathTransitionHints(
+                DesiredHeadingX: 1,
+                DesiredHeadingZ: 0,
+                MinExitSpeed: 0.0,
+                MaxExitSpeed: 0.05,
+                RequireStableFooting: true,
+                RequireGrounded: true,
+                RequireJumpReady: false,
+                AllowAirBrake: true,
+                HorizonTicks: 12),
+            PreserveSprint = true
+        };
+        var next = new PathSegment
+        {
+            Start = new Location(1.5, 81, 1.5),
+            End = new Location(2.5, 81, 1.5),
+            MoveType = MoveType.Traverse,
+            ExitTransition = PathTransitionType.FinalStop
+        };
+
+        var template = new AscendTemplate(ascend, next);
+
+        // Seed mid-arc state mirroring the live PathDiag tick-trace at the
+        // first observed tick of seg9/41: bot already airborne with rising
+        // vy, cardinal +Z momentum from the preceding Descend, and yaw
+        // pointing roughly NE (the AscendTemplate snapped yaw on the
+        // takeoff tick).
+        var physics = new PlayerPhysics
+        {
+            Position = new Vec3d(0.7, 80.42, 0.92),
+            DeltaMovement = new Vec3d(0.0, 0.333, 0.145),
+            OnGround = false,
+            Sprinting = true,
+            MovementSpeed = 0.1f,
+            Yaw = 311f,
+            Pitch = 0f
+        };
+
+        var input = new MovementInput();
+        TemplateState state = TemplateState.InProgress;
+        Location finalPos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+        var trace = new List<string>();
+        int elapsedTicks = 0;
+        for (; elapsedTicks < 80; elapsedTicks++)
+        {
+            input.Reset();
+            Location pos = new(physics.Position.X, physics.Position.Y, physics.Position.Z);
+            state = template.Tick(pos, physics, input, world);
+            if (elapsedTicks < 30 || state != TemplateState.InProgress)
+            {
+                trace.Add(
+                    $"tick={elapsedTicks} state={state} pos={pos} yaw={physics.Yaw:F1} vel={physics.DeltaMovement} " +
+                    $"onGround={physics.OnGround} input(F={input.Forward},B={input.Back},J={input.Jump},S={input.Sprint})");
+            }
+            if (state != TemplateState.InProgress)
+            {
+                finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+                break;
+            }
+
+            physics.ApplyInput(input);
+            physics.Tick(world);
+            finalPos = new Location(physics.Position.X, physics.Position.Y, physics.Position.Z);
+        }
+
+        Assert.True(
+            state == TemplateState.Complete,
+            $"state={state} elapsed={elapsedTicks} finalPos={finalPos} vel={physics.DeltaMovement}\n{string.Join('\n', trace)}");
+        Assert.True(
+            physics.OnGround,
+            $"state={state} finalPos={finalPos} vel={physics.DeltaMovement}");
+        Assert.True(
+            TemplateFootingHelper.IsCenterInsideTargetBlock(finalPos, ascend.End),
+            $"finalPos={finalPos} target={ascend.End}\n{string.Join('\n', trace)}");
+        Assert.True(
+            elapsedTicks <= 30,
+            $"completion took {elapsedTicks} ticks; expected post-landing shortcut to fire promptly\n{string.Join('\n', trace)}");
+    }
 }

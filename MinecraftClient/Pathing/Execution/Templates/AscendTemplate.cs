@@ -43,6 +43,7 @@ namespace MinecraftClient.Pathing.Execution.Templates
         private Location _lastPos;
         private int _stuckTicks;
         private bool _initiatedJump;
+        private bool _hasBeenAirborne;
         private int _diagonalBrakeTicks;
 
         public AscendTemplate(PathSegment segment, PathSegment? nextSegment)
@@ -182,8 +183,38 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 }
             }
 
+            if (!physics.OnGround)
+                _hasBeenAirborne = true;
+
             if (physics.OnGround && Math.Abs(dy) < 0.2)
             {
+                // Post-landing shortcut: once the Ascend's jump arc has put the
+                // bot back on ground at the target's elevation with its center
+                // inside the target column, the segment has done its job. Hand
+                // off to the next template (which snaps yaw on its first tick)
+                // instead of trying to brake or settle to stable footing.
+                //
+                // Holding onto the segment here re-runs both the AscendTemplate
+                // top-level yaw smoothing toward targetYaw (a moving bearing as
+                // the bot drifts past End) AND GroundedSegmentController's
+                // segment/exit-heading rotation each tick. The two competing
+                // yaw targets (e.g. yaw=233 anti-velocity vs yaw=315 segment
+                // heading vs yaw=270 exit heading on a Descend->PrepareJump->
+                // Ascend->Turn chain) oscillate the bot ~80 ticks until it
+                // walks off the 1-block landing's edge and the segment fails.
+                // Mirrors the existing "Ascend completes on PrepareJump as
+                // soon as center is inside the target block" gate in
+                // GroundedSegmentController.ShouldComplete. FinalStop is
+                // excluded because the last segment must come to rest at
+                // the goal: hand it back to GroundedSegmentController,
+                // which uses IsSettledAtEnd to detect a true stop.
+                if (_hasBeenAirborne
+                    && _segment.ExitTransition != PathTransitionType.FinalStop
+                    && TemplateFootingHelper.IsCenterInsideTargetBlock(pos, _segment.End))
+                {
+                    return TemplateState.Complete;
+                }
+
                 GroundedSegmentController.Apply(_segment, _nextSegment, pos, physics, input, world);
                 if (GroundedSegmentController.ShouldComplete(_segment, pos, physics))
                     return TemplateState.Complete;

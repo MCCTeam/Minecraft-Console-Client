@@ -150,9 +150,31 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         && (onOrPastTarget
                             || (_hasFallen
                                 && TemplateHelper.ShouldBiasTowardExitHeading(pos, _segment, distanceThreshold: 1.5))));
-                float airborneYaw = biasTowardExitInAir
-                    ? TemplateHelper.GetExitHeadingYaw(_segment)
-                    : targetYaw;
+                float airborneYaw;
+                if (biasTowardExitInAir)
+                {
+                    airborneYaw = TemplateHelper.GetExitHeadingYaw(_segment);
+                }
+                else if (!isSingleStepDescend)
+                {
+                    // Multi-block descend: target-tracking yaw rotates as
+                    // the bot drifts past the landing column mid-fall (e.g.
+                    // a diagonal 3 c2c drop with dx=-1, dz=-1 starts at
+                    // yaw=135, the relative bearing to End flips through
+                    // 90 -> 0 -> 315 in 6 air ticks). With Forward input
+                    // held, the rotating yaw pushes air-control momentum
+                    // perpendicular to the planned trajectory, drifting
+                    // the bot ~0.5 m past the landing column and onto an
+                    // adjacent block one tier below. Lock airborne yaw to
+                    // the segment's start->end heading so air drift stays
+                    // aligned with the planned diagonal; the GroundedSegment
+                    // controller takes over once the bot is on the landing.
+                    airborneYaw = TemplateHelper.CalculateYaw(_segment.HeadingX, _segment.HeadingZ);
+                }
+                else
+                {
+                    airborneYaw = targetYaw;
+                }
 
                 physics.Yaw = TemplateHelper.SmoothYaw(physics.Yaw, airborneYaw);
                 if (_hasFallen || YawDifference(physics.Yaw, airborneYaw) <= PreDropYawToleranceDeg)
