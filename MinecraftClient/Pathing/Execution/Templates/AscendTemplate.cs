@@ -188,28 +188,31 @@ namespace MinecraftClient.Pathing.Execution.Templates
 
             if (physics.OnGround && Math.Abs(dy) < 0.2)
             {
-                // Post-landing shortcut: once the Ascend's jump arc has put the
-                // bot back on ground at the target's elevation with its center
-                // inside the target column, the segment has done its job. Hand
-                // off to the next template (which snaps yaw on its first tick)
-                // instead of trying to brake or settle to stable footing.
+                // Post-landing shortcut for Turn exits only: once the Ascend's
+                // jump arc has put the bot back on ground at the target's
+                // elevation with its center inside the target column, hand off
+                // to the next template (which snaps yaw on its first tick)
+                // instead of trying to settle to stable footing.
                 //
                 // Holding onto the segment here re-runs both the AscendTemplate
                 // top-level yaw smoothing toward targetYaw (a moving bearing as
                 // the bot drifts past End) AND GroundedSegmentController's
-                // segment/exit-heading rotation each tick. The two competing
-                // yaw targets (e.g. yaw=233 anti-velocity vs yaw=315 segment
-                // heading vs yaw=270 exit heading on a Descend->PrepareJump->
-                // Ascend->Turn chain) oscillate the bot ~80 ticks until it
+                // exit-heading rotation each tick. With a Turn transition the
+                // two yaw targets disagree (segment heading vs perpendicular
+                // exit heading) and the bot oscillates ~80 ticks until it
                 // walks off the 1-block landing's edge and the segment fails.
-                // Mirrors the existing "Ascend completes on PrepareJump as
-                // soon as center is inside the target block" gate in
-                // GroundedSegmentController.ShouldComplete. FinalStop is
-                // excluded because the last segment must come to rest at
-                // the goal: hand it back to GroundedSegmentController,
-                // which uses IsSettledAtEnd to detect a true stop.
+                //
+                // We deliberately do NOT shortcut PrepareJump exits: the next
+                // segment is another jump that needs the bot settled near the
+                // target column center for a clean takeoff. Completing too
+                // early leaves the bot's start position offset along the
+                // previous heading, which compounds with the next segment's
+                // sprint-jump boost and overshoots short (2-block) parkour
+                // landings. ContinueStraight/LandingRecovery share the same
+                // segment heading as the next segment, so the GSC handoff
+                // does not produce a conflicting yaw target.
                 if (_hasBeenAirborne
-                    && _segment.ExitTransition != PathTransitionType.FinalStop
+                    && _segment.ExitTransition == PathTransitionType.Turn
                     && TemplateFootingHelper.IsCenterInsideTargetBlock(pos, _segment.End))
                 {
                     return TemplateState.Complete;
