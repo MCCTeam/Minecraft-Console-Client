@@ -58,6 +58,22 @@ namespace MinecraftClient.Pathing.Execution
         private int _lastObservedSegmentIndex = -1;
         private int _ticksSinceSegmentStart;
 
+        // Diagnostic emission runs on the thread pool to keep the 20 TPS tick
+        // unblocked. Each batch is appended to a single chained Task so that
+        // line ordering is preserved across batches, even when the same tick
+        // produces both a slow-segment dump and the next seg-> header. Without
+        // the chain, multiple Task.Run calls could interleave and mangle the
+        // log output.
+        //
+        // Without this offload, a 200-line failure dump issued synchronously
+        // through ConsoleIO.WriteLogLine -> file logger took 200-500 ms on
+        // the main tick. The stalled tick stops position packets so the
+        // server view freezes, then snaps forward when the tick resumes -
+        // exactly the "freeze, jump, freeze" the user reported when /pathdiag
+        // was on.
+        private Task _diagFlushTail = Task.CompletedTask;
+        private readonly object _diagFlushLock = new();
+
         public bool IsNavigating =>
             (_executor is not null && !_executor.IsComplete)
             || _nextExecutor is not null
@@ -203,24 +219,29 @@ namespace MinecraftClient.Pathing.Execution
                 if (_lastObservedSegmentIndex >= 0
                     && _ticksSinceSegmentStart >= SlowSegmentDumpTickThreshold)
                 {
-                    _infoLog?.Invoke(
-                        $"[PathDiag] Slow segment {_lastObservedSegmentIndex}/{_executor.TotalSegments} took {_ticksSinceSegmentStart} ticks, dumping last {Math.Min(_diagnosticsTail.Count, _ticksSinceSegmentStart)} ticks:");
                     int toDump = Math.Min(_diagnosticsTail.Count, _ticksSinceSegmentStart);
                     int skipCount = _diagnosticsTail.Count - toDump;
+                    var batch = new List<string>(toDump + 1)
+                    {
+                        $"[PathDiag] Slow segment {_lastObservedSegmentIndex}/{_executor.TotalSegments} took {_ticksSinceSegmentStart} ticks, dumping last {toDump} ticks:"
+                    };
                     int i = 0;
                     foreach (string line in _diagnosticsTail)
                     {
                         if (i++ < skipCount)
                             continue;
-                        _infoLog?.Invoke($"[PathDiag]   t-{toDump - (i - skipCount)}: {line}");
+                        batch.Add($"[PathDiag]   t-{toDump - (i - skipCount)}: {line}");
                     }
+                    DispatchDiagnosticsBatch(batch);
                 }
 
                 _lastObservedSegmentIndex = segIdx;
                 _ticksSinceSegmentStart = 0;
-                _infoLog?.Invoke(
-                    $"[PathDiag] seg->{segIdx}/{_executor.TotalSegments} pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) yaw={physics.Yaw:F1} vy={physics.DeltaMovement.Y:F3} og={physics.OnGround} " +
-                    (seg is null ? "none" : $"{seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1}) exit={seg.ExitTransition}"));
+                DispatchDiagnosticsBatch(new[]
+                {
+                    $"[PathDiag] seg->{segIdx}/{_executor.TotalSegments} pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) yaw={physics.Yaw:F1} vy={physics.DeltaMovement.Y:F3} og={physics.OnGround} "
+                    + (seg is null ? "none" : $"{seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1}) exit={seg.ExitTransition}")
+                });
             }
             else
             {
@@ -239,28 +260,70 @@ namespace MinecraftClient.Pathing.Execution
                 return;
             PathSegment? seg = _executor.CurrentSegment;
             int segIdx = _executor.CurrentIndex;
-            _infoLog?.Invoke($"[PathDiag] Failure context: pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) failingSeg={segIdx}/{_executor.TotalSegments} " +
-                             (seg is null ? "seg=<none>" : $"seg={seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1}) exit={seg.ExitTransition}"));
+            var batch = new List<string>(_diagnosticsTail.Count + 2)
+            {
+                $"[PathDiag] Failure context: pos=({pos.X:F2},{pos.Y:F2},{pos.Z:F2}) failingSeg={segIdx}/{_executor.TotalSegments} "
+                + (seg is null ? "seg=<none>" : $"seg={seg.MoveType} ({seg.Start.X:F1},{seg.Start.Y:F1},{seg.Start.Z:F1})->({seg.End.X:F1},{seg.End.Y:F1},{seg.End.Z:F1}) exit={seg.ExitTransition}")
+            };
             if (_diagnosticsTail.Count > 0)
             {
-                _infoLog?.Invoke($"[PathDiag] Recent tick trace (last {_diagnosticsTail.Count}):");
+                batch.Add($"[PathDiag] Recent tick trace (last {_diagnosticsTail.Count}):");
                 int i = 0;
+                int total = _diagnosticsTail.Count;
                 foreach (string line in _diagnosticsTail)
-                    _infoLog?.Invoke($"[PathDiag]   t-{_diagnosticsTail.Count - i++ - 1}: {line}");
+                    batch.Add($"[PathDiag]   t-{total - i++ - 1}: {line}");
             }
+            DispatchDiagnosticsBatch(batch);
         }
 
         private void EmitPathDumpDiagnostics(string label, PathResult result, int startIdx = 0)
         {
             if (!DiagnosticsEnabled)
                 return;
-            _infoLog?.Invoke($"[PathDiag] {label}: {result.Path.Count} waypoints, status={result.Status}, nodes={result.NodesExplored}, time={result.ElapsedMs}ms");
             int count = result.Path.Count;
+            var batch = new List<string>(count + 1)
+            {
+                $"[PathDiag] {label}: {count} waypoints, status={result.Status}, nodes={result.NodesExplored}, time={result.ElapsedMs}ms"
+            };
             for (int i = 0; i < count; i++)
             {
                 var node = result.Path[i];
                 string move = i == 0 ? "Start" : node.MoveUsed.ToString();
-                _infoLog?.Invoke($"[PathDiag]   [{startIdx + i:D2}] {move,-22} ({node.X},{node.Y},{node.Z})");
+                batch.Add($"[PathDiag]   [{startIdx + i:D2}] {move,-22} ({node.X},{node.Y},{node.Z})");
+            }
+            DispatchDiagnosticsBatch(batch);
+        }
+
+        /// <summary>
+        /// Schedule a diagnostics line batch for emission on a background task,
+        /// chained behind any prior batch so output order is preserved. The
+        /// caller's snapshot is captured by reference; the input list MUST not
+        /// be mutated after dispatch.
+        /// </summary>
+        private void DispatchDiagnosticsBatch(IReadOnlyList<string> lines)
+        {
+            Action<string>? infoLog = _infoLog;
+            if (infoLog is null || lines.Count == 0)
+                return;
+
+            lock (_diagFlushLock)
+            {
+                _diagFlushTail = _diagFlushTail.ContinueWith(_ =>
+                {
+                    for (int i = 0; i < lines.Count; i++)
+                    {
+                        try
+                        {
+                            infoLog(lines[i]);
+                        }
+                        catch
+                        {
+                            // Swallow logger faults so a downstream sink failure
+                            // never tears down the chain (which would silently
+                            // drop every subsequent diagnostics batch).
+                        }
+                    }
+                }, TaskScheduler.Default);
             }
         }
 

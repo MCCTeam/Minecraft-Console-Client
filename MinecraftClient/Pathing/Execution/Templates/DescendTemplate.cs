@@ -145,7 +145,24 @@ namespace MinecraftClient.Pathing.Execution.Templates
                 double segmentYDrop = _segment.Start.Y - _segment.End.Y;
                 bool isSingleStepDescend = segmentYDrop <= 1.0;
                 bool footInsideTarget = TemplateFootingHelper.IsFootprintInsideTargetBlock(pos, ExpectedEnd);
-                bool biasTowardExitInAir = footInsideTarget
+
+                // Long-descend lateral drift guard. When the bot's footprint
+                // enters the landing block at the very start of a multi-block
+                // fall (e.g. a 22-block water drop where target X/Z column
+                // matches the launch column), `biasTowardExitInAir` would
+                // immediately rotate yaw to the next segment's heading. With
+                // Forward held during the entire fall, the perpendicular air
+                // drift accumulates ~0.05 m/tick and over 20+ airborne ticks
+                // walks the bot a full block out of the landing column, so it
+                // misses the water/landing target and dies on the rim. Only
+                // permit exit-heading bias for non-single-step descends once
+                // the bot is within ~1.5 m of the landing Y (~3 ticks of
+                // free-fall), so any exit-heading drift cannot displace the
+                // landing footprint by more than a fraction of a block.
+                double remainingFallY = pos.Y - _segment.End.Y;
+                bool nearLanding = remainingFallY <= 1.5;
+
+                bool biasTowardExitInAir = (footInsideTarget && (isSingleStepDescend || nearLanding))
                     || (isSingleStepDescend
                         && (onOrPastTarget
                             || (_hasFallen
@@ -204,11 +221,25 @@ namespace MinecraftClient.Pathing.Execution.Templates
                         // release forward input so sprint momentum decays
                         // via air drag over the final 1-2 ticks of fall,
                         // pulling the bot back into the landing column.
+                        //
+                        // The same guard applies to long water/landing
+                        // drops with any non-PrepareJump exit. A 22-block
+                        // fall lasts 20+ airborne ticks; at ~0.2 m/tick
+                        // peak air-control velocity, holding Forward for
+                        // the entire fall accumulates 4+ m of horizontal
+                        // drift past the start ledge and the bot lands
+                        // outside the 1x1 water column. Once the
+                        // footprint is inside the target column, brake
+                        // horizontal velocity so the bot falls straight
+                        // down into the water/landing block.
                         bool riskyOvershoot = _hasFallen
                             && segmentYDrop >= 2.0
                             && onOrPastTarget
                             && _segment.ExitTransition == PathTransitionType.PrepareJump;
-                        if (riskyOvershoot)
+                        bool longFallFootprintLanding = _hasFallen
+                            && segmentYDrop >= 2.0
+                            && footInsideTarget;
+                        if (riskyOvershoot || longFallFootprintLanding)
                         {
                             input.Forward = false;
                             input.Sprint = false;
