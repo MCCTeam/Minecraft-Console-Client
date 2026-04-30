@@ -5,6 +5,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_2;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_11;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._26_1;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Registries;
@@ -22,7 +23,7 @@ public class StructuredComponentsRegistry261 : StructuredComponentRegistry
         RegisterComponent<UseEffectsComponent>(5, "minecraft:use_effects");
         RegisterComponent<CustomNameComponent>(6, "minecraft:custom_name");
         RegisterComponent<PotionDurationScaleComponent>(7, "minecraft:minimum_attack_charge");
-        RegisterComponent<RegistryEitherHolderComponent>(8, "minecraft:damage_type");
+        RegisterComponent<VarIntComponent>(8, "minecraft:damage_type");
         RegisterComponent<ItemNameComponent>(9, "minecraft:item_name");
         RegisterComponent<ItemModelComponent>(10, "minecraft:item_model");
         RegisterComponent<LoreNameComponent1206>(11, "minecraft:lore");
@@ -41,7 +42,7 @@ public class StructuredComponentsRegistry261 : StructuredComponentRegistry
         RegisterComponent<ConsumableComponent>(24, "minecraft:consumable");
         RegisterComponent<UseRemainderComponent>(25, "minecraft:use_remainder");
         RegisterComponent<UseCooldownComponent>(26, "minecraft:use_cooldown");
-        RegisterComponent<DamageResistantComponent>(27, "minecraft:damage_resistant");
+        RegisterComponent<HolderSetComponent261>(27, "minecraft:damage_resistant");
         RegisterComponent<ToolComponent>(28, "minecraft:tool");
         RegisterComponent<WeaponComponent>(29, "minecraft:weapon");
         RegisterComponent<AttackRangeComponent>(30, "minecraft:attack_range");
@@ -75,11 +76,11 @@ public class StructuredComponentsRegistry261 : StructuredComponentRegistry
         RegisterComponent<EntityDataComponent>(58, "minecraft:entity_data");
         RegisterComponent<BucketEntityDataComponent>(59, "minecraft:bucket_entity_data");
         RegisterComponent<BlockEntityDataComponent>(60, "minecraft:block_entity_data");
-        RegisterComponent<InstrumentComponent1215>(61, "minecraft:instrument");
-        RegisterComponent<ProvidesTrimMaterialComponent>(62, "minecraft:provides_trim_material");
+        RegisterComponent<InstrumentComponent261>(61, "minecraft:instrument");
+        RegisterComponent<ProvidesTrimMaterialComponent261>(62, "minecraft:provides_trim_material");
         RegisterComponent<OmniousBottleAmplifierComponent>(63, "minecraft:ominous_bottle_amplifier");
         RegisterComponent<JukeBoxPlayableComponent>(64, "minecraft:jukebox_playable");
-        RegisterComponent<ProvidesBannerPatternsComponent>(65, "minecraft:provides_banner_patterns");
+        RegisterComponent<HolderSetComponent261>(65, "minecraft:provides_banner_patterns");
         RegisterComponent<RecipesComponent>(66, "minecraft:recipes");
         RegisterComponent<LodestoneTrackerComponent>(67, "minecraft:lodestone_tracker");
         RegisterComponent<FireworkExplosionComponent>(68, "minecraft:firework_explosion");
@@ -112,9 +113,9 @@ public class StructuredComponentsRegistry261 : StructuredComponentRegistry
         RegisterComponent<VarIntComponent>(94, "minecraft:pig/sound_variant");           // New in 26.1
         RegisterComponent<VarIntComponent>(95, "minecraft:cow/variant");
         RegisterComponent<VarIntComponent>(96, "minecraft:cow/sound_variant");           // New in 26.1
-        RegisterComponent<EitherHolderComponent>(97, "minecraft:chicken/variant");
+        RegisterComponent<VarIntComponent>(97, "minecraft:chicken/variant");
         RegisterComponent<VarIntComponent>(98, "minecraft:chicken/sound_variant");       // New in 26.1
-        RegisterComponent<RegistryEitherHolderComponent>(99, "minecraft:zombie_nautilus/variant");
+        RegisterComponent<VarIntComponent>(99, "minecraft:zombie_nautilus/variant");
         RegisterComponent<VarIntComponent>(100, "minecraft:frog/variant");
         RegisterComponent<VarIntComponent>(101, "minecraft:horse/variant");
         RegisterComponent<PaintingVariantHolderComponent>(102, "minecraft:painting/variant");
