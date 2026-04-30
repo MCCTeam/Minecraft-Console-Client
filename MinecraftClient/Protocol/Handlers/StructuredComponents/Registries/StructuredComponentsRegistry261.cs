@@ -5,7 +5,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_2;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_11;
-using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_26_1;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._26_1;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Registries;

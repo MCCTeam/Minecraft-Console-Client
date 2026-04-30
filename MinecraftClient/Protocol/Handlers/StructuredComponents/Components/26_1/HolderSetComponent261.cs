@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
-namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_26_1;
+namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._26_1;
 
 public class HolderSetComponent261(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)

@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
-namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_26_1;
+namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._26_1;
 
-public class InstrumentComponent261(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
+public class ProvidesTrimMaterialComponent261(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int HolderId { get; set; }
@@ -15,17 +15,15 @@ public class InstrumentComponent261(DataTypes dataTypes, ItemPalette itemPalette
         if (HolderId != 0)
             return;
 
-        var soundHolderId = DataTypes.ReadNextVarInt(data);
-        if (soundHolderId == 0)
+        DataTypes.ReadNextString(data); // base asset suffix
+
+        var overrideCount = DataTypes.ReadNextVarInt(data);
+        for (var i = 0; i < overrideCount; i++)
         {
-            DataTypes.ReadNextString(data); // ResourceLocation
-            var hasFixedRange = DataTypes.ReadNextBool(data);
-            if (hasFixedRange)
-                DataTypes.ReadNextFloat(data);
+            DataTypes.ReadNextString(data); // ResourceKey<EquipmentAsset>
+            DataTypes.ReadNextString(data); // override suffix
         }
 
-        DataTypes.ReadNextFloat(data); // useDuration
-        DataTypes.ReadNextFloat(data); // range
         DataTypes.ReadNextNbt(data); // ComponentSerialization.STREAM_CODEC
     }
 
