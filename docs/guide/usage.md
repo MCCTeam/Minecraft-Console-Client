@@ -268,6 +268,117 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>book</code></summary>
+
+<div class="custom-container note"><p class="custom-container-title">Note</p>
+
+**You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+
+</div>
+
+- **Description:**
+
+  Read the book in your main hand, or edit it if it is a writable book.
+
+  In TUI mode, `/book read` opens a page viewer instead of printing the whole book to chat. The same viewer also opens automatically when the server tells the client to open a book.
+
+  If you are holding a writable book, you can replace all pages, update one page, insert a page, delete a page, and sign the finished book.
+
+- **Usage:**
+
+  Read the current book or a single page:
+
+  ```
+  /book read [page]
+  ```
+
+  Replace the whole writable book from inline text or a file:
+
+  ```
+  /book write text <text>
+  /book write file <path>
+  ```
+
+  Open the TUI editor or edit specific pages from the command line:
+
+  ```
+  /book edit
+  /book edit page <page> <text>
+  /book edit insert <page> <text>
+  /book edit delete <page>
+  ```
+
+  Sign the writable book in your main hand:
+
+  ```
+  /book sign <title>
+  ```
+
+- **Notes:**
+
+  `read` works with a writable book or a written book in your main hand.
+
+  `write`, `edit`, and `sign` require a writable book in your main hand.
+
+  Use `\n` for line breaks and `\f` for page breaks when passing inline text.
+
+  MCC checks page count, page length, and title length against the current protocol before sending the packet.
+
+  The interactive editor is only available in TUI mode.
+
+- **Examples:**
+
+  Read the held book:
+
+  ```
+  /book read
+  ```
+
+  Show only page 2:
+
+  ```
+  /book read 2
+  ```
+
+  Write two pages from the command line:
+
+  ```
+  /book write text First page\nSecond line\fSecond page
+  ```
+
+  Load the book text from a file:
+
+  ```
+  /book write file ./letter.txt
+  ```
+
+  Replace page 3:
+
+  ```
+  /book edit page 3 Updated text for page three
+  ```
+
+  Insert a new page before page 2:
+
+  ```
+  /book edit insert 2 This page goes before the old page 2
+  ```
+
+  Delete page 4:
+
+  ```
+  /book edit delete 4
+  ```
+
+  Sign the current writable book:
+
+  ```
+  /book sign Meeting Notes
+  ```
+
+</details>
+
+<details>
 <summary><code>bed</code></summary>
 
 - **Description:**
