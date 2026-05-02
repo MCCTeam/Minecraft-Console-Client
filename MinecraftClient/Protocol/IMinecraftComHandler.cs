@@ -225,6 +225,12 @@ namespace MinecraftClient.Protocol
         void OnPluginChannelMessage(string channel, byte[] data);
 
         /// <summary>
+        /// Called when the server asks the client to open a book UI.
+        /// </summary>
+        /// <param name="hand">Book hand, 0 main hand, 1 off hand.</param>
+        void OnBookOpen(int hand);
+
+        /// <summary>
         /// Called when an entity has spawned
         /// </summary>
         /// <param name="entity">Spawned entity</param>

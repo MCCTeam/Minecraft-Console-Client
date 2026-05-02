@@ -241,6 +241,9 @@ namespace MinecraftClient.Protocol.Handlers
                 >= MC_1_16_2_Version => new ItemPalette1162(),
                 >= MC_1_16_1_Version => new ItemPalette1161(),
                 >= MC_1_15_Version => new ItemPalette115(),
+                >= MC_1_14_Version => new ItemPalette114(),
+                >= MC_1_13_2_Version => new ItemPalette1132(),
+                >= MC_1_13_Version => new ItemPalette113(),
                 >= MC_1_12_Version => new ItemPalette112(),
                 >= MC_1_11_Version => new ItemPalette111(),
                 >= MC_1_10_Version => new ItemPalette110(),
@@ -2313,8 +2316,13 @@ namespace MinecraftClient.Protocol.Handlers
                     // Length is unneeded as the whole remaining packetData is the entire payload of the packet.
                     if (protocolVersion < MC_1_8_Version)
                         pForge.ReadNextVarShort(packetData);
+                    if (IsOpenBookPluginChannel(channel))
+                        handler.OnBookOpen(ReadBookHand(new Queue<byte>(packetData)));
                     handler.OnPluginChannelMessage(channel, packetData.ToArray());
                     return pForge.HandlePluginMessage(channel, packetData, ref currentDimension);
+                case PacketTypesIn.OpenBook:
+                    handler.OnBookOpen(ReadBookHand(packetData));
+                    break;
                 case PacketTypesIn.Disconnect:
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick,
                         dataTypes.ReadNextChat(packetData));
@@ -2983,6 +2991,9 @@ namespace MinecraftClient.Protocol.Handlers
                         dataTypes.ReadNextVarInt(packetData); // Sound id
                         soundName = null;
                     }
+
+                    if (protocolVersion < MC_1_19_Version && packetData.Count < 21)
+                        break;
 
                     int category = dataTypes.ReadNextVarInt(packetData);
                     double x = dataTypes.ReadNextInt(packetData) / 8.0D;
@@ -5279,6 +5290,18 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        private bool IsOpenBookPluginChannel(string channel)
+        {
+            return protocolVersion < MC_1_13_Version
+                ? string.Equals(channel, "MC|BOpen", StringComparison.Ordinal)
+                : string.Equals(channel, "minecraft:book_open", StringComparison.Ordinal);
+        }
+
+        private int ReadBookHand(Queue<byte> packetData)
+        {
+            return packetData.Count > 0 ? dataTypes.ReadNextVarInt(packetData) : (int)BookHand.Main;
+        }
+
         /// <summary>
         /// Send a Login Plugin Response packet (0x02)
         /// </summary>
@@ -5865,6 +5888,80 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(dataTypes.GetString(recipeId));
                 packet.AddRange(dataTypes.GetBool(makeAll));
                 SendPacket(PacketTypesOut.CraftRecipeRequest, packet);
+                return true;
+            }
+            catch (SocketException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+        }
+
+        public bool SendEditBook(Item currentBook, IReadOnlyList<string> pages, string? title, string author, int selectedHotbarSlot)
+        {
+            try
+            {
+                if (protocolVersion < MC_1_8_Version)
+                    return false;
+
+                bool signing = title is not null;
+                IReadOnlyList<string> normalizedPages = BookContentHelper.NormalizePages(pages);
+
+                if (protocolVersion < MC_1_13_Version)
+                {
+                    Item payload = signing
+                        ? BookContentHelper.CreateWrittenPayload(
+                            currentBook,
+                            normalizedPages,
+                            title ?? string.Empty,
+                            author,
+                            encodePagesAsJson: protocolVersion < MC_1_9_Version)
+                        : BookContentHelper.CreateWritablePayload(currentBook, normalizedPages);
+
+                    byte[] payloadData = dataTypes.GetItemSlot(payload, itemPalette);
+                    if (payloadData.Length > 32767)
+                        return false;
+
+                    return SendPluginChannelPacket(signing ? "MC|BSign" : "MC|BEdit", payloadData);
+                }
+
+                if (protocolVersion < MC_1_17_Version)
+                {
+                    Item payload = signing
+                        ? BookContentHelper.CreateWrittenPayload(currentBook, normalizedPages, title ?? string.Empty, author, encodePagesAsJson: false)
+                        : BookContentHelper.CreateWritablePayload(currentBook, normalizedPages);
+
+                    List<byte> packet = new();
+                    packet.AddRange(dataTypes.GetItemSlot(payload, itemPalette));
+                    packet.AddRange(dataTypes.GetBool(signing));
+
+                    if (protocolVersion >= MC_1_16_5_Version)
+                        packet.AddRange(DataTypes.GetVarInt(selectedHotbarSlot));
+                    else if (protocolVersion >= MC_1_13_2_Version)
+                        packet.AddRange(DataTypes.GetVarInt((int)BookHand.Main));
+
+                    SendPacket(PacketTypesOut.EditBook, packet);
+                    return true;
+                }
+
+                List<byte> modernPacket = new();
+                modernPacket.AddRange(DataTypes.GetVarInt(selectedHotbarSlot));
+                modernPacket.AddRange(DataTypes.GetVarInt(normalizedPages.Count));
+                foreach (string page in normalizedPages)
+                    modernPacket.AddRange(dataTypes.GetString(page));
+
+                modernPacket.AddRange(dataTypes.GetBool(signing));
+                if (signing)
+                    modernPacket.AddRange(dataTypes.GetString(title ?? string.Empty));
+
+                SendPacket(PacketTypesOut.EditBook, modernPacket);
                 return true;
             }
             catch (SocketException)

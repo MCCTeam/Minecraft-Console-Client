@@ -816,6 +816,11 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //MC 1.8-1.12.1 recipe book not supported
         }
 
+        public bool SendEditBook(Item currentBook, IReadOnlyList<string> pages, string? title, string author, int selectedHotbarSlot)
+        {
+            return false; //MC 1.4.6-1.6.4 book editing is not supported
+        }
+
         public bool SendCloseWindow(int windowId)
         {
             return false; //Currently not implemented

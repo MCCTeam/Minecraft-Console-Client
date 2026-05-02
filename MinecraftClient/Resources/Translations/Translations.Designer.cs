@@ -7552,5 +7552,149 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("cmd.achievement.entry", resourceCulture);
             }
         }
+        internal static string cmd_book_usage {
+            get { return ResourceManager.GetString("cmd.book.usage", resourceCulture); }
+        }
+
+        internal static string cmd_book_desc {
+            get { return ResourceManager.GetString("cmd.book.desc", resourceCulture); }
+        }
+
+        internal static string cmd_book_help_read {
+            get { return ResourceManager.GetString("cmd.book.help_read", resourceCulture); }
+        }
+
+        internal static string cmd_book_help_write {
+            get { return ResourceManager.GetString("cmd.book.help_write", resourceCulture); }
+        }
+
+        internal static string cmd_book_help_edit {
+            get { return ResourceManager.GetString("cmd.book.help_edit", resourceCulture); }
+        }
+
+        internal static string cmd_book_help_sign {
+            get { return ResourceManager.GetString("cmd.book.help_sign", resourceCulture); }
+        }
+
+        internal static string cmd_book_not_holding_book {
+            get { return ResourceManager.GetString("cmd.book.not_holding_book", resourceCulture); }
+        }
+
+        internal static string cmd_book_not_holding_writable {
+            get { return ResourceManager.GetString("cmd.book.not_holding_writable", resourceCulture); }
+        }
+
+        internal static string cmd_book_tui_opened {
+            get { return ResourceManager.GetString("cmd.book.tui_opened", resourceCulture); }
+        }
+
+        internal static string cmd_book_tui_required {
+            get { return ResourceManager.GetString("cmd.book.tui_required", resourceCulture); }
+        }
+
+        internal static string cmd_book_write_sent {
+            get { return ResourceManager.GetString("cmd.book.write_sent", resourceCulture); }
+        }
+
+        internal static string cmd_book_edit_sent {
+            get { return ResourceManager.GetString("cmd.book.edit_sent", resourceCulture); }
+        }
+
+        internal static string cmd_book_sign_sent {
+            get { return ResourceManager.GetString("cmd.book.sign_sent", resourceCulture); }
+        }
+
+        internal static string cmd_book_write_failed {
+            get { return ResourceManager.GetString("cmd.book.write_failed", resourceCulture); }
+        }
+
+        internal static string cmd_book_file_not_found {
+            get { return ResourceManager.GetString("cmd.book.file_not_found", resourceCulture); }
+        }
+
+        internal static string cmd_book_page_out_of_range {
+            get { return ResourceManager.GetString("cmd.book.page_out_of_range", resourceCulture); }
+        }
+
+        internal static string cmd_book_too_many_pages {
+            get { return ResourceManager.GetString("cmd.book.too_many_pages", resourceCulture); }
+        }
+
+        internal static string cmd_book_page_too_long {
+            get { return ResourceManager.GetString("cmd.book.page_too_long", resourceCulture); }
+        }
+
+        internal static string cmd_book_title_invalid {
+            get { return ResourceManager.GetString("cmd.book.title_invalid", resourceCulture); }
+        }
+
+        internal static string cmd_book_header_signed {
+            get { return ResourceManager.GetString("cmd.book.header_signed", resourceCulture); }
+        }
+
+        internal static string cmd_book_header_writable {
+            get { return ResourceManager.GetString("cmd.book.header_writable", resourceCulture); }
+        }
+
+        internal static string cmd_book_page_header {
+            get { return ResourceManager.GetString("cmd.book.page_header", resourceCulture); }
+        }
+
+        internal static string tui_book_title_watermark {
+            get { return ResourceManager.GetString("tui.book.title_watermark", resourceCulture); }
+        }
+
+        internal static string tui_book_prev {
+            get { return ResourceManager.GetString("tui.book.prev", resourceCulture); }
+        }
+
+        internal static string tui_book_next {
+            get { return ResourceManager.GetString("tui.book.next", resourceCulture); }
+        }
+
+        internal static string tui_book_insert {
+            get { return ResourceManager.GetString("tui.book.insert", resourceCulture); }
+        }
+
+        internal static string tui_book_delete {
+            get { return ResourceManager.GetString("tui.book.delete", resourceCulture); }
+        }
+
+        internal static string tui_book_save {
+            get { return ResourceManager.GetString("tui.book.save", resourceCulture); }
+        }
+
+        internal static string tui_book_sign {
+            get { return ResourceManager.GetString("tui.book.sign", resourceCulture); }
+        }
+
+        internal static string tui_book_close {
+            get { return ResourceManager.GetString("tui.book.close", resourceCulture); }
+        }
+
+        internal static string tui_book_saved {
+            get { return ResourceManager.GetString("tui.book.saved", resourceCulture); }
+        }
+
+        internal static string tui_book_save_failed {
+            get { return ResourceManager.GetString("tui.book.save_failed", resourceCulture); }
+        }
+
+        internal static string tui_book_signed {
+            get { return ResourceManager.GetString("tui.book.signed", resourceCulture); }
+        }
+
+        internal static string tui_book_page_header {
+            get { return ResourceManager.GetString("tui.book.page_header", resourceCulture); }
+        }
+
+        internal static string tui_book_editing {
+            get { return ResourceManager.GetString("tui.book.editing", resourceCulture); }
+        }
+
+        internal static string tui_book_reading {
+            get { return ResourceManager.GetString("tui.book.reading", resourceCulture); }
+        }
+
     }
 }

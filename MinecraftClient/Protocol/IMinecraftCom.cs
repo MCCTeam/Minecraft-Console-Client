@@ -200,6 +200,17 @@ namespace MinecraftClient.Protocol
         bool SendPlaceRecipe(int windowId, string recipeId, bool makeAll);
 
         /// <summary>
+        /// Send a book edit/sign packet for the currently held writable book.
+        /// </summary>
+        /// <param name="currentBook">Current held writable book</param>
+        /// <param name="pages">Book pages</param>
+        /// <param name="title">Title when signing, otherwise null</param>
+        /// <param name="author">Current player name when signing</param>
+        /// <param name="selectedHotbarSlot">Selected hotbar slot, 0-8</param>
+        /// <returns>True if packet was successfully sent</returns>
+        bool SendEditBook(Item currentBook, IReadOnlyList<string> pages, string? title, string author, int selectedHotbarSlot);
+
+        /// <summary>
         /// Plays animation
         /// </summary>
         /// <param name="animation">0 for left arm, 1 for right arm</param>
