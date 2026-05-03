@@ -1957,7 +1957,7 @@ redirectFrom:
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues with it and you should treat it as an experimental bot.**
+**This bot is still experimental, has some known issues, and should be treated with extra caution on legacy versions.**
 
 </div>
 
@@ -1975,6 +1975,8 @@ redirectFrom:
   - Pumpkin
   - Potato
   - Wheat
+
+  Beetroot farming requires Minecraft `1.9+`.
 
   **Current list of issues:**
 

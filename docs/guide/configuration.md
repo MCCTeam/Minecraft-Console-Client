@@ -555,7 +555,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
   <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-  **This feature is currently not supported in `1.4.6 - 1.9`. But we are working on getting it supported in 1.8 and 1.9.**
+  **This feature is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
 
   </div>
 

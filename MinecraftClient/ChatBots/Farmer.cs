@@ -73,7 +73,7 @@ namespace MinecraftClient.ChatBots
 
         public override void Initialize()
         {
-            if (GetProtocolVersion() < Protocol18Handler.MC_1_13_Version)
+            if (GetProtocolVersion() < Protocol18Handler.MC_1_8_Version)
             {
                 LogToConsole(Translations.bot_farmer_not_implemented);
                 return;
@@ -148,6 +148,10 @@ namespace MinecraftClient.ChatBots
         {
             if (running)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_farmer_already_running);
+
+            if (!IsCropAvailableForProtocol(whatToFarm, GetProtocolVersion()))
+                return r.SetAndReturn(CmdResult.Status.Fail,
+                    string.Format(Translations.bot_farmer_crop_unavailable, whatToFarm, "1.9"));
 
             var movementLock = BotMovementLock.Instance;
             if (movementLock is { IsLocked: true })
@@ -369,11 +373,11 @@ namespace MinecraftClient.ChatBots
                                     break;
                                 }
 
-                                var loc = new Location(Math.Floor(location.X), Math.Floor(location2.Y),
+                                var loc = new Location(Math.Floor(location.X), Math.Floor(location.Y),
                                     Math.Floor(location.Z));
                                 LogDebug("Sending placeblock to: " + loc);
 
-                                SendPlaceBlock(loc, Direction.Up);
+                                SendPlaceBlock(loc, Direction.Up, lookAtBlock: true);
                                 Thread.Sleep(300);
                             }
                             else LogDebug("Can't move to: " + location2);
@@ -496,7 +500,7 @@ namespace MinecraftClient.ChatBots
                                 {
                                     // TODO: Do a check if the carrot/potato is on the first growth stage
                                     // if so, use: new Location(location.X, (double)(location.Y - 1) + (double)0.93750, location.Z)
-                                    SendPlaceBlock(location2, Direction.Down);
+                                    SendPlaceBlock(location2, Direction.Down, lookAtBlock: true);
                                 }
 
                                 Thread.Sleep(100);
@@ -591,6 +595,15 @@ namespace MinecraftClient.ChatBots
             };
         }
 
+        private static bool IsCropAvailableForProtocol(CropType type, int protocolVersion)
+        {
+            return type switch
+            {
+                CropType.Beetroot => protocolVersion >= Protocol18Handler.MC_1_9_Version,
+                _ => true
+            };
+        }
+
         private List<Location> FindEmptyFarmland(int radius)
         {
             return GetWorld()
@@ -616,15 +629,18 @@ namespace MinecraftClient.ChatBots
                     if (fullyGrown && material is Material.Melon or Material.Pumpkin)
                         return true;
 
-                    var isFullyGrown = IsCropFullyGrown(GetWorld().GetBlock(location), cropType);
+                    var isFullyGrown = IsCropFullyGrown(GetWorld().GetBlock(location), cropType, location);
                     return fullyGrown ? isFullyGrown : !isFullyGrown;
                 })
                 .ToList();
         }
 
-        private bool IsCropFullyGrown(Block block, CropType cropType)
+        private bool IsCropFullyGrown(Block block, CropType cropType, Location? location = null)
         {
             var protocolVersion = GetProtocolVersion();
+
+            if (protocolVersion < Protocol18Handler.MC_1_13_Version)
+                return IsLegacyCropFullyGrown(block, cropType, location);
 
             switch (cropType)
             {
@@ -779,6 +795,44 @@ namespace MinecraftClient.ChatBots
             }
 
             return false;
+        }
+
+        private bool IsLegacyCropFullyGrown(Block block, CropType cropType, Location? location)
+        {
+            return cropType switch
+            {
+                CropType.Beetroot => block.BlockId == 207 && block.BlockMeta >= 3,
+                CropType.Carrot => block.BlockId == 141 && block.BlockMeta >= 7,
+                CropType.Melon => block.BlockId == 105
+                    && (block.BlockMeta >= 7 || HasAdjacentBlock(location, Material.Melon)),
+                CropType.NetherWart => block.BlockId == 115 && block.BlockMeta >= 3,
+                CropType.Pumpkin => block.BlockId == 104
+                    && (block.BlockMeta >= 7 || HasAdjacentBlock(location, Material.Pumpkin)),
+                CropType.Potato => block.BlockId == 142 && block.BlockMeta >= 7,
+                CropType.Wheat => block.BlockId == 59 && block.BlockMeta >= 7,
+                _ => false
+            };
+        }
+
+        private bool HasAdjacentBlock(Location? location, Material material)
+        {
+            if (location is not Location stemLocation)
+                return false;
+
+            var world = GetWorld();
+            int x = (int)Math.Floor(stemLocation.X);
+            int y = (int)Math.Floor(stemLocation.Y);
+            int z = (int)Math.Floor(stemLocation.Z);
+
+            Location[] adjacentLocations =
+            [
+                new(x + 1, y, z),
+                new(x - 1, y, z),
+                new(x, y, z + 1),
+                new(x, y, z - 1)
+            ];
+
+            return adjacentLocations.Any(adjacentLocation => world.GetBlock(adjacentLocation).Type == material);
         }
 
         // Yoinked from ReinforceZwei's AutoTree and adapted to search the whole of inventory in additon to the hotbar
