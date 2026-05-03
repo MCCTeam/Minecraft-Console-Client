@@ -149,6 +149,10 @@ namespace MinecraftClient.ChatBots
             if (running)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.bot_farmer_already_running);
 
+            if (!IsCropAvailableForProtocol(whatToFarm, GetProtocolVersion()))
+                return r.SetAndReturn(CmdResult.Status.Fail,
+                    string.Format(Translations.bot_farmer_crop_unavailable, whatToFarm, "1.9"));
+
             var movementLock = BotMovementLock.Instance;
             if (movementLock is { IsLocked: true })
                 return r.SetAndReturn(CmdResult.Status.Fail,
@@ -369,11 +373,11 @@ namespace MinecraftClient.ChatBots
                                     break;
                                 }
 
-                                var loc = new Location(Math.Floor(location.X), Math.Floor(location2.Y),
+                                var loc = new Location(Math.Floor(location.X), Math.Floor(location.Y),
                                     Math.Floor(location.Z));
                                 LogDebug("Sending placeblock to: " + loc);
 
-                                SendPlaceBlock(loc, Direction.Up);
+                                SendPlaceBlock(loc, Direction.Up, lookAtBlock: true);
                                 Thread.Sleep(300);
                             }
                             else LogDebug("Can't move to: " + location2);
@@ -496,7 +500,7 @@ namespace MinecraftClient.ChatBots
                                 {
                                     // TODO: Do a check if the carrot/potato is on the first growth stage
                                     // if so, use: new Location(location.X, (double)(location.Y - 1) + (double)0.93750, location.Z)
-                                    SendPlaceBlock(location2, Direction.Down);
+                                    SendPlaceBlock(location2, Direction.Down, lookAtBlock: true);
                                 }
 
                                 Thread.Sleep(100);
@@ -588,6 +592,15 @@ namespace MinecraftClient.ChatBots
                 CropType.Potato => ItemType.Potato,
                 CropType.Wheat => ItemType.Wheat,
                 _ => throw new Exception("Item type for " + type.GetType().Name + " has not been mapped!")
+            };
+        }
+
+        private static bool IsCropAvailableForProtocol(CropType type, int protocolVersion)
+        {
+            return type switch
+            {
+                CropType.Beetroot => protocolVersion >= Protocol18Handler.MC_1_9_Version,
+                _ => true
             };
         }
 

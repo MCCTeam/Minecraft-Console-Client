@@ -1222,6 +1222,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is only available in Minecraft {1} and newer!.
+        /// </summary>
+        internal static string bot_farmer_crop_unavailable {
+            get {
+                return ResourceManager.GetString("bot.farmer.crop_unavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Farming bot.
         /// </summary>
         internal static string bot_farmer_desc {
@@ -1267,7 +1276,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not implemented bellow 1.13!.
+        ///   Looks up a localized string similar to Not implemented below 1.8!.
         /// </summary>
         internal static string bot_farmer_not_implemented {
             get {

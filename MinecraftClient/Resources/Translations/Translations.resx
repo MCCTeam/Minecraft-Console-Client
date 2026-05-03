@@ -505,6 +505,9 @@ cooldown: {6}</value>
   <data name="bot.farmer.crop_type" xml:space="preserve">
     <value>Crop type</value>
   </data>
+  <data name="bot.farmer.crop_unavailable" xml:space="preserve">
+    <value>{0} is only available in Minecraft {1} and newer!</value>
+  </data>
   <data name="bot.farmer.desc" xml:space="preserve">
     <value>Farming bot</value>
   </data>

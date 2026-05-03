@@ -1562,10 +1562,11 @@ namespace MinecraftClient.Scripting
         /// <param name="location">Location to place block to</param>
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
+        /// <param name="lookAtBlock">Also look at the block before interacting</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool SendPlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
+        public bool SendPlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand, bool lookAtBlock = false)
         {
-            return Handler.PlaceBlock(location, blockFace, hand);
+            return Handler.PlaceBlock(location, blockFace, hand, lookAtBlock);
         }
 
         /// <summary>

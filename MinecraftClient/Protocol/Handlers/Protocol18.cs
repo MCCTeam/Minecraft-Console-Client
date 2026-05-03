@@ -211,6 +211,7 @@ namespace MinecraftClient.Protocol.Handlers
                 >= MC_1_14_Version => new EntityPalette114(),
                 >= MC_1_13_Version => new EntityPalette113(),
                 >= MC_1_12_Version => new EntityPalette112(),
+                >= MC_1_11_Version => new EntityPalette112(),
                 _ => new EntityPalette18()
             };
 
@@ -2968,7 +2969,9 @@ namespace MinecraftClient.Protocol.Handlers
                     double y = dataTypes.ReadNextInt(packetData) / 8.0D;
                     double z = dataTypes.ReadNextInt(packetData) / 8.0D;
                     float volume = dataTypes.ReadNextFloat(packetData);
-                    float pitch = dataTypes.ReadNextFloat(packetData);
+                    float pitch = protocolVersion < MC_1_10_Version
+                        ? dataTypes.ReadNextByte(packetData) / 63.0f
+                        : dataTypes.ReadNextFloat(packetData);
 
                     handler.OnSoundEffect(soundName, new Location(x, y, z), category, volume, pitch, null);
                     break;
@@ -2989,7 +2992,9 @@ namespace MinecraftClient.Protocol.Handlers
                     double y = dataTypes.ReadNextInt(packetData) / 8.0D;
                     double z = dataTypes.ReadNextInt(packetData) / 8.0D;
                     float volume = dataTypes.ReadNextFloat(packetData);
-                    float pitch = dataTypes.ReadNextFloat(packetData);
+                    float pitch = protocolVersion < MC_1_10_Version
+                        ? dataTypes.ReadNextByte(packetData) / 63.0f
+                        : dataTypes.ReadNextFloat(packetData);
 
                     if (protocolVersion >= MC_1_19_Version)
                         dataTypes.ReadNextLong(packetData); // Seed
@@ -5502,9 +5507,7 @@ namespace MinecraftClient.Protocol.Handlers
                         playerInventory.Items.TryGetValue(slotWindowIds[currentSlot], out var item);
                         packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
 
-                        packet.Add(0); // cursorX
-                        packet.Add(0); // cursorY
-                        packet.Add(0); // cursorZ
+                        AddLegacyBlockPlacementCursor(packet, cursorX, cursorY, cursorZ);
 
                         SendPacket(PacketTypesOut.PlayerBlockPlacement, packet);
                         return true;
@@ -5520,9 +5523,14 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                 }
 
-                packet.AddRange(dataTypes.GetFloat(cursorX)); // cursorX
-                packet.AddRange(dataTypes.GetFloat(cursorY)); // cursorY
-                packet.AddRange(dataTypes.GetFloat(cursorZ)); // cursorZ
+                if (protocolVersion < MC_1_11_Version)
+                    AddLegacyBlockPlacementCursor(packet, cursorX, cursorY, cursorZ);
+                else
+                {
+                    packet.AddRange(dataTypes.GetFloat(cursorX)); // cursorX
+                    packet.AddRange(dataTypes.GetFloat(cursorY)); // cursorY
+                    packet.AddRange(dataTypes.GetFloat(cursorZ)); // cursorZ
+                }
 
                 if (protocolVersion >= MC_1_14_Version)
                     packet.Add(0); // insideBlock = false
@@ -5560,6 +5568,18 @@ namespace MinecraftClient.Protocol.Handlers
             Direction.East => (1.0f, 0.5f, 0.5f),
             _ => (0.5f, 0.5f, 0.5f),
         };
+
+        private static void AddLegacyBlockPlacementCursor(List<byte> packet, float cursorX, float cursorY, float cursorZ)
+        {
+            packet.Add(ToLegacyBlockPlacementCursor(cursorX));
+            packet.Add(ToLegacyBlockPlacementCursor(cursorY));
+            packet.Add(ToLegacyBlockPlacementCursor(cursorZ));
+        }
+
+        private static byte ToLegacyBlockPlacementCursor(float cursor)
+        {
+            return (byte)Math.Clamp((int)(cursor * 16.0f), 0, byte.MaxValue);
+        }
 
         public bool SendHeldItemChange(short slot)
         {

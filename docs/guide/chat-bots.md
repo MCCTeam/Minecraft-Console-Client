@@ -1976,6 +1976,8 @@ redirectFrom:
   - Potato
   - Wheat
 
+  Beetroot farming requires Minecraft `1.9+`.
+
   **Current list of issues:**
 
   - Sometimes the bot will not bone meal carrots/potatoes or melon/pumpkin stems (you will see it in a pattern of crops that have not been bonemealed)
