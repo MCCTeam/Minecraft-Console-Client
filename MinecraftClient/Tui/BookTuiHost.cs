@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -58,14 +59,23 @@ internal sealed class BookView : UserControl
     private readonly List<string> pages;
     private readonly TextBlock header;
     private readonly TextBlock status;
+    private readonly TextBlock shortcutTip;
     private readonly TextBox pageText;
     private readonly TextBox titleText;
+    private readonly Button previousButton;
+    private readonly Button nextButton;
+    private readonly Button insertButton;
+    private readonly Button deleteButton;
+    private readonly Button saveButton;
+    private readonly Button signButton;
+    private bool bookSigned;
     private int pageIndex;
 
     public BookView(McClient handler, BookContent content, bool editable)
     {
         this.handler = handler;
         this.editable = editable;
+        bookSigned = content.IsSigned;
         pages = content.Pages.ToList();
         if (pages.Count == 0)
             pages.Add(string.Empty);
@@ -87,11 +97,19 @@ internal sealed class BookView : UserControl
             TextWrapping = TextWrapping.Wrap
         };
 
+        shortcutTip = new TextBlock
+        {
+            Foreground = Brushes.DarkGray,
+            Margin = new Thickness(1, 0),
+            Text = Translations.tui_book_page_shortcut_tip,
+            TextWrapping = TextWrapping.Wrap
+        };
+
         pageText = new TextBox
         {
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            IsReadOnly = !editable,
+            IsReadOnly = !CanEdit,
             Foreground = Brushes.White,
             Background = Brushes.Black,
             BorderBrush = Brushes.Gray,
@@ -100,19 +118,26 @@ internal sealed class BookView : UserControl
         };
         pageText.TextChanged += (_, _) =>
         {
-            if (editable && pageIndex >= 0 && pageIndex < pages.Count)
+            if (CanEdit && pageIndex >= 0 && pageIndex < pages.Count)
                 pages[pageIndex] = pageText.Text ?? string.Empty;
         };
 
         titleText = new TextBox
         {
             Watermark = Translations.tui_book_title_watermark,
-            IsVisible = editable,
+            IsVisible = CanEdit,
             Foreground = Brushes.White,
             Background = Brushes.Black,
             BorderBrush = Brushes.Gray,
             Margin = new Thickness(1)
         };
+
+        previousButton = Button(Translations.tui_book_prev, (_, _) => TryMovePage(-1));
+        nextButton = Button(Translations.tui_book_next, (_, _) => TryMovePage(1));
+        insertButton = Button(Translations.tui_book_insert, (_, _) => InsertPage(), editable);
+        deleteButton = Button(Translations.tui_book_delete, (_, _) => DeletePage(), editable);
+        saveButton = Button(Translations.tui_book_save, (_, _) => Save(), editable);
+        signButton = Button(Translations.tui_book_sign, (_, _) => Sign(), editable);
 
         var controls = new StackPanel
         {
@@ -121,12 +146,12 @@ internal sealed class BookView : UserControl
             Margin = new Thickness(1),
             Children =
             {
-                Button(Translations.tui_book_prev, (_, _) => MovePage(-1)),
-                Button(Translations.tui_book_next, (_, _) => MovePage(1)),
-                Button(Translations.tui_book_insert, (_, _) => InsertPage(), editable),
-                Button(Translations.tui_book_delete, (_, _) => DeletePage(), editable),
-                Button(Translations.tui_book_save, (_, _) => Save(), editable),
-                Button(Translations.tui_book_sign, (_, _) => Sign(), editable),
+                previousButton,
+                nextButton,
+                insertButton,
+                deleteButton,
+                saveButton,
+                signButton,
                 Button(Translations.tui_book_close, (_, _) => Close())
             }
         };
@@ -138,6 +163,7 @@ internal sealed class BookView : UserControl
             {
                 DockTo(header, Dock.Top),
                 DockTo(status, Dock.Bottom),
+                DockTo(shortcutTip, Dock.Bottom),
                 DockTo(controls, Dock.Bottom),
                 DockTo(titleText, Dock.Bottom),
                 pageText
@@ -145,26 +171,31 @@ internal sealed class BookView : UserControl
         };
 
         Content = panel;
+        AttachedToVisualTree += (_, _) =>
+        {
+            AddHandler(KeyDownEvent, OnTunnelKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
+            FocusPageText();
+        };
+        DetachedFromVisualTree += (_, _) => RemoveHandler(KeyDownEvent, OnTunnelKeyDown);
         Refresh();
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
+    private bool CanEdit => editable && !bookSigned;
+
+    private void OnTunnelKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.PageUp)
         {
-            MovePage(-1);
+            TryMovePage(-1);
             e.Handled = true;
             return;
         }
 
         if (e.Key == Key.PageDown)
         {
-            MovePage(1);
+            TryMovePage(1);
             e.Handled = true;
-            return;
         }
-
-        base.OnKeyDown(e);
     }
 
     private static Control DockTo(Control control, Dock dock)
@@ -186,14 +217,22 @@ internal sealed class BookView : UserControl
         return button;
     }
 
-    private void MovePage(int delta)
+    private bool TryMovePage(int delta)
     {
-        pageIndex = Math.Clamp(pageIndex + delta, 0, pages.Count - 1);
+        int targetPageIndex = Math.Clamp(pageIndex + delta, 0, pages.Count - 1);
+        if (targetPageIndex == pageIndex)
+            return false;
+
+        pageIndex = targetPageIndex;
         Refresh();
+        return true;
     }
 
     private void InsertPage()
     {
+        if (!CanEdit)
+            return;
+
         pages.Insert(pageIndex + 1, string.Empty);
         pageIndex++;
         Refresh();
@@ -201,6 +240,9 @@ internal sealed class BookView : UserControl
 
     private void DeletePage()
     {
+        if (!CanEdit)
+            return;
+
         if (pages.Count == 1)
             pages[0] = string.Empty;
         else
@@ -213,6 +255,14 @@ internal sealed class BookView : UserControl
 
     private void Save()
     {
+        if (bookSigned || IsHeldBookSigned())
+        {
+            bookSigned = true;
+            status.Text = Translations.cmd_book_cannot_edit_signed;
+            RefreshEditability();
+            return;
+        }
+
         if (!Validate(out string error))
         {
             status.Text = error;
@@ -226,6 +276,14 @@ internal sealed class BookView : UserControl
 
     private void Sign()
     {
+        if (bookSigned || IsHeldBookSigned())
+        {
+            bookSigned = true;
+            status.Text = Translations.cmd_book_already_signed;
+            RefreshEditability();
+            return;
+        }
+
         string title = (titleText.Text ?? string.Empty).Trim();
         if (!Validate(out string error, title))
         {
@@ -233,8 +291,16 @@ internal sealed class BookView : UserControl
             return;
         }
 
-        status.Text = handler.SendBookEdit(pages, title)
-            ? Translations.tui_book_signed
+        if (handler.SendBookEdit(pages, title))
+        {
+            bookSigned = true;
+            status.Text = Translations.tui_book_signed;
+            RefreshEditability();
+            return;
+        }
+
+        status.Text = IsHeldBookSigned()
+            ? Translations.cmd_book_already_signed
             : Translations.tui_book_save_failed;
     }
 
@@ -274,9 +340,44 @@ internal sealed class BookView : UserControl
 
     private void Refresh()
     {
-        pageText.Text = pages[pageIndex];
+        string currentPageText = pages[pageIndex];
+        if (!string.Equals(pageText.Text, currentPageText, StringComparison.Ordinal))
+            pageText.Text = currentPageText;
+
         header.Text = string.Format(Translations.tui_book_page_header, pageIndex + 1, pages.Count);
-        status.Text = editable ? Translations.tui_book_editing : Translations.tui_book_reading;
-        pageText.Focus();
+        status.Text = CanEdit ? Translations.tui_book_editing : Translations.tui_book_reading;
+        RefreshEditability();
+        FocusPageText();
+    }
+
+    private void RefreshEditability()
+    {
+        previousButton.IsEnabled = pageIndex > 0;
+        nextButton.IsEnabled = pageIndex < pages.Count - 1;
+        insertButton.IsEnabled = CanEdit;
+        deleteButton.IsEnabled = CanEdit;
+        saveButton.IsEnabled = CanEdit;
+        signButton.IsEnabled = CanEdit;
+        pageText.IsReadOnly = !CanEdit;
+        titleText.IsEnabled = CanEdit;
+        titleText.IsVisible = CanEdit;
+        shortcutTip.Text = CanEdit
+            ? Translations.tui_book_edit_shortcut_tip
+            : Translations.tui_book_page_shortcut_tip;
+    }
+
+    private void FocusPageText()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            pageText.Focus();
+            if (CanEdit)
+                pageText.CaretIndex = pageText.Text?.Length ?? 0;
+        }, DispatcherPriority.Input);
+    }
+
+    private bool IsHeldBookSigned()
+    {
+        return BookContentHelper.TryRead(handler.GetHeldBook(BookHand.Main), out BookContent content) && content.IsSigned;
     }
 }

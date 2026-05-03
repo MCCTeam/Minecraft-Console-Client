@@ -93,7 +93,7 @@ namespace MinecraftClient.Commands
         private int OpenEditor(CmdResult r)
         {
             McClient handler = CmdResult.currentHandler!;
-            if (!EnsureWritable(r, handler, out _))
+            if (!EnsureWritable(r, handler, out _, Translations.cmd_book_cannot_edit_signed))
                 return -1;
 
             return BookTuiHost.TryOpen(handler, BookHand.Main, editable: true)
@@ -104,7 +104,7 @@ namespace MinecraftClient.Commands
         private int WriteBook(CmdResult r, string text)
         {
             McClient handler = CmdResult.currentHandler!;
-            if (!EnsureWritable(r, handler, out _))
+            if (!EnsureWritable(r, handler, out _, Translations.cmd_book_cannot_edit_signed))
                 return -1;
 
             IReadOnlyList<string> pages = SplitPages(text);
@@ -127,7 +127,7 @@ namespace MinecraftClient.Commands
         private int EditPage(CmdResult r, int page, string text)
         {
             McClient handler = CmdResult.currentHandler!;
-            if (!EnsureWritable(r, handler, out BookContent content))
+            if (!EnsureWritable(r, handler, out BookContent content, Translations.cmd_book_cannot_edit_signed))
                 return -1;
 
             List<string> pages = content.Pages.ToList();
@@ -146,7 +146,7 @@ namespace MinecraftClient.Commands
         private int InsertPage(CmdResult r, int page, string text)
         {
             McClient handler = CmdResult.currentHandler!;
-            if (!EnsureWritable(r, handler, out BookContent content))
+            if (!EnsureWritable(r, handler, out BookContent content, Translations.cmd_book_cannot_edit_signed))
                 return -1;
 
             List<string> pages = content.Pages.ToList();
@@ -165,7 +165,7 @@ namespace MinecraftClient.Commands
         private int DeletePage(CmdResult r, int page)
         {
             McClient handler = CmdResult.currentHandler!;
-            if (!EnsureWritable(r, handler, out BookContent content))
+            if (!EnsureWritable(r, handler, out BookContent content, Translations.cmd_book_cannot_edit_signed))
                 return -1;
 
             List<string> pages = content.Pages.ToList();
@@ -187,7 +187,7 @@ namespace MinecraftClient.Commands
         private int SignBook(CmdResult r, string title)
         {
             McClient handler = CmdResult.currentHandler!;
-            if (!EnsureWritable(r, handler, out BookContent content))
+            if (!EnsureWritable(r, handler, out BookContent content, Translations.cmd_book_already_signed))
                 return -1;
 
             string normalizedTitle = title.Trim();
@@ -208,7 +208,7 @@ namespace MinecraftClient.Commands
             return false;
         }
 
-        private static bool EnsureWritable(CmdResult r, McClient handler, out BookContent content)
+        private static bool EnsureWritable(CmdResult r, McClient handler, out BookContent content, string signedBookMessage)
         {
             content = BookContent.EmptyWritable;
             if (!EnsureInventory(r, handler))
@@ -217,11 +217,18 @@ namespace MinecraftClient.Commands
             Item? item = handler.GetHeldBook();
             if (!BookContentHelper.IsWritableBook(item))
             {
-                r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_book_not_holding_writable);
+                r.SetAndReturn(CmdResult.Status.Fail, GetWritableBookFailureMessage(item, signedBookMessage));
                 return false;
             }
 
             return BookContentHelper.TryRead(item, out content);
+        }
+
+        private static string GetWritableBookFailureMessage(Item? item, string signedBookMessage)
+        {
+            return BookContentHelper.TryRead(item, out BookContent content) && content.IsSigned
+                ? signedBookMessage
+                : Translations.cmd_book_not_holding_writable;
         }
 
         private static IReadOnlyList<string> SplitPages(string text)

@@ -2683,6 +2683,12 @@ see item details.</value>
   <data name="cmd.book.not_holding_writable" xml:space="preserve">
     <value>You must hold a writable book in your main hand.</value>
   </data>
+  <data name="cmd.book.already_signed" xml:space="preserve">
+    <value>Book already signed.</value>
+  </data>
+  <data name="cmd.book.cannot_edit_signed" xml:space="preserve">
+    <value>You cannot edit a signed book.</value>
+  </data>
   <data name="cmd.book.tui_opened" xml:space="preserve">
     <value>Book TUI opened.</value>
   </data>
@@ -2766,5 +2772,11 @@ see item details.</value>
   </data>
   <data name="tui.book.reading" xml:space="preserve">
     <value>Reading book.</value>
+  </data>
+  <data name="tui.book.edit_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
+  </data>
+  <data name="tui.book.page_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
   </data>
 </root>

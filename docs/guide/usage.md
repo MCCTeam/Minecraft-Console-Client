@@ -326,6 +326,8 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
   The interactive editor is only available in TUI mode.
 
+  In the TUI book view, `PageUp`/`PageDown` switches pages.
+
 - **Examples:**
 
   Read the held book:

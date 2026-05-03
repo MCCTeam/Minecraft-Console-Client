@@ -7584,6 +7584,14 @@ namespace MinecraftClient {
             get { return ResourceManager.GetString("cmd.book.not_holding_writable", resourceCulture); }
         }
 
+        internal static string cmd_book_already_signed {
+            get { return ResourceManager.GetString("cmd.book.already_signed", resourceCulture); }
+        }
+
+        internal static string cmd_book_cannot_edit_signed {
+            get { return ResourceManager.GetString("cmd.book.cannot_edit_signed", resourceCulture); }
+        }
+
         internal static string cmd_book_tui_opened {
             get { return ResourceManager.GetString("cmd.book.tui_opened", resourceCulture); }
         }
@@ -7694,6 +7702,14 @@ namespace MinecraftClient {
 
         internal static string tui_book_reading {
             get { return ResourceManager.GetString("tui.book.reading", resourceCulture); }
+        }
+
+        internal static string tui_book_edit_shortcut_tip {
+            get { return ResourceManager.GetString("tui.book.edit_shortcut_tip", resourceCulture); }
+        }
+
+        internal static string tui_book_page_shortcut_tip {
+            get { return ResourceManager.GetString("tui.book.page_shortcut_tip", resourceCulture); }
         }
 
     }
