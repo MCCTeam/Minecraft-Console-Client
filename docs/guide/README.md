@@ -71,6 +71,8 @@ It was originally made by [ORelio](https://github.com/ORelio) in 2012 on the [Mi
 
 - [Inventory Handling](usage.md#inventory)
 
+- [Book Support](usage.md#book)
+
 - [Terrain Traversing](usage.md#move)
 
 - Entity Handling

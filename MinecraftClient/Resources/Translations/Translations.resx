@@ -2662,4 +2662,124 @@ see item details.</value>
   <data name="cmd.achievement.entry" xml:space="preserve">
     <value>{0} {1} [{2}]</value>
   </data>
+  <data name="cmd.book.usage" xml:space="preserve">
+    <value>book &lt;read|write|edit|sign&gt;</value>
+  </data>
+  <data name="cmd.book.desc" xml:space="preserve">
+    <value>read, write, edit, and sign the book held in your main hand.</value>
+  </data>
+  <data name="cmd.book.help_read" xml:space="preserve">
+    <value>/book read [page]</value>
+  </data>
+  <data name="cmd.book.help_write" xml:space="preserve">
+    <value>/book write text &lt;text&gt; or /book write file &lt;path&gt;. Use \n for line breaks and \f for page breaks.</value>
+  </data>
+  <data name="cmd.book.help_edit" xml:space="preserve">
+    <value>/book edit, /book edit page &lt;page&gt; &lt;text&gt;, /book edit insert &lt;page&gt; &lt;text&gt;, or /book edit delete &lt;page&gt;.</value>
+  </data>
+  <data name="cmd.book.help_sign" xml:space="preserve">
+    <value>/book sign &lt;title&gt;</value>
+  </data>
+  <data name="cmd.book.not_holding_book" xml:space="preserve">
+    <value>You are not holding a book.</value>
+  </data>
+  <data name="cmd.book.not_holding_writable" xml:space="preserve">
+    <value>You must hold a writable book in your main hand.</value>
+  </data>
+  <data name="cmd.book.already_signed" xml:space="preserve">
+    <value>Book already signed.</value>
+  </data>
+  <data name="cmd.book.cannot_edit_signed" xml:space="preserve">
+    <value>You cannot edit a signed book.</value>
+  </data>
+  <data name="cmd.book.tui_opened" xml:space="preserve">
+    <value>Book TUI opened.</value>
+  </data>
+  <data name="cmd.book.tui_required" xml:space="preserve">
+    <value>The book editor is only available in TUI mode.</value>
+  </data>
+  <data name="cmd.book.write_sent" xml:space="preserve">
+    <value>Book write packet sent.</value>
+  </data>
+  <data name="cmd.book.edit_sent" xml:space="preserve">
+    <value>Book edit packet sent.</value>
+  </data>
+  <data name="cmd.book.sign_sent" xml:space="preserve">
+    <value>Book sign packet sent.</value>
+  </data>
+  <data name="cmd.book.write_failed" xml:space="preserve">
+    <value>Book packet could not be sent.</value>
+  </data>
+  <data name="cmd.book.file_not_found" xml:space="preserve">
+    <value>Book file not found: {0}</value>
+  </data>
+  <data name="cmd.book.page_out_of_range" xml:space="preserve">
+    <value>Page {0} is outside the current page range 1-{1}.</value>
+  </data>
+  <data name="cmd.book.too_many_pages" xml:space="preserve">
+    <value>Book has {0} pages, but this version supports at most {1} pages.</value>
+  </data>
+  <data name="cmd.book.page_too_long" xml:space="preserve">
+    <value>Page {0} has {1} characters, but this version supports at most {2} characters per page.</value>
+  </data>
+  <data name="cmd.book.title_invalid" xml:space="preserve">
+    <value>Book title must be 1-{0} characters.</value>
+  </data>
+  <data name="cmd.book.header_signed" xml:space="preserve">
+    <value>Written book: {0} by {1}</value>
+  </data>
+  <data name="cmd.book.header_writable" xml:space="preserve">
+    <value>Writable book</value>
+  </data>
+  <data name="cmd.book.page_header" xml:space="preserve">
+    <value>Page {0}/{1}</value>
+  </data>
+  <data name="tui.book.title_watermark" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="tui.book.prev" xml:space="preserve">
+    <value>Prev</value>
+  </data>
+  <data name="tui.book.next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="tui.book.insert" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="tui.book.delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="tui.book.save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="tui.book.sign" xml:space="preserve">
+    <value>Sign</value>
+  </data>
+  <data name="tui.book.close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="tui.book.saved" xml:space="preserve">
+    <value>Saved.</value>
+  </data>
+  <data name="tui.book.save_failed" xml:space="preserve">
+    <value>Book packet could not be sent.</value>
+  </data>
+  <data name="tui.book.signed" xml:space="preserve">
+    <value>Signed.</value>
+  </data>
+  <data name="tui.book.page_header" xml:space="preserve">
+    <value>Book page {0}/{1}</value>
+  </data>
+  <data name="tui.book.editing" xml:space="preserve">
+    <value>Editing writable book.</value>
+  </data>
+  <data name="tui.book.reading" xml:space="preserve">
+    <value>Reading book.</value>
+  </data>
+  <data name="tui.book.edit_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
+  </data>
+  <data name="tui.book.page_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
+  </data>
 </root>

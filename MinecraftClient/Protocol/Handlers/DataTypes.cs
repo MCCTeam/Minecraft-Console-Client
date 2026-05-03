@@ -514,7 +514,7 @@ namespace MinecraftClient.Protocol.Handlers
                     var type = itemPalette.FromId(itemId); 
                     itemCount = ReadNextByte(cache); 
                     nbt = ReadNextNbt(cache);
-                    return new Item(type, itemCount, nbt);
+                    return new Item(type, itemCount, itemId, nbt);
                 }
                 case >= Protocol18Handler.MC_1_13_Version:
                 {
@@ -526,7 +526,7 @@ namespace MinecraftClient.Protocol.Handlers
                     var type = itemPalette.FromId(itemId);
                     itemCount = ReadNextByte(cache);
                     nbt = ReadNextNbt(cache);
-                    return new Item(type, itemCount, nbt);
+                    return new Item(type, itemCount, itemId, nbt);
                 }
                 default:
                 {

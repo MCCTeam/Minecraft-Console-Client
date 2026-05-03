@@ -1850,6 +1850,72 @@ namespace MinecraftClient
             return handler.SendPluginChannelPacket(channel, data);
         }
 
+        public Item? GetHeldBook(BookHand hand = BookHand.Main)
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => GetHeldBook(hand));
+
+            if (!inventoryHandlingEnabled || !inventories.TryGetValue(0, out Container? inventory))
+                return null;
+
+            int slot = hand == BookHand.Off ? 45 : 36 + CurrentSlot;
+            return inventory.Items.TryGetValue(slot, out Item? item) ? item : null;
+        }
+
+        public bool TryGetHeldBookContent(out BookContent content, BookHand hand = BookHand.Main)
+        {
+            if (InvokeRequired)
+            {
+                (bool ok, BookContent value) = InvokeOnMainThread(() =>
+                {
+                    bool ok = TryGetHeldBookContent(out BookContent value, hand);
+                    return (ok, value);
+                });
+                content = value;
+                return ok;
+            }
+
+            return BookContentHelper.TryRead(GetHeldBook(hand), out content);
+        }
+
+        public bool SendBookEdit(IReadOnlyList<string> pages, string? title = null)
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SendBookEdit(pages, title));
+
+            Item? currentBook = GetHeldBook(BookHand.Main);
+            if (!BookContentHelper.IsWritableBook(currentBook))
+                return false;
+
+            IReadOnlyList<string> normalizedPages = BookContentHelper.NormalizePages(pages);
+            bool sent = handler.SendEditBook(currentBook!, normalizedPages, title, username, CurrentSlot);
+            if (sent && GetProtocolVersion() < Protocol18Handler.MC_1_17_Version)
+                SetHeldBook(BookHand.Main, CreateLocalBookResult(currentBook!, normalizedPages, title));
+
+            return sent;
+        }
+
+        private Item CreateLocalBookResult(Item currentBook, IReadOnlyList<string> pages, string? title)
+        {
+            return title is null
+                ? BookContentHelper.CreateWritablePayload(currentBook, pages)
+                : BookContentHelper.CreateWrittenPayload(
+                    currentBook,
+                    pages,
+                    title,
+                    username,
+                    encodePagesAsJson: GetProtocolVersion() < Protocol18Handler.MC_1_9_Version);
+        }
+
+        private void SetHeldBook(BookHand hand, Item item)
+        {
+            if (!inventoryHandlingEnabled || !inventories.TryGetValue(0, out Container? inventory))
+                return;
+
+            int slot = hand == BookHand.Off ? 45 : 36 + CurrentSlot;
+            inventory.Items[slot] = item;
+        }
+
         /// <summary>
         /// Send the Entity Action packet with the Specified ID
         /// </summary>
@@ -3815,6 +3881,17 @@ namespace MinecraftClient
             {
                 DispatchBotEvent(bot => bot.OnPluginMessage(channel, data), registeredBotPluginChannels[channel]);
             }
+        }
+
+        public void OnBookOpen(int hand)
+        {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => OnBookOpen(hand));
+                return;
+            }
+
+            Tui.BookTuiHost.OpenFromServer(this, hand == (int)BookHand.Off ? BookHand.Off : BookHand.Main);
         }
 
         /// <summary>
