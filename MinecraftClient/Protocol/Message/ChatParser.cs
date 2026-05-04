@@ -699,7 +699,11 @@ namespace MinecraftClient.Protocol.Message
             if (translations.Count == 0)
                 return;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath)!);
+            string? cacheDirectory = Path.GetDirectoryName(cacheFilePath);
+            if (string.IsNullOrEmpty(cacheDirectory))
+                return;
+
+            Directory.CreateDirectory(cacheDirectory);
 
             ResourcePackTranslationCacheEntry cacheEntry = new()
             {
