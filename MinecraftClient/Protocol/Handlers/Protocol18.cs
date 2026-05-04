@@ -580,7 +580,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                             case ConfigurationPacketTypesIn.RemoveResourcePack:
                                 if (dataTypes.ReadNextBool(packetData)) // Has UUID
-                                    dataTypes.ReadNextUUID(packetData); // UUID
+                                    ChatParser.RemoveResourcePackTranslations(dataTypes.ReadNextUUID(packetData).ToString("D")); // UUID
+                                else
+                                    ChatParser.ClearResourcePackTranslations();
                                 break;
 
                             case ConfigurationPacketTypesIn.ResourcePack:
@@ -703,6 +705,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             var url = dataTypes.ReadNextString(packetData);
             var hash = dataTypes.ReadNextString(packetData);
+            string packIdentifier = uuid != Guid.Empty ? uuid.ToString("D") : (hash.Length == 40 ? hash : url);
 
             if (protocolVersion >= MC_1_17_Version)
             {
@@ -740,6 +743,8 @@ namespace MinecraftClient.Protocol.Handlers
                 SendPacket(PacketTypesOut.ResourcePackStatus, acceptedResourcePackData); // Accepted
                 SendPacket(PacketTypesOut.ResourcePackStatus, loadedResourcePackData); // Successfully loaded
             }
+
+            ChatParser.LoadResourcePackTranslations(packIdentifier, url, hash);
         }
 
         private bool HandlePlayPackets(int packetId, Queue<byte> packetData)
@@ -2447,7 +2452,9 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketTypesIn.RemoveResourcePack:
                     if (dataTypes.ReadNextBool(packetData)) // Has UUID
-                        dataTypes.ReadNextUUID(packetData); // UUID
+                        ChatParser.RemoveResourcePackTranslations(dataTypes.ReadNextUUID(packetData).ToString("D")); // UUID
+                    else
+                        ChatParser.ClearResourcePackTranslations();
                     break;
                 case PacketTypesIn.ResourcePackSend:
                     HandleResourcePackPacket(packetData);
