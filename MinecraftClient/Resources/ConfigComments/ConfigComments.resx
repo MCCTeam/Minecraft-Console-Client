@@ -498,8 +498,10 @@ You need to have ChatFormat working correctly and add yourself in botowners to u
 /!\ Server admins can spoof PMs (/tellraw, /nick) so enable RemoteControl only if you trust server admins</value>
   </data>
   <data name="ChatBot.ReplayCapture" xml:space="preserve">
-    <value>Enable recording of the game (/replay start) and replay it later using the Replay Mod (https://www.replaymod.com/)
+    <value>Enable automatic recording of the game and replay it later using the Replay Mod (https://www.replaymod.com/)
+Use /replay save to create a snapshot replay file while still recording.
 Please note that due to technical limitations, the client player (you) will not be shown in the replay file
+Each MCC instance uses its own temporary replay cache so multiple clients can record from the same folder without colliding.
 /!\ You SHOULD use /replay stop or exit the program gracefully with /quit OR THE REPLAY FILE MAY GET CORRUPT!</value>
   </data>
   <data name="ChatBot.ReplayCapture.Backup_Interval" xml:space="preserve">

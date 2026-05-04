@@ -1,8 +1,11 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
@@ -10,405 +13,445 @@ using MinecraftClient.Protocol.Handlers.PacketPalettes;
 namespace MinecraftClient.Protocol
 {
     /// <summary>
-    /// Record and save replay file that can be used by Replay mod
+    /// Record and save replay files that can be used by Replay Mod.
     /// </summary>
-    public class ReplayHandler
+    public class ReplayHandler : IDisposable
     {
-        public string ReplayFileName = @"whhhh.mcpr";
-        public string ReplayFileDirectory = @"replay_recordings";
-        public MetaDataHandler MetaData;
-        public bool RecordRunning { get { return !cleanedUp; } }
-
-        private readonly string recordingTmpFileName = @"recording.tmcpr";
-        private readonly string temporaryCache = @"recording_cache";
-        private readonly DataTypes dataTypes;
-        private readonly PacketTypePalette packetType;
-        private readonly int protocolVersion;
-        private readonly BinaryWriter? recordStream;
-        private readonly DateTime recordStartTime;
-        private DateTime lastPacketTime;
-        private bool prepareCleanUp = false;
-        private bool cleanedUp = false;
+        private const string DefaultReplayDirectory = "replay_recordings";
+        private const string WorkingRootDirectory = "recording_cache";
+        private const string RecordingEntryName = "recording.tmcpr";
+        private const string BackupFileName = "REPLAY_BACKUP.mcpr";
 
         private static readonly bool logOutput = true;
 
-        private int playerEntityID;
-        private Guid playerUUID;
-        private Location playerLastPosition;
-        private float playerLastYaw;
-        private float playerLastPitch;
+        private readonly Lock _sync = new();
+        private readonly DataTypes _dataTypes;
+        private readonly PacketTypePalette _packetType;
+        private readonly int _protocolVersion;
+        private readonly string _instanceToken;
+        private readonly string _workingDirectory;
+        private readonly string _recordingFilePath;
+        private readonly string _backupReplayPath;
+        private readonly EventHandler _processExitHandler;
+        private readonly FileStream _recordStream;
+        private readonly DateTime _recordStartTime;
+
+        private ReplayRecordingState _state = ReplayRecordingState.Recording;
+        private bool _recordStreamClosed;
+        private bool _disposed;
+        private DateTime _lastPacketTime;
+
+        private int _playerEntityId = -1;
+        private Guid _playerUuid;
+        private Location _playerLastPosition;
+        private float _playerLastYaw;
+        private float _playerLastPitch;
+
+        public string ReplayFileName { get; private set; } = string.Empty;
+        public string ReplayFileDirectory { get; }
+        public MetaDataHandler MetaData { get; }
+
+        public bool RecordRunning
+        {
+            get
+            {
+                lock (_sync)
+                    return _state == ReplayRecordingState.Recording;
+            }
+        }
 
         public ReplayHandler(int protocolVersion)
+            : this(protocolVersion, null, DefaultReplayDirectory)
         {
-            dataTypes = new DataTypes(protocolVersion);
-            packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
-            this.protocolVersion = protocolVersion;
+        }
 
-            if (!Directory.Exists(ReplayFileDirectory))
-                Directory.CreateDirectory(ReplayFileDirectory);
-            if (!Directory.Exists(temporaryCache))
-                Directory.CreateDirectory(temporaryCache);
+        public ReplayHandler(int protocolVersion, string? serverName, string recordingDirectory = DefaultReplayDirectory)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(recordingDirectory);
 
-            recordStream = new BinaryWriter(new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Create, FileAccess.ReadWrite));
-            recordStartTime = DateTime.Now;
+            _dataTypes = new DataTypes(protocolVersion);
+            _packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
+            _protocolVersion = protocolVersion;
+            ReplayFileDirectory = recordingDirectory;
+            Directory.CreateDirectory(ReplayFileDirectory);
 
-            MetaData = new MetaDataHandler
+            _instanceToken = Path.GetRandomFileName().Replace(".", string.Empty, StringComparison.Ordinal);
+            _workingDirectory = Path.Combine(WorkingRootDirectory, $"{DateTime.UtcNow:yyyyMMdd_HHmmss_fff}_{Environment.ProcessId}_{_instanceToken}");
+            Directory.CreateDirectory(_workingDirectory);
+
+            _recordingFilePath = Path.Combine(_workingDirectory, RecordingEntryName);
+            _backupReplayPath = Path.Combine(_workingDirectory, BackupFileName);
+            _recordStream = new FileStream(_recordingFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+            _processExitHandler = (_, _) => FinalizeOnProcessExit();
+
+            _recordStartTime = DateTime.UtcNow;
+            _lastPacketTime = _recordStartTime;
+
+            MetaData = new MetaDataHandler(_workingDirectory)
             {
-                date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds,
+                serverName = serverName,
+                date = new DateTimeOffset(_recordStartTime).ToUnixTimeMilliseconds(),
                 protocol = protocolVersion,
                 mcversion = ProtocolHandler.ProtocolVersion2MCVer(protocolVersion)
             };
             MetaData.SaveToFile();
 
-            playerLastPosition = new Location(0, 0, 0);
+            _playerLastPosition = new Location(0, 0, 0);
+            AppDomain.CurrentDomain.ProcessExit += _processExitHandler;
+
             WriteLog("Start recording.");
         }
 
-        public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
-            : this(protocolVersion)
+        public void Dispose()
         {
-            dataTypes = new DataTypes(protocolVersion);
-            packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
+            if (_disposed)
+                return;
 
-            MetaData.serverName = serverName;
-            ReplayFileDirectory = recordingDirectory;
-        }
-
-        ~ReplayHandler()
-        {
-            OnShutDown();
+            try
+            {
+                OnShutDown();
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.ProcessExit -= _processExitHandler;
+                _disposed = true;
+                GC.SuppressFinalize(this);
+            }
         }
 
         public void SetClientEntityID(int entityID)
         {
-            playerEntityID = entityID;
+            lock (_sync)
+            {
+                _playerEntityId = entityID;
+                if (entityID >= 0)
+                    MetaData.selfId = entityID;
+            }
         }
 
         public void SetClientPlayerUUID(Guid uuid)
         {
-            playerUUID = uuid;
-        }
-
-        #region File and stream handling
-
-        public void CloseRecordStream()
-        {
-            try
+            lock (_sync)
             {
-                recordStream!.Flush();
-                recordStream.Close();
+                _playerUuid = uuid;
+                MetaData.AddPlayerUUID(uuid);
             }
-            catch { }
         }
+
+        public string GetBackupReplayPath() => _backupReplayPath;
 
         /// <summary>
-        /// Stop recording and save replay file. Should called once before program exit
+        /// Stop recording and save the replay file.
         /// </summary>
         public void OnShutDown()
         {
-            if (!cleanedUp)
+            lock (_sync)
             {
-                prepareCleanUp = true;
-                CloseRecordStream();
-                CreateReplayFile();
-                cleanedUp = true;
-            }
-        }
+                EnsureNotDisposed();
 
-        /// <summary>
-        /// Create the replay file for Replay mod to read
-        /// </summary>
-        public void CreateReplayFile()
-        {
-            string replayFileName = GetReplayDefaultName();
-            CreateReplayFile(replayFileName);
-        }
+                if (_state != ReplayRecordingState.Recording)
+                    return;
 
-        /// <summary>
-        /// Create the replay file for Replay mod to read
-        /// </summary>
-        /// <param name="replayFileName">Replay file name</param>
-        public void CreateReplayFile(string replayFileName)
-        {
-            WriteLog("Creating replay file.");
+                string replayFileName = GetReplayDefaultName();
+                string replayFilePath = ResolveReplayPath(replayFileName);
 
-            MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
-            MetaData.SaveToFile();
-
-            using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
-            {
-                using Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open);
-                using FileStream replayArchiveFile = new(Path.Combine(ReplayFileDirectory, replayFileName), FileMode.Create, FileAccess.Write);
-                using ZipArchive replayArchive = new(replayArchiveFile, ZipArchiveMode.Create);
-
-                ZipArchiveEntry recordingEntry = replayArchive.CreateEntry(recordingTmpFileName);
-                using (Stream recordingEntryStream = recordingEntry.Open())
+                WriteLog("Creating replay file.");
+                _state = ReplayRecordingState.Finalizing;
+                try
                 {
-                    recordingFile.CopyTo(recordingEntryStream);
+                    CloseRecordStreamUnsafe();
+                    WriteReplayArchiveUnsafe(replayFilePath, readFromActiveStream: false);
+                    ReplayFileName = replayFileName;
+                    _state = ReplayRecordingState.Stopped;
+                    CleanupWorkingFilesUnsafe();
+                    WriteLog("Replay file created.");
                 }
-
-                ZipArchiveEntry metadataEntry = replayArchive.CreateEntry(MetaData.MetaDataFileName);
-                using Stream metadataEntryStream = metadataEntry.Open();
-                metaDataFile.CopyTo(metadataEntryStream);
+                catch
+                {
+                    _state = ReplayRecordingState.Stopped;
+                    throw;
+                }
             }
-
-            File.Delete(Path.Combine(temporaryCache, recordingTmpFileName));
-            File.Delete(Path.Combine(temporaryCache, MetaData.MetaDataFileName));
-
-            WriteLog("Replay file created.");
         }
 
         /// <summary>
-        /// Create a backup replay file while recording
+        /// Create a snapshot replay file while the recording is still running.
         /// </summary>
-        /// <param name="replayFileName"></param>
         public void CreateBackupReplay(string replayFileName)
         {
-            if (cleanedUp || prepareCleanUp)
-                return;
-            WriteDebugLog("Creating backup replay file.");
-
-            MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
-            MetaData.SaveToFile();
-
-            using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
+            lock (_sync)
             {
-                using FileStream replayArchiveFile = new(replayFileName, FileMode.Create, FileAccess.Write);
-                using ZipArchive replayArchive = new(replayArchiveFile, ZipArchiveMode.Create);
+                EnsureNotDisposed();
 
-                ZipArchiveEntry recordingEntry = replayArchive.CreateEntry(recordingTmpFileName);
-                using (Stream recordingEntryStream = recordingEntry.Open())
-                {
-                    // .CopyTo() method start from stream current position
-                    // We need to reset position in order to get full content
-                    long lastPosition = recordStream!.BaseStream.Position;
-                    try
-                    {
-                        recordStream.BaseStream.Position = 0;
-                        recordStream.BaseStream.CopyTo(recordingEntryStream);
-                    }
-                    finally
-                    {
-                        recordStream.BaseStream.Position = lastPosition;
-                    }
-                }
+                if (_state != ReplayRecordingState.Recording)
+                    return;
 
-                ZipArchiveEntry metadataEntry = replayArchive.CreateEntry(MetaData.MetaDataFileName);
-                using Stream metadataEntryStream = metadataEntry.Open();
-                metaDataFile.CopyTo(metadataEntryStream);
+                WriteDebugLog("Creating backup replay file.");
+                WriteReplayArchiveUnsafe(ResolveReplayPath(replayFileName), readFromActiveStream: true);
+                WriteDebugLog("Backup replay file created.");
             }
-
-            WriteDebugLog("Backup replay file created.");
         }
 
         /// <summary>
-        /// Get the default mcpr file name by current time
+        /// Get a default unique replay file name for the current recording.
         /// </summary>
-        /// <returns></returns>
         public string GetReplayDefaultName()
         {
-            var now = DateTime.Now;
-            return string.Format("{0}_{1}_{2}_{3}_{4}_{5}.mcpr", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second); // yyyy_mm_dd_hh_mm_ss
+            string version = ProtocolHandler.ProtocolVersion2MCVer(_protocolVersion).Replace('.', '_');
+            return $"{DateTime.UtcNow:yyyy_MM_dd_HH_mm_ss_fff}_{version}_{Environment.ProcessId}_{_instanceToken}.mcpr";
         }
 
-        #endregion
-
-        #region Packet related method
-
         /// <summary>
-        /// Add a packet from network
+        /// Add a packet from network capture.
         /// </summary>
-        /// <param name="packetID"></param>
-        /// <param name="packetData"></param>
-        /// <param name="isLogin"></param>
-        /// <param name="isInbound"></param>
         public void AddPacket(int packetID, IEnumerable<byte> packetData, bool isLogin, bool isInbound)
         {
-            if (cleanedUp || prepareCleanUp)
-                return;
+            byte[] packetBytes = packetData as byte[] ?? [.. packetData];
 
-            try
+            lock (_sync)
             {
-                if (isInbound)
-                    HandleInBoundPacket(packetID, packetData, isLogin);
-                else return;
+                if (_disposed || _state != ReplayRecordingState.Recording)
+                    return;
 
-                if (PacketShouldSave(packetID, isLogin, isInbound))
-                    AddPacket(packetID, packetData);
-            }
-            catch (Exception e)
-            {
-                WriteDebugLog("Exception while adding packet: " + e.Message + "\n" + e.StackTrace);
+                try
+                {
+                    if (!isInbound)
+                        return;
+
+                    HandleInBoundPacket(packetID, packetBytes, isLogin);
+
+                    if (PacketShouldSave(packetID, isLogin, isInbound))
+                        AddPacketUnsafe(packetID, packetBytes);
+                }
+                catch (Exception e)
+                {
+                    WriteDebugLog("Exception while adding packet: " + e.Message + "\n" + e.StackTrace);
+                }
             }
         }
 
         /// <summary>
-        /// Add packet directly without checking (internal use only)
+        /// Add a player's UUID to the metadata.
         /// </summary>
-        /// <param name="packetID"></param>
-        /// <param name="packetData"></param>
-        private void AddPacket(int packetID, IEnumerable<byte> packetData)
-        {
-            lastPacketTime = DateTime.Now;
-            // build raw packet
-            // format: packetID + packetData
-            List<byte> rawPacket = new();
-            rawPacket.AddRange(DataTypes.GetVarInt(packetID).ToArray());
-            rawPacket.AddRange(packetData.ToArray());
-            // build format
-            // format: timestamp + packetLength + RawPacket
-            List<byte> line = new();
-            int nowTime = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
-            line.AddRange(BitConverter.GetBytes((Int32)nowTime).AsEnumerable().Reverse().ToArray());
-            line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).AsEnumerable().Reverse().ToArray());
-            line.AddRange(rawPacket.ToArray());
-            // Write out to the file
-            recordStream!.Write(line.ToArray());
-        }
-
-        /// <summary>
-        /// Add a player's UUID to the MetaData
-        /// </summary>
-        /// <param name="uuid"></param>
-        /// <param name="name"></param>
         public void OnPlayerSpawn(Guid uuid)
         {
-            // Metadata has a field for storing uuid for all players entered client render range
-            MetaData.AddPlayerUUID(uuid);
+            lock (_sync)
+            {
+                MetaData.AddPlayerUUID(uuid);
+            }
         }
 
-        /// <summary>
-        /// Determine a packet should be saved
-        /// </summary>
-        /// <param name="packetID"></param>
-        /// <param name="isLogin"></param>
-        /// <param name="isInbound"></param>
-        /// <returns></returns>
+        private void AddPacketUnsafe(int packetID, byte[] packetData)
+        {
+            _lastPacketTime = DateTime.UtcNow;
+
+            byte[] packetId = [.. DataTypes.GetVarInt(packetID)];
+            byte[] rawPacket = new byte[packetId.Length + packetData.Length];
+            packetId.CopyTo(rawPacket, 0);
+            packetData.CopyTo(rawPacket, packetId.Length);
+
+            int elapsedMilliseconds = Math.Max(0, Convert.ToInt32((_lastPacketTime - _recordStartTime).TotalMilliseconds));
+            Span<byte> header = stackalloc byte[8];
+            BinaryPrimitives.WriteInt32BigEndian(header, elapsedMilliseconds);
+            BinaryPrimitives.WriteInt32BigEndian(header[4..], rawPacket.Length);
+
+            _recordStream.Write(header);
+            _recordStream.Write(rawPacket);
+        }
+
         private bool PacketShouldSave(int packetID, bool isLogin, bool isInbound)
         {
-            if (!isInbound) // save inbound only
+            if (!isInbound)
                 return false;
-            if (!isLogin) // save all play state packet
-            {
+
+            if (!isLogin)
                 return true;
-            }
-            else
-            { // is login
-                if (packetID == 0x02) // login success
-                {
-                    return true;
-                }
-                else return false;
-            }
+
+            return packetID == 0x02;
         }
 
-        /// <summary>
-        /// Used to gather information needed
-        /// </summary>
-        /// <remarks>
-        /// Also for converting client side packet to server side packet
-        /// </remarks>
-        /// <param name="packetID"></param>
-        /// <param name="packetData"></param>
-        /// <param name="isLogin"></param>
-        private void HandleInBoundPacket(int packetID, IEnumerable<byte> packetData, bool isLogin)
+        private void HandleInBoundPacket(int packetID, byte[] packetData, bool isLogin)
         {
             Queue<byte> p = new(packetData);
-            PacketTypesIn pType = packetType.GetIncomingTypeById(packetID);
-            // Login success. Get player UUID
+            PacketTypesIn pType = _packetType.GetIncomingTypeById(packetID);
+
             if (isLogin && packetID == 0x02)
             {
-                if (protocolVersion < Protocol18Handler.MC_1_16_Version)
+                if (_protocolVersion < Protocol18Handler.MC_1_16_Version)
                 {
-                    if (Guid.TryParse(dataTypes.ReadNextString(p), out Guid uuid))
+                    if (Guid.TryParse(_dataTypes.ReadNextString(p), out Guid uuid))
                     {
                         SetClientPlayerUUID(uuid);
-                        WriteDebugLog("User UUID: " + uuid.ToString());
+                        WriteDebugLog("User UUID: " + uuid);
                     }
                 }
                 else
                 {
-                    var uuid2 = dataTypes.ReadNextUUID(p);
-                    SetClientPlayerUUID(uuid2);
-                    WriteDebugLog("User UUID: " + uuid2.ToString());
+                    Guid uuid = _dataTypes.ReadNextUUID(p);
+                    SetClientPlayerUUID(uuid);
+                    WriteDebugLog("User UUID: " + uuid);
                 }
                 return;
             }
 
             if (!isLogin && pType == PacketTypesIn.JoinGame)
             {
-                // Get client player entity ID
-                SetClientEntityID(dataTypes.ReadNextInt(p));
+                SetClientEntityID(_dataTypes.ReadNextInt(p));
                 return;
             }
 
             if (!isLogin && pType == PacketTypesIn.SpawnPlayer)
             {
-                dataTypes.ReadNextVarInt(p);
-                OnPlayerSpawn(dataTypes.ReadNextUUID(p));
+                _dataTypes.ReadNextVarInt(p);
+                OnPlayerSpawn(_dataTypes.ReadNextUUID(p));
                 return;
             }
 
-            // Get client player location for calculating movement delta later
             if (pType == PacketTypesIn.PlayerPositionAndLook)
             {
-                double x = dataTypes.ReadNextDouble(p);
-                double y = dataTypes.ReadNextDouble(p);
-                double z = dataTypes.ReadNextDouble(p);
-                float yaw = dataTypes.ReadNextFloat(p);
-                float pitch = dataTypes.ReadNextFloat(p);
-                byte locMask = dataTypes.ReadNextByte(p);
+                double x = _dataTypes.ReadNextDouble(p);
+                double y = _dataTypes.ReadNextDouble(p);
+                double z = _dataTypes.ReadNextDouble(p);
+                float yaw = _dataTypes.ReadNextFloat(p);
+                float pitch = _dataTypes.ReadNextFloat(p);
+                byte locMask = _dataTypes.ReadNextByte(p);
 
-                playerLastPitch = pitch;
-                playerLastYaw = yaw;
-                if (protocolVersion >= Protocol18Handler.MC_1_8_Version)
+                _playerLastPitch = pitch;
+                _playerLastYaw = yaw;
+                if (_protocolVersion >= Protocol18Handler.MC_1_8_Version)
                 {
-                    playerLastPosition.X = (locMask & 1 << 0) != 0 ? playerLastPosition.X + x : x;
-                    playerLastPosition.Y = (locMask & 1 << 1) != 0 ? playerLastPosition.Y + y : y;
-                    playerLastPosition.Z = (locMask & 1 << 2) != 0 ? playerLastPosition.Z + z : z;
+                    _playerLastPosition.X = (locMask & 1 << 0) != 0 ? _playerLastPosition.X + x : x;
+                    _playerLastPosition.Y = (locMask & 1 << 1) != 0 ? _playerLastPosition.Y + y : y;
+                    _playerLastPosition.Z = (locMask & 1 << 2) != 0 ? _playerLastPosition.Z + z : z;
                 }
                 else
                 {
-                    playerLastPosition.X = x;
-                    playerLastPosition.Y = y;
-                    playerLastPosition.Z = z;
+                    _playerLastPosition.X = x;
+                    _playerLastPosition.Y = y;
+                    _playerLastPosition.Z = z;
                 }
-                return;
             }
         }
 
-        /// <summary>
-        /// Handle outbound packet (i.e. client player movement)
-        /// </summary>
-        /// <param name="packetID"></param>
-        /// <param name="packetData"></param>
-        /// <param name="isLogin"></param>
-        private void HandleOutBoundPacket(int packetID, IEnumerable<byte> packetData, bool isLogin)
+        private void WriteReplayArchiveUnsafe(string replayFilePath, bool readFromActiveStream)
         {
-            var packetType = this.packetType.GetOutgoingTypeById(packetID);
-            if (packetType == PacketTypesOut.PlayerPosition
-                || packetType == PacketTypesOut.PlayerPositionAndRotation)
+            Directory.CreateDirectory(Path.GetDirectoryName(replayFilePath) ?? ".");
+
+            MetaData.duration = GetCurrentDurationMillisecondsUnsafe();
+            if (_playerEntityId >= 0)
+                MetaData.selfId = _playerEntityId;
+            if (_playerUuid != Guid.Empty)
+                MetaData.AddPlayerUUID(_playerUuid);
+
+            MetaData.SaveToFile();
+
+            using FileStream replayArchiveFile = new(replayFilePath, FileMode.Create, FileAccess.Write);
+            using ZipArchive replayArchive = new(replayArchiveFile, ZipArchiveMode.Create);
+
+            ZipArchiveEntry recordingEntry = replayArchive.CreateEntry(RecordingEntryName);
+            using (Stream recordingEntryStream = recordingEntry.Open())
             {
-                // translate them to incoming entitymovement packet then save them
+                if (readFromActiveStream)
+                    CopyActiveRecordingUnsafe(recordingEntryStream);
+                else
+                    using (FileStream recordingFile = new(_recordingFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        recordingFile.CopyTo(recordingEntryStream);
+            }
+
+            ZipArchiveEntry metadataEntry = replayArchive.CreateEntry(MetaData.MetaDataFileName);
+            using Stream metadataEntryStream = metadataEntry.Open();
+            using FileStream metadataFile = new(Path.Combine(_workingDirectory, MetaData.MetaDataFileName), FileMode.Open, FileAccess.Read, FileShare.Read);
+            metadataFile.CopyTo(metadataEntryStream);
+        }
+
+        private void CopyActiveRecordingUnsafe(Stream destination)
+        {
+            _recordStream.Flush();
+            long position = _recordStream.Position;
+            try
+            {
+                _recordStream.Position = 0;
+                _recordStream.CopyTo(destination);
+            }
+            finally
+            {
+                _recordStream.Position = position;
             }
         }
 
-        private byte[] GetSpawnPlayerPacket(int entityID, Guid playerUUID, Location location, double pitch, double yaw)
+        private int GetCurrentDurationMillisecondsUnsafe() =>
+            Math.Max(0, Convert.ToInt32((_lastPacketTime - _recordStartTime).TotalMilliseconds));
+
+        private bool HasCapturedPacketsUnsafe() => _lastPacketTime > _recordStartTime;
+
+        private void CloseRecordStreamUnsafe()
         {
-            List<byte> packet = new();
-            packet.AddRange(DataTypes.GetVarInt(entityID));
-            packet.AddRange(playerUUID.ToBigEndianBytes());
-            packet.AddRange(dataTypes.GetDouble(location.X));
-            packet.AddRange(dataTypes.GetDouble(location.Y));
-            packet.AddRange(dataTypes.GetDouble(location.Z));
-            packet.Add((byte)0);
-            packet.Add((byte)0);
-            return packet.ToArray();
+            if (_recordStreamClosed)
+                return;
+
+            _recordStream.Flush();
+            _recordStream.Dispose();
+            _recordStreamClosed = true;
         }
 
-        #endregion
+        private void CleanupWorkingFilesUnsafe()
+        {
+            DeleteFileIfExists(_backupReplayPath);
+            DeleteFileIfExists(_recordingFilePath);
+            DeleteFileIfExists(Path.Combine(_workingDirectory, MetaData.MetaDataFileName));
 
-        #region Helper method
+            if (Directory.Exists(_workingDirectory) && Directory.GetFileSystemEntries(_workingDirectory).Length == 0)
+                Directory.Delete(_workingDirectory);
+        }
+
+        private void FinalizeOnProcessExit()
+        {
+            lock (_sync)
+            {
+                if (_disposed || _state != ReplayRecordingState.Recording)
+                    return;
+
+                try
+                {
+                    _state = ReplayRecordingState.Finalizing;
+                    CloseRecordStreamUnsafe();
+
+                    if (HasCapturedPacketsUnsafe())
+                    {
+                        string replayFileName = GetReplayDefaultName();
+                        WriteDebugLog("Process exit detected, finalizing replay file.");
+                        WriteReplayArchiveUnsafe(ResolveReplayPath(replayFileName), readFromActiveStream: false);
+                        ReplayFileName = replayFileName;
+                    }
+
+                    _state = ReplayRecordingState.Stopped;
+                    CleanupWorkingFilesUnsafe();
+                }
+                catch (Exception e)
+                {
+                    _state = ReplayRecordingState.Stopped;
+                    WriteDebugLog("Exception while finalizing replay on process exit: " + e.Message + "\n" + e.StackTrace);
+                }
+            }
+        }
+
+        private string ResolveReplayPath(string replayFileName)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(replayFileName);
+
+            if (Path.IsPathRooted(replayFileName) || !string.IsNullOrEmpty(Path.GetDirectoryName(replayFileName)))
+                return replayFileName;
+
+            return Path.Combine(ReplayFileDirectory, replayFileName);
+        }
+
+        private void EnsureNotDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
+
+        private static void DeleteFileIfExists(string path)
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
 
         private static void WriteLog(string t)
         {
@@ -422,88 +465,96 @@ namespace MinecraftClient.Protocol
                 WriteLog(t);
         }
 
-        #endregion
+        private enum ReplayRecordingState
+        {
+            Recording,
+            Finalizing,
+            Stopped
+        }
     }
 
     /// <summary>
-    /// Handle MetaData used by Replay mod
+    /// Metadata used by Replay Mod.
     /// </summary>
     public class MetaDataHandler
     {
-        public readonly string MetaDataFileName = @"metaData.json";
-        public readonly string temporaryCache = @"recording_cache";
+        private static readonly JsonSerializerOptions s_jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        private readonly HashSet<string> _players = new(StringComparer.OrdinalIgnoreCase);
+
+        public string MetaDataFileName { get; } = "metaData.json";
+        public string temporaryCache { get; }
 
         public bool singlePlayer = false;
         public string? serverName;
-        public int duration = 0; // duration of the whole replay
-        public long date; // start time of the recording in unix timestamp milliseconds
-        public string mcversion = "0.0"; // e.g. 1.15.2
+        public string? customServerName;
+        public int duration;
+        public long date;
+        public string mcversion = "0.0";
         public string fileFormat = "MCPR";
-        public int fileFormatVersion = 14; // 14 is what I found in metadata generated in 1.15.2 replay mod
+        public int fileFormatVersion = 14;
         public int protocol;
-        public string generator = "MCC"; // The program which generated the file (MCC have more popularity now :P)
-        public int selfId = -1; // I saw -1 in medaData file generated by Replay mod. Not sure what is this for
-        public List<string> players; // Array of UUIDs of all players which can be seen in the replay
+        public string generator = "MCC";
+        public int selfId = -1;
 
-        public MetaDataHandler()
+        public MetaDataHandler(string temporaryCache)
         {
-            players = new List<string>();
+            this.temporaryCache = temporaryCache;
         }
 
-        /// <summary>
-        /// Add a player's UUID who appeared in the replay
-        /// </summary>
-        /// <param name="uuid"></param>
         public void AddPlayerUUID(Guid uuid)
         {
-            players.Add(uuid.ToString());
+            _players.Add(uuid.ToString());
         }
 
-        /// <summary>
-        /// Export metadata to JSON string
-        /// </summary>
-        /// <returns>JSON string</returns>
         public string ToJson()
         {
-            return String.Concat(new[] { "{"
-                , "\"singleplayer\":" , singlePlayer.ToString().ToLower() , ","
-                , "\"serverName\":\"" , serverName , "\","
-                , "\"duration\":" , duration.ToString() , ","
-                , "\"date\":" , date.ToString() , ","
-                , "\"mcversion\":\"" , mcversion , "\","
-                , "\"fileFormat\":\"" , fileFormat , "\","
-                , "\"fileFormatVersion\":" , fileFormatVersion.ToString() , ","
-                , "\"protocol\":" , protocol.ToString() , ","
-                , "\"generator\":\"" , generator , "\","
-                , "\"selfId\":" , selfId.ToString() + ","
-                , "\"player\":" , GetPlayersJsonArray()
-                , "}"
-            });
+            ReplayMetaDataModel metaData = new()
+            {
+                Singleplayer = singlePlayer,
+                ServerName = serverName,
+                CustomServerName = customServerName,
+                Duration = duration,
+                Date = date,
+                Mcversion = mcversion,
+                FileFormat = fileFormat,
+                FileFormatVersion = fileFormatVersion,
+                Protocol = protocol,
+                Generator = generator,
+                SelfId = selfId,
+                Players = [.. _players]
+            };
+
+            return JsonSerializer.Serialize(metaData, s_jsonOptions);
         }
 
-        /// <summary>
-        /// Save metadata to disk file
-        /// </summary>
         public void SaveToFile()
         {
+            Directory.CreateDirectory(temporaryCache);
             File.WriteAllText(Path.Combine(temporaryCache, MetaDataFileName), ToJson());
         }
 
-        /// <summary>
-        /// Get players UUID JSON array string
-        /// </summary>
-        /// <returns></returns>
-        private string GetPlayersJsonArray()
+        private sealed class ReplayMetaDataModel
         {
-            if (players.Count == 0)
-                return "[]";
+            public bool Singleplayer { get; init; }
+            public string? ServerName { get; init; }
+            public string? CustomServerName { get; init; }
+            public int Duration { get; init; }
+            public long Date { get; init; }
 
-            // Place between brackets the comma-separated list of player names placed between quotes
-            return String.Format("[{0}]",
-                String.Join(",",
-                    players.Select(player => String.Format("\"{0}\"", player))
-                )
-            );
+            [JsonPropertyName("mcversion")]
+            public string Mcversion { get; init; } = "0.0";
+
+            public string FileFormat { get; init; } = "MCPR";
+            public int FileFormatVersion { get; init; }
+            public int Protocol { get; init; }
+            public string Generator { get; init; } = "MCC";
+            public int SelfId { get; init; } = -1;
+            public string[] Players { get; init; } = [];
         }
     }
 }
