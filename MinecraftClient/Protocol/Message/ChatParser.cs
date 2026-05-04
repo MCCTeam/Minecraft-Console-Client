@@ -262,8 +262,10 @@ namespace MinecraftClient.Protocol.Message
         }
 
         private const long MaxResourcePackDownloadBytes = 256L * 1024 * 1024;
+        private const int ResourcePackDownloadBufferSize = 81920;
 
         private static readonly List<ResourcePackTranslationLayer> ResourcePackTranslationLayers = [];
+        private static readonly HttpClient ResourcePackHttpClient = new();
 
         /// <summary>
         /// Initialize translation rules.
@@ -521,16 +523,15 @@ namespace MinecraftClient.Protocol.Message
 
         private static void DownloadResourcePack(Uri resourcePackUri, string hash, string temporaryFilePath)
         {
-            using HttpClient httpClient = new();
             using HttpResponseMessage response =
-                httpClient.GetAsync(resourcePackUri, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
+                ResourcePackHttpClient.GetAsync(resourcePackUri, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
 
             using Stream resourcePackStream = response.Content.ReadAsStream();
             using FileStream temporaryFile = File.Create(temporaryFilePath);
             using IncrementalHash incrementalHash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
 
-            byte[] buffer = new byte[81920];
+            byte[] buffer = new byte[ResourcePackDownloadBufferSize];
             long totalBytes = 0;
 
             while (true)
@@ -553,13 +554,13 @@ namespace MinecraftClient.Protocol.Message
             {
                 string downloadedHash = Convert.ToHexString(incrementalHash.GetHashAndReset());
                 if (!downloadedHash.Equals(hash, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException();
+                    throw new InvalidDataException($"Resource pack hash mismatch for {resourcePackUri}. Expected {hash}, got {downloadedHash}.");
             }
         }
 
         private static void LoadResourcePackTranslations(string packIdentifier, Stream resourcePackStream)
         {
-            var fallbackTranslations = new Dictionary<string, string>(StringComparer.Ordinal);
+            var mergedTranslations = new Dictionary<string, string>(StringComparer.Ordinal);
             var selectedLanguageTranslations = new Dictionary<string, string>(StringComparer.Ordinal);
             string selectedLanguage = Config.Main.Advanced.Language;
 
@@ -572,7 +573,7 @@ namespace MinecraftClient.Protocol.Message
 
                 if (language.Equals("en_us", StringComparison.OrdinalIgnoreCase))
                 {
-                    MergeResourcePackTranslations(entry, fallbackTranslations);
+                    MergeResourcePackTranslations(entry, mergedTranslations);
                 }
                 else if (language.Equals(selectedLanguage, StringComparison.OrdinalIgnoreCase))
                 {
@@ -581,12 +582,12 @@ namespace MinecraftClient.Protocol.Message
             }
 
             foreach (var entry in selectedLanguageTranslations)
-                fallbackTranslations[entry.Key] = entry.Value;
+                mergedTranslations[entry.Key] = entry.Value;
 
             RemoveResourcePackTranslations(packIdentifier);
 
-            if (fallbackTranslations.Count > 0)
-                ResourcePackTranslationLayers.Add(new ResourcePackTranslationLayer(packIdentifier, fallbackTranslations));
+            if (mergedTranslations.Count > 0)
+                ResourcePackTranslationLayers.Add(new ResourcePackTranslationLayer(packIdentifier, mergedTranslations));
         }
 
         private static bool TryGetResourcePackLanguage(string entryPath, out string? language)

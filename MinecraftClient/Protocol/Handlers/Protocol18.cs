@@ -705,6 +705,8 @@ namespace MinecraftClient.Protocol.Handlers
 
             var url = dataTypes.ReadNextString(packetData);
             var hash = dataTypes.ReadNextString(packetData);
+            // Use the server-provided UUID when available, then fall back to the legacy SHA-1 hash,
+            // and finally the URL so pre-UUID resource packs can still be replaced or cleared locally.
             string packIdentifier = uuid != Guid.Empty ? uuid.ToString("D") : (hash.Length == 40 ? hash : url);
 
             if (protocolVersion >= MC_1_17_Version)
