@@ -164,7 +164,7 @@ namespace MinecraftClient
         /// <summary>
         /// Write a formatted chat line to the console when chat output is enabled.
         /// </summary>
-        public static void WriteChatLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
+        public static void WriteChatLineIfVisible(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
         {
             if (!ChatVisible)
                 return;
@@ -206,11 +206,13 @@ namespace MinecraftClient
                 {
                     Console.Clear();
                 }
-                catch (IOException)
+                catch (IOException ex)
                 {
+                    System.Diagnostics.Debug.WriteLine(ex);
                 }
-                catch (PlatformNotSupportedException)
+                catch (PlatformNotSupportedException ex)
                 {
+                    System.Diagnostics.Debug.WriteLine(ex);
                 }
 
                 return;

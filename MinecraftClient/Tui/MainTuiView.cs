@@ -272,6 +272,7 @@ namespace MinecraftClient.Tui
         {
             _logLines.Clear();
             _logControls.Clear();
+            ScheduleScrollToEnd();
         }
 
         private void TrimLog()

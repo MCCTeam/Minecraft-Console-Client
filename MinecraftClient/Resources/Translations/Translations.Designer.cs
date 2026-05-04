@@ -3043,7 +3043,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Console chat output is now hidden.
+        ///   Looks up a localized string similar to Console chat output is now hidden..
         /// </summary>
         internal static string cmd_console_chat_state_off {
             get {
@@ -3052,7 +3052,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Console chat output is now visible.
+        ///   Looks up a localized string similar to Console chat output is now visible..
         /// </summary>
         internal static string cmd_console_chat_state_on {
             get {
