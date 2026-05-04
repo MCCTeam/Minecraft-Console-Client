@@ -11,6 +11,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Tomlet;
+using Tomlet.Models;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Message
@@ -275,9 +277,6 @@ namespace MinecraftClient.Protocol.Message
         private const int ResourcePackDownloadBufferSize = 81920;
         private const string ResourcePackTranslationCacheVersion = "1";
         private const string ForgeModTranslationDirectory = "mods";
-
-        private static readonly Regex ForgeModIdLineRegex =
-            new(@"^\s*modId\s*=\s*""([^""]+)""", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly List<TranslationLayer> ForgeModTranslationLayers = [];
         private static readonly List<TranslationLayer> ResourcePackTranslationLayers = [];
@@ -658,11 +657,11 @@ namespace MinecraftClient.Protocol.Message
 
                 if (language.Equals("en_us", StringComparison.OrdinalIgnoreCase))
                 {
-                    MergeResourcePackTranslations(entry, mergedTranslations);
+                    MergeTranslationsFromZipEntry(entry, mergedTranslations);
                 }
                 else if (language.Equals(selectedLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    MergeResourcePackTranslations(entry, selectedLanguageTranslations);
+                    MergeTranslationsFromZipEntry(entry, selectedLanguageTranslations);
                 }
             }
 
@@ -692,7 +691,7 @@ namespace MinecraftClient.Protocol.Message
             return !string.IsNullOrEmpty(language);
         }
 
-        private static void MergeResourcePackTranslations(ZipArchiveEntry entry, Dictionary<string, string> translations)
+        private static void MergeTranslationsFromZipEntry(ZipArchiveEntry entry, Dictionary<string, string> translations)
         {
             using Stream entryStream = entry.Open();
             Dictionary<string, string>? entryTranslations =
@@ -732,24 +731,26 @@ namespace MinecraftClient.Protocol.Message
 
         private static HashSet<string> GetForgeModIds(ZipArchive archive)
         {
-            ZipArchiveEntry? modsTomlEntry = archive.Entries.FirstOrDefault(entry =>
-                entry.FullName.Equals("META-INF/mods.toml", StringComparison.OrdinalIgnoreCase));
+            ZipArchiveEntry? modsTomlEntry = archive.GetEntry("META-INF/mods.toml")
+                ?? archive.GetEntry("META-INF/MODS.TOML");
 
             if (modsTomlEntry is null)
                 return [];
 
-            HashSet<string> modIds = new(StringComparer.OrdinalIgnoreCase);
             using StreamReader reader = new(modsTomlEntry.Open(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            TomlDocument document = new TomlParser().Parse(reader.ReadToEnd());
+            if (!document.TryGetValue("mods", out TomlValue? modsValue) || modsValue is not TomlArray modsArray)
+                return [];
 
-            while (reader.ReadLine() is string line)
+            HashSet<string> modIds = new(StringComparer.OrdinalIgnoreCase);
+            foreach (TomlValue modValue in modsArray)
             {
-                string trimmedLine = line.Trim();
-                if (trimmedLine.StartsWith('#'))
+                if (modValue is not TomlTable modTable || !modTable.ContainsKey("modId"))
                     continue;
 
-                Match match = ForgeModIdLineRegex.Match(trimmedLine);
-                if (match.Success)
-                    modIds.Add(NormalizeForgeModId(match.Groups[1].Value));
+                string modId = modTable.GetString("modId");
+                if (!string.IsNullOrWhiteSpace(modId))
+                    modIds.Add(NormalizeForgeModId(modId));
             }
 
             return modIds;
@@ -779,7 +780,7 @@ namespace MinecraftClient.Protocol.Message
                         fallbackTranslations[modId] = translations;
                     }
 
-                    MergeResourcePackTranslations(entry, translations);
+                    MergeTranslationsFromZipEntry(entry, translations);
                 }
                 else if (language.Equals(selectedLanguage, StringComparison.OrdinalIgnoreCase))
                 {
@@ -789,7 +790,7 @@ namespace MinecraftClient.Protocol.Message
                         selectedTranslations[modId] = translations;
                     }
 
-                    MergeResourcePackTranslations(entry, translations);
+                    MergeTranslationsFromZipEntry(entry, translations);
                 }
             }
 
@@ -844,12 +845,12 @@ namespace MinecraftClient.Protocol.Message
 
         private static string NormalizeForgeModId(string modId)
         {
-            return Settings.ToLowerIfNeed(modId.Trim());
+            return modId.Trim().ToLowerInvariant();
         }
 
         private static string NormalizeLanguageCode(string language)
         {
-            return Settings.ToLowerIfNeed(language.Trim()).Replace('-', '_');
+            return language.Trim().ToLowerInvariant().Replace('-', '_');
         }
 
         private static bool TryLoadCachedResourcePackTranslations(string cacheFilePath, Uri resourcePackUri, string hash,
