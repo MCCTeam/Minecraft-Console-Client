@@ -314,7 +314,7 @@ namespace MinecraftClient
                 client.ReceiveBufferSize = 1024 * 1024;
                 client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000; // Default: 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
-                if (forgeInfo is not null)
+                if (forgeInfo is not null && forgeInfo.Version == FMLVersion.FML)
                     ChatParser.LoadForgeModTranslations(forgeInfo.Mods.Select(static mod => mod.ModID));
                 Log.Info(Translations.mcc_version_supported);
 

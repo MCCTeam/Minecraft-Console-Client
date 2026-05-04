@@ -511,8 +511,7 @@ namespace MinecraftClient.Protocol.Message
 
             foreach (string modDirectory in GetForgeModTranslationDirectories())
             {
-                foreach (string modJarPath in Directory.EnumerateFiles(modDirectory, "*.jar")
-                             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
+                foreach (string modJarPath in Directory.EnumerateFiles(modDirectory, "*.jar"))
                 {
                     try
                     {
@@ -1005,7 +1004,8 @@ namespace MinecraftClient.Protocol.Message
         private static string ComputeFileSha256(string filePath)
         {
             using FileStream stream = File.OpenRead(filePath);
-            return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+            using SHA256 sha256 = SHA256.Create();
+            return Convert.ToHexString(sha256.ComputeHash(stream)).ToLowerInvariant();
         }
 
         private static bool TryLoadCachedForgeModTranslations(string cacheFilePath, string sourceHash,
