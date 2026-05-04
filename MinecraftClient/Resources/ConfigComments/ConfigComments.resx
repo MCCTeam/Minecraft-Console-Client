@@ -688,7 +688,13 @@ Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; P
     <value>Load translations from server resource packs and cache extracted language entries locally for faster reuse.</value>
   </data>
   <data name="Main.Advanced.load_forge_mod_translations" xml:space="preserve">
-    <value>Load translations from local Forge mod jars in the mods folder when their mod IDs are announced by the server.</value>
+    <value>Load translations from local Forge mod jars when their mod IDs are announced by the server. Disabled by default.</value>
+  </data>
+  <data name="Main.Advanced.auto_discover_forge_mod_translation_sources" xml:space="preserve">
+    <value>Also scan standard Minecraft, Prism Launcher, and CurseForge instance mod folders for translation jars when available.</value>
+  </data>
+  <data name="Main.Advanced.forge_mod_translation_path" xml:space="preserve">
+    <value>Optional path to a mods folder. When set, MCC loads Forge mod translations from this folder instead of automatic discovery.</value>
   </data>
   <data name="Main.Advanced.mc_forge" xml:space="preserve">
     <value>Use "auto", "no" or "force". Force-enabling only works for MC 1.13+.</value>

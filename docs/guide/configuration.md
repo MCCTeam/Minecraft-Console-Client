@@ -283,11 +283,33 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Description:**
 
-  Set this to `false` to ignore translations from local Forge mod jars. When enabled, MCC looks in the local `mods` folder, reads matching `assets/<modId>/lang/<locale>.json` files from jars announced by the server, and falls back to `en_us` when the selected locale is missing.
+  Set this to `true` to load translations from local Forge mod jars for the mod IDs announced by the server. MCC first checks the folder from `ForgeModTranslationPath` when it is set. Otherwise it checks the local `mods` folder, and if `AutoDiscoverForgeModTranslationSources` is enabled it also scans standard launcher folders such as `.minecraft/mods`, Prism Launcher instances, and CurseForge instances. MCC falls back to `en_us` when the selected locale is missing, and caches parsed results by jar hash.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
+
+#### `AutoDiscoverForgeModTranslationSources`
+
+- **Description:**
+
+  Set this to `false` to stop scanning launcher-managed mod folders outside the current working directory. This setting only matters when `LoadForgeModTranslations` is enabled and `ForgeModTranslationPath` is empty.
 
 - **Type:** `boolean`
 
 - **Default:** `true`
+
+#### `ForgeModTranslationPath`
+
+- **Description:**
+
+  Optional path to a mods folder. When this is set, MCC loads Forge mod translations from that folder instead of using automatic discovery.
+
+  If automatic discovery does not find the mod you need, copy that mod jar into the configured folder, or into the local `mods` folder next to MCC, and MCC will read translations from there without modifying the jar.
+
+- **Type:** `string`
+
+- **Default:** `""`
 
 #### `ConsoleTitle`
 
