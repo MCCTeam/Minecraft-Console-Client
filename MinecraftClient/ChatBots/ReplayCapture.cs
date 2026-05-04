@@ -43,8 +43,7 @@ namespace MinecraftClient.ChatBots
         public override void Initialize()
         {
             SetNetworkPacketEventEnabled(true);
-            replay = new ReplayHandler(GetProtocolVersion());
-            replay.MetaData.serverName = GetServerHost() + GetServerPort();
+            replay = new ReplayHandler(GetProtocolVersion(), $"{GetServerHost()}:{GetServerPort()}");
             backupCounter = Settings.DoubleToTick(Config.Backup_Interval);
 
             McClient.dispatcher.Register(l => l.Literal("help")
@@ -68,6 +67,8 @@ namespace MinecraftClient.ChatBots
         {
             McClient.dispatcher.Unregister(CommandName);
             McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
+            replay?.Dispose();
+            replay = null;
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -85,9 +86,9 @@ namespace MinecraftClient.ChatBots
         {
             try
             {
-                if (replay!.RecordRunning)
+                if (replay is { RecordRunning: true })
                 {
-                    replay.CreateBackupReplay(Path.Combine("replay_recordings", replay.GetReplayDefaultName()));
+                    replay.CreateBackupReplay(Path.Combine(replay.ReplayFileDirectory, replay.GetReplayDefaultName()));
                     return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_replayCapture_created);
                 }
                 else
@@ -103,7 +104,7 @@ namespace MinecraftClient.ChatBots
         {
             try
             {
-                if (replay!.RecordRunning)
+                if (replay is { RecordRunning: true })
                 {
                     replay.OnShutDown();
                     return r.SetAndReturn(CmdResult.Status.Done, Translations.bot_replayCapture_stopped);
@@ -119,16 +120,16 @@ namespace MinecraftClient.ChatBots
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
         {
-            replay!.AddPacket(packetID, packetData, isLogin, isInbound);
+            replay?.AddPacket(packetID, packetData, isLogin, isInbound);
         }
 
         public override void Update()
         {
-            if (Config.Backup_Interval > 0 && replay!.RecordRunning)
+            if (Config.Backup_Interval > 0 && replay is { RecordRunning: true })
             {
                 if (backupCounter <= 0)
                 {
-                    replay.CreateBackupReplay(Path.Combine("recording_cache", "REPLAY_BACKUP.mcpr"));
+                    replay.CreateBackupReplay(replay.GetBackupReplayPath());
                     backupCounter = Settings.DoubleToTick(Config.Backup_Interval);
                 }
                 else backupCounter--;
@@ -137,7 +138,7 @@ namespace MinecraftClient.ChatBots
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            replay!.OnShutDown();
+            replay?.OnShutDown();
             return base.OnDisconnect(reason, message);
         }
     }

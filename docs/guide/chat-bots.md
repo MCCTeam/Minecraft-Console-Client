@@ -3064,11 +3064,13 @@ redirectFrom:
 
 - **Description:**
 
-  Enable recording of the game (`/replay start`) and replay it later using the Replay Mod (https://www.replaymod.com/).
+  Enable automatic recording of the game and replay it later using the Replay Mod (https://www.replaymod.com/).
+
+  Use `/replay save` to create a snapshot replay file while recording, and `/replay stop` to finalize the active recording.
 
   <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-  **This bot does not work for 1.19, we need maintainers for it.**
+  **Use `/replay stop` or exit MCC gracefully with `/quit` so the replay file can be finalized cleanly.**
 
   </div>
 
@@ -3078,9 +3080,9 @@ redirectFrom:
 
   </div>
 
-  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-  **You SHOULD use `/replay stop` or exit the program gracefully with `/quit` OR THE REPLAY FILE MAY GET CORRUPT!**
+  **Each MCC instance uses its own temporary replay cache, so multiple MCC clients can record from the same folder without overwriting each other.**
 
   </div>
 
