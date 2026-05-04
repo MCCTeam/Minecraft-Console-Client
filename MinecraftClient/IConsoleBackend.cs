@@ -60,6 +60,8 @@ namespace MinecraftClient
 
         void ClearInputBuffer();
 
+        void ClearScreen();
+
         bool DisplayUserInput { get; set; }
 
         void SetInputVisible(bool visible);

@@ -883,6 +883,24 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>clear-console</code></summary>
+
+- **Description:**
+
+  Clear the visible console output.
+
+  In TUI mode this clears the log panel. In the classic console it clears the terminal screen.
+
+- **Usage:**
+
+  ```
+  /clear-console
+  /cc
+  ```
+
+</details>
+
+<details>
 <summary><code>connect</code></summary>
 
 - **Description:**
@@ -1580,6 +1598,39 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
   ```
   /inventory s SlimeBlock 10
+  ```
+
+</details>
+
+<details>
+<summary><code>console-chat</code></summary>
+
+- **Description:**
+
+  Temporarily show or hide chat in the console.
+
+  This changes the current session only. If you want the same behavior every time MCC starts, use [`Console.General.Display_Chat`](configuration.md#display_chat).
+
+- **Usage:**
+
+  ```
+  /console-chat
+  /console-chat on
+  /console-chat off
+  ```
+
+- **Examples:**
+
+  Hide chat until you turn it back on:
+
+  ```
+  /console-chat off
+  ```
+
+  Show chat again:
+
+  ```
+  /console-chat on
   ```
 
 </details>

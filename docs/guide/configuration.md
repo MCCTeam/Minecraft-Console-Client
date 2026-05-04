@@ -1132,6 +1132,18 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `true`
 
+#### `Display_Chat`
+
+- **Description:**
+
+  Set this to `false` if you want MCC to keep receiving chat without printing it in the console.
+
+  This only affects console output. It does not stop bots from receiving chat, and it does not turn off chat file logging.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
 #### `History_Input_Records`
 
 - **Description:**

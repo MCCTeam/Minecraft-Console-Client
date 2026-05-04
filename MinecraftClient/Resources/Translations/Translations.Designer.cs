@@ -3025,6 +3025,42 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to clear the console output..
+        /// </summary>
+        internal static string cmd_clear_console_desc {
+            get {
+                return ResourceManager.GetString("cmd.clear_console.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to toggle chat visibility in the console..
+        /// </summary>
+        internal static string cmd_console_chat_desc {
+            get {
+                return ResourceManager.GetString("cmd.console_chat.desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Console chat output is now hidden..
+        /// </summary>
+        internal static string cmd_console_chat_state_off {
+            get {
+                return ResourceManager.GetString("cmd.console_chat.state_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Console chat output is now visible..
+        /// </summary>
+        internal static string cmd_console_chat_state_on {
+            get {
+                return ResourceManager.GetString("cmd.console_chat.state_on", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to toggle debug messages..
         /// </summary>
         internal static string cmd_debug_desc {
