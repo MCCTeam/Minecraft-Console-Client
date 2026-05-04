@@ -279,6 +279,16 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `true`
 
+#### `LoadForgeModTranslations`
+
+- **Description:**
+
+  Set this to `false` to ignore translations from local Forge mod jars. When enabled, MCC looks in the local `mods` folder, reads matching `assets/<modId>/lang/<locale>.json` files from jars announced by the server, and falls back to `en_us` when the selected locale is missing.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
 #### `ConsoleTitle`
 
 - **Description:**
