@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -253,12 +255,36 @@ namespace MinecraftClient.Protocol.Message
         /// </summary>
         private static Dictionary<string, string> TranslationRules = new();
 
+        private sealed class ResourcePackTranslationLayer(string packIdentifier, Dictionary<string, string> translations)
+        {
+            public string PackIdentifier { get; } = packIdentifier;
+            public Dictionary<string, string> Translations { get; } = translations;
+        }
+
+        private sealed class ResourcePackTranslationCacheEntry
+        {
+            public string CacheVersion { get; init; } = string.Empty;
+            public string Language { get; init; } = string.Empty;
+            public string SourceUrl { get; init; } = string.Empty;
+            public string SourceHash { get; init; } = string.Empty;
+            public Dictionary<string, string> Translations { get; init; } = [];
+        }
+
+        private const long MaxResourcePackDownloadBytes = 256L * 1024 * 1024;
+        private const int ResourcePackDownloadBufferSize = 81920;
+        private const string ResourcePackTranslationCacheVersion = "1";
+
+        private static readonly List<ResourcePackTranslationLayer> ResourcePackTranslationLayers = [];
+        private static readonly HttpClient ResourcePackHttpClient = new();
+
         /// <summary>
         /// Initialize translation rules.
         /// Necessary for properly printing some chat messages.
         /// </summary>
         public static void InitTranslations()
         {
+            ResourcePackTranslationLayers.Clear();
+
             if (!RulesInitialized)
             {
                 InitRules();
@@ -379,10 +405,72 @@ namespace MinecraftClient.Protocol.Message
 
         public static string? TranslateString(string rulename)
         {
-            if (TranslationRules.TryGetValue(rulename, out string? result))
-                return result;
-            else
-                return null;
+            return TryGetTranslationRule(rulename, out string? result) ? result : null;
+        }
+
+        public static void LoadResourcePackTranslations(string packIdentifier, string url, string hash)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(packIdentifier);
+            ArgumentException.ThrowIfNullOrEmpty(url);
+
+            if (!Config.Main.Advanced.LoadResourcePackTranslations)
+                return;
+
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? resourcePackUri)
+                || resourcePackUri.Scheme is not "http" and not "https")
+            {
+                return;
+            }
+
+            string cacheFilePath = GetResourcePackTranslationCacheFilePath(resourcePackUri, hash);
+            if (TryLoadCachedResourcePackTranslations(cacheFilePath, resourcePackUri, hash, out Dictionary<string, string>? cachedTranslations))
+            {
+                ReplaceResourcePackTranslations(packIdentifier, cachedTranslations);
+                return;
+            }
+
+            string temporaryFilePath = Path.GetTempFileName();
+            try
+            {
+                DownloadResourcePack(resourcePackUri, hash, temporaryFilePath);
+                using FileStream resourcePackFile = File.OpenRead(temporaryFilePath);
+                Dictionary<string, string> resourcePackTranslations = ExtractResourcePackTranslations(resourcePackFile);
+                ReplaceResourcePackTranslations(packIdentifier, resourcePackTranslations);
+                SaveCachedResourcePackTranslations(cacheFilePath, resourcePackUri, hash, resourcePackTranslations);
+            }
+            catch (HttpRequestException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+            catch (InvalidDataException)
+            {
+            }
+            catch (JsonException)
+            {
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(temporaryFilePath);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
+        public static void RemoveResourcePackTranslations(string packIdentifier)
+        {
+                ResourcePackTranslationLayers.RemoveAll(layer =>
+                layer.PackIdentifier.Equals(packIdentifier, StringComparison.Ordinal));
+        }
+
+        public static void ClearResourcePackTranslations()
+        {
+            ResourcePackTranslationLayers.Clear();
         }
 
         /// <summary>
@@ -400,10 +488,9 @@ namespace MinecraftClient.Protocol.Message
                 RulesInitialized = true;
             }
 
-            if (TranslationRules.ContainsKey(rulename))
+            if (TryGetTranslationRule(rulename, out string? rule))
             {
                 int using_idx = 0;
-                string rule = TranslationRules[rulename];
                 StringBuilder result = new();
                 for (int i = 0; i < rule.Length; i++)
                 {
@@ -443,6 +530,211 @@ namespace MinecraftClient.Protocol.Message
                 return result.ToString();
             }
             else return "[" + rulename + "] " + string.Join(" ", using_data);
+        }
+
+        private static bool TryGetTranslationRule(string rulename, out string? result)
+        {
+            for (int i = ResourcePackTranslationLayers.Count - 1; i >= 0; i--)
+            {
+                if (ResourcePackTranslationLayers[i].Translations.TryGetValue(rulename, out result))
+                    return true;
+            }
+
+            return TranslationRules.TryGetValue(rulename, out result);
+        }
+
+        private static void DownloadResourcePack(Uri resourcePackUri, string hash, string temporaryFilePath)
+        {
+            using HttpResponseMessage response =
+                ResourcePackHttpClient.GetAsync(resourcePackUri, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
+
+            using Stream resourcePackStream = response.Content.ReadAsStream();
+            using FileStream temporaryFile = File.Create(temporaryFilePath);
+            using IncrementalHash incrementalHash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+
+            byte[] buffer = new byte[ResourcePackDownloadBufferSize];
+            long totalBytes = 0;
+
+            while (true)
+            {
+                int bytesRead = resourcePackStream.Read(buffer, 0, buffer.Length);
+                if (bytesRead <= 0)
+                    break;
+
+                totalBytes += bytesRead;
+                if (totalBytes > MaxResourcePackDownloadBytes)
+                    throw new InvalidDataException();
+
+                temporaryFile.Write(buffer, 0, bytesRead);
+
+                if (hash.Length == 40)
+                    incrementalHash.AppendData(buffer, 0, bytesRead);
+            }
+
+            if (hash.Length == 40)
+            {
+                string downloadedHash = Convert.ToHexString(incrementalHash.GetHashAndReset());
+                if (!downloadedHash.Equals(hash, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException($"Resource pack hash mismatch for {resourcePackUri}. Expected {hash}, got {downloadedHash}.");
+            }
+        }
+
+        private static Dictionary<string, string> ExtractResourcePackTranslations(Stream resourcePackStream)
+        {
+            var mergedTranslations = new Dictionary<string, string>(StringComparer.Ordinal);
+            var selectedLanguageTranslations = new Dictionary<string, string>(StringComparer.Ordinal);
+            string selectedLanguage = Config.Main.Advanced.Language;
+
+            using ZipArchive archive = new(resourcePackStream, ZipArchiveMode.Read, leaveOpen: true);
+
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                if (!TryGetResourcePackLanguage(entry.FullName, out string? language))
+                    continue;
+
+                if (language.Equals("en_us", StringComparison.OrdinalIgnoreCase))
+                {
+                    MergeResourcePackTranslations(entry, mergedTranslations);
+                }
+                else if (language.Equals(selectedLanguage, StringComparison.OrdinalIgnoreCase))
+                {
+                    MergeResourcePackTranslations(entry, selectedLanguageTranslations);
+                }
+            }
+
+            foreach (var entry in selectedLanguageTranslations)
+                mergedTranslations[entry.Key] = entry.Value;
+
+            return mergedTranslations;
+        }
+
+        private static bool TryGetResourcePackLanguage(string entryPath, out string? language)
+        {
+            language = null;
+
+            string[] pathParts = entryPath
+                .Replace('\\', '/')
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            if (pathParts.Length != 4
+                || !pathParts[0].Equals("assets", StringComparison.OrdinalIgnoreCase)
+                || !pathParts[2].Equals("lang", StringComparison.OrdinalIgnoreCase)
+                || !pathParts[3].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            language = Path.GetFileNameWithoutExtension(pathParts[3]);
+            return !string.IsNullOrEmpty(language);
+        }
+
+        private static void MergeResourcePackTranslations(ZipArchiveEntry entry, Dictionary<string, string> translations)
+        {
+            using Stream entryStream = entry.Open();
+            Dictionary<string, string>? entryTranslations =
+                JsonSerializer.Deserialize<Dictionary<string, string>>(entryStream);
+
+            if (entryTranslations is null)
+                return;
+
+            foreach (var (key, value) in entryTranslations)
+                translations[key] = value;
+        }
+
+        private static void ReplaceResourcePackTranslations(string packIdentifier, Dictionary<string, string> translations)
+        {
+            RemoveResourcePackTranslations(packIdentifier);
+
+            if (translations.Count > 0)
+                ResourcePackTranslationLayers.Add(new ResourcePackTranslationLayer(packIdentifier, translations));
+        }
+
+        private static bool TryLoadCachedResourcePackTranslations(string cacheFilePath, Uri resourcePackUri, string hash,
+            out Dictionary<string, string>? translations)
+        {
+            translations = null;
+
+            if (!File.Exists(cacheFilePath))
+                return false;
+
+            try
+            {
+                using FileStream cacheFile = File.OpenRead(cacheFilePath);
+                ResourcePackTranslationCacheEntry? cacheEntry =
+                    JsonSerializer.Deserialize<ResourcePackTranslationCacheEntry>(cacheFile);
+
+                if (cacheEntry is not null
+                    && cacheEntry.CacheVersion == ResourcePackTranslationCacheVersion
+                    && cacheEntry.Language.Equals(Config.Main.Advanced.Language, StringComparison.OrdinalIgnoreCase)
+                    && cacheEntry.SourceUrl.Equals(resourcePackUri.AbsoluteUri, StringComparison.Ordinal)
+                    && cacheEntry.SourceHash.Equals(hash, StringComparison.OrdinalIgnoreCase)
+                    && cacheEntry.Translations.Count > 0)
+                {
+                    translations = new Dictionary<string, string>(cacheEntry.Translations, StringComparer.Ordinal);
+                    return true;
+                }
+            }
+            catch (IOException)
+            {
+            }
+            catch (JsonException)
+            {
+            }
+
+            try
+            {
+                File.Delete(cacheFilePath);
+            }
+            catch (IOException)
+            {
+            }
+
+            return false;
+        }
+
+        private static void SaveCachedResourcePackTranslations(string cacheFilePath, Uri resourcePackUri, string hash,
+            Dictionary<string, string> translations)
+        {
+            if (translations.Count == 0)
+                return;
+
+            string? cacheDirectory = Path.GetDirectoryName(cacheFilePath);
+            if (string.IsNullOrEmpty(cacheDirectory))
+                return;
+
+            Directory.CreateDirectory(cacheDirectory);
+
+            ResourcePackTranslationCacheEntry cacheEntry = new()
+            {
+                CacheVersion = ResourcePackTranslationCacheVersion,
+                Language = Config.Main.Advanced.Language,
+                SourceUrl = resourcePackUri.AbsoluteUri,
+                SourceHash = hash,
+                Translations = new Dictionary<string, string>(translations, StringComparer.Ordinal)
+            };
+
+            File.WriteAllText(cacheFilePath, JsonSerializer.Serialize(cacheEntry), Encoding.UTF8);
+        }
+
+        private static string GetResourcePackTranslationCacheFilePath(Uri resourcePackUri, string hash)
+        {
+            string cacheKey = GetResourcePackTranslationCacheKey(resourcePackUri, hash);
+            return Path.Combine("lang", "resourcepacks", $"{cacheKey}.{Config.Main.Advanced.Language}.json");
+        }
+
+        private static string GetResourcePackTranslationCacheKey(Uri resourcePackUri, string hash)
+        {
+            if (IsValidSha1(hash))
+                return hash.ToLowerInvariant();
+
+            byte[] urlHash = SHA256.HashData(Encoding.UTF8.GetBytes(resourcePackUri.AbsoluteUri));
+            return "url-" + Convert.ToHexString(urlHash).ToLowerInvariant();
+        }
+
+        private static bool IsValidSha1(string hash)
+        {
+            return hash.Length == 40 && hash.All(Uri.IsHexDigit);
         }
 
         /// <summary>
