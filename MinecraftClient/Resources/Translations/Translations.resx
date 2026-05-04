@@ -1090,6 +1090,18 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.connect.unknown" xml:space="preserve">
     <value>Unknown account '{0}'.</value>
   </data>
+  <data name="cmd.console_chat.desc" xml:space="preserve">
+    <value>toggle chat visibility in the console.</value>
+  </data>
+  <data name="cmd.console_chat.state_off" xml:space="preserve">
+    <value>Console chat output is now hidden</value>
+  </data>
+  <data name="cmd.console_chat.state_on" xml:space="preserve">
+    <value>Console chat output is now visible</value>
+  </data>
+  <data name="cmd.clear_console.desc" xml:space="preserve">
+    <value>clear the console output.</value>
+  </data>
   <data name="cmd.debug.desc" xml:space="preserve">
     <value>toggle debug messages.</value>
   </data>

@@ -63,6 +63,12 @@ namespace MinecraftClient
             ConsoleInteractive.ConsoleReader.ClearBuffer();
         }
 
+        public void ClearScreen()
+        {
+            Console.Clear();
+            ConsoleInteractive.ConsoleSuggestion.ClearSuggestions();
+        }
+
         public void SetInputVisible(bool visible)
         {
             ConsoleInteractive.ConsoleReader.SetInputVisible(visible);

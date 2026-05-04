@@ -1122,6 +1122,8 @@ namespace MinecraftClient
 
                 public void OnSettingUpdate()
                 {
+                    ConsoleIO.ChatVisible = General.Display_Chat;
+
                     var backend = ConsoleIO.Backend;
                     if (backend == null) return;
 
@@ -1224,6 +1226,9 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Console.General.Display_Input$")]
                     public bool Display_Input = true;
+
+                    [TomlInlineComment("$Console.General.Display_Chat$")]
+                    public bool Display_Chat = true;
 
                     [TomlInlineComment("$Console.General.History_Input_Records$")]
                     public int History_Input_Records = 32;

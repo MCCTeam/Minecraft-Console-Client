@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -60,6 +61,11 @@ namespace MinecraftClient
         /// Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
         /// </summary>
         public static bool EnableTimestamps = false;
+
+        /// <summary>
+        /// Determine whether chat lines should be displayed in the console.
+        /// </summary>
+        public static bool ChatVisible = true;
 
         /// <summary>
         /// Specify a generic log line prefix for WriteLogLine()
@@ -156,6 +162,17 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Write a formatted chat line to the console when chat output is enabled.
+        /// </summary>
+        public static void WriteChatLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
+        {
+            if (!ChatVisible)
+                return;
+
+            WriteLineFormatted(str, acceptnewlines, displayTimestamp);
+        }
+
+        /// <summary>
         /// Write a prefixed log line. Prefix is set in LogPrefix.
         /// </summary>
         /// <param name="text">Text of the log line</param>
@@ -176,6 +193,30 @@ namespace MinecraftClient
         {
             if (BasicIO) return;
             Backend.ClearInputBuffer();
+        }
+
+        /// <summary>
+        /// Clear the visible console output.
+        /// </summary>
+        public static void ClearConsole()
+        {
+            if (BasicIO || Backend is null)
+            {
+                try
+                {
+                    Console.Clear();
+                }
+                catch (IOException)
+                {
+                }
+                catch (PlatformNotSupportedException)
+                {
+                }
+
+                return;
+            }
+
+            Backend.ClearScreen();
         }
 
         #endregion

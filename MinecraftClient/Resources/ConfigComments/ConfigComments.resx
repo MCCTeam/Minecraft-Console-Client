@@ -589,6 +589,9 @@ Custom colors are only available when using "vt100_24bit" color mode.</value>
   <data name="Console.General.Display_Input" xml:space="preserve">
     <value>You can use "Ctrl+P" to print out the current input and cursor position.</value>
   </data>
+  <data name="Console.General.Display_Chat" xml:space="preserve">
+    <value>Whether to display received chat messages in the console. This does not affect chat bots or chat log files.</value>
+  </data>
   <data name="Console.General.History_Input_Records" xml:space="preserve">
     <value>Maximum number of input history records to keep.</value>
   </data>

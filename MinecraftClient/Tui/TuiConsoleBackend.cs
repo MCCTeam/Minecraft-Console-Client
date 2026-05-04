@@ -240,6 +240,15 @@ namespace MinecraftClient.Tui
                 Dispatcher.UIThread.Post(() => _view?.ClearInput());
         }
 
+        public void ClearScreen()
+        {
+            if (_view == null) return;
+            if (Dispatcher.UIThread.CheckAccess())
+                _view.ClearLog();
+            else
+                Dispatcher.UIThread.Post(() => _view?.ClearLog());
+        }
+
         public void SetInputVisible(bool visible)
         {
         }

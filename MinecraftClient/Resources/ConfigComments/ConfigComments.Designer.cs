@@ -1430,6 +1430,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Whether to display received chat messages in the console. This does not affect chat bots or chat log files..
+        /// </summary>
+        internal static string Console_General_Display_Chat {
+            get {
+                return ResourceManager.GetString("Console.General.Display_Chat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Maximum number of input history records to keep..
         /// </summary>
         internal static string Console_General_History_Input_Records {

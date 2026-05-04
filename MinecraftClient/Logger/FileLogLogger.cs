@@ -72,7 +72,8 @@ namespace MinecraftClient.Logger
             {
                 if (ShouldDisplay(FilterChannel.Chat, msg))
                 {
-                    LogAndSave(msg);
+                    ConsoleIO.WriteChatLineFormatted(msg);
+                    Save(msg);
                 }
                 else Debug("[Logger] One Chat message filtered: " + msg);
             }
