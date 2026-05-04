@@ -269,6 +269,16 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Default:** `true`
 
+#### `LoadResourcePackTranslations`
+
+- **Description:**
+
+  Set this to `false` to ignore translations provided by server resource packs. When enabled, MCC caches extracted resource-pack translation data locally so future joins can reuse it without downloading the pack again.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
 #### `ConsoleTitle`
 
 - **Description:**

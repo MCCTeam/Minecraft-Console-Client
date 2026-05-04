@@ -775,6 +775,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.Advanced.LoadMccTrans$")]
                     public bool LoadMccTranslation = true;
 
+                    [TomlInlineComment("$Main.Advanced.load_resourcepack_translations$")]
+                    public bool LoadResourcePackTranslations = true;
+
                     // [TomlInlineComment("$Main.Advanced.console_title$")]
                     public string ConsoleTitle = "%username%@%serverip% - Minecraft Console Client";
 
