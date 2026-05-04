@@ -301,6 +301,8 @@ namespace MinecraftClient.Protocol.Handlers
                             for (int i = 0; i < modCount; i++)
                                 mods.Add(dataTypes.ReadNextString(packetData));
 
+                            ChatParser.LoadForgeModTranslations(mods);
+
                             Dictionary<string, string> channels = new();
                             int channelCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < channelCount; i++)

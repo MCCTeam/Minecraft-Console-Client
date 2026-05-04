@@ -680,6 +680,8 @@ namespace MinecraftClient
                     if (Advanced.TcpTimeout < 1)
                         Advanced.TcpTimeout = 1;
 
+                    Advanced.ForgeModTranslationPath = Advanced.ForgeModTranslationPath.Trim();
+
                     if (Advanced.MovementSpeed < 1)
                         Advanced.MovementSpeed = 1;
 
@@ -777,6 +779,15 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Main.Advanced.load_resourcepack_translations$")]
                     public bool LoadResourcePackTranslations = true;
+
+                    [TomlInlineComment("$Main.Advanced.load_forge_mod_translations$")]
+                    public bool LoadForgeModTranslations = false;
+
+                    [TomlInlineComment("$Main.Advanced.auto_discover_forge_mod_translation_sources$")]
+                    public bool AutoDiscoverForgeModTranslationSources = true;
+
+                    [TomlInlineComment("$Main.Advanced.forge_mod_translation_path$")]
+                    public string ForgeModTranslationPath = "";
 
                     // [TomlInlineComment("$Main.Advanced.console_title$")]
                     public string ConsoleTitle = "%username%@%serverip% - Minecraft Console Client";

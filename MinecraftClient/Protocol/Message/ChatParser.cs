@@ -5,11 +5,14 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Tomlet;
+using Tomlet.Models;
 using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Message
@@ -255,9 +258,9 @@ namespace MinecraftClient.Protocol.Message
         /// </summary>
         private static Dictionary<string, string> TranslationRules = new();
 
-        private sealed class ResourcePackTranslationLayer(string packIdentifier, Dictionary<string, string> translations)
+        private sealed class TranslationLayer(string identifier, Dictionary<string, string> translations)
         {
-            public string PackIdentifier { get; } = packIdentifier;
+            public string Identifier { get; } = identifier;
             public Dictionary<string, string> Translations { get; } = translations;
         }
 
@@ -270,11 +273,22 @@ namespace MinecraftClient.Protocol.Message
             public Dictionary<string, string> Translations { get; init; } = [];
         }
 
+        private sealed class ForgeModTranslationCacheEntry
+        {
+            public string CacheVersion { get; init; } = string.Empty;
+            public string Language { get; init; } = string.Empty;
+            public string SourceHash { get; init; } = string.Empty;
+            public Dictionary<string, Dictionary<string, string>> TranslationsByModId { get; init; } = [];
+        }
+
         private const long MaxResourcePackDownloadBytes = 256L * 1024 * 1024;
         private const int ResourcePackDownloadBufferSize = 81920;
         private const string ResourcePackTranslationCacheVersion = "1";
+        private const string ForgeModTranslationCacheVersion = "1";
+        private const string LocalForgeModTranslationDirectory = "mods";
 
-        private static readonly List<ResourcePackTranslationLayer> ResourcePackTranslationLayers = [];
+        private static readonly List<TranslationLayer> ForgeModTranslationLayers = [];
+        private static readonly List<TranslationLayer> ResourcePackTranslationLayers = [];
         private static readonly HttpClient ResourcePackHttpClient = new();
 
         /// <summary>
@@ -283,6 +297,7 @@ namespace MinecraftClient.Protocol.Message
         /// </summary>
         public static void InitTranslations()
         {
+            ForgeModTranslationLayers.Clear();
             ResourcePackTranslationLayers.Clear();
 
             if (!RulesInitialized)
@@ -464,13 +479,64 @@ namespace MinecraftClient.Protocol.Message
 
         public static void RemoveResourcePackTranslations(string packIdentifier)
         {
-                ResourcePackTranslationLayers.RemoveAll(layer =>
-                layer.PackIdentifier.Equals(packIdentifier, StringComparison.Ordinal));
+            ResourcePackTranslationLayers.RemoveAll(layer =>
+                layer.Identifier.Equals(packIdentifier, StringComparison.Ordinal));
         }
 
         public static void ClearResourcePackTranslations()
         {
             ResourcePackTranslationLayers.Clear();
+        }
+
+        public static void LoadForgeModTranslations(IEnumerable<string> modIds)
+        {
+            ArgumentNullException.ThrowIfNull(modIds);
+
+            ForgeModTranslationLayers.Clear();
+
+            if (!Config.Main.Advanced.LoadForgeModTranslations)
+                return;
+
+            HashSet<string> requestedModIds = new(
+                modIds
+                    .Where(static modId => !string.IsNullOrWhiteSpace(modId))
+                    .Select(static modId => NormalizeForgeModId(modId)),
+                StringComparer.OrdinalIgnoreCase);
+
+            if (requestedModIds.Count == 0)
+                return;
+
+            Dictionary<string, Dictionary<string, string>> translationsByModId =
+                new(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string modDirectory in GetForgeModTranslationDirectories())
+            {
+                foreach (string modJarPath in Directory.EnumerateFiles(modDirectory, "*.jar"))
+                {
+                    try
+                    {
+                        MergeForgeModTranslations(modJarPath, requestedModIds, translationsByModId);
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (InvalidDataException)
+                    {
+                    }
+                    catch (JsonException)
+                    {
+                    }
+                }
+            }
+
+            foreach (string modId in requestedModIds)
+            {
+                if (translationsByModId.TryGetValue(modId, out Dictionary<string, string>? translations)
+                    && translations.Count > 0)
+                {
+                    ForgeModTranslationLayers.Add(new TranslationLayer(modId, translations));
+                }
+            }
         }
 
         /// <summary>
@@ -532,11 +598,17 @@ namespace MinecraftClient.Protocol.Message
             else return "[" + rulename + "] " + string.Join(" ", using_data);
         }
 
-        private static bool TryGetTranslationRule(string rulename, out string? result)
+        private static bool TryGetTranslationRule(string rulename, [NotNullWhen(true)] out string? result)
         {
             for (int i = ResourcePackTranslationLayers.Count - 1; i >= 0; i--)
             {
                 if (ResourcePackTranslationLayers[i].Translations.TryGetValue(rulename, out result))
+                    return true;
+            }
+
+            for (int i = ForgeModTranslationLayers.Count - 1; i >= 0; i--)
+            {
+                if (ForgeModTranslationLayers[i].Translations.TryGetValue(rulename, out result))
                     return true;
             }
 
@@ -595,11 +667,11 @@ namespace MinecraftClient.Protocol.Message
 
                 if (language.Equals("en_us", StringComparison.OrdinalIgnoreCase))
                 {
-                    MergeResourcePackTranslations(entry, mergedTranslations);
+                    MergeTranslationsFromZipEntry(entry, mergedTranslations);
                 }
                 else if (language.Equals(selectedLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    MergeResourcePackTranslations(entry, selectedLanguageTranslations);
+                    MergeTranslationsFromZipEntry(entry, selectedLanguageTranslations);
                 }
             }
 
@@ -609,7 +681,7 @@ namespace MinecraftClient.Protocol.Message
             return mergedTranslations;
         }
 
-        private static bool TryGetResourcePackLanguage(string entryPath, out string? language)
+        private static bool TryGetResourcePackLanguage(string entryPath, [NotNullWhen(true)] out string? language)
         {
             language = null;
 
@@ -629,7 +701,7 @@ namespace MinecraftClient.Protocol.Message
             return !string.IsNullOrEmpty(language);
         }
 
-        private static void MergeResourcePackTranslations(ZipArchiveEntry entry, Dictionary<string, string> translations)
+        private static void MergeTranslationsFromZipEntry(ZipArchiveEntry entry, Dictionary<string, string> translations)
         {
             using Stream entryStream = entry.Open();
             Dictionary<string, string>? entryTranslations =
@@ -647,11 +719,373 @@ namespace MinecraftClient.Protocol.Message
             RemoveResourcePackTranslations(packIdentifier);
 
             if (translations.Count > 0)
-                ResourcePackTranslationLayers.Add(new ResourcePackTranslationLayer(packIdentifier, translations));
+                ResourcePackTranslationLayers.Add(new TranslationLayer(packIdentifier, translations));
+        }
+
+        private static void MergeForgeModTranslations(string modJarPath, HashSet<string> requestedModIds,
+            Dictionary<string, Dictionary<string, string>> translationsByModId)
+        {
+            string sourceHash = ComputeFileSha256(modJarPath);
+            string cacheFilePath = GetForgeModTranslationCacheFilePath(sourceHash);
+            if (!TryLoadCachedForgeModTranslations(cacheFilePath, sourceHash,
+                    out Dictionary<string, Dictionary<string, string>>? cachedTranslations))
+            {
+                using FileStream modJarStream = File.OpenRead(modJarPath);
+                cachedTranslations = ExtractForgeModTranslations(modJarStream);
+                SaveCachedForgeModTranslations(cacheFilePath, sourceHash, cachedTranslations);
+            }
+
+            Dictionary<string, Dictionary<string, string>> archiveTranslations = cachedTranslations
+                .Where(static entry => entry.Value.Count > 0)
+                .Where(entry => requestedModIds.Contains(entry.Key))
+                .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var (modId, translations) in archiveTranslations)
+                translationsByModId[modId] = translations;
+        }
+
+        private static Dictionary<string, Dictionary<string, string>> ExtractForgeModTranslations(Stream modJarStream)
+        {
+            using ZipArchive archive = new(modJarStream, ZipArchiveMode.Read, leaveOpen: true);
+            HashSet<string> archiveModIds = GetForgeModIds(archive);
+            if (archiveModIds.Count == 0)
+                return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
+            return ExtractForgeModTranslations(archive, archiveModIds);
+        }
+
+        private static HashSet<string> GetForgeModIds(ZipArchive archive)
+        {
+            ZipArchiveEntry? modsTomlEntry = archive.GetEntry("META-INF/mods.toml")
+                ?? archive.GetEntry("META-INF/MODS.TOML");
+
+            if (modsTomlEntry is null)
+                return [];
+
+            using StreamReader reader = new(modsTomlEntry.Open(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            TomlDocument document = new TomlParser().Parse(reader.ReadToEnd());
+            if (!document.TryGetValue("mods", out TomlValue? modsValue) || modsValue is not TomlArray modsArray)
+                return [];
+
+            HashSet<string> modIds = new(StringComparer.OrdinalIgnoreCase);
+            foreach (TomlValue modValue in modsArray)
+            {
+                if (modValue is not TomlTable modTable || !modTable.ContainsKey("modId"))
+                    continue;
+
+                string modId = modTable.GetString("modId");
+                if (!string.IsNullOrWhiteSpace(modId))
+                    modIds.Add(NormalizeForgeModId(modId));
+            }
+
+            return modIds;
+        }
+
+        private static Dictionary<string, Dictionary<string, string>> ExtractForgeModTranslations(ZipArchive archive, HashSet<string> requestedModIds)
+        {
+            string selectedLanguage = NormalizeLanguageCode(Config.Main.Advanced.Language);
+            Dictionary<string, Dictionary<string, string>> fallbackTranslations =
+                new(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, Dictionary<string, string>> selectedTranslations =
+                new(StringComparer.OrdinalIgnoreCase);
+
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                if (!TryGetForgeModLanguage(entry.FullName, out string? modId, out string? language))
+                    continue;
+
+                if (!requestedModIds.Contains(modId))
+                    continue;
+
+                if (language.Equals("en_us", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!fallbackTranslations.TryGetValue(modId, out Dictionary<string, string>? translations))
+                    {
+                        translations = new Dictionary<string, string>(StringComparer.Ordinal);
+                        fallbackTranslations[modId] = translations;
+                    }
+
+                    MergeTranslationsFromZipEntry(entry, translations);
+                }
+                else if (language.Equals(selectedLanguage, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!selectedTranslations.TryGetValue(modId, out Dictionary<string, string>? translations))
+                    {
+                        translations = new Dictionary<string, string>(StringComparer.Ordinal);
+                        selectedTranslations[modId] = translations;
+                    }
+
+                    MergeTranslationsFromZipEntry(entry, translations);
+                }
+            }
+
+            Dictionary<string, Dictionary<string, string>> mergedTranslations =
+                new(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string modId in requestedModIds)
+            {
+                Dictionary<string, string> modTranslations = new(StringComparer.Ordinal);
+
+                if (fallbackTranslations.TryGetValue(modId, out Dictionary<string, string>? fallback))
+                {
+                    foreach (var (key, value) in fallback)
+                        modTranslations[key] = value;
+                }
+
+                if (selectedTranslations.TryGetValue(modId, out Dictionary<string, string>? selected))
+                {
+                    foreach (var (key, value) in selected)
+                        modTranslations[key] = value;
+                }
+
+                if (modTranslations.Count > 0)
+                    mergedTranslations[modId] = modTranslations;
+            }
+
+            return mergedTranslations;
+        }
+
+        private static bool TryGetForgeModLanguage(string entryPath, [NotNullWhen(true)] out string? modId,
+            [NotNullWhen(true)] out string? language)
+        {
+            modId = null;
+            language = null;
+
+            string[] pathParts = entryPath
+                .Replace('\\', '/')
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            if (pathParts.Length != 4
+                || !pathParts[0].Equals("assets", StringComparison.OrdinalIgnoreCase)
+                || !pathParts[2].Equals("lang", StringComparison.OrdinalIgnoreCase)
+                || !pathParts[3].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            modId = NormalizeForgeModId(pathParts[1]);
+            language = NormalizeLanguageCode(Path.GetFileNameWithoutExtension(pathParts[3]));
+            return !string.IsNullOrEmpty(modId) && !string.IsNullOrEmpty(language);
+        }
+
+        private static string NormalizeForgeModId(string modId)
+        {
+            return modId.Trim().ToLowerInvariant();
+        }
+
+        private static string NormalizeLanguageCode(string language)
+        {
+            return language.Trim().ToLowerInvariant().Replace('-', '_');
+        }
+
+        private static IEnumerable<string> GetForgeModTranslationDirectories()
+        {
+            string? configuredPath = Config.Main.Advanced.ForgeModTranslationPath?.Trim();
+            if (!string.IsNullOrWhiteSpace(configuredPath))
+            {
+                string overridePath = Path.GetFullPath(configuredPath);
+                if (Directory.Exists(overridePath))
+                    yield return overridePath;
+
+                yield break;
+            }
+
+            HashSet<string> yieldedPaths = new(PathComparer);
+
+            foreach (string candidate in GetDefaultForgeModTranslationDirectories())
+            {
+                string fullPath = Path.GetFullPath(candidate);
+                if (Directory.Exists(fullPath) && yieldedPaths.Add(fullPath))
+                    yield return fullPath;
+            }
+
+            if (!Config.Main.Advanced.AutoDiscoverForgeModTranslationSources)
+                yield break;
+
+            foreach (string candidate in DiscoverLauncherForgeModTranslationDirectories())
+            {
+                string fullPath = Path.GetFullPath(candidate);
+                if (Directory.Exists(fullPath) && yieldedPaths.Add(fullPath))
+                    yield return fullPath;
+            }
+        }
+
+        private static IEnumerable<string> GetDefaultForgeModTranslationDirectories()
+        {
+            yield return LocalForgeModTranslationDirectory;
+        }
+
+        private static IEnumerable<string> DiscoverLauncherForgeModTranslationDirectories()
+        {
+            if (TryGetOfficialMinecraftModsDirectory(out string? officialModsDirectory))
+                yield return officialModsDirectory;
+
+            foreach (string prismModsDirectory in EnumerateInstanceModsDirectories(GetPrismLauncherInstancesDirectory()))
+                yield return prismModsDirectory;
+
+            foreach (string curseForgeModsDirectory in EnumerateInstanceModsDirectories(GetCurseForgeInstancesDirectory(), "mods"))
+                yield return curseForgeModsDirectory;
+        }
+
+        private static IEnumerable<string> EnumerateInstanceModsDirectories(string? instancesDirectory, params string[] relativeModsPaths)
+        {
+            if (string.IsNullOrWhiteSpace(instancesDirectory) || !Directory.Exists(instancesDirectory))
+                yield break;
+
+            string[] instanceDirectories;
+            try
+            {
+                instanceDirectories = Directory.GetDirectories(instancesDirectory);
+            }
+            catch (IOException)
+            {
+                yield break;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                yield break;
+            }
+
+            foreach (string instanceDirectory in instanceDirectories)
+            {
+                foreach (string relativeModsPath in relativeModsPaths.Length > 0
+                             ? relativeModsPaths
+                             : [Path.Combine(".minecraft", "mods"), Path.Combine("minecraft", "mods"), "mods"])
+                {
+                    string modsDirectory = Path.Combine(instanceDirectory, relativeModsPath);
+                    if (Directory.Exists(modsDirectory))
+                        yield return modsDirectory;
+                }
+            }
+        }
+
+        private static bool TryGetOfficialMinecraftModsDirectory([NotNullWhen(true)] out string? modsDirectory)
+        {
+            modsDirectory = null;
+            string? userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrWhiteSpace(userProfile))
+                return false;
+
+            string baseMinecraftDirectory = OperatingSystem.IsWindows()
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft")
+                : Path.Combine(userProfile, ".minecraft");
+
+            modsDirectory = Path.Combine(baseMinecraftDirectory, "mods");
+            return true;
+        }
+
+        private static string? GetPrismLauncherInstancesDirectory()
+        {
+            string? userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrWhiteSpace(userProfile))
+                return null;
+
+            if (OperatingSystem.IsWindows())
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PrismLauncher", "instances");
+
+            if (OperatingSystem.IsMacOS())
+                return Path.Combine(userProfile, "Library", "Application Support", "PrismLauncher", "instances");
+
+            return Path.Combine(userProfile, ".local", "share", "PrismLauncher", "instances");
+        }
+
+        private static string? GetCurseForgeInstancesDirectory()
+        {
+            string? userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrWhiteSpace(userProfile))
+                return null;
+
+            return Path.Combine(userProfile, "curseforge", "minecraft", "Instances");
+        }
+
+        private static readonly StringComparer PathComparer =
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
+        private static string ComputeFileSha256(string filePath)
+        {
+            using FileStream stream = File.OpenRead(filePath);
+            using SHA256 sha256 = SHA256.Create();
+            return Convert.ToHexString(sha256.ComputeHash(stream)).ToLowerInvariant();
+        }
+
+        private static bool TryLoadCachedForgeModTranslations(string cacheFilePath, string sourceHash,
+            [NotNullWhen(true)] out Dictionary<string, Dictionary<string, string>>? translationsByModId)
+        {
+            translationsByModId = null;
+
+            if (!File.Exists(cacheFilePath))
+                return false;
+
+            try
+            {
+                using FileStream cacheFile = File.OpenRead(cacheFilePath);
+                ForgeModTranslationCacheEntry? cacheEntry =
+                    JsonSerializer.Deserialize<ForgeModTranslationCacheEntry>(cacheFile);
+
+                if (cacheEntry is not null
+                    && cacheEntry.CacheVersion == ForgeModTranslationCacheVersion
+                    && cacheEntry.Language.Equals(Config.Main.Advanced.Language, StringComparison.OrdinalIgnoreCase)
+                    && cacheEntry.SourceHash.Equals(sourceHash, StringComparison.OrdinalIgnoreCase)
+                    && cacheEntry.TranslationsByModId.Count > 0)
+                {
+                    translationsByModId = cacheEntry.TranslationsByModId.ToDictionary(
+                        static entry => entry.Key,
+                        static entry => new Dictionary<string, string>(entry.Value, StringComparer.Ordinal),
+                        StringComparer.OrdinalIgnoreCase);
+                    return true;
+                }
+            }
+            catch (IOException)
+            {
+            }
+            catch (JsonException)
+            {
+            }
+
+            try
+            {
+                File.Delete(cacheFilePath);
+            }
+            catch (IOException)
+            {
+            }
+
+            return false;
+        }
+
+        private static void SaveCachedForgeModTranslations(string cacheFilePath, string sourceHash,
+            Dictionary<string, Dictionary<string, string>> translationsByModId)
+        {
+            if (translationsByModId.Count == 0)
+                return;
+
+            string? cacheDirectory = Path.GetDirectoryName(cacheFilePath);
+            if (string.IsNullOrEmpty(cacheDirectory))
+                return;
+
+            Directory.CreateDirectory(cacheDirectory);
+
+            ForgeModTranslationCacheEntry cacheEntry = new()
+            {
+                CacheVersion = ForgeModTranslationCacheVersion,
+                Language = Config.Main.Advanced.Language,
+                SourceHash = sourceHash,
+                TranslationsByModId = translationsByModId.ToDictionary(
+                    static entry => entry.Key,
+                    static entry => new Dictionary<string, string>(entry.Value, StringComparer.Ordinal),
+                    StringComparer.OrdinalIgnoreCase)
+            };
+
+            File.WriteAllText(cacheFilePath, JsonSerializer.Serialize(cacheEntry), Encoding.UTF8);
+        }
+
+        private static string GetForgeModTranslationCacheFilePath(string sourceHash)
+        {
+            return Path.Combine("lang", "forgemods", $"{sourceHash}.{NormalizeLanguageCode(Config.Main.Advanced.Language)}.json");
         }
 
         private static bool TryLoadCachedResourcePackTranslations(string cacheFilePath, Uri resourcePackUri, string hash,
-            out Dictionary<string, string>? translations)
+            [NotNullWhen(true)] out Dictionary<string, string>? translations)
         {
             translations = null;
 
