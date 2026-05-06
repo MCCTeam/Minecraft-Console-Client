@@ -437,7 +437,7 @@ namespace MinecraftClient.Mapping
         public void SetBlock(Location location, Block block)
         {
             ChunkColumn? column = this[location.ChunkX, location.ChunkZ];
-            if (column is not null && column.ColumnSize >= location.ChunkY)
+            if (column is not null && location.ChunkY >= 0 && location.ChunkY < column.ColumnSize)
             {
                 Chunk? chunk = column.GetChunk(location);
                 if (chunk is null)
