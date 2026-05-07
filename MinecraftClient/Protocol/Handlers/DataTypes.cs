@@ -411,6 +411,12 @@ namespace MinecraftClient.Protocol.Handlers
             return ReadNextNbt(cache, true);
         }
 
+        public object? ReadNextNbtTag(Queue<byte> cache)
+        {
+            var tagType = ReadNextByte(cache);
+            return tagType == 0 ? null : ReadNbtField(cache, tagType);
+        }
+
         /// <summary>
         /// Read an ItemStackTemplate (26.1+) from a cache of bytes.
         /// Unlike ItemStack, this uses item-first encoding: item_id, count, DataComponentPatch.
@@ -1441,6 +1447,17 @@ namespace MinecraftClient.Protocol.Handlers
             return GetNbt(nbt, true);
         }
 
+        public byte[] GetNbtTag(object? tag)
+        {
+            if (tag is null)
+                return [0];
+
+            var tagData = GetNbtField(tag, out var tagType);
+            var data = new List<byte> { tagType };
+            data.AddRange(tagData);
+            return data.ToArray();
+        }
+
         /// <summary>
         /// Build an uncompressed Named Binary Tag blob for sending over the network (internal)
         /// </summary>
@@ -1887,6 +1904,39 @@ namespace MinecraftClient.Protocol.Handlers
                     slotData.AddRange(GetShort((short)item.Data));
                     slotData.AddRange(GetNbt(item.NBT));
                 }
+            }
+
+            return slotData.ToArray();
+        }
+
+        /// <summary>
+        /// Get a byte array representing the given item as a non-empty ItemStackTemplate.
+        /// </summary>
+        /// <param name="item">Item</param>
+        /// <param name="itemPalette">Item Palette</param>
+        /// <returns>ItemStackTemplate representation</returns>
+        public byte[] GetItemStackTemplate(Item item, ItemPalette itemPalette)
+        {
+            List<byte> slotData = new();
+
+            slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
+            slotData.AddRange(GetVarInt(item.Count));
+
+            if (item.Components is not null && item.Components.Count > 0)
+            {
+                slotData.AddRange(GetVarInt(item.Components.Count));
+                slotData.AddRange(GetVarInt(0)); // components to remove
+                foreach (var component in item.Components)
+                {
+                    slotData.AddRange(GetVarInt(component.TypeId));
+                    var serialized = component.Serialize();
+                    slotData.AddRange(serialized);
+                }
+            }
+            else
+            {
+                slotData.AddRange(GetVarInt(0)); // no components to add
+                slotData.AddRange(GetVarInt(0)); // no components to remove
             }
 
             return slotData.ToArray();
