@@ -155,10 +155,13 @@ start_mcc_session() {
 }
 
 setup_hotbar_items() {
+    local sword_item='minecraft:diamond_sword{display:{Name:'\''{"text":"Raid Slayed"}'\''},Enchantments:[{id:"minecraft:sweeping",lvl:3s},{id:"minecraft:sharpness",lvl:5s},{id:"minecraft:looting",lvl:3s},{id:"minecraft:mending",lvl:1s},{id:"minecraft:unbreaking",lvl:3s}]}'
+    local chestplate_item='minecraft:diamond_chestplate{display:{Name:'\''{"text":"Raid Plate"}'\''},Enchantments:[{id:"minecraft:thorns",lvl:3s},{id:"minecraft:protection",lvl:4s},{id:"minecraft:unbreaking",lvl:3s},{id:"minecraft:mending",lvl:1s}]}'
+
     run_server_command "clear $TEST_USERNAME"
     run_server_command "gamemode survival $TEST_USERNAME"
-    run_server_command "item replace entity $TEST_USERNAME hotbar.0 with minecraft:diamond_sword{display:{Name:'{\"text\":\"Raid Slayed\"}'},Enchantments:[{id:\"minecraft:sweeping\",lvl:3s},{id:\"minecraft:sharpness\",lvl:5s},{id:\"minecraft:looting\",lvl:3s},{id:\"minecraft:mending\",lvl:1s},{id:\"minecraft:unbreaking\",lvl:3s}]}"
-    run_server_command "item replace entity $TEST_USERNAME hotbar.1 with minecraft:diamond_chestplate{display:{Name:'{\"text\":\"Raid Plate\"}'},Enchantments:[{id:\"minecraft:thorns\",lvl:3s},{id:\"minecraft:protection\",lvl:4s},{id:\"minecraft:unbreaking\",lvl:3s},{id:\"minecraft:mending\",lvl:1s}]}"
+    run_server_command "item replace entity $TEST_USERNAME hotbar.0 with $sword_item"
+    run_server_command "item replace entity $TEST_USERNAME hotbar.1 with $chestplate_item"
     sleep 2
 }
 
