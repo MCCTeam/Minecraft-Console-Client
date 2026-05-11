@@ -20,7 +20,7 @@
     "@vuepress/plugin-search": "2.0.0-rc.125",
     "@vuepress/plugin-shiki": "2.0.0-rc.125",
     "@vuepress/theme-default": "2.0.0-rc.125",
-    "mermaid": "11.13.0",
+    "mermaid": "11.15.0",
     "sass-embedded": "1.98.0",
     "sass-loader": "16.0.7",
     "vuepress": "2.0.0-rc.26"
