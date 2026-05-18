@@ -525,6 +525,9 @@ namespace MinecraftClient
 
         private void StartConsoleSession()
         {
+            if (ConsoleIO.Backend is null)
+                return;
+
             cmdprompt = new CancellationTokenSource();
 
             if (!consoleReadThreadOwned)
