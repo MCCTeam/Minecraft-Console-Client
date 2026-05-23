@@ -1154,9 +1154,10 @@ namespace MinecraftClient.Scripting
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
         /// <param name="duration">Dig duration in seconds. 0 = auto-compute for survival, or instant for creative</param>
-        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
+        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true,
+            double duration = 0, MiningCalculator.MiningOptions? miningOptions = null)
         {
-            return Handler.DigBlock(location, direction, swingArms, lookAtBlock, duration);
+            return Handler.DigBlock(location, direction, swingArms, lookAtBlock, duration, miningOptions);
         }
 
         /// <summary>

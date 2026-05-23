@@ -395,6 +395,24 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Apply Efficiency enchantment speed when AutoDig computes mining time. Disable this for strict anti-cheat compatibility..
+        /// </summary>
+        internal static string ChatBot_AutoDig_Apply_Efficiency_Enchantments {
+            get {
+                return ResourceManager.GetString("ChatBot.AutoDig.Apply_Efficiency_Enchantments", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Haste and Conduit Power speed effects when AutoDig computes mining time. Disable this for strict anti-cheat compatibility..
+        /// </summary>
+        internal static string ChatBot_AutoDig_Apply_Haste_Effects {
+            get {
+                return ResourceManager.GetString("ChatBot.AutoDig.Apply_Haste_Effects", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Mining a block for more than &quot;Dig_Timeout&quot; seconds will be considered a timeout..
         /// </summary>
         internal static string ChatBot_AutoDig_Dig_Timeout {
