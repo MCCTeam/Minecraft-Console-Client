@@ -242,6 +242,12 @@ For the naming of the block, please see https://mccteam.github.io/r/block/#L15</
   <data name="ChatBot.AutoDig.Auto_Tool_Switch" xml:space="preserve">
     <value>Automatically switch to the appropriate tool.</value>
   </data>
+  <data name="ChatBot.AutoDig.Apply_Efficiency_Enchantments" xml:space="preserve">
+    <value>Apply Efficiency enchantment speed when AutoDig computes mining time. Disable this for strict anti-cheat compatibility.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Apply_Haste_Effects" xml:space="preserve">
+    <value>Apply Haste and Conduit Power speed effects when AutoDig computes mining time. Disable this for strict anti-cheat compatibility.</value>
+  </data>
   <data name="ChatBot.AutoDig.Dig_Timeout" xml:space="preserve">
     <value>Mining a block for more than "Dig_Timeout" seconds will be considered a timeout.</value>
   </data>

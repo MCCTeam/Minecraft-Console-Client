@@ -763,6 +763,34 @@ redirectFrom:
 
   - **Default:** `false`
 
+  #### `Apply_Efficiency_Enchantments`
+
+  - **Description:**
+
+    Include Efficiency enchantments when Auto Dig calculates how long it should wait before finishing a block break.
+
+    Disable this if a server's anti-cheat expects slower mining timing. This only changes MCC's timing calculation; it does not remove the enchantment from your tool.
+
+  - **Available values:** `true` and `false`
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
+  #### `Apply_Haste_Effects`
+
+  - **Description:**
+
+    Include Haste and Conduit Power effects when Auto Dig calculates how long it should wait before finishing a block break.
+
+    Disable this if a server's anti-cheat does not allow the faster timing. This only changes MCC's timing calculation; it does not remove the effect from your player.
+
+  - **Available values:** `true` and `false`
+
+  - **Type:** `boolean`
+
+  - **Default:** `true`
+
   #### `Durability_Limit`
 
   - **Description:**

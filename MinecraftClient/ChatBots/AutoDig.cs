@@ -30,6 +30,12 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$ChatBot.AutoDig.Auto_Tool_Switch$")]
             public bool Auto_Tool_Switch = false;
 
+            [TomlInlineComment("$ChatBot.AutoDig.Apply_Efficiency_Enchantments$")]
+            public bool Apply_Efficiency_Enchantments = true;
+
+            [TomlInlineComment("$ChatBot.AutoDig.Apply_Haste_Effects$")]
+            public bool Apply_Haste_Effects = true;
+
             [TomlInlineComment("$ChatBot.AutoDig.Durability_Limit$")]
             public int Durability_Limit = 2;
 
@@ -322,6 +328,15 @@ namespace MinecraftClient.ChatBots
             return !IsBelowDurabilityLimit(currentTool);
         }
 
+        private static MiningCalculator.MiningOptions GetMiningOptions()
+        {
+            return new MiningCalculator.MiningOptions
+            {
+                ApplyEfficiencyEnchantments = Config.Apply_Efficiency_Enchantments,
+                ApplyHasteEffects = Config.Apply_Haste_Effects
+            };
+        }
+
         public override void Update()
         {
             lock (stateLock)
@@ -393,7 +408,7 @@ namespace MinecraftClient.ChatBots
                         if (!EnsureSuitableTool(block.Type))
                             return false;
 
-                        if (DigBlock(blockLoc, Direction.Down, lookAtBlock: false))
+                        if (DigBlock(blockLoc, Direction.Down, lookAtBlock: false, miningOptions: GetMiningOptions()))
                         {
                             currentDig = blockLoc;
                             if (Config.Log_Block_Dig)
@@ -457,7 +472,7 @@ namespace MinecraftClient.ChatBots
                     if (!EnsureSuitableTool(targetBlock.Type))
                         return false;
 
-                    if (DigBlock(target, Direction.Down, lookAtBlock: true))
+                    if (DigBlock(target, Direction.Down, lookAtBlock: true, miningOptions: GetMiningOptions()))
                     {
                         currentDig = target;
                         if (Config.Log_Block_Dig)
@@ -494,7 +509,7 @@ namespace MinecraftClient.ChatBots
                         if (!EnsureSuitableTool(block.Type))
                             return false;
 
-                        if (DigBlock(blockLoc, Direction.Down, lookAtBlock: true))
+                        if (DigBlock(blockLoc, Direction.Down, lookAtBlock: true, miningOptions: GetMiningOptions()))
                         {
                             currentDig = blockLoc;
                             if (Config.Log_Block_Dig)

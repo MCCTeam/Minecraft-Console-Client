@@ -2875,7 +2875,8 @@ namespace MinecraftClient
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        public bool DigBlock(Location location, Direction blockFace, bool swingArms = true, bool lookAtBlock = true, double duration = 0)
+        public bool DigBlock(Location location, Direction blockFace, bool swingArms = true, bool lookAtBlock = true,
+            double duration = 0, MiningCalculator.MiningOptions? miningOptions = null)
         {
             // TODO select best face from current player location
 
@@ -2883,7 +2884,8 @@ namespace MinecraftClient
                 return false;
 
             if (InvokeRequired)
-                return InvokeOnMainThread(() => DigBlock(location, blockFace, swingArms, lookAtBlock, duration));
+                return InvokeOnMainThread(() => DigBlock(location, blockFace, swingArms, lookAtBlock, duration,
+                    miningOptions));
 
             lock (DigLock)
             {
@@ -2898,16 +2900,21 @@ namespace MinecraftClient
                     UpdateLocation(GetCurrentLocation(), location);
 
                 // Auto-compute dig duration for survival/adventure mode when not explicitly supplied
+                bool autoComputedDuration = false;
                 if (duration <= 0 && protocolversion >= Protocol18Handler.MC_1_8_Version
                     && gamemode is 0 or 2) // Survival or Adventure
                 {
-                    duration = ComputeAutoDigDuration(location);
+                    autoComputedDuration = true;
+                    duration = ComputeAutoDigDuration(location, miningOptions);
                 }
 
                 // Send dig start and dig end, will need to wait for server response to know dig result
                 // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
                 bool result = handler.SendPlayerDigging(0, location, blockFace, sequenceId++)
                     && (!swingArms || DoAnimation((int)Hand.MainHand));
+
+                if (autoComputedDuration && duration <= 0)
+                    return result;
 
                 if (duration <= 0)
                     result &= handler.SendPlayerDigging(2, location, blockFace, sequenceId++);
@@ -2926,7 +2933,7 @@ namespace MinecraftClient
         /// enchantments, effects, attributes, and player state.
         /// Returns 0 for instant-break blocks.
         /// </summary>
-        private double ComputeAutoDigDuration(Location location)
+        private double ComputeAutoDigDuration(Location location, MiningCalculator.MiningOptions? miningOptions = null)
         {
             try
             {
@@ -2954,16 +2961,49 @@ namespace MinecraftClient
                     playerAttributes,
                     playerPhysics.InWater,
                     playerPhysics.OnGround,
-                    protocolversion);
+                    protocolversion,
+                    miningOptions);
 
-                if (ticks <= 0)
+                if (ticks < 0)
+                    return -1;
+
+                if (ticks == 0)
                     return 0;
 
                 return (double)ticks / Settings.ClientTicksPerSecond;
             }
             catch
             {
-                return 0;
+                return ComputeConservativeAutoDigDuration(location);
+            }
+        }
+
+        private double ComputeConservativeAutoDigDuration(Location location)
+        {
+            try
+            {
+                Block block = world.GetBlock(location);
+                if (block.Type == Material.Air)
+                    return 0;
+
+                int ticks = MiningCalculator.ComputeDigTicks(
+                    blockMaterial: block.Type,
+                    heldItem: null,
+                    helmetItem: null,
+                    effects: new(),
+                    playerAttributes: new(),
+                    isUnderwater: playerPhysics.InWater,
+                    isOnGround: playerPhysics.OnGround,
+                    protocolVersion: protocolversion);
+
+                if (ticks < 0)
+                    return -1;
+
+                return ticks == 0 ? 1.0 : (double)ticks / Settings.ClientTicksPerSecond;
+            }
+            catch
+            {
+                return 1.0;
             }
         }
 

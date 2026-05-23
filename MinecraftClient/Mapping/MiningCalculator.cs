@@ -16,6 +16,15 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public static class MiningCalculator
     {
+        public sealed class MiningOptions
+        {
+            public static readonly MiningOptions Vanilla = new();
+
+            public bool ApplyEfficiencyEnchantments { get; init; } = true;
+
+            public bool ApplyHasteEffects { get; init; } = true;
+        }
+
         /// <summary>
         /// Compute the number of ticks required to break a block in survival mode.
         /// Returns 0 for instant-break blocks, -1 for unbreakable blocks.
@@ -37,8 +46,10 @@ namespace MinecraftClient.Mapping
             Dictionary<string, double> playerAttributes,
             bool isUnderwater,
             bool isOnGround,
-            int protocolVersion)
+            int protocolVersion,
+            MiningOptions? options = null)
         {
+            options ??= MiningOptions.Vanilla;
             float hardness = BlockHardness.GetHardness(blockMaterial);
 
             if (hardness < 0)
@@ -49,7 +60,7 @@ namespace MinecraftClient.Mapping
 
             float destroySpeed = GetDestroySpeed(
                 blockMaterial, heldItem, helmetItem, effects, playerAttributes,
-                isUnderwater, isOnGround, protocolVersion);
+                isUnderwater, isOnGround, protocolVersion, options);
 
             bool correctTool = HasCorrectToolForDrops(blockMaterial, heldItem, protocolVersion);
             int divisor = correctTool ? 30 : 100;
@@ -73,18 +84,22 @@ namespace MinecraftClient.Mapping
             Dictionary<string, double> playerAttributes,
             bool isUnderwater,
             bool isOnGround,
-            int protocolVersion)
+            int protocolVersion,
+            MiningOptions options)
         {
             float speed = GetToolSpeed(blockMaterial, heldItem, protocolVersion);
 
-            if (speed > 1.0f)
+            if (speed > 1.0f && options.ApplyEfficiencyEnchantments)
             {
                 speed += GetEfficiencyBonus(heldItem, playerAttributes, protocolVersion);
             }
 
-            int digSpeedAmplifier = GetDigSpeedAmplifier(effects);
-            if (digSpeedAmplifier >= 0)
-                speed *= 1.0f + (digSpeedAmplifier + 1) * 0.2f;
+            if (options.ApplyHasteEffects)
+            {
+                int digSpeedAmplifier = GetDigSpeedAmplifier(effects);
+                if (digSpeedAmplifier >= 0)
+                    speed *= 1.0f + (digSpeedAmplifier + 1) * 0.2f;
+            }
 
             // Mining Fatigue
             if (effects.TryGetValue(Effects.MiningFatigue, out var fatigueData))
