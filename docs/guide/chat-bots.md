@@ -3432,7 +3432,7 @@ redirectFrom:
 
   </div>
 
-  - **Available values:** [Item Type List](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/MinecraftClient/Inventory/ItemType.cs)
+  - **Available values:** [Item Type List](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs)
 
   - **Type:** `array of strings with item names`
 
