@@ -16,6 +16,25 @@ import { mainConfig, defaultThemeConfig } from './configs/locales_config.js'
 
 const isProd = process.env.NODE_ENV === 'production'
 
+const htmlEntityMap: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&nbsp;': ' ',
+}
+
+function normalizeSearchText(text: string): string {
+  return text
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (match) => htmlEntityMap[match] ?? ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function vueTemplateTolerantPlugin(): Plugin {
   let compilerSfc: typeof import('@vue/compiler-sfc') | undefined
   return {
@@ -154,6 +173,10 @@ export default defineUserConfig({
     searchPlugin({
       maxSuggestions: 15,
       hotKeys: ['s', '/'],
+      getExtraFields: (page) => {
+        const content = normalizeSearchText(page.contentRendered)
+        return content ? [content] : []
+      },
       locales: {
         '/': {
           placeholder: 'Search',
