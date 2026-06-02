@@ -1157,10 +1157,22 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
   /useitem
   ```
 
+  Use the item from a specific hand:
+
+  ```
+  /useitem <mainhand|offhand>
+  ```
+
   Use the item on a specific block:
 
   ```
   /useitem <x> <y> <z>
+  ```
+
+  Use the item from a specific hand on a specific block:
+
+  ```
+  /useitem <x> <y> <z> <mainhand|offhand>
   ```
 
 </details>
