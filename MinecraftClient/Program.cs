@@ -900,11 +900,24 @@ namespace MinecraftClient
         /// <param name="keepAccountAndServerSettings">Optional, keep account and server settings</param>
         public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
+            TryRestart(delaySeconds, keepAccountAndServerSettings);
+        }
+
+        internal static bool HasRestartPendingForAnotherThread
+        {
+            get
+            {
+                lock (_restartLock)
+                    return HasRestartPendingForAnotherThreadNoLock();
+            }
+        }
+
+        internal static bool TryRestart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
+        {
             lock (_restartLock)
             {
-                if (_restartThread is not null && _restartThread.IsAlive
-                    && _restartThread != Thread.CurrentThread)
-                    return;
+                if (HasRestartPendingForAnotherThreadNoLock())
+                    return false;
 
                 ConsoleIO.Backend?.StopReadThread();
                 var thread = new Thread(new ThreadStart(delegate
@@ -938,7 +951,15 @@ namespace MinecraftClient
                 }));
                 _restartThread = thread;
                 thread.Start();
+                return true;
             }
+        }
+
+        private static bool HasRestartPendingForAnotherThreadNoLock()
+        {
+            return _restartThread is not null
+                && _restartThread.IsAlive
+                && _restartThread != Thread.CurrentThread;
         }
 
         public static void DoExit(int exitcode = 0)
