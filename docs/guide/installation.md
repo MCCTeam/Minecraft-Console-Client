@@ -367,11 +367,11 @@ docker-compose down
 
 ## Run on Android
 
-It is possible to run Minecraft Console Client on Android through Termux and Ubuntu, but it requires a manual setup with a lot of commands, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
+It is possible to run Minecraft Console Client on Android through Termux and Ubuntu, but it requires a manual setup, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
 
 <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-**This section gets a bit technical. If you run into issues, open a discussion on our GitHub repository page.**
+**This section gets a bit technical. If you run into issues, open a discussion on our GitHub repository page, or ask us on our Discord server.**
 
 </div>
 
@@ -410,7 +410,7 @@ It is possible to run Minecraft Console Client on Android through Termux and Ubu
 
 </div>
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">Warning</p>
 
 **Once you have installed Termux, open it, pull down the Android notification drawer, find the Termux notification, and expand it (swipe down on the notification) until you see `Exit | Acquire wakelock`. Tap `Acquire wakelock` and allow Termux to bypass battery optimization when prompted. Skipping this step may cause Termux to be killed by Android when running in the background.**
 
@@ -422,9 +422,9 @@ We use `proot-distro`, an official Termux utility, to install Ubuntu. It will in
 
 Open Termux and run the following commands one at a time, in order:
 
-1. `pkg update`
-2. `pkg upgrade`
-3. `pkg install proot-distro`
+1. `pkg update -y`
+2. `pkg upgrade -y`
+3. `pkg install proot-distro -y`
 
 <div class="custom-container note"><p class="custom-container-title">Note</p>
 
@@ -435,13 +435,13 @@ Open Termux and run the following commands one at a time, in order:
 Now install Ubuntu:
 
 ```bash
-proot-distro install ubuntu
+pd install ubuntu:26.04
 ```
 
 Once the installation finishes, start Ubuntu with:
 
 ```bash
-proot-distro login ubuntu
+pd login ubuntu
 ```
 
 <div class="custom-container note"><p class="custom-container-title">Note</p>
@@ -452,60 +452,15 @@ proot-distro login ubuntu
 
 #### Installing .NET
 
-First, update the Ubuntu package lists and install a few tools:
+First, update the Ubuntu package lists and install a few dependencies and tools:
 
 ```bash
-apt update -y && apt upgrade -y
+apt update && apt upgrade -y && apt install -y dotnet-sdk-10.0 wget curl nano
 ```
-
-```bash
-apt install wget curl nano -y
-```
-
-Then install .NET 10.0 using Microsoft's official install script:
-
-```bash
-wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
-chmod +x dotnet-install.sh
-./dotnet-install.sh --channel 10.0
-```
-
-Now add .NET to your PATH so it works in future sessions. Open `.bashrc`:
-
-```bash
-nano ~/.bashrc
-```
-
-Scroll to the bottom of the file using the `Page Down` key, add a blank line, and paste the following:
-
-```bash
-export DOTNET_ROOT=$HOME/.dotnet
-export PATH=$PATH:$HOME/.dotnet:$HOME/.dotnet/tools
-```
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**If you do not know how to use Nano, watch this [YouTube tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).**
-
-</div>
-
-Save the file with `CTRL + X`, type `Y`, and press Enter. Then apply the changes:
-
-```bash
-source ~/.bashrc
-```
-
-Verify the installation by running:
-
-```bash
-dotnet --version
-```
-
-You should see a version number like `10.0.xxx`.
 
 #### Installing MCC
 
-Finally, we can install MCC.
+Now we can install MCC.
 
 Let's make a folder where MCC will be stored:
 
@@ -514,46 +469,39 @@ mkdir MinecraftConsoleClient
 cd MinecraftConsoleClient
 ```
 
-Download the latest MCC binary for ARM64:
+Download the latest MCC binary for ARM (the script auto detects the platform):
 
 ```bash
-wget -O MinecraftClient \
-  "$(curl -s https://api.github.com/repos/MCCTeam/Minecraft-Console-Client/releases/latest \
-    | grep 'browser_download_url.*linux-arm64"' \
-    | cut -d '"' -f 4)"
+wget -qO- https://mccteam.github.io/install.sh | sh
 ```
 
-<div class="custom-container note"><p class="custom-container-title">Note</p>
-
-**If you have a 32-bit ARM device, replace `linux-arm64` with `linux-arm` in the command above.**
-
-</div>
-
-Make it executable:
-
-```bash
-chmod +x MinecraftClient
-```
-
-And run it with:
+Now you can run the MCC with this command:
 
 ```bash
 ./MinecraftClient
 ```
 
-#### After installation
+#### Running MCC
 
 When you open Termux next time, start Ubuntu with:
 
 ```bash
-proot-distro login ubuntu
+pd login ubuntu
 ```
 
-Then run MCC with `./MinecraftClient`
+Then enter the folder you made `cd MinecraftConsoleClient` (If you named it different, use that name).
 
-To stop MCC from running you can press `CTRL + C`
+Then run MCC with: `./MinecraftClient`
 
-To edit the configuration/settings, you need a text editor, we recommend Nano, as it's very simple to use, if you have followed the installation steps above, you should be familiar with it, if not, check out [this tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).
+To stop MCC from running you can press: `CTRL + C`
+
+To edit the configuration/settings, you need a text editor, we recommend Nano, as it's very simple to use.
+
+<div class="custom-container note"><p class="custom-container-title">Note</p>
+
+**If you do not know how to use Nano, watch this [YouTube tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).**
+
+</div>
 
 For downloading files, you can use the `wget` file we have installed, simply run:
 
