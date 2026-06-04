@@ -12,7 +12,7 @@ public class AttributeSubComponent(DataTypes dataTypes, SubComponentRegistry sub
     public double Value { get; set; }
     public int Operation { get; set; }
     public int Slot { get; set; }
-    
+
     protected override void Parse(Queue<byte> data)
     {
         TypeId = DataTypes.ReadNextVarInt(data);
@@ -28,10 +28,10 @@ public class AttributeSubComponent(DataTypes dataTypes, SubComponentRegistry sub
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(TypeId));
         data.AddRange(DataTypes.GetUUID(Uuid));
-        
+
         if (string.IsNullOrEmpty(Name?.Trim()))
             throw new ArgumentNullException($"Can not serialize AttributeSubComponent due to Name being null or empty!");
-        
+
         data.AddRange(DataTypes.GetString(Name));
         data.AddRange(DataTypes.GetDouble(Value));
         data.AddRange(DataTypes.GetVarInt(Operation));

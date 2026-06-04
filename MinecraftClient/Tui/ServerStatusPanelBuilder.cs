@@ -91,7 +91,7 @@ namespace MinecraftClient.Tui
             row.Inlines.Add(Value(versionClean, McColors.Aqua));
             row.Inlines.Add(new Run(" (") { Foreground = McColors.Gray });
             row.Inlines.Add(new Run(string.Format(Translations.mcc_server_info_label_protocol, info.ProtocolVersion))
-                { Foreground = McColors.Gray });
+            { Foreground = McColors.Gray });
             row.Inlines.Add(new Run(")") { Foreground = McColors.Gray });
             panel.Children.Add(row);
         }
@@ -107,7 +107,7 @@ namespace MinecraftClient.Tui
             row.Inlines.Add(Value(resolvedMcVer, McColors.Green));
             row.Inlines.Add(new Run(" (") { Foreground = McColors.Gray });
             row.Inlines.Add(new Run(string.Format(Translations.mcc_server_info_label_protocol, info.ResolvedProtocol))
-                { Foreground = McColors.Gray });
+            { Foreground = McColors.Gray });
             row.Inlines.Add(new Run(")") { Foreground = McColors.Gray });
             panel.Children.Add(row);
         }
@@ -126,7 +126,7 @@ namespace MinecraftClient.Tui
             var row = new TextBlock();
             row.Inlines!.Add(Label(Translations.mcc_server_info_label_ping));
             row.Inlines.Add(new Run(string.Format(Translations.mcc_server_info_label_ping_ms, info.PingMs))
-                { Foreground = pingColor });
+            { Foreground = pingColor });
             panel.Children.Add(row);
         }
 

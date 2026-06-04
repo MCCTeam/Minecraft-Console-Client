@@ -13,7 +13,7 @@ public class DetailsSubComponent(DataTypes dataTypes, SubComponentRegistry subCo
     public bool ShowIcon { get; set; }
     public bool HasHiddenEffects { get; set; }
     public DetailsSubComponent? Detail { get; set; }
-    
+
     protected override void Parse(Queue<byte> data)
     {
         Amplifier = DataTypes.ReadNextVarInt(data);
@@ -22,8 +22,8 @@ public class DetailsSubComponent(DataTypes dataTypes, SubComponentRegistry subCo
         ShowParticles = DataTypes.ReadNextBool(data);
         ShowIcon = DataTypes.ReadNextBool(data);
         HasHiddenEffects = DataTypes.ReadNextBool(data);
-        
-        if(HasHiddenEffects)
+
+        if (HasHiddenEffects)
             Detail = (DetailsSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
     }
 
@@ -39,9 +39,9 @@ public class DetailsSubComponent(DataTypes dataTypes, SubComponentRegistry subCo
 
         if (HasHiddenEffects)
         {
-            if(Detail is null)
+            if (Detail is null)
                 throw new ArgumentNullException($"Can not serialize a DetailSubComponent1206 when the Detail is empty but HasHiddenEffects is true!");
-                
+
             data.AddRange(Detail.Serialize());
         }
 

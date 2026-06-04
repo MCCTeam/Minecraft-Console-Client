@@ -2985,71 +2985,71 @@ namespace MinecraftClient.Protocol.Handlers
                     handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
                     break;
                 case PacketTypesIn.NamedSoundEffect:
-                {
-                    string? soundName = dataTypes.ReadNextString(packetData);
-                    int category = dataTypes.ReadNextVarInt(packetData);
-                    double x = dataTypes.ReadNextInt(packetData) / 8.0D;
-                    double y = dataTypes.ReadNextInt(packetData) / 8.0D;
-                    double z = dataTypes.ReadNextInt(packetData) / 8.0D;
-                    float volume = dataTypes.ReadNextFloat(packetData);
-                    float pitch = protocolVersion < MC_1_10_Version
-                        ? dataTypes.ReadNextByte(packetData) / 63.0f
-                        : dataTypes.ReadNextFloat(packetData);
-
-                    handler.OnSoundEffect(soundName, new Location(x, y, z), category, volume, pitch, null);
-                    break;
-                }
-                case PacketTypesIn.SoundEffect:
-                {
-                    string? soundName;
-                    if (protocolVersion >= MC_1_19_Version)
-                        soundName = ReadSoundEventHolderName(packetData);
-                    else
                     {
-                        dataTypes.ReadNextVarInt(packetData); // Sound id
-                        soundName = null;
-                    }
+                        string? soundName = dataTypes.ReadNextString(packetData);
+                        int category = dataTypes.ReadNextVarInt(packetData);
+                        double x = dataTypes.ReadNextInt(packetData) / 8.0D;
+                        double y = dataTypes.ReadNextInt(packetData) / 8.0D;
+                        double z = dataTypes.ReadNextInt(packetData) / 8.0D;
+                        float volume = dataTypes.ReadNextFloat(packetData);
+                        float pitch = protocolVersion < MC_1_10_Version
+                            ? dataTypes.ReadNextByte(packetData) / 63.0f
+                            : dataTypes.ReadNextFloat(packetData);
 
-                    if (protocolVersion < MC_1_19_Version && packetData.Count < 21)
+                        handler.OnSoundEffect(soundName, new Location(x, y, z), category, volume, pitch, null);
                         break;
-
-                    int category = dataTypes.ReadNextVarInt(packetData);
-                    double x = dataTypes.ReadNextInt(packetData) / 8.0D;
-                    double y = dataTypes.ReadNextInt(packetData) / 8.0D;
-                    double z = dataTypes.ReadNextInt(packetData) / 8.0D;
-                    float volume = dataTypes.ReadNextFloat(packetData);
-                    float pitch = protocolVersion < MC_1_10_Version
-                        ? dataTypes.ReadNextByte(packetData) / 63.0f
-                        : dataTypes.ReadNextFloat(packetData);
-
-                    if (protocolVersion >= MC_1_19_Version)
-                        dataTypes.ReadNextLong(packetData); // Seed
-
-                    handler.OnSoundEffect(soundName, new Location(x, y, z), category, volume, pitch, null);
-                    break;
-                }
-                case PacketTypesIn.EntitySoundEffect:
-                {
-                    string? soundName;
-                    if (protocolVersion >= MC_1_19_Version)
-                        soundName = ReadSoundEventHolderName(packetData);
-                    else
-                    {
-                        dataTypes.ReadNextVarInt(packetData); // Sound id
-                        soundName = null;
                     }
+                case PacketTypesIn.SoundEffect:
+                    {
+                        string? soundName;
+                        if (protocolVersion >= MC_1_19_Version)
+                            soundName = ReadSoundEventHolderName(packetData);
+                        else
+                        {
+                            dataTypes.ReadNextVarInt(packetData); // Sound id
+                            soundName = null;
+                        }
 
-                    int category = dataTypes.ReadNextVarInt(packetData);
-                    int entityId = dataTypes.ReadNextVarInt(packetData);
-                    float volume = dataTypes.ReadNextFloat(packetData);
-                    float pitch = dataTypes.ReadNextFloat(packetData);
+                        if (protocolVersion < MC_1_19_Version && packetData.Count < 21)
+                            break;
 
-                    if (protocolVersion >= MC_1_19_Version)
-                        dataTypes.ReadNextLong(packetData); // Seed
+                        int category = dataTypes.ReadNextVarInt(packetData);
+                        double x = dataTypes.ReadNextInt(packetData) / 8.0D;
+                        double y = dataTypes.ReadNextInt(packetData) / 8.0D;
+                        double z = dataTypes.ReadNextInt(packetData) / 8.0D;
+                        float volume = dataTypes.ReadNextFloat(packetData);
+                        float pitch = protocolVersion < MC_1_10_Version
+                            ? dataTypes.ReadNextByte(packetData) / 63.0f
+                            : dataTypes.ReadNextFloat(packetData);
 
-                    handler.OnSoundEffect(soundName, null, category, volume, pitch, entityId);
-                    break;
-                }
+                        if (protocolVersion >= MC_1_19_Version)
+                            dataTypes.ReadNextLong(packetData); // Seed
+
+                        handler.OnSoundEffect(soundName, new Location(x, y, z), category, volume, pitch, null);
+                        break;
+                    }
+                case PacketTypesIn.EntitySoundEffect:
+                    {
+                        string? soundName;
+                        if (protocolVersion >= MC_1_19_Version)
+                            soundName = ReadSoundEventHolderName(packetData);
+                        else
+                        {
+                            dataTypes.ReadNextVarInt(packetData); // Sound id
+                            soundName = null;
+                        }
+
+                        int category = dataTypes.ReadNextVarInt(packetData);
+                        int entityId = dataTypes.ReadNextVarInt(packetData);
+                        float volume = dataTypes.ReadNextFloat(packetData);
+                        float pitch = dataTypes.ReadNextFloat(packetData);
+
+                        if (protocolVersion >= MC_1_19_Version)
+                            dataTypes.ReadNextLong(packetData); // Seed
+
+                        handler.OnSoundEffect(soundName, null, category, volume, pitch, entityId);
+                        break;
+                    }
                 case PacketTypesIn.HeldItemChange:
                 case PacketTypesIn.SetHeldSlot:
                     handler.OnHeldItemChange(dataTypes.ReadNextByte(packetData)); // Slot

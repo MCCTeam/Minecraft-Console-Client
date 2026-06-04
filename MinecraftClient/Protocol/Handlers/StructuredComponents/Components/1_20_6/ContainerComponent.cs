@@ -5,11 +5,11 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class ContainerComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class ContainerComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public List<Item?> Items { get; set; } = [];
-    
+
     public override void Parse(Queue<byte> data)
     {
         var count = DataTypes.ReadNextVarInt(data);
@@ -23,7 +23,7 @@ public class ContainerComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
         data.AddRange(DataTypes.GetVarInt(Items.Count));
         foreach (var item in Items)
             data.AddRange(DataTypes.GetItemSlot(item, ItemPalette));
-            
+
         return new Queue<byte>(data);
     }
 }

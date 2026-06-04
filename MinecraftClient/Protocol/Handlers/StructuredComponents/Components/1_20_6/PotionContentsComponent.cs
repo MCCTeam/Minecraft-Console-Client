@@ -6,7 +6,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public bool HasPotionId { get; set; }
@@ -14,7 +14,7 @@ public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
     public bool HasCustomColor { get; set; }
     public int CustomColor { get; set; }
     public List<PotionEffectSubComponent> Effects { get; set; } = new();
-    
+
     public override void Parse(Queue<byte> data)
     {
         HasPotionId = DataTypes.ReadNextBool(data);
@@ -44,7 +44,7 @@ public class PotionContentsComponent(DataTypes dataTypes, ItemPalette itemPalett
         data.AddRange(DataTypes.GetVarInt(Effects.Count));
         foreach (var effect in Effects)
             data.AddRange(effect.Serialize());
-        
+
         return new Queue<byte>(data);
     }
 }

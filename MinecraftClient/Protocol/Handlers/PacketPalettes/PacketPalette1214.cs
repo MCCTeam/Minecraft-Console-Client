@@ -3,8 +3,8 @@ using System.Collections.Generic;
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 public class PacketPalette1214 : PacketTypePalette
-    {
-        private readonly Dictionary<int, PacketTypesIn> typeIn = new()
+{
+    private readonly Dictionary<int, PacketTypesIn> typeIn = new()
         {
             { 0x00, PacketTypesIn.Bundle },                     // Bundle delimiter
             { 0x01, PacketTypesIn.SpawnEntity },                // Add Entity
@@ -139,7 +139,7 @@ public class PacketPalette1214 : PacketTypePalette
             { 0x82, PacketTypesIn.ServerLinks }                 // Server Links
         };
 
-        private readonly Dictionary<int, PacketTypesOut> typeOut = new()
+    private readonly Dictionary<int, PacketTypesOut> typeOut = new()
         {
             { 0x00, PacketTypesOut.TeleportConfirm },             // Accept Teleportation
             { 0x01, PacketTypesOut.QueryBlockNBT },               // Block Entity Tag Query
@@ -205,7 +205,7 @@ public class PacketPalette1214 : PacketTypePalette
             { 0x3D, PacketTypesOut.UseItem },                     // Use Item
         };
 
-        private readonly Dictionary<int, ConfigurationPacketTypesIn> configurationTypesIn = new()
+    private readonly Dictionary<int, ConfigurationPacketTypesIn> configurationTypesIn = new()
         {
             { 0x00, ConfigurationPacketTypesIn.CookieRequest },
             { 0x01, ConfigurationPacketTypesIn.PluginMessage },
@@ -226,7 +226,7 @@ public class PacketPalette1214 : PacketTypePalette
             { 0x10, ConfigurationPacketTypesIn.ServerLinks }
         };
 
-        private readonly Dictionary<int, ConfigurationPacketTypesOut> configurationTypesOut = new()
+    private readonly Dictionary<int, ConfigurationPacketTypesOut> configurationTypesOut = new()
         {
             { 0x00, ConfigurationPacketTypesOut.ClientInformation },
             { 0x01, ConfigurationPacketTypesOut.CookieResponse },
@@ -237,9 +237,9 @@ public class PacketPalette1214 : PacketTypePalette
             { 0x06, ConfigurationPacketTypesOut.ResourcePackResponse },
             { 0x07, ConfigurationPacketTypesOut.KnownDataPacks }
         };
-        
-        protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;
-        protected override Dictionary<int, PacketTypesOut> GetListOut() => typeOut;
-        protected override Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn() => configurationTypesIn!;
-        protected override Dictionary<int, ConfigurationPacketTypesOut> GetConfigurationListOut() => configurationTypesOut!;
-    }
+
+    protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;
+    protected override Dictionary<int, PacketTypesOut> GetListOut() => typeOut;
+    protected override Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn() => configurationTypesIn!;
+    protected override Dictionary<int, ConfigurationPacketTypesOut> GetConfigurationListOut() => configurationTypesOut!;
+}

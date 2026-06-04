@@ -4,7 +4,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class InstrumentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class InstrumentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     // holder ID: 0 = inline instrument data, N>0 = registry reference (id = N-1)
@@ -20,7 +20,7 @@ public class InstrumentComponent(DataTypes dataTypes, ItemPalette itemPalette, S
 
     public int UseDuration { get; set; }
     public float Range { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         InstrumentHolderId = DataTypes.ReadNextVarInt(data);

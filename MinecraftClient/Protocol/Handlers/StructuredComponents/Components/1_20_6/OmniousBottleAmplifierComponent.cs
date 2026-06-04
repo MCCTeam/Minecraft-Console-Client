@@ -4,11 +4,11 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class OmniousBottleAmplifierComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class OmniousBottleAmplifierComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int Amplifier { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         Amplifier = DataTypes.ReadNextVarInt(data);

@@ -9,14 +9,14 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class FireworksComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class FireworksComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int FlightDuration { get; set; }
     public int NumberOfExplosions { get; set; }
 
     public List<FireworkExplosionSubComponent> Explosions { get; set; } = [];
-    
+
     public override void Parse(Queue<byte> data)
     {
         FlightDuration = DataTypes.ReadNextVarInt(data);
@@ -24,7 +24,7 @@ public class FireworksComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
 
         if (NumberOfExplosions > 0)
         {
-            for(var i = 0; i < NumberOfExplosions; i++)
+            for (var i = 0; i < NumberOfExplosions; i++)
                 Explosions.Add(
                     (FireworkExplosionSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.FireworkExplosion,
                         data));
@@ -40,8 +40,8 @@ public class FireworksComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
         {
             if (NumberOfExplosions != Explosions.Count)
                 throw new Exception("Can't serialize FireworksComponent because NumberOfExplosions and the lenght of Explosions differ!");
-            
-            foreach(var explosion in Explosions)
+
+            foreach (var explosion in Explosions)
                 data.AddRange(explosion.Serialize().ToList());
         }
         return new Queue<byte>(data);

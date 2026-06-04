@@ -120,7 +120,7 @@ namespace MinecraftClient.Scripting
 
                             var loc = failure.Location.GetMappedLineSpan();
                             var line = code.Split('\n')[loc.StartLinePosition.Line];
-                            
+
                             ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, on line ({line.Trim()}): [{failure.Id}] {failure.GetMessage()}");
                         }
 

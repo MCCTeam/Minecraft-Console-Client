@@ -5,14 +5,14 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class LodestoneTrackerComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class LodestoneTrackerComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public bool HasGlobalPosition { get; set; }
     public string Dimension { get; set; } = null!;
     public Location Position { get; set; }
     public bool Tracked { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         HasGlobalPosition = DataTypes.ReadNextBool(data);
@@ -22,7 +22,7 @@ public class LodestoneTrackerComponent(DataTypes dataTypes, ItemPalette itemPale
             Dimension = DataTypes.ReadNextString(data);
             Position = DataTypes.ReadNextLocation(data);
         }
-        
+
         Tracked = DataTypes.ReadNextBool(data);
     }
 
@@ -36,7 +36,7 @@ public class LodestoneTrackerComponent(DataTypes dataTypes, ItemPalette itemPale
             data.AddRange(DataTypes.GetString(Dimension));
             data.AddRange(DataTypes.GetLocation(Position));
         }
-        
+
         data.AddRange(DataTypes.GetBool(Tracked));
         return new Queue<byte>(data);
     }

@@ -51,7 +51,7 @@ namespace MinecraftClient.Inventory
             Count = count;
             NBT = nbt;
         }
-        
+
         public Item(ItemType itemType, int count, int data, Dictionary<string, object>? nbt) : this(itemType, count, nbt)
         {
             Data = data;
@@ -134,8 +134,8 @@ namespace MinecraftClient.Inventory
                     {
                         object[] displayName = (object[])displayProperties["Lore"];
                         lores.AddRange(from string st in displayName
-                            let str = ChatParser.ParseText(st.ToString())
-                            select str);
+                                       let str = ChatParser.ParseText(st.ToString())
+                                       select str);
                         return lores.ToArray();
                     }
                 }

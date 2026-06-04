@@ -26,4 +26,5 @@ public class TypedEntityDataComponent261(DataTypes dataTypes, ItemPalette itemPa
 }
 
 public class BlockEntityDataComponent261(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
-    : TypedEntityDataComponent261(dataTypes, itemPalette, subComponentRegistry) {}
+    : TypedEntityDataComponent261(dataTypes, itemPalette, subComponentRegistry)
+{ }

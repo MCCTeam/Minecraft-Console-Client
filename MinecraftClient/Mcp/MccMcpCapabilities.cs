@@ -1392,18 +1392,18 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             bool success = client.SendLocationUpdate();
             return success
                 ? MccMcpResult.Ok(new
-            {
-                success,
-                direction = parsedDirection.ToString(),
-                yaw = client.GetYaw(),
-                pitch = client.GetPitch(),
-                location = ToCoordinate(current)
-            })
+                {
+                    success,
+                    direction = parsedDirection.ToString(),
+                    yaw = client.GetYaw(),
+                    pitch = client.GetPitch(),
+                    location = ToCoordinate(current)
+                })
                 : MccMcpResult.Fail("action_failed", data: new
-            {
-                success,
-                direction = parsedDirection.ToString()
-            });
+                {
+                    success,
+                    direction = parsedDirection.ToString()
+                });
         });
     }
 
@@ -1426,19 +1426,19 @@ public sealed class MccMcpCapabilities : IMccMcpCapabilities
             bool success = client.SendLocationUpdate();
             return success
                 ? MccMcpResult.Ok(new
-            {
-                success,
-                yaw = client.GetYaw(),
-                pitch = client.GetPitch(),
-                location = ToCoordinate(current)
-            })
+                {
+                    success,
+                    yaw = client.GetYaw(),
+                    pitch = client.GetPitch(),
+                    location = ToCoordinate(current)
+                })
                 : MccMcpResult.Fail("action_failed", data: new
-            {
-                success,
-                yaw,
-                pitch,
-                location = ToCoordinate(current)
-            });
+                {
+                    success,
+                    yaw,
+                    pitch,
+                    location = ToCoordinate(current)
+                });
         });
     }
 

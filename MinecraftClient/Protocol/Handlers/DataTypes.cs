@@ -459,7 +459,7 @@ namespace MinecraftClient.Protocol.Handlers
             var nbt = null as Dictionary<string, object>;
             var item = null as Item;
             var strcturedComponentsToAdd = new List<StructuredComponent>();
-            
+
             switch (protocolversion)
             {
                 // MC 1.13.2 and greater
@@ -467,10 +467,10 @@ namespace MinecraftClient.Protocol.Handlers
                     itemCount = ReadNextVarInt(cache);
 
                     if (itemCount <= 0) return null;
-                    
+
                     itemId = ReadNextVarInt(cache);
                     item = new Item(itemPalette.FromId(itemId), itemCount, null);
-                        
+
                     var numberOfComponentsToAdd = ReadNextVarInt(cache);
                     var numberofComponentsToRemove = ReadNextVarInt(cache);
                     var structuredComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
@@ -506,55 +506,55 @@ namespace MinecraftClient.Protocol.Handlers
 
                     return item;
                 case >= Protocol18Handler.MC_1_13_2_Version:
-                {
-                    var itemPresent = ReadNextBool(cache);
+                    {
+                        var itemPresent = ReadNextBool(cache);
 
-                    if (!itemPresent)
-                        return null;
+                        if (!itemPresent)
+                            return null;
 
-                    itemId = ReadNextVarInt(cache);
+                        itemId = ReadNextVarInt(cache);
 
-                    if (itemId == -1)
-                        return null;
+                        if (itemId == -1)
+                            return null;
 
-                    var type = itemPalette.FromId(itemId); 
-                    itemCount = ReadNextByte(cache); 
-                    nbt = ReadNextNbt(cache);
-                    return new Item(type, itemCount, itemId, nbt);
-                }
+                        var type = itemPalette.FromId(itemId);
+                        itemCount = ReadNextByte(cache);
+                        nbt = ReadNextNbt(cache);
+                        return new Item(type, itemCount, itemId, nbt);
+                    }
                 case >= Protocol18Handler.MC_1_13_Version:
-                {
-                    itemId = ReadNextShort(cache);
+                    {
+                        itemId = ReadNextShort(cache);
 
-                    if (itemId == -1)
-                        return null;
+                        if (itemId == -1)
+                            return null;
 
-                    var type = itemPalette.FromId(itemId);
-                    itemCount = ReadNextByte(cache);
-                    nbt = ReadNextNbt(cache);
-                    return new Item(type, itemCount, itemId, nbt);
-                }
+                        var type = itemPalette.FromId(itemId);
+                        itemCount = ReadNextByte(cache);
+                        nbt = ReadNextNbt(cache);
+                        return new Item(type, itemCount, itemId, nbt);
+                    }
                 default:
-                {
-                    itemId = ReadNextShort(cache);
+                    {
+                        itemId = ReadNextShort(cache);
 
-                    if (itemId == -1)
-                        return null;
+                        if (itemId == -1)
+                            return null;
 
-                    itemCount = ReadNextByte(cache);
-                    var data = ReadNextShort(cache); 
-                    nbt = ReadNextNbt(cache);
+                        itemCount = ReadNextByte(cache);
+                        var data = ReadNextShort(cache);
+                        nbt = ReadNextNbt(cache);
 
-                    // For 1.8 - 1.12.2 we combine Item Id and Item Data/Damage to a single value using: (id << 16) | data
-                    return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
-                }
+                        // For 1.8 - 1.12.2 we combine Item Id and Item Data/Damage to a single value using: (id << 16) | data
+                        return new Item(itemPalette.FromId((itemId << 16) | (ushort)data), itemCount, data, nbt);
+                    }
             }
         }
 
         private void ReadNextDetail(Queue<byte> cache)
         {
             var potionEffectId = ReadNextVarInt(cache);
-                                        
+
             // Details
             var potionEffectAmplifier = ReadNextVarInt(cache);
             var duration = ReadNextVarInt(cache); // -1 for infinite
@@ -1179,14 +1179,14 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
                         ReadNextVarInt(cache); // BlockState (minecraft:block)
                     break;
-                    
+
                 case 2:
                     // 1.18
                     if (protocolversion > Protocol18Handler.MC_1_17_1_Version)
                         ReadNextVarInt(cache); // Block state (minecraft:block before 1.20.6, minecraft:block_marker in 1.20.6+)
                     break;
                 case 3:
-                    if (protocolversion is (< Protocol18Handler.MC_1_17_Version or > Protocol18Handler.MC_1_17_1_Version) 
+                    if (protocolversion is (< Protocol18Handler.MC_1_17_Version or > Protocol18Handler.MC_1_17_1_Version)
                         and < Protocol18Handler.MC_1_20_6_Version)
                         ReadNextVarInt(
                             cache); // Block State (minecraft:block before 1.18, minecraft:block_marker after 1.18 up to 1.20.6)
@@ -1346,7 +1346,7 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 45:
                     // 1.21+
-                    if(protocolversion >= Protocol18Handler.MC_1_21_Version)
+                    if (protocolversion >= Protocol18Handler.MC_1_21_Version)
                         ReadVibration(cache);
                     break;
                 case 99:
@@ -1389,7 +1389,7 @@ namespace MinecraftClient.Protocol.Handlers
             ReadNextFloat(cache);    // Entity eye height
             ReadNextVarInt(cache);   // Ticks
         }
-        
+
         /// <summary>
         /// Read a single villager trade from a cache of bytes and remove it from the cache
         /// </summary>

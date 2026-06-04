@@ -6,13 +6,13 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class AttributeModifiersComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class AttributeModifiersComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfAttributes { get; set; }
     public List<SubComponent> Attributes { get; set; } = new();
     public bool ShowInTooltip { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         NumberOfAttributes = DataTypes.ReadNextVarInt(data);
@@ -27,13 +27,13 @@ public class AttributeModifiersComponent(DataTypes dataTypes, ItemPalette itemPa
     {
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(NumberOfAttributes));
-        
-        if(Attributes.Count != NumberOfAttributes)
+
+        if (Attributes.Count != NumberOfAttributes)
             throw new ArgumentNullException($"Can not serialize a AttributeModifiersComponent when the Attributes count != NumberOfAttributes!");
-        
+
         foreach (var attribute in Attributes)
             data.AddRange(attribute.Serialize());
-        
+
         data.AddRange(DataTypes.GetBool(ShowInTooltip));
         return new Queue<byte>(data);
     }

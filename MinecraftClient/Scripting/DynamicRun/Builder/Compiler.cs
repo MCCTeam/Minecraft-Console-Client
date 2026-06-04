@@ -78,7 +78,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
             var MinecraftClientDll = typeof(Program).Assembly.Location;     // The path to MinecraftClient.dll
 
             // We're on a self-contained binary, so we need to extract the executable to get the assemblies.
-            if (string.IsNullOrEmpty(MinecraftClientDll)) 
+            if (string.IsNullOrEmpty(MinecraftClientDll))
             {
                 // Create a temporary file to copy the executable to.
                 var executablePath = Environment.ProcessPath;
@@ -86,29 +86,29 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                     throw new InvalidOperationException("Cannot determine the process path for self-contained scripting extraction.");
                 var tempPath = Path.Combine(Path.GetTempPath(), "mcc-scripting");
                 Directory.CreateDirectory(tempPath);
-                
+
                 var tempFile = Path.Combine(tempPath, "mcc-executable");
                 var useExisting = false;
 
                 // Check if we already have the executable in the temporary path.
-                foreach (var file in Directory.EnumerateFiles(tempPath)) 
+                foreach (var file in Directory.EnumerateFiles(tempPath))
                 {
-                    if (file.EndsWith("mcc-executable")) 
+                    if (file.EndsWith("mcc-executable"))
                     {
                         // Check if the file is the same as the current executable.
-                        if (File.ReadAllBytes(file).SequenceEqual(File.ReadAllBytes(executablePath))) 
+                        if (File.ReadAllBytes(file).SequenceEqual(File.ReadAllBytes(executablePath)))
                         {
                             useExisting = true;
                             break;
                         }
-                        
+
                         // If not, refresh the cache.
                         File.Delete(file);
                         break;
                     }
                 }
-                
-                if (!File.Exists(executablePath)) 
+
+                if (!File.Exists(executablePath))
                 {
                     throw new FileNotFoundException("[Script Error] Could not locate the current folder of MCC for scripting.");
                 }
@@ -141,7 +141,8 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 assemblyrefs.Add(new("Microsoft.Win32.Primitives"));
                 assemblyrefs.Add(new("System.Collections.Concurrent"));
 
-                foreach (var refs in assemblyrefs) {
+                foreach (var refs in assemblyrefs)
+                {
                     Assembly? loadedAssembly;
                     try
                     {
@@ -153,19 +154,22 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                         continue;
                     }
 
-                    if (string.IsNullOrEmpty(loadedAssembly.Location)) {
+                    if (string.IsNullOrEmpty(loadedAssembly.Location))
+                    {
                         // Check if we can access the file from the executable.
                         var reference = files.FirstOrDefault(x =>
                             Path.GetFileNameWithoutExtension(x.RelativePath) == refs.Name);
                         var refCount = files.Count(x => Path.GetFileNameWithoutExtension(x.RelativePath) == refs.Name);
-                        if (refCount > 1) {
+                        if (refCount > 1)
+                        {
                             // Safety net for the case where the assembly is referenced multiple times.
                             // Should not happen normally, but we can make exceptions when it does happen.
                             throw new InvalidOperationException(
                                 "[Script Error] Too many references to the same assembly. Assembly name: " + refs.Name);
                         }
 
-                        if (reference is null) {
+                        if (reference is null)
+                        {
                             // Facade assemblies may not be in the bundle - skip them silently
                             continue;
                         }

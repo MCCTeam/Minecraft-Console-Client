@@ -282,7 +282,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <returns></returns>
         bool SendPlayerSession(PlayerKeyPair? playerKeyPair);
-        
+
         /// <summary>
         /// Send the server a command to type in the item name in the Anvil inventory when it's open.
         /// </summary>
@@ -301,7 +301,7 @@ namespace MinecraftClient.Protocol
         /// <param name="name">The cookie identifier/name</param>
         /// <param name="data">The cookie data byte array</param>
         bool SendCookieResponse(string name, byte[]? data);
-        
+
         /// <summary>
         /// Send the server known data packs
         /// </summary>
