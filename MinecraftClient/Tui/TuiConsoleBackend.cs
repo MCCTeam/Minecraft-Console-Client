@@ -277,7 +277,8 @@ namespace MinecraftClient.Tui
             {
                 Thread.Sleep(1000);
                 Environment.Exit(0);
-            }) { Name = "TUI-Exit-Guard", IsBackground = true }.Start();
+            })
+            { Name = "TUI-Exit-Guard", IsBackground = true }.Start();
         }
 
         private volatile bool _shutdownRequested;

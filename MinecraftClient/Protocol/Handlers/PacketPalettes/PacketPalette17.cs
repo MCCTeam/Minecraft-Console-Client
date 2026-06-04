@@ -114,7 +114,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 
         protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;
         protected override Dictionary<int, PacketTypesOut> GetListOut() => typeOut;
-        
+
         protected override Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn() => new();
         protected override Dictionary<int, ConfigurationPacketTypesOut> GetConfigurationListOut() => new();
     }

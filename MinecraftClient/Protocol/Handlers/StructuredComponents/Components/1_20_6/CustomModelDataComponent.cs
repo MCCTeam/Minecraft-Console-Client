@@ -10,7 +10,7 @@ public class CustomModelDataComponent(DataTypes dataTypes, ItemPalette itemPalet
     public List<bool> Flags { get; set; } = [];
     public List<string> Strings { get; set; } = [];
     public List<int> Colors { get; set; } = [];
-    
+
     public override void Parse(Queue<byte> data)
     {
         Floats = ReadList(data, static (dataTypes, componentData) => dataTypes.ReadNextFloat(componentData));

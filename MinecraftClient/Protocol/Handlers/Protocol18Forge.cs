@@ -377,7 +377,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 string registryName = dataTypes.ReadNextString(packetData);
                                 ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_registry, registryName));
                             }
-                            
+
                             fmlResponsePacket.AddRange(DataTypes.GetVarInt(99));
                             fmlResponseReady = true;
                             break;
@@ -410,7 +410,7 @@ namespace MinecraftClient.Protocol.Handlers
                             //                             [    Version   ][ String ]
                             //
                             // We're ignoring this packet in MCC
-                            
+
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mod Data List");
@@ -505,7 +505,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     return new ForgeInfo(FMLVersion.FML3);
                 }
-                return new ForgeInfo(FMLVersion.FML2); 
+                return new ForgeInfo(FMLVersion.FML2);
             }
             else throw new InvalidOperationException(Translations.error_forgeforce);
         }
@@ -568,6 +568,6 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return false;
-        }    
+        }
     }
 }

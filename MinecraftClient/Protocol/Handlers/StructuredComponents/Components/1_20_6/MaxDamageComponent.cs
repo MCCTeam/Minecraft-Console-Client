@@ -8,7 +8,7 @@ public class MaxDamageComponent(DataTypes dataTypes, ItemPalette itemPalette, Su
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int MaxDamage { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         MaxDamage = DataTypes.ReadNextVarInt(data);

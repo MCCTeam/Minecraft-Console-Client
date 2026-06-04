@@ -9,7 +9,7 @@ public class BlockSetSubcomponent(DataTypes dataTypes, SubComponentRegistry subC
     public int Type { get; set; }
     public string? TagName { get; set; }
     public List<int>? BlockIds { get; set; }
-    
+
     protected override void Parse(Queue<byte> data)
     {
         Type = DataTypes.ReadNextVarInt(data);
@@ -18,9 +18,9 @@ public class BlockSetSubcomponent(DataTypes dataTypes, SubComponentRegistry subC
             TagName = DataTypes.ReadNextString(data);
 
         if (Type == 0) return;
-        
+
         BlockIds = [];
-            
+
         for (var i = 0; i < Type - 1; i++)
             BlockIds.Add(DataTypes.ReadNextVarInt(data));
     }
@@ -33,16 +33,16 @@ public class BlockSetSubcomponent(DataTypes dataTypes, SubComponentRegistry subC
         {
             if (string.IsNullOrEmpty(TagName?.Trim()))
                 throw new ArgumentNullException($"Can not serialize an empty tag name when the Block Set type is 0!");
-            
+
             data.AddRange(DataTypes.GetString(TagName));
         }
 
         if (Type == 0) return new Queue<byte>(data);
-        
-        if(BlockIds is null || BlockIds.Count == 0)
+
+        if (BlockIds is null || BlockIds.Count == 0)
             throw new ArgumentNullException($"Can not serialize an empty list of Block IDs in a Block Set when the type is not 0!");
-            
-        for(var i = 0; i < Type - 1; i++)
+
+        for (var i = 0; i < Type - 1; i++)
             data.AddRange(DataTypes.GetVarInt(BlockIds[i]));
 
         return new Queue<byte>(data);

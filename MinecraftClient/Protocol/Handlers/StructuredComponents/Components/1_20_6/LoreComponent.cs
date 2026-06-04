@@ -5,19 +5,19 @@ using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class LoreNameComponent1206(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class LoreNameComponent1206(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfLines { get; set; }
     public List<string> Lines { get; set; } = [];
     public List<Dictionary<string, object>> LinesNbt { get; set; } = [];
-    
+
     public override void Parse(Queue<byte> data)
     {
         NumberOfLines = DataTypes.ReadNextVarInt(data);
-        
+
         if (NumberOfLines <= 0) return;
-        
+
         for (var i = 0; i < NumberOfLines; i++)
         {
             var lineNbt = DataTypes.ReadNextNbt(data);

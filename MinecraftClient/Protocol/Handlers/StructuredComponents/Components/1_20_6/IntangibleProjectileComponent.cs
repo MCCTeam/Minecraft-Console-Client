@@ -4,11 +4,11 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class IntangibleProjectileComponent(DataTypes dataTypes, ItemPalette itemPalette,  SubComponentRegistry subComponentRegistry) 
+public class IntangibleProjectileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public Dictionary<string, object>? Nbt { get; set; } = new();
-    
+
     public override void Parse(Queue<byte> data)
     {
         Nbt = DataTypes.ReadNextNbt(data);

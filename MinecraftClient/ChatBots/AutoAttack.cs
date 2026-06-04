@@ -180,12 +180,11 @@ namespace MinecraftClient.ChatBots
                         if (entitiesToAttack.ContainsKey(priorityEntity))
                         {
                             // check entity distance and health again
-                                if (ShouldAttackEntity(entitiesToAttack[priorityEntity]))
-                                {
-                                    LogToConsole($"[{DateTime.Now:HH:mm:ss.fff}] Attacking entity {priorityEntity}");
-                                    InteractEntity(priorityEntity, Config.Interaction); // hit the entity!
-                                    SendAnimation(Inventory.Hand.MainHand); // Arm animation
-                                }
+                            if (ShouldAttackEntity(entitiesToAttack[priorityEntity]))
+                            {
+                                InteractEntity(priorityEntity, Config.Interaction); // hit the entity!
+                                SendAnimation(Inventory.Hand.MainHand); // Arm animation
+                            }
 
 
                         }
@@ -194,12 +193,11 @@ namespace MinecraftClient.ChatBots
                     {
                         foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
                         {
-                                // check that we are in range once again.
-                                if (ShouldAttackEntity(entity.Value))
-                                {
-                                    LogToConsole($"[{DateTime.Now:HH:mm:ss.fff}] Attacking entity {entity.Key}");
-                                    InteractEntity(entity.Key, Config.Interaction); // hit the entity!
-                                }
+                            // check that we are in range once again.
+                            if (ShouldAttackEntity(entity.Value))
+                            {
+                                InteractEntity(entity.Key, Config.Interaction); // hit the entity!
+                            }
 
                         }
                         SendAnimation(Inventory.Hand.MainHand); // Arm animation

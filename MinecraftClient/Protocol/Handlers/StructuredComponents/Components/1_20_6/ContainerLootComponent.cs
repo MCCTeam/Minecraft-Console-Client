@@ -4,11 +4,11 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class ContainerLootComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class ContainerLootComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public Dictionary<string, object>? Nbt { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         Nbt = DataTypes.ReadNextNbt(data);

@@ -226,7 +226,8 @@ namespace MinecraftClient.Scripting
         /// <param name="pitch">Sound pitch</param>
         /// <param name="sourceEntity">Source entity for entity-sound packets when tracked</param>
         public virtual void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch,
-            Entity? sourceEntity) { }
+            Entity? sourceEntity)
+        { }
 
         /// <summary>
         /// Called when an entity rotates
@@ -405,7 +406,8 @@ namespace MinecraftClient.Scripting
         /// <param name="players">Player/entity names. Present when method is 0, 3, or 4.</param>
         public virtual void OnTeam(string teamName, byte method, string displayName, byte friendlyFlags,
             string nameTagVisibility, string collisionRule, int color,
-            string prefix, string suffix, List<string> players) { }
+            string prefix, string suffix, List<string> players)
+        { }
 
         /// <summary>
         /// Called when the client received the Tab Header and Footer
@@ -413,7 +415,7 @@ namespace MinecraftClient.Scripting
         /// <param name="header">Header</param>
         /// <param name="footer">Footer</param>
         public virtual void OnTabListHeaderAndFooter(string header, string footer) { }
-        
+
         /// <summary>
         /// Called when an inventory/container was updated by server
         /// </summary>
@@ -1068,7 +1070,7 @@ namespace MinecraftClient.Scripting
         {
             Handler.BotLoad(chatBot);
         }
-        
+
         /// <summary>
         /// Set an App Variable
         /// </summary>
@@ -1079,7 +1081,7 @@ namespace MinecraftClient.Scripting
         {
             Config.AppVar.SetVar(name, value);
         }
-        
+
         /// <summary>
         /// Get a value from an App Variable
         /// </summary>
@@ -1089,7 +1091,7 @@ namespace MinecraftClient.Scripting
         {
             return Config.AppVar.GetVar(name);
         }
-        
+
         /// <summary>
         /// Replaces variables in text with their values from the App Var registry
         /// </summary>

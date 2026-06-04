@@ -28,7 +28,7 @@ namespace MinecraftClient.Protocol.Session
         public string ServerIDhash { get; set; }
         [Key(6)]
         public byte[]? ServerPublicKey { get; set; }
-        
+
         [IgnoreMember]
         public Task<bool>? SessionPreCheckTask = null;
 

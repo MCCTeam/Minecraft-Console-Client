@@ -120,7 +120,7 @@ namespace MinecraftClient
 
         // scoreboard teams (key = team name)
         private readonly Dictionary<string, PlayerTeam> teams = new(StringComparer.Ordinal);
-        
+
         // Sneaking
         public bool IsSneaking { get; set; } = false;
         private bool isUnderSlab = false;
@@ -142,7 +142,7 @@ namespace MinecraftClient
 
         // ChatBot OnNetworkPacket event
         private bool networkPacketCaptureEnabled = false;
-        
+
         // Cookies
         private Dictionary<string, byte[]> Cookies { get; set; } = new();
 
@@ -233,7 +233,7 @@ namespace MinecraftClient
         private bool consoleHandlersAttached = false;
 
         public ILogger Log;
-        
+
         private static IMinecraftComHandler? instance;
         public static IMinecraftComHandler? Instance => instance;
 
@@ -250,7 +250,7 @@ namespace MinecraftClient
         {
             CmdResult.currentHandler = this;
             instance = this;
-            
+
             terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
             inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
             entityHandlingEnabled = Config.Main.Advanced.EntityHandling;
@@ -281,7 +281,7 @@ namespace MinecraftClient
                 scope.SetTag("Protocol Version", protocolversion.ToString());
                 scope.SetTag("Minecraft Version", ProtocolHandler.ProtocolVersion2MCVer(protocolversion));
                 scope.SetTag("MCC Build", Program.BuildInfo is null ? "Debug" : Program.BuildInfo);
-                    
+
                 if (forgeInfo is not null)
                     scope.SetTag("Forge Version", forgeInfo.Version.ToString());
 
@@ -291,17 +291,17 @@ namespace MinecraftClient
                     MinecraftVersion = ProtocolHandler.ProtocolVersion2MCVer(protocolversion),
                     ForgeInfo = forgeInfo?.Version
                 };
-                
-                scope.Contexts["Client Configuration"] = new 
+
+                scope.Contexts["Client Configuration"] = new
                 {
                     TerrainAndMovementsEnabled = terrainAndMovementsEnabled,
                     InventoryHandlingEnabled = inventoryHandlingEnabled,
                     EntityHandlingEnabled = entityHandlingEnabled
                 };
             });
-            
+
             SentrySdk.StartSession();
-            
+
             /* Load commands from Commands namespace */
             LoadCommands();
 
@@ -356,7 +356,7 @@ namespace MinecraftClient
 
             return;
 
-            Retry:
+        Retry:
             if (timeoutdetector is not null)
             {
                 timeoutdetector.Item2.Cancel();
@@ -379,7 +379,7 @@ namespace MinecraftClient
                 }
 
                 throw new Exception("Initialization failed.");
-            } 
+            }
             else
             {
                 // AutoRelog is enabled - invoke its static handler to trigger reconnection.
@@ -399,7 +399,7 @@ namespace MinecraftClient
                 throw new Exception("Initialization failed.");
             }
         }
-        
+
         public void Transfer(string newHost, int newPort)
         {
             // Do not block here: a new handler can start processing packets before the
@@ -419,13 +419,13 @@ namespace MinecraftClient
             {
                 ResolveTransferAddress(ref resolvedHost, ref resolvedPort);
                 Log.Info($"Initiating a transfer to: {resolvedHost}:{resolvedPort}");
-                
+
                 // Unload bots
                 UnloadAllBots();
                 bots.Clear();
 
                 ResetStateForTransfer();
-                
+
                 // Retire the old handler so its updater exits without reporting a stale disconnect.
                 oldHandler.Dispose();
                 oldClient.Close();
@@ -916,7 +916,7 @@ namespace MinecraftClient
             }
 
             SentrySdk.EndSession();
-            
+
             if (!will_restart)
             {
                 StopConsoleSession();
@@ -2844,7 +2844,7 @@ namespace MinecraftClient
                     _ => handler.SendInteractEntity(entityID, (int)type),
                 };
             }
-            
+
             return false;
         }
 
@@ -3128,7 +3128,7 @@ namespace MinecraftClient
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Send the server a command to type in the item name in the Anvil inventory when it's open.
         /// </summary>
@@ -3140,7 +3140,7 @@ namespace MinecraftClient
 
             if (inventories.Values.ToList().Last().Type != ContainerType.Anvil)
                 return false;
-            
+
             return handler.SendRenameItem(itemName);
         }
 
@@ -3563,7 +3563,7 @@ namespace MinecraftClient
                 if (!Config.Signature.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
                     return;
                 messageText = ChatParser.ParseSignedChat(message, links);
-                
+
                 if (message.isSystemChat)
                 {
                     if (Config.Signature.MarkSystemMessage)
@@ -4555,7 +4555,7 @@ namespace MinecraftClient
                 Entity entity = entities[entityID];
                 entity.Metadata = metadata;
                 int itemEntityMetadataFieldIndex = protocolversion < Protocol18Handler.MC_1_17_Version ? 7 : 8;
-                
+
                 if (entity.Type.ContainsItem() && metadata.TryGetValue(itemEntityMetadataFieldIndex, out object? itemObj) && itemObj is not null && itemObj.GetType() == typeof(Item))
                 {
                     Item item = (Item)itemObj;

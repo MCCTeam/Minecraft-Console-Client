@@ -7,7 +7,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class SuspiciousStewEffectsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class SuspiciousStewEffectsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfEffects { get; set; }
@@ -28,7 +28,7 @@ public class SuspiciousStewEffectsComponent(DataTypes dataTypes, ItemPalette ite
 
         if (NumberOfEffects != Effects.Count)
             throw new InvalidOperationException("Can not serialize SuspiciousStewEffectsComponent1206 because umberOfEffects != Effects.Count!");
-        
+
         foreach (var effect in Effects)
         {
             data.AddRange(DataTypes.GetVarInt(effect.TypeId));

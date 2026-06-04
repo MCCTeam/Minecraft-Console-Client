@@ -11,7 +11,7 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
     public string? ExactValue { get; set; }
     public string? MinValue { get; set; }
     public string? MaxValue { get; set; }
-    
+
     protected override void Parse(Queue<byte> data)
     {
         Name = DataTypes.ReadNextString(data);
@@ -34,7 +34,7 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
 
         if (string.IsNullOrEmpty(Name?.Trim()))
             throw new ArgumentNullException($"Can not serialize a Property sub-component if the Name is null or empty!");
-        
+
         data.AddRange(DataTypes.GetString(Name));
         data.AddRange(DataTypes.GetBool(IsExactMatch));
 
@@ -42,7 +42,7 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
         {
             if (string.IsNullOrEmpty(ExactValue?.Trim()))
                 throw new ArgumentNullException($"Can not serialize a Property sub-component if the ExactValue is null or empty when the type is Exact Match!");
-            
+
             data.AddRange(DataTypes.GetString(ExactValue));
         }
         else
@@ -50,12 +50,12 @@ public class PropertySubComponent(DataTypes dataTypes, SubComponentRegistry subC
             data.AddRange(DataTypes.GetBool(MinValue is not null));
             if (MinValue is not null)
                 data.AddRange(DataTypes.GetString(MinValue));
-            
+
             data.AddRange(DataTypes.GetBool(MaxValue is not null));
             if (MaxValue is not null)
                 data.AddRange(DataTypes.GetString(MaxValue));
         }
-        
+
         return new Queue<byte>(data);
     }
 }

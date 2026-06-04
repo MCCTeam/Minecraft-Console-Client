@@ -27,7 +27,7 @@ public class EquippableComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     {
         Slot = DataTypes.ReadNextVarInt(data);
         EquipSound = (SoundEventSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.SoundEvent, data);
-        
+
         HasModel = DataTypes.ReadNextBool(data);
         if (HasModel)
             Model = DataTypes.ReadNextString(data);
