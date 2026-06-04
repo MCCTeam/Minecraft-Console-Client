@@ -193,7 +193,7 @@ You need to enable Entity Handling to use this bot
     <value>Capped between 1 to 4</value>
   </data>
   <data name="ChatBot.AutoAttack.Cooldown_Time" xml:space="preserve">
-    <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
+    <value>Delay between attacks. Set "Custom = false" to let MCC calculate it. When Custom = true, set Min/Max for the cooldown range. If RandomMode = true, a random value between Min and Max is used for each attack.</value>
   </data>
   <data name="ChatBot.AutoAttack.Entites_List" xml:space="preserve">
     <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
