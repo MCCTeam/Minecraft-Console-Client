@@ -59,32 +59,7 @@
     <PackageReference Include="Telegram.Bot" Version="22.9.5.3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="config\ChatBots\AutoLeaveOnLowHp.cs" />
-    <Compile Remove="config\ChatBots\AutoLook.cs" />
-    <Compile Remove="config\ChatBots\AutoTree.cs" />
-    <Compile Remove="config\ChatBots\CobblestoneMiner.cs" />
-    <Compile Remove="config\ChatBots\DiscordWebhook.cs" />
-    <Compile Remove="config\ChatBots\EntityCount.cs" />
-    <Compile Remove="config\ChatBots\OreMiner.cs" />
-    <Compile Remove="config\ChatBots\PayKassa.cs" />
-    <Compile Remove="config\ChatBots\QIWIAPI.cs" />
-    <Compile Remove="config\ChatBots\SugarCaneMiner.cs" />
-    <Compile Remove="config\ChatBots\TreeFarmer.cs" />
-    <Compile Remove="config\ChatBots\VkMessager.cs" />
-    <Compile Remove="config\ChatBots\WebSocketBot.cs" />
-    <Compile Remove="config\sample-script-extended.cs" />
-    <Compile Remove="config\sample-script-packet-capture.cs" />
-    <Compile Remove="config\sample-script-pm-forwarder.cs" />
-    <Compile Remove="config\sample-script-random-command.cs" />
-    <Compile Remove="config\sample-script-tick-counter.cs" />
-    <Compile Remove="config\sample-script-with-chatbot.cs" />
-    <Compile Remove="config\sample-script-with-http-request.cs" />
-    <Compile Remove="config\sample-script-with-task.cs" />
-    <Compile Remove="config\sample-script-with-world-access.cs" />
-    <Compile Remove="config\sample-script-packet-capture.cs" />
-    <Compile Remove="config\sample-script.cs" />
-    <Compile Remove="config\ChatBots\MineCube.cs" />
-    <Compile Remove="config\ChatBots\SugarCaneFarmer.cs" />
+    <Compile Remove="config\**\*.cs" />
     <Compile Remove="Mapping\VillagerInfo.cs" />
   </ItemGroup>
   <ItemGroup>
