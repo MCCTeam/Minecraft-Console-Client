@@ -26,6 +26,32 @@ mcc-publish --rid linux-x64
 
 Keep shared servers running by default. Do not stop or reset them unless the user explicitly asks for that, or you need to switch server versions.
 
+### Full inventory regression sweep
+
+Use `tools/run-inventory-full-sweep.sh` when changing inventory, container, item-slot serialization, packet palettes, game-mode handling, or block-use behavior. It runs MCC against real local servers with temporary configs and checks player inventory, creative give/delete, search, click, drop, chest container, mirrored player slots, and crash markers.
+
+```bash
+# Focused retest
+tools/run-inventory-full-sweep.sh --versions "1.21.10 1.21.11"
+
+# Full default major-version sweep
+tools/run-inventory-full-sweep.sh
+
+# Run the Issue #3112 mirrored-player-inventory script after a passing sweep
+tools/run-inventory-full-sweep.sh --versions "1.20.4" --run-issue-script
+```
+
+Useful environment overrides:
+
+```bash
+RUN_ROOT=/tmp/my-inventory-run \
+MCC_SERVERS=/path/to/servers \
+STOP_ON_FAIL=1 \
+tools/run-inventory-full-sweep.sh --versions "1.19 1.20.4"
+```
+
+The script writes `summary.tsv` under `RUN_ROOT`. Per-version MCC logs are under `/tmp/mcc-debug/inventory-full-<version>/mcc-debug.log`, and command output blocks are saved next to the summary.
+
 ### tmpfs build mode
 
 ```bash
