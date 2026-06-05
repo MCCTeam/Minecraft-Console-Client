@@ -115,6 +115,37 @@ Use this for TPS, movement-cadence, or packet-cadence work:
 
 Run them against a real server with a temp config and summarize counts from the captured logs.
 
+### 4. Full inventory regression sweep
+
+Use this when touching inventory snapshots, player/container slot sync, creative inventory, item-slot serialization, packet palettes, game-mode updates, or block-use paths that open containers:
+
+```bash
+tools/run-inventory-full-sweep.sh --versions "1.21.10 1.21.11"
+```
+
+Default coverage includes:
+
+- player inventory listing and inventory discovery
+- creative give/delete
+- inventory search
+- player right/left click stack split and merge
+- player drop one and drop all
+- chest open via `useblock`
+- container listing and close
+- mirrored player slots in container windows
+- shift-click and shift-right-click transfer
+- container right/left click, cursor stack, drop one, and drop all
+- creative middle-click command path
+- log scan for packet parse failures, queue-empty crashes, unhandled exceptions, and disconnects
+
+The script writes `summary.tsv` under `RUN_ROOT` and per-version logs under `/tmp/mcc-debug/inventory-full-<version>/mcc-debug.log`.
+
+When a matrix has existing PASS rows, do not rerun them unless a later code change affects that row or the user asks for a full rerun. Derive remaining rows from summaries:
+
+```bash
+awk 'FNR>1 && $2=="PASS" {print $1}' /tmp/mcc-inventory-full-sweep/*/summary.tsv | sort -V | uniq
+```
+
 ## Preconditions
 
 Before running any scenario:
@@ -165,6 +196,8 @@ Optionally override the login name with the fourth argument to the config helper
   - summarize the latest full-spectrum run
 - `tools/run-creative-e2e.sh`
   - ordered creative-mode E2E regression scenario
+- `tools/run-inventory-full-sweep.sh`
+  - full inventory command/API sweep across one or more versions
 
 ## Evidence Discipline
 
@@ -224,3 +257,7 @@ Always summarize:
 - If a test assertion fails, inspect the real MCC output before changing the code or weakening the assertion.
 - If an older server behaves oddly on Linux, check `use-native-transport=false` in `server.properties`.
 - If a matrix row fails before producing `mcc.log` or a command transcript, treat it as a harness failure, fix the environment, and rerun that row before drawing product conclusions.
+- If creative inventory commands report "You must be in Creative gamemode" after RCON switched the player, inspect game-mode update parsing before assuming creative inventory is broken. Modern servers can update local game mode through game event reason `3`.
+- If an inventory row crashes with `Queue empty` or `Failed to process incoming packet`, inspect packet palette routing before changing inventory code. A single shifted packet ID can make a healthy inventory feature look broken.
+- For chest-open failures, separate product and harness causes. The player may be standing inside the chest or suffocating on older servers. Stand beside the chest, put a floor under the player, and retry `useblock`.
+- For shared local servers, a `Done` log line does not prove RCON is ready. Retry setup commands and verify the actual RCON port from `server.properties`.

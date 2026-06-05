@@ -45,6 +45,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_8_Version = 47;
         internal const int MC_1_9_Version = 107;
         internal const int MC_1_9_1_Version = 108;
+        internal const int MC_1_9_2_Version = 109;
         internal const int MC_1_10_Version = 210;
         internal const int MC_1_11_Version = 315;
         internal const int MC_1_11_2_Version = 316;
@@ -841,7 +842,7 @@ namespace MinecraftClient.Protocol.Handlers
                                                     packetData); // Dimension Type: NBT Tag Compound
                                             break;
                                         default:
-                                            dataTypes.ReadNextString(packetData);
+                                            dimensionTypeName = dataTypes.ReadNextString(packetData);
                                             break;
                                     }
 
@@ -1413,7 +1414,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     dataTypes.ReadNextNbt(packetData); // Dimension Type: NBT Tag Compound
                                 break;
                             default:
-                                dataTypes.ReadNextString(packetData);
+                                dimensionTypeNameRespawn = dataTypes.ReadNextString(packetData);
                                 break;
                         }
 
@@ -4027,6 +4028,21 @@ namespace MinecraftClient.Protocol.Handlers
             int blockEntityCount = dataTypes.ReadNextVarInt(packetData);
             for (int i = 0; i < blockEntityCount; i++)
             {
+                if (protocolVersion < MC_1_18_1_Version)
+                {
+                    Dictionary<string, object>? blockEntityNbt = dataTypes.ReadNextNbt(packetData);
+                    if (blockEntityNbt.TryGetValue("x", out var nbtX)
+                        && blockEntityNbt.TryGetValue("y", out var nbtY)
+                        && blockEntityNbt.TryGetValue("z", out var nbtZ))
+                    {
+                        handler.OnBlockEntityData(
+                            new Location(Convert.ToInt32(nbtX), Convert.ToInt32(nbtY), Convert.ToInt32(nbtZ)),
+                            blockEntityNbt);
+                    }
+
+                    continue;
+                }
+
                 int packedXZ = dataTypes.ReadNextByte(packetData);
                 int y = dataTypes.ReadNextShort(packetData);
                 dataTypes.ReadNextVarInt(packetData); // Block entity type registry id
@@ -5616,7 +5632,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private static byte ToLegacyBlockPlacementCursor(float cursor)
         {
-            return (byte)Math.Clamp((int)(cursor * 16.0f), 0, byte.MaxValue);
+            return (byte)Math.Clamp((int)(cursor * 16.0f), 0, 15);
         }
 
         public bool SendHeldItemChange(short slot)
@@ -5752,15 +5768,10 @@ namespace MinecraftClient.Protocol.Handlers
 
                 switch (protocolVersion)
                 {
-                    // 1.18+
-                    case >= MC_1_18_1_Version:
+                    // 1.17.1+
+                    case >= MC_1_17_1_Version:
                         packet.AddRange(DataTypes.GetVarInt(stateId)); // State ID
                         packet.AddRange(dataTypes.GetShort((short)slotId)); // Slot ID
-                        break;
-                    // 1.17.1
-                    case MC_1_17_1_Version:
-                        packet.AddRange(dataTypes.GetShort((short)slotId)); // Slot ID
-                        packet.AddRange(DataTypes.GetVarInt(stateId)); // State ID
                         break;
                     // Older
                     default:

@@ -157,6 +157,43 @@ When packet changes are detected:
 2. Create new `PacketPaletteXXX.cs` based on the previous one, adjusting IDs
 3. Update `PacketType18Handler.cs` routing
 
+Use scriptable comparisons instead of eyeballing long packet tables. The packet ID is the registration index in `GameProtocols.java`:
+
+```bash
+python3 - <<'PY'
+import re
+for ver in ["1.21.10", "1.21.11", "26.1"]:
+    path=f"MinecraftOfficial/{ver}-decompiled/net/minecraft/network/protocol/game/GameProtocols.java"
+    text=open(path).read()
+    start=text.index("CLIENTBOUND_TEMPLATE")
+    names=[m.group(1) for m in re.finditer(r"\.addPacket\(([^,]+),", text[start:])]
+    print("==", ver, len(names))
+    for i, name in enumerate(names):
+        print(f"0x{i:02X}", name)
+PY
+```
+
+For focused diffs:
+
+```bash
+python3 - <<'PY'
+import re
+def packets(ver, marker):
+    text=open(f"MinecraftOfficial/{ver}-decompiled/net/minecraft/network/protocol/game/GameProtocols.java").read()
+    start=text.index(marker)
+    return [m.group(1) for m in re.finditer(r"\.addPacket\(([^,]+),", text[start:])]
+left, right = "1.21.10", "1.21.11"
+a, b = packets(left, "CLIENTBOUND_TEMPLATE"), packets(right, "CLIENTBOUND_TEMPLATE")
+for i in range(max(len(a), len(b))):
+    x = a[i] if i < len(a) else "<none>"
+    y = b[i] if i < len(b) else "<none>"
+    if x != y:
+        print(f"0x{i:02X}: {left}={x} | {right}={y}")
+PY
+```
+
+Do the same for `SERVERBOUND_TEMPLATE`. Clientbound and serverbound can change independently. Do not inherit a newer palette just because one side looks similar. For example, `1.21.11` used the same play packet order as `1.21.9/1.21.10` for the tested inventory path, while `26.1` had additional shifts.
+
 ## Step 5: Check Variant Encoding Changes
 
 For entity types that use variant serializers (Cat, Wolf, Frog, Painting), check if the codec changed between versions by inspecting:

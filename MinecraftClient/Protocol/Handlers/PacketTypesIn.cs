@@ -146,7 +146,7 @@ namespace MinecraftClient.Protocol.Handlers
         UpdateHealth,               //
         UpdateLight,                //
         UpdateScore,                //
-        UpdateSign,                 // For 1.8 or below
+        UpdateSign,                 // For 1.8 or below, and 1.9-1.9.2
         UpdateSimulationDistance,   //
         UpdateViewDistance,         //
         UpdateViewPosition,         //

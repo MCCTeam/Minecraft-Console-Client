@@ -69,7 +69,16 @@ namespace MinecraftClient.Mapping
         /// <param name="registryCodec">Registry Codec nbt data</param>
         public static void StoreDimensionList(Dictionary<string, object> registryCodec)
         {
-            var dimensionListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:dimension_type"])["value"]);
+            const string namespacedDimensionTypeKey = "minecraft:dimension_type";
+            const string legacyDimensionTypeKey = "dimension_type";
+
+            if (!registryCodec.TryGetValue(namespacedDimensionTypeKey, out var dimensionTypeRegistry)
+                && !registryCodec.TryGetValue(legacyDimensionTypeKey, out dimensionTypeRegistry))
+            {
+                return;
+            }
+
+            var dimensionListNbt = (object[])(((Dictionary<string, object>)dimensionTypeRegistry)["value"]);
             foreach (var (dimensionName, dimensionType) in from Dictionary<string, object> dimensionNbt in dimensionListNbt
                                                            let dimensionName = (string)dimensionNbt["name"]
                                                            let dimensionType = (Dictionary<string, object>)dimensionNbt["element"]
@@ -333,9 +342,38 @@ namespace MinecraftClient.Mapping
                     return; // Dimension found with prefixed name
                 }
             }
+            else
+            {
+                string unprefixedName = name["minecraft:".Length..];
+                if (dimensionList.TryGetValue(unprefixedName, out dimension))
+                {
+                    curDimension = dimension;
+                    return;
+                }
+            }
+
+            if (TryStoreDefaultVanillaDimension(name)
+                && dimensionList.TryGetValue(name, out dimension))
+            {
+                curDimension = dimension;
+                return;
+            }
 
             // If still not found, dimension does not exist
             throw new KeyNotFoundException($"Dimension '{name}' not found in dimensions dictionary.");
+        }
+
+        private static bool TryStoreDefaultVanillaDimension(string name)
+        {
+            var normalizedName = name.StartsWith("minecraft:")
+                ? name
+                : "minecraft:" + name;
+
+            if (normalizedName is not ("minecraft:overworld" or "minecraft:the_nether" or "minecraft:the_end"))
+                return false;
+
+            StoreOneDimension(name, new Dictionary<string, object>());
+            return true;
         }
 
 
