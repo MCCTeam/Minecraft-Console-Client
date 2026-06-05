@@ -228,6 +228,7 @@ namespace MinecraftClient
         SessionToken _sessionToken;
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
+        private Thread? basicIOReadThread;
         private int transferInProgress = 0;
         private bool consoleReadThreadOwned = false;
         private bool consoleHandlersAttached = false;
@@ -527,6 +528,23 @@ namespace MinecraftClient
         {
             cmdprompt = new CancellationTokenSource();
 
+            if (ConsoleIO.BasicIO || ConsoleIO.Backend is null)
+            {
+                if (!consoleReadThreadOwned)
+                {
+                    CancellationToken token = cmdprompt.Token;
+                    basicIOReadThread = new Thread(() => BasicIOReadLoop(token))
+                    {
+                        IsBackground = true,
+                        Name = "MCC BasicIO read thread"
+                    };
+                    basicIOReadThread.Start();
+                    consoleReadThreadOwned = true;
+                }
+
+                return;
+            }
+
             if (!consoleReadThreadOwned)
             {
                 ConsoleIO.Backend.BeginReadThread();
@@ -543,6 +561,15 @@ namespace MinecraftClient
 
         private void StopConsoleSession()
         {
+            if (ConsoleIO.BasicIO || ConsoleIO.Backend is null)
+            {
+                cmdprompt?.Cancel();
+                basicIOReadThread = null;
+                consoleReadThreadOwned = false;
+                consoleHandlersAttached = false;
+                return;
+            }
+
             if (consoleHandlersAttached)
             {
                 ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
@@ -554,6 +581,19 @@ namespace MinecraftClient
             {
                 ConsoleIO.Backend.StopReadThread();
                 consoleReadThreadOwned = false;
+            }
+        }
+
+        private void BasicIOReadLoop(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                string? input = Console.ReadLine();
+                if (input is null)
+                    return;
+
+                if (!token.IsCancellationRequested)
+                    ConsoleReaderOnMessageReceived(this, input);
             }
         }
 

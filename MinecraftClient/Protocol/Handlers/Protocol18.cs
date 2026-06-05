@@ -4258,7 +4258,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             log.Debug($"§8{Translations.debug_crypto}");
 
-            if (serverIDhash != "-")
+            if (serverIDhash != "-" && !string.IsNullOrWhiteSpace(sessionID))
             {
                 log.Info(Translations.mcc_session);
 
