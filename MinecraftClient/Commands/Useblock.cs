@@ -1,3 +1,4 @@
+using System;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
@@ -53,8 +54,27 @@ namespace MinecraftClient.Commands
             Location current = handler.GetCurrentLocation();
             block = block.ToAbsolute(current).ToFloor();
             Location blockCenter = block.ToCenter();
-            bool res = handler.PlaceBlock(block, Direction.Down, hand, lookAtBlock: true);
+            bool res = handler.PlaceBlock(block, GetFaceNearestPlayer(current, blockCenter), hand, lookAtBlock: true);
             return r.SetAndReturn(string.Format(Translations.cmd_useblock_use, blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed"), res);
+        }
+
+        private static Direction GetFaceNearestPlayer(Location playerLocation, Location blockCenter)
+        {
+            double dx = playerLocation.X - blockCenter.X;
+            double dy = playerLocation.Y - blockCenter.Y;
+            double dz = playerLocation.Z - blockCenter.Z;
+
+            double absX = Math.Abs(dx);
+            double absY = Math.Abs(dy);
+            double absZ = Math.Abs(dz);
+
+            if (absX >= absY && absX >= absZ)
+                return dx >= 0 ? Direction.East : Direction.West;
+
+            if (absY >= absZ)
+                return dy >= 0 ? Direction.Up : Direction.Down;
+
+            return dz >= 0 ? Direction.South : Direction.North;
         }
     }
 }

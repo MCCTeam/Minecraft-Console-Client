@@ -2022,6 +2022,90 @@ namespace MinecraftClient
             };
         }
 
+        private static bool TryGetMirroredPlayerInventoryRange(Container inventory, out int firstWindowSlot, out int lastWindowSlot)
+        {
+            firstWindowSlot = -1;
+            lastWindowSlot = -1;
+
+            if (inventory.Type == ContainerType.PlayerInventory)
+                return false;
+
+            const int mirroredPlayerInventorySlotCount = 36;
+            int slotCount = inventory.Type.SlotCount();
+            if (slotCount < mirroredPlayerInventorySlotCount)
+                return false;
+
+            firstWindowSlot = slotCount - mirroredPlayerInventorySlotCount;
+            lastWindowSlot = slotCount - 1;
+            return true;
+        }
+
+        private static bool TryGetMirroredPlayerInventorySlot(Container inventory, int windowSlot, out int playerInventorySlot)
+        {
+            playerInventorySlot = -1;
+
+            if (!TryGetMirroredPlayerInventoryRange(inventory, out int firstWindowSlot, out int lastWindowSlot))
+                return false;
+
+            if (windowSlot < firstWindowSlot || windowSlot > lastWindowSlot)
+                return false;
+
+            playerInventorySlot = windowSlot - firstWindowSlot + 9;
+            return true;
+        }
+
+        private static bool AreSameInventorySlot(Item? left, Item? right)
+        {
+            if (left is null || left.IsEmpty)
+                return right is null || right.IsEmpty;
+            if (right is null || right.IsEmpty)
+                return false;
+
+            return left.Type == right.Type
+                && left.Count == right.Count
+                && left.Data == right.Data
+                && ReferenceEquals(left.NBT, right.NBT)
+                && ReferenceEquals(left.Components, right.Components);
+        }
+
+        private bool SetPlayerInventorySlot(int playerInventorySlot, Item? item)
+        {
+            if (!inventories.TryGetValue(0, out Container? playerInventory))
+                return false;
+
+            playerInventory.Items.TryGetValue(playerInventorySlot, out Item? previousItem);
+            if (AreSameInventorySlot(previousItem, item))
+                return false;
+
+            if (item is null || item.IsEmpty)
+                playerInventory.Items.Remove(playerInventorySlot);
+            else
+                playerInventory.Items[playerInventorySlot] = item;
+
+            return true;
+        }
+
+        private bool SyncPlayerInventorySlotFromWindow(Container inventory, int windowSlot)
+        {
+            if (!TryGetMirroredPlayerInventorySlot(inventory, windowSlot, out int playerInventorySlot))
+                return false;
+
+            inventory.Items.TryGetValue(windowSlot, out Item? item);
+            return SetPlayerInventorySlot(playerInventorySlot, item);
+        }
+
+        private bool SyncPlayerInventorySlotsFromWindow(Container inventory)
+        {
+            if (!TryGetMirroredPlayerInventoryRange(inventory, out int firstWindowSlot, out int lastWindowSlot))
+                return false;
+
+            bool changed = false;
+            for (int windowSlot = firstWindowSlot; windowSlot <= lastWindowSlot; windowSlot++)
+                changed |= SyncPlayerInventorySlotFromWindow(inventory, windowSlot);
+
+            return changed;
+        }
+
         /// <summary>
         /// Click a slot in the specified window
         /// </summary>
@@ -2748,6 +2832,8 @@ namespace MinecraftClient
                         changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
                         break;
                 }
+
+                SyncPlayerInventorySlotsFromWindow(inventory);
             }
 
             return handler.SendWindowAction(windowId, slotId, action, item, changedSlots, inventories[windowId].StateID);
@@ -2764,7 +2850,16 @@ namespace MinecraftClient
         /// <returns>TRUE if item given successfully</returns>
         public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt = null)
         {
-            return InvokeOnMainThread(() => handler.SendCreativeInventoryAction(slot, itemType, count, nbt));
+            return InvokeOnMainThread(() =>
+            {
+                if (!handler.SendCreativeInventoryAction(slot, itemType, count, nbt))
+                    return false;
+
+                if (slot is >= 1 and <= 45)
+                    SetPlayerInventorySlot(slot, new Item(itemType, count, nbt));
+
+                return true;
+            });
         }
 
         /// <summary>
@@ -3780,6 +3875,9 @@ namespace MinecraftClient
             {
                 inventories[inventoryID].Items = itemList;
                 inventories[inventoryID].StateID = stateId;
+                bool playerInventoryChanged = SyncPlayerInventorySlotsFromWindow(inventories[inventoryID]);
+                if (playerInventoryChanged)
+                    DispatchBotEvent(bot => bot.OnInventoryUpdate(0));
                 DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
             }
         }
@@ -3820,6 +3918,9 @@ namespace MinecraftClient
                             inventories[inventoryID].Items.Remove(slotID);
                     }
                     else inventories[inventoryID].Items[slotID] = item;
+
+                    if (SyncPlayerInventorySlotFromWindow(inventories[inventoryID], slotID))
+                        DispatchBotEvent(bot => bot.OnInventoryUpdate(0));
                 }
             }
             DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
@@ -4676,6 +4777,9 @@ namespace MinecraftClient
         {
             switch (reason)
             {
+                case 3:
+                    OnGamemodeUpdate(Guid.Empty, (int)value);
+                    break;
                 case 7:
                     DispatchBotEvent(bot => bot.OnRainLevelChange(value));
                     break;

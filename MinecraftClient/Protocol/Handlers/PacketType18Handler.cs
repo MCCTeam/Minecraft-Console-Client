@@ -56,6 +56,7 @@ namespace MinecraftClient.Protocol.Handlers
                 <= Protocol18Handler.MC_1_21_5_Version and > Protocol18Handler.MC_1_21_4_Version => new PacketPalette1215(),
                 <= Protocol18Handler.MC_1_21_4_Version and > Protocol18Handler.MC_1_21_2_Version => new PacketPalette1214(),
                 <= Protocol18Handler.MC_1_8_Version => new PacketPalette17(),
+                <= Protocol18Handler.MC_1_9_2_Version => new PacketPalette19(),
                 <= Protocol18Handler.MC_1_11_2_Version => new PacketPalette110(),
                 <= Protocol18Handler.MC_1_12_Version => new PacketPalette112(),
                 <= Protocol18Handler.MC_1_12_2_Version => new PacketPalette1122(),
