@@ -127,7 +127,7 @@ namespace MinecraftClient.ChatBots
         private void DoAntiAfkStuff()
         {
             var isMovementLocked = BotMovementLock.Instance;
-            if (Config.Use_Terrain_Handling && GetTerrainEnabled() && isMovementLocked is {IsLocked: false})
+            if (Config.Use_Terrain_Handling && GetTerrainEnabled() && isMovementLocked is { IsLocked: false })
             {
                 var currentLocation = GetCurrentLocation();
 

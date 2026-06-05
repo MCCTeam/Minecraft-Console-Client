@@ -49,7 +49,7 @@ namespace MinecraftClient.Protocol
         void DeleteCookie(string key);
 
         void Transfer(string newHost, int newPort);
-        
+
         /// <summary>
         /// Invoke a task on the main thread, wait for completion and retrieve return value.
         /// </summary>
@@ -518,7 +518,7 @@ namespace MinecraftClient.Protocol
         /// <param name="header">Header</param>
         /// <param name="footer">Footer</param>
         void OnTabListHeaderAndFooter(string header, string footer);
-        
+
         /// <summary>
         /// Called when tradeList is received from server
         /// </summary>
@@ -604,7 +604,7 @@ namespace MinecraftClient.Protocol
         /// <returns>True if packet was successfully sent</returns>
 
         bool ClickContainerButton(int windowId, int buttonId);
-        
+
         /// <summary>
         /// Send a rename item packet when the anvil inventory is open and there is an item in the first slot
         /// </summary>

@@ -10,13 +10,13 @@ public class SoundEventSubComponent(DataTypes dataTypes, SubComponentRegistry su
     public string? SoundName { get; set; }
     public bool HasFixedRange { get; set; }
     public float FixedRange { get; set; }
-    
+
     protected override void Parse(Queue<byte> data)
     {
         Type = DataTypes.ReadNextVarInt(data);
 
         if (Type != 0) return;
-        
+
         SoundName = DataTypes.ReadNextString(data);
         HasFixedRange = DataTypes.ReadNextBool(data);
 
@@ -30,14 +30,14 @@ public class SoundEventSubComponent(DataTypes dataTypes, SubComponentRegistry su
         data.AddRange(DataTypes.GetVarInt(Type));
 
         if (Type != 0) return new Queue<byte>(data);
-        
+
         if (string.IsNullOrEmpty(SoundName?.Trim()))
             throw new ArgumentNullException($"Can not serialize SoundEventSubComponent due to SoundName being null or empty!");
-            
+
         data.AddRange(DataTypes.GetString(SoundName));
         data.AddRange(DataTypes.GetBool(HasFixedRange));
-            
-        if(HasFixedRange)
+
+        if (HasFixedRange)
             data.AddRange(DataTypes.GetFloat(FixedRange));
 
         return new Queue<byte>(data);

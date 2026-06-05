@@ -19,7 +19,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        private static Dimension curDimension= new();
+        private static Dimension curDimension = new();
 
         private static readonly Dictionary<string, Dimension> dimensionList = new();
 
@@ -91,7 +91,7 @@ namespace MinecraftClient.Mapping
         public static void LoadDefaultDimensions1206Plus()
         {
             // TODO: Move this to a JSON file.
-            
+
             var defaultRegistryCodec = new Dictionary<string, object>
             {
                 { "minecraft:dimension_type", new Dictionary<string, object>
@@ -323,58 +323,58 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="name">	The name of the dimension type</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
-	public static void SetDimension(string name)
-	{
-	    // Try to get the dimension using the name as is
-	    if (dimensionList.TryGetValue(name, out Dimension? dimension))
-	    {
-		curDimension = dimension;
-		return; // Dimension found
-	    }
+        public static void SetDimension(string name)
+        {
+            // Try to get the dimension using the name as is
+            if (dimensionList.TryGetValue(name, out Dimension? dimension))
+            {
+                curDimension = dimension;
+                return; // Dimension found
+            }
 
-	    // If not found, check if name lacks 'minecraft:' prefix and try again
-		    if (!name.StartsWith("minecraft:"))
-		    {
-			string prefixedName = "minecraft:" + name;
-			if (dimensionList.TryGetValue(prefixedName, out dimension))
-			{
-			    curDimension = dimension;
-			    return; // Dimension found with prefixed name
-			}
-		    }
-		    else
-		    {
-			string unprefixedName = name["minecraft:".Length..];
-			if (dimensionList.TryGetValue(unprefixedName, out dimension))
-			{
-			    curDimension = dimension;
-			    return;
-			}
-		    }
+            // If not found, check if name lacks 'minecraft:' prefix and try again
+            if (!name.StartsWith("minecraft:"))
+            {
+                string prefixedName = "minecraft:" + name;
+                if (dimensionList.TryGetValue(prefixedName, out dimension))
+                {
+                    curDimension = dimension;
+                    return; // Dimension found with prefixed name
+                }
+            }
+            else
+            {
+                string unprefixedName = name["minecraft:".Length..];
+                if (dimensionList.TryGetValue(unprefixedName, out dimension))
+                {
+                    curDimension = dimension;
+                    return;
+                }
+            }
 
-		    if (TryStoreDefaultVanillaDimension(name)
-			&& dimensionList.TryGetValue(name, out dimension))
-		    {
-			curDimension = dimension;
-			return;
-		    }
+            if (TryStoreDefaultVanillaDimension(name)
+                && dimensionList.TryGetValue(name, out dimension))
+            {
+                curDimension = dimension;
+                return;
+            }
 
-		    // If still not found, dimension does not exist
-		    throw new KeyNotFoundException($"Dimension '{name}' not found in dimensions dictionary.");
-		}
+            // If still not found, dimension does not exist
+            throw new KeyNotFoundException($"Dimension '{name}' not found in dimensions dictionary.");
+        }
 
-		private static bool TryStoreDefaultVanillaDimension(string name)
-		{
-		    var normalizedName = name.StartsWith("minecraft:")
-			? name
-			: "minecraft:" + name;
+        private static bool TryStoreDefaultVanillaDimension(string name)
+        {
+            var normalizedName = name.StartsWith("minecraft:")
+                ? name
+                : "minecraft:" + name;
 
-		    if (normalizedName is not ("minecraft:overworld" or "minecraft:the_nether" or "minecraft:the_end"))
-			return false;
+            if (normalizedName is not ("minecraft:overworld" or "minecraft:the_nether" or "minecraft:the_end"))
+                return false;
 
-		    StoreOneDimension(name, new Dictionary<string, object>());
-		    return true;
-		}
+            StoreOneDimension(name, new Dictionary<string, object>());
+            return true;
+        }
 
 
 

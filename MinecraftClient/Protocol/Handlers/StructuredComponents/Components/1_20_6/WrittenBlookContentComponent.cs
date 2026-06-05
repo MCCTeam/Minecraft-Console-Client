@@ -17,7 +17,7 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
     public int NumberOfPages { get; set; }
     public List<BookPage> Pages { get; set; } = [];
     public bool Resolved { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         RawTitle = DataTypes.ReadNextString(data);
@@ -25,7 +25,7 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
 
         if (HasFilteredTitle)
             FilteredTitle = DataTypes.ReadNextString(data);
-        
+
         Author = DataTypes.ReadNextString(data);
         Generation = DataTypes.ReadNextVarInt(data);
         NumberOfPages = DataTypes.ReadNextVarInt(data);
@@ -37,13 +37,13 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
             var hasFilteredContent = DataTypes.ReadNextBool(data);
             Dictionary<string, object>? filteredContentNbt = null;
             string? filteredContent = null;
-            
+
             if (hasFilteredContent)
             {
                 filteredContentNbt = DataTypes.ReadNextNbt(data);
                 filteredContent = ChatParser.ParseText(filteredContentNbt);
             }
-            
+
             Pages.Add(new BookPage(rawContent, hasFilteredContent, filteredContent, rawContentNbt, filteredContentNbt));
         }
 
@@ -53,18 +53,18 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        
+
         data.AddRange(DataTypes.GetString(RawTitle));
         data.AddRange(DataTypes.GetBool(HasFilteredTitle));
 
         if (HasFilteredTitle)
         {
-            if(FilteredTitle is null)
+            if (FilteredTitle is null)
                 throw new InvalidOperationException("Can not serialize WrittenBookContentComponent because HasFilteredTitle is true but FilteredTitle is null!");
-            
+
             data.AddRange(DataTypes.GetString(FilteredTitle));
         }
-        
+
         data.AddRange(DataTypes.GetString(Author));
         data.AddRange(DataTypes.GetVarInt(Generation));
         data.AddRange(DataTypes.GetVarInt(Pages.Count));

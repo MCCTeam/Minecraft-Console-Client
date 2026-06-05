@@ -8,7 +8,7 @@ public class EnchantmentGlintOverrideComponent(DataTypes dataTypes, ItemPalette 
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public bool HasGlint { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         HasGlint = DataTypes.ReadNextBool(data);

@@ -38,7 +38,7 @@ public class EntityMetadataPalette1194 : EntityMetadataPalette
         { 26, EntityMetaDataType.Vector3 },
         { 27, EntityMetaDataType.Quaternion },
     };
-        
+
     public override Dictionary<int, EntityMetaDataType> GetEntityMetadataMappingsList()
     {
         return entityMetadataMappings;

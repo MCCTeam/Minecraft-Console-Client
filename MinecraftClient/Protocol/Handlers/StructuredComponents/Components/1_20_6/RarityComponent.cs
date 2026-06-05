@@ -5,11 +5,11 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class RarityComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class RarityComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public ItemRarity Rarity { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         Rarity = (ItemRarity)DataTypes.ReadNextVarInt(data);

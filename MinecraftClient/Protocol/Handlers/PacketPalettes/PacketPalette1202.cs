@@ -178,7 +178,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x34, PacketTypesOut.PlayerBlockPlacement },        // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item On) 
             { 0x35, PacketTypesOut.UseItem },                     // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item) 
         };
-        
+
         private readonly Dictionary<int, ConfigurationPacketTypesIn> configurationTypesIn = new()
         {
             { 0x00, ConfigurationPacketTypesIn.PluginMessage },
@@ -201,7 +201,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x04, ConfigurationPacketTypesOut.Pong },
             { 0x05, ConfigurationPacketTypesOut.ResourcePackResponse }
         };
-        
+
         protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;
         protected override Dictionary<int, PacketTypesOut> GetListOut() => typeOut;
         protected override Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn() => configurationTypesIn!;

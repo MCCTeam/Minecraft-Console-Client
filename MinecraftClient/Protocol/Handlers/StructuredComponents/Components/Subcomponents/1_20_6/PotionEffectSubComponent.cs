@@ -8,7 +8,7 @@ public class PotionEffectSubComponent(DataTypes dataTypes, SubComponentRegistry 
 {
     public int TypeId { get; set; }
     public DetailsSubComponent Details { get; set; } = null!;
-    
+
     protected override void Parse(Queue<byte> data)
     {
         TypeId = DataTypes.ReadNextVarInt(data);

@@ -7,7 +7,7 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Registries;
 
 public class StructuredComponentsRegistry121 : StructuredComponentRegistry
 {
-    public StructuredComponentsRegistry121(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+    public StructuredComponentsRegistry121(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
         : base(dataTypes, itemPalette, subComponentRegistry)
     {
         RegisterComponent<CustomDataComponent>(0, "minecraft:custom_data");

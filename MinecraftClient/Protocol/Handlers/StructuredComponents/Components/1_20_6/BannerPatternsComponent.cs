@@ -5,12 +5,12 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class BannerPatternsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class BannerPatternsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfLayers { get; set; }
     public List<BannerLayer> Layers { get; set; } = [];
-    
+
     public override void Parse(Queue<byte> data)
     {
         NumberOfLayers = DataTypes.ReadNextVarInt(data);
@@ -44,17 +44,17 @@ public class BannerPatternsComponent(DataTypes dataTypes, ItemPalette itemPalett
 
                 if (bannerLayer.PatternType == 0)
                 {
-                    if(string.IsNullOrEmpty(bannerLayer.AssetId) || string.IsNullOrEmpty(bannerLayer.TranslationKey))
+                    if (string.IsNullOrEmpty(bannerLayer.AssetId) || string.IsNullOrEmpty(bannerLayer.TranslationKey))
                         throw new Exception("Can't serialize BannerPatternsComponent because AssetId or TranslationKey is null/empty!");
-                    
+
                     data.AddRange(DataTypes.GetString(bannerLayer.AssetId));
                     data.AddRange(DataTypes.GetString(bannerLayer.TranslationKey));
                 }
-                
+
                 data.AddRange(DataTypes.GetVarInt(bannerLayer.DyeColor));
             }
         }
-        
+
         return new Queue<byte>(data);
     }
 }

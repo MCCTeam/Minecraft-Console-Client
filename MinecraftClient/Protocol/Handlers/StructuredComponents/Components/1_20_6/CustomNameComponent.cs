@@ -5,12 +5,12 @@ using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class CustomNameComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class CustomNameComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public string CustomName { get; set; } = string.Empty;
     public Dictionary<string, object>? CustomNameNbt { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         CustomNameNbt = DataTypes.ReadNextNbt(data);

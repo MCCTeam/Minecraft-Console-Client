@@ -24,7 +24,7 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
     public string TrimPatternTypeDescription { get; set; } = null!;
     public bool Decal { get; set; }
     public bool ShowInTooltip { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         TrimMaterialType = DataTypes.ReadNextVarInt(data);
@@ -73,16 +73,16 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
         {
             if (string.IsNullOrEmpty(AssetName))
                 throw new NullReferenceException("Can't serialize the TrimComponent because the Asset Name is null!");
-            
+
             data.AddRange(DataTypes.GetString(AssetName));
             data.AddRange(DataTypes.GetVarInt(Ingredient));
             data.AddRange(DataTypes.GetFloat(ItemModelIndex));
             data.AddRange(DataTypes.GetVarInt(NumberOfOverrides));
             if (NumberOfOverrides > 0)
             {
-                if(NumberOfOverrides != Overrides?.Count)
+                if (NumberOfOverrides != Overrides?.Count)
                     throw new NullReferenceException("Can't serialize the TrimComponent because value of NumberOfOverrides and the size of Overrides don't match!");
-                
+
                 foreach (var (armorMaterialType, assetName) in Overrides)
                 {
                     data.AddRange(DataTypes.GetVarInt(armorMaterialType));
@@ -97,15 +97,15 @@ public class TrimComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComp
         {
             if (string.IsNullOrEmpty(TrimPatternTypeAssetName))
                 throw new NullReferenceException("Can't serialize the TrimComponent because the TrimPatternTypeAssetName is null!");
-            
+
             data.AddRange(DataTypes.GetString(TrimPatternTypeAssetName));
             data.AddRange(DataTypes.GetVarInt(TemplateItem));
             data.AddRange(DataTypes.GetNbt(TrimPatternTypeDescriptionNbt));
             data.AddRange(DataTypes.GetBool(Decal));
         }
-        
+
         data.AddRange(DataTypes.GetBool(ShowInTooltip));
-        
+
         return new Queue<byte>(data);
     }
 }
