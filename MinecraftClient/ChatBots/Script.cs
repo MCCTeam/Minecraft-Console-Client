@@ -149,6 +149,12 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        public override bool OnDisconnect(DisconnectReason reason, string message)
+        {
+            UnloadBot();
+            return false;
+        }
+
         public override void Update()
         {
             if (csharp) //C# compiled script
