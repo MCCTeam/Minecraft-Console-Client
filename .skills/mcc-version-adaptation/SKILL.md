@@ -194,13 +194,6 @@ PY
 
 Do the same for `SERVERBOUND_TEMPLATE`. Clientbound and serverbound can change independently. Do not inherit a newer palette just because one side looks similar. For example, `1.21.11` used the same play packet order as `1.21.9/1.21.10` for the tested inventory path, while `26.1` had additional shifts.
 
-Known packet lessons:
-
-- `1.9`, `1.9.1`, and `1.9.2` need their own packet palette. They are not safe to route through the later 1.9.x palette.
-- Pure `1.19` serverbound IDs differ from later 1.19.x. Do not put `MessageAcknowledgment` at `0x03`; pure 1.19 has `ChatCommand` at `0x03`, `ChatMessage` at `0x04`, and `ChatPreview` at `0x05`.
-- A wrong packet palette often appears as unrelated inventory failure: creative give/delete disconnects, `Queue empty`, or `Failed to process incoming packet`.
-- Game event reason `3` is `CHANGE_GAME_MODE`. If RCON changed the player to creative but MCC still refuses creative inventory commands, inspect `ChangeGameState` handling.
-
 ## Step 5: Check Variant Encoding Changes
 
 For entity types that use variant serializers (Cat, Wolf, Frog, Painting), check if the codec changed between versions by inspecting:
@@ -229,17 +222,6 @@ Compare key packet codec classes between versions. Known changes:
 - **1.21.9+**: `SpawnEntity` velocity fields changed from `short / 8000.0` to `LpVec3` format (VarLong-packed fixed-point). Gate reading in `DataTypes.ReadNextEntity()` by version.
 
 When in doubt, compare the relevant packet class (e.g. `ClientboundAddEntityPacket.java`) between versions.
-
-## Step 7.1: Check JoinGame and Respawn Formats
-
-JoinGame and Respawn are high-risk because dimension fields changed several times:
-
-- `1.16` and `1.16.1`: dimension type/name handling uses string identifiers in places where later versions do not.
-- `1.16.2` through `1.18.2`: dimension type can be an NBT compound in JoinGame/Respawn.
-- `1.19+`: dimension type commonly moves back to identifiers.
-- `1.20.6+`: registry-driven IDs appear in more fields.
-
-When a version joins but terrain, inventory, or later packets look misaligned, inspect JoinGame/Respawn first. A single wrong dimension-field read leaves unread bytes in the packet and can make the next packet look broken.
 
 ## Step 8: Update Block Collision Shapes (Physics Engine)
 
