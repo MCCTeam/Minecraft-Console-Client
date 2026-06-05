@@ -11,8 +11,6 @@ REPO_ROOT="$(cd -P "$(dirname "$SCRIPT_SELF")/.." >/dev/null 2>&1 && pwd)"
 SCRIPT_DIR="$REPO_ROOT/.skills/mcc-integration-testing/scripts"
 RUN_ROOT="${RUN_ROOT:-/tmp/mcc-inventory-full-sweep/$(date +%Y%m%d-%H%M%S)}"
 VERSIONS="${VERSIONS_OVERRIDE:-1.8 1.9 1.10 1.11 1.12 1.13 1.14 1.15 1.16 1.17 1.18 1.19 1.20 1.21 26.1}"
-RUN_ISSUE_SCRIPT="${RUN_ISSUE_SCRIPT:-0}"
-ISSUE_VERSION="${ISSUE_VERSION:-1.20.4}"
 STOP_ON_FAIL="${STOP_ON_FAIL:-1}"
 
 usage() {
@@ -24,19 +22,15 @@ The matrix is sequential because mc-* tmux sessions are shared state.
 
 Options:
   --versions "1.20.4 1.21.11"  Space-separated versions to test.
-  --run-issue-script           Run the Issue #3112 MCCScript repro after a passing sweep.
-  --issue-version VERSION      Version for the Issue #3112 repro. Default: 1.20.4.
   --keep-going                 Continue after failures.
   --stop-on-fail               Stop on first failure. Default.
   -h, --help                   Show this help.
 
 Environment overrides:
-  VERSIONS_OVERRIDE, RUN_ROOT, RUN_ISSUE_SCRIPT, ISSUE_VERSION, STOP_ON_FAIL,
-  MCC_SERVERS.
+  VERSIONS_OVERRIDE, RUN_ROOT, STOP_ON_FAIL, MCC_SERVERS.
 
 Examples:
   tools/run-inventory-full-sweep.sh --versions "1.21.10 1.21.11"
-  RUN_ISSUE_SCRIPT=1 tools/run-inventory-full-sweep.sh --versions "1.20.4"
 USAGE
 }
 
@@ -44,14 +38,6 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --versions)
             VERSIONS="$2"
-            shift 2
-            ;;
-        --run-issue-script)
-            RUN_ISSUE_SCRIPT=1
-            shift
-            ;;
-        --issue-version)
-            ISSUE_VERSION="$2"
             shift 2
             ;;
         --keep-going)
@@ -348,7 +334,7 @@ run_inventory_sequence() {
     send_mcc_command "$session" "$log_file" "inventory container list" 1 "$block_file"
     assert_contains "$LAST_BLOCK" '#0[[:space:]]*: x16[[:space:]]+Diamond' "container shift-click did not move Diamond to chest slot 0" || return 1
     send_mcc_command "$session" "$log_file" "inventory player list" 1 "$block_file"
-    assert_not_contains "$LAST_BLOCK" '#36[[:space:]]*: x16[[:space:]]+Diamond' "issue case failed: player slot 36 still showed shifted Diamond" || return 1
+    assert_not_contains "$LAST_BLOCK" '#36[[:space:]]*: x16[[:space:]]+Diamond' "mirrored player slot 36 still showed shifted Diamond" || return 1
 
     send_mcc_command "$session" "$log_file" "inventory container click 55 ShiftRightClick" 2 "$block_file"
     send_mcc_command "$session" "$log_file" "inventory container list" 1 "$block_file"
@@ -472,187 +458,6 @@ run_one_version() {
     return 1
 }
 
-write_issue3112_script() {
-    local script_path="$1"
-    cat > "$script_path" <<'CS'
-//MCCScript 1.0
-
-MCC.LoadBot(new Issue3112InventoryReproBot());
-
-//MCCScript Extensions
-
-public class Issue3112InventoryReproBot : ChatBot
-{
-    private int ticks;
-    private int phase;
-    private bool finished;
-
-    public override void AfterGameJoined()
-    {
-        ticks = 0;
-        phase = 0;
-        finished = false;
-        LogToConsole("ISSUE3112_REPRO_START");
-    }
-
-    public override void Update()
-    {
-        if (finished)
-            return;
-
-        ticks++;
-
-        if (phase == 0 && ticks >= 20)
-        {
-            PerformInternalCommand("inventory creativedelete 36");
-            PerformInternalCommand("inventory creativegive 36 DiamondOre 1");
-            PerformInternalCommand("changeslot 9");
-            phase = 1;
-            ticks = 0;
-            return;
-        }
-
-        if (phase == 1 && ticks >= 20)
-        {
-            if (!PlayerHasOre())
-            {
-                Fail("missing ore before container click");
-                return;
-            }
-
-            PerformInternalCommand("useblock 1 80 0");
-            phase = 2;
-            ticks = 0;
-            return;
-        }
-
-        if (phase == 2 && ticks >= 40)
-        {
-            if (!GetInventories().ContainsKey(1))
-            {
-                Fail("container did not open");
-                return;
-            }
-
-            PerformInternalCommand("inventory container click 54 ShiftClick");
-            phase = 3;
-            ticks = 0;
-            return;
-        }
-
-        if (phase == 3 && ticks >= 40)
-        {
-            if (PlayerHasOre())
-                Fail("ISSUE3112_REPRO_STALE_FAIL");
-            else
-                Pass();
-        }
-    }
-
-    private bool PlayerHasOre()
-    {
-        foreach (var item in GetPlayerInventory().Items.Values)
-        {
-            if (item.Type == ItemType.DiamondOre && item.Count > 0)
-                return true;
-        }
-
-        return false;
-    }
-
-    private void Pass()
-    {
-        finished = true;
-        LogToConsole("ISSUE3112_REPRO_PASS");
-        PerformInternalCommand("inventory container close");
-    }
-
-    private void Fail(string reason)
-    {
-        finished = true;
-        LogToConsole(reason);
-    }
-}
-CS
-}
-
-run_issue3112_repro() {
-    local version="$1"
-    local target
-    target="$(server_target_for "$version")"
-    local safe session username version_dir cfg log_file script_file mcc_root rcon_port
-    safe="$(sanitize_version "$version")"
-    session="issue3112-$safe"
-    username="Iss3112${safe//_/}"
-    username="${username:0:16}"
-    version_dir="$RUN_ROOT/issue3112-$version"
-    cfg="$version_dir/MinecraftClient.ini"
-    log_file="/tmp/mcc-debug/$session/mcc-debug.log"
-    script_file="$version_dir/issue3112_repro.cs"
-    mkdir -p "$version_dir" "/tmp/mcc-debug/$session"
-    : > "$log_file"
-    write_issue3112_script "$script_file"
-
-    echo "== issue3112 $version =="
-    bash "$SCRIPT_DIR/ensure_offline_server.sh" "$target" >/dev/null || { printf '%s\tFAIL\t%s\t%s\n' "issue3112-$version" "server setup failed" "$log_file" >> "$SUMMARY"; return 1; }
-    mc-start "$target" >/dev/null || { printf '%s\tFAIL\t%s\t%s\n' "issue3112-$version" "server start failed" "$log_file" >> "$SUMMARY"; return 1; }
-    wait_for_server_ready "$target" >/dev/null || true
-    rcon_port="$(rcon_port_for "$target")"
-
-    bash "$SCRIPT_DIR/prepare_offline_mcc_config.sh" "$cfg" "$version" "$username" >/dev/null || { printf '%s\tFAIL\t%s\t%s\n' "issue3112-$version" "config setup failed" "$log_file" >> "$SUMMARY"; mc-stop "$target" --confirm >/dev/null 2>&1 || true; return 1; }
-    sed -i 's#^Server = .*#Server = { Host = "localhost", Port = 25565 }#' "$cfg"
-    FAIL_DETAIL=""
-    setup_world "$rcon_port" || { printf '%s\tFAIL\t%s\t%s\n' "issue3112-$version" "${FAIL_DETAIL:-world setup failed}" "$log_file" >> "$SUMMARY"; mc-stop "$target" --confirm >/dev/null 2>&1 || true; return 1; }
-
-    mcc_root="$(dirname "$cfg")"
-    local input_file="/tmp/mcc-debug/$session/mcc_input.txt"
-    local pid_file="/tmp/mcc-debug/$session/mcc.pid"
-    : > "$input_file"
-    (
-        cd "$mcc_root" || exit 1
-        printf '%s\n' "$$" > "$pid_file"
-        exec env MCC_FILE_INPUT=1 MCC_INPUT_FILE="$input_file" dotnet run --project "$REPO_ROOT/MinecraftClient" -c Release --no-build > "$log_file" 2>&1
-    ) &
-    local mcc_pid=$!
-    printf '%s\n' "$mcc_pid" > "$pid_file"
-
-    local ok=0
-    if ! wait_for_file_pattern_local "$log_file" "Server was successfully joined" 40; then
-        FAIL_DETAIL="MCC did not join server"
-        ok=1
-    else
-        setup_player "$rcon_port" "$username" || { FAIL_DETAIL="player setup failed after join"; ok=1; }
-        setup_area "$rcon_port" || { ok=1; }
-        setup_player "$rcon_port" "$username" || { FAIL_DETAIL="player setup failed after area setup"; ok=1; }
-        sleep 2
-        if [[ -z "${FAIL_DETAIL:-}" ]]; then
-            mcc-cmd --session "$session" "script $script_file" >/dev/null
-            if wait_for_file_pattern_local "$log_file" "ISSUE3112_REPRO_PASS" 30; then
-                ok=0
-            else
-                FAIL_DETAIL="Issue #3112 repro did not pass"
-                ok=1
-            fi
-        fi
-    fi
-
-    kill "$mcc_pid" >/dev/null 2>&1 || true
-    wait "$mcc_pid" >/dev/null 2>&1 || true
-    mc-stop "$target" --confirm >/dev/null 2>&1 || true
-    wait_for_server_stop "$target" >/dev/null 2>&1 || true
-
-    if [[ "$ok" -eq 0 ]]; then
-        printf '%s\tPASS\tIssue #3112 mirrored inventory script\t%s\n' "issue3112-$version" "$log_file" >> "$SUMMARY"
-        echo "PASS issue3112 $version"
-        return 0
-    fi
-
-    printf '%s\tFAIL\t%s\t%s\n' "issue3112-$version" "${FAIL_DETAIL:-unknown failure}" "$log_file" >> "$SUMMARY"
-    echo "${FAIL_DETAIL:-unknown failure}" >&2
-    echo "FAIL issue3112 $version"
-    return 1
-}
-
 overall=0
 for version in $VERSIONS; do
     if ! run_one_version "$version"; then
@@ -662,12 +467,5 @@ for version in $VERSIONS; do
 done
 
 echo "SUMMARY=$SUMMARY"
-
-if [[ "$RUN_ISSUE_SCRIPT" == "1" && "$overall" -eq 0 ]]; then
-    if ! run_issue3112_repro "$ISSUE_VERSION"; then
-        overall=1
-    fi
-    echo "SUMMARY=$SUMMARY"
-fi
 
 exit "$overall"

@@ -36,9 +36,6 @@ tools/run-inventory-full-sweep.sh --versions "1.21.10 1.21.11"
 
 # Full default major-version sweep
 tools/run-inventory-full-sweep.sh
-
-# Run the Issue #3112 mirrored-player-inventory script after a passing sweep
-tools/run-inventory-full-sweep.sh --versions "1.20.4" --run-issue-script
 ```
 
 Useful environment overrides:

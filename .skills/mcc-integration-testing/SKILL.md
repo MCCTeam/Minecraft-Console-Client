@@ -138,12 +138,6 @@ Default coverage includes:
 - creative middle-click command path
 - log scan for packet parse failures, queue-empty crashes, unhandled exceptions, and disconnects
 
-Run the Issue #3112 repro after a passing sweep:
-
-```bash
-tools/run-inventory-full-sweep.sh --versions "1.20.4" --run-issue-script
-```
-
 The script writes `summary.tsv` under `RUN_ROOT` and per-version logs under `/tmp/mcc-debug/inventory-full-<version>/mcc-debug.log`.
 
 When a matrix has existing PASS rows, do not rerun them unless a later code change affects that row or the user asks for a full rerun. Derive remaining rows from summaries:
@@ -203,7 +197,7 @@ Optionally override the login name with the fourth argument to the config helper
 - `tools/run-creative-e2e.sh`
   - ordered creative-mode E2E regression scenario
 - `tools/run-inventory-full-sweep.sh`
-  - full inventory command/API sweep across one or more versions, with optional Issue #3112 MCCScript repro
+  - full inventory command/API sweep across one or more versions
 
 ## Evidence Discipline
 
