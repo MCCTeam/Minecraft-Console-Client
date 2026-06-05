@@ -7,13 +7,13 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class CanPlaceOnComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class CanPlaceOnComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int NumberOfPredicates { get; set; }
     public List<BlockPredicateSubcomponent> BlockPredicates { get; set; } = new();
     public bool ShowInTooltip { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         NumberOfPredicates = DataTypes.ReadNextVarInt(data);
@@ -28,13 +28,13 @@ public class CanPlaceOnComponent(DataTypes dataTypes, ItemPalette itemPalette, S
     {
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(NumberOfPredicates));
-        
-        if(NumberOfPredicates > 0 && BlockPredicates.Count == 0)
+
+        if (NumberOfPredicates > 0 && BlockPredicates.Count == 0)
             throw new ArgumentNullException($"Can not serialize a CanPlaceOnComponent when the BlockPredicates is empty but NumberOfPredicates is > 0!");
-        
+
         foreach (var blockPredicate in BlockPredicates)
             data.AddRange(blockPredicate.Serialize());
-        
+
         data.AddRange(DataTypes.GetBool(ShowInTooltip));
         return new Queue<byte>(data);
     }

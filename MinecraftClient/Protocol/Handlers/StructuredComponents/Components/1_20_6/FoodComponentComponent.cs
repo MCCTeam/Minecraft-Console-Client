@@ -7,7 +7,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public int Nutrition { get; set; }
@@ -15,7 +15,7 @@ public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette
     public bool CanAlwaysEat { get; set; }
     public float SecondsToEat { get; set; }
     public List<EffectSubComponent> Effects { get; set; } = new();
-    
+
     public override void Parse(Queue<byte> data)
     {
         Nutrition = DataTypes.ReadNextVarInt(data);
@@ -23,8 +23,8 @@ public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette
         CanAlwaysEat = DataTypes.ReadNextBool(data);
         SecondsToEat = DataTypes.ReadNextFloat(data);
         var numberOfEffects = DataTypes.ReadNextVarInt(data);
-        
-        for(var i = 0; i < numberOfEffects; i++)
+
+        for (var i = 0; i < numberOfEffects; i++)
             Effects.Add((EffectSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Effect, data));
     }
 
@@ -37,9 +37,9 @@ public class FoodComponentComponent(DataTypes dataTypes, ItemPalette itemPalette
         data.AddRange(DataTypes.GetFloat(SecondsToEat));
         data.AddRange(DataTypes.GetVarInt(Effects.Count));
 
-        foreach(var effect in Effects)
+        foreach (var effect in Effects)
             data.AddRange(effect.Serialize());
-        
+
         return new Queue<byte>(data);
     }
 }

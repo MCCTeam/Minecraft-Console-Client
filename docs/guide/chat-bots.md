@@ -354,19 +354,19 @@ redirectFrom:
 
   - **Description:**
 
-    How long to wait between each attack in seconds.
+    Controls the delay between attacks. By default, MCC calculates this based on server TPS. Set `Custom` to `true` to specify your own values:
 
-    To enable it, set `Custom` (boolean) to `true` and change `value` (double) to your preferred value (eg. `1.5`).
+    - `Min` — minimum cooldown in seconds
+    - `Max` — maximum cooldown in seconds
+    - `RandomMode` — if enabled, picks a random cooldown between `Min` and `Max` for each attack
 
-    By default, this is disabled and MCC calculates it based on the server TPS.
-
-  - **Format:** `Cooldown_Time = { Custom = <is enabled (true|false)>, value = <seconds (double)> }`
+  - **Format:** `Cooldown_Time = { Custom = <true|false>, RandomMode = <true|false>, Min = <seconds>, Max = <seconds> }`
 
   - **Type:** `inline table`
 
-  - **Example:** `Cooldown_Time = { Custom = true, value = 1.5 }`
+  - **Example:** `Cooldown_Time = { Custom = true, RandomMode = true, Min = 1.0, Max = 2.0 }`
 
-  - **Default:** `{ Custom = false, value = 1.0 }`
+  - **Default:** `{ Custom = false, RandomMode = false, Min = 1.5, Max = 2.5 }`
 
   #### `Interaction`
 

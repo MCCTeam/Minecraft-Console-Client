@@ -11,7 +11,7 @@ public class AttributeSubComponent121(DataTypes dataTypes, SubComponentRegistry 
     public double Value { get; set; }
     public int Operation { get; set; }
     public int Slot { get; set; }
-    
+
     protected override void Parse(Queue<byte> data)
     {
         TypeId = DataTypes.ReadNextVarInt(data);
@@ -25,10 +25,10 @@ public class AttributeSubComponent121(DataTypes dataTypes, SubComponentRegistry 
     {
         var data = new List<byte>();
         data.AddRange(DataTypes.GetVarInt(TypeId));
-        
+
         if (string.IsNullOrEmpty(ResourceLocation?.Trim()))
             throw new ArgumentNullException($"Can not serialize AttributeSubComponent121 due to ResourceLocation being null or empty!");
-        
+
         data.AddRange(DataTypes.GetString(ResourceLocation));
         data.AddRange(DataTypes.GetDouble(Value));
         data.AddRange(DataTypes.GetVarInt(Operation));

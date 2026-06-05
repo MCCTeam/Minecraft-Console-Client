@@ -949,7 +949,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
-        
+
         public bool SendRenameItem(string itemName)
         {
             return false;

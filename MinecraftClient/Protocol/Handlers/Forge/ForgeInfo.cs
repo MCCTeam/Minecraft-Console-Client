@@ -133,7 +133,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     break;
                 case FMLVersion.FML3:
                     // Example ModInfo for Minecraft 1.18 and greater (FML3)
-                    
+
                     // "forgeData": {
                     //     "channels": [],
                     //     "mods": [],
@@ -169,24 +169,26 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     //                                                      [   Channel Version  ][ String ]
                     //                                                      [ Required On Client ][  Bool  ]
 
-                    for (var i = 0; i < modsSize; i++) {
+                    for (var i = 0; i < modsSize; i++)
+                    {
                         var channelSizeAndVersionFlag = dataTypes.ReadNextVarInt(dataPackage);
                         var channelSize = channelSizeAndVersionFlag >> 1;
 
                         int VERSION_FLAG_IGNORESERVERONLY = 0b1;
                         var isIgnoreServerOnly = (channelSizeAndVersionFlag & VERSION_FLAG_IGNORESERVERONLY) != 0;
-                        
+
                         var modId = dataTypes.ReadNextString(dataPackage);
-                        
+
                         string IGNORESERVERONLY = "IGNORED";
                         var modVersion = isIgnoreServerOnly ? IGNORESERVERONLY : dataTypes.ReadNextString(dataPackage);
-                    
-                        for (var i1 = 0; i1 < channelSize; i1++) {
+
+                        for (var i1 = 0; i1 < channelSize; i1++)
+                        {
                             dataTypes.ReadNextString(dataPackage); // channelName
                             dataTypes.ReadNextString(dataPackage); // channelVersion
                             dataTypes.ReadNextBool(dataPackage); // requiredOnClient
                         }
- 
+
                         mods.Add(modId, modVersion);
                         Mods.Add(new ForgeMod(modId, modVersion));
                     }
@@ -213,7 +215,8 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// The code below is converted from forge source code, see:
         /// https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/ServerStatusPing.java#L361
         /// </para>
-        private static Queue<byte> decodeOptimized(string encodedData) {
+        private static Queue<byte> decodeOptimized(string encodedData)
+        {
             int size0 = encodedData[0];
             int size1 = encodedData[1];
             int size = size0 | (size1 << 15);

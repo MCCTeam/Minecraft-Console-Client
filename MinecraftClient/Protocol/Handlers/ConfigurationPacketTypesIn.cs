@@ -22,6 +22,6 @@ public enum ConfigurationPacketTypesIn
     ClearDialog,        // Added in 1.21.6
     ShowDialog,         // Added in 1.21.6
     CodeOfConduct,      // Added in 1.21.9
-    
+
     Unknown
 }

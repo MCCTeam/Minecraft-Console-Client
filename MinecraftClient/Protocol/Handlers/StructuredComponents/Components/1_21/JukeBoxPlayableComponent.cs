@@ -7,7 +7,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21;
 
-public class JukeBoxPlayableComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class JukeBoxPlayableComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public bool DirectMode { get; set; }
@@ -18,7 +18,7 @@ public class JukeBoxPlayableComponent(DataTypes dataTypes, ItemPalette itemPalet
     public float? Duration { get; set; }
     public int? Output { get; set; }
     public bool ShowTooltip { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         DirectMode = DataTypes.ReadNextBool(data);
@@ -46,22 +46,22 @@ public class JukeBoxPlayableComponent(DataTypes dataTypes, ItemPalette itemPalet
     public override Queue<byte> Serialize()
     {
         var data = new List<byte>();
-        
+
         data.AddRange(DataTypes.GetBool(DirectMode));
 
         if (!DirectMode)
         {
             if (string.IsNullOrEmpty(SongName?.Trim()))
                 throw new ArgumentNullException($"Can not serialize JukeBoxPlayableComponent due to SongName being null or empty!");
-            
+
             data.AddRange(DataTypes.GetString(SongName));
         }
 
         if (DirectMode)
         {
-            if(SongType is null)
+            if (SongType is null)
                 throw new ArgumentNullException($"Can not serialize JukeBoxPlayableComponent due to SongType being null!");
-            
+
             data.AddRange(DataTypes.GetVarInt((int)SongType));
 
             if (SongType == 0)
@@ -91,9 +91,9 @@ public class JukeBoxPlayableComponent(DataTypes dataTypes, ItemPalette itemPalet
                 data.AddRange(DataTypes.GetVarInt((int)Output));
             }
         }
-        
+
         data.AddRange(DataTypes.GetBool(ShowTooltip));
-        
+
         return new Queue<byte>(data);
     }
 }

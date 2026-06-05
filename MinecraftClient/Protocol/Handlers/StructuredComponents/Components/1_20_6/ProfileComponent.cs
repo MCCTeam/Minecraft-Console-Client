@@ -18,7 +18,7 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
     public string? CapeAssetId { get; set; }
     public string? ElytraAssetId { get; set; }
     public ProfileSkinModel? Model { get; set; }
-    
+
     public override void Parse(Queue<byte> data)
     {
         ResetState();

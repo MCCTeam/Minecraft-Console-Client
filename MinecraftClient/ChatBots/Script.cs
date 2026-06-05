@@ -86,7 +86,7 @@ namespace MinecraftClient.ChatBots
         public static bool LookForScript(ref string filename)
         {
             //Automatically look in subfolders and try to add ".txt" file extension
-             char dir_slash = Path.DirectorySeparatorChar;
+            char dir_slash = Path.DirectorySeparatorChar;
             string[] files = new string[]
             {
                 filename,
@@ -147,6 +147,12 @@ namespace MinecraftClient.ChatBots
 
                 UnloadBot(); //No need to keep the bot active
             }
+        }
+
+        public override bool OnDisconnect(DisconnectReason reason, string message)
+        {
+            UnloadBot();
+            return false;
         }
 
         public override void Update()
@@ -213,7 +219,7 @@ namespace MinecraftClient.ChatBots
                                                     .ToLower();
                                                 processedLine = string.Join("", processedLine.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
                                                 var parts = processedLine.Contains("to") ? processedLine.Split("to") : processedLine.Split("-");
-                                                
+
                                                 if (parts.Length == 2)
                                                 {
                                                     var min = Convert.ToInt32(parts[0]);
@@ -224,10 +230,12 @@ namespace MinecraftClient.ChatBots
                                                         (min, max) = (max, min);
                                                         LogToConsole(Translations.cmd_wait_random_min_bigger);
                                                     }
-                                                    
+
                                                     ticks = new Random().Next(min, max);
-                                                } else ticks = Convert.ToInt32(instruction_line[5..]);
-                                            } else ticks = Convert.ToInt32(instruction_line[5..]);
+                                                }
+                                                else ticks = Convert.ToInt32(instruction_line[5..]);
+                                            }
+                                            else ticks = Convert.ToInt32(instruction_line[5..]);
                                         }
                                         catch { }
                                         sleepticks = ticks;

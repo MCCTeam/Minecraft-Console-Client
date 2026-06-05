@@ -16,7 +16,7 @@ public class EntityMetadataPalette18 : EntityMetadataPalette
         { 6, EntityMetaDataType.Vector3Int },
         { 7, EntityMetaDataType.Rotation }
     };
-        
+
     public override Dictionary<int, EntityMetaDataType> GetEntityMetadataMappingsList()
     {
         return entityMetadataMappings;

@@ -28,7 +28,7 @@ namespace MinecraftClient.ChatBots
             public PriorityType Priority = PriorityType.distance;
 
             [TomlInlineComment("$ChatBot.AutoAttack.Cooldown_Time$")]
-            public CooldownConfig Cooldown_Time = new(false, 1.0);
+            public CooldownConfig Cooldown_Time = new();
 
             [TomlInlineComment("$ChatBot.AutoAttack.Interaction$")]
             public InteractType Interaction = InteractType.Attack;
@@ -50,10 +50,19 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
-                if (Cooldown_Time.Custom && Cooldown_Time.value <= 0)
+                if (Cooldown_Time.Custom)
                 {
-                    LogToConsole(BotName, Translations.bot_autoAttack_invalidcooldown);
-                    Cooldown_Time.value = 1.0;
+                    if (Cooldown_Time.Min <= 0)
+                        Cooldown_Time.Min = 0.1;
+                    if (Cooldown_Time.Max <= 0)
+                        Cooldown_Time.Max = 0.1;
+
+                    if (Cooldown_Time.Min > Cooldown_Time.Max)
+                    {
+                        double temp = Cooldown_Time.Min;
+                        Cooldown_Time.Min = Cooldown_Time.Max;
+                        Cooldown_Time.Max = temp;
+                    }
                 }
 
                 if (Attack_Range < 1.0)
@@ -72,24 +81,16 @@ namespace MinecraftClient.ChatBots
             public struct CooldownConfig
             {
                 public bool Custom;
-                public double value;
+                public bool RandomMode = false;
+                public double Min = 1.5;
+                public double Max = 2.5;
 
                 public CooldownConfig()
                 {
                     Custom = false;
-                    value = 0;
-                }
-
-                public CooldownConfig(double value)
-                {
-                    Custom = true;
-                    this.value = value;
-                }
-
-                public CooldownConfig(bool Override, double value)
-                {
-                    this.Custom = Override;
-                    this.value = value;
+                    RandomMode = false;
+                    Min = 1.5;
+                    Max = 2.5;
                 }
             }
         }
@@ -105,13 +106,14 @@ namespace MinecraftClient.ChatBots
         private float health = 100;
         private readonly bool attackHostile = true;
         private readonly bool attackPassive = false;
+        private readonly Random _random = new();
 
         public AutoAttack()
         {
             overrideAttackSpeed = Config.Cooldown_Time.Custom;
             if (Config.Cooldown_Time.Custom)
             {
-                attackCooldownSeconds = Config.Cooldown_Time.value;
+                attackCooldownSeconds = Config.Cooldown_Time.Min;
                 attackCooldown = SecondsToAttackCooldownTicks(attackCooldownSeconds);
             }
 
@@ -137,6 +139,12 @@ namespace MinecraftClient.ChatBots
 
             if (attackCooldownCounter == 0)
             {
+                if (Config.Cooldown_Time.Custom && Config.Cooldown_Time.RandomMode)
+                {
+                    double randomSeconds = _random.NextDouble() * (Config.Cooldown_Time.Max - Config.Cooldown_Time.Min) + Config.Cooldown_Time.Min;
+                    attackCooldown = SecondsToAttackCooldownTicks(randomSeconds);
+                }
+
                 attackCooldownCounter = attackCooldown;
                 if (entitiesToAttack.Count > 0)
                 {
@@ -177,6 +185,8 @@ namespace MinecraftClient.ChatBots
                                 InteractEntity(priorityEntity, Config.Interaction); // hit the entity!
                                 SendAnimation(Inventory.Hand.MainHand); // Arm animation
                             }
+
+
                         }
                     }
                     else
@@ -188,6 +198,7 @@ namespace MinecraftClient.ChatBots
                             {
                                 InteractEntity(entity.Key, Config.Interaction); // hit the entity!
                             }
+
                         }
                         SendAnimation(Inventory.Hand.MainHand); // Arm animation
                     }

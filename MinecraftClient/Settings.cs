@@ -758,9 +758,9 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Main.General.AuthlibUser$")]
                     public string AuthUser = "";
-                  
 
-                    public enum LoginType { mojang, microsoft,yggdrasil };
+
+                    public enum LoginType { mojang, microsoft, yggdrasil };
 
                     public enum LoginMethod { mcc, browser };
                 }
@@ -770,7 +770,7 @@ namespace MinecraftClient
                 {
                     [TomlInlineComment("$Main.Advanced.enable_sentry$")]
                     public bool EnableSentry = true;
-                    
+
                     [TomlInlineComment("$Main.Advanced.language$")]
                     public string Language = "en_us";
 
@@ -1515,7 +1515,7 @@ namespace MinecraftClient
                                 string varname = var_name.ToString();
                                 string varname_lower = Settings.ToLowerIfNeed(varname);
                                 i = i + varname.Length + 1;
-                                
+
                                 if (TryGetReadOnlyVar(varname_lower, out object? readOnlyVar))
                                 {
                                     result.Append(readOnlyVar.ToString());

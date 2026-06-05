@@ -117,7 +117,8 @@ namespace MinecraftClient.Mapping
                     return true;
                 default:
                     return false;
-            };
+            }
+            ;
         }
     }
 }

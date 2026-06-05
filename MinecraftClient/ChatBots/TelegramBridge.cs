@@ -352,7 +352,7 @@ namespace MinecraftClient.ChatBots
                         replyParameters: message.MessageId,
                         cancellationToken: _cancellationToken,
                         parseMode: ParseMode.Markdown);
-                    return;;
+                    return; ;
                 }
 
                 CmdResult result = new();

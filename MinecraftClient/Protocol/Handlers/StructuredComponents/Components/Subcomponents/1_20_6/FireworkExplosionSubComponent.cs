@@ -13,7 +13,7 @@ public class FireworkExplosionSubComponent(DataTypes dataTypes, SubComponentRegi
     public List<int> FadeColors { get; set; } = [];
     public bool HasTrail { get; set; }
     public bool HasTwinkle { get; set; }
-    
+
     protected override void Parse(Queue<byte> data)
     {
         Shape = DataTypes.ReadNextVarInt(data);
@@ -21,12 +21,12 @@ public class FireworkExplosionSubComponent(DataTypes dataTypes, SubComponentRegi
 
         for (var i = 0; i < NumberOfColors; i++)
             Colors.Add(DataTypes.ReadNextInt(data));
-        
+
         NumberOfFadeColors = DataTypes.ReadNextVarInt(data);
 
         for (var i = 0; i < NumberOfFadeColors; i++)
             FadeColors.Add(DataTypes.ReadNextInt(data));
-        
+
         HasTrail = DataTypes.ReadNextBool(data);
         HasTwinkle = DataTypes.ReadNextBool(data);
     }
@@ -45,7 +45,7 @@ public class FireworkExplosionSubComponent(DataTypes dataTypes, SubComponentRegi
             foreach (var color in Colors)
                 data.AddRange(DataTypes.GetInt(color));
         }
-        
+
         data.AddRange(DataTypes.GetVarInt(NumberOfFadeColors));
         if (NumberOfFadeColors > 0)
         {
@@ -55,7 +55,7 @@ public class FireworkExplosionSubComponent(DataTypes dataTypes, SubComponentRegi
             foreach (var fadeColor in FadeColors)
                 data.AddRange(DataTypes.GetInt(fadeColor));
         }
-        
+
         data.AddRange(DataTypes.GetBool(HasTrail));
         data.AddRange(DataTypes.GetBool(HasTwinkle));
         return new Queue<byte>(data);

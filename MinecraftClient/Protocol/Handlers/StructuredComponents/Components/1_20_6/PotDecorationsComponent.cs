@@ -4,15 +4,15 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class PotDecorationsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+public class PotDecorationsComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
     : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public List<int> Items { get; set; } = [];
-    
+
     public override void Parse(Queue<byte> data)
     {
         var count = DataTypes.ReadNextVarInt(data);
-        for(var i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
             Items.Add(DataTypes.ReadNextVarInt(data));
     }
 
