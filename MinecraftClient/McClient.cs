@@ -2004,8 +2004,8 @@ namespace MinecraftClient
                 if (item.Count <= spaceLeft)
                 {
                     // Can fit into the stack
-                    item.Count = 0;
                     curItem.Count += item.Count;
+                    item.Count = 0;
 
                     changedSlots.Add(new Tuple<short, Item?>((short)curId, curItem));
                     changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
@@ -2214,6 +2214,10 @@ namespace MinecraftClient
                                 changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
                             else
                                 changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
+
+                            // Clean up cursor item if count reached zero
+                            if (playerInventory.Items.TryGetValue(-1, out Item? cursorAfterLeft) && cursorAfterLeft.IsEmpty)
+                                playerInventory.Items.Remove(-1);
                         }
                         else
                         {
@@ -2302,6 +2306,9 @@ namespace MinecraftClient
                                 }
                             }
                         }
+                        // Clean up cursor item if count reached zero
+                        if (playerInventory.Items.TryGetValue(-1, out Item? cursorItem) && cursorItem.IsEmpty)
+                            playerInventory.Items.Remove(-1);
                         if (inventory.Items.ContainsKey(slotId))
                             changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
                         else
@@ -2850,6 +2857,13 @@ namespace MinecraftClient
                                     else if (item.Count != itemCount)
                                         changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
                                 }
+                            }
+
+                            // Clean up source slot if fully depleted by partial merges
+                            if (item!.Count <= 0 && inventory.Items.ContainsKey(slotId))
+                            {
+                                inventory.Items.Remove(slotId);
+                                changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
                             }
                         }
                         break;
@@ -3913,6 +3927,10 @@ namespace MinecraftClient
         {
             if (inventories.ContainsKey(inventoryID))
             {
+                // Filter out empty items (Count=0 or Air) that some servers may send
+                foreach (int key in itemList.Where(slot => slot.Value.IsEmpty).Select(slot => slot.Key).ToList())
+                    itemList.Remove(key);
+
                 inventories[inventoryID].Items = itemList;
                 inventories[inventoryID].StateID = stateId;
                 bool playerInventoryChanged = SyncPlayerInventorySlotsFromWindow(inventories[inventoryID]);
