@@ -550,7 +550,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (Settings.Config.Logging.DebugMessages)
                 ConsoleIO.WriteLineFormatted("§8" + Translations.debug_crypto, acceptnewlines: true);
 
-            if (serverIDhash != "-")
+            if (serverIDhash != "-" && !string.IsNullOrWhiteSpace(sessionID))
             {
                 ConsoleIO.WriteLine(Translations.mcc_session);
                 string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
