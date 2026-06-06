@@ -209,8 +209,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xC9:
                     string name = ReadNextString(); bool online = ReadNextByte() != 0x00; ReadData(2);
                     Guid FakeUUID = new(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                    if (online)
-                        handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID));
+                    if (online) handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID));
                     else handler.OnPlayerLeave(FakeUUID);
                     break;
                 case 0xCA: if (protocolversion >= 72) { ReadData(9); } else ReadData(3); break;
