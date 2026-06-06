@@ -1457,7 +1457,7 @@ Note that parameters in '[]' are optional.</value>
     <value>Right</value>
   </data>
   <data name="cmd.inventory.shiftclick" xml:space="preserve">
-    <value>Shift clicking slot {0} in window #{1}</value>
+    <value>Shift</value>
   </data>
   <data name="cmd.inventory.shiftclick_fail" xml:space="preserve">
     <value>Shift click failed, this may be because this container type is not supported</value>
@@ -2329,7 +2329,7 @@ Logging in...</value>
     <value>Minimum number that you have provided is bigger than the maximum, swapping them around!</value>
   </data>
   <data name="cmd.inventory.shiftrightclick" xml:space="preserve">
-    <value>Shift right-clicking slot {0} in window #{1}</value>
+    <value>Shift right</value>
   </data>
   <data name="mcc.avaliable_profiles" xml:space="preserve">
     <value>Avaliable profiles:</value>

@@ -4135,7 +4135,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shift clicking slot {0} in window #{1}.
+        ///   Looks up a localized string similar to Shift.
         /// </summary>
         internal static string cmd_inventory_shiftclick {
             get {
@@ -4153,7 +4153,7 @@ namespace MinecraftClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shift right-clicking slot {0} in window #{1}.
+        ///   Looks up a localized string similar to Shift right.
         /// </summary>
         internal static string cmd_inventory_shiftrightclick {
             get {
