@@ -13,9 +13,9 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
 {
     internal class CompileRunner
     {
-        public object? Execute(byte[] compiledAssembly, string[] args, Dictionary<string, object>? localVars, ChatBot apiHandler)
+        public object? Execute(byte[] compiledAssembly, string[] args, Dictionary<string, object>? localVars, ChatBot apiHandler, string? scriptOwnerKey = null)
         {
-            var assemblyLoadContextWeakRef = LoadAndExecute(compiledAssembly, args, localVars, apiHandler);
+            var assemblyLoadContextWeakRef = LoadAndExecute(compiledAssembly, args, localVars, apiHandler, scriptOwnerKey);
 
             for (var i = 0; i < 8 && assemblyLoadContextWeakRef.Item1.IsAlive; i++)
             {
@@ -28,14 +28,14 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Tuple<WeakReference, object?> LoadAndExecute(byte[] compiledAssembly, string[] args, Dictionary<string, object>? localVars, ChatBot apiHandler)
+        private static Tuple<WeakReference, object?> LoadAndExecute(byte[] compiledAssembly, string[] args, Dictionary<string, object>? localVars, ChatBot apiHandler, string? scriptOwnerKey)
         {
             using var asm = new MemoryStream(compiledAssembly);
             var assemblyLoadContext = new SimpleUnloadableAssemblyLoadContext();
 
             var assembly = assemblyLoadContext.LoadFromStream(asm);
             var compiledScript = assembly.CreateInstance("ScriptLoader.Script")!;
-            var execResult = compiledScript.GetType().GetMethod("__run")!.Invoke(compiledScript, new object[] { new CSharpAPI(apiHandler, localVars), args });
+            var execResult = compiledScript.GetType().GetMethod("__run")!.Invoke(compiledScript, new object[] { new CSharpAPI(apiHandler, localVars, scriptOwnerKey), args });
 
             assemblyLoadContext.Unload();
 
