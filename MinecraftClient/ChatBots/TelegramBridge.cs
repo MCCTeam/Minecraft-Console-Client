@@ -194,7 +194,7 @@ namespace MinecraftClient.ChatBots
 
             else message = text;
 
-            SendMessage(message);
+            SendRawMessage(message);
         }
 
         public void SendMessage(string message)
@@ -205,6 +205,22 @@ namespace MinecraftClient.ChatBots
             try
             {
                 botClient!.SendMessage(Config.ChannelId.Trim(), message, parseMode: ParseMode.Markdown).Wait(Config.Message_Send_Timeout);
+            }
+            catch (Exception e)
+            {
+                LogToConsole("§§4§l§f" + Translations.bot_TelegramBridge_canceled_sending);
+                LogDebugToConsole(e);
+            }
+        }
+
+        public void SendRawMessage(string message)
+        {
+            if (!CanSendMessages() || string.IsNullOrEmpty(message))
+                return;
+
+            try
+            {
+                botClient!.SendMessage(Config.ChannelId.Trim(), message).Wait(Config.Message_Send_Timeout);
             }
             catch (Exception e)
             {
