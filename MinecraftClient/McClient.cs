@@ -54,6 +54,7 @@ namespace MinecraftClient
         private readonly List<ChatBot> bots = new();
         private static readonly List<ChatBot> botsOnHold = new();
         private static readonly Dictionary<int, Container> inventories = new();
+        private static readonly HashSet<int> inventoriesWithFullContents = new();
         private readonly Dictionary<string, RecipeBookRecipeEntry> unlockedRecipes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Achievement> achievements = new(StringComparer.Ordinal);
         private string? activeAdvancementTab;
@@ -866,8 +867,11 @@ namespace MinecraftClient
 
             DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
 
+            foreach (ChatBot bot in bots.Where(bot => bot.ScriptOwnerKey is not null).ToList())
+                BotUnLoad(bot);
+
             botsOnHold.Clear();
-            botsOnHold.AddRange(bots);
+            botsOnHold.AddRange(bots.Where(bot => bot.ScriptOwnerKey is null));
 
             if (handler is not null)
             {
@@ -1262,7 +1266,7 @@ namespace MinecraftClient
             bots.Add(b);
             if (init)
                 DispatchBotEvent(bot => bot.Initialize(), [b]);
-            if (handler is not null)
+            if (CanSendMessage)
                 DispatchBotEvent(bot => bot.AfterGameJoined(), [b]);
         }
 
@@ -1287,6 +1291,21 @@ namespace MinecraftClient
             foreach (var entry in botRegistrations)
             {
                 UnregisterPluginChannel(entry.Key, b);
+            }
+        }
+
+        internal void UnloadBotsByScriptOwnerKey(string scriptOwnerKey)
+        {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => UnloadBotsByScriptOwnerKey(scriptOwnerKey));
+                return;
+            }
+
+            foreach (ChatBot bot in GetLoadedChatBots())
+            {
+                if (bot.ScriptOwnerKey == scriptOwnerKey)
+                    BotUnLoad(bot);
             }
         }
 
@@ -2004,8 +2023,8 @@ namespace MinecraftClient
                 if (item.Count <= spaceLeft)
                 {
                     // Can fit into the stack
-                    item.Count = 0;
                     curItem.Count += item.Count;
+                    item.Count = 0;
 
                     changedSlots.Add(new Tuple<short, Item?>((short)curId, curItem));
                     changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
@@ -2062,6 +2081,24 @@ namespace MinecraftClient
             };
         }
 
+        private static bool TryGetMirroredPlayerInventoryRange(Container inventory, out int firstWindowSlot, out int lastWindowSlot)
+        {
+            firstWindowSlot = -1;
+            lastWindowSlot = -1;
+
+            if (inventory.Type is ContainerType.PlayerInventory or ContainerType.Unknown)
+                return false;
+
+            const int mirroredPlayerInventorySlotCount = 36;
+            int slotCount = inventory.Type.SlotCount();
+            if (slotCount <= mirroredPlayerInventorySlotCount)
+                return false;
+
+            firstWindowSlot = slotCount - mirroredPlayerInventorySlotCount;
+            lastWindowSlot = slotCount - 1;
+            return true;
+        }
+
         private static bool AreSameInventorySlot(Item? left, Item? right)
         {
             if (left is null || left.IsEmpty)
@@ -2081,16 +2118,69 @@ namespace MinecraftClient
             if (!inventories.TryGetValue(0, out Container? playerInventory))
                 return false;
 
+            if (item is null || item.IsEmpty)
+                return playerInventory.Items.Remove(playerInventorySlot);
+
+            Item itemClone = item.CloneWithCount(item.Count);
+
             playerInventory.Items.TryGetValue(playerInventorySlot, out Item? previousItem);
-            if (AreSameInventorySlot(previousItem, item))
+            if (AreSameInventorySlot(previousItem, itemClone))
                 return false;
 
-            if (item is null || item.IsEmpty)
-                playerInventory.Items.Remove(playerInventorySlot);
-            else
-                playerInventory.Items[playerInventorySlot] = item;
+            playerInventory.Items[playerInventorySlot] = itemClone;
 
             return true;
+        }
+
+        private bool SyncPlayerInventorySlotsFromWindow(Container? inventory)
+        {
+            if (inventory is null)
+                return false;
+
+            if (!inventoriesWithFullContents.Contains(inventory.ID))
+                return false;
+
+            if (!TryGetMirroredPlayerInventoryRange(inventory, out int firstWindowSlot, out int lastWindowSlot))
+                return false;
+
+            if (!inventories.TryGetValue(0, out Container? playerInventory))
+                return false;
+
+            const int firstPlayerInventorySlot = 9;
+            const int lastPlayerInventorySlot = firstPlayerInventorySlot + 36 - 1;
+            Dictionary<int, Item> mirroredItems = new();
+
+            for (int windowSlot = firstWindowSlot; windowSlot <= lastWindowSlot; windowSlot++)
+            {
+                if (!inventory.Items.TryGetValue(windowSlot, out Item? item) || item.IsEmpty)
+                    continue;
+
+                int playerInventorySlot = windowSlot - firstWindowSlot + firstPlayerInventorySlot;
+                mirroredItems[playerInventorySlot] = item.CloneWithCount(item.Count);
+            }
+
+            bool changed = false;
+            for (int playerInventorySlot = firstPlayerInventorySlot; playerInventorySlot <= lastPlayerInventorySlot; playerInventorySlot++)
+            {
+                playerInventory.Items.TryGetValue(playerInventorySlot, out Item? previousItem);
+                mirroredItems.TryGetValue(playerInventorySlot, out Item? mirroredItem);
+                if (AreSameInventorySlot(previousItem, mirroredItem))
+                    continue;
+
+                changed = true;
+                break;
+            }
+
+            if (!changed)
+                return false;
+
+            for (int playerInventorySlot = firstPlayerInventorySlot; playerInventorySlot <= lastPlayerInventorySlot; playerInventorySlot++)
+                playerInventory.Items.Remove(playerInventorySlot);
+
+            foreach ((int playerInventorySlot, Item item) in mirroredItems)
+                playerInventory.Items[playerInventorySlot] = item;
+
+            return changed;
         }
 
         /// <summary>
@@ -2157,6 +2247,10 @@ namespace MinecraftClient
                                 playerInventory.Items.Remove(-1);
                             }
 
+                            // Clean up cursor item if count reached zero
+                            if (playerInventory.Items.TryGetValue(-1, out Item? cursorAfterLeft) && cursorAfterLeft.IsEmpty)
+                                playerInventory.Items.Remove(-1);
+
                             if (inventory.Items.ContainsKey(slotId))
                                 changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
                             else
@@ -2213,6 +2307,10 @@ namespace MinecraftClient
                                 inventory.Items[slotId] = itemClone;
                                 playerInventory.Items[-1].Count--;
                             }
+
+                            // Clean up cursor item if count reached zero
+                            if (playerInventory.Items.TryGetValue(-1, out Item? cursorItem) && cursorItem.IsEmpty)
+                                playerInventory.Items.Remove(-1);
                         }
                         else
                         {
@@ -2798,6 +2896,11 @@ namespace MinecraftClient
                                         changedSlots.Add(new Tuple<short, Item?>((short)slotId, inventory.Items[slotId]));
                                 }
                             }
+                            if (item!.Count <= 0 && inventory.Items.ContainsKey(slotId))
+                            {
+                                inventory.Items.Remove(slotId);
+                                changedSlots.Add(new Tuple<short, Item?>((short)slotId, null));
+                            }
                         }
                         break;
                     case WindowActionType.DropItem:
@@ -2820,6 +2923,8 @@ namespace MinecraftClient
                         break;
                 }
             }
+
+            SyncPlayerInventorySlotsFromWindow(inventory);
 
             return handler.SendWindowAction(windowId, slotId, action, item, changedSlots, inventories[windowId].StateID);
         }
@@ -2871,7 +2976,10 @@ namespace MinecraftClient
             if (inventories.ContainsKey(windowId))
             {
                 if (windowId != 0)
+                {
                     inventories.Remove(windowId);
+                    inventoriesWithFullContents.Remove(windowId);
+                }
                 bool result = handler.SendCloseWindow(windowId);
                 DispatchBotEvent(bot => bot.OnInventoryClose(windowId));
                 return result;
@@ -2892,6 +3000,7 @@ namespace MinecraftClient
                 return InvokeOnMainThread<bool>(ClearInventories);
 
             inventories.Clear();
+            inventoriesWithFullContents.Clear();
             inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
             ClearUnlockedRecipes();
             return true;
@@ -3704,6 +3813,7 @@ namespace MinecraftClient
         /// <param name="inventoryID">Inventory ID</param>
         public void OnInventoryOpen(int inventoryID, Container inventory)
         {
+            inventoriesWithFullContents.Remove(inventoryID);
             inventories[inventoryID] = inventory;
 
             if (inventoryID != 0)
@@ -3730,9 +3840,15 @@ namespace MinecraftClient
             if (inventories.ContainsKey(inventoryID))
             {
                 if (inventoryID == 0)
+                {
                     inventories[0].Items.Clear(); // Don't delete player inventory
+                    inventoriesWithFullContents.Clear();
+                }
                 else
+                {
                     inventories.Remove(inventoryID);
+                    inventoriesWithFullContents.Remove(inventoryID);
+                }
             }
 
             if (inventoryID != 0)
@@ -3858,8 +3974,16 @@ namespace MinecraftClient
         {
             if (inventories.ContainsKey(inventoryID))
             {
+                // Filter out empty items (Count=0 or Air) that some servers may send
+                foreach (int key in itemList.Where(slot => slot.Value.IsEmpty).Select(slot => slot.Key).ToList())
+                    itemList.Remove(key);
+
                 inventories[inventoryID].Items = itemList;
                 inventories[inventoryID].StateID = stateId;
+                inventoriesWithFullContents.Add(inventoryID);
+                bool playerInventoryChanged = SyncPlayerInventorySlotsFromWindow(inventories[inventoryID]);
+                if (playerInventoryChanged)
+                    DispatchBotEvent(bot => bot.OnInventoryUpdate(0));
                 DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
             }
         }
@@ -3884,7 +4008,7 @@ namespace MinecraftClient
                 inventoryID = 0; // Prevent key not found for some bots relied to this event
                 if (inventories.ContainsKey(0))
                 {
-                    if (item is not null)
+                    if (item is not null && !item.IsEmpty)
                         inventories[0].Items[-1] = item;
                     else
                         inventories[0].Items.Remove(-1);
@@ -3900,6 +4024,9 @@ namespace MinecraftClient
                             inventories[inventoryID].Items.Remove(slotID);
                     }
                     else inventories[inventoryID].Items[slotID] = item;
+
+                    if (SyncPlayerInventorySlotsFromWindow(inventories[inventoryID]))
+                        DispatchBotEvent(bot => bot.OnInventoryUpdate(0));
                 }
             }
             DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
