@@ -132,6 +132,7 @@ namespace MinecraftClient.Protocol.Handlers
                     byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
                     Receive(keepalive, 1, 4, SocketFlags.None);
                     handler.OnServerKeepAlive();
+                    handler.SetCanSendMessage(true);
                     Send(keepalive); break;
                 case 0x01: ReadData(4); ReadNextString(); ReadData(5); break;
                 case 0x02: ReadData(1); ReadNextString(); ReadNextString(); ReadData(4); break;
@@ -208,7 +209,9 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xC9:
                     string name = ReadNextString(); bool online = ReadNextByte() != 0x00; ReadData(2);
                     Guid FakeUUID = new(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                    if (online) { handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID)); } else { handler.OnPlayerLeave(FakeUUID); }
+                    if (online)
+                        handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID));
+                    else handler.OnPlayerLeave(FakeUUID);
                     break;
                 case 0xCA: if (protocolversion >= 72) { ReadData(9); } else ReadData(3); break;
                 case 0xCB:
