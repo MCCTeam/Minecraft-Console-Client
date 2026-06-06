@@ -26,7 +26,7 @@ namespace MinecraftClient.Scripting
         /// <param name="run">Set to false to compile and cache the script without launching it</param>
         /// <exception cref="CSharpException">Thrown if an error occured</exception>
         /// <returns>Result of the execution, returned by the script</returns>
-        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object>? localVars, bool run = true, string scriptName = "Unknown Script")
+        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object>? localVars, bool run = true, string scriptName = "Unknown Script", string? scriptOwnerKey = null)
         {
             //Script compatibility check for handling future versions differently
             if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
@@ -143,7 +143,7 @@ namespace MinecraftClient.Scripting
             {
                 try
                 {
-                    var compiled = runner.Execute(assembly!, args, localVars, apiHandler);
+                    var compiled = runner.Execute(assembly!, args, localVars, apiHandler, scriptOwnerKey);
                     return compiled;
                 }
                 catch (Exception e) { throw new CSharpException(CSErrorType.RuntimeError, e); }
@@ -209,10 +209,11 @@ namespace MinecraftClient.Scripting
         /// <param name="apiHandler">ChatBot API Handler</param>
         /// <param name="tickHandler">ChatBot tick handler</param>
         /// <param name="localVars">Local variables passed along with the script</param>
-        public CSharpAPI(ChatBot apiHandler, Dictionary<string, object>? localVars)
+        public CSharpAPI(ChatBot apiHandler, Dictionary<string, object>? localVars, string? scriptOwnerKey = null)
         {
             SetMaster(apiHandler);
             this.localVars = localVars;
+            SetScriptOwnerKey(scriptOwnerKey);
         }
 
         /// <summary>

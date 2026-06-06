@@ -867,8 +867,11 @@ namespace MinecraftClient
 
             DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
 
+            foreach (ChatBot bot in bots.Where(bot => bot.ScriptOwnerKey is not null).ToList())
+                BotUnLoad(bot);
+
             botsOnHold.Clear();
-            botsOnHold.AddRange(bots);
+            botsOnHold.AddRange(bots.Where(bot => bot.ScriptOwnerKey is null));
 
             if (handler is not null)
             {
@@ -1263,7 +1266,7 @@ namespace MinecraftClient
             bots.Add(b);
             if (init)
                 DispatchBotEvent(bot => bot.Initialize(), [b]);
-            if (handler is not null)
+            if (CanSendMessage)
                 DispatchBotEvent(bot => bot.AfterGameJoined(), [b]);
         }
 
@@ -1288,6 +1291,21 @@ namespace MinecraftClient
             foreach (var entry in botRegistrations)
             {
                 UnregisterPluginChannel(entry.Key, b);
+            }
+        }
+
+        internal void UnloadBotsByScriptOwnerKey(string scriptOwnerKey)
+        {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => UnloadBotsByScriptOwnerKey(scriptOwnerKey));
+                return;
+            }
+
+            foreach (ChatBot bot in GetLoadedChatBots())
+            {
+                if (bot.ScriptOwnerKey == scriptOwnerKey)
+                    BotUnLoad(bot);
             }
         }
 

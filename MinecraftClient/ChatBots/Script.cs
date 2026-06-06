@@ -25,6 +25,7 @@ namespace MinecraftClient.ChatBots
         private bool csharp;
         private Thread? thread;
         private readonly Dictionary<string, object>? localVars;
+        private readonly string? scriptOwnerKey;
 
         public Script(string filename)
         {
@@ -36,6 +37,13 @@ namespace MinecraftClient.ChatBots
         {
             owner = ownername;
             this.localVars = localVars;
+        }
+
+        internal Script(string filename, string? ownername, Dictionary<string, object>? localVars, string? scriptOwnerKey)
+            : this(filename, ownername, localVars)
+        {
+            this.scriptOwnerKey = scriptOwnerKey;
+            SetScriptOwnerKey(scriptOwnerKey);
         }
 
         private void ParseArguments(string argstr)
@@ -166,7 +174,7 @@ namespace MinecraftClient.ChatBots
                     {
                         try
                         {
-                            CSharpRunner.Run(this, lines, args, localVars, scriptName: file!);
+                            CSharpRunner.Run(this, lines, args, localVars, scriptName: file!, scriptOwnerKey: scriptOwnerKey);
                         }
                         catch (CSharpException e)
                         {

@@ -39,9 +39,20 @@ namespace MinecraftClient.Scripting
         //Handler will be automatically set on bot loading, don't worry about this
         public void SetHandler(McClient handler) { _handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
-        protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
+        protected void LoadBot(ChatBot bot)
+        {
+            if (ScriptOwnerKey is not null)
+                bot.SetScriptOwnerKey(ScriptOwnerKey);
+
+            if (Handler.GetLoadedChatBots().Any(loadedBot => ReferenceEquals(loadedBot, bot)))
+                Handler.BotUnLoad(bot);
+
+            Handler.BotLoad(bot);
+        }
         protected List<ChatBot> GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
         protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot); }
+        internal string? ScriptOwnerKey { get; private set; }
+        internal void SetScriptOwnerKey(string? scriptOwnerKey) { ScriptOwnerKey = scriptOwnerKey; }
         private McClient? _handler = null;
         private ChatBot? master = null;
         private readonly List<string> registeredPluginChannels = new();
