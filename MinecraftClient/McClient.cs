@@ -3435,7 +3435,8 @@ namespace MinecraftClient
             if (!String.IsNullOrWhiteSpace(bandString))
                 handler.SendBrandInfo(bandString.Trim());
 
-            if (Config.MCSettings.Enabled)
+            // 1.20.2+ expects ClientInformation during configuration; older servers still want it here.
+            if (Config.MCSettings.Enabled && protocolversion < Protocol18Handler.MC_1_20_2_Version)
                 handler.SendClientSettings(
                     Config.MCSettings.Locale,
                     Config.MCSettings.RenderDistance,

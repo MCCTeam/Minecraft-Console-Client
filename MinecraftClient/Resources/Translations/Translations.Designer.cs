@@ -7757,5 +7757,49 @@ namespace MinecraftClient {
             get { return ResourceManager.GetString("tui.book.page_shortcut_tip", resourceCulture); }
         }
 
+        internal static string debug_packet_incoming {
+            get { return ResourceManager.GetString("debug.packet.incoming", resourceCulture); }
+        }
+
+        internal static string debug_packet_outgoing {
+            get { return ResourceManager.GetString("debug.packet.outgoing", resourceCulture); }
+        }
+
+        internal static string debug_packet_state_change {
+            get { return ResourceManager.GetString("debug.packet.state_change", resourceCulture); }
+        }
+
+        internal static string debug_packet_unknown_type {
+            get { return ResourceManager.GetString("debug.packet.unknown_type", resourceCulture); }
+        }
+
+        internal static string debug_packet_compression_disabled {
+            get { return ResourceManager.GetString("debug.packet.compression.disabled", resourceCulture); }
+        }
+
+        internal static string debug_packet_compression_uncompressed {
+            get { return ResourceManager.GetString("debug.packet.compression.uncompressed", resourceCulture); }
+        }
+
+        internal static string debug_packet_compression_compressed {
+            get { return ResourceManager.GetString("debug.packet.compression.compressed", resourceCulture); }
+        }
+
+        internal static string debug_packet_loop_exit {
+            get { return ResourceManager.GetString("debug.packet.loop_exit", resourceCulture); }
+        }
+
+        internal static string debug_packet_loop_reason_queue_completed {
+            get { return ResourceManager.GetString("debug.packet.loop_reason.queue_completed", resourceCulture); }
+        }
+
+        internal static string debug_packet_loop_reason_socket_closed {
+            get { return ResourceManager.GetString("debug.packet.loop_reason.socket_closed", resourceCulture); }
+        }
+
+        internal static string debug_packet_loop_reason_cancelled {
+            get { return ResourceManager.GetString("debug.packet.loop_reason.cancelled", resourceCulture); }
+        }
+
     }
 }

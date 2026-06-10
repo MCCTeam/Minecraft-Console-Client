@@ -1077,6 +1077,9 @@ namespace MinecraftClient
                 [TomlInlineComment("$Logging.DebugMessages$")]
                 public bool DebugMessages = false;
 
+                [TomlInlineComment("$Logging.PacketDebugMessages$")]
+                public bool PacketDebugMessages = false;
+
                 [TomlInlineComment("$Logging.ChatMessages$")]
                 public bool ChatMessages = true;
 

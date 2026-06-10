@@ -1424,17 +1424,24 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (protocolversion >= Protocol18Handler.MC_1_20_4_Version)
             {
-                // Read as NBT
-                var r = ReadNextNbt(cache);
-                var msg = ChatParser.ParseText(r);
-                return msg;
+                // Vanilla 1.20.4+ uses NBT here, but Hypixel exposed a JSON-string fallback on the same path.
+                Queue<byte> fallbackCache = new(cache);
+                try
+                {
+                    var r = ReadNextNbt(cache);
+                    return ChatParser.ParseText(r);
+                }
+                catch (System.IO.InvalidDataException)
+                {
+                    cache.Clear();
+                    foreach (var b in fallbackCache)
+                        cache.Enqueue(b);
+                }
             }
-            else
-            {
-                // Read as String
-                var json = ReadNextString(cache);
-                return ChatParser.ParseText(json);
-            }
+
+            // Read as String
+            var json = ReadNextString(cache);
+            return ChatParser.ParseText(json);
         }
 
         /// <summary>

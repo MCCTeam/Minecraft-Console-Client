@@ -57,6 +57,17 @@ namespace MinecraftClient.Logger
             }
         }
 
+        public override void PacketDebug(string msg)
+        {
+            if (Settings.Config.Logging.PacketDebugMessages)
+            {
+                if (ShouldDisplay(FilterChannel.Debug, msg))
+                {
+                    Log("§8[DEBUG] " + msg);
+                }
+            }
+        }
+
         public override void Info(string msg)
         {
             if (InfoEnabled)

@@ -7,6 +7,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_8;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_9;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_11;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._26_1;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Registries;
@@ -72,9 +73,9 @@ public class StructuredComponentsRegistry12111 : StructuredComponentRegistry
         RegisterComponent<WrittenBlookContentComponent>(53, "minecraft:written_book_content");
         RegisterComponent<TrimComponent1215>(54, "minecraft:trim");
         RegisterComponent<DebugStickStateComponent>(55, "minecraft:debug_stick_state");
-        RegisterComponent<EntityDataComponent>(56, "minecraft:entity_data");
+        RegisterComponent<TypedEntityDataComponent261>(56, "minecraft:entity_data");
         RegisterComponent<BucketEntityDataComponent>(57, "minecraft:bucket_entity_data");
-        RegisterComponent<BlockEntityDataComponent>(58, "minecraft:block_entity_data");
+        RegisterComponent<BlockEntityDataComponent261>(58, "minecraft:block_entity_data");
         RegisterComponent<InstrumentComponent1215>(59, "minecraft:instrument");
         RegisterComponent<ProvidesTrimMaterialComponent>(60, "minecraft:provides_trim_material");
         RegisterComponent<OmniousBottleAmplifierComponent>(61, "minecraft:ominous_bottle_amplifier");

@@ -32,22 +32,40 @@ public class WrittenBlookContentComponent(DataTypes dataTypes, ItemPalette itemP
 
         for (var i = 0; i < NumberOfPages; i++)
         {
-            var rawContentNbt = DataTypes.ReadNextNbt(data);
-            var rawContent = ChatParser.ParseText(rawContentNbt);
+            var (rawContent, rawContentNbt) = ReadPageComponent(data);
             var hasFilteredContent = DataTypes.ReadNextBool(data);
             Dictionary<string, object>? filteredContentNbt = null;
             string? filteredContent = null;
 
             if (hasFilteredContent)
-            {
-                filteredContentNbt = DataTypes.ReadNextNbt(data);
-                filteredContent = ChatParser.ParseText(filteredContentNbt);
-            }
+                (filteredContent, filteredContentNbt) = ReadPageComponent(data);
 
             Pages.Add(new BookPage(rawContent, hasFilteredContent, filteredContent, rawContentNbt, filteredContentNbt));
         }
 
         Resolved = DataTypes.ReadNextBool(data);
+    }
+
+    private (string Content, Dictionary<string, object> Nbt) ReadPageComponent(Queue<byte> data)
+    {
+        // Hypixel sent page payloads in the string-shaped form on this structured-book path,
+        // so keep the parser tolerant while still preserving the raw data for serialization.
+        Queue<byte> fallbackData = new(data);
+
+        try
+        {
+            var nbt = DataTypes.ReadNextNbt(data);
+            return (ChatParser.ParseText(nbt), nbt);
+        }
+        catch (System.IO.InvalidDataException)
+        {
+            data.Clear();
+            foreach (var b in fallbackData)
+                data.Enqueue(b);
+
+            var json = DataTypes.ReadNextString(data);
+            return (ChatParser.ParseText(json), new Dictionary<string, object> { [""] = json });
+        }
     }
 
     public override Queue<byte> Serialize()

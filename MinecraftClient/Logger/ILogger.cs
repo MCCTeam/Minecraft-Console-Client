@@ -16,6 +16,10 @@
         void Debug(string msg, params object[] args);
         void Debug(object msg);
 
+        void PacketDebug(string msg);
+        void PacketDebug(string msg, params object[] args);
+        void PacketDebug(object msg);
+
         void Warn(string msg);
         void Warn(string msg, params object[] args);
         void Warn(object msg);
