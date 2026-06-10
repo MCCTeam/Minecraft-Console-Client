@@ -40,6 +40,18 @@
             Debug(msg.ToString() ?? string.Empty);
         }
 
+        public abstract void PacketDebug(string msg);
+
+        public void PacketDebug(string msg, params object[] args)
+        {
+            PacketDebug(string.Format(msg, args));
+        }
+
+        public void PacketDebug(object msg)
+        {
+            PacketDebug(msg.ToString() ?? string.Empty);
+        }
+
         public abstract void Error(string msg);
 
         public void Error(string msg, params object[] args)

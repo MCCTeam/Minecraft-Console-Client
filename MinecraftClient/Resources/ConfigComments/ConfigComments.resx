@@ -626,6 +626,9 @@ Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Con
   <data name="Logging.DebugMessages" xml:space="preserve">
     <value>Please enable this before submitting bug reports. Thanks!</value>
   </data>
+  <data name="Logging.PacketDebugMessages" xml:space="preserve">
+    <value>Show low-level packet debug logs.</value>
+  </data>
   <data name="Logging.ErrorMessages" xml:space="preserve">
     <value>Show error messages.</value>
   </data>

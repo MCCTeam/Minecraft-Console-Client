@@ -795,7 +795,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 case PacketTypesIn.JoinGame:
                     // Temporary fix
-                    log.Debug("Receive JoinGame");
+                    log.PacketDebug("Receive JoinGame");
 
                     receiveDeclareCommands = receivePlayerInfo = false;
 
@@ -988,7 +988,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case PacketTypesIn.DeclareCommands:
                     if (protocolVersion >= MC_1_19_Version)
                     {
-                        log.Debug("Receive DeclareCommands");
+                        log.PacketDebug("Receive DeclareCommands");
                         DeclareCommands.Read(dataTypes, packetData, protocolVersion);
                         receiveDeclareCommands = true;
                         if (receivePlayerInfo)
@@ -2155,7 +2155,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     if (playerUuid == handler.GetUserUuid())
                                     {
-                                        log.Debug($"Receive ChatUuid = {chatUuid}");
+                                        log.PacketDebug($"Receive ChatUuid = {chatUuid}");
                                         this.chatUuid = chatUuid;
                                     }
                                 }
@@ -2164,7 +2164,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     player.ClearPublicKey();
 
                                     if (playerUuid == handler.GetUserUuid())
-                                        log.Debug("Receive ChatUuid = Empty");
+                                        log.PacketDebug("Receive ChatUuid = Empty");
                                 }
 
                                 if (playerUuid == handler.GetUserUuid())
@@ -4144,7 +4144,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (!log.DebugEnabled)
                 return;
 
-            log.Debug(string.Format(Translations.debug_packet_state_change, previousState, newState));
+            log.PacketDebug(string.Format(Translations.debug_packet_state_change, previousState, newState));
         }
 
         private void LogIncomingPacket(int packetId, int payloadLength, int frameLength, bool compressed, int uncompressedLength)
@@ -4159,7 +4159,7 @@ namespace MinecraftClient.Protocol.Handlers
                     ? string.Format(Translations.debug_packet_compression_compressed, uncompressedLength)
                     : Translations.debug_packet_compression_uncompressed;
 
-            log.Debug(string.Format(Translations.debug_packet_incoming,
+            log.PacketDebug(string.Format(Translations.debug_packet_incoming,
                 currentState,
                 packetId,
                 packetType,
@@ -4173,7 +4173,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (!log.DebugEnabled)
                 return;
 
-            log.Debug(string.Format(Translations.debug_packet_outgoing,
+            log.PacketDebug(string.Format(Translations.debug_packet_outgoing,
                 currentState,
                 packetId,
                 packetType ?? ResolveOutgoingPacketType(packetId),
@@ -4186,7 +4186,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (!log.DebugEnabled)
                 return;
 
-            log.Debug(string.Format(Translations.debug_packet_loop_exit,
+            log.PacketDebug(string.Format(Translations.debug_packet_loop_exit,
                 loopName,
                 reason,
                 currentState,
@@ -4245,7 +4245,7 @@ namespace MinecraftClient.Protocol.Handlers
             int nextState = isTransfer && protocolVersion >= MC_1_20_6_Version ? 3 : 2;
 
             if (nextState == 3)
-                log.Debug("Using transfer handshake intent for transferred login.");
+                log.PacketDebug("Using transfer handshake intent for transferred login.");
 
             // 1. Send the handshake packet
             SendPacket(0x00, dataTypes.ConcatBytes(
@@ -4389,7 +4389,7 @@ namespace MinecraftClient.Protocol.Handlers
             var RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             var secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
-            log.Debug($"§8{Translations.debug_crypto}");
+            log.PacketDebug($"§8{Translations.debug_crypto}");
 
             if (serverIDhash != "-" && !string.IsNullOrWhiteSpace(sessionID))
             {
@@ -4883,7 +4883,7 @@ namespace MinecraftClient.Protocol.Handlers
             command = Regex.Replace(command, @"\s+", " ");
             command = Regex.Replace(command, @"\s$", string.Empty);
 
-            log.Debug($"chat command = {command}");
+            log.PacketDebug($"chat command = {command}");
 
             if (protocolVersion >= MC_1_20_6_Version && !isOnlineMode)
             {
@@ -4911,7 +4911,7 @@ namespace MinecraftClient.Protocol.Handlers
                     else
                     {
                         needSigned = [];
-                        log.Debug("DeclareCommands tree unavailable, sending command without signed arguments.");
+                        log.PacketDebug("DeclareCommands tree unavailable, sending command without signed arguments.");
                     }
                 }
 
@@ -6417,7 +6417,7 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(DataTypes.GetVarInt(playerKeyPair.PublicKey.SignatureV2!.Length));
                     packet.AddRange(playerKeyPair.PublicKey.SignatureV2);
 
-                    log.Debug(
+                    log.PacketDebug(
                         $"SendPlayerSession MessageUUID = {chatUuid.ToString()},  len(PublicKey) = {playerKeyPair.PublicKey.Key.Length}, len(SignatureV2) = {playerKeyPair.PublicKey.SignatureV2!.Length}");
 
                     SendPacket(PacketTypesOut.PlayerSession, packet);

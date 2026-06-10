@@ -90,6 +90,17 @@ namespace MinecraftClient.Logger
             }
         }
 
+        public override void PacketDebug(string msg)
+        {
+            if (Settings.Config.Logging.PacketDebugMessages)
+            {
+                if (ShouldDisplay(FilterChannel.Debug, msg))
+                {
+                    LogAndSave("§8[DEBUG] " + msg);
+                }
+            }
+        }
+
         public override void Error(string msg)
         {
             base.Error(msg);

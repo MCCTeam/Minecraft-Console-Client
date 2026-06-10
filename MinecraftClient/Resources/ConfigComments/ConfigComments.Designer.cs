@@ -1533,6 +1533,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show low-level packet debug logs..
+        /// </summary>
+        internal static string Logging_PacketDebugMessages {
+            get {
+                return ResourceManager.GetString("Logging.PacketDebugMessages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show error messages..
         /// </summary>
         internal static string Logging_ErrorMessages {
