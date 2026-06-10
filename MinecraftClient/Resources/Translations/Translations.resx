@@ -2794,4 +2794,37 @@ see item details.</value>
   <data name="tui.book.page_shortcut_tip" xml:space="preserve">
     <value>PageUp/PageDown: previous/next page</value>
   </data>
+  <data name="debug.packet.incoming" xml:space="preserve">
+    <value>[S -&gt; C] state={0} id=0x{1:X2} type={2} payload={3} frame={4} compression={5}</value>
+  </data>
+  <data name="debug.packet.outgoing" xml:space="preserve">
+    <value>[C -&gt; S] state={0} id=0x{1:X2} type={2} payload={3} compression_threshold={4}</value>
+  </data>
+  <data name="debug.packet.state_change" xml:space="preserve">
+    <value>Protocol state changed: {0} -&gt; {1}</value>
+  </data>
+  <data name="debug.packet.unknown_type" xml:space="preserve">
+    <value>Unknown(0x{0:X2})</value>
+  </data>
+  <data name="debug.packet.compression.disabled" xml:space="preserve">
+    <value>disabled</value>
+  </data>
+  <data name="debug.packet.compression.uncompressed" xml:space="preserve">
+    <value>uncompressed</value>
+  </data>
+  <data name="debug.packet.compression.compressed" xml:space="preserve">
+    <value>compressed, uncompressed={0}</value>
+  </data>
+  <data name="debug.packet.loop_exit" xml:space="preserve">
+    <value>{0} exited: reason={1}, state={2}, socket_connected={3}</value>
+  </data>
+  <data name="debug.packet.loop_reason.queue_completed" xml:space="preserve">
+    <value>packet queue completed</value>
+  </data>
+  <data name="debug.packet.loop_reason.socket_closed" xml:space="preserve">
+    <value>socket closed</value>
+  </data>
+  <data name="debug.packet.loop_reason.cancelled" xml:space="preserve">
+    <value>cancelled</value>
+  </data>
 </root>
