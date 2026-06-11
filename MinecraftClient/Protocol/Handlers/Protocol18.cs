@@ -2104,12 +2104,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                     break;
                 case PacketTypesIn.ChangeGameState:
-                    if (protocolVersion >= MC_1_15_2_Version)
-                    {
-                        var reason = dataTypes.ReadNextByte(packetData);
-                        var state = dataTypes.ReadNextFloat(packetData);
-                        handler.OnGameEvent(reason, state);
-                    }
+                    var reason = dataTypes.ReadNextByte(packetData);
+                    var state = dataTypes.ReadNextFloat(packetData);
+                    handler.OnGameEvent(reason, state);
 
                     break;
                 case PacketTypesIn.PlayerInfo:
@@ -2337,6 +2334,11 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnPlayerLeave(playerUuid);
                     }
 
+                    break;
+                case PacketTypesIn.PlayerListHeaderAndFooter:
+                    handler.OnTabListHeaderAndFooter(
+                        dataTypes.ReadNextChat(packetData),
+                        dataTypes.ReadNextChat(packetData));
                     break;
                 case PacketTypesIn.TabComplete:
                     var oldTransactionId = autocomplete_transaction_id;
@@ -2605,7 +2607,9 @@ namespace MinecraftClient.Protocol.Handlers
                         if (Enum.IsDefined(typeof(Effects), effectId))
                         {
                             var effect = (Effects)effectId;
-                            var amplifier = dataTypes.ReadNextByte(packetData);
+                            var amplifier = protocolVersion >= MC_1_20_6_Version
+                                ? dataTypes.ReadNextVarInt(packetData)
+                                : dataTypes.ReadNextByte(packetData);
                             var duration = dataTypes.ReadNextVarInt(packetData);
                             var flags = dataTypes.ReadNextByte(packetData);
                             var hasFactorData = false;
@@ -3088,7 +3092,10 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 case PacketTypesIn.HeldItemChange:
                 case PacketTypesIn.SetHeldSlot:
-                    handler.OnHeldItemChange(dataTypes.ReadNextByte(packetData)); // Slot
+                    var heldSlot = protocolVersion >= MC_1_21_4_Version
+                        ? dataTypes.ReadNextVarInt(packetData)
+                        : dataTypes.ReadNextByte(packetData);
+                    handler.OnHeldItemChange((byte)heldSlot);
                     break;
                 case PacketTypesIn.ScoreboardObjective:
                     var objectiveName = dataTypes.ReadNextString(packetData);
@@ -6082,11 +6089,18 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                var packet = new List<byte>
+                List<byte> packet = new();
+                if (protocolVersion >= MC_1_20_6_Version)
                 {
-                    (byte)windowId,
-                    (byte)buttonId
-                };
+                    packet.AddRange(DataTypes.GetVarInt(windowId));
+                    packet.AddRange(DataTypes.GetVarInt(buttonId));
+                }
+                else
+                {
+                    packet.Add((byte)windowId);
+                    packet.Add((byte)buttonId);
+                }
+
                 SendPacket(PacketTypesOut.ClickWindowButton, packet);
                 return true;
             }
