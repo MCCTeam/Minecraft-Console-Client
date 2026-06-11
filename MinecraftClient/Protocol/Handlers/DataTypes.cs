@@ -1396,12 +1396,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The item that was read or NULL for an empty slot</returns>
         public VillagerTrade ReadNextTrade(Queue<byte> cache, ItemPalette itemPalette)
         {
-            Item inputItem1 = ReadNextItemSlot(cache, itemPalette)!;
+            Item inputItem1 = ReadNextTradeCost(cache, itemPalette)!;
             Item outputItem = ReadNextItemSlot(cache, itemPalette)!;
 
             Item? inputItem2 = null;
 
-            if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
+            if (protocolversion >= Protocol18Handler.MC_1_20_6_Version)
+                inputItem2 = ReadNextOptionalTradeCost(cache, itemPalette);
+            else if (protocolversion >= Protocol18Handler.MC_1_19_3_Version)
                 inputItem2 = ReadNextItemSlot(cache, itemPalette);
             else
             {
@@ -1418,6 +1420,40 @@ namespace MinecraftClient.Protocol.Handlers
             int demand = ReadNextInt(cache);
             return new VillagerTrade(inputItem1, outputItem, inputItem2, tradeDisabled, numberOfTradeUses,
                 maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);
+        }
+
+        private Item? ReadNextTradeCost(Queue<byte> cache, ItemPalette itemPalette)
+        {
+            if (protocolversion < Protocol18Handler.MC_1_20_6_Version)
+                return ReadNextItemSlot(cache, itemPalette);
+
+            var itemId = ReadNextVarInt(cache);
+            var itemCount = ReadNextVarInt(cache);
+            var item = new Item(itemPalette.FromId(itemId), itemCount, null);
+            var componentCount = ReadNextVarInt(cache);
+
+            if (componentCount > 0)
+            {
+                var structuredComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
+                var components = new List<StructuredComponent>(componentCount);
+                for (var i = 0; i < componentCount; i++)
+                {
+                    var componentTypeId = ReadNextVarInt(cache);
+                    components.Add(structuredComponentHandler.Parse(componentTypeId, cache));
+                }
+
+                item.Components = components;
+            }
+
+            return item;
+        }
+
+        private Item? ReadNextOptionalTradeCost(Queue<byte> cache, ItemPalette itemPalette)
+        {
+            if (!ReadNextBool(cache))
+                return null;
+
+            return ReadNextTradeCost(cache, itemPalette);
         }
 
         public string ReadNextChat(Queue<byte> cache)
