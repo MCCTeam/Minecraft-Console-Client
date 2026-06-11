@@ -115,7 +115,31 @@ Use this for TPS, movement-cadence, or packet-cadence work:
 
 Run them against a real server with a temp config and summarize counts from the captured logs.
 
-### 4. Full inventory regression sweep
+### 4. Structured components test
+
+Use this after touching any `StructuredComponents` code (registries, component
+parsers, subcomponents, codec helpers) to prove every component type in a
+version parses on the wire without error:
+
+```bash
+bash tools/run-structured-components-test.sh 1.21.11
+```
+
+Run a single version (fast, ~2 min) or a matrix:
+
+```bash
+for v in 1.20.6 1.21 1.21.2 1.21.5 1.21.11 26.1; do
+  bash tools/run-structured-components-test.sh "$v"
+done
+```
+
+The script gives items with every registered component via RCON `/give`, reads
+them back with `inventory player list`, and asserts no parse errors in the MCC
+log. Version-gated components (v1212+, v1215+, v12111+, v261) are tested only
+on the versions that support them. See `SC_Integration_Test_Report.md` for a
+reference run across all 6 version groups.
+
+### 5. Full inventory regression sweep
 
 Use this when touching inventory snapshots, player/container slot sync, creative inventory, item-slot serialization, packet palettes, game-mode updates, or block-use paths that open containers:
 
@@ -198,6 +222,8 @@ Optionally override the login name with the fourth argument to the config helper
   - ordered creative-mode E2E regression scenario
 - `tools/run-inventory-full-sweep.sh`
   - full inventory command/API sweep across one or more versions
+- `tools/run-structured-components-test.sh`
+  - exercises every structured component via RCON `/give` across versions 1.20.6-26.1
 
 ## Evidence Discipline
 

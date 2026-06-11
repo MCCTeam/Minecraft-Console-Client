@@ -15,7 +15,7 @@ public class StructuredComponentsRegistry1212 : StructuredComponentRegistry
         RegisterComponent<MaxStackSizeComponent>(1, "minecraft:max_stack_size");
         RegisterComponent<MaxDamageComponent>(2, "minecraft:max_damage");
         RegisterComponent<DamageComponent>(3, "minecraft:damage");
-        RegisterComponent<UnbrekableComponent1206>(4, "minecraft:unbreakable");
+        RegisterComponent<UnbreakableComponent1206>(4, "minecraft:unbreakable");
         RegisterComponent<CustomNameComponent>(5, "minecraft:custom_name");
         RegisterComponent<ItemNameComponent>(6, "minecraft:item_name");
         RegisterComponent<ItemModelComponent>(7, "minecraft:item_model");
@@ -57,15 +57,15 @@ public class StructuredComponentsRegistry1212 : StructuredComponentRegistry
         RegisterComponent<BundleContentsComponent>(40, "minecraft:bundle_contents");
         RegisterComponent<PotionContentsComponent1212>(41, "minecraft:potion_contents");
         RegisterComponent<SuspiciousStewEffectsComponent>(42, "minecraft:suspicious_stew_effects");
-        RegisterComponent<WritableBlookContentComponent>(43, "minecraft:writable_book_content");
-        RegisterComponent<WrittenBlookContentComponent>(44, "minecraft:written_book_content");
+        RegisterComponent<WritableBookContentComponent>(43, "minecraft:writable_book_content");
+        RegisterComponent<WrittenBookContentComponent>(44, "minecraft:written_book_content");
         RegisterComponent<TrimComponent>(45, "minecraft:trim");
         RegisterComponent<DebugStickStateComponent>(46, "minecraft:debug_stick_state");
         RegisterComponent<EntityDataComponent>(47, "minecraft:entity_data");
         RegisterComponent<BucketEntityDataComponent>(48, "minecraft:bucket_entity_data");
         RegisterComponent<BlockEntityDataComponent>(49, "minecraft:block_entity_data");
         RegisterComponent<InstrumentComponent>(50, "minecraft:instrument");
-        RegisterComponent<OmniousBottleAmplifierComponent>(51, "minecraft:ominous_bottle_amplifier");
+        RegisterComponent<OminousBottleAmplifierComponent>(51, "minecraft:ominous_bottle_amplifier");
         RegisterComponent<JukeBoxPlayableComponent121>(52, "minecraft:jukebox_playable");
         RegisterComponent<RecipesComponent>(53, "minecraft:recipes");
         RegisterComponent<LodestoneTrackerComponent>(54, "minecraft:lodestone_tracker");

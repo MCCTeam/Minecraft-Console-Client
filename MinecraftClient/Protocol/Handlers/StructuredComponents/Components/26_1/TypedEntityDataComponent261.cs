@@ -1,30 +1,13 @@
-using System.Collections.Generic;
 using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._26_1;
 
 public class TypedEntityDataComponent261(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
-    : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
-{
-    public int EntityTypeId { get; set; }
-    public Dictionary<string, object>? Nbt { get; set; }
-
-    public override void Parse(Queue<byte> data)
-    {
-        EntityTypeId = DataTypes.ReadNextVarInt(data);
-        Nbt = DataTypes.ReadNextNbt(data);
-    }
-
-    public override Queue<byte> Serialize()
-    {
-        var data = new List<byte>();
-        data.AddRange(DataTypes.GetVarInt(EntityTypeId));
-        data.AddRange(DataTypes.GetNbt(Nbt));
-        return new Queue<byte>(data);
-    }
-}
+    : TypedEntityDataComponent(dataTypes, itemPalette, subComponentRegistry)
+{ }
 
 public class BlockEntityDataComponent261(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
-    : TypedEntityDataComponent261(dataTypes, itemPalette, subComponentRegistry)
+    : TypedBlockEntityDataComponent(dataTypes, itemPalette, subComponentRegistry)
 { }

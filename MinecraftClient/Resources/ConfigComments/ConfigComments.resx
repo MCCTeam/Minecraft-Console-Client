@@ -629,6 +629,9 @@ Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Con
   <data name="Logging.PacketDebugMessages" xml:space="preserve">
     <value>Show low-level packet debug logs.</value>
   </data>
+  <data name="Logging.PacketDebugExclusions" xml:space="preserve">
+    <value>Packet types to exclude from packet debug logs, e.g. ["KeepAlive", "Ping"].</value>
+  </data>
   <data name="Logging.ErrorMessages" xml:space="preserve">
     <value>Show error messages.</value>
   </data>

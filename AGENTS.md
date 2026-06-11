@@ -123,3 +123,4 @@ Read `docs/guide/ai-assisted-development.md` before starting development work on
 - Don't trust older docs over current code for supported versions or feature gates. When AGENTS.md, skills, and older docs disagree, prefer current code and current tool behavior, then update the stale source.
 - Don't hardcode user-facing strings (messages, labels, help text) directly in source code; always use `Translations.*` resources so the text can be localized.
 - Never use "—" ("em dash"), unless specifically being instructed to do so!
+- Never generate MCC config files (`.ini`) in the repo root. When `dotnet run --project MinecraftClient -- --help` is used to generate a config template, it writes `MinecraftClient.ini` to the current directory. Always run this command from a system temp directory (e.g. `mktemp -d`) or use `prepare_offline_mcc_config.sh` which already handles output routing.

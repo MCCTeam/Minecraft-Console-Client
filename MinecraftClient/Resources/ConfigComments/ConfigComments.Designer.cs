@@ -1542,6 +1542,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Packet types to exclude from packet debug logs, e.g. [&quot;KeepAlive&quot;, &quot;Ping&quot;]..
+        /// </summary>
+        internal static string Logging_PacketDebugExclusions {
+            get {
+                return ResourceManager.GetString("Logging.PacketDebugExclusions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show error messages..
         /// </summary>
         internal static string Logging_ErrorMessages {

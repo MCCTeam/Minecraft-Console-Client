@@ -362,7 +362,10 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     while (socketWrapper.HasDataAvailable())
                     {
-                        packetQueue.Add(ReadNextPacket(), cancelToken);
+                        var packet = ReadNextPacket();
+                        if (packet.Item1 == -1)
+                            continue;
+                        packetQueue.Add(packet, cancelToken);
 
                         if (cancelToken.IsCancellationRequested)
                             break;
@@ -418,7 +421,8 @@ namespace MinecraftClient.Protocol.Handlers
         internal Tuple<int, Queue<byte>> ReadNextPacket()
         {
             var size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            Queue<byte> packetData = new(socketWrapper.ReadDataRAW(size)); //Packet contents
+            var rawBytes = socketWrapper.ReadDataRAW(size);
+            Queue<byte> packetData = new(rawBytes); //Packet contents
             var compressed = false;
             var sizeUncompressed = 0;
 
@@ -434,6 +438,13 @@ namespace MinecraftClient.Protocol.Handlers
                     packetData = new Queue<byte>(uncompressed);
                     compressed = true;
                 }
+            }
+
+            if (packetData.Count == 0)
+            {
+                var rawHex = rawBytes.Length > 0 ? BitConverter.ToString(rawBytes).Replace("-", " ") : "(empty)";
+                log.Debug("Empty packet after decompress: size={0}, sizeUncompressed={1}, protocol={2}, state={3}, rawBytes=[{4}]", size, sizeUncompressed, protocolVersion, currentState, rawHex);
+                return new(-1, packetData);
             }
 
             var packetId = dataTypes.ReadNextVarInt(packetData); // Packet ID
@@ -4147,12 +4158,21 @@ namespace MinecraftClient.Protocol.Handlers
             log.PacketDebug(string.Format(Translations.debug_packet_state_change, previousState, newState));
         }
 
+        private static bool IsPacketExcluded(string packetType)
+        {
+            var exclusions = Settings.Config.Logging.PacketDebugExclusions;
+            return exclusions.Count > 0 && exclusions.Contains(packetType, StringComparer.OrdinalIgnoreCase);
+        }
+
         private void LogIncomingPacket(int packetId, int payloadLength, int frameLength, bool compressed, int uncompressedLength)
         {
             if (!log.DebugEnabled)
                 return;
 
             var packetType = ResolveIncomingPacketType(packetId);
+            if (IsPacketExcluded(packetType))
+                return;
+
             var compressionInfo = compression_treshold < 0
                 ? Translations.debug_packet_compression_disabled
                 : compressed
@@ -4173,10 +4193,14 @@ namespace MinecraftClient.Protocol.Handlers
             if (!log.DebugEnabled)
                 return;
 
+            var resolvedType = packetType ?? ResolveOutgoingPacketType(packetId);
+            if (IsPacketExcluded(resolvedType))
+                return;
+
             log.PacketDebug(string.Format(Translations.debug_packet_outgoing,
                 currentState,
                 packetId,
-                packetType ?? ResolveOutgoingPacketType(packetId),
+                resolvedType,
                 payloadLength,
                 compression_treshold));
         }

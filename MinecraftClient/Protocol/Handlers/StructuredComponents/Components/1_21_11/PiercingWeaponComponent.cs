@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_11;
@@ -9,29 +10,24 @@ public class PiercingWeaponComponent(DataTypes dataTypes, ItemPalette itemPalett
 {
     public bool DealsKnockback { get; set; }
     public bool Dismounts { get; set; }
+    public SoundEventHolderData? Sound { get; set; }
+    public SoundEventHolderData? HitSound { get; set; }
 
     public override void Parse(Queue<byte> data)
     {
         DealsKnockback = DataTypes.ReadNextBool(data);
         Dismounts = DataTypes.ReadNextBool(data);
-        ReadOptionalSoundEventHolder(data);
-        ReadOptionalSoundEventHolder(data);
-    }
-
-    private void ReadOptionalSoundEventHolder(Queue<byte> data)
-    {
-        if (!DataTypes.ReadNextBool(data)) return;
-        var holderId = DataTypes.ReadNextVarInt(data);
-        if (holderId == 0)
-        {
-            DataTypes.ReadNextString(data);
-            if (DataTypes.ReadNextBool(data))
-                DataTypes.ReadNextFloat(data);
-        }
+        Sound = StructuredComponentCodecHelpers.ReadOptionalSoundEventHolder(DataTypes, data);
+        HitSound = StructuredComponentCodecHelpers.ReadOptionalSoundEventHolder(DataTypes, data);
     }
 
     public override Queue<byte> Serialize()
     {
-        return new Queue<byte>();
+        var data = new List<byte>();
+        data.AddRange(DataTypes.GetBool(DealsKnockback));
+        data.AddRange(DataTypes.GetBool(Dismounts));
+        StructuredComponentCodecHelpers.WriteOptionalSoundEventHolder(DataTypes, data, Sound);
+        StructuredComponentCodecHelpers.WriteOptionalSoundEventHolder(DataTypes, data, HitSound);
+        return new Queue<byte>(data);
     }
 }
