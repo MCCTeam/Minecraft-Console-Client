@@ -13,7 +13,7 @@ public class StructuredComponentsRegistry1206 : StructuredComponentRegistry
         RegisterComponent<MaxStackSizeComponent>(1, "minecraft:max_stack_size");
         RegisterComponent<MaxDamageComponent>(2, "minecraft:max_damage");
         RegisterComponent<DamageComponent>(3, "minecraft:damage");
-        RegisterComponent<UnbrekableComponent1206>(4, "minecraft:unbreakable");
+        RegisterComponent<UnbreakableComponent1206>(4, "minecraft:unbreakable");
         RegisterComponent<CustomNameComponent>(5, "minecraft:custom_name");
         RegisterComponent<ItemNameComponent>(6, "minecraft:item_name");
         RegisterComponent<LoreNameComponent1206>(7, "minecraft:lore");
@@ -29,7 +29,7 @@ public class StructuredComponentsRegistry1206 : StructuredComponentRegistry
         RegisterComponent<CreativeSlotLockComponent>(17, "minecraft:creative_slot_lock");
         RegisterComponent<EnchantmentGlintOverrideComponent>(18, "minecraft:enchantment_glint_override");
         RegisterComponent<IntangibleProjectileComponent>(19, "minecraft:intangible_projectile");
-        RegisterComponent<FoodComponentComponent>(20, "minecraft:food");
+        RegisterComponent<FoodComponent>(20, "minecraft:food");
         RegisterComponent<FireResistantComponent>(21, "minecraft:fire_resistant");
         RegisterComponent<ToolComponent>(22, "minecraft:tool");
         RegisterComponent<StoredEnchantmentsComponent>(23, "minecraft:stored_enchantments");
@@ -42,15 +42,15 @@ public class StructuredComponentsRegistry1206 : StructuredComponentRegistry
         RegisterComponent<BundleContentsComponent>(30, "minecraft:bundle_contents");
         RegisterComponent<PotionContentsComponent>(31, "minecraft:potion_contents");
         RegisterComponent<SuspiciousStewEffectsComponent>(32, "minecraft:suspicious_stew_effects");
-        RegisterComponent<WritableBlookContentComponent>(33, "minecraft:writable_book_content");
-        RegisterComponent<WrittenBlookContentComponent>(34, "minecraft:written_book_content");
+        RegisterComponent<WritableBookContentComponent>(33, "minecraft:writable_book_content");
+        RegisterComponent<WrittenBookContentComponent>(34, "minecraft:written_book_content");
         RegisterComponent<TrimComponent>(35, "minecraft:trim");
         RegisterComponent<DebugStickStateComponent>(36, "minecraft:debug_stick_state");
         RegisterComponent<EntityDataComponent>(37, "minecraft:entity_data");
         RegisterComponent<BucketEntityDataComponent>(38, "minecraft:bucket_entity_data");
         RegisterComponent<BlockEntityDataComponent>(39, "minecraft:block_entity_data");
         RegisterComponent<InstrumentComponent>(40, "minecraft:instrument");
-        RegisterComponent<OmniousBottleAmplifierComponent>(41, "minecraft:ominous_bottle_amplifier");
+        RegisterComponent<OminousBottleAmplifierComponent>(41, "minecraft:ominous_bottle_amplifier");
         RegisterComponent<RecipesComponent>(42, "minecraft:recipes");
         RegisterComponent<LodestoneTrackerComponent>(43, "minecraft:lodestone_tracker");
         RegisterComponent<FireworkExplosionComponent>(44, "minecraft:firework_explosion");

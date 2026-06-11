@@ -6,6 +6,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_2;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_8;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_9;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_11;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Registries;
@@ -15,8 +16,9 @@ public class StructuredComponentsRegistry1215 : StructuredComponentRegistry
     public StructuredComponentsRegistry1215(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
         : base(dataTypes, itemPalette, subComponentRegistry)
     {
-        var uses1218AttributeAndEquippableFormats = dataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_6_Version;
+        var uses1216AttributeAndEquippableFormats = dataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_6_Version;
         var usesTypedBeesFormat = dataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_9_Version;
+        var usesTypedEntityDataFormat = dataTypes.ProtocolVersion >= Protocol18Handler.MC_1_21_9_Version;
 
         RegisterComponent<CustomDataComponent>(0, "minecraft:custom_data");
         RegisterComponent<MaxStackSizeComponent>(1, "minecraft:max_stack_size");
@@ -31,7 +33,7 @@ public class StructuredComponentsRegistry1215 : StructuredComponentRegistry
         RegisterComponent<EnchantmentsComponent1215>(10, "minecraft:enchantments");
         RegisterComponent<CanPlaceOnComponent1215>(11, "minecraft:can_place_on");
         RegisterComponent<CanBreakComponent1215>(12, "minecraft:can_break");
-        if (uses1218AttributeAndEquippableFormats)
+        if (uses1216AttributeAndEquippableFormats)
             RegisterComponent<AttributeModifiersComponent1218>(13, "minecraft:attribute_modifiers");
         else
             RegisterComponent<AttributeModifiersComponent1215>(13, "minecraft:attribute_modifiers");
@@ -50,7 +52,7 @@ public class StructuredComponentsRegistry1215 : StructuredComponentRegistry
         RegisterComponent<ToolComponent1215>(25, "minecraft:tool");
         RegisterComponent<WeaponComponent>(26, "minecraft:weapon"); // NEW
         RegisterComponent<EnchantableComponent>(27, "minecraft:enchantable");
-        if (uses1218AttributeAndEquippableFormats)
+        if (uses1216AttributeAndEquippableFormats)
             RegisterComponent<EquippableComponent1218>(28, "minecraft:equippable");
         else
             RegisterComponent<EquippableComponent1215>(28, "minecraft:equippable");
@@ -70,16 +72,22 @@ public class StructuredComponentsRegistry1215 : StructuredComponentRegistry
         RegisterComponent<PotionContentsComponent1212>(42, "minecraft:potion_contents");
         RegisterComponent<PotionDurationScaleComponent>(43, "minecraft:potion_duration_scale"); // NEW
         RegisterComponent<SuspiciousStewEffectsComponent>(44, "minecraft:suspicious_stew_effects");
-        RegisterComponent<WritableBlookContentComponent>(45, "minecraft:writable_book_content");
-        RegisterComponent<WrittenBlookContentComponent>(46, "minecraft:written_book_content");
+        RegisterComponent<WritableBookContentComponent>(45, "minecraft:writable_book_content");
+        RegisterComponent<WrittenBookContentComponent>(46, "minecraft:written_book_content");
         RegisterComponent<TrimComponent1215>(47, "minecraft:trim");
         RegisterComponent<DebugStickStateComponent>(48, "minecraft:debug_stick_state");
-        RegisterComponent<EntityDataComponent>(49, "minecraft:entity_data");
+        if (usesTypedEntityDataFormat)
+            RegisterComponent<TypedEntityDataComponent>(49, "minecraft:entity_data");
+        else
+            RegisterComponent<EntityDataComponent>(49, "minecraft:entity_data");
         RegisterComponent<BucketEntityDataComponent>(50, "minecraft:bucket_entity_data");
-        RegisterComponent<BlockEntityDataComponent>(51, "minecraft:block_entity_data");
+        if (usesTypedEntityDataFormat)
+            RegisterComponent<TypedBlockEntityDataComponent>(51, "minecraft:block_entity_data");
+        else
+            RegisterComponent<BlockEntityDataComponent>(51, "minecraft:block_entity_data");
         RegisterComponent<InstrumentComponent1215>(52, "minecraft:instrument"); // Changed to EitherHolder<Instrument> in 1.21.5
         RegisterComponent<ProvidesTrimMaterialComponent>(53, "minecraft:provides_trim_material"); // NEW
-        RegisterComponent<OmniousBottleAmplifierComponent>(54, "minecraft:ominous_bottle_amplifier");
+        RegisterComponent<OminousBottleAmplifierComponent>(54, "minecraft:ominous_bottle_amplifier");
         RegisterComponent<JukeBoxPlayableComponent1215>(55, "minecraft:jukebox_playable");
         RegisterComponent<ProvidesBannerPatternsComponent>(56, "minecraft:provides_banner_patterns"); // NEW
         RegisterComponent<RecipesComponent>(57, "minecraft:recipes");
@@ -116,7 +124,7 @@ public class StructuredComponentsRegistry1215 : StructuredComponentRegistry
         RegisterComponent<VarIntComponent>(83, "minecraft:rabbit/variant");
         RegisterComponent<VarIntComponent>(84, "minecraft:pig/variant");
         RegisterComponent<VarIntComponent>(85, "minecraft:cow/variant");
-        RegisterComponent<EitherHolderComponent>(86, "minecraft:chicken/variant"); // EitherHolder<ChickenVariant>
+        RegisterComponent<RegistryEitherHolderComponent>(86, "minecraft:chicken/variant"); // EitherHolder<ChickenVariant>
         RegisterComponent<VarIntComponent>(87, "minecraft:frog/variant");
         RegisterComponent<VarIntComponent>(88, "minecraft:horse/variant");
         RegisterComponent<PaintingVariantHolderComponent>(89, "minecraft:painting/variant"); // Holder<PaintingVariant>

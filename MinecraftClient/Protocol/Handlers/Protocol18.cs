@@ -362,7 +362,10 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     while (socketWrapper.HasDataAvailable())
                     {
-                        packetQueue.Add(ReadNextPacket(), cancelToken);
+                        var packet = ReadNextPacket();
+                        if (packet.Item1 == -1)
+                            continue;
+                        packetQueue.Add(packet, cancelToken);
 
                         if (cancelToken.IsCancellationRequested)
                             break;
@@ -418,7 +421,8 @@ namespace MinecraftClient.Protocol.Handlers
         internal Tuple<int, Queue<byte>> ReadNextPacket()
         {
             var size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            Queue<byte> packetData = new(socketWrapper.ReadDataRAW(size)); //Packet contents
+            var rawBytes = socketWrapper.ReadDataRAW(size);
+            Queue<byte> packetData = new(rawBytes); //Packet contents
             var compressed = false;
             var sizeUncompressed = 0;
 
@@ -434,6 +438,13 @@ namespace MinecraftClient.Protocol.Handlers
                     packetData = new Queue<byte>(uncompressed);
                     compressed = true;
                 }
+            }
+
+            if (packetData.Count == 0)
+            {
+                var rawHex = rawBytes.Length > 0 ? BitConverter.ToString(rawBytes).Replace("-", " ") : "(empty)";
+                log.Warn($"[DEBUG] Empty packet after decompress: size={size}, sizeUncompressed={sizeUncompressed}, protocol={protocolVersion}, state={currentState}, rawBytes=[{rawHex}]");
+                return new(-1, packetData);
             }
 
             var packetId = dataTypes.ReadNextVarInt(packetData); // Packet ID

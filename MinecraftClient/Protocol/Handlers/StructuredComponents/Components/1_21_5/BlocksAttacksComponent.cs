@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Components;
 using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_21_5;
@@ -9,10 +10,13 @@ public class BlocksAttacksComponent(DataTypes dataTypes, ItemPalette itemPalette
 {
     public float BlockDelaySeconds { get; set; }
     public float DisableCooldownScale { get; set; }
-    public List<byte[]> RawDamageReductions { get; set; } = [];
+    public List<DamageReductionData> DamageReductions { get; set; } = [];
     public float ItemDamageThreshold { get; set; }
     public float ItemDamageBase { get; set; }
     public float ItemDamageFactor { get; set; }
+    public string? BypassedBy { get; set; }
+    public SoundEventHolderData? BlockSound { get; set; }
+    public SoundEventHolderData? DisableSound { get; set; }
 
     public override void Parse(Queue<byte> data)
     {
@@ -25,11 +29,13 @@ public class BlocksAttacksComponent(DataTypes dataTypes, ItemPalette itemPalette
             var horizontalBlockingAngle = DataTypes.ReadNextFloat(data);
 
             var hasTypeFilter = DataTypes.ReadNextBool(data);
-            if (hasTypeFilter)
-                ReadHolderSet(data);
+            var typeFilter = hasTypeFilter
+                ? StructuredComponentCodecHelpers.ReadHolderSet(DataTypes, data)
+                : null;
 
             var baseDmg = DataTypes.ReadNextFloat(data);
             var factor = DataTypes.ReadNextFloat(data);
+            DamageReductions.Add(new DamageReductionData(horizontalBlockingAngle, typeFilter, baseDmg, factor));
         }
 
         ItemDamageThreshold = DataTypes.ReadNextFloat(data);
@@ -38,46 +44,38 @@ public class BlocksAttacksComponent(DataTypes dataTypes, ItemPalette itemPalette
 
         var hasBypassedBy = DataTypes.ReadNextBool(data);
         if (hasBypassedBy)
-            DataTypes.ReadNextString(data); // TagKey<DamageType> as ResourceLocation
+            BypassedBy = DataTypes.ReadNextString(data); // TagKey<DamageType> as ResourceLocation
 
-        var hasBlockSound = DataTypes.ReadNextBool(data);
-        if (hasBlockSound)
-            ReadSoundEventHolder(data);
-
-        var hasDisableSound = DataTypes.ReadNextBool(data);
-        if (hasDisableSound)
-            ReadSoundEventHolder(data);
-    }
-
-    private void ReadHolderSet(Queue<byte> data)
-    {
-        var sizeOrTag = DataTypes.ReadNextVarInt(data);
-        if (sizeOrTag == 0)
-        {
-            DataTypes.ReadNextString(data); // Tag ResourceLocation
-        }
-        else
-        {
-            var count = sizeOrTag - 1;
-            for (var i = 0; i < count; i++)
-                DataTypes.ReadNextVarInt(data); // Holder<DamageType> registry ids
-        }
-    }
-
-    private void ReadSoundEventHolder(Queue<byte> data)
-    {
-        var holderId = DataTypes.ReadNextVarInt(data);
-        if (holderId == 0)
-        {
-            DataTypes.ReadNextString(data); // ResourceLocation
-            var hasFixedRange = DataTypes.ReadNextBool(data);
-            if (hasFixedRange)
-                DataTypes.ReadNextFloat(data);
-        }
+        BlockSound = StructuredComponentCodecHelpers.ReadOptionalSoundEventHolder(DataTypes, data);
+        DisableSound = StructuredComponentCodecHelpers.ReadOptionalSoundEventHolder(DataTypes, data);
     }
 
     public override Queue<byte> Serialize()
     {
-        return new Queue<byte>();
+        var data = new List<byte>();
+        data.AddRange(DataTypes.GetFloat(BlockDelaySeconds));
+        data.AddRange(DataTypes.GetFloat(DisableCooldownScale));
+        data.AddRange(DataTypes.GetVarInt(DamageReductions.Count));
+        foreach (var reduction in DamageReductions)
+        {
+            data.AddRange(DataTypes.GetFloat(reduction.HorizontalBlockingAngle));
+            data.AddRange(DataTypes.GetBool(reduction.Type is not null));
+            if (reduction.Type is not null)
+                StructuredComponentCodecHelpers.WriteHolderSet(DataTypes, data, reduction.Type);
+            data.AddRange(DataTypes.GetFloat(reduction.Base));
+            data.AddRange(DataTypes.GetFloat(reduction.Factor));
+        }
+
+        data.AddRange(DataTypes.GetFloat(ItemDamageThreshold));
+        data.AddRange(DataTypes.GetFloat(ItemDamageBase));
+        data.AddRange(DataTypes.GetFloat(ItemDamageFactor));
+        data.AddRange(DataTypes.GetBool(BypassedBy is not null));
+        if (BypassedBy is not null)
+            data.AddRange(DataTypes.GetString(BypassedBy));
+        StructuredComponentCodecHelpers.WriteOptionalSoundEventHolder(DataTypes, data, BlockSound);
+        StructuredComponentCodecHelpers.WriteOptionalSoundEventHolder(DataTypes, data, DisableSound);
+        return new Queue<byte>(data);
     }
 }
+
+public sealed record DamageReductionData(float HorizontalBlockingAngle, HolderSetData? Type, float Base, float Factor);

@@ -100,7 +100,7 @@ public static class BookContentHelper
     {
         if (item.Components is not null)
         {
-            var component = item.Components.OfType<WritableBlookContentComponent>().FirstOrDefault();
+            var component = item.Components.OfType<WritableBookContentComponent>().FirstOrDefault();
             if (component is not null)
             {
                 content = new BookContent(
@@ -121,7 +121,7 @@ public static class BookContentHelper
     {
         if (item.Components is not null)
         {
-            var component = item.Components.OfType<WrittenBlookContentComponent>().FirstOrDefault();
+            var component = item.Components.OfType<WrittenBookContentComponent>().FirstOrDefault();
             if (component is not null)
             {
                 content = new BookContent(

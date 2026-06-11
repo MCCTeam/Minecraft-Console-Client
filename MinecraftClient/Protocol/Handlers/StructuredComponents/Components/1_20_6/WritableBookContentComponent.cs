@@ -6,7 +6,7 @@ using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
 
-public class WritableBlookContentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
+public class WritableBookContentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
 {
     public List<BookPage> Pages { get; set; } = [];
 
@@ -41,7 +41,7 @@ public class WritableBlookContentComponent(DataTypes dataTypes, ItemPalette item
             if (page.HasFilteredContent)
             {
                 if (page.FilteredContent is null)
-                    throw new InvalidOperationException("Can not serialize WritableBlookContentComponent because page.HasFilteredContent = true, but FilteredContent is null!");
+                    throw new InvalidOperationException("Can not serialize WritableBookContentComponent because page.HasFilteredContent = true, but FilteredContent is null!");
 
                 data.AddRange(DataTypes.GetString(page.FilteredContent));
             }
