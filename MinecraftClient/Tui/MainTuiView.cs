@@ -1207,6 +1207,15 @@ namespace MinecraftClient.Tui
         {
             if (e.Key == Key.Escape && _overlayContent != null)
             {
+                if (_overlayContent is IOverlayCloseHandler closeHandler)
+                {
+                    if (closeHandler.TryCloseByUser())
+                        HideOverlay();
+
+                    e.Handled = true;
+                    return;
+                }
+
                 HideOverlay();
                 e.Handled = true;
                 return;

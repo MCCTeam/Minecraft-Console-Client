@@ -11,6 +11,7 @@ using MinecraftClient.ChatBots;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Commands;
+using MinecraftClient.Dialogs;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
@@ -235,6 +236,7 @@ namespace MinecraftClient
         private bool consoleHandlersAttached = false;
 
         public ILogger Log;
+        public DialogManager Dialogs { get; }
 
         private static IMinecraftComHandler? instance;
         public static IMinecraftComHandler? Instance => instance;
@@ -276,6 +278,7 @@ namespace MinecraftClient
             Log.ChatEnabled = Config.Logging.ChatMessages;
             Log.WarnEnabled = Config.Logging.WarningMessages;
             Log.ErrorEnabled = Config.Logging.ErrorMessages;
+            Dialogs = new DialogManager(this);
 
             // SENTRY: Send our client version and server version to Sentry
             SentrySdk.ConfigureScope(scope =>
@@ -1817,6 +1820,14 @@ namespace MinecraftClient
 
                 TrySendMessageToServer();
             }
+        }
+
+        public bool SendCustomClickAction(string id, Dictionary<string, object>? payload)
+        {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SendCustomClickAction(id, payload));
+
+            return handler.SendCustomClickAction(id, payload);
         }
 
         /// <summary>
@@ -3419,6 +3430,34 @@ namespace MinecraftClient
         public void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
         {
             DispatchBotEvent(bot => bot.OnNetworkPacket(packetID, packetData, isLogin, isInbound));
+        }
+
+        public void OnDialogRegistryData(int protocolId, string resourceId, DialogDefinition dialog)
+        {
+            Dialogs.StoreRegistryDialog(protocolId, resourceId, dialog);
+        }
+
+        public void OnDialogShown(DialogDefinition dialog, DialogPhase phase)
+        {
+            var instance = Dialogs.Show(dialog, phase);
+            Tui.DialogTuiHost.TryOpen(this, instance, force: phase == DialogPhase.Configuration);
+        }
+
+        public void OnDialogRegistryReferenceShown(int protocolId, DialogPhase phase)
+        {
+            var instance = Dialogs.ShowRegistryReference(protocolId, phase);
+            Tui.DialogTuiHost.TryOpen(this, instance, force: phase == DialogPhase.Configuration);
+        }
+
+        public void OnDialogCleared()
+        {
+            Dialogs.Clear();
+            Tui.DialogTuiHost.CloseCurrent();
+        }
+
+        public void OnServerLinksUpdated(IReadOnlyList<DialogServerLink> links)
+        {
+            Dialogs.SetServerLinks(links);
         }
 
         /// <summary>

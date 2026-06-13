@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using MinecraftClient.Crypto;
+using MinecraftClient.Dialogs;
 using MinecraftClient.Inventory;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Logger;
@@ -19,6 +20,7 @@ using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Handlers.packet.s2c;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
+using MinecraftClient.Protocol.Dialogs;
 using MinecraftClient.Protocol.Message;
 using MinecraftClient.Protocol.ProfileKey;
 using MinecraftClient.Protocol.Session;
@@ -118,6 +120,7 @@ namespace MinecraftClient.Protocol.Handlers
         readonly PacketTypePalette packetPalette;
         readonly SocketWrapper socketWrapper;
         readonly DataTypes dataTypes;
+        readonly DialogNbtParser dialogNbtParser = new();
         Tuple<Thread, CancellationTokenSource>? netMain = null; // main thread
         Tuple<Thread, CancellationTokenSource>? netReader = null; // reader thread
         readonly ILogger log;
@@ -564,6 +567,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     var isDimension = registryId == "minecraft:dimension_type";
                                     var isAttribute = registryId == "minecraft:attribute";
                                     var isEnchantment = registryId == "minecraft:enchantment";
+                                    var isDialog = registryId == "minecraft:dialog";
 
                                     var availableChats = isChat ? new Dictionary<int, string>() : null;
                                     var dimensionIdMap = isDimension ? new Dictionary<int, string>() : null;
@@ -596,6 +600,8 @@ namespace MinecraftClient.Protocol.Handlers
                                         }
                                         else if (isEnchantment)
                                             enchantmentIdMap!.Add(i, entryId);
+                                        else if (isDialog && nbtData is not null)
+                                            handler.OnDialogRegistryData(i, entryId, dialogNbtParser.Parse(nbtData));
                                     }
 
                                     if (isChat)
@@ -671,16 +677,15 @@ namespace MinecraftClient.Protocol.Handlers
                                 break;
 
                             case ConfigurationPacketTypesIn.ServerLinks:
-                                var cfgLinksCount = dataTypes.ReadNextVarInt(packetData);
-                                for (var i = 0; i < cfgLinksCount; i++)
-                                {
-                                    var cfgIsBuiltIn = dataTypes.ReadNextBool(packetData);
-                                    if (cfgIsBuiltIn)
-                                        dataTypes.ReadNextVarInt(packetData); // Known type ID
-                                    else
-                                        dataTypes.ReadNextChat(packetData); // Component label
-                                    dataTypes.ReadNextString(packetData); // URL
-                                }
+                                handler.OnServerLinksUpdated(ReadServerLinks(packetData));
+                                break;
+
+                            case ConfigurationPacketTypesIn.ClearDialog:
+                                handler.OnDialogCleared();
+                                break;
+
+                            case ConfigurationPacketTypesIn.ShowDialog:
+                                HandleShowDialog(packetData, DialogPhase.Configuration);
                                 break;
 
                             // Ignore other packets at this stage
@@ -3373,16 +3378,15 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
 
                 case PacketTypesIn.ServerLinks:
-                    var linksCount = dataTypes.ReadNextVarInt(packetData);
-                    for (var i = 0; i < linksCount; i++)
-                    {
-                        var isBuiltIn = dataTypes.ReadNextBool(packetData);
-                        if (isBuiltIn)
-                            dataTypes.ReadNextVarInt(packetData); // Known type ID
-                        else
-                            dataTypes.ReadNextChat(packetData); // Component label
-                        dataTypes.ReadNextString(packetData); // URL
-                    }
+                    handler.OnServerLinksUpdated(ReadServerLinks(packetData));
+                    break;
+
+                case PacketTypesIn.ClearDialog:
+                    handler.OnDialogCleared();
+                    break;
+
+                case PacketTypesIn.ShowDialog:
+                    HandleShowDialog(packetData, DialogPhase.Play);
                     break;
 
                 // 1.21.2+ new packets
@@ -4103,6 +4107,61 @@ namespace MinecraftClient.Protocol.Handlers
         private void SendPacket(ConfigurationPacketTypesOut packet, IEnumerable<byte> packetData)
         {
             SendPacket(packetPalette.GetOutgoingIdByTypeConfiguration(packet), packetData, packet.ToString());
+        }
+
+        private void HandleShowDialog(Queue<byte> packetData, DialogPhase phase)
+        {
+            if (phase == DialogPhase.Play)
+            {
+                var holderId = dataTypes.ReadNextVarInt(packetData);
+                if (holderId != 0)
+                {
+                    handler.OnDialogRegistryReferenceShown(holderId - 1, phase);
+                    return;
+                }
+            }
+
+            var dialog = dialogNbtParser.Parse(dataTypes.ReadNextNbt(packetData));
+            handler.OnDialogShown(dialog, phase);
+        }
+
+        private IReadOnlyList<DialogServerLink> ReadServerLinks(Queue<byte> packetData)
+        {
+            var linksCount = dataTypes.ReadNextVarInt(packetData);
+            List<DialogServerLink> links = new(linksCount);
+
+            for (var i = 0; i < linksCount; i++)
+            {
+                string label;
+                var isBuiltIn = dataTypes.ReadNextBool(packetData);
+                if (isBuiltIn)
+                    label = GetKnownServerLinkLabel(dataTypes.ReadNextVarInt(packetData));
+                else
+                    label = dataTypes.ReadNextChat(packetData);
+
+                var url = dataTypes.ReadNextString(packetData);
+                links.Add(new DialogServerLink(label, url));
+            }
+
+            return links;
+        }
+
+        private static string GetKnownServerLinkLabel(int id)
+        {
+            return id switch
+            {
+                0 => Translations.dialog_server_link_report_bug,
+                1 => Translations.dialog_server_link_community_guidelines,
+                2 => Translations.dialog_server_link_support,
+                3 => Translations.dialog_server_link_status,
+                4 => Translations.dialog_server_link_feedback,
+                5 => Translations.dialog_server_link_community,
+                6 => Translations.dialog_server_link_website,
+                7 => Translations.dialog_server_link_forums,
+                8 => Translations.dialog_server_link_news,
+                9 => Translations.dialog_server_link_announcements,
+                _ => id.ToString(CultureInfo.InvariantCulture)
+            };
         }
 
         /// <summary>
@@ -5010,6 +5069,49 @@ namespace MinecraftClient.Protocol.Handlers
                 }
 
                 return true;
+            }
+            catch (SocketException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+        }
+
+        public bool SendCustomClickAction(string id, Dictionary<string, object>? payload)
+        {
+            if (protocolVersion < MC_1_21_6_Version)
+                return false;
+
+            try
+            {
+                List<byte> fields = new();
+                fields.AddRange(dataTypes.GetString(id.Contains(':', StringComparison.Ordinal) ? id : "minecraft:" + id));
+
+                var tagBytes = dataTypes.GetNbtTag(payload);
+                if (tagBytes.Length > 65536)
+                    return false;
+
+                fields.AddRange(DataTypes.GetVarInt(tagBytes.Length));
+                fields.AddRange(tagBytes);
+
+                switch (currentState)
+                {
+                    case CurrentState.Configuration:
+                        SendPacket(ConfigurationPacketTypesOut.CustomClickAction, fields);
+                        return true;
+                    case CurrentState.Play:
+                        SendPacket(PacketTypesOut.CustomClickAction, fields);
+                        return true;
+                    default:
+                        return false;
+                }
             }
             catch (SocketException)
             {

@@ -266,6 +266,11 @@ namespace MinecraftClient.Protocol.Handlers
             throw new NotImplementedException();
         }
 
+        public bool SendCustomClickAction(string id, Dictionary<string, object>? payload)
+        {
+            return false;
+        }
+
         public void Dispose()
         {
             try
