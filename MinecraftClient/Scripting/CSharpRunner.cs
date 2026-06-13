@@ -72,9 +72,7 @@ namespace MinecraftClient.Scripting
                                 scriptMain = false;
                         }
 
-                        if (scriptMain)
-                            script.Add(new(i + 1, line));
-                        else extensions.Add(new(i + 1, line));
+                        (scriptMain ? script : extensions).Add(new(i + 1, line));
                     }
 
                     //Add return statement if missing
@@ -178,7 +176,7 @@ namespace MinecraftClient.Scripting
 
         private static string EscapeLineDirectivePath(string path)
         {
-            return path.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+            return path.Replace("\\", "\\\\").Replace("\"", "\\\"");
         }
 
         private static string FormatCompilationFailure(Diagnostic failure, string scriptName)
