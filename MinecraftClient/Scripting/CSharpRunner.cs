@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using MinecraftClient.Scripting.DynamicRun.Builder;
 using static MinecraftClient.Settings;
 
@@ -15,6 +16,8 @@ namespace MinecraftClient.Scripting
     class CSharpRunner
     {
         private static readonly Dictionary<ulong, byte[]> CompileCache = new();
+
+        private readonly record struct ScriptSourceLine(int LineNumber, string Text);
 
         /// <summary>
         /// Run the specified C# script file
@@ -48,12 +51,13 @@ namespace MinecraftClient.Scripting
                 {
                     //Process different sections of the script file
                     bool scriptMain = true;
-                    List<string> script = new();
-                    List<string> extensions = new();
+                    List<ScriptSourceLine> script = new();
+                    List<ScriptSourceLine> extensions = new();
                     List<string> libs = new();
                     List<string> dlls = new();
-                    foreach (string line in lines)
+                    for (int i = 0; i < lines.Length; i++)
                     {
+                        string line = lines[i];
                         if (line.StartsWith("//using"))
                         {
                             libs.Add(line.Replace("//", "").Trim());
@@ -67,43 +71,20 @@ namespace MinecraftClient.Scripting
                             if (line.EndsWith("Extensions"))
                                 scriptMain = false;
                         }
-                        else if (scriptMain)
-                            script.Add(line);
-                        else extensions.Add(line);
+
+                        if (scriptMain)
+                            script.Add(new(i + 1, line));
+                        else extensions.Add(new(i + 1, line));
                     }
 
                     //Add return statement if missing
-                    if (script.All(line => !line.StartsWith("return ") && !line.Contains(" return ")))
-                        script.Add("return null;");
+                    bool hasImplicitReturn = script.All(line => !line.Text.StartsWith("return ", StringComparison.Ordinal)
+                        && !line.Text.Contains(" return ", StringComparison.Ordinal));
 
                     //Generate a class from the given script
-                    string code = string.Join("\n", new string[]
-                    {
-                        "using System;",
-                        "using System.Collections.Generic;",
-                        "using System.Text.RegularExpressions;",
-                        "using System.Linq;",
-                        "using System.Text;",
-                        "using System.IO;",
-                        "using System.Net;",
-                        "using System.Threading;",
-                        "using MinecraftClient;",
-                        "using MinecraftClient.Scripting;",
-                        "using MinecraftClient.Mapping;",
-                        "using MinecraftClient.Inventory;",
-                        string.Join("\n", libs),
-                        "namespace ScriptLoader {",
-                        "public class Script {",
-                        "public CSharpAPI MCC;",
-                        "public object __run(CSharpAPI __apiHandler, string[] args) {",
-                            "this.MCC = __apiHandler;",
-                            string.Join("\n", script),
-                        "}",
-                            string.Join("\n", extensions),
-                        "}}",
-                    });
+                    string code = BuildScriptCode(scriptName, script, extensions, libs, hasImplicitReturn);
 
-                    ConsoleIO.WriteLogLine($"[Script] Starting compilation for {scriptName}...");
+                    ConsoleIO.WriteLogLine(string.Format(Translations.script_compile_started, scriptName));
 
                     //Compile the C# class in memory using all the currently loaded assemblies
                     var result = compiler.Compile(code, Guid.NewGuid().ToString(), dlls);
@@ -112,22 +93,17 @@ namespace MinecraftClient.Scripting
                     if (result.Failures is not null)
                     {
 
-                        ConsoleIO.WriteLogLine("[Script] Compilation failed with error(s):");
+                        ConsoleIO.WriteLogLine(Translations.script_compile_failed);
 
                         foreach (var failure in result.Failures)
                         {
-                            // Get the line that contains the error:
-
-                            var loc = failure.Location.GetMappedLineSpan();
-                            var line = code.Split('\n')[loc.StartLinePosition.Line];
-
-                            ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, on line ({line.Trim()}): [{failure.Id}] {failure.GetMessage()}");
+                            ConsoleIO.WriteLogLine(FormatCompilationFailure(failure, scriptName));
                         }
 
                         throw new CSharpException(CSErrorType.InvalidScript, new InvalidProgramException("Compilation failed due to error(s)."));
                     }
 
-                    ConsoleIO.WriteLogLine("[Script] Compilation done with no errors.");
+                    ConsoleIO.WriteLogLine(Translations.script_compile_succeeded);
 
                     //Retrieve compiled assembly
                     assembly = result.Assembly;
@@ -149,6 +125,77 @@ namespace MinecraftClient.Scripting
                 catch (Exception e) { throw new CSharpException(CSErrorType.RuntimeError, e); }
             }
             else return null;
+        }
+
+        private static string BuildScriptCode(string scriptName, IEnumerable<ScriptSourceLine> script, IEnumerable<ScriptSourceLine> extensions, IEnumerable<string> libs, bool hasImplicitReturn)
+        {
+            StringBuilder codeBuilder = new();
+            codeBuilder.AppendLine("using System;");
+            codeBuilder.AppendLine("using System.Collections.Generic;");
+            codeBuilder.AppendLine("using System.Text.RegularExpressions;");
+            codeBuilder.AppendLine("using System.Linq;");
+            codeBuilder.AppendLine("using System.Text;");
+            codeBuilder.AppendLine("using System.IO;");
+            codeBuilder.AppendLine("using System.Net;");
+            codeBuilder.AppendLine("using System.Threading;");
+            codeBuilder.AppendLine("using MinecraftClient;");
+            codeBuilder.AppendLine("using MinecraftClient.Scripting;");
+            codeBuilder.AppendLine("using MinecraftClient.Mapping;");
+            codeBuilder.AppendLine("using MinecraftClient.Inventory;");
+
+            foreach (string lib in libs)
+                codeBuilder.AppendLine(lib);
+
+            codeBuilder.AppendLine("namespace ScriptLoader {");
+            codeBuilder.AppendLine("public class Script {");
+            codeBuilder.AppendLine("public CSharpAPI MCC;");
+            codeBuilder.AppendLine("public object __run(CSharpAPI __apiHandler, string[] args) {");
+            codeBuilder.AppendLine("this.MCC = __apiHandler;");
+            AppendMappedSection(codeBuilder, scriptName, script);
+
+            if (hasImplicitReturn)
+                codeBuilder.AppendLine("return null;");
+
+            codeBuilder.AppendLine("}");
+            AppendMappedSection(codeBuilder, scriptName, extensions);
+            codeBuilder.AppendLine("}}");
+            return codeBuilder.ToString();
+        }
+
+        private static void AppendMappedSection(StringBuilder codeBuilder, string scriptName, IEnumerable<ScriptSourceLine> lines)
+        {
+            ScriptSourceLine[] sourceLines = lines.ToArray();
+            if (sourceLines.Length == 0)
+                return;
+
+            codeBuilder.AppendLine($@"#line {sourceLines[0].LineNumber} ""{EscapeLineDirectivePath(scriptName)}""");
+
+            foreach (ScriptSourceLine line in sourceLines)
+                codeBuilder.AppendLine(line.Text);
+
+            codeBuilder.AppendLine("#line default");
+        }
+
+        private static string EscapeLineDirectivePath(string path)
+        {
+            return path.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+        }
+
+        private static string FormatCompilationFailure(Diagnostic failure, string scriptName)
+        {
+            if (failure.Location.IsInSource)
+            {
+                var location = failure.Location.GetMappedLineSpan();
+                string sourcePath = string.IsNullOrWhiteSpace(location.Path) ? scriptName : location.Path;
+                return string.Format(Translations.script_compile_error,
+                    sourcePath,
+                    location.StartLinePosition.Line + 1,
+                    location.StartLinePosition.Character + 1,
+                    failure.Id,
+                    failure.GetMessage());
+            }
+
+            return string.Format(Translations.script_compile_error_no_location, scriptName, failure.Id, failure.GetMessage());
         }
 
         /// <summary>
