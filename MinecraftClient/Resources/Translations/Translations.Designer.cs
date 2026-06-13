@@ -1780,6 +1780,51 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("bot.script.pm.loaded", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Error in {0} at line {1}, column {2}: [{3}] {4}.
+        /// </summary>
+        internal static string script_compile_error {
+            get {
+                return ResourceManager.GetString("script.compile.error", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Error in {0}: [{1}] {2}.
+        /// </summary>
+        internal static string script_compile_error_no_location {
+            get {
+                return ResourceManager.GetString("script.compile.error_no_location", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [Script] Compilation failed with error(s):.
+        /// </summary>
+        internal static string script_compile_failed {
+            get {
+                return ResourceManager.GetString("script.compile.failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [Script] Starting compilation for {0}....
+        /// </summary>
+        internal static string script_compile_started {
+            get {
+                return ResourceManager.GetString("script.compile.started", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to [Script] Compilation done with no errors..
+        /// </summary>
+        internal static string script_compile_succeeded {
+            get {
+                return ResourceManager.GetString("script.compile.succeeded", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Loaded task:

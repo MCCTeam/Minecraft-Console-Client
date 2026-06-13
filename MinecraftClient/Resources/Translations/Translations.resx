@@ -693,6 +693,21 @@ cooldown: {6}</value>
   <data name="bot.script.pm.loaded" xml:space="preserve">
     <value>Script '{0}' loaded.</value>
   </data>
+  <data name="script.compile.error" xml:space="preserve">
+    <value>Error in {0} at line {1}, column {2}: [{3}] {4}</value>
+  </data>
+  <data name="script.compile.error_no_location" xml:space="preserve">
+    <value>Error in {0}: [{1}] {2}</value>
+  </data>
+  <data name="script.compile.failed" xml:space="preserve">
+    <value>[Script] Compilation failed with error(s):</value>
+  </data>
+  <data name="script.compile.started" xml:space="preserve">
+    <value>[Script] Starting compilation for {0}...</value>
+  </data>
+  <data name="script.compile.succeeded" xml:space="preserve">
+    <value>[Script] Compilation done with no errors.</value>
+  </data>
   <data name="bot.scriptScheduler.loaded_task" xml:space="preserve">
     <value>Loaded task:
 {0}</value>
