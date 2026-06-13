@@ -18,7 +18,7 @@ public static class DialogFormatter
     {
         StringBuilder builder = new();
         builder.AppendLine(string.Format(Translations.dialog_render_header, instance.Revision, instance.Phase, instance.Definition.DisplayTitle()));
-        builder.AppendLine(string.Format(Translations.dialog_render_type, instance.Definition.Type));
+        builder.AppendLine(string.Format(Translations.dialog_render_type, DisplayType(instance.Definition.Type)));
 
         foreach (var body in instance.Definition.Body.Where(static body => !string.IsNullOrWhiteSpace(body.Text)))
             builder.AppendLine(string.Format(Translations.dialog_render_body, body.Text));
@@ -45,6 +45,19 @@ public static class DialogFormatter
             builder.AppendLine(Translations.dialog_render_cancel_hint);
 
         return builder.ToString();
+    }
+
+    public static string DisplayType(string rawType)
+    {
+        return rawType switch
+        {
+            "minecraft:notice" => Translations.dialog_type_notice,
+            "minecraft:confirmation" => Translations.dialog_type_confirmation,
+            "minecraft:multi_action" => Translations.dialog_type_multi_action,
+            "minecraft:dialog_list" => Translations.dialog_type_dialog_list,
+            "minecraft:server_links" => Translations.dialog_type_server_links,
+            _ => string.IsNullOrEmpty(rawType) ? Translations.dialog_type_unknown : rawType
+        };
     }
 
     private static string DescribeInput(DialogInput input)

@@ -3034,4 +3034,22 @@ see item details.</value>
   <data name="dialog.action_desc_unknown" xml:space="preserve">
     <value>unknown</value>
   </data>
+  <data name="dialog.type.notice" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="dialog.type.confirmation" xml:space="preserve">
+    <value>Confirmation</value>
+  </data>
+  <data name="dialog.type.multi_action" xml:space="preserve">
+    <value>Multi-action</value>
+  </data>
+  <data name="dialog.type.dialog_list" xml:space="preserve">
+    <value>Dialog list</value>
+  </data>
+  <data name="dialog.type.server_links" xml:space="preserve">
+    <value>Server links</value>
+  </data>
+  <data name="dialog.type.unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
 </root>

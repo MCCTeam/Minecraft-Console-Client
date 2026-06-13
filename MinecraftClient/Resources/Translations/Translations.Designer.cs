@@ -8077,5 +8077,29 @@ namespace MinecraftClient {
             get { return ResourceManager.GetString("dialog.action_desc_unknown", resourceCulture); }
         }
 
+        internal static string dialog_type_notice {
+            get { return ResourceManager.GetString("dialog.type.notice", resourceCulture); }
+        }
+
+        internal static string dialog_type_confirmation {
+            get { return ResourceManager.GetString("dialog.type.confirmation", resourceCulture); }
+        }
+
+        internal static string dialog_type_multi_action {
+            get { return ResourceManager.GetString("dialog.type.multi_action", resourceCulture); }
+        }
+
+        internal static string dialog_type_dialog_list {
+            get { return ResourceManager.GetString("dialog.type.dialog_list", resourceCulture); }
+        }
+
+        internal static string dialog_type_server_links {
+            get { return ResourceManager.GetString("dialog.type.server_links", resourceCulture); }
+        }
+
+        internal static string dialog_type_unknown {
+            get { return ResourceManager.GetString("dialog.type.unknown", resourceCulture); }
+        }
+
     }
 }
