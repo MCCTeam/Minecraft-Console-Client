@@ -328,6 +328,9 @@ public sealed class DialogNbtParser
         if (value is Dictionary<string, object> dialogData)
             return new DialogActionDefinition(DialogActionKind.ShowDialog, NestedDialog: new DialogNbtParser().Parse(dialogData), Type: type);
 
+        if (value is int protocolId)
+            return new DialogActionDefinition(DialogActionKind.ShowDialog, DialogReferenceId: protocolId, Type: type);
+
         return new DialogActionDefinition(DialogActionKind.ShowDialog, Value: value.ToString(), Type: type);
     }
 

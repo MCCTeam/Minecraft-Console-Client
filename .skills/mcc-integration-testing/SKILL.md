@@ -139,6 +139,34 @@ log. Version-gated components (v1212+, v1215+, v12111+, v261) are tested only
 on the versions that support them. See `SC_Integration_Test_Report.md` for a
 reference run across all 6 version groups.
 
+### 6. Dialog integration test
+
+Use this after touching any dialog system code (packet handling, NBT parsing,
+models, TUI, command dispatch, the state machine in `DialogManager`, or the
+codec in `DialogNbtParser`). Tests all 5 dialog types, button actions (close,
+run_command, show_dialog), cancel/dismiss, click-label, and body content:
+
+```bash
+tools/run-dialog-test.sh 26.1
+```
+
+The script starts the server if needed, generates a temp MCC config, launches
+MCC with file-input mode (requires both `MCC_FILE_INPUT=1` and
+`MCC_INPUT_FILE=<path>` env vars), sends inline SNBT dialogs via RCON, and
+asserts 29 checks against the MCC log.
+
+Key requirements that differ from other test modes:
+
+- FileInputBot is loaded only when `MCC_FILE_INPUT=1` is set in the
+  environment. The `[ChatBot.FileInput]` config section is ignored at load
+  time.
+- The input file path is controlled by `MCC_INPUT_FILE`, *not* by the config
+  `File` setting.
+- Dialogs use inline SNBT syntax through `ResourceOrIdArgument`, e.g.:
+  `dialog show <player> {type:"minecraft:notice", title:{text:"Hello"}}`
+- The `ActionButton.CODEC` flattens `CommonButtonData` fields (`label`,
+  `tooltip`, `width`) into the same object as `action` — no `button` wrapper.
+
 ### 5. Full inventory regression sweep
 
 Use this when touching inventory snapshots, player/container slot sync, creative inventory, item-slot serialization, packet palettes, game-mode updates, or block-use paths that open containers:
@@ -224,6 +252,9 @@ Optionally override the login name with the fourth argument to the config helper
   - full inventory command/API sweep across one or more versions
 - `tools/run-structured-components-test.sh`
   - exercises every structured component via RCON `/give` across versions 1.20.6-26.1
+- `tools/run-dialog-test.sh`
+  - dialog integration test: all 5 types, run_command/show_dialog actions,
+    cancel/dismiss/click-label, body content; 29 assertions on MCC log
 
 ## Evidence Discipline
 
@@ -287,3 +318,6 @@ Always summarize:
 - If an inventory row crashes with `Queue empty` or `Failed to process incoming packet`, inspect packet palette routing before changing inventory code. A single shifted packet ID can make a healthy inventory feature look broken.
 - For chest-open failures, separate product and harness causes. The player may be standing inside the chest or suffocating on older servers. Stand beside the chest, put a floor under the player, and retry `useblock`.
 - For shared local servers, a `Done` log line does not prove RCON is ready. Retry setup commands and verify the actual RCON port from `server.properties`.
+- If `tools/run-dialog-test.sh` fails with "FileInput Watching: .../mcc_input.txt" pointing to the wrong directory, the `MCC_INPUT_FILE` env var was not set in the tmux command. FileInputBot ignores the config `File` setting entirely.
+- If inline SNBT dialogs fail on the server side (`Failed to parse structure: No key ...`), check whether `ActionButton.CODEC` fields are flat (no `button` wrapper) and whether the dialog type fields match the 26.1 server (`label` not `text` in `CommonButtonData`).
+- If a dialog integration test fails on "Server showed custom dialog", the dialog packet (id=0x8C in 26.1 play phase) may not have been sent. Verify the RCON command succeeded and the server printed "Displayed dialog to ...".
