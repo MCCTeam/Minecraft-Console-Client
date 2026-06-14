@@ -174,6 +174,13 @@ internal sealed class DialogView : Border, IOverlayCloseHandler
             });
         }
 
+        main.Children.Add(new TextBlock
+        {
+            Text = Translations.dialog_render_help_hint,
+            Foreground = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
+            TextWrapping = TextWrapping.Wrap
+        });
+
         main.Children.Add(_status);
         scroll.Content = main;
         root.Children.Add(scroll);

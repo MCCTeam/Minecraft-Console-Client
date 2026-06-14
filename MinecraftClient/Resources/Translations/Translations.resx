@@ -3067,4 +3067,7 @@ see item details.</value>
   <data name="dialog.input_kind.unknown" xml:space="preserve">
     <value>Unknown</value>
   </data>
+  <data name="dialog.render.help_hint" xml:space="preserve">
+    <value>Use /dialog help for a list of commands.</value>
+  </data>
 </root>

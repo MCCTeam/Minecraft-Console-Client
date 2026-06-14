@@ -45,6 +45,8 @@ public static class DialogFormatter
                 builder.AppendLine(string.Format(Translations.dialog_render_action, action.Index, action.Label, DescribeAction(action.Action)));
         }
 
+        builder.AppendLine();
+        builder.AppendLine("§o" + Translations.dialog_render_help_hint + "§r");
         builder.Append(border);
         return builder.ToString();
     }

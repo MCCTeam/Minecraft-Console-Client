@@ -8121,5 +8121,9 @@ namespace MinecraftClient {
             get { return ResourceManager.GetString("dialog.input_kind.unknown", resourceCulture); }
         }
 
+        internal static string dialog_render_help_hint {
+            get { return ResourceManager.GetString("dialog.render.help_hint", resourceCulture); }
+        }
+
     }
 }

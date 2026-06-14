@@ -3440,13 +3440,15 @@ namespace MinecraftClient
         public void OnDialogShown(DialogDefinition dialog, DialogPhase phase)
         {
             var instance = Dialogs.Show(dialog, phase);
-            Tui.DialogTuiHost.TryOpen(this, instance, force: phase == DialogPhase.Configuration);
+            if (!Tui.DialogTuiHost.TryOpen(this, instance, force: phase == DialogPhase.Configuration))
+                ConsoleIO.WriteLineFormatted(DialogFormatter.Render(instance), acceptnewlines: true);
         }
 
         public void OnDialogRegistryReferenceShown(int protocolId, DialogPhase phase)
         {
             var instance = Dialogs.ShowRegistryReference(protocolId, phase);
-            Tui.DialogTuiHost.TryOpen(this, instance, force: phase == DialogPhase.Configuration);
+            if (!Tui.DialogTuiHost.TryOpen(this, instance, force: phase == DialogPhase.Configuration))
+                ConsoleIO.WriteLineFormatted(DialogFormatter.Render(instance), acceptnewlines: true);
         }
 
         public void OnDialogCleared()
