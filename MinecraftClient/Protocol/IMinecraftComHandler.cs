@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MinecraftClient.Dialogs;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
@@ -92,6 +93,31 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="message">Message received</param>
         public void OnTextReceived(ChatMessage message);
+
+        /// <summary>
+        /// Called when the server synchronizes a dialog registry entry.
+        /// </summary>
+        void OnDialogRegistryData(int protocolId, string resourceId, DialogDefinition dialog);
+
+        /// <summary>
+        /// Called when the server shows a custom dialog.
+        /// </summary>
+        void OnDialogShown(DialogDefinition dialog, DialogPhase phase);
+
+        /// <summary>
+        /// Called when the server shows a custom dialog by registry protocol ID.
+        /// </summary>
+        void OnDialogRegistryReferenceShown(int protocolId, DialogPhase phase);
+
+        /// <summary>
+        /// Called when the server clears the current custom dialog.
+        /// </summary>
+        void OnDialogCleared();
+
+        /// <summary>
+        /// Called when the server sends updated server links.
+        /// </summary>
+        void OnServerLinksUpdated(IReadOnlyList<DialogServerLink> links);
 
         /// <summary>
         /// Will be called every animations of the hit and place block

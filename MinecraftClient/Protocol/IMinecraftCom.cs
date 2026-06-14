@@ -49,6 +49,14 @@ namespace MinecraftClient.Protocol
         bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair = null);
 
         /// <summary>
+        /// Send a custom click action packet introduced for dialogs in Minecraft 1.21.6.
+        /// </summary>
+        /// <param name="id">Custom action resource location</param>
+        /// <param name="payload">Optional NBT payload</param>
+        /// <returns>True if successfully sent</returns>
+        bool SendCustomClickAction(string id, Dictionary<string, object>? payload);
+
+        /// <summary>
         /// Allow to respawn after death
         /// </summary>
         /// <returns>True if packet successfully sent</returns>

@@ -2842,4 +2842,247 @@ see item details.</value>
   <data name="debug.packet.loop_reason.cancelled" xml:space="preserve">
     <value>cancelled</value>
   </data>
+  <data name="cmd.dialog.usage" xml:space="preserve">
+    <value>dialog [show|open|set|click|click-label|cancel|dismiss]</value>
+  </data>
+  <data name="cmd.dialog.desc" xml:space="preserve">
+    <value>View and interact with the current server custom dialog.</value>
+  </data>
+  <data name="dialog.received" xml:space="preserve">
+    <value>Server showed custom dialog: {0}. Use /dialog show.</value>
+  </data>
+  <data name="dialog.cleared" xml:space="preserve">
+    <value>Server cleared the custom dialog.</value>
+  </data>
+  <data name="dialog.none" xml:space="preserve">
+    <value>No custom dialog is active.</value>
+  </data>
+  <data name="dialog.dismissed" xml:space="preserve">
+    <value>Dialog dismissed locally.</value>
+  </data>
+  <data name="dialog.unresolved_title" xml:space="preserve">
+    <value>Unresolved dialog {0}</value>
+  </data>
+  <data name="dialog.unresolved_body" xml:space="preserve">
+    <value>The server referenced dialog registry entry {0}, but MCC has no data for it.</value>
+  </data>
+  <data name="dialog.unresolved_action_disabled" xml:space="preserve">
+    <value>This dialog could not be resolved, so actions are disabled.</value>
+  </data>
+  <data name="dialog.input_unknown" xml:space="preserve">
+    <value>Unknown dialog input: {0}</value>
+  </data>
+  <data name="dialog.input_set" xml:space="preserve">
+    <value>Dialog input {0} set to {1}.</value>
+  </data>
+  <data name="dialog.input_too_long" xml:space="preserve">
+    <value>Input {0} is longer than {1} characters.</value>
+  </data>
+  <data name="dialog.input_boolean_invalid" xml:space="preserve">
+    <value>Input {0} expects true or false.</value>
+  </data>
+  <data name="dialog.input_option_invalid" xml:space="preserve">
+    <value>Input {0} expects one of the listed option IDs.</value>
+  </data>
+  <data name="dialog.input_number_invalid" xml:space="preserve">
+    <value>Input {0} expects a number.</value>
+  </data>
+  <data name="dialog.input_number_range_invalid" xml:space="preserve">
+    <value>Input {0} must be between {1} and {2}.</value>
+  </data>
+  <data name="dialog.action_unknown" xml:space="preserve">
+    <value>Unknown dialog action index: {0}</value>
+  </data>
+  <data name="dialog.action_label_unknown" xml:space="preserve">
+    <value>Unknown dialog action label: {0}</value>
+  </data>
+  <data name="dialog.action_label_ambiguous" xml:space="preserve">
+    <value>Dialog action label is ambiguous: {0}</value>
+  </data>
+  <data name="dialog.cannot_cancel" xml:space="preserve">
+    <value>This dialog cannot be closed with cancel.</value>
+  </data>
+  <data name="dialog.action_closed" xml:space="preserve">
+    <value>Dialog action closed locally.</value>
+  </data>
+  <data name="dialog.action_command_not_in_play" xml:space="preserve">
+    <value>This dialog command action is only available in play state.</value>
+  </data>
+  <data name="dialog.action_invalid" xml:space="preserve">
+    <value>Dialog action is invalid.</value>
+  </data>
+  <data name="dialog.action_custom_failed" xml:space="preserve">
+    <value>Custom dialog action packet could not be sent.</value>
+  </data>
+  <data name="dialog.action_command_sent" xml:space="preserve">
+    <value>Dialog command sent: {0}</value>
+  </data>
+  <data name="dialog.action_custom_sent" xml:space="preserve">
+    <value>Dialog custom action sent: {0}</value>
+  </data>
+  <data name="dialog.action_nested_opened" xml:space="preserve">
+    <value>Nested dialog opened.</value>
+  </data>
+  <data name="dialog.action_open_url" xml:space="preserve">
+    <value>Dialog URL action: {0}</value>
+  </data>
+  <data name="dialog.action_suggest_command" xml:space="preserve">
+    <value>Dialog suggested command: {0}</value>
+  </data>
+  <data name="dialog.action_copy" xml:space="preserve">
+    <value>Dialog copy action: {0}</value>
+  </data>
+  <data name="dialog.action_unsupported" xml:space="preserve">
+    <value>Unsupported dialog action: {0}</value>
+  </data>
+  <data name="dialog.tui_pending" xml:space="preserve">
+    <value>Custom dialog is pending. Use dialog open after closing the current overlay.</value>
+  </data>
+  <data name="dialog.tui_unavailable" xml:space="preserve">
+    <value>Dialog TUI is unavailable.</value>
+  </data>
+  <data name="dialog.tui_opened" xml:space="preserve">
+    <value>Dialog TUI opened.</value>
+  </data>
+  <data name="dialog.action_unnamed" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="dialog.action_ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="dialog.item_body" xml:space="preserve">
+    <value>Item preview</value>
+  </data>
+  <data name="dialog.server_link.report_bug" xml:space="preserve">
+    <value>Report bug</value>
+  </data>
+  <data name="dialog.server_link.community_guidelines" xml:space="preserve">
+    <value>Community guidelines</value>
+  </data>
+  <data name="dialog.server_link.support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="dialog.server_link.status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="dialog.server_link.feedback" xml:space="preserve">
+    <value>Feedback</value>
+  </data>
+  <data name="dialog.server_link.community" xml:space="preserve">
+    <value>Community</value>
+  </data>
+  <data name="dialog.server_link.website" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="dialog.server_link.forums" xml:space="preserve">
+    <value>Forums</value>
+  </data>
+  <data name="dialog.server_link.news" xml:space="preserve">
+    <value>News</value>
+  </data>
+  <data name="dialog.server_link.announcements" xml:space="preserve">
+    <value>Announcements</value>
+  </data>
+  <data name="tui.dialog.cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="dialog.render.header" xml:space="preserve">
+    <value>Dialog #{0} [{1}]: {2}</value>
+  </data>
+  <data name="dialog.render.type" xml:space="preserve">
+    <value>Type: {0}</value>
+  </data>
+  <data name="dialog.render.body" xml:space="preserve">
+    <value>Body: {0}</value>
+  </data>
+  <data name="dialog.render.inputs" xml:space="preserve">
+    <value>Inputs:</value>
+  </data>
+  <data name="dialog.render.input" xml:space="preserve">
+    <value>  {0} ({1}) {2} = {3} [{4}]</value>
+  </data>
+  <data name="dialog.render.actions" xml:space="preserve">
+    <value>Actions:</value>
+  </data>
+  <data name="dialog.render.action" xml:space="preserve">
+    <value>  [{0}] {1} ({2})</value>
+  </data>
+  <data name="dialog.render.cancel_hint" xml:space="preserve">
+    <value>Use /dialog cancel to close or run the cancel action.</value>
+  </data>
+  <data name="dialog.input_desc_text" xml:space="preserve">
+    <value>max {0} chars</value>
+  </data>
+  <data name="dialog.input_desc_boolean" xml:space="preserve">
+    <value>Yes={0}, No={1}</value>
+  </data>
+  <data name="dialog.input_desc_options" xml:space="preserve">
+    <value>options: {0}</value>
+  </data>
+  <data name="dialog.input_desc_number" xml:space="preserve">
+    <value>range {0}..{1}</value>
+  </data>
+  <data name="dialog.input_desc_unknown" xml:space="preserve">
+    <value>unknown input</value>
+  </data>
+  <data name="dialog.action_desc_close" xml:space="preserve">
+    <value>close</value>
+  </data>
+  <data name="dialog.action_desc_command" xml:space="preserve">
+    <value>command</value>
+  </data>
+  <data name="dialog.action_desc_custom" xml:space="preserve">
+    <value>custom</value>
+  </data>
+  <data name="dialog.action_desc_show_dialog" xml:space="preserve">
+    <value>show dialog</value>
+  </data>
+  <data name="dialog.action_desc_open_url" xml:space="preserve">
+    <value>open URL</value>
+  </data>
+  <data name="dialog.action_desc_suggest" xml:space="preserve">
+    <value>suggest command</value>
+  </data>
+  <data name="dialog.action_desc_copy" xml:space="preserve">
+    <value>copy</value>
+  </data>
+  <data name="dialog.action_desc_unknown" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="dialog.type.notice" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="dialog.type.confirmation" xml:space="preserve">
+    <value>Confirmation</value>
+  </data>
+  <data name="dialog.type.multi_action" xml:space="preserve">
+    <value>Multi Action</value>
+  </data>
+  <data name="dialog.type.dialog_list" xml:space="preserve">
+    <value>Dialog list</value>
+  </data>
+  <data name="dialog.type.server_links" xml:space="preserve">
+    <value>Server links</value>
+  </data>
+  <data name="dialog.type.unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="dialog.input_kind.text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="dialog.input_kind.boolean" xml:space="preserve">
+    <value>Check box</value>
+  </data>
+  <data name="dialog.input_kind.options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="dialog.input_kind.number" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="dialog.input_kind.unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="dialog.render.help_hint" xml:space="preserve">
+    <value>Use /dialog help for a list of commands.</value>
+  </data>
 </root>

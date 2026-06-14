@@ -1648,6 +1648,120 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 </details>
 
 <details>
+<summary><code>dialog</code></summary>
+
+- **Description:**
+
+  Browse and interact with dialogs sent by the server. Dialogs are popups with a title, body text, and buttons. TUI mode gives the best experience -- use `/dialog open` to view the dialog in a full-screen overlay.
+
+  When a server shows a dialog, MCC prints:
+
+  ```
+  [MCC] Server showed custom dialog: Server Notice. Use dialog show.
+  ```
+
+  Run `/dialog show` to see the full dialog. Buttons show up like this:
+
+  ```
+  Actions:
+    [1] OK (close)
+    [2] Visit (command)
+    [3] Rules (show dialog)
+  ```
+
+  The text in parentheses tells you what the button does: `(close)` closes the dialog, `(command)` sends a chat command, `(show dialog)` opens another dialog.
+
+- **Dialog types:**
+
+  Dialogs come in a few shapes. You might see these in the output of `/dialog show`:
+
+  **Notice** -- A popup with a title, optional body, and one button.
+
+  ```
+  Type: Notice
+
+  Welcome to the server!
+
+  Body: Read the rules before playing.
+
+  Actions:
+    [1] OK (close)
+  ```
+
+  **Confirmation** -- A choice between two buttons.
+
+  ```
+  Type: Confirmation
+
+  Reset your progress?
+
+  Actions:
+    [1] Yes (close)
+    [2] No (close)
+  ```
+
+  **Multi-action** -- A grid of buttons.
+
+  ```
+  Type: Multi-action
+
+  Choose a destination
+
+  Actions:
+    [1] Spawn (close)
+    [2] Shop (close)
+    [3] Arena (close)
+  ```
+
+  **Dialog list** -- A list of sub-dialogs. Clicking one opens another dialog.
+
+  ```
+  Type: Dialog list
+
+  Help Topics
+
+  Actions:
+    [1] Rules (show dialog)
+    [2] Commands (show dialog)
+  ```
+
+  **Server links** -- Shows the server's configured links as buttons. May be empty.
+
+  ```
+  Type: Server links
+
+  Server Links
+  ```
+
+- **Usage:**
+
+  ```
+  /dialog
+  /dialog show
+  /dialog open
+  /dialog click <index>
+  /dialog click-label <label>
+  /dialog set <input> <value>
+  /dialog input <input> <value>
+  /dialog cancel
+  /dialog dismiss
+  ```
+
+- **Examples:**
+
+  ```
+  /dialog show
+  /dialog click 1
+  /dialog click-label Teleport
+  /dialog set name MyPlayer
+  /dialog dismiss
+  ```
+
+  See what dialog is currently shown, click the first button, click a button by its text, fill in an input, or close the dialog.
+
+</details>
+
+<details>
 <summary><code>debug</code></summary>
 
 - **Description:**
