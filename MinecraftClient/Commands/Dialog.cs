@@ -53,9 +53,11 @@ public class Dialog : Command
     {
         var handler = CmdResult.currentHandler!;
         var current = handler.Dialogs.Current;
-        return current is null
-            ? r.SetAndReturn(CmdResult.Status.Fail, Translations.dialog_none)
-            : r.SetAndReturn(CmdResult.Status.Done, DialogFormatter.Render(current));
+        if (current is null)
+            return r.SetAndReturn(CmdResult.Status.Fail, Translations.dialog_none);
+
+        ConsoleIO.WriteLineFormatted(DialogFormatter.Render(current), acceptnewlines: true);
+        return r.SetAndReturn(CmdResult.Status.Done);
     }
 
     private static int Open(CmdResult r)

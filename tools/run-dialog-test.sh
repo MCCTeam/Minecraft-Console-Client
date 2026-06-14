@@ -151,14 +151,14 @@ header "1. Notice Dialog"
 mc-rcon 'dialog show MCCBot {type:"minecraft:notice", title:{text:"Notice Title"}}' 2>&1 | ansi_strip | grep -v "^$"
 assert_dialog_shown "notice dialog" "Notice Title"
 write_input "dialog show"
-assert_log "notice type" "Type: Notice" 10
+assert_log "notice render" "Dialog #1" 10
 assert_log "notice OK button" "OK (close)" 3
 
 header "2. Confirmation Dialog"
 mc-rcon 'dialog show MCCBot {type:"minecraft:confirmation", title:{text:"Confirm?"}, yes:{label:{text:"Yes"}}, no:{label:{text:"No"}}}' 2>&1 | ansi_strip | grep -v "^$"
 assert_dialog_shown "confirmation" "Confirm?"
 write_input "dialog show"
-assert_log "confirmation type" "Type: Confirmation" 10
+assert_log "confirmation render" "Dialog #1" 10
 assert_log "yes button" "Yes (close)" 3
 assert_log "no button" "No (close)" 3
 
@@ -166,7 +166,7 @@ header "3. Multi-Action Dialog"
 mc-rcon 'dialog show MCCBot {type:"minecraft:multi_action", title:{text:"Choose"}, actions:[{label:{text:"Alpha"}}, {label:{text:"Beta"}}, {label:{text:"Gamma"}}]}' 2>&1 | ansi_strip | grep -v "^$"
 assert_dialog_shown "multi_action" "Choose"
 write_input "dialog show"
-assert_log "multi_action type" "Type: Multi-action" 10
+assert_log "multi_action render" "Dialog #1" 10
 assert_log "multi_action button 1" "Alpha (close)" 3
 assert_log "multi_action button 2" "Beta (close)" 3
 assert_log "multi_action button 3" "Gamma (close)" 3
@@ -175,7 +175,7 @@ header "4. Dialog-List Dialog"
 mc-rcon 'dialog show MCCBot {type:"minecraft:dialog_list", title:{text:"List"}, dialogs:[{type:"minecraft:notice", title:{text:"Sub One"}}, {type:"minecraft:notice", title:{text:"Sub Two"}}]}' 2>&1 | ansi_strip | grep -v "^$"
 assert_dialog_shown "dialog_list" "List"
 write_input "dialog show"
-assert_log "dialog_list type" "Type: Dialog list" 10
+assert_log "dialog_list render" "Dialog #1" 10
 assert_log "dialog_list sub 1" "Sub One (show dialog)" 3
 assert_log "dialog_list sub 2" "Sub Two (show dialog)" 3
 
@@ -183,7 +183,7 @@ header "5. Server-Links Dialog"
 mc-rcon 'dialog show MCCBot {type:"minecraft:server_links", title:{text:"Links"}}' 2>&1 | ansi_strip | grep -v "^$"
 assert_dialog_shown "server_links" "Links"
 write_input "dialog show"
-assert_log "server_links type" "Type: Server links" 10
+assert_log "server_links render" "Dialog #1" 10
 
 header "6. Body Content"
 mc-rcon 'dialog show MCCBot {type:"minecraft:notice", title:{text:"With Body"}, body:[{type:"minecraft:plain_message", contents:{text:"Hello from body"}}]}' 2>&1 | ansi_strip | grep -v "^$"

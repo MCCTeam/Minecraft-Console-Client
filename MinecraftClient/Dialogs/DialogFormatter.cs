@@ -11,17 +11,21 @@ public static class DialogFormatter
         if (!string.IsNullOrWhiteSpace(definition.ExternalTitle))
             return definition.ExternalTitle!;
 
-        return string.IsNullOrWhiteSpace(definition.Title) ? definition.Type : definition.Title;
+        return string.IsNullOrWhiteSpace(definition.Title) ? DisplayType(definition.Type) : definition.Title;
     }
+
+    private const int BoxWidth = 50;
 
     public static string Render(DialogInstance instance)
     {
         StringBuilder builder = new();
-        builder.AppendLine(string.Format(Translations.dialog_render_header, instance.Revision, instance.Phase, instance.Definition.DisplayTitle()));
-        builder.AppendLine(string.Format(Translations.dialog_render_type, DisplayType(instance.Definition.Type)));
+        string border = new('-', BoxWidth);
+        builder.AppendLine(border);
+        builder.AppendLine("     " + string.Format(Translations.dialog_render_header, instance.Revision, instance.Phase, instance.Definition.DisplayTitle()));
+        builder.AppendLine(border);
 
         foreach (var body in instance.Definition.Body.Where(static body => !string.IsNullOrWhiteSpace(body.Text)))
-            builder.AppendLine(string.Format(Translations.dialog_render_body, body.Text));
+            builder.AppendLine(body.Text);
 
         if (instance.Definition.Inputs.Count > 0)
         {
@@ -30,7 +34,7 @@ public static class DialogFormatter
             {
                 instance.Values.TryGetValue(input.Key, out var value);
                 value ??= input.InitialValue;
-                builder.AppendLine(string.Format(Translations.dialog_render_input, input.Key, input.Kind, input.Label, value, DescribeInput(input)));
+                builder.AppendLine(string.Format(Translations.dialog_render_input, input.Key, DescribeKind(input.Kind), input.Label, value, DescribeInput(input)));
             }
         }
 
@@ -41,9 +45,7 @@ public static class DialogFormatter
                 builder.AppendLine(string.Format(Translations.dialog_render_action, action.Index, action.Label, DescribeAction(action.Action)));
         }
 
-        if (instance.Definition.CancelAction is not null || instance.Definition.CanCloseWithEscape)
-            builder.AppendLine(Translations.dialog_render_cancel_hint);
-
+        builder.Append(border);
         return builder.ToString();
     }
 
@@ -57,6 +59,18 @@ public static class DialogFormatter
             "minecraft:dialog_list" => Translations.dialog_type_dialog_list,
             "minecraft:server_links" => Translations.dialog_type_server_links,
             _ => string.IsNullOrEmpty(rawType) ? Translations.dialog_type_unknown : rawType
+        };
+    }
+
+    private static string DescribeKind(DialogInputKind kind)
+    {
+        return kind switch
+        {
+            DialogInputKind.Text => Translations.dialog_input_kind_text,
+            DialogInputKind.Boolean => Translations.dialog_input_kind_boolean,
+            DialogInputKind.SingleOption => Translations.dialog_input_kind_options,
+            DialogInputKind.NumberRange => Translations.dialog_input_kind_number,
+            _ => Translations.dialog_input_kind_unknown
         };
     }
 

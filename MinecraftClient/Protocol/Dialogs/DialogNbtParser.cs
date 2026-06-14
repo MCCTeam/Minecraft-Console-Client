@@ -79,9 +79,6 @@ public sealed class DialogNbtParser
         var body = ParseBody(GetValue(nbt, "body"));
         var inputs = ParseInputs(GetValue(nbt, "inputs"));
 
-        if (string.IsNullOrWhiteSpace(title))
-            title = type;
-
         return new DialogCommon(title, externalTitle, canCloseWithEscape, pause, afterAction, body, inputs);
     }
 

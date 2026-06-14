@@ -1,12 +1,81 @@
 using System;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
     /// <summary>
     /// Console backend wrapping the ConsoleInteractive library (existing behavior).
     /// </summary>
-    public class ClassicConsoleBackend : IConsoleBackend
+    public partial class ClassicConsoleBackend : IConsoleBackend
     {
+        private static readonly (byte R, byte G, byte B, char Code)[] McStandardColors =
+        [
+            (0, 0, 0, '0'),       // black
+            (0, 0, 170, '1'),     // dark_blue
+            (0, 170, 0, '2'),     // dark_green
+            (0, 170, 170, '3'),   // dark_aqua
+            (170, 0, 0, '4'),     // dark_red
+            (170, 0, 170, '5'),   // dark_purple
+            (255, 170, 0, '6'),   // gold
+            (170, 170, 170, '7'), // gray
+            (85, 85, 85, '8'),    // dark_gray
+            (85, 85, 255, '9'),   // blue
+            (85, 255, 85, 'a'),   // green
+            (85, 255, 255, 'b'),  // aqua
+            (255, 85, 85, 'c'),   // red
+            (255, 85, 255, 'd'),  // light_purple
+            (255, 255, 85, 'e'),  // yellow
+            (255, 255, 255, 'f'), // white
+        ];
+
+        [GeneratedRegex("§#([0-9a-fA-F]{6})")]
+        private static partial Regex HexColorRegex();
+
+        private static char NearestMcColor(byte r, byte g, byte b)
+        {
+            int bestIdx = 0;
+            long bestDist = long.MaxValue;
+
+            for (int i = 0; i < McStandardColors.Length; i++)
+            {
+                var (sr, sg, sb, _) = McStandardColors[i];
+                long dr = r - sr;
+                long dg = g - sg;
+                long db = b - sb;
+                long dist = dr * dr + dg * dg + db * db;
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestIdx = i;
+                }
+            }
+
+            return McStandardColors[bestIdx].Code;
+        }
+
+        private static string ResolveHexColors(string text)
+        {
+            if (string.IsNullOrEmpty(text) || !text.Contains("§#", StringComparison.Ordinal))
+                return text;
+
+            return HexColorRegex().Replace(text, match =>
+            {
+                ReadOnlySpan<char> hex = match.Groups[1].ValueSpan;
+                byte r = (byte)((HexVal(hex[0]) << 4) | HexVal(hex[1]));
+                byte g = (byte)((HexVal(hex[2]) << 4) | HexVal(hex[3]));
+                byte b = (byte)((HexVal(hex[4]) << 4) | HexVal(hex[5]));
+                return $"§{NearestMcColor(r, g, b)}";
+            });
+        }
+
+        private static int HexVal(char c) => c switch
+        {
+            >= '0' and <= '9' => c - '0',
+            >= 'a' and <= 'f' => c - 'a' + 10,
+            >= 'A' and <= 'F' => c - 'A' + 10,
+            _ => 0
+        };
+
         public event EventHandler<string>? MessageReceived;
         public event EventHandler<ConsoleInputBuffer>? OnInputChange;
 
@@ -28,7 +97,7 @@ namespace MinecraftClient
 
         public void WriteLineFormatted(string text)
         {
-            ConsoleInteractive.ConsoleWriter.WriteLineFormatted(text);
+            ConsoleInteractive.ConsoleWriter.WriteLineFormatted(ResolveHexColors(text));
         }
 
         public void BeginReadThread()

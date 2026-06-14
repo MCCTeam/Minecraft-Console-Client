@@ -8101,5 +8101,25 @@ namespace MinecraftClient {
             get { return ResourceManager.GetString("dialog.type.unknown", resourceCulture); }
         }
 
+        internal static string dialog_input_kind_text {
+            get { return ResourceManager.GetString("dialog.input_kind.text", resourceCulture); }
+        }
+
+        internal static string dialog_input_kind_boolean {
+            get { return ResourceManager.GetString("dialog.input_kind.boolean", resourceCulture); }
+        }
+
+        internal static string dialog_input_kind_options {
+            get { return ResourceManager.GetString("dialog.input_kind.options", resourceCulture); }
+        }
+
+        internal static string dialog_input_kind_number {
+            get { return ResourceManager.GetString("dialog.input_kind.number", resourceCulture); }
+        }
+
+        internal static string dialog_input_kind_unknown {
+            get { return ResourceManager.GetString("dialog.input_kind.unknown", resourceCulture); }
+        }
+
     }
 }

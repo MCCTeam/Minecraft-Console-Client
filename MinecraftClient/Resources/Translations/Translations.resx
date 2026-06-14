@@ -2834,7 +2834,7 @@ see item details.</value>
     <value>View and interact with the current server custom dialog.</value>
   </data>
   <data name="dialog.received" xml:space="preserve">
-    <value>Server showed custom dialog: {0}. Use dialog show.</value>
+    <value>Server showed custom dialog: {0}. Use /dialog show.</value>
   </data>
   <data name="dialog.cleared" xml:space="preserve">
     <value>Server cleared the custom dialog.</value>
@@ -2993,13 +2993,13 @@ see item details.</value>
     <value>  [{0}] {1} ({2})</value>
   </data>
   <data name="dialog.render.cancel_hint" xml:space="preserve">
-    <value>Use dialog cancel to close or run the cancel action.</value>
+    <value>Use /dialog cancel to close or run the cancel action.</value>
   </data>
   <data name="dialog.input_desc_text" xml:space="preserve">
     <value>max {0} chars</value>
   </data>
   <data name="dialog.input_desc_boolean" xml:space="preserve">
-    <value>true={0}, false={1}</value>
+    <value>Yes={0}, No={1}</value>
   </data>
   <data name="dialog.input_desc_options" xml:space="preserve">
     <value>options: {0}</value>
@@ -3041,7 +3041,7 @@ see item details.</value>
     <value>Confirmation</value>
   </data>
   <data name="dialog.type.multi_action" xml:space="preserve">
-    <value>Multi-action</value>
+    <value>Multi Action</value>
   </data>
   <data name="dialog.type.dialog_list" xml:space="preserve">
     <value>Dialog list</value>
@@ -3050,6 +3050,21 @@ see item details.</value>
     <value>Server links</value>
   </data>
   <data name="dialog.type.unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="dialog.input_kind.text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="dialog.input_kind.boolean" xml:space="preserve">
+    <value>Check box</value>
+  </data>
+  <data name="dialog.input_kind.options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="dialog.input_kind.number" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="dialog.input_kind.unknown" xml:space="preserve">
     <value>Unknown</value>
   </data>
 </root>

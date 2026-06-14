@@ -59,20 +59,27 @@ public static class DialogTuiHost
 
 internal sealed class DialogView : Border, IOverlayCloseHandler
 {
+    private static readonly Color AccentColor = Color.FromRgb(80, 180, 255);
+    private static readonly Color BorderColor = Color.FromRgb(70, 70, 70);
+    private static readonly Color SectionBg = Color.FromRgb(20, 20, 20);
+    private static readonly Color InputBg = Color.FromRgb(35, 35, 35);
+
     private readonly McClient _handler;
     private readonly DialogInstance _instance;
     private readonly TextBlock _status;
     private readonly Dictionary<string, Control> _inputControls = new(StringComparer.Ordinal);
+    private readonly StackPanel _inputsPanel;
+    private readonly WrapPanel _buttonsPanel;
 
     public DialogView(McClient handler, DialogInstance instance)
     {
         _handler = handler;
         _instance = instance;
 
-        BorderBrush = Brushes.White;
+        BorderBrush = new SolidColorBrush(BorderColor);
         BorderThickness = new Thickness(1);
-        Background = Brushes.Black;
-        Padding = new Thickness(1);
+        Background = new SolidColorBrush(Color.FromRgb(12, 12, 12));
+        Padding = new Thickness(2);
         HorizontalAlignment = HorizontalAlignment.Stretch;
         VerticalAlignment = VerticalAlignment.Stretch;
         Focusable = true;
@@ -81,14 +88,18 @@ internal sealed class DialogView : Border, IOverlayCloseHandler
         {
             Foreground = Brushes.Gray,
             TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(1, 0)
+            Margin = new Thickness(0, 1, 0, 0)
         };
+
+        _inputsPanel = new StackPanel { Spacing = 0, Margin = new Thickness(0) };
+        _buttonsPanel = new WrapPanel { Orientation = Orientation.Horizontal };
 
         Child = BuildContent();
 
         AttachedToVisualTree += (_, _) =>
         {
             AddHandler(KeyDownEvent, OnTunnelKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
+            FocusFirstInput();
             Focus();
         };
         DetachedFromVisualTree += (_, _) => RemoveHandler(KeyDownEvent, OnTunnelKeyDown);
@@ -112,75 +123,97 @@ internal sealed class DialogView : Border, IOverlayCloseHandler
 
     private Control BuildContent()
     {
-        var main = new StackPanel
+        var root = new DockPanel { Margin = new Thickness(0) };
+
+        var scroll = new ScrollViewer
         {
-            Spacing = 1,
-            Margin = new Thickness(1)
+            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
         };
 
-        main.Children.Add(new TextBlock
+        var main = new StackPanel { Spacing = 0, Margin = new Thickness(0) };
+
+        // Title
+        main.Children.Add(McColorParser.CreateColoredTextBlock(_instance.Definition.DisplayTitle()));
+
+        // Separator
+        main.Children.Add(new Border
         {
-            Text = _instance.Definition.DisplayTitle(),
-            Foreground = Brushes.Yellow,
-            FontWeight = FontWeight.Bold,
-            TextWrapping = TextWrapping.Wrap
+            Height = 1,
+            Background = new SolidColorBrush(BorderColor),
+            Margin = new Thickness(0, 1, 0, 1)
         });
 
+        // Body
         foreach (var body in _instance.Definition.Body)
         {
             if (string.IsNullOrWhiteSpace(body.Text))
                 continue;
+            main.Children.Add(McColorParser.CreateColoredTextBlock(body.Text));
+        }
 
+        // Build action buttons
+        EnsureActionButtons();
+
+        // Inputs
+        foreach (var input in _instance.Definition.Inputs)
+            main.Children.Add(BuildInput(input));
+
+        // Action buttons
+        if (_buttonsPanel.Children.Count > 0)
+            main.Children.Add(_buttonsPanel);
+
+        // Cancel hint
+        if (_instance.Definition.CancelAction is not null || _instance.Definition.CanCloseWithEscape)
+        {
             main.Children.Add(new TextBlock
             {
-                Text = body.Text,
-                Foreground = Brushes.White,
+                Text = Translations.dialog_render_cancel_hint,
+                Foreground = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
                 TextWrapping = TextWrapping.Wrap
             });
         }
 
-        foreach (var input in _instance.Definition.Inputs)
-            main.Children.Add(BuildInput(input));
+        main.Children.Add(_status);
+        scroll.Content = main;
+        root.Children.Add(scroll);
 
-        var buttons = new WrapPanel
-        {
-            Orientation = Orientation.Horizontal
-        };
+        return root;
+    }
+
+    private void EnsureActionButtons()
+    {
+        if (_buttonsPanel.Children.Count > 0)
+            return;
 
         foreach (var action in _instance.Definition.Actions)
         {
-            var button = new Button
+            var btn = new Button
             {
-                Content = action.Label,
-                Margin = new Thickness(0, 0, 1, 1),
-                MinWidth = Math.Max(8, Math.Min(action.Label.Length + 4, 32))
+                Content = McColorParser.CreateColoredTextBlock(action.Label),
+                Padding = new Thickness(1),
+                BorderThickness = new Thickness(1),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(60, 60, 60)),
+                Background = new SolidColorBrush(Color.FromRgb(40, 40, 40)),
+                Margin = new Thickness(0, 0, 1, 1)
             };
-            button.Click += (_, _) => Click(action.Index);
-            buttons.Children.Add(button);
+            btn.Click += (_, _) => Click(action.Index);
+            _buttonsPanel.Children.Add(btn);
         }
 
         if (_instance.Definition.CancelAction is not null || _instance.Definition.CanCloseWithEscape)
         {
             var cancel = new Button
             {
-                Content = Translations.tui_dialog_cancel,
-                Margin = new Thickness(0, 0, 1, 1)
+                Content = McColorParser.CreateColoredTextBlock(Translations.tui_dialog_cancel),
+                Padding = new Thickness(1),
+                BorderThickness = new Thickness(1),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(80, 40, 40)),
+                Background = new SolidColorBrush(Color.FromRgb(50, 25, 25))
             };
             cancel.Click += (_, _) => TryCloseByUser();
-            buttons.Children.Add(cancel);
+            _buttonsPanel.Children.Add(cancel);
         }
-
-        if (buttons.Children.Count > 0)
-            main.Children.Add(buttons);
-
-        main.Children.Add(_status);
-
-        return new ScrollViewer
-        {
-            Content = main,
-            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
-            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
-        };
     }
 
     private Control BuildInput(DialogInput input)
@@ -188,84 +221,125 @@ internal sealed class DialogView : Border, IOverlayCloseHandler
         _instance.Values.TryGetValue(input.Key, out var value);
         value ??= input.InitialValue;
 
-        var panel = new StackPanel
-        {
-            Spacing = 0,
-            Margin = new Thickness(0, 1)
-        };
+        var panel = new StackPanel { Spacing = 0, Margin = new Thickness(0) };
 
         if (input.LabelVisible && !string.IsNullOrWhiteSpace(input.Label))
-        {
-            panel.Children.Add(new TextBlock
-            {
-                Text = input.Label,
-                Foreground = Brushes.LightGray,
-                TextWrapping = TextWrapping.Wrap
-            });
-        }
+            panel.Children.Add(McColorParser.CreateColoredTextBlock(input.Label));
 
-        Control control = input.Kind switch
+        Control inner = input.Kind switch
         {
-            DialogInputKind.Boolean => BuildBooleanInput(value),
+            DialogInputKind.Boolean => BuildBooleanInput(value, input),
             DialogInputKind.SingleOption => BuildOptionInput(input, value),
             DialogInputKind.NumberRange => BuildNumberInput(input, value),
             _ => BuildTextInput(input, value)
         };
 
-        _inputControls[input.Key] = control;
-        panel.Children.Add(control);
+        _inputControls[input.Key] = inner;
+
+        if (input.Kind == DialogInputKind.Boolean)
+        {
+            panel.Children.Add(inner);
+        }
+        else
+        {
+            panel.Children.Add(new Border
+            {
+                Background = new SolidColorBrush(InputBg),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(55, 55, 55)),
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(1),
+                Child = inner
+            });
+        }
+
         return panel;
     }
 
-    private static Control BuildTextInput(DialogInput input, string value)
+    private Control BuildTextInput(DialogInput input, string value)
     {
-        return new TextBox
+        var tb = new TextBox
         {
             Text = value,
             AcceptsReturn = input.Multiline,
-            TextWrapping = TextWrapping.Wrap,
+            TextWrapping = input.Multiline ? TextWrapping.Wrap : TextWrapping.NoWrap,
             MaxLength = input.MaxLength,
             Foreground = Brushes.White,
-            Background = Brushes.Black,
-            BorderBrush = Brushes.Gray
+            Background = new SolidColorBrush(InputBg),
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(0)
         };
+
+        return tb;
     }
 
-    private static Control BuildBooleanInput(string value)
+    private Control BuildBooleanInput(string value, DialogInput input)
     {
         return new CheckBox
         {
             IsChecked = value.Equals("true", StringComparison.OrdinalIgnoreCase),
-            Foreground = Brushes.White
+            Foreground = Brushes.White,
+            Padding = new Thickness(0)
         };
     }
 
-    private static Control BuildOptionInput(DialogInput input, string value)
+    private Control BuildOptionInput(DialogInput input, string value)
     {
         var combo = new ComboBox
         {
             ItemsSource = input.Options ?? [],
-            Foreground = Brushes.White
+            Foreground = Brushes.White,
+            Background = new SolidColorBrush(InputBg),
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(1, 0)
         };
-        combo.SelectionBoxItemTemplate = null;
+
         combo.SelectedItem = input.Options?.FirstOrDefault(option => option.Id.Equals(value, StringComparison.Ordinal))
             ?? input.Options?.FirstOrDefault();
+
         return combo;
     }
 
-    private static Control BuildNumberInput(DialogInput input, string value)
+    private Control BuildNumberInput(DialogInput input, string value)
     {
+        double numValue = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : input.InitialNumber ?? input.Start;
+
+        double min = Math.Min(input.Start, input.End);
+        double max = Math.Max(input.Start, input.End);
+
+        var panel = new DockPanel { LastChildFill = true };
+
         var slider = new Slider
         {
-            Minimum = Math.Min(input.Start, input.End),
-            Maximum = Math.Max(input.Start, input.End),
-            Value = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
-                ? number
-                : input.InitialNumber ?? input.Start,
+            Minimum = min,
+            Maximum = max,
+            Value = numValue,
             TickFrequency = input.Step ?? 1,
-            IsSnapToTickEnabled = input.Step is not null
+            IsSnapToTickEnabled = input.Step is not null,
+            Foreground = new SolidColorBrush(AccentColor)
         };
-        return slider;
+
+        var label = new TextBlock
+        {
+            Text = numValue.ToString(CultureInfo.InvariantCulture),
+            Foreground = Brushes.White,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(2, 0, 0, 0),
+            MinWidth = 16
+        };
+
+        slider.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == Slider.ValueProperty)
+                label.Text = ((float)slider.Value).ToString(CultureInfo.InvariantCulture);
+        };
+
+        DockPanel.SetDock(label, Dock.Right);
+        panel.Children.Add(slider);
+        panel.Children.Add(label);
+
+        return panel;
     }
 
     private void Click(int index)
@@ -306,6 +380,20 @@ internal sealed class DialogView : Border, IOverlayCloseHandler
         return true;
     }
 
+    private void FocusFirstInput()
+    {
+        var first = _inputControls.Values.FirstOrDefault();
+        if (first is TextBox tb)
+        {
+            tb.Focus();
+            tb.SelectAll();
+        }
+        else
+        {
+            first?.Focus();
+        }
+    }
+
     private void CloseIfInactive()
     {
         var current = _handler.Dialogs.Current;
@@ -326,11 +414,22 @@ internal sealed class DialogView : Border, IOverlayCloseHandler
 
     private void OnTunnelKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Escape)
+        if (e.Key == Key.Escape)
+        {
+            TryCloseByUser();
+            e.Handled = true;
             return;
+        }
 
-        TryCloseByUser();
-        e.Handled = true;
+        if (e.Key == Key.Enter)
+        {
+            var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+            if (focused is TextBox && _instance.Definition.Actions.Count > 0)
+            {
+                Click(_instance.Definition.Actions[0].Index);
+                e.Handled = true;
+            }
+        }
     }
 
     private static string NumberToString(float value)
