@@ -64,7 +64,7 @@ namespace MinecraftClient
                 byte r = (byte)((HexVal(hex[0]) << 4) | HexVal(hex[1]));
                 byte g = (byte)((HexVal(hex[2]) << 4) | HexVal(hex[3]));
                 byte b = (byte)((HexVal(hex[4]) << 4) | HexVal(hex[5]));
-                return $"§{NearestMcColor(r, g, b)}";
+                return ColorHelper.GetColorEscapeCode(r, g, b, foreground: true);
             });
         }
 
