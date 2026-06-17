@@ -112,12 +112,7 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
 
         data.AddRange(DataTypes.GetBool(HasName));
         if (HasName)
-        {
-            if (string.IsNullOrEmpty(Name))
-                throw new NullReferenceException("Can't serialize the ProfileComponent because the Name is null/empty!");
-
-            data.AddRange(DataTypes.GetString(Name));
-        }
+            data.AddRange(DataTypes.GetString(Name ?? ""));
 
         data.AddRange(DataTypes.GetBool(HasUniqueId));
         if (HasUniqueId)
@@ -140,22 +135,14 @@ public class ProfileComponent(DataTypes dataTypes, ItemPalette itemPalette, SubC
             if (!HasUniqueId)
                 throw new NullReferenceException("Can't serialize the ProfileComponent because a full profile requires a UUID!");
 
-            if (!HasName || string.IsNullOrEmpty(Name))
-                throw new NullReferenceException("Can't serialize the ProfileComponent because a full profile requires a name!");
-
             data.AddRange(DataTypes.GetUUID(Uuid));
-            data.AddRange(DataTypes.GetString(Name));
+            data.AddRange(DataTypes.GetString(Name ?? ""));
         }
         else
         {
             data.AddRange(DataTypes.GetBool(HasName));
             if (HasName)
-            {
-                if (string.IsNullOrEmpty(Name))
-                    throw new NullReferenceException("Can't serialize the ProfileComponent because HasName is true, but the Name is null/empty!");
-
-                data.AddRange(DataTypes.GetString(Name));
-            }
+                data.AddRange(DataTypes.GetString(Name ?? ""));
 
             data.AddRange(DataTypes.GetBool(HasUniqueId));
             if (HasUniqueId)
