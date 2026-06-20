@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using static MinecraftClient.Settings.ConsoleConfigHealper.ConsoleConfig;
 
 namespace MinecraftClient
@@ -100,9 +100,9 @@ namespace MinecraftClient
                             }
                         }
                         if (foreground)
-                            return $"§{best_idx:X}";
+                            return $"§{best_idx:x}";
                         else
-                            return $"§§{best_idx:X}";
+                            return $"§§{best_idx:x}";
                     }
 
                 case ConsoleColorModeType.vt100_4bit:
@@ -163,7 +163,7 @@ namespace MinecraftClient
         }
     }
 
-    public class ColorRGBA
+    public record struct ColorRGBA
     {
         public byte R { get; set; }
         public byte G { get; set; }

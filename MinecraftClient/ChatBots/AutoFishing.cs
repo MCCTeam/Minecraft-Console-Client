@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using MinecraftClient.CommandHandler.Patch;
@@ -61,6 +62,21 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$ChatBot.AutoFishing.Hook_Threshold$")]
             public double Hook_Threshold = 0.2;
 
+            [TomlInlineComment("$ChatBot.AutoFishing.Enable_Velocity_Detection$")]
+            public bool Enable_Velocity_Detection = true;
+
+            [TomlInlineComment("$ChatBot.AutoFishing.Velocity_Hook_Threshold$")]
+            public double Velocity_Hook_Threshold = -0.2;
+
+            [TomlInlineComment("$ChatBot.AutoFishing.Enable_Sound_Detection$")]
+            public bool Enable_Sound_Detection = true;
+
+            [TomlInlineComment("$ChatBot.AutoFishing.Sound_Distance$")]
+            public double Sound_Distance = 5.0;
+
+            [TomlInlineComment("$ChatBot.AutoFishing.Detection_Warmup$")]
+            public double Detection_Warmup = 1.0;
+
             [TomlInlineComment("$ChatBot.AutoFishing.Log_Fish_Bobber$")]
             public bool Log_Fish_Bobber = false;
 
@@ -96,12 +112,27 @@ namespace MinecraftClient.ChatBots
 
                 if (Hook_Threshold < 0)
                     Hook_Threshold = -Hook_Threshold;
+
+                if (Velocity_Hook_Threshold > 0)
+                    Velocity_Hook_Threshold = -Velocity_Hook_Threshold;
+
+                if (Sound_Distance < 0)
+                    Sound_Distance = -Sound_Distance;
+
+                if (Detection_Warmup < 0)
+                    Detection_Warmup = 0;
             }
 
             public struct LocationConfig
             {
                 public Coordination? XYZ;
                 public Facing? facing;
+
+                public LocationConfig()
+                {
+                    XYZ = null;
+                    facing = null;
+                }
 
                 public LocationConfig(double yaw, double pitch)
                 {
@@ -125,6 +156,13 @@ namespace MinecraftClient.ChatBots
                 {
                     public double x, y, z;
 
+                    public Coordination()
+                    {
+                        x = 0;
+                        y = 0;
+                        z = 0;
+                    }
+
                     public Coordination(double x, double y, double z)
                     {
                         this.x = x; this.y = y; this.z = z;
@@ -134,6 +172,12 @@ namespace MinecraftClient.ChatBots
                 public struct Facing
                 {
                     public double yaw, pitch;
+
+                    public Facing()
+                    {
+                        yaw = 0;
+                        pitch = 0;
+                    }
 
                     public Facing(double yaw, double pitch)
                     {
@@ -151,12 +195,13 @@ namespace MinecraftClient.ChatBots
         private Entity? fishingBobber;
         private Location LastPos = Location.Zero;
         private DateTime CaughtTime = DateTime.Now;
+        private DateTime BobberSpawnTime = DateTime.MinValue;
         private int fishItemCounter = 15;
         private Dictionary<ItemType, uint> fishItemCnt = new();
         private Entity fishItem = new(-1, EntityType.Item, Location.Zero);
 
         private int counter = 0;
-        private readonly object stateLock = new();
+        private readonly Lock stateLock = new();
         private FishingState state = FishingState.WaitJoinGame;
 
         private int curLocationIdx = 0, moveDir = 1;
@@ -444,6 +489,7 @@ namespace MinecraftClient.ChatBots
                     fishingBobber = entity;
                     LastPos = entity.Location;
                     isFishing = true;
+                    BobberSpawnTime = DateTime.Now;
 
                     castTimeout = 24;
                     counter = 0;
@@ -454,7 +500,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityDespawn(Entity entity)
         {
-            if (entity != null && fishingBobber != null && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
+            if (entity is not null && fishingBobber is not null && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
             {
                 if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("FishingBobber despawn at {0}", entity.Location));
@@ -479,8 +525,8 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            if (isFishing && entity != null && fishingBobber!.ID == entity.ID &&
-                (state == FishingState.WaitingFishToBite || state == FishingState.WaitingFishingBobber))
+            if (isFishing && entity is not null && fishingBobber!.ID == entity.ID &&
+                state == FishingState.WaitingFishToBite)
             {
                 Location Pos = entity.Location;
                 double Dx = LastPos.X - Pos.X;
@@ -495,13 +541,7 @@ namespace MinecraftClient.ChatBots
                     Math.Abs(Dz) < Math.Abs(Config.Stationary_Threshold) &&
                     Math.Abs(Dy) > Math.Abs(Config.Hook_Threshold))
                 {
-                    // prevent triggering multiple time
-                    if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
-                    {
-                        isFishing = false;
-                        CaughtTime = DateTime.Now;
-                        OnCaughtFish();
-                    }
+                    TryCatchFish();
                 }
             }
         }
@@ -518,6 +558,38 @@ namespace MinecraftClient.ChatBots
                 else
                     fishItemCnt.Add(item.Type, (uint)item.Count);
             }
+        }
+
+        public override void OnEntityVelocity(Entity entity, double velocityX, double velocityY, double velocityZ)
+        {
+            if (!Config.Enable_Velocity_Detection || !CanUseAdvancedDetection())
+                return;
+
+            if (fishingBobber is null || entity.ID != fishingBobber.ID)
+                return;
+
+            if (velocityY <= Config.Velocity_Hook_Threshold)
+                TryCatchFish();
+        }
+
+        public override void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch,
+            Entity? sourceEntity)
+        {
+            if (!Config.Enable_Sound_Detection || !CanUseAdvancedDetection())
+                return;
+
+            if (!IsFishingBobberSplashSound(soundName))
+                return;
+
+            Location? soundLocation = location;
+            if (soundLocation is null && sourceEntity is not null)
+                soundLocation = sourceEntity.Location;
+
+            if (soundLocation is null || fishingBobber is null)
+                return;
+
+            if (soundLocation.Value.Distance(fishingBobber.Location) <= Config.Sound_Distance)
+                TryCatchFish();
         }
 
         public override void AfterGameJoined()
@@ -542,8 +614,40 @@ namespace MinecraftClient.ChatBots
             fishingBobber = null;
             LastPos = Location.Zero;
             CaughtTime = DateTime.Now;
+            BobberSpawnTime = DateTime.MinValue;
 
             return base.OnDisconnect(reason, message);
+        }
+
+        private bool CanUseAdvancedDetection()
+        {
+            if (!isFishing || fishingBobber is null || state != FishingState.WaitingFishToBite)
+                return false;
+
+            return (DateTime.Now - BobberSpawnTime).TotalSeconds >= Config.Detection_Warmup;
+        }
+
+        private void TryCatchFish()
+        {
+            if (!CanUseAdvancedDetection())
+                return;
+
+            // Prevent repeated catches from multiple packets of the same bite.
+            if ((DateTime.Now - CaughtTime).TotalSeconds <= 1)
+                return;
+
+            isFishing = false;
+            CaughtTime = DateTime.Now;
+            OnCaughtFish();
+        }
+
+        private static bool IsFishingBobberSplashSound(string? soundName)
+        {
+            return string.Equals(soundName, "minecraft:entity.fishing_bobber.splash",
+                       StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(soundName, "entity.fishing_bobber.splash", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(soundName, "minecraft:entity.bobber.splash", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(soundName, "entity.bobber.splash", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -583,12 +687,12 @@ namespace MinecraftClient.ChatBots
 
             LocationConfig curConfig = locationList[curLocationIdx];
 
-            if (curConfig.facing != null)
+            if (curConfig.facing is not null)
                 (nextYaw, nextPitch) = ((float)curConfig.facing.Value.yaw, (float)curConfig.facing.Value.pitch);
             else
                 (nextYaw, nextPitch) = (GetYaw(), GetPitch());
 
-            if (curConfig.XYZ != null)
+            if (curConfig.XYZ is not null)
             {
                 Location current = GetCurrentLocation();
                 Location goal = new(curConfig.XYZ.Value.x, curConfig.XYZ.Value.y, curConfig.XYZ.Value.z);

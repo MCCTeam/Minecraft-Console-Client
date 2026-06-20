@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -12,23 +12,11 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Terrain Decoding handler for Protocol18
     /// </summary>
-    class Protocol18Terrain
+    class Protocol18Terrain(int protocolVersion, DataTypes dataTypes, IMinecraftComHandler handler)
     {
-        private readonly int protocolversion;
-        private readonly DataTypes dataTypes;
-        private readonly IMinecraftComHandler handler;
-
-        /// <summary>
-        /// Initialize a new Terrain Decoder
-        /// </summary>
-        /// <param name="protocolVersion">Minecraft Protocol Version</param>
-        /// <param name="dataTypes">Minecraft Protocol Data Types</param>
-        public Protocol18Terrain(int protocolVersion, DataTypes dataTypes, IMinecraftComHandler handler)
-        {
-            protocolversion = protocolVersion;
-            this.dataTypes = dataTypes;
-            this.handler = handler;
-        }
+        private readonly int protocolversion = protocolVersion;
+        private readonly DataTypes dataTypes = dataTypes;
+        private readonly IMinecraftComHandler handler = handler;
 
         /// <summary>
         /// Reading the "Block states" field: consists of 4096 entries, representing all the blocks in the chunk section.
@@ -47,7 +35,8 @@ namespace MinecraftClient.Protocol.Handlers
                 ushort blockId = (ushort)dataTypes.ReadNextVarInt(cache);
                 Block block = new(blockId);
 
-                dataTypes.SkipNextVarInt(cache); // Data Array Length will be zero
+                if (protocolversion < Protocol18Handler.MC_1_21_5_Version)
+                    dataTypes.SkipNextVarInt(cache); // Data Array Length will be zero (removed in 1.21.5)
 
                 // Empty chunks will not be stored
                 if (block.Type == Material.Air)
@@ -80,7 +69,8 @@ namespace MinecraftClient.Protocol.Handlers
                     palette[i] = (uint)dataTypes.ReadNextVarInt(cache);
 
                 //// Block IDs are packed in the array of 64-bits integers
-                dataTypes.SkipNextVarInt(cache); // Entry length
+                if (protocolversion < Protocol18Handler.MC_1_21_5_Version)
+                    dataTypes.SkipNextVarInt(cache); // Entry length (removed in 1.21.5)
                 Span<byte> entryDataByte = stackalloc byte[8];
                 Span<long> entryDataLong = MemoryMarshal.Cast<byte, long>(entryDataByte); // Faster than MemoryMarshal.Read<long>
 
@@ -183,6 +173,9 @@ namespace MinecraftClient.Protocol.Handlers
                         // Non-air block count inside chunk section, for lighting purposes
                         int blockCnt = dataTypes.ReadNextShort(cache);
 
+                        if (protocolversion >= Protocol18Handler.MC_26_1_Version)
+                            dataTypes.ReadNextShort(cache); // Fluid count (26.1+)
+
                         // Read Block states (Type: Paletted Container)
                         Chunk? chunk = ReadBlockStatesField(cache);
 
@@ -196,8 +189,8 @@ namespace MinecraftClient.Protocol.Handlers
                             if (bitsPerEntryBiome == 0)
                             {
                                 dataTypes.SkipNextVarInt(cache); // Value
-                                dataTypes.SkipNextVarInt(cache); // Data Array Length
-                                // Data Array must be empty
+                                if (protocolversion < Protocol18Handler.MC_1_21_5_Version)
+                                    dataTypes.SkipNextVarInt(cache); // Data Array Length (removed in 1.21.5)
                             }
                             else
                             {
@@ -207,8 +200,20 @@ namespace MinecraftClient.Protocol.Handlers
                                     for (int i = 0; i < paletteLength; i++)
                                         dataTypes.SkipNextVarInt(cache); // Palette
                                 }
-                                int dataArrayLength = dataTypes.ReadNextVarInt(cache); // Data Array Length
-                                dataTypes.DropData(dataArrayLength * 8, cache); // Data Array
+                                if (protocolversion >= Protocol18Handler.MC_1_21_5_Version)
+                                {
+                                    // 1.21.5: No VarInt length prefix; calculate from bits per entry
+                                    // Biome container has 64 entries (4x4x4)
+                                    // Uses SimpleBitStorage: valuesPerLong = 64/bitsPerEntry, longs = ceil(64/valuesPerLong)
+                                    int valuesPerLong = 64 / bitsPerEntryBiome;
+                                    int dataArrayLength = (64 + valuesPerLong - 1) / valuesPerLong;
+                                    dataTypes.DropData(dataArrayLength * 8, cache);
+                                }
+                                else
+                                {
+                                    int dataArrayLength = dataTypes.ReadNextVarInt(cache); // Data Array Length
+                                    dataTypes.DropData(dataArrayLength * 8, cache); // Data Array
+                                }
                             }
                         }
                     }

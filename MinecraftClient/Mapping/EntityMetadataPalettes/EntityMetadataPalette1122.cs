@@ -22,7 +22,7 @@ public class EntityMetadataPalette1122 : EntityMetadataPalette
         { 12, EntityMetaDataType.OptionalBlockId },
         { 13, EntityMetaDataType.Nbt },
     };
-        
+
     public override Dictionary<int, EntityMetaDataType> GetEntityMetadataMappingsList()
     {
         return entityMetadataMappings;

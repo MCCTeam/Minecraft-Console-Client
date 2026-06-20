@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -210,7 +210,7 @@ namespace MinecraftClient.Commands
             Item item = entity.Item;
             string location = $"X:{Math.Round(entity.Location.X, 2)}, Y:{Math.Round(entity.Location.Y, 2)}, Z:{Math.Round(entity.Location.Z, 2)}";
 
-            if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
+            if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.SplashPotion || type == EntityType.LingeringPotion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
                 return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_item}: {item.GetTypeString()}, {Translations.cmd_entityCmd_location}: {location}";
             else if (type == EntityType.Player && !string.IsNullOrEmpty(nickname))
                 return $" #{id}: {Translations.cmd_entityCmd_type}: {entity.GetTypeString()}, {Translations.cmd_entityCmd_nickname}: §8{nickname}§8, {Translations.cmd_entityCmd_latency}: {latency}, {Translations.cmd_entityCmd_health}: {health}, {Translations.cmd_entityCmd_pose}: {pose}, {Translations.cmd_entityCmd_location}: {location}";
@@ -251,7 +251,7 @@ namespace MinecraftClient.Commands
             {
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_latency}: {latency}");
             }
-            else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
+            else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.SplashPotion || type == Mapping.EntityType.LingeringPotion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
             {
                 string? displayName = item.DisplayName;
                 if (string.IsNullOrEmpty(displayName))
@@ -260,20 +260,20 @@ namespace MinecraftClient.Commands
                     sb.Append($"\n [MCC] {Translations.cmd_entityCmd_item}: {item.GetTypeString()} x{item.Count} - {displayName}§8");
             }
 
-            if (entity.Equipment.Count >= 1 && entity.Equipment != null)
+            if (entity.Equipment is not null && entity.Equipment.Count >= 1)
             {
                 sb.Append($"\n [MCC] {Translations.cmd_entityCmd_equipment}:");
-                if (entity.Equipment.ContainsKey(0) && entity.Equipment[0] != null)
+                if (entity.Equipment.ContainsKey(0) && entity.Equipment[0] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_mainhand}: {entity.Equipment[0].GetTypeString()} x{entity.Equipment[0].Count}");
-                if (entity.Equipment.ContainsKey(1) && entity.Equipment[1] != null)
+                if (entity.Equipment.ContainsKey(1) && entity.Equipment[1] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_offhand}: {entity.Equipment[1].GetTypeString()} x{entity.Equipment[1].Count}");
-                if (entity.Equipment.ContainsKey(5) && entity.Equipment[5] != null)
+                if (entity.Equipment.ContainsKey(5) && entity.Equipment[5] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_helmet}: {entity.Equipment[5].GetTypeString()} x{entity.Equipment[5].Count}");
-                if (entity.Equipment.ContainsKey(4) && entity.Equipment[4] != null)
+                if (entity.Equipment.ContainsKey(4) && entity.Equipment[4] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_chestplate}: {entity.Equipment[4].GetTypeString()} x{entity.Equipment[4].Count}");
-                if (entity.Equipment.ContainsKey(3) && entity.Equipment[3] != null)
+                if (entity.Equipment.ContainsKey(3) && entity.Equipment[3] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_leggings}: {entity.Equipment[3].GetTypeString()} x{entity.Equipment[3].Count}");
-                if (entity.Equipment.ContainsKey(2) && entity.Equipment[2] != null)
+                if (entity.Equipment.ContainsKey(2) && entity.Equipment[2] is not null)
                     sb.Append($"\n   [MCC] {Translations.cmd_entityCmd_boots}: {entity.Equipment[2].GetTypeString()} x{entity.Equipment[2].Count}");
             }
 
@@ -317,7 +317,7 @@ namespace MinecraftClient.Commands
                     bool shouldInteractAt = entity.Type == EntityType.ArmorStand ||
                                             entity.Type == EntityType.ChestMinecart ||
                                             entity.Type == EntityType.ChestBoat;
-                    
+
                     handler.InteractEntity(entity.ID, shouldInteractAt ? InteractType.InteractAt : InteractType.Interact);
                     return Translations.cmd_entityCmd_used;
                 case ActionType.List:

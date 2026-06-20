@@ -7,7 +7,6 @@ https://github.com/laurentkempe/DynamicRun/blob/master/LICENSE
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -50,7 +49,7 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
         private static CSharpCompilation GenerateCode(string sourceCode, string fileName, List<string> additionalAssemblies)
         {
             var codeString = SourceText.From(sourceCode);
-            var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp9);
+            var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest);
 
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
 
@@ -79,35 +78,37 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
             var MinecraftClientDll = typeof(Program).Assembly.Location;     // The path to MinecraftClient.dll
 
             // We're on a self-contained binary, so we need to extract the executable to get the assemblies.
-            if (string.IsNullOrEmpty(MinecraftClientDll)) 
+            if (string.IsNullOrEmpty(MinecraftClientDll))
             {
                 // Create a temporary file to copy the executable to.
                 var executablePath = Environment.ProcessPath;
+                if (executablePath is null)
+                    throw new InvalidOperationException("Cannot determine the process path for self-contained scripting extraction.");
                 var tempPath = Path.Combine(Path.GetTempPath(), "mcc-scripting");
                 Directory.CreateDirectory(tempPath);
-                
+
                 var tempFile = Path.Combine(tempPath, "mcc-executable");
                 var useExisting = false;
 
                 // Check if we already have the executable in the temporary path.
-                foreach (var file in Directory.EnumerateFiles(tempPath)) 
+                foreach (var file in Directory.EnumerateFiles(tempPath))
                 {
-                    if (file.EndsWith("mcc-executable")) 
+                    if (file.EndsWith("mcc-executable"))
                     {
                         // Check if the file is the same as the current executable.
-                        if (File.ReadAllBytes(file).SequenceEqual(File.ReadAllBytes(executablePath))) 
+                        if (File.ReadAllBytes(file).SequenceEqual(File.ReadAllBytes(executablePath)))
                         {
                             useExisting = true;
                             break;
                         }
-                        
+
                         // If not, refresh the cache.
                         File.Delete(file);
                         break;
                     }
                 }
-                
-                if (!File.Exists(executablePath)) 
+
+                if (!File.Exists(executablePath))
                 {
                     throw new FileNotFoundException("[Script Error] Could not locate the current folder of MCC for scripting.");
                 }
@@ -117,47 +118,69 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                     File.Copy(executablePath, tempFile);
 
                 // Access the contents of the executable.
-                ExecutableReader e = new();
-                var viewAccessor = MemoryMappedFile.CreateFromFile(tempFile, FileMode.Open).CreateViewAccessor();
-                var manifest = e.ReadManifest(viewAccessor);
-                var files = manifest.Files;
+                using ExecutableReader executableReader = new(tempFile);
+                if (!executableReader.IsSingleFile)
+                    throw new InvalidOperationException("[Script Error] The executable is not a single-file bundle.");
+
+                var files = executableReader.Bundle.Files;
 
                 Stream? assemblyStream;
 
                 var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()!;
                 assemblyrefs.Add(new("MinecraftClient"));
                 assemblyrefs.Add(new("System.Private.CoreLib"));
+                // Facade assemblies needed for compiling scripts that reference netstandard libraries (e.g. Brigadier.NET)
+                assemblyrefs.Add(new("netstandard"));
+                assemblyrefs.Add(new("System.Runtime"));
+                assemblyrefs.Add(new("System.Private.Uri"));
+                assemblyrefs.Add(new("System.Net.Requests"));
+                assemblyrefs.Add(new("System.Net.WebSockets"));
+                assemblyrefs.Add(new("System.Net.HttpListener"));
+                assemblyrefs.Add(new("System.Net.Primitives"));
+                assemblyrefs.Add(new("System.Net.Sockets"));
+                assemblyrefs.Add(new("Microsoft.Win32.Primitives"));
+                assemblyrefs.Add(new("System.Collections.Concurrent"));
 
-                foreach (var refs in assemblyrefs) {
-                    var loadedAssembly = Assembly.Load(refs);
-                    if (string.IsNullOrEmpty(loadedAssembly.Location)) {
+                foreach (var refs in assemblyrefs)
+                {
+                    Assembly? loadedAssembly;
+                    try
+                    {
+                        loadedAssembly = Assembly.Load(refs);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // Facade assemblies like netstandard may not be loadable in all environments
+                        continue;
+                    }
+
+                    if (string.IsNullOrEmpty(loadedAssembly.Location))
+                    {
                         // Check if we can access the file from the executable.
                         var reference = files.FirstOrDefault(x =>
-                            x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
-                        var refCount = files.Count(x => x.RelativePath.Remove(x.RelativePath.Length - 4) == refs.Name);
-                        if (refCount > 1) {
+                            Path.GetFileNameWithoutExtension(x.RelativePath) == refs.Name);
+                        var refCount = files.Count(x => Path.GetFileNameWithoutExtension(x.RelativePath) == refs.Name);
+                        if (refCount > 1)
+                        {
                             // Safety net for the case where the assembly is referenced multiple times.
                             // Should not happen normally, but we can make exceptions when it does happen.
                             throw new InvalidOperationException(
                                 "[Script Error] Too many references to the same assembly. Assembly name: " + refs.Name);
                         }
 
-                        if (reference == null) {
-                            throw new InvalidOperationException(
-                                "[Script Error] The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
+                        if (reference is null)
+                        {
+                            // Facade assemblies may not be in the bundle - skip them silently
+                            continue;
                         }
 
-                        assemblyStream = GetStreamForFileEntry(viewAccessor, reference);
+                        assemblyStream = reference.AsStream();
                         references.Add(MetadataReference.CreateFromStream(assemblyStream!));
                         continue;
                     }
 
                     references.Add(MetadataReference.CreateFromFile(loadedAssembly.Location));
                 }
-
-                // Cleanup.
-                viewAccessor.Flush();
-                viewAccessor.Dispose();
             }
             else
             {
@@ -165,6 +188,18 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 references.Add(MetadataReference.CreateFromFile(SystemConsole));
                 references.Add(MetadataReference.CreateFromFile(MinecraftClientDll));
                 Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
+
+                // Add facade assemblies needed for Roslyn compilation when referencing
+                // libraries that target netstandard (e.g. Brigadier.NET).
+                var runtimeDir = Path.GetDirectoryName(SystemPrivateCoreLib)!;
+                foreach (var facadeName in new[] { "netstandard.dll", "System.Runtime.dll", "System.Private.Uri.dll", "System.Net.Requests.dll",
+                    "System.Net.WebSockets.dll", "System.Net.HttpListener.dll", "System.Net.Primitives.dll", "System.Net.Sockets.dll",
+                    "Microsoft.Win32.Primitives.dll", "System.Collections.Concurrent.dll" })
+                {
+                    var facadePath = Path.Combine(runtimeDir, facadeName);
+                    if (File.Exists(facadePath))
+                        references.Add(MetadataReference.CreateFromFile(facadePath));
+                }
             }
 #pragma warning restore IL3000
 
@@ -174,14 +209,6 @@ namespace MinecraftClient.Scripting.DynamicRun.Builder
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                     optimizationLevel: OptimizationLevel.Release,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
-        }
-
-        private static Stream? GetStreamForFileEntry(MemoryMappedViewAccessor viewAccessor, FileEntry file)
-        {
-            if (typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, file }) is not Stream stream)
-                throw new InvalidOperationException("[Script Error] The executable does not contain the assembly. Assembly name: " + file.RelativePath);
-
-            return stream;
         }
 
         internal struct CompileResult

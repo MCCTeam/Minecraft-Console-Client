@@ -34,7 +34,7 @@ public class EntityMetadataPalette1193 : EntityMetadataPalette
         { 22, EntityMetaDataType.OptionalGlobalPosition },
         { 23, EntityMetaDataType.PaintingVariant }
     };
-        
+
     public override Dictionary<int, EntityMetaDataType> GetEntityMetadataMappingsList()
     {
         return entityMetadataMappings;

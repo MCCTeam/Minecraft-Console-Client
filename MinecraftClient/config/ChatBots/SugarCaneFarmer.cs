@@ -151,7 +151,7 @@ class SugarCaneFarmer : SugarCaneFarmerBase
     {
         LogToConsole("Sugar Cane farming bot created by Daenges.");
 
-        Handler.dispatcher.Register(l => l.Literal(CommandName)
+        McClient.dispatcher.Register(l => l.Literal(CommandName)
                 .Then(l => l.Argument("Commands", Arguments.GreedyString())
                     .Executes(r => {
                         CommandHandler(Arguments.GetString(r, "Commands").Split(' ', StringSplitOptions.TrimEntries));
@@ -162,7 +162,7 @@ class SugarCaneFarmer : SugarCaneFarmerBase
 
     public override void OnUnload()
     {
-        Handler.dispatcher.Unregister(CommandName);
+        McClient.dispatcher.Unregister(CommandName);
     }
 
     /// <summary>

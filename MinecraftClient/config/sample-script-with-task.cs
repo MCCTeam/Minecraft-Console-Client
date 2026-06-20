@@ -13,7 +13,7 @@ public class PeriodicTask : ChatBot
     private DateTime nextTaskRun = DateTime.Now;
 
     /// <summary>
-    /// Called on each MCC tick, around 10 times per second
+    /// Called on each MCC tick, around 20 times per second
     /// </summary>
     public override void Update()
     {

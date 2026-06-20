@@ -1,0 +1,101 @@
+using System;
+using System.Collections.Generic;
+using MinecraftClient.Inventory;
+using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
+using MinecraftClient.Protocol.Message;
+
+namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Components._1_20_6;
+
+public class WrittenBookContentComponent(DataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) : StructuredComponent(dataTypes, itemPalette, subComponentRegistry)
+{
+    public string RawTitle { get; set; } = null!;
+    public bool HasFilteredTitle { get; set; }
+    public string? FilteredTitle { get; set; }
+    public string Author { get; set; } = null!;
+    public int Generation { get; set; }
+    public int NumberOfPages { get; set; }
+    public List<BookPage> Pages { get; set; } = [];
+    public bool Resolved { get; set; }
+
+    public override void Parse(Queue<byte> data)
+    {
+        RawTitle = DataTypes.ReadNextString(data);
+        HasFilteredTitle = DataTypes.ReadNextBool(data);
+
+        if (HasFilteredTitle)
+            FilteredTitle = DataTypes.ReadNextString(data);
+
+        Author = DataTypes.ReadNextString(data);
+        Generation = DataTypes.ReadNextVarInt(data);
+        NumberOfPages = DataTypes.ReadNextVarInt(data);
+
+        for (var i = 0; i < NumberOfPages; i++)
+        {
+            var (rawContent, rawContentNbt) = ReadPageComponent(data);
+            var hasFilteredContent = DataTypes.ReadNextBool(data);
+            Dictionary<string, object>? filteredContentNbt = null;
+            string? filteredContent = null;
+
+            if (hasFilteredContent)
+                (filteredContent, filteredContentNbt) = ReadPageComponent(data);
+
+            Pages.Add(new BookPage(rawContent, hasFilteredContent, filteredContent, rawContentNbt, filteredContentNbt));
+        }
+
+        Resolved = DataTypes.ReadNextBool(data);
+    }
+
+    private (string Content, Dictionary<string, object> Nbt) ReadPageComponent(Queue<byte> data)
+    {
+        // Hypixel sent page payloads in the string-shaped form on this structured-book path,
+        // so keep the parser tolerant while still preserving the raw data for serialization.
+        Queue<byte> fallbackData = new(data);
+
+        try
+        {
+            var nbt = DataTypes.ReadNextNbt(data);
+            return (ChatParser.ParseText(nbt), nbt);
+        }
+        catch (System.IO.InvalidDataException)
+        {
+            data.Clear();
+            foreach (var b in fallbackData)
+                data.Enqueue(b);
+
+            var json = DataTypes.ReadNextString(data);
+            return (ChatParser.ParseText(json), new Dictionary<string, object> { [""] = json });
+        }
+    }
+
+    public override Queue<byte> Serialize()
+    {
+        var data = new List<byte>();
+
+        data.AddRange(DataTypes.GetString(RawTitle));
+        data.AddRange(DataTypes.GetBool(HasFilteredTitle));
+
+        if (HasFilteredTitle)
+        {
+            if (FilteredTitle is null)
+                throw new InvalidOperationException("Can not serialize WrittenBookContentComponent because HasFilteredTitle is true but FilteredTitle is null!");
+
+            data.AddRange(DataTypes.GetString(FilteredTitle));
+        }
+
+        data.AddRange(DataTypes.GetString(Author));
+        data.AddRange(DataTypes.GetVarInt(Generation));
+        data.AddRange(DataTypes.GetVarInt(Pages.Count));
+
+        foreach (var page in Pages)
+        {
+            data.AddRange(DataTypes.GetNbt(page.RawContentNbt));
+            data.AddRange(DataTypes.GetBool(page.HasFilteredContent));
+
+            if (page.HasFilteredContent)
+                data.AddRange(DataTypes.GetNbt(page.FilteredContentNbt));
+        }
+        data.AddRange(DataTypes.GetBool(Resolved));
+        return new Queue<byte>(data);
+    }
+}

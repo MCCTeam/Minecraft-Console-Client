@@ -211,7 +211,7 @@ namespace MinecraftClient
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     HttpResponseMessage res = httpWebRequest.Result;
-                    if (res.Headers.Location != null)
+                    if (res.Headers.Location is not null)
                     {
                         Match match = Regex.Match(res.Headers.Location.ToString(), GithubReleaseUrl + @"/tag/(\d{4})(\d{2})(\d{2})-(\d+)");
                         if (match.Success && match.Groups.Count == 5)
@@ -284,7 +284,7 @@ namespace MinecraftClient
 
         private static bool CompareVersionInfo(string? current, string? latest)
         {
-            if (current == null || latest == null)
+            if (current is null || latest is null)
                 return false;
             Regex reg = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s(\d{4})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{2}).*");
             Regex reg2 = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s\w+\s(\d{2})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{4}).*");
@@ -297,13 +297,13 @@ namespace MinecraftClient
                 try { curTime = new(int.Parse(curMatch.Groups[2].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[4].Value)); }
                 catch { curTime = null; }
             }
-            if (curTime == null)
+            if (curTime is null)
             {
                 curMatch = reg2.Match(current);
                 try { curTime = new(int.Parse(curMatch.Groups[4].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[2].Value)); }
                 catch { curTime = null; }
             }
-            if (curTime == null)
+            if (curTime is null)
                 return false;
 
             Match latestMatch = reg.Match(latest);
@@ -312,13 +312,13 @@ namespace MinecraftClient
                 try { latestTime = new(int.Parse(latestMatch.Groups[2].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[4].Value)); }
                 catch { latestTime = null; }
             }
-            if (latestTime == null)
+            if (latestTime is null)
             {
                 latestMatch = reg2.Match(latest);
                 try { latestTime = new(int.Parse(latestMatch.Groups[4].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[2].Value)); }
                 catch { latestTime = null; }
             }
-            if (latestTime == null)
+            if (latestTime is null)
                 return false;
 
             int curBuildId, latestBuildId;

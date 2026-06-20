@@ -1,6 +1,8 @@
-﻿using Brigadier.NET;
+using System;
+using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.CommandHandler.CmdResult;
 
@@ -9,7 +11,7 @@ namespace MinecraftClient.Commands
     class Useblock : Command
     {
         public override string CmdName { get { return "useblock"; } }
-        public override string CmdUsage { get { return "useblock <x> <y> <z>"; } }
+        public override string CmdUsage { get { return "useblock <x> <y> <z> [mainhand|offhand]"; } }
         public override string CmdDesc { get { return Translations.cmd_useblock_desc; } }
 
         public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
@@ -22,7 +24,11 @@ namespace MinecraftClient.Commands
 
             dispatcher.Register(l => l.Literal(CmdName)
                 .Then(l => l.Argument("Location", MccArguments.Location())
-                    .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"))))
+                    .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"), Hand.MainHand))
+                    .Then(l => l.Literal("mainhand")
+                        .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"), Hand.MainHand)))
+                    .Then(l => l.Literal("offhand")
+                        .Executes(r => UseBlockAtLocation(r.Source, MccArguments.GetLocation(r, "Location"), Hand.OffHand))))
                 .Then(l => l.Literal("_help")
                     .Executes(r => GetUsage(r.Source, string.Empty))
                     .Redirect(dispatcher.GetRoot().GetChild("help").GetChild(CmdName)))
@@ -39,7 +45,7 @@ namespace MinecraftClient.Commands
             });
         }
 
-        private int UseBlockAtLocation(CmdResult r, Location block)
+        private int UseBlockAtLocation(CmdResult r, Location block, Hand hand)
         {
             McClient handler = CmdResult.currentHandler!;
             if (!handler.GetTerrainEnabled())
@@ -48,8 +54,27 @@ namespace MinecraftClient.Commands
             Location current = handler.GetCurrentLocation();
             block = block.ToAbsolute(current).ToFloor();
             Location blockCenter = block.ToCenter();
-            bool res = handler.PlaceBlock(block, Direction.Down);
+            bool res = handler.PlaceBlock(block, GetFaceNearestPlayer(current, blockCenter), hand, lookAtBlock: true);
             return r.SetAndReturn(string.Format(Translations.cmd_useblock_use, blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed"), res);
+        }
+
+        private static Direction GetFaceNearestPlayer(Location playerLocation, Location blockCenter)
+        {
+            double dx = playerLocation.X - blockCenter.X;
+            double dy = playerLocation.Y - blockCenter.Y;
+            double dz = playerLocation.Z - blockCenter.Z;
+
+            double absX = Math.Abs(dx);
+            double absY = Math.Abs(dy);
+            double absZ = Math.Abs(dz);
+
+            if (absX >= absY && absX >= absZ)
+                return dx >= 0 ? Direction.East : Direction.West;
+
+            if (absY >= absZ)
+                return dy >= 0 ? Direction.Up : Direction.Down;
+
+            return dz >= 0 ? Direction.South : Direction.North;
         }
     }
 }

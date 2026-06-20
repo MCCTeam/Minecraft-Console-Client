@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Net.Http;
@@ -13,6 +13,7 @@ namespace MinecraftClient.WinAPI
     /// Allow to set the player skin as console icon, on Windows only.
     /// See StackOverflow no. 2986853
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public static class ConsoleIcon
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -32,18 +33,14 @@ namespace MinecraftClient.WinAPI
 
         private static void SetWindowIcon(System.Drawing.Icon icon)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
-                SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
-                SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
-            }
+            IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+            SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
+            SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
         }
 
         /// <summary>
         /// Asynchronously download the player's skin and set the head as console icon
         /// </summary>
-        [SupportedOSPlatform("windows")]
         public static void SetPlayerIconAsync(string playerName)
         {
             Thread t = new(new ThreadStart(delegate
@@ -99,16 +96,13 @@ namespace MinecraftClient.WinAPI
         /// </summary>
         public static void RevertToMCCIcon()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) //Windows Only
+            try
             {
-                try
-                {
-                    Icon defaultIcon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!)!;
-                    SetWindowIcon(Icon.FromHandle(defaultIcon.Handle)); // Windows 10+ (New console)
-                    SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
-                }
-                catch { }
+                Icon defaultIcon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!)!;
+                SetWindowIcon(Icon.FromHandle(defaultIcon.Handle)); // Windows 10+ (New console)
+                SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
             }
+            catch { }
         }
     }
 }

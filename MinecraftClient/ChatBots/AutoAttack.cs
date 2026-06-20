@@ -28,7 +28,7 @@ namespace MinecraftClient.ChatBots
             public PriorityType Priority = PriorityType.distance;
 
             [TomlInlineComment("$ChatBot.AutoAttack.Cooldown_Time$")]
-            public CooldownConfig Cooldown_Time = new(false, 1.0);
+            public CooldownConfig Cooldown_Time = new();
 
             [TomlInlineComment("$ChatBot.AutoAttack.Interaction$")]
             public InteractType Interaction = InteractType.Attack;
@@ -50,10 +50,19 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
-                if (Cooldown_Time.Custom && Cooldown_Time.value <= 0)
+                if (Cooldown_Time.Custom)
                 {
-                    LogToConsole(BotName, Translations.bot_autoAttack_invalidcooldown);
-                    Cooldown_Time.value = 1.0;
+                    if (Cooldown_Time.Min <= 0)
+                        Cooldown_Time.Min = 0.1;
+                    if (Cooldown_Time.Max <= 0)
+                        Cooldown_Time.Max = 0.1;
+
+                    if (Cooldown_Time.Min > Cooldown_Time.Max)
+                    {
+                        double temp = Cooldown_Time.Min;
+                        Cooldown_Time.Min = Cooldown_Time.Max;
+                        Cooldown_Time.Max = temp;
+                    }
                 }
 
                 if (Attack_Range < 1.0)
@@ -72,24 +81,16 @@ namespace MinecraftClient.ChatBots
             public struct CooldownConfig
             {
                 public bool Custom;
-                public double value;
+                public bool RandomMode = false;
+                public double Min = 1.5;
+                public double Max = 2.5;
 
                 public CooldownConfig()
                 {
                     Custom = false;
-                    value = 0;
-                }
-
-                public CooldownConfig(double value)
-                {
-                    Custom = true;
-                    this.value = value;
-                }
-
-                public CooldownConfig(bool Override, double value)
-                {
-                    this.Custom = Override;
-                    this.value = value;
+                    RandomMode = false;
+                    Min = 1.5;
+                    Max = 2.5;
                 }
             }
         }
@@ -105,14 +106,15 @@ namespace MinecraftClient.ChatBots
         private float health = 100;
         private readonly bool attackHostile = true;
         private readonly bool attackPassive = false;
+        private readonly Random _random = new();
 
         public AutoAttack()
         {
             overrideAttackSpeed = Config.Cooldown_Time.Custom;
             if (Config.Cooldown_Time.Custom)
             {
-                attackCooldownSeconds = Config.Cooldown_Time.value;
-                attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
+                attackCooldownSeconds = Config.Cooldown_Time.Min;
+                attackCooldown = SecondsToAttackCooldownTicks(attackCooldownSeconds);
             }
 
             attackHostile = Config.Attack_Hostile;
@@ -137,6 +139,12 @@ namespace MinecraftClient.ChatBots
 
             if (attackCooldownCounter == 0)
             {
+                if (Config.Cooldown_Time.Custom && Config.Cooldown_Time.RandomMode)
+                {
+                    double randomSeconds = _random.NextDouble() * (Config.Cooldown_Time.Max - Config.Cooldown_Time.Min) + Config.Cooldown_Time.Min;
+                    attackCooldown = SecondsToAttackCooldownTicks(randomSeconds);
+                }
+
                 attackCooldownCounter = attackCooldown;
                 if (entitiesToAttack.Count > 0)
                 {
@@ -177,6 +185,8 @@ namespace MinecraftClient.ChatBots
                                 InteractEntity(priorityEntity, Config.Interaction); // hit the entity!
                                 SendAnimation(Inventory.Hand.MainHand); // Arm animation
                             }
+
+
                         }
                     }
                     else
@@ -188,6 +198,7 @@ namespace MinecraftClient.ChatBots
                             {
                                 InteractEntity(entity.Key, Config.Interaction); // hit the entity!
                             }
+
                         }
                         SendAnimation(Inventory.Hand.MainHand); // Arm animation
                     }
@@ -274,7 +285,7 @@ namespace MinecraftClient.ChatBots
                         serverTPS = GetServerTPS();
                         attackSpeed = prop[attackSpeedKey];
                         attackCooldownSeconds = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
-                        attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
+                        attackCooldown = SecondsToAttackCooldownTicks(attackCooldownSeconds);
                     }
                 }
             }
@@ -288,7 +299,13 @@ namespace MinecraftClient.ChatBots
             serverTPS = tps;
             // re-calculate attack speed
             attackCooldownSeconds = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
-            attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
+            attackCooldown = SecondsToAttackCooldownTicks(attackCooldownSeconds);
+        }
+
+        private static int SecondsToAttackCooldownTicks(double seconds)
+        {
+            seconds = Math.Min(int.MaxValue / (double)Settings.ClientTicksPerSecond, seconds);
+            return Math.Max(1, (int)Math.Truncate(seconds * Settings.ClientTicksPerSecond) + 1);
         }
 
         /// <summary>

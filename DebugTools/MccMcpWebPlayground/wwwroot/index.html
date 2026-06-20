@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCC MCP Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-title"><span>MCC</span> MCP Playground</div>
+        <div class="brand-subtitle">Canonical guidance bootstrap, typed run state, verified completion</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div id="status" class="status-pill">Booting...</div>
+      <button id="theme-toggle" class="icon-button" title="Toggle theme" aria-label="Toggle theme">
+        <span id="theme-toggle-icon">◎</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel chat-panel">
+      <div class="panel-header">
+        <h1>Conversation</h1>
+        <div class="panel-actions">
+          <button id="clear-chat-btn" class="icon-button" title="Clear chat">Clear Chat</button>
+        </div>
+      </div>
+      <div id="chat" class="panel-body chat-body">
+        <div id="empty-state" class="empty-state">
+          <p>No messages yet.</p>
+          <p>Ask the harness to inspect or act through MCC's MCP server.</p>
+        </div>
+        <div id="typing-indicator" class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel timeline-panel">
+      <div class="panel-header">
+        <h1>Run Timeline</h1>
+        <div class="panel-actions">
+          <button id="clear-tools-btn" class="icon-button" title="Clear timeline">Clear Events</button>
+        </div>
+      </div>
+      <div id="tools" class="panel-body timeline-body">
+        <div id="tools-empty-state" class="empty-state">
+          <p>No run events yet.</p>
+          <p>Typed SSE events will appear here as the harness runs.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="composer">
+    <div class="composer-row">
+      <textarea id="prompt" placeholder="Ask MCC to inspect, move, or interact through the web harness..."></textarea>
+    </div>
+    <div class="composer-footer">
+      <div class="composer-hint">Press <kbd>Enter</kbd> to send, <kbd>Shift</kbd> + <kbd>Enter</kbd> for a new line.</div>
+      <div class="composer-actions">
+        <button id="stop" class="ghost-button">Stop</button>
+        <button id="clear" class="ghost-button">Clear All</button>
+        <button id="send" class="primary-button">Send</button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

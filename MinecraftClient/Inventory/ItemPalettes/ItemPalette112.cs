@@ -62,7 +62,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[1769472] = ItemType.PoweredRail;
             mappings[1835008] = ItemType.DetectorRail;
             mappings[1900544] = ItemType.StickyPiston;
-            mappings[2031617] = ItemType.Grass;
+            mappings[2031617] = ItemType.ShortGrass;
             mappings[2031618] = ItemType.Fern;
             mappings[2097152] = ItemType.DeadBush;
             mappings[2162688] = ItemType.Piston;

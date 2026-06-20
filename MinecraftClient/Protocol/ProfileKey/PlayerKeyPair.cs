@@ -73,11 +73,11 @@ namespace MinecraftClient.Protocol.ProfileKey
         {
             List<string> datas = new();
             datas.Add(Convert.ToBase64String(PublicKey.Key));
-            if (PublicKey.Signature == null)
+            if (PublicKey.Signature is null)
                 datas.Add(string.Empty);
             else
                 datas.Add(Convert.ToBase64String(PublicKey.Signature));
-            if (PublicKey.SignatureV2 == null)
+            if (PublicKey.SignatureV2 is null)
                 datas.Add(string.Empty);
             else
                 datas.Add(Convert.ToBase64String(PublicKey.SignatureV2));

@@ -19,12 +19,13 @@ namespace MinecraftClient.ChatBots
         private string? file;
         private string[] lines = Array.Empty<string>();
         private string[] args = Array.Empty<string>();
-        private int sleepticks = 10;
+        private int sleepticks = Settings.ClientTicksPerSecond;
         private int nextline = 0;
         private readonly string? owner;
         private bool csharp;
         private Thread? thread;
         private readonly Dictionary<string, object>? localVars;
+        private readonly string? scriptOwnerKey;
 
         public Script(string filename)
         {
@@ -36,6 +37,13 @@ namespace MinecraftClient.ChatBots
         {
             owner = ownername;
             this.localVars = localVars;
+        }
+
+        internal Script(string filename, string? ownername, Dictionary<string, object>? localVars, string? scriptOwnerKey)
+            : this(filename, ownername, localVars)
+        {
+            this.scriptOwnerKey = scriptOwnerKey;
+            SetScriptOwnerKey(scriptOwnerKey);
         }
 
         private void ParseArguments(string argstr)
@@ -86,7 +94,7 @@ namespace MinecraftClient.ChatBots
         public static bool LookForScript(ref string filename)
         {
             //Automatically look in subfolders and try to add ".txt" file extension
-             char dir_slash = Path.DirectorySeparatorChar;
+            char dir_slash = Path.DirectorySeparatorChar;
             string[] files = new string[]
             {
                 filename,
@@ -149,24 +157,30 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        public override bool OnDisconnect(DisconnectReason reason, string message)
+        {
+            UnloadBot();
+            return false;
+        }
+
         public override void Update()
         {
             if (csharp) //C# compiled script
             {
                 //Initialize thread on first update
-                if (thread == null)
+                if (thread is null)
                 {
                     thread = new Thread(() =>
                     {
                         try
                         {
-                            CSharpRunner.Run(this, lines, args, localVars, scriptName: file!);
+                            CSharpRunner.Run(this, lines, args, localVars, scriptName: file!, scriptOwnerKey: scriptOwnerKey);
                         }
                         catch (CSharpException e)
                         {
                             string errorMessage = string.Format(Translations.bot_script_fail, file, e.ExceptionType);
                             LogToConsole(errorMessage);
-                            if (owner != null)
+                            if (owner is not null)
                                 SendPrivateMessage(owner, errorMessage);
                             LogToConsole(e.InnerException);
                         }
@@ -178,7 +192,7 @@ namespace MinecraftClient.ChatBots
                 }
 
                 //Unload bot once the thread has finished running
-                if (thread != null && !thread.IsAlive)
+                if (thread is not null && !thread.IsAlive)
                 {
                     UnloadBot();
                 }
@@ -202,7 +216,7 @@ namespace MinecraftClient.ChatBots
                                 switch (instruction_name.ToLower())
                                 {
                                     case "wait":
-                                        int ticks = 10;
+                                        int ticks = Settings.ClientTicksPerSecond;
                                         try
                                         {
                                             if (instruction_line[5..].Contains("to", StringComparison.OrdinalIgnoreCase) ||
@@ -213,7 +227,7 @@ namespace MinecraftClient.ChatBots
                                                     .ToLower();
                                                 processedLine = string.Join("", processedLine.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
                                                 var parts = processedLine.Contains("to") ? processedLine.Split("to") : processedLine.Split("-");
-                                                
+
                                                 if (parts.Length == 2)
                                                 {
                                                     var min = Convert.ToInt32(parts[0]);
@@ -224,10 +238,12 @@ namespace MinecraftClient.ChatBots
                                                         (min, max) = (max, min);
                                                         LogToConsole(Translations.cmd_wait_random_min_bigger);
                                                     }
-                                                    
+
                                                     ticks = new Random().Next(min, max);
-                                                } else ticks = Convert.ToInt32(instruction_line[5..]);
-                                            } else ticks = Convert.ToInt32(instruction_line[5..]);
+                                                }
+                                                else ticks = Convert.ToInt32(instruction_line[5..]);
+                                            }
+                                            else ticks = Convert.ToInt32(instruction_line[5..]);
                                         }
                                         catch { }
                                         sleepticks = ticks;

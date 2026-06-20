@@ -21,13 +21,13 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static Dictionary<int, string> LoadRegistry(string registriesJsonFile, string jsonRegistryName)
         {
-            Json.JSONData rawJson = Json.ParseJson(File.ReadAllText(registriesJsonFile));
-            Json.JSONData rawRegistry = rawJson.Properties[jsonRegistryName].Properties["entries"];
+            var rawJson = Json.ParseJson(File.ReadAllText(registriesJsonFile));
+            var rawRegistry = rawJson![jsonRegistryName]!["entries"]!.AsObject();
             Dictionary<int, string> registry = new();
 
-            foreach (KeyValuePair<string, Json.JSONData> entry in rawRegistry.Properties)
+            foreach (var entry in rawRegistry)
             {
-                int entryId = int.Parse(entry.Value.Properties["protocol_id"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
+                int entryId = int.Parse(entry.Value!["protocol_id"].GetStringValue(), NumberStyles.Any, CultureInfo.CurrentCulture);
 
                 //minecraft:item_name => ItemName
                 string entryName = String.Concat(

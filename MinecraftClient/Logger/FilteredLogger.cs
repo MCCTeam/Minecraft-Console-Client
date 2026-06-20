@@ -31,7 +31,7 @@ namespace MinecraftClient.Logger
                         regexToUse = new(debug);
                     break;
             }
-            if (regexToUse != null)
+            if (regexToUse is not null)
             {
                 // IsMatch and white/blacklist result can be represented using XOR
                 // e.g.  matched(true) ^ blacklist(true) => shouldn't log(false)
@@ -54,6 +54,17 @@ namespace MinecraftClient.Logger
                     Log("§8[DEBUG] " + msg);
                 }
                 // Don't write debug lines here as it could cause a stack overflow
+            }
+        }
+
+        public override void PacketDebug(string msg)
+        {
+            if (Settings.Config.Logging.PacketDebugMessages)
+            {
+                if (ShouldDisplay(FilterChannel.Debug, msg))
+                {
+                    Log("§8[DEBUG] " + msg);
+                }
             }
         }
 
@@ -81,7 +92,7 @@ namespace MinecraftClient.Logger
             {
                 if (ShouldDisplay(FilterChannel.Chat, msg))
                 {
-                    Log(msg);
+                    ConsoleIO.WriteChatLineIfVisible(msg);
                 }
                 else Debug("[Logger] One Chat message filtered: " + msg);
             }

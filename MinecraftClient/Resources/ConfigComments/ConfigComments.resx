@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -119,7 +119,7 @@
   </resheader>
   <data name="AppVars.Variables" xml:space="preserve">
     <value>can be used in some other fields as %yourvar%
-%username% and %serverip% are reserved variables.</value>
+%username%, %login%, %serverip%, %serverport%, %datetime% and %players% are reserved read-only variables.</value>
   </data>
   <data name="ChatBot" xml:space="preserve">
     <value>=============================== #
@@ -193,7 +193,7 @@ You need to enable Entity Handling to use this bot
     <value>Capped between 1 to 4</value>
   </data>
   <data name="ChatBot.AutoAttack.Cooldown_Time" xml:space="preserve">
-    <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
+    <value>Delay between attacks. Set "Custom = false" to let MCC calculate it. When Custom = true, set Min/Max for the cooldown range. If RandomMode = true, a random value between Min and Max is used for each attack.</value>
   </data>
   <data name="ChatBot.AutoAttack.Entites_List" xml:space="preserve">
     <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
@@ -241,6 +241,12 @@ For the naming of the block, please see https://mccteam.github.io/r/block/#L15</
   </data>
   <data name="ChatBot.AutoDig.Auto_Tool_Switch" xml:space="preserve">
     <value>Automatically switch to the appropriate tool.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Apply_Efficiency_Enchantments" xml:space="preserve">
+    <value>Apply Efficiency enchantment speed when AutoDig computes mining time. Disable this for strict anti-cheat compatibility.</value>
+  </data>
+  <data name="ChatBot.AutoDig.Apply_Haste_Effects" xml:space="preserve">
+    <value>Apply Haste and Conduit Power speed effects when AutoDig computes mining time. Disable this for strict anti-cheat compatibility.</value>
   </data>
   <data name="ChatBot.AutoDig.Dig_Timeout" xml:space="preserve">
     <value>Mining a block for more than "Dig_Timeout" seconds will be considered a timeout.</value>
@@ -310,6 +316,21 @@ You can use "/fish" to control the bot manually.
   </data>
   <data name="ChatBot.AutoFishing.Hook_Threshold" xml:space="preserve">
     <value>A "stationary" hook that moves above this threshold in the Y-axis will be considered to have caught a fish.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Enable_Velocity_Detection" xml:space="preserve">
+    <value>Enable fish bite detection using fishing bobber velocity packets.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Velocity_Hook_Threshold" xml:space="preserve">
+    <value>Velocity Y threshold (blocks/tick). Values below this are treated as a bite. Keep this value negative.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Enable_Sound_Detection" xml:space="preserve">
+    <value>Enable fish bite detection using splash sounds near the fishing bobber.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Sound_Distance" xml:space="preserve">
+    <value>Maximum distance (blocks) between splash sound and bobber to treat it as a bite.</value>
+  </data>
+  <data name="ChatBot.AutoFishing.Detection_Warmup" xml:space="preserve">
+    <value>Delay (seconds) after bobber spawn before bite detection starts. Helps ignore cast-entry splash/motion.</value>
   </data>
   <data name="ChatBot.AutoFishing.Log_Fish_Bobber" xml:space="preserve">
     <value>Used to adjust the above two thresholds, which when enabled will print the change in the position of the fishhook entity upon receipt of its movement packet.</value>
@@ -389,6 +410,15 @@ For Discord message formatting, check the following: https://mccteam.github.io/r
   </data>
   <data name="ChatBot.DiscordBridge.Token" xml:space="preserve">
     <value>Your Discord Bot token.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.AllowOtherBotMessages" xml:space="preserve">
+    <value>When enabled, messages from other Discord bots in the channel will be relayed to Minecraft chat. The bridge always ignores its own messages to prevent loops.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.RelayAllMessages" xml:space="preserve">
+    <value>When enabled, all text received from the Minecraft server (including system messages, join/leave notifications, etc.) will be relayed to Discord, not just player chat and private messages.</value>
+  </data>
+  <data name="ChatBot.DiscordBridge.MessageAggregationInterval" xml:space="preserve">
+    <value>Interval in seconds to aggregate messages before sending them to Discord. When set to 0, messages are sent immediately one by one. When set to a value like 1.0, messages received within that interval are batched into a single Discord message. Useful for reducing Discord API rate limits.</value>
   </data>
   <data name="ChatBot.Farmer" xml:space="preserve">
     <value>Automatically farms crops for you (plants, breaks and bonemeals them).
@@ -474,8 +504,10 @@ You need to have ChatFormat working correctly and add yourself in botowners to u
 /!\ Server admins can spoof PMs (/tellraw, /nick) so enable RemoteControl only if you trust server admins</value>
   </data>
   <data name="ChatBot.ReplayCapture" xml:space="preserve">
-    <value>Enable recording of the game (/replay start) and replay it later using the Replay Mod (https://www.replaymod.com/)
+    <value>Enable automatic recording of the game and replay it later using the Replay Mod (https://www.replaymod.com/)
+Use /replay save to create a snapshot replay file while still recording.
 Please note that due to technical limitations, the client player (you) will not be shown in the replay file
+Each MCC instance uses its own temporary replay cache so multiple clients can record from the same folder without colliding.
 /!\ You SHOULD use /replay stop or exit the program gracefully with /quit OR THE REPLAY FILE MAY GET CORRUPT!</value>
   </data>
   <data name="ChatBot.ReplayCapture.Backup_Interval" xml:space="preserve">
@@ -551,11 +583,26 @@ Custom colors are only available when using "vt100_24bit" color mode.</value>
   <data name="Console.CommandSuggestion.Use_Basic_Arrow" xml:space="preserve">
     <value>Enable this option if the arrows in the command suggestions are not displayed properly in your terminal.</value>
   </data>
+  <data name="Console.General.ConsoleMode" xml:space="preserve">
+    <value>Console mode: "classic" for the standard terminal, "tui" for a pseudo-graphical full-screen interface.</value>
+  </data>
   <data name="Console.General.ConsoleColorMode" xml:space="preserve">
     <value>Use "disable", "legacy_4bit", "vt100_4bit", "vt100_8bit" or "vt100_24bit". If a garbled code like "←[0m" appears on the terminal, you can try switching to "legacy_4bit" mode, or just disable it.</value>
   </data>
+  <data name="Console.General.Display_Icon_Banner" xml:space="preserve">
+    <value>Whether to display the MCC startup icon banner.</value>
+  </data>
   <data name="Console.General.Display_Input" xml:space="preserve">
     <value>You can use "Ctrl+P" to print out the current input and cursor position.</value>
+  </data>
+  <data name="Console.General.Display_Chat" xml:space="preserve">
+    <value>Whether to display received chat messages in the console. This does not affect chat bots or chat log files.</value>
+  </data>
+  <data name="Console.General.History_Input_Records" xml:space="preserve">
+    <value>Maximum number of input history records to keep.</value>
+  </data>
+  <data name="Console.General.TUI_Log_Scrollback" xml:space="preserve">
+    <value>Maximum log lines kept in TUI mode scrollback. Set to 0 for automatic.</value>
   </data>
   <data name="Head" xml:space="preserve">
     <value>Startup Config File
@@ -578,6 +625,12 @@ Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Con
   </data>
   <data name="Logging.DebugMessages" xml:space="preserve">
     <value>Please enable this before submitting bug reports. Thanks!</value>
+  </data>
+  <data name="Logging.PacketDebugMessages" xml:space="preserve">
+    <value>Show low-level packet debug logs.</value>
+  </data>
+  <data name="Logging.PacketDebugExclusions" xml:space="preserve">
+    <value>Packet types to exclude from packet debug logs, e.g. ["KeepAlive", "Ping"].</value>
   </data>
   <data name="Logging.ErrorMessages" xml:space="preserve">
     <value>Show error messages.</value>
@@ -643,6 +696,18 @@ Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; P
   <data name="Main.Advanced.LoadMccTrans" xml:space="preserve">
     <value>Load translations applied to MCC when available, turn it off to use English only.</value>
   </data>
+  <data name="Main.Advanced.load_resourcepack_translations" xml:space="preserve">
+    <value>Load translations from server resource packs and cache extracted language entries locally for faster reuse.</value>
+  </data>
+  <data name="Main.Advanced.load_forge_mod_translations" xml:space="preserve">
+    <value>Load translations from local Forge mod jars when their mod IDs are announced by the server. Disabled by default.</value>
+  </data>
+  <data name="Main.Advanced.auto_discover_forge_mod_translation_sources" xml:space="preserve">
+    <value>Also scan standard Minecraft, Prism Launcher, and CurseForge instance mod folders for translation jars when available.</value>
+  </data>
+  <data name="Main.Advanced.forge_mod_translation_path" xml:space="preserve">
+    <value>Optional path to a mods folder. When set, MCC loads Forge mod translations from this folder instead of automatic discovery.</value>
+  </data>
   <data name="Main.Advanced.mc_forge" xml:space="preserve">
     <value>Use "auto", "no" or "force". Force-enabling only works for MC 1.13+.</value>
   </data>
@@ -651,6 +716,9 @@ Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; P
   </data>
   <data name="Main.Advanced.message_cooldown" xml:space="preserve">
     <value>Controls the minimum interval (in seconds) between sending each message to the server.</value>
+  </data>
+  <data name="Main.Advanced.max_chat_message_length" xml:space="preserve">
+    <value>Override the maximum chat message length. Set to 0 to use the default (100 for 1.10 and below, 256 for 1.11+). WARNING: Setting this incorrectly may cause you to be kicked from the server.</value>
   </data>
   <data name="Main.Advanced.minecraft_realms" xml:space="preserve">
     <value>Enable support for joining Minecraft Realms worlds.</value>
@@ -696,6 +764,15 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
   <data name="Main.Advanced.show_inventory_layout" xml:space="preserve">
     <value>Show inventory layout as ASCII art in inventory command.</value>
   </data>
+  <data name="Main.Advanced.show_effect_messages" xml:space="preserve">
+    <value>Show chat notifications when your active effects are gained or expire. Set to false to disable these messages entirely.</value>
+  </data>
+  <data name="Main.Advanced.show_effect_names_in_tui" xml:space="preserve">
+    <value>Show full effect names and levels in the TUI status bar instead of compact effect icons only.</value>
+  </data>
+  <data name="Main.Advanced.show_github_star_reminder" xml:space="preserve">
+    <value>Show a GitHub star reminder on startup. Set to false to hide it.</value>
+  </data>
   <data name="Main.Advanced.show_system_messages" xml:space="preserve">
     <value>System messages for server ops.</value>
   </data>
@@ -721,7 +798,7 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
     <value>The address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)</value>
   </data>
   <data name="Main.General.method" xml:space="preserve">
-    <value>Microsoft Account sign-in method: "mcc" OR "browser". If the login always fails, please try to use the "browser" once.</value>
+    <value>Microsoft Account sign-in method: "mcc" (device code, supports 2FA) OR "browser" (manual browser login).</value>
   </data>
   <data name="Main.General.server_info" xml:space="preserve">
     <value>Account type: "mojang" OR "microsoft" OR "yggdrasil". Also affects interactive login in console.</value>
@@ -828,6 +905,60 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
   <data name="ChatBot.ItemsCollector" xml:space="preserve">
     <value>A Chat Bot that collects items on the ground</value>
   </data>
+  <data name="ChatBot.DiscordRpc" xml:space="preserve">
+    <value>Show a Discord Rich Presence status with your current Minecraft session info.
+Setup:
+1. Go to https://discord.com/developers/applications and log in with your Discord account.
+2. Click "New Application", give it a name (e.g. "MCC") and confirm.
+3. On the application page, copy the "Application ID" and paste it in the "ApplicationId" field below.
+4. (Optional) Go to "Rich Presence" -&gt; "Art Assets" to upload custom images for LargeImageKey/SmallImageKey.
+Note: This does NOT require a Bot Token, only an Application ID. Discord must be running on the same machine as MCC.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ApplicationId" xml:space="preserve">
+    <value>Your Discord Application ID. Create one at https://discord.com/developers/applications</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.PresenceDetails" xml:space="preserve">
+    <value>The top line of the Rich Presence display. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.PresenceState" xml:space="preserve">
+    <value>The second line of the Rich Presence display. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.LargeImageKey" xml:space="preserve">
+    <value>The key of the large image asset uploaded to your Discord application.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.LargeImageText" xml:space="preserve">
+    <value>Tooltip text for the large image. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.SmallImageKey" xml:space="preserve">
+    <value>The key of the small image asset uploaded to your Discord application (leave empty to hide).</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.SmallImageText" xml:space="preserve">
+    <value>Tooltip text for the small image. Supports placeholders.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowServerAddress" xml:space="preserve">
+    <value>Show the server address (host and port) in the Discord presence. When disabled, {server_host} and {server_port} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowCoordinates" xml:space="preserve">
+    <value>Show the player coordinates in the Discord presence. When disabled, {x}, {y}, {z} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowHealth" xml:space="preserve">
+    <value>Show health and food level in the Discord presence. When disabled, {health}, {max_health}, {food} are masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowDimension" xml:space="preserve">
+    <value>Show the current dimension in the Discord presence. When disabled, {dimension} is masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowGamemode" xml:space="preserve">
+    <value>Show the current gamemode in the Discord presence. When disabled, {gamemode} is masked.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowElapsedTime" xml:space="preserve">
+    <value>Show elapsed session time in the Discord presence.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.ShowPlayerCount" xml:space="preserve">
+    <value>Show the online player count as a party size in the Discord presence.</value>
+  </data>
+  <data name="ChatBot.DiscordRpc.UpdateIntervalSeconds" xml:space="preserve">
+    <value>How often (in seconds) to refresh the Discord presence. Minimum: 1</value>
+  </data>
   <data name="ChatBot.WebSocketBot" xml:space="preserve">
     <value>Remotely control the client using Web Sockets.\n# This is useful if you want to implement an application that can remotely and asynchronously execute procedures in MCC.\n# Example implementation written in JavaScript: https://github.com/milutinke/MCC.js.git\n# The protocol specification will be available in the documentation soon.</value>
   </data>
@@ -850,9 +981,108 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Ignore invalid player name</value>
   </data>
   <data name="Main.General.AuthlibServer" xml:space="preserve">
-    <value>Yggdrasil authlib server domain name and port.</value>
+    <value>authlib-injector authentication server to use for Yggdrasil accounts</value>
+  </data>
+  <data name="AuthlibServer.Host" xml:space="preserve">
+    <value>Domain name or IP address</value>
+  </data>
+  <data name="AuthlibServer.Port" xml:space="preserve">
+    <value>Port to connect on</value>
+  </data>
+  <data name="AuthlibServer.AuthlibInjectorAPIPath" xml:space="preserve">
+    <value>Path component of the authlib-injector API location. Refer to the authlib-injector documentation for more info.</value>
+  </data>
+  <data name="AuthlibServer.UseHttps" xml:space="preserve">
+    <value>Set to false if your authlib-injector server uses plain HTTP (e.g. for local testing without TLS).</value>
   </data>
   <data name="Main.Advanced.enable_sentry" xml:space="preserve">
     <value>Set to false to opt-out of Sentry error logging.</value>
+  </data>
+  <data name="Console.Minimap" xml:space="preserve">
+    <value>Settings for the TUI minimap overlay that shows terrain and entities.</value>
+  </data>
+  <data name="Console.Minimap.Enabled" xml:space="preserve">
+    <value>Whether the minimap is visible on startup in TUI mode.</value>
+  </data>
+  <data name="Console.Minimap.Zoom" xml:space="preserve">
+    <value>Blocks per pixel, 1-16. 1 = closest (1:1), 16 = farthest (16 blocks per pixel).</value>
+  </data>
+  <data name="Console.Minimap.Width" xml:space="preserve">
+    <value>Map width in pixels (characters). Range 10-120, default 40.</value>
+  </data>
+  <data name="Console.Minimap.Height" xml:space="preserve">
+    <value>Map height in pixels (must be even, uses half-block chars). Range 4-80, default 40.</value>
+  </data>
+  <data name="Console.Minimap.Position" xml:space="preserve">
+    <value>Minimap position: "top_left", "top_right", "center", "bottom_left", or "bottom_right".</value>
+  </data>
+  <data name="Console.Minimap.ShowPlayerNames" xml:space="preserve">
+    <value>Show player names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowHostileNames" xml:space="preserve">
+    <value>Show hostile mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowNeutralNames" xml:space="preserve">
+    <value>Show neutral mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.ShowPassiveNames" xml:space="preserve">
+    <value>Show passive mob names on the minimap.</value>
+  </data>
+  <data name="Console.Minimap.RefreshInterval" xml:space="preserve">
+    <value>Minimap refresh interval in milliseconds (100-5000).</value>
+  </data>
+  <data name="Console.Minimap.CaveMode" xml:space="preserve">
+    <value>Cave rendering mode: "auto" (detect ceiling), "on" (always cave view), "off" (always surface view).</value>
+  </data>
+  <data name="Console.TabList" xml:space="preserve">
+    <value>Settings for the /tab command and live TUI tab overlay.</value>
+  </data>
+  <data name="Console.TabList.ShowTeams" xml:space="preserve">
+    <value>Show a separate team column in /tab output. Disabled by default for a more vanilla-like player list.</value>
+  </data>
+  <data name="Main.General.AuthlibUser" xml:space="preserve">
+    <value>Yggdrasil authlib multi-user selection.</value>
+  </data>
+  <data name="ChatBot.McpServer" xml:space="preserve">
+    <value>Host an embedded MCP server while connected to Minecraft. Disabled by default.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport" xml:space="preserve">
+    <value>Embedded MCP HTTP transport settings.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities" xml:space="preserve">
+    <value>Enable or disable MCP tool categories.</value>
+  </data>
+  <data name="ChatBot.McpServer.Enabled" xml:space="preserve">
+    <value>Enable the built-in embedded MCP server bot. Server starts only after game join and stops on disconnect.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.BindHost" xml:space="preserve">
+    <value>IP/host to bind the embedded MCP HTTP listener to. Default is loopback only.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.Port" xml:space="preserve">
+    <value>TCP port for the embedded MCP HTTP listener.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.Route" xml:space="preserve">
+    <value>Route prefix where MCP endpoints are exposed.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.RequireAuthToken" xml:space="preserve">
+    <value>Require Bearer token authentication for MCP endpoint requests.</value>
+  </data>
+  <data name="ChatBot.McpServer.Transport.AuthTokenEnvVar" xml:space="preserve">
+    <value>Environment variable name containing the MCP auth token when auth is required.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.SessionStatus" xml:space="preserve">
+    <value>Allow session and status inspection tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.ChatAndCommands" xml:space="preserve">
+    <value>Allow chat and internal command tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.Movement" xml:space="preserve">
+    <value>Allow movement and view-control tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.Inventory" xml:space="preserve">
+    <value>Allow inventory read and action tools.</value>
+  </data>
+  <data name="ChatBot.McpServer.Capabilities.EntityWorld" xml:space="preserve">
+    <value>Allow entity and world inspection tools.</value>
   </data>
 </root>

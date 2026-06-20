@@ -1,40 +1,34 @@
 ---
 title: Configuration
-redirectFrom: 
-    - "/g/conf/index.html"
-    - "/g/conf.html"
+redirectFrom:
+  - /g/conf/index.html
+  - /g/conf.html
 ---
 
 # Configuration
 
-**Minecraft Console Client** can be both configured by the [command line parameters](usage.md#command-line-parameters) and the configuration file.
+**Minecraft Console Client** can be configured through both [command-line parameters](usage.md#command-line-parameters) and the configuration file.
 
-By the default all of the configurations are stored in the configuration file named `MinecraftClient.ini` which is created the first time you run the program, but you also can specify your own configuration file by providing a path to it as a first parameter when starting the MCC, check out [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
-
-</div>
+By default, MCC stores its settings in `MinecraftClient.ini`, which is created the first time you run the program. You can also pass a custom configuration file path as the first argument when starting MCC. See [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
 ## Notes
 
--   Some settings will be omitted from the documentation due to them being not used often, we do not want documentation to be cluttered, we advise you to manually read through the configuration file, where every setting has a description next to it.
--   Some plugin/bot related settings will be covered in the plugins section, not here
+- Some less common settings are not repeated here. The generated config file contains inline descriptions for every setting.
+- Bot-specific settings are documented in [Chat Bots](chat-bots.md).
 
 ## Configuration File
 
 ### Format
 
-The configuration file uses the [TOML format](https://toml.io/en/), all of the options are key-value pairs separated into sections.
+The configuration file uses the [TOML format](https://toml.io/en/). Options are key-value pairs grouped into sections.
 
-Sections are defined in-between the square brackets (Example: `[This is a section]`), each occurrence of this marks a beginning of a new section.
+Sections are defined between square brackets, for example `[This is a section]`.
 
-The settings/options are defined as key-value pairs, where the name of the setting and the value are separated by the equals sign `=` (Example: `some-setting=some value`).
+Settings are written as key-value pairs, with the key and value separated by `=`, for example `some-setting = "some value"`.
 
 Lines starting with `#` are comments, they do not have an effect on the configuration of the program, their purpose is purely a descriptive one.
 
-**To get familiar with all the data types and styles of settings please read the [official TOML documenation](https://toml.io/en/v1.0.0).**
+**For the full syntax and data types, see the [official TOML documentation](https://toml.io/en/v1.0.0).**
 
 Full Example:
 
@@ -52,353 +46,544 @@ Section_Enabled = true
 colors = [ "red", "yellow", "green" ]
 
 [ThirdSection.Subsection]
-Coordinate = { x = 145, y = 64, y = 2045 }
+Coordinate = { x = 145, y = 64, z = 2045 }
 ```
 
 ## Main Section
 
 ### Main General section
 
--   **Section header:** `Main.General`
+- **Section header:** `Main.General`
+
+<details>
+<summary>Account, Server, and Authentication settings</summary>
 
 #### `Account`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you need to provide your in-game name (for offline accounts) or email for Microsoft accounts (Mojang accounts do not work anymore) and your password (if using an offline account, use `-` for the password).
+  This setting is where you provide your account login information.
 
--   **Format:**
+  For **Microsoft accounts**, set `Login` to your Microsoft email. You do not need to provide a password because MCC uses the OAuth 2.0 device code flow for authentication (you sign in through your browser, with full 2FA support).
 
-    `Account = { Login = "<email>", Password = "<password>" }`
+  For **offline accounts**, set `Login` to your desired in-game name and `Password` to `-`.
 
--   **Type:** `inline table`
+  For **Yggdrasil accounts**, set `Login` and `Password` to the credentials for your authlib server.
 
--   **Example:**
+- **Format:**
 
-    `Account = { Login = "some.random.player@gmail.com", Password = "myEpicPassword123" }`
+  `Account = { Login = "<email>" }`
+
+- **Type:** `inline table`
+
+- **Examples:**
+
+  Microsoft account (password not needed):
+
+  ```
+  Account = { Login = "player@example.com" }
+  ```
+
+  Offline account:
+
+  ```
+  Account = { Login = "Steve", Password = "-" }
+  ```
 
 #### `Server`
 
--   **Description:**
+- **Description:**
 
-    This is the setting where you provide the address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)
+  This is the setting where you provide the address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)
 
-    Host can also fill in the nickname of the server in the "Server List" below.
+  Host can also fill in the nickname of the server in the "Server List" below.
 
--   **Format:** `Server = { Host = "<ip>", Port = <port> }`
+- **Format:** `Server = { Host = "<ip>", Port = <port> }`
 
--   **Type:** `inline table`
+- **Type:** `inline table`
 
--   **Example:**
+- **Example:**
 
-    ```
-    Server = { Host = "mysupercoolserver.com" }
-    ```
+  ```
+  Server = { Host = "mysupercoolserver.com" }
+  ```
 
-    ```
-    Server = { Host = "192.168.1.27", Port = 12345 }
-    ```
+  ```
+  Server = { Host = "192.168.1.27", Port = 12345 }
+  ```
 
-    ```
-    Server = { Host = "ServerAlias1" }
-    ```
+  ```
+  Server = { Host = "ServerAlias1" }
+  ```
 
 #### `AccountType`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you define the type of your account: `mojang` or `microsoft`
+  This setting defines the account type: `mojang`, `microsoft`, or `yggdrasil`.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
+  **Use `microsoft` for normal Microsoft accounts. `yggdrasil` is for custom authlib/Yggdrasil servers.**
 
-    </div>
+  </div>
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `microsoft`
+- **Default:** `microsoft`
 
--   **Example:**
+- **Example:**
 
-    ```
-    AccountType = "microsoft"
-    ```
+  ```
+  AccountType = "microsoft"
+  ```
 
 #### `Method`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you define the way you will sign in with your Microsoft account, available options are `mcc` and `browser`.
+  This setting is where you define the way you will sign in with your Microsoft account, available options are `mcc` and `browser`. The `mcc` method uses the OAuth 2.0 device code flow: MCC will display a code and a URL, and you complete the sign-in (including 2FA) in your browser. The `browser` method opens a sign-in page in your browser and you paste the resulting code back into MCC.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `mcc`
+- **Default:** `mcc`
 
--   **Example:**
+- **Example:**
 
-    ```
-    Method = "mcc"
-    ```
+  ```
+  Method = "mcc"
+  ```
+
+#### `AuthServer`
+
+- **Description:**
+
+  This subsection is used when `AccountType` is set to `yggdrasil`. It points MCC at the authlib/Yggdrasil server used for login, session checks, and profile key requests.
+
+  MCC now writes this as a dedicated TOML subsection instead of an inline table:
+
+  ```toml
+  [Main.General.AuthServer]
+  ```
+
+  `Host` accepts either a plain host name or a `host:port` pair. If you include the port there, MCC updates `Port` to match.
+
+  `AuthlibInjectorAPIPath` defaults to `/api/yggdrasil`. Change it if your authlib-injector server uses a different prefix, such as `/authlib-injector`.
+
+  `UseHttps` defaults to `true`. Set it to `false` if your local or development auth server only exposes plain HTTP.
+
+- **Type:** `section`
+
+- **Default:**
+
+  ```toml
+  [Main.General.AuthServer]
+  Port = 443
+  AuthlibInjectorAPIPath = "/api/yggdrasil"
+  UseHttps = true
+  Host = ""
+  ```
+
+- **Example:**
+
+  ```
+  [Main.General.AuthServer]
+  Host = "auth.example.com"
+  Port = 443
+  AuthlibInjectorAPIPath = "/api/yggdrasil"
+  UseHttps = true
+  ```
+
+  ```
+  [Main.General.AuthServer]
+  Host = "127.0.0.1"
+  Port = 25585
+  AuthlibInjectorAPIPath = "/authlib-injector"
+  UseHttps = false
+  ```
+
+#### `AuthUser`
+
+- **Description:**
+
+  This setting allows for Yggdrasil authlib multi-user selection. It selects which profile MCC should use when the authlib/Yggdrasil server returns multiple available profiles. Leave it empty to pick the profile interactively.
+
+- **Type:** `string`
+
+- **Default:** `""`
+
+- **Example:**
+
+  ```
+  AuthUser = "SomePlayer"
+  ```
+
+</details>
 
 ### Main Advanced section
 
--   **Section header:** `Main.Advanced`
+- **Section header:** `Main.Advanced`
+
+<details>
+<summary>Advanced settings (Language, Version, Features, and more)</summary>
 
 #### `Language`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you define which language you want to use.
+  This setting is where you define which language you want to use.
 
-    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages.These files describe how some messages should be printed depending on your preferred language.
+  When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages.These files describe how some messages should be printed depending on your preferred language.
 
-    The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
+  The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
 
-    To find your language code, check [this link](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239s).
+  To find your language code, check [this list](https://mccteam.github.io/r/l-code.html).
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `en_gb`
+- **Default:** `en_us`
 
--   **Example:**
+- **Example:**
 
-    ```
-    Language = "en_gb"
-    ```
+  ```
+  Language = "en_us"
+  ```
+
+#### `EnableSentry`
+
+- **Description:**
+
+  Set this to `false` to opt out of Sentry error reporting.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `LoadMccTranslation`
+
+- **Description:**
+
+  Set this to `false` to keep MCC in English even when translated strings are available.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `LoadResourcePackTranslations`
+
+- **Description:**
+
+  Set this to `false` to ignore translations provided by server resource packs. When enabled, MCC caches extracted resource-pack translation data locally so future joins can reuse it without downloading the pack again.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `LoadForgeModTranslations`
+
+- **Description:**
+
+  Set this to `true` to load translations from local Forge mod jars for the mod IDs announced by the server. MCC first checks the folder from `ForgeModTranslationPath` when it is set. Otherwise it checks the local `mods` folder, and if `AutoDiscoverForgeModTranslationSources` is enabled it also scans standard launcher folders such as `.minecraft/mods`, Prism Launcher instances, and CurseForge instances. MCC falls back to `en_us` when the selected locale is missing, and caches parsed results by jar hash.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
+
+#### `AutoDiscoverForgeModTranslationSources`
+
+- **Description:**
+
+  Set this to `false` to stop scanning launcher-managed mod folders outside the current working directory. This setting only matters when `LoadForgeModTranslations` is enabled and `ForgeModTranslationPath` is empty.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `ForgeModTranslationPath`
+
+- **Description:**
+
+  Optional path to a mods folder. When this is set, MCC loads Forge mod translations from that folder instead of using automatic discovery.
+
+  If automatic discovery does not find the mod you need, copy that mod jar into the configured folder, or into the local `mods` folder next to MCC, and MCC will read translations from there without modifying the jar.
+
+- **Type:** `string`
+
+- **Default:** `""`
 
 #### `ConsoleTitle`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can change the title of the program window if you want to. You can use the variables in it.
+  This setting is where you can change the title of the program window if you want to. You can use the variables in it.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `"%username%@%serverip% - Minecraft Console Client"`
+- **Default:** `"%username%@%serverip% - Minecraft Console Client"`
 
--   **Example:**
+- **Example:**
 
-    ```
-    ConsoleTitle = "%username%@%serverip% - Minecraft Console Client"
-    ```
+  ```
+  ConsoleTitle = "%username%@%serverip% - Minecraft Console Client"
+  ```
 
 #### `InternalCmdChar`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can change the prefix character of internal MCC commands.
+  This setting is where you can change the prefix character of internal MCC commands.
 
-    Available options:
+  Available options:
 
-    -   `none`
-    -   `slash`
-    -   `backslash`
+  - `none`
+  - `slash`
+  - `backslash`
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `slash`
+- **Default:** `slash`
 
--   **Example:**
+- **Example:**
 
-    ```
-    InternalCmdChar = "slash"
-    ```
+  ```
+  InternalCmdChar = "slash"
+  ```
 
 #### `MessageCooldown`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can change the minimum delay in seconds between messages to avoid being kicked for spam.
+  This setting is where you can change the minimum delay in seconds between messages to avoid being kicked for spam.
 
--   **Type:** `float`
+- **Type:** `float`
 
--   **Default:** `1.0`
+- **Default:** `1.0`
+
+#### `MaxChatMessageLength`
+
+- **Description:**
+
+  Overrides the maximum chat message length. By default, MCC caps messages at 100 characters on Minecraft 1.10 and below, and 256 characters on 1.11 and above. Set to `0` to keep the default.
+
+  Some servers (like Hypixel on 1.8) accept messages longer than the vanilla protocol default for that version. This setting lets you match whatever limit the server actually allows.
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  **Setting this to a value the server doesn't support may get you kicked. Only change it if you know the server accepts longer messages than the version default.**
+
+  </div>
+
+- **Type:** `integer`
+
+- **Default:** `0`
+
+- **Range:** `0` - `32767`
 
 #### `BotOwners`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can set the owners of the bots/client which can be used by some plugins. The names are separated as strings within an array, separated by commas.
+  This setting is where you can set the owners of the bots/client which can be used by some plugins. The names are separated as strings within an array, separated by commas.
 
--   **Format:**
+- **Format:**
 
-    ```
-    BotOwners = [ "<nick>", "<nick>", ... ]
-    ```
+  ```
+  BotOwners = [ "<nick>", "<nick>", ... ]
+  ```
 
--   **Type:** `array of strings`
+- **Type:** `array of strings`
 
--   **Default:** `[ "Player1", "Player2", ]`
+- **Default:** `[ "Player1", "Player2", ]`
 
--   **Example:**
+- **Example:**
 
-    ```
-    BotOwners = [ "milutinke", "bradbyte", "BruceChen", ]
-    ```
+  ```
+  BotOwners = [ "milutinke", "bradbyte", "BruceChen", ]
+  ```
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **Admins can impersonate players on versions older than 1.19**
+  **Admins can impersonate players on versions older than 1.19**
 
-    </div>
-
+  </div>
 
 #### `MinecraftVersion`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can set the version you are playing on.
+  This setting is where you can set the version you are playing on.
 
--   **Format:** `MinecraftVersion = "<version>"`
+- **Format:** `MinecraftVersion = "<version>"`
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Version format:** `1.X.X`
+- **Version format:** `1.X.X`
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `auto`
+- **Default:** `auto`
 
--   **Example:**
+- **Example:**
 
-    ```
-    MinecraftVersion = "1.18.2"
-    ```
+  ```
+  MinecraftVersion = "1.18.2"
+  ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **MCC supports only 1.4.6 - 1.19.2**
+  **Current code support is `1.4.6` through `26.1`.**
 
-    </div>
+  </div>
 
 #### `EnableForge`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can define if you're playing on a forge server.
+  This setting is where you can define if you're playing on a forge server.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Available options:**
+- **Available options:**
 
-    -   `auto`
-    -   `no`
-    -   `force`
+  - `auto`
+  - `no`
+  - `force`
 
--   **Default:** `auto`
+- **Default:** `no`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Force-enabling only works for MC 1.13 +**
+  **Force-enabling only works for MC 1.13 +**
 
-    </div>
+  </div>
 
 #### `BrandInfo`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can change how MCC identifies itself to the server. It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
+  This setting is where you can change how MCC identifies itself to the server. It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `mcc`
+- **Default:** `mcc`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **For playing on Hypixel you need to use `vanilla`**
+  **For playing on Hypixel you need to use `vanilla`**
 
-    </div>
+  </div>
 
 #### `ChatbotLogFile`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can set the path to the file which will contain the logs, leave empty for no log file.
+  This setting is where you can set the path to the file which will contain the logs, leave empty for no log file.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** Empty
+- **Default:** Empty
 
--   **Example:**
+- **Example:**
 
-    ```
-    ChatbotLogFile = "my-log.txt"
-    ```
+  ```
+  ChatbotLogFile = "my-log.txt"
+  ```
 
 #### `PrivateMsgsCmdName`
 
--   **Description:**
+- **Description:**
 
-    The name of the command which is used for remote control of the bot.
+  The name of the command which is used for remote control of the bot.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `tell`
+- **Default:** `tell`
 
 #### `ShowSystemMessages`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can define if you want to see the system messages (example command block outputs) if you're an OP.
+  This setting is where you can define if you want to see the system messages (example command block outputs) if you're an OP.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `ShowXPBarMessages`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can define if you want to see the Boss XP Bar messages.
+  This setting is where you can define if you want to see the Boss XP Bar messages.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
-    > **Note: Can create a spam if there is a bunch of withers**
+  > **Note: Can create a spam if there is a bunch of withers**
 
 #### `ShowChatLinks`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can define if you want to decode links embedded in chat messages and show them in console.
+  This setting is where you can define if you want to decode links embedded in chat messages and show them in console.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `ShowInventoryLayout`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can define if you want to have the MCC show you the inventory in a form of an ASCII art when using the `/inventory` internal command.
+  This setting is where you can define if you want to have the MCC show you the inventory in a form of an ASCII art when using the `/inventory` internal command.
 
-    How it looks like:
+  How it looks like:
 
-    ![ASCII Art here](/images/guide/PlayerInventory.png "ASCII Art here")
+  ![ASCII Art here](/images/guide/PlayerInventory.png "ASCII Art here")
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
+
+#### `ShowEffectMessages`
+
+- **Description:**
+
+  This setting controls whether MCC prints messages when one of your active effects is gained or expires.
+
+  Set it to `false` if a beacon or another repeated effect source is spamming the console.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `ShowEffectNamesInTUI`
+
+- **Description:**
+
+  This setting lets you show full effect names and levels in the TUI status bar instead of the compact icon-only effect display.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
 
 #### `TerrainAndMovements`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can set if you want to enable terrain movement, so you can use command like `/move` and some bots.
+  This setting is where you can set if you want to enable terrain movement, so you can use command like `/move` and some bots.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **This feature is currently not supported in `1.4.6 - 1.6`.**
+  **This feature is currently not supported in `1.4.6 - 1.6`.**
 
-    </div>
+  </div>
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
 
@@ -406,884 +591,1105 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 #### `InventoryHandling`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can set if you want to enable inventory handling using the `/inventory` command.
+  This setting is where you can set if you want to enable inventory handling using the `/inventory` command.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **This feature is currently not supported in `1.4.6 - 1.9`. But we are working on getting it supported in 1.8 and 1.9.**
+  **This feature is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
 
-    </div>
+  </div>
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `EntityHandling`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can set if you want to enable interactions with entities such as players, mobs, minecarts, etc..
+  This setting is where you can set if you want to enable interactions with entities such as players, mobs, minecarts, etc..
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **This feature is currently not supported in `1.4.6 - 1.7`.**
+  **This feature is currently not supported in `1.4.6 - 1.7`.**
 
-    </div>
+  </div>
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+  **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
 
-    </div>
+  </div>
 
 #### `SessionCache`
 
--   **Description:**
+- **Description:**
 
-    This setting is where you can define is you want your session info to be stored on the disk or in memory, or not to be stored (this will make you login every time which will add some time to the process).
+  This setting is where you can define is you want your session info to be stored on the disk or in memory, or not to be stored (this will make you login every time which will add some time to the process).
 
-    You can disable this by using `none`.
+  You can disable this by using `none`.
 
-    The `disk` option will save your login authorization token on the disk, but this can be a bit of a security risk if someone else has access to your folder where you have MCC installed.
+  The `disk` option will save your login authorization token on the disk, but this can be a bit of a security risk if someone else has access to your folder where you have MCC installed.
 
-    The `memory` will last until you close down the program.
+  The `memory` will last until you close down the program.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `disk`
+- **Default:** `disk`
 
 #### `ProfileKeyCache`
 
--   **Description:**
+- **Description:**
 
-    Same as `SessionCache` but for your profile keys which are used for chat signing and validation.
+  Same as `SessionCache` but for your profile keys which are used for chat signing and validation.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `disk`
+- **Default:** `disk`
 
 #### `ResolveSrvRecords`
 
--   **Description:**
+- **Description:**
 
-    Use `no`, `fast` (5s timeout), or `yes`.
+  Use `no`, `fast` (5s timeout), or `yes`.
 
-    Required for joining some servers.
+  Required for joining some servers.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `fast`
+- **Default:** `fast`
 
 #### `PlayerHeadAsIcon`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to set the icon of the program to be the head of your in-game skin.
+  This setting allows you to set the icon of the program to be the head of your in-game skin.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Only works on Windows XP-8 or Windows 10 with old console**
+  **Only works on Windows XP-8 or Windows 10 with old console**
 
-    </div>
+  </div>
 
 #### `ExitOnFailure`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to disable pauses on error, for using MCC in non-interactive scripts
+  This setting allows you to define if your want to disable pauses on error, for using MCC in non-interactive scripts
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `CacheScript`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to have MCC cache compiled scripts for faster load on low-end devices.
+  This setting allows you to define if your want to have MCC cache compiled scripts for faster load on low-end devices.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `Timestamps`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to have MCC prepend timestamps to chat messages.
+  This setting allows you to define if your want to have MCC prepend timestamps to chat messages.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `AutoRespawn`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to auto respawn if you die.
+  This setting allows you to define if your want to auto respawn if you die.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Make sure the spawn point is safe**
+  **Make sure the spawn point is safe**
 
-    </div>
+  </div>
 
 #### `MinecraftRealms`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to enable support for joining Minecraft Realms.
+  This setting allows you to define if your want to enable support for joining Minecraft Realms.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `MoveHeadWhileWalking`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to enable head movement while walking to avoid anti-cheat triggers
+  This setting allows you to define if your want to enable head movement while walking to avoid anti-cheat triggers
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `TcpTimeout`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define a custom timeout period in seconds. Use only if you know what you're doing.
+  This setting allows you to define a custom timeout period in seconds. Use only if you know what you're doing.
 
--   **Type:** `integer`
+- **Type:** `integer`
 
--   **Default:** `30`
+- **Default:** `30`
 
 #### `EnableEmoji`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to disable emojis in the [`chunk`](usage.md#chunk) command.
+  This setting allows you to disable emojis in the [`chunk`](usage.md#chunk) command.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `MovementSpeed`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to change the movement speed of the bot.
+  This setting allows you to change the movement speed of the bot.
 
--   **Type:** `integer`
+- **Type:** `integer`
 
--   **Default:** `2`
+- **Default:** `2`
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
 **A movement speed higher than 2 may be considered cheating by some plugins.**
 
+</div>
+
 #### `IgnoreInvalidPlayerName`
 
--   **Description:**
+- **Description:**
 
-    Minecraft player name can only consist of English letters, numbers, and underscore symbols. Other name will be considered as invalid and ignored by default.
+  Minecraft player name can only consist of English letters, numbers, and underscore symbols. Other name will be considered as invalid and ignored by default.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
-</div>
+</details>
 
 ### Account List section
 
--   **Section header:** `Main.Advanced.AccountList`
+- **Section header:** `Main.Advanced.AccountList`
 
--   **Description:**
+- **Description:**
 
-    This section allows you to add multiple accounts so you can switch easily between them on the fly.
+  This section allows you to add multiple accounts so you can switch easily between them on the fly.
 
--   **Usage examples:**
+- **Usage examples:**
 
-    `/connect <serverip> Player1`
+  `/connect <serverip> Player1`
 
--   **Type:** `array of inline tables`
+- **Type:** `array of inline tables`
 
--   **Format:**
+- **Format:**
 
-    ```toml
-    <account nick> = { Login = "<email>", Password = "<password>" }
-    ```
+  ```toml
+  <account nick> = { Login = "<email>", Password = "<password>" }
+  ```
 
--   **Examples:**
+- **Examples:**
 
-    ```toml
-    Player1 = { Login = "playerone@email.com", Password = "thepassword" }
-    ```
+  ```toml
+  Player1 = { Login = "playerone@email.com", Password = "thepassword" }
+  ```
 
 ### Server List section
 
--   **Section header:** `Main.Advanced.ServerList`
+- **Section header:** `Main.Advanced.ServerList`
 
--   **Description:**
+- **Description:**
 
-    This section allows you to add multiple server aliases which enables fast and easy switching between servers. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
+  This section allows you to add multiple server aliases which enables fast and easy switching between servers. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
 
--   **Usage examples:**
+- **Usage examples:**
 
-    `/connect Server2`
+  `/connect Server2`
 
--   **Type:** `array of inline tables`
+- **Type:** `array of inline tables`
 
--   **Format:**
+- **Format:**
 
-    ```toml
-    <server alias> = { Host = "<ip>", Port = <port> }
-    ```
+  ```toml
+  <server alias> = { Host = "<ip>", Port = <port> }
+  ```
 
--   **Examples:**
+- **Examples:**
 
-    ```toml
-    ServerAlias1 = { Host = "mc.awesomeserver.com" }
-    ServerAlias2 = { Host = "192.168.1.27", Port = 12345 }
-    ```
+  ```toml
+  ServerAlias1 = { Host = "mc.awesomeserver.com" }
+  ServerAlias2 = { Host = "192.168.1.27", Port = 12345 }
+  ```
 
 ### Signature section
 
--   **Section header:** `Signature`
+- **Section header:** `Signature`
 
--   **Description:**
+- **Description:**
 
-    Affects only Minecraft 1.19+.
+  Affects only Minecraft 1.19+.
 
-    This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
+  This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
+
+<details>
+<summary>Chat signing and verification settings</summary>
 
 #### `LoginWithSecureProfile`
 
--   **Description:**
+- **Description:**
 
-    Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with `enforce-secure-profile=true`
+  Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with `enforce-secure-profile=true`
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `SignChat`
 
--   **Description:**
+- **Description:**
 
-    Whether to sign the chat sent from the MCC.
+  Whether to sign the chat sent from the MCC.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `SignMessageInCommand`
 
--   **Description:**
+- **Description:**
 
-    Whether to sign the messages contained in the commands sent by the MCC.
+  Whether to sign the messages contained in the commands sent by the MCC.
 
-    For example, the message in `/msg` and `/me`
+  For example, the message in `/msg` and `/me`
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `MarkLegallySignedMsg`
 
--   **Description:**
+- **Description:**
 
-    Use green color block to mark chat with legitimate signatures.
+  Use green color block to mark chat with legitimate signatures.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `true`
 
 #### `MarkModifiedMsg`
 
--   **Description:**
+- **Description:**
 
-    Use yellow color block to mark chat that have been modified by the server.
+  Use yellow color block to mark chat that have been modified by the server.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `MarkIllegallySignedMsg`
 
--   **Description:**
+- **Description:**
 
-    Use red color block to mark chat without legitimate signature.
+  Use red color block to mark chat without legitimate signature.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `MarkSystemMessage`
 
--   **Description:**
+- **Description:**
 
-    Use gray color block to mark system message (always without signature).
+  Use gray color block to mark system message (always without signature).
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `true`
 
 #### `ShowModifiedChat`
 
--   **Description:**
+- **Description:**
 
-    Set to true to display messages modified by the server, false to display the original signed messages.
+  Set to true to display messages modified by the server, false to display the original signed messages.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `ShowIllegalSignedChat`
 
--   **Description:**
+- **Description:**
 
-    Whether to display chat and messages in commands without legal signature.
+  Whether to display chat and messages in commands without legal signature.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
-### Logging section
+</details>
 
--   **Section header:** `Logging`
+### App Vars values section
+
+- **Section header:** `AppVar.VarStirng`
+
+<details>
+<summary>Logging and filtering settings</summary>
 
 #### `DebugMessages`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to see debug messages while the client is running, this is useful when there is a bug and you want to report a problem, or if you're developing a script/bot and you want to debug it.
+  This setting allows you to define if your want to see debug messages while the client is running, this is useful when there is a bug and you want to report a problem, or if you're developing a script/bot and you want to debug it.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `ChatMessages`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to see chat messages.
+  This setting allows you to define if your want to see chat messages.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `InfoMessages`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to see info messages.
+  This setting allows you to define if your want to see info messages.
 
-    Most of the messages from MCC.
+  Most of the messages from MCC.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `WarningMessages`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to see warning messages.
+  This setting allows you to define if your want to see warning messages.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `ErrorMessages`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to see error messages.
+  This setting allows you to define if your want to see error messages.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `ChatFilterRegex`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to filter chat messages being logged using a Regex expression.
+  This setting allows you to define if your want to filter chat messages being logged using a Regex expression.
 
-    More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
+  More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `.*`
+- **Default:** `.*`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Not filtering anything by default**
+  **Not filtering anything by default**
 
-    </div>
+  </div>
 
 #### `DebugFilterRegex`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to filter debug messages being logged using a Regex expression.
+  This setting allows you to define if your want to filter debug messages being logged using a Regex expression.
 
-    More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
+  More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `.*`
+- **Default:** `.*`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Not filtering anything by default**
+  **Not filtering anything by default**
 
-    </div>
+  </div>
 
 #### `FilterMode`
 
--   **Description:**
+- **Description:**
 
-    Can be `disable`, `blacklist` or `whitelist`
+  Can be `disable`, `blacklist` or `whitelist`
 
-    "disable" will disable the filter, `blacklist` hides the messages, while the `whitelist` shows the messages that match the Regex expression that you've defined.
+  "disable" will disable the filter, `blacklist` hides the messages, while the `whitelist` shows the messages that match the Regex expression that you've defined.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `disable`
+- **Default:** `disable`
 
 #### `LogToFile`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to log messages to a file.
+  This setting allows you to define if your want to log messages to a file.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `LogFile`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define a path to a file where you want to log messages if you have enabled logging to a file with `LogToFile = true`.
+  This setting allows you to define a path to a file where you want to log messages if you have enabled logging to a file with `LogToFile = true`.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `console-log.txt`
+- **Default:** `console-log.txt`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **%username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
+  **%username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
 
-    </div>
+  </div>
 
 #### `PrependTimestamp`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want prepend timestamps to messages that are written to the log file.
+  This setting allows you to define if your want prepend timestamps to messages that are written to the log file.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `SaveColorCodes`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want keep the server color codes in the logged messages.
+  This setting allows you to define if your want keep the server color codes in the logged messages.
 
-    Example of a color coded message: `§bsome message`
+  Example of a color coded message: `§bsome message`
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
+
+</details>
 
 ## App Vars section
 
--   **Section header:** `AppVar`
+- **Section header:** `AppVar`
 
--   **Description:**
+- **Description:**
 
-    This section allows you to define your own custom settings/variables which you can use in scripts, bots or other setting fields.
+  This section allows you to define your own custom settings/variables which you can use in scripts, bots or other setting fields.
 
-    To define a variable/setting, simply make a new line with the following format under the `[AppVar.VarStirng]` section:
+  To define a variable/setting, simply make a new line with the following format under the `[AppVar.VarStirng]` section:
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **`%username%`, `%serverip%`, `%datetime%` are reserved variables**
+  **`%username%`, `%login%`, `%serverip%`, `%serverport%`, `%datetime%`, `%date%`, `%players%` are reserved read-only variables**
 
-    </div>
+  </div>
 
--   **Section header:** `Logging`
+- **Section header:** `AppVar.VarStirng`
 
--   **Examples:**
+- **Examples:**
 
-    ```
-    your_var = "your_value"
-    "your var 2" = "your value 2"
-    ```
+  ```
+  your_var = "your_value"
+  "your var 2" = "your value 2"
+  ```
+
+## Console section
+
+- **Section header:** `Console`
+
+- **Description:**
+
+  Console-related settings for input handling and command suggestions.
+
+### Console General section
+
+- **Section header:** `Console.General`
+
+<details>
+<summary>Console display settings</summary>
+
+#### `ConsoleColorMode`
+
+- **Description:**
+
+  Use `disable`, `legacy_4bit`, `vt100_4bit`, `vt100_8bit`, or `vt100_24bit`.
+
+  If the terminal shows garbled escape sequences like `←[0m`, try `legacy_4bit` or disable color output.
+
+- **Type:** `string`
+
+- **Default:** `vt100_24bit`
+
+#### `Display_Input`
+
+- **Description:**
+
+  Set this to `false` if you do not want MCC to echo the current input line while typing.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `Display_Chat`
+
+- **Description:**
+
+  Set this to `false` if you want MCC to keep receiving chat without printing it in the console.
+
+  This only affects console output. It does not stop bots from receiving chat, and it does not turn off chat file logging.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `History_Input_Records`
+
+- **Description:**
+
+  Maximum number of remembered console input lines.
+
+- **Type:** `integer`
+
+- **Default:** `32`
+
+</details>
+
+### Console CommandSuggestion section
+
+- **Section header:** `Console.CommandSuggestion`
+
+- **Description:**
+
+  Command completion suggestions in the console.
+
+<details>
+<summary>Command suggestion settings</summary>
+
+#### `Enable`
+
+- **Description:**
+
+  Set this to `false` to disable command completion suggestions.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `Enable_Color`
+
+- **Description:**
+
+  Enables colored suggestions when the terminal color mode supports it.
+
+- **Type:** `boolean`
+
+- **Default:** `true`
+
+#### `Use_Basic_Arrow`
+
+- **Description:**
+
+  Use this if the suggestion arrows are not displayed correctly in your terminal.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
+
+#### `Max_Suggestion_Width`
+
+- **Description:**
+
+  Maximum width of the suggestion popup.
+
+- **Type:** `integer`
+
+- **Default:** `30`
+
+### Console TabList section
+
+- **Section header:** `Console.TabList`
+
+- **Description:**
+
+  Settings for the `/tab` command and the live tab overlay in TUI mode.
+
+<details>
+<summary>Tab list settings</summary>
+
+#### `ShowTeams`
+
+- **Description:**
+
+  Show a separate team column in `/tab` output.
+
+  This is disabled by default so `/tab` stays closer to the in-game player list and keeps the output compact. Team formatting still applies to player names even when the extra column is hidden.
+
+  When enabled, MCC shows the team display name when the server provides one. If the server only sends an internal team identifier, MCC hides that noise instead of printing a raw UUID-like value.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
+
+- **Example:**
+
+  ```toml
+  [Console.TabList]
+  ShowTeams = true
+  ```
+
+</details>
+
+#### `Max_Displayed_Suggestions`
+
+- **Description:**
+
+  Maximum number of suggestions shown at once.
+
+- **Type:** `integer`
+
+- **Default:** `6`
+
+#### Color fields
+
+- **Description:**
+
+  The suggestion text, tooltip, and arrow colors are stored as hex color strings such as `#f8fafc`.
+
+  MCC validates these values on startup and falls back to built-in defaults if a color string is invalid.
+
+</details>
 
 ## Proxy section
 
--   **Section header:** `Proxy`
+- **Section header:** `Proxy`
 
--   **Description:**
+- **Description:**
 
-    Connect to a server via a proxy instead of connecting directly.
+  Connect to a server via a proxy instead of connecting directly.
+
+<details>
+<summary>Proxy settings</summary>
 
 #### `Enabled_Login`
 
--   **Description:**
+- **Description:**
 
-    If Mojang session services or Microsoft login services are blocked on your network or your ip is blacklisted or rate limited by Microsoft, set the value to `true`.
+  If Mojang session services or Microsoft login services are blocked on your network or your ip is blacklisted or rate limited by Microsoft, set the value to `true`.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
+
+#### `Enabled_Update`
+
+- **Description:**
+
+  Use the proxy when MCC checks for updates.
+
+- **Type:** `boolean`
+
+- **Default:** `false`
 
 #### `Enabled_Ingame`
 
--   **Description:**
+- **Description:**
 
-    Whether to connect to the game server through a proxy.
+  Whether to connect to the game server through a proxy.
 
-    If connecting to a port 25565 (Minecraft) is blocked on your network, set the value to `true` to login and connect using the proxy.
+  If connecting to a port 25565 (Minecraft) is blocked on your network, set the value to `true` to login and connect using the proxy.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    **Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
+  **Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
 
-    </div>
+  </div>
 
 #### `Server`
 
--   **Description:**
+- **Description:**
 
-    The proxy server IP and port.
+  The proxy server IP and port.
 
-    Proxy server must allow HTTPS for login, and non-443 ports for playing.
+  Proxy server must allow HTTPS for login, and non-443 ports for playing.
 
--   **Format:**
+- **Format:**
 
-    ```
-    Server = { Host = "<ip>", Port = <port> }
-    ```
+  ```
+  Server = { Host = "<ip>", Port = <port> }
+  ```
 
--   **Default:** `{ Host = "0.0.0.0", Port = 8080 }`
+- **Default:** `{ Host = "0.0.0.0", Port = 8080 }`
 
 #### `Proxy_Type`
 
--   **Description:**
+- **Description:**
 
-    The type of your proxy.
+  The type of your proxy.
 
-    Available options:
+  Available options:
 
-    -   `HTTPT`
-    -   `SOCKS4`
-    -   `SOCKS4a`
-    -   `SOCKS5`
+  - `HTTP`
+  - `SOCKS4`
+  - `SOCKS4a`
+  - `SOCKS5`
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `HTTPT`
+- **Default:** `HTTP`
 
 #### `Username`
 
--   **Description:**
+- **Description:**
 
-    The proxy account username.
+  The proxy account username.
 
-    Only needed for password protected proxies.
+  Only needed for password protected proxies.
 
--   **Default:** `` ``
+- **Default:** ` `
 
 #### `Password`
 
--   **Description:**
+- **Description:**
 
-    The proxy account password.
+  The proxy account password.
 
-    Only needed for password protected proxies.
+  Only needed for password protected proxies.
 
--   **Default:** `` ``
+- **Default:** ` `
+
+</details>
 
 ## MCSettings section
 
--   **Section header:** `MCSettings`
+- **Section header:** `MCSettings`
 
--   **Description:**
+- **Description:**
 
-    Client settings related to language, render distance, difficulty, chat and skins.
+  Client settings related to language, render distance, difficulty, chat and skins.
+
+<details>
+<summary>Game client settings</summary>
 
 #### `Enabled`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to use settings from this section.
+  This setting allows you to specify if you want to use settings from this section.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `Locale`
 
--   **Description:**
+- **Description:**
 
-    Use any language implemented in Minecraft
+  Use any language implemented in Minecraft
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `en_US`
+- **Default:** `en_US`
 
 #### `RenderDistance`
 
--   **Description:**
+- **Description:**
 
-    Render distance in chunks: `0 - 255`
+  Render distance in chunks: `0 - 255`
 
--   **Type:** `integer`
+- **Type:** `integer`
 
--   **Default:** `8`
+- **Default:** `8`
 
 #### `Difficulty`
 
--   **Description:**
+- **Description:**
 
-    Available options:
+  Available options:
 
-    -   `peaceful`
-    -   `easy`
-    -   `normal`
-    -   `difficult`
+  - `peaceful`
+  - `easy`
+  - `normal`
+  - `difficult`
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `normal`
+- **Default:** `peaceful`
 
 #### `ChatMode`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to effectively mute yourself.
+  This setting allows you to effectively mute yourself.
 
-    Available options:
+  Available options:
 
-    -   `enabled` (You can chat)
-    -   `commands` (You can only do commands)
-    -   `disabled`
+  - `enabled` (You can chat)
+  - `commands` (You can only do commands)
+  - `disabled`
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `enabled`
+- **Default:** `enabled`
 
 #### `ChatColors`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to disable chat colors.
+  This setting allows you to disable chat colors.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `MainHand`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify your main hand.
+  This setting allows you to specify your main hand.
 
--   **Available values:** `right` and `left`
+- **Available values:** `right` and `left`
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `left`
+- **Default:** `left`
+
+</details>
 
 ## MCSettings Skin section
 
--   **Section header:** `MCSettings.Skin`
+- **Section header:** `MCSettings.Skin`
 
--   **Description:**
+- **Description:**
 
-    Skin options.
+  Skin options.
+
+<details>
+<summary>Skin visibility settings</summary>
 
 #### `Cape`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to have your skin cape shown.
+  This setting allows you to specify if you want to have your skin cape shown.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `Hat`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to have your skin hat shown.
+  This setting allows you to specify if you want to have your skin hat shown.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `Jacket`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to have your skin jacket shown.
+  This setting allows you to specify if you want to have your skin jacket shown.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `Sleeve_Left`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to have your left sleeve shown.
+  This setting allows you to specify if you want to have your left sleeve shown.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `Sleeve_Right`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to have your right sleeve shown.
+  This setting allows you to specify if you want to have your right sleeve shown.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `Pants_Left`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to have your left part of the pants shown.
+  This setting allows you to specify if you want to have your left part of the pants shown.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `Pants_Right`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify if you want to have your right part of the pants shown.
+  This setting allows you to specify if you want to have your right part of the pants shown.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
+
+</details>
 
 ## Chat Format section
 
--   **Section header:** `ChatFormat`
+- **Section header:** `ChatFormat`
 
--   **Description:**
+- **Description:**
 
-    The MCC does it best to detect chat messages, but some server have unusual chat formats.
+  The MCC does it best to detect chat messages, but some server have unusual chat formats.
 
-    When this happens, you'll need to configure the chat format yourself using settings from this section.
+  When this happens, you'll need to configure the chat format yourself using settings from this section.
 
-    The MCC uses Regular Expressions (Regex) to detect the chat formatting, in case that you're not familiar with Regex you can use the following resources to learn it and test it out:
+  The MCC uses Regular Expressions (Regex) to detect the chat formatting, in case that you're not familiar with Regex you can use the following resources to learn it and test it out:
 
-    -   Crash courses:
-        -   [Regex video tutorial by Web Dev Simplified](https://www.youtube.com/watch?v=rhzKDrUiJVk)
-        -   [Regex on paper by Crack Concepts](https://www.youtube.com/watch?v=9RksQ5YT7FM)
-    -   In-depth tutorials:
+  - Crash courses:
 
-        -   [Quite a long and detailed tutorial by Svetlin Nakov](https://www.youtube.com/watch?v=DS9IO0W7-0Q)
-        -   [Microsoft Documentation on Regex](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference)
+    - [Regex video tutorial by Web Dev Simplified](https://www.youtube.com/watch?v=rhzKDrUiJVk)
+    - [Regex on paper by Crack Concepts](https://www.youtube.com/watch?v=9RksQ5YT7FM)
 
-    -   Testing Regex expressions online:
-        -   [https://regex101.com/](https://regex101.com/)
-        -   [https://regexr.com/](https://regexr.com/)
+  - In-depth tutorials:
+
+    - [Quite a long and detailed tutorial by Svetlin Nakov](https://www.youtube.com/watch?v=DS9IO0W7-0Q)
+    - [Microsoft Documentation on Regex](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference)
+
+  - Testing Regex expressions online:
+
+    - [https://regex101.com/](https://regex101.com/)
+    - [https://regexr.com/](https://regexr.com/)
+
+<details>
+<summary>Chat format settings</summary>
 
 #### `Builtins`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want use the default chat formats.
+  This setting allows you to define if your want use the default chat formats.
 
-    Set to `false` to avoid conflicts with custom formats.
+  Set to `false` to avoid conflicts with custom formats.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `true`
+- **Default:** `true`
 
 #### `UserDefined`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to define if your want to use the custom chat formats defined bellow using Regex.
+  This setting allows you to define if your want to use the custom chat formats defined bellow using Regex.
 
-    Set to `true` to use the custom formats defined in `Public`, `Private` and `TeleportRequest`.
+  Set to `true` to use the custom formats defined in `Public`, `Private` and `TeleportRequest`.
 
--   **Type:** `boolean`
+- **Type:** `boolean`
 
--   **Default:** `false`
+- **Default:** `false`
 
 #### `Public`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify a custom chat message format using Regex (Regular expressions).
+  This setting allows you to specify a custom chat message format using Regex (Regular expressions).
 
-    More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
+  More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
 
-    Only works when `Builtins` is set to `false`.
+  Only works when `Builtins` is set to `false`.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `Public = "^<([a-zA-Z0-9_]+)> (.+)$"`
+- **Default:** `Public = "^<([a-zA-Z0-9_]+)> (.+)$"`
 
 #### `Private`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify a custom chat message format for private messages using Regex (Regular expressions).
+  This setting allows you to specify a custom chat message format for private messages using Regex (Regular expressions).
 
-    More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
+  More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
 
-    Only works when `Builtins` is set to `false`.
+  Only works when `Builtins` is set to `false`.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `Private = "^([a-zA-Z0-9_]+) whispers to you: (.+)$"`
+- **Default:** `Private = "^([a-zA-Z0-9_]+) whispers to you: (.+)$"`
 
 #### `TeleportRequest`
 
--   **Description:**
+- **Description:**
 
-    This setting allows you to specify a custom chat message format for a Teleport request using Regex (Regular expressions).
+  This setting allows you to specify a custom chat message format for a Teleport request using Regex (Regular expressions).
 
-    More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
+  More on Regex [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference).
 
-    Only works when `Builtins` is set to `false`.
+  Only works when `Builtins` is set to `false`.
 
--   **Type:** `string`
+- **Type:** `string`
 
--   **Default:** `TeleportRequest = '^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$'`
+- **Default:** `TeleportRequest = '^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$'`
+
+</details>
+
+## Chat Bot section
+
+- **Section header:** `ChatBot`
+
+- **Description:**
+
+  This top-level section groups the built-in bot configs that ship with MCC.
+
+  The detailed options for each bot are documented in [Chat Bots](chat-bots.md), so this page only covers the shared runtime and client settings.

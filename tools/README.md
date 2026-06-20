@@ -1,0 +1,247 @@
+# MCC Version Adaptation Tools
+
+Scripts for analyzing Minecraft version differences and generating MCC palette files.
+
+Requires: Python 3.10+
+
+## Local debug helpers
+
+The `tools/` directory also contains the shell helpers used for day-to-day MCC debugging:
+
+```bash
+source tools/mcc-env.sh
+mc-start 1.21.11
+mcc-debug -v 1.21.11 --file-input
+mcc-cmd "debug state"
+mcc-publish --rid linux-x64
+```
+
+### Shared server, isolated MCC sessions
+
+- `mc-*` commands operate on the shared local Minecraft server.
+- `mcc-*` commands operate on one MCC client session.
+- The default `session` is the current worktree name.
+- The default username is derived from `session`, so two worktrees can join the same shared server without kicking each other.
+- `MCC_SERVERS` remains the shared server-root override.
+
+Keep shared servers running by default. Do not stop or reset them unless the user explicitly asks for that, or you need to switch server versions.
+
+### Full inventory regression sweep
+
+Use `tools/run-inventory-full-sweep.sh` when changing inventory, container, item-slot serialization, packet palettes, game-mode handling, or block-use behavior. It runs MCC against real local servers with temporary configs and checks player inventory, creative give/delete, search, click, drop, chest container, mirrored player slots, and crash markers.
+
+```bash
+# Focused retest
+tools/run-inventory-full-sweep.sh --versions "1.21.10 1.21.11"
+
+# Full default major-version sweep
+tools/run-inventory-full-sweep.sh
+```
+
+Useful environment overrides:
+
+```bash
+RUN_ROOT=/tmp/my-inventory-run \
+MCC_SERVERS=/path/to/servers \
+STOP_ON_FAIL=1 \
+tools/run-inventory-full-sweep.sh --versions "1.19 1.20.4"
+```
+
+The script writes `summary.tsv` under `RUN_ROOT`. Per-version MCC logs are under `/tmp/mcc-debug/inventory-full-<version>/mcc-debug.log`, and command output blocks are saved next to the summary.
+
+### tmpfs build mode
+
+```bash
+source tools/mcc-env.sh
+export MCC_BUILD_MODE=tmpfs
+mcc-build
+mcc-build-clean
+```
+
+When `MCC_BUILD_MODE=tmpfs`, build output goes to `/dev/shm/mcc-build/<worktree>/` on Linux, or `${TMPDIR:-/tmp}/mcc-build/<worktree>/` when `/dev/shm` is unavailable.
+
+## Data Sources
+
+Two types of data can be used as input:
+
+| Source | How to Get | Authoritative? |
+|--------|-----------|---------------|
+| Decompiled Java source | `MinecraftDecompiler.jar` → `MinecraftOfficial/<ver>-decompiled/` | Mostly (see caveat below) |
+| Server data reports | `java -DbundlerMainClass=net.minecraft.data.Main -jar server.jar --reports` | **Yes** |
+
+**Important since MC 1.21.9**: Some items and blocks are registered outside `Items.java`/`Blocks.java` field declarations (via block registration callbacks). In these cases, the decompiled source undercounts entries. **Always use server data reports** for item and block palettes when available.
+
+### Decompiling a new MC version
+
+```bash
+# Server side (default) — also downloads server.jar into MinecraftOfficial/downloads/<ver>/
+tools/decompile.sh --version 1.21.9
+
+# Client side
+tools/decompile.sh --version 1.21.9 --side CLIENT
+```
+
+If you keep server assets outside the repo, set `MCC_SERVERS=/path/to/servers` before using `tools/mcc-env.sh` or `tools/start-server.sh`.
+
+The script auto-downloads `MinecraftDecompiler.jar` from GitHub releases if it doesn't exist.
+
+### Generating server data reports
+
+```bash
+cd /tmp
+java -DbundlerMainClass=net.minecraft.data.Main \
+  -jar $MCC_SERVERS/<version>/server.jar \
+  --reports --output /tmp/mc_reports
+```
+
+This generates:
+- `/tmp/mc_reports/reports/registries.json` — all registries with protocol IDs
+- `/tmp/mc_reports/reports/blocks.json` — all blocks with block state IDs
+- `/tmp/mc_reports/reports/packets.json` — packet protocol definitions
+
+## diff_registries.py — Compare registries between versions
+
+Compares Items, EntityTypes, Blocks, DataComponents, and EntityDataSerializers between two MC versions. Reports whether each palette needs updating, lists added/removed entries, and shows ID shift statistics.
+
+```bash
+# Basic comparison (decompiled source only)
+python3 tools/diff_registries.py 1.21.8 1.21.9
+
+# With cross-validation against server registries.json (recommended)
+python3 tools/diff_registries.py 1.21.8 1.21.9 --registry /tmp/mc_reports/reports/registries.json
+```
+
+The `--registry` flag enables cross-validation: compares the count and set of entries found in decompiled Java source against the server's authoritative registry. Any mismatches indicate that palette generation must use server data instead of Java source.
+
+Output indicates for each registry:
+- **IDENTICAL** → reuse existing palette
+- **PALETTE UPDATE NEEDED** → create new palette file + update version routing
+- **Count MISMATCH** (with --registry) → server has entries not in Java source
+
+## gen_item_palette.py — Generate ItemPalette C# file
+
+Two modes:
+
+```bash
+# Preferred: from server registries.json (accurate since 1.21.9)
+python3 tools/gen_item_palette.py --from-registry /tmp/mc_reports/reports/registries.json 1219
+
+# Legacy: from decompiled Items.java
+python3 tools/gen_item_palette.py 1.21.1 121
+```
+
+Output: `MinecraftClient/Inventory/ItemPalettes/ItemPalette<suffix>.cs`
+
+Validates each item name against `ItemType.cs` and warns about missing enum values. Add missing values to `ItemType.cs` in alphabetical order before compiling.
+
+## gen_block_palette.py — Generate BlockPalette C# file
+
+```bash
+python3 tools/gen_block_palette.py /tmp/mc_reports/reports/blocks.json 1219
+# → MinecraftClient/Mapping/BlockPalettes/Palette1219.cs
+```
+
+Generates a complete block palette with block state ID ranges from the server's `blocks.json`. Validates against `Material.cs` and warns about missing enum values.
+
+## gen_entity_palette.py — Generate EntityPalette C# file
+
+```bash
+python3 tools/gen_entity_palette.py /tmp/mc_reports/reports/registries.json 1219
+# → MinecraftClient/Mapping/EntityPalettes/EntityPalette1219.cs
+```
+
+Generates entity type palette from server's `registries.json`. Validates against `EntityType.cs` and warns about missing enum values.
+
+## gen_entity_metadata_palette.py — Generate EntityMetadataPalette C# file
+
+```bash
+python3 tools/gen_entity_metadata_palette.py 1.21.9 1219
+# → MinecraftClient/Mapping/EntityMetadataPalettes/EntityMetadataPalette1219.cs
+```
+
+Reads `EntityDataSerializers.java` static block registration order. Maps Java field names to MCC's `EntityMetaDataType` enum. If a new serializer type appears that isn't in the mapping table, it will warn you to update:
+1. The script's `FIELD_TO_ENUM` dict
+2. MCC's `EntityMetaDataType.cs` enum
+3. `DataTypes.cs` ReadNextMetadata() read logic
+
+## gen_command_argument_registry.py — Generate DeclareCommands registry arrays
+
+```bash
+python3 tools/gen_command_argument_registry.py 1.20.6 1.21.5 1.21.6
+```
+
+Reads `ArgumentTypeInfos.java`, skips the `SharedConstants.IS_RUNNING_IN_IDE` block, and prints C# array initializers for the runtime `COMMAND_ARGUMENT_TYPE` registry order. Use this when Mojang inserts new command argument types and the modern `DeclareCommands` parser needs updated ID routing.
+
+## gen_block_shapes.py — Download & compact block collision shapes
+
+Downloads block collision shapes from PrismarineJS `minecraft-data` and compacts them into a single JSON for MCC's physics engine.
+
+```bash
+# Auto-download for a specific MC version
+python3 tools/gen_block_shapes.py 26.1
+# → MinecraftClient/Physics/BlockShapeData.json
+
+# From a local file (if network is slow)
+python3 tools/gen_block_shapes.py --from-file /path/to/blockCollisionShapes.json
+```
+
+Output: `MinecraftClient/Physics/BlockShapeData.json` (embedded as a resource via `.csproj`).
+
+Data source: `https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc/<version>/blockCollisionShapes.json`
+
+Uses `curl` with resume (`-C -`) for reliable download over slow connections. Falls back to manual download if retries are exhausted.
+
+## gen_block_color_map.py -- Generate minimap block color JSON
+
+Extracts block-to-MapColor RGB mappings from decompiled Minecraft source for the TUI minimap.
+
+```bash
+python3 tools/gen_block_color_map.py MinecraftOfficial/26.1-rc-2-decompiled
+# -> MinecraftClient/Tui/MinimapBlockColors.json
+```
+
+Parses three files from the decompiled source:
+- `MapColor.java` -- extracts the 64 base MapColor constants and their RGB values
+- `DyeColor.java` -- maps dye colors to MapColor constants
+- `Blocks.java` -- determines each block's assigned MapColor via `.mapColor()` calls
+
+Output: `MinecraftClient/Tui/MinimapBlockColors.json` (embedded as a resource via `.csproj`). Contains color entries, plus lists of transparent, water, and ice materials.
+
+Validates each block name against MCC's `Material.cs` enum. Blocks without a matching enum value are skipped.
+
+## gen_entity_category_map.py -- Generate minimap entity category JSON
+
+Extracts entity-to-MobCategory mappings from decompiled Minecraft source for the TUI minimap.
+
+```bash
+python3 tools/gen_entity_category_map.py MinecraftOfficial/26.1-rc-2-decompiled
+# -> MinecraftClient/Tui/MinimapEntityCategories.json
+```
+
+Parses `EntityType.java` to read each entity's `MobCategory` assignment from the `EntityType.Builder.of(Factory, MobCategory.XXX)` call. Maps Minecraft categories to MCC minimap categories:
+- `MONSTER` -> hostile
+- `CREATURE`/`AMBIENT`/`AXOLOTLS`/`WATER_*` -> passive
+- `MISC` -> non_living
+
+The script maintains manual override lists for:
+- **Neutral mobs** (e.g. Enderman, Spider, Wolf, Bee) -- Minecraft has no "neutral" category; these are MONSTER or CREATURE in code but only attack when provoked
+- **Passive overrides** (e.g. Villager, WanderingTrader) -- classified as MISC in Minecraft for spawning reasons but should appear as passive on the minimap
+
+Output: `MinecraftClient/Tui/MinimapEntityCategories.json` (embedded as a resource via `.csproj`). Validates each entity name against MCC's `EntityType.cs` enum.
+
+## Recommended workflow
+
+1. Generate server reports (Step 0)
+2. Run `diff_registries.py --registry` to identify changes and validate source completeness
+3. For each registry needing update:
+   - Items: `gen_item_palette.py --from-registry`
+   - Blocks: `gen_block_palette.py`
+   - Entities: `gen_entity_palette.py`
+   - Metadata: `gen_entity_metadata_palette.py`
+4. Update block collision shapes: `gen_block_shapes.py`
+5. Update minimap data (if blocks or entities changed):
+   - Block colors: `gen_block_color_map.py`
+   - Entity categories: `gen_entity_category_map.py`
+6. Add any missing enum values to `ItemType.cs`, `Material.cs`, `EntityType.cs`, `EntityMetaDataType.cs`
+7. Update version routing (see SKILL.md)
+8. Build and test

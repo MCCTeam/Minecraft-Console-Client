@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -37,7 +38,9 @@ namespace MinecraftClient
         public const string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/c492375ded5da34b646b8c5c0842a0028bc69cec/2.json";
         public const string TranslationsFile_Website_Download = "https://resources.download.minecraft.net";
 
-        public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
+        public const string TranslationProjectUrl = "https://crowdin.com/project/minecraft-console-client";
+        public const int ClientTicksPerSecond = 20;
+        public const int ClientTickIntervalMilliseconds = 1000 / ClientTicksPerSecond;
 
         public static GlobalConfig Config = new();
 
@@ -133,7 +136,22 @@ namespace MinecraftClient
 
         }
 
-        public static Tuple<bool, bool> LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
+        /// <summary>
+        /// Structured result returned by <see cref="LoadFromFile(string, bool)"/>.
+        /// </summary>
+        public readonly struct ConfigLoadResult
+        {
+            public bool Success { get; init; }
+            public bool NeedWriteDefault { get; init; }
+            /// <summary>True when a pre-TOML legacy config was detected, backed up, and a fresh default is needed.</summary>
+            public bool IsLegacyUpgrade { get; init; }
+            /// <summary>Non-null when the load failed due to a parse/IO error (not a legacy upgrade).</summary>
+            public string? ErrorMessage { get; init; }
+            /// <summary>Path where the old config was backed up (legacy upgrade case).</summary>
+            public string? LegacyBackupPath { get; init; }
+        }
+
+        public static ConfigLoadResult LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
         {
             bool keepAccountSettings = InternalConfig.KeepAccountSettings;
             bool keepServerSettings = InternalConfig.KeepServerSettings;
@@ -154,21 +172,27 @@ namespace MinecraftClient
                 Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
                 try
                 {
-                    // The old configuration file has been backed up as A.
                     string configString = File.ReadAllText(filepath);
                     if (configString.Contains("Some settings missing here after an upgrade?"))
                     {
                         string newFilePath = Path.ChangeExtension(filepath, ".old.ini");
                         File.Copy(filepath, newFilePath, true);
-                        ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
-                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.mcc_backup_old_config, newFilePath));
-                        return new(false, true);
+                        return new ConfigLoadResult
+                        {
+                            Success = false,
+                            NeedWriteDefault = true,
+                            IsLegacyUpgrade = true,
+                            LegacyBackupPath = newFilePath
+                        };
                     }
                 }
                 catch { }
-                ConsoleIO.WriteLineFormatted("§c" + Translations.config_load_fail);
-                ConsoleIO.WriteLine(ex.GetFullMessage());
-                return new(false, false);
+                return new ConfigLoadResult
+                {
+                    Success = false,
+                    NeedWriteDefault = false,
+                    ErrorMessage = ex.GetFullMessage()
+                };
             }
             finally
             {
@@ -177,7 +201,7 @@ namespace MinecraftClient
                 if (!keepServerSettings)
                     InternalConfig.KeepServerSettings = false;
             }
-            return new(true, false);
+            return new ConfigLoadResult { Success = true, NeedWriteDefault = false };
         }
 
         public static void WriteToFile(string filepath, bool backupOldFile)
@@ -265,7 +289,17 @@ namespace MinecraftClient
                     //Load settings as --setting=value and --section.setting=value
                     if (!argument.Contains('='))
                         throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
-                    throw new NotImplementedException();
+
+                    string argumentBody = argument[2..];
+                    int separatorIndex = argumentBody.IndexOf('=');
+                    if (separatorIndex < 1)
+                        throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
+
+                    string settingName = argumentBody[..separatorIndex].Trim();
+                    string settingValue = argumentBody[(separatorIndex + 1)..].Trim();
+
+                    if (!TryApplyArgumentSetting(settingName, settingValue))
+                        throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
                 }
                 else if (argument.StartsWith("-") && argument.Length > 1)
                 {
@@ -302,6 +336,221 @@ namespace MinecraftClient
                     }
                     positionalIndex++;
                 }
+            }
+        }
+
+        private static readonly string[][] s_argumentSettingSearchPrefixes =
+        [
+            [],
+            ["Main", "Advanced"],
+            ["Main", "General"],
+            ["Main"],
+            ["Logging"],
+            ["Console", "General"],
+            ["Console", "CommandSuggestion"],
+            ["Console"],
+            ["MCSettings"],
+            ["ChatFormat"],
+            ["ChatBot"],
+            ["Signature"],
+            ["Proxy"],
+            ["AppVar"]
+        ];
+
+        private static bool TryApplyArgumentSetting(string settingPath, string settingValue)
+        {
+            if (string.IsNullOrWhiteSpace(settingPath))
+                return false;
+
+            string[] settingParts = settingPath
+                .Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (settingParts.Length == 0)
+                return false;
+
+            HashSet<string> triedPaths = new(StringComparer.Ordinal);
+            foreach (string[] prefix in s_argumentSettingSearchPrefixes)
+            {
+                string[] fullPath = [.. prefix, .. settingParts];
+                string pathKey = string.Join('.', fullPath.Select(NormalizeArgumentToken));
+                if (!triedPaths.Add(pathKey))
+                    continue;
+
+                if (!TryResolveArgumentSettingPath(fullPath, out object owner, out MemberInfo member, out List<object> objectPath))
+                    continue;
+
+                if (!TryConvertArgumentValue(settingValue, GetMemberType(member), out object? convertedValue))
+                    return false;
+
+                if (!TrySetMemberValue(owner, member, convertedValue))
+                    return false;
+
+                ApplyOnSettingUpdate(objectPath);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryResolveArgumentSettingPath(string[] fullPath, out object owner, out MemberInfo member, out List<object> objectPath)
+        {
+            owner = Config;
+            objectPath = [owner];
+            member = null!;
+
+            for (int i = 0; i < fullPath.Length; i++)
+            {
+                if (!TryGetArgumentMember(owner.GetType(), fullPath[i], out MemberInfo currentMember))
+                    return false;
+
+                if (i == fullPath.Length - 1)
+                {
+                    member = currentMember;
+                    return true;
+                }
+
+                object? nextObject = GetMemberValue(owner, currentMember);
+                if (nextObject is null)
+                    return false;
+
+                owner = nextObject;
+                objectPath.Add(owner);
+            }
+
+            return false;
+        }
+
+        private static bool TryGetArgumentMember(Type ownerType, string token, out MemberInfo member)
+        {
+            ArgumentNullException.ThrowIfNull(ownerType);
+
+            string normalizedToken = NormalizeArgumentToken(token);
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.Public;
+
+            foreach (PropertyInfo property in ownerType.GetProperties(flags))
+            {
+                if (!property.CanRead || !property.CanWrite || property.GetIndexParameters().Length > 0)
+                    continue;
+
+                if (NormalizeArgumentToken(property.Name) == normalizedToken)
+                {
+                    member = property;
+                    return true;
+                }
+            }
+
+            foreach (FieldInfo field in ownerType.GetFields(flags))
+            {
+                if (NormalizeArgumentToken(field.Name) == normalizedToken)
+                {
+                    member = field;
+                    return true;
+                }
+            }
+
+            member = null!;
+            return false;
+        }
+
+        private static string NormalizeArgumentToken(string token)
+        {
+            return ToLowerIfNeed(token.Replace("_", string.Empty, StringComparison.Ordinal)
+                                       .Replace("-", string.Empty, StringComparison.Ordinal));
+        }
+
+        private static Type GetMemberType(MemberInfo member)
+        {
+            return member switch
+            {
+                PropertyInfo property => property.PropertyType,
+                FieldInfo field => field.FieldType,
+                _ => throw new ArgumentException($"Unsupported member type: {member.MemberType}", nameof(member))
+            };
+        }
+
+        private static object? GetMemberValue(object owner, MemberInfo member)
+        {
+            return member switch
+            {
+                PropertyInfo property => property.GetValue(owner),
+                FieldInfo field => field.GetValue(owner),
+                _ => null
+            };
+        }
+
+        private static bool TrySetMemberValue(object owner, MemberInfo member, object? value)
+        {
+            switch (member)
+            {
+                case PropertyInfo property:
+                    property.SetValue(owner, value);
+                    return true;
+                case FieldInfo field:
+                    field.SetValue(owner, value);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool TryConvertArgumentValue(string input, Type targetType, out object? converted)
+        {
+            Type effectiveType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+            if (effectiveType == typeof(string))
+            {
+                converted = input;
+                return true;
+            }
+
+            if (effectiveType == typeof(bool))
+            {
+                bool success = bool.TryParse(input, out bool value);
+                converted = value;
+                return success;
+            }
+
+            if (effectiveType.IsEnum)
+            {
+                bool success = Enum.TryParse(effectiveType, input, true, out object? value);
+                converted = value;
+                return success;
+            }
+
+            try
+            {
+                converted = Convert.ChangeType(input, effectiveType, CultureInfo.InvariantCulture);
+                return true;
+            }
+            catch (InvalidCastException)
+            {
+                converted = null;
+                return false;
+            }
+            catch (FormatException)
+            {
+                converted = null;
+                return false;
+            }
+            catch (OverflowException)
+            {
+                converted = null;
+                return false;
+            }
+        }
+
+        private static void ApplyOnSettingUpdate(List<object> objectPath)
+        {
+            HashSet<object> calledObjects = new(ReferenceEqualityComparer.Instance);
+
+            for (int i = objectPath.Count - 1; i >= 0; i--)
+            {
+                object target = objectPath[i];
+                if (!calledObjects.Add(target))
+                    continue;
+
+                MethodInfo? onSettingUpdate = target.GetType().GetMethod(nameof(MainConfig.OnSettingUpdate), BindingFlags.Instance | BindingFlags.Public, []);
+                onSettingUpdate?.Invoke(target, null);
             }
         }
 
@@ -420,8 +669,18 @@ namespace MinecraftClient
                     if (Advanced.MessageCooldown < 0)
                         Advanced.MessageCooldown = 0;
 
+                    if (Advanced.MaxChatMessageLength < 0)
+                        Advanced.MaxChatMessageLength = 0;
+                    else if (Advanced.MaxChatMessageLength > 32767)
+                        Advanced.MaxChatMessageLength = 32767;
+
+                    if (Advanced.MaxChatMessageLength > 0)
+                        ConsoleIO.WriteLineFormatted("§e[Settings] MaxChatMessageLength is set to " + Advanced.MaxChatMessageLength + ". Setting this incorrectly may cause you to be kicked from the server.");
+
                     if (Advanced.TcpTimeout < 1)
                         Advanced.TcpTimeout = 1;
+
+                    Advanced.ForgeModTranslationPath = Advanced.ForgeModTranslationPath.Trim();
 
                     if (Advanced.MovementSpeed < 1)
                         Advanced.MovementSpeed = 1;
@@ -495,10 +754,13 @@ namespace MinecraftClient
                     [TomlInlineComment("$Main.General.method$")]
                     public LoginMethod Method = LoginMethod.mcc;
                     [TomlInlineComment("$Main.General.AuthlibServer$")]
-                    public AuthlibServer AuthServer = new(string.Empty);
-                  
+                    public AuthlibServer AuthServer = new();
 
-                    public enum LoginType { mojang, microsoft,yggdrasil };
+                    [TomlInlineComment("$Main.General.AuthlibUser$")]
+                    public string AuthUser = "";
+
+
+                    public enum LoginType { mojang, microsoft, yggdrasil };
 
                     public enum LoginMethod { mcc, browser };
                 }
@@ -508,12 +770,24 @@ namespace MinecraftClient
                 {
                     [TomlInlineComment("$Main.Advanced.enable_sentry$")]
                     public bool EnableSentry = true;
-                    
+
                     [TomlInlineComment("$Main.Advanced.language$")]
                     public string Language = "en_us";
 
                     [TomlInlineComment("$Main.Advanced.LoadMccTrans$")]
                     public bool LoadMccTranslation = true;
+
+                    [TomlInlineComment("$Main.Advanced.load_resourcepack_translations$")]
+                    public bool LoadResourcePackTranslations = true;
+
+                    [TomlInlineComment("$Main.Advanced.load_forge_mod_translations$")]
+                    public bool LoadForgeModTranslations = false;
+
+                    [TomlInlineComment("$Main.Advanced.auto_discover_forge_mod_translation_sources$")]
+                    public bool AutoDiscoverForgeModTranslationSources = true;
+
+                    [TomlInlineComment("$Main.Advanced.forge_mod_translation_path$")]
+                    public string ForgeModTranslationPath = "";
 
                     // [TomlInlineComment("$Main.Advanced.console_title$")]
                     public string ConsoleTitle = "%username%@%serverip% - Minecraft Console Client";
@@ -523,6 +797,9 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Main.Advanced.message_cooldown$")]
                     public double MessageCooldown = 1.0;
+
+                    [TomlInlineComment("$Main.Advanced.max_chat_message_length$")]
+                    public int MaxChatMessageLength = 0;
 
                     [TomlInlineComment("$Main.Advanced.bot_owners$")]
                     public List<string> BotOwners = new() { "Player1", "Player2" };
@@ -553,6 +830,15 @@ namespace MinecraftClient
 
                     [TomlInlineComment("$Main.Advanced.show_inventory_layout$")]
                     public bool ShowInventoryLayout = true;
+
+                    [TomlInlineComment("$Main.Advanced.show_effect_messages$")]
+                    public bool ShowEffectMessages = true;
+
+                    [TomlInlineComment("$Main.Advanced.show_effect_names_in_tui$")]
+                    public bool ShowEffectNamesInTUI = false;
+
+                    [TomlInlineComment("$Main.Advanced.show_github_star_reminder$")]
+                    public bool ShowGithubStarReminder = true;
 
                     [TomlInlineComment("$Main.Advanced.terrain_and_movements$")]
                     public bool TerrainAndMovements = false;
@@ -658,6 +944,12 @@ namespace MinecraftClient
                 {
                     public string Login = string.Empty, Password = string.Empty;
 
+                    public AccountInfoConfig()
+                    {
+                        Login = string.Empty;
+                        Password = string.Empty;
+                    }
+
                     public AccountInfoConfig(string Login)
                     {
                         this.Login = Login;
@@ -675,6 +967,12 @@ namespace MinecraftClient
                 {
                     public string Host = string.Empty;
                     public ushort? Port = null;
+
+                    public ServerInfoConfig()
+                    {
+                        Host = string.Empty;
+                        Port = null;
+                    }
 
                     public ServerInfoConfig(string Host)
                     {
@@ -694,28 +992,39 @@ namespace MinecraftClient
                         this.Port = Port;
                     }
                 }
-                public struct AuthlibServer
+                [TomlDoNotInlineObject]
+                public class AuthlibServer
                 {
-                    public string Host = string.Empty;
-                    public int Port = 443;
+                    [NonSerialized]
+                    private string _host = string.Empty;
 
-                    public AuthlibServer(string Host)
+                    [TomlInlineComment("$AuthlibServer.Host$")]
+                    public string Host
                     {
-                        string[] sip = Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
-                        this.Host = sip[0];
-
-                        if (sip.Length > 1)
+                        get => _host;
+                        set
                         {
-                            try { this.Port = Convert.ToUInt16(sip[1]); }
-                            catch (FormatException) { }
+                            string[] split = value.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                            if (split.Length >= 1)
+                                _host = split[0];
+                            if (split.Length >= 2)
+                            {
+                                try { Port = Convert.ToUInt16(split[1]); }
+                                catch (FormatException) { }
+                            }
                         }
                     }
 
-                    public AuthlibServer(string Host, ushort Port)
-                    {
-                        this.Host = Host.Split(new[] { ":", "：" }, StringSplitOptions.None)[0];
-                        this.Port = Port;
-                    }
+                    [TomlInlineComment("$AuthlibServer.Port$")]
+                    public int Port = 443;
+
+                    [TomlInlineComment("$AuthlibServer.AuthlibInjectorAPIPath$")]
+                    public string AuthlibInjectorAPIPath = "/api/yggdrasil";
+
+                    [TomlInlineComment("$AuthlibServer.UseHttps$")]
+                    public bool UseHttps = true;
+
+
                 }
             }
         }
@@ -768,6 +1077,12 @@ namespace MinecraftClient
                 [TomlInlineComment("$Logging.DebugMessages$")]
                 public bool DebugMessages = false;
 
+                [TomlInlineComment("$Logging.PacketDebugMessages$")]
+                public bool PacketDebugMessages = false;
+
+                [TomlInlineComment("$Logging.PacketDebugExclusions$")]
+                public List<string> PacketDebugExclusions = new();
+
                 [TomlInlineComment("$Logging.ChatMessages$")]
                 public bool ChatMessages = true;
 
@@ -819,38 +1134,39 @@ namespace MinecraftClient
                 [TomlPrecedingComment("$Console.CommandSuggestion$")]
                 public CommandSuggestionConfig CommandSuggestion = new();
 
+                [TomlPrecedingComment("$Console.Minimap$")]
+                public MinimapConfig Minimap = new();
+
+                [TomlPrecedingComment("$Console.TabList$")]
+                public TabListConfig TabList = new();
+
                 public void OnSettingUpdate()
                 {
-                    // Reader
-                    ConsoleInteractive.ConsoleReader.DisplayUesrInput = General.Display_Input;
+                    ConsoleIO.ChatVisible = General.Display_Chat;
 
-                    // Writer
-                    ConsoleInteractive.ConsoleWriter.EnableColor = General.ConsoleColorMode != ConsoleColorModeType.disable;
+                    var backend = ConsoleIO.Backend;
+                    if (backend == null) return;
 
-                    ConsoleInteractive.ConsoleWriter.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
+                    backend.DisplayUserInput = General.Display_Input;
+                    backend.SetBackreadBufferLimit(General.History_Input_Records);
 
-                    // Buffer
-                    General.History_Input_Records =
-                        ConsoleInteractive.ConsoleBuffer.SetBackreadBufferLimit(General.History_Input_Records);
-
-                    // Suggestion
-                    if (General.ConsoleColorMode == ConsoleColorModeType.disable)
-                        CommandSuggestion.Enable_Color = false;
-
-                    ConsoleInteractive.ConsoleSuggestion.EnableColor = CommandSuggestion.Enable_Color;
-
-                    ConsoleInteractive.ConsoleSuggestion.Enable24bitColor = General.ConsoleColorMode == ConsoleColorModeType.vt100_24bit;
-
-                    ConsoleInteractive.ConsoleSuggestion.UseBasicArrow = CommandSuggestion.Use_Basic_Arrow;
-
-                    CommandSuggestion.Max_Suggestion_Width =
-                        ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionLength(CommandSuggestion.Max_Suggestion_Width);
-
-                    CommandSuggestion.Max_Displayed_Suggestions =
-                        ConsoleInteractive.ConsoleSuggestion.SetMaxSuggestionCount(CommandSuggestion.Max_Displayed_Suggestions);
-
-                    // Suggestion color settings
+                    if (backend is ClassicConsoleBackend classic)
                     {
+                        classic.EnableWriterColor = General.ConsoleColorMode != ConsoleColorModeType.disable;
+                        classic.UseVT100ColorCode = General.ConsoleColorMode != ConsoleColorModeType.legacy_4bit;
+
+                        if (General.ConsoleColorMode == ConsoleColorModeType.disable)
+                            CommandSuggestion.Enable_Color = false;
+
+                        classic.EnableSuggestionColor = CommandSuggestion.Enable_Color;
+                        classic.Enable24bitColor = General.ConsoleColorMode == ConsoleColorModeType.vt100_24bit;
+                        classic.UseBasicArrow = CommandSuggestion.Use_Basic_Arrow;
+
+                        CommandSuggestion.Max_Suggestion_Width =
+                            classic.SetMaxSuggestionLength(CommandSuggestion.Max_Suggestion_Width);
+                        CommandSuggestion.Max_Displayed_Suggestions =
+                            classic.SetMaxSuggestionCount(CommandSuggestion.Max_Displayed_Suggestions);
+
                         if (!CheckColorCode(CommandSuggestion.Text_Color))
                         {
                             ConsoleIO.WriteLine(string.Format(Translations.config_commandsuggestion_illegal_color, "CommandSuggestion.TextColor", CommandSuggestion.Text_Color));
@@ -887,7 +1203,7 @@ namespace MinecraftClient
                             CommandSuggestion.Arrow_Symbol_Color = "#d1d5db";
                         }
 
-                        ConsoleInteractive.ConsoleSuggestion.SetColors(
+                        classic.SetSuggestionColors(
                             CommandSuggestion.Text_Color, CommandSuggestion.Text_Background_Color,
                             CommandSuggestion.Highlight_Text_Color, CommandSuggestion.Highlight_Text_Background_Color,
                             CommandSuggestion.Tooltip_Color, CommandSuggestion.Highlight_Tooltip_Color,
@@ -919,14 +1235,26 @@ namespace MinecraftClient
                 [TomlDoNotInlineObject]
                 public class MainConfig
                 {
+                    [TomlInlineComment("$Console.General.ConsoleMode$")]
+                    public ConsoleModeType ConsoleMode = ConsoleModeType.classic;
+
                     [TomlInlineComment("$Console.General.ConsoleColorMode$")]
                     public ConsoleColorModeType ConsoleColorMode = ConsoleColorModeType.vt100_24bit;
+
+                    [TomlInlineComment("$Console.General.Display_Icon_Banner$")]
+                    public bool Display_Icon_Banner = true;
 
                     [TomlInlineComment("$Console.General.Display_Input$")]
                     public bool Display_Input = true;
 
+                    [TomlInlineComment("$Console.General.Display_Chat$")]
+                    public bool Display_Chat = true;
+
                     [TomlInlineComment("$Console.General.History_Input_Records$")]
                     public int History_Input_Records = 32;
+
+                    [TomlInlineComment("$Console.General.TUI_Log_Scrollback$")]
+                    public int TUI_Log_Scrollback = 0;
                 }
 
                 [TomlDoNotInlineObject]
@@ -942,7 +1270,7 @@ namespace MinecraftClient
 
                     public int Max_Suggestion_Width = 30;
 
-                    public int Max_Displayed_Suggestions = 6;
+                    public int Max_Displayed_Suggestions = 10;
 
                     public string Text_Color = "#f8fafc";
 
@@ -959,7 +1287,62 @@ namespace MinecraftClient
                     public string Arrow_Symbol_Color = "#d1d5db";
                 }
 
+                public enum ConsoleModeType { classic, tui };
                 public enum ConsoleColorModeType { disable, legacy_4bit, vt100_4bit, vt100_8bit, vt100_24bit };
+
+                [TomlDoNotInlineObject]
+                public class MinimapConfig
+                {
+                    [TomlInlineComment("$Console.Minimap.Enabled$")]
+                    public bool Enabled = false;
+
+                    [TomlInlineComment("$Console.Minimap.Zoom$")]
+                    public int Zoom = Tui.MinimapControl.DefaultZoom;
+
+                    [TomlInlineComment("$Console.Minimap.Width$")]
+                    public int Width = Tui.MinimapControl.DefaultWidth;
+
+                    [TomlInlineComment("$Console.Minimap.Height$")]
+                    public int Height = Tui.MinimapControl.DefaultHeight;
+
+                    [TomlInlineComment("$Console.Minimap.Position$")]
+                    public Tui.MinimapPosition Position = Tui.MinimapPosition.top_right;
+
+                    [TomlInlineComment("$Console.Minimap.ShowPlayerNames$")]
+                    public bool ShowPlayerNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowHostileNames$")]
+                    public bool ShowHostileNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowNeutralNames$")]
+                    public bool ShowNeutralNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.ShowPassiveNames$")]
+                    public bool ShowPassiveNames = false;
+
+                    [TomlInlineComment("$Console.Minimap.RefreshInterval$")]
+                    public int RefreshInterval = Tui.MinimapControl.DefaultRefreshMs;
+
+                    [TomlInlineComment("$Console.Minimap.CaveMode$")]
+                    public Tui.CaveModeOption CaveMode = Tui.CaveModeOption.auto;
+
+                    public void OnSettingUpdate()
+                    {
+                        Zoom = Math.Clamp(Zoom, Tui.MinimapControl.MinZoom, Tui.MinimapControl.MaxZoom);
+                        Width = Math.Clamp(Width, 10, 120);
+                        Height = Math.Clamp(Height, 4, 80);
+                        if (Height % 2 != 0) Height++;
+                        RefreshInterval = Math.Clamp(RefreshInterval,
+                            Tui.MinimapControl.MinRefreshMs, Tui.MinimapControl.MaxRefreshMs);
+                    }
+                }
+
+                [TomlDoNotInlineObject]
+                public class TabListConfig
+                {
+                    [TomlInlineComment("$Console.TabList.ShowTeams$")]
+                    public bool ShowTeams = false;
+                }
             }
         }
 
@@ -983,7 +1366,38 @@ namespace MinecraftClient
                 private readonly Dictionary<string, object> VarObject = new();
 
                 [NonSerialized]
-                readonly object varLock = new();
+                readonly Lock varLock = new();
+
+                private static bool TryGetReadOnlyVar(string varName, [NotNullWhen(true)] out object? varData)
+                {
+                    switch (Settings.ToLowerIfNeed(varName))
+                    {
+                        case "username":
+                            varData = InternalConfig.Username;
+                            return true;
+                        case "login":
+                            varData = InternalConfig.Account.Login;
+                            return true;
+                        case "serverip":
+                            varData = InternalConfig.ServerIP;
+                            return true;
+                        case "serverport":
+                            varData = InternalConfig.ServerPort;
+                            return true;
+                        case "datetime":
+                            varData = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                            return true;
+                        case "date":
+                            varData = DateTime.Now.ToString("yyyy-MM-dd");
+                            return true;
+                        case "players":
+                            varData = string.Join(", ", McClient.Instance?.GetOnlinePlayers() ?? []);
+                            return true;
+                        default:
+                            varData = null;
+                            return false;
+                    }
+                }
 
                 /// <summary>
                 /// Set a custom %variable% which will be available through expandVars()
@@ -1027,6 +1441,8 @@ namespace MinecraftClient
                 /// <returns>The value or null if the variable does not exists</returns>
                 public object? GetVar(string varName)
                 {
+                    if (TryGetReadOnlyVar(varName, out object? readOnlyVar))
+                        return readOnlyVar;
                     if (VarStirng.TryGetValue(varName, out string? valueString))
                         return valueString;
                     else if (VarObject.TryGetValue(varName, out object? valueObject))
@@ -1042,6 +1458,8 @@ namespace MinecraftClient
                 /// <returns>The value or null if the variable does not exists</returns>
                 public bool TryGetVar(string varName, [NotNullWhen(true)] out object? varData)
                 {
+                    if (TryGetReadOnlyVar(varName, out varData))
+                        return true;
                     if (VarStirng.TryGetValue(varName, out string? valueString))
                     {
                         varData = valueString;
@@ -1104,31 +1522,21 @@ namespace MinecraftClient
                                 string varname_lower = Settings.ToLowerIfNeed(varname);
                                 i = i + varname.Length + 1;
 
-                                switch (varname_lower)
+                                if (TryGetReadOnlyVar(varname_lower, out object? readOnlyVar))
                                 {
-                                    case "username": result.Append(InternalConfig.Username); break;
-                                    case "login": result.Append(InternalConfig.Account.Login); break;
-                                    case "serverip": result.Append(InternalConfig.ServerIP); break;
-                                    case "serverport": result.Append(InternalConfig.ServerPort); break;
-                                    case "datetime":
-                                        DateTime time = DateTime.Now;
-                                        result.Append(String.Format("{0}-{1}-{2} {3}:{4}:{5}",
-                                            time.Year.ToString("0000"),
-                                            time.Month.ToString("00"),
-                                            time.Day.ToString("00"),
-                                            time.Hour.ToString("00"),
-                                            time.Minute.ToString("00"),
-                                            time.Second.ToString("00")));
-
-                                        break;
-                                    default:
-                                        if (localVars != null && localVars.ContainsKey(varname_lower))
-                                            result.Append(localVars[varname_lower].ToString());
-                                        else if (TryGetVar(varname_lower, out object? var_value))
-                                            result.Append(var_value.ToString());
-                                        else
-                                            result.Append("%" + varname + '%');
-                                        break;
+                                    result.Append(readOnlyVar.ToString());
+                                }
+                                else if (localVars is not null && localVars.ContainsKey(varname_lower))
+                                {
+                                    result.Append(localVars[varname_lower].ToString());
+                                }
+                                else if (TryGetVar(varname_lower, out object? var_value))
+                                {
+                                    result.Append(var_value.ToString());
+                                }
+                                else
+                                {
+                                    result.Append("%" + varname + '%');
                                 }
                             }
                             else result.Append(str[i]);
@@ -1429,23 +1837,47 @@ namespace MinecraftClient
                     get { return ChatBots.TelegramBridge.Config; }
                     set { ChatBots.TelegramBridge.Config = value; ChatBots.TelegramBridge.Config.OnSettingUpdate(); }
                 }
-                
+
                 [TomlPrecedingComment("$ChatBot.ItemsCollector$")]
                 public ChatBots.ItemsCollector.Configs ItemsCollector
                 {
                     get { return ChatBots.ItemsCollector.Config; }
-                    set { ChatBots.ItemsCollector.Config = value; ChatBots.ItemsCollector.Config.OnSettingUpdate(); }
+                    set
+                    {
+                        ChatBots.ItemsCollector.Config = value;
+                        ChatBots.ItemsCollector.Config.OnSettingUpdate();
+                    }
                 }
-                
-                [TomlPrecedingComment("$ChatBot.WebSocketBot$")]
-                public ChatBots.WebSocketBot.Configs WebSocketBot
+
+                [TomlPrecedingComment("$ChatBot.DiscordRpc$")]
+                public ChatBots.DiscordRpc.Configs DiscordRpc
                 {
-                    get { return ChatBots.WebSocketBot.Config!; }
-                    set { ChatBots.WebSocketBot.Config = value; }
+                    get { return ChatBots.DiscordRpc.Config; }
+                    set { ChatBots.DiscordRpc.Config = value; ChatBots.DiscordRpc.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$ChatBot.McpServer$")]
+                public ChatBots.McpServer.Configs McpServer
+                {
+                    get { return ChatBots.McpServer.Config; }
+                    set
+                    {
+                        ChatBots.McpServer.Config = value ?? new ChatBots.McpServer.Configs();
+                        ChatBots.McpServer.Config.OnSettingUpdate();
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Map the system CultureInfo name to a Minecraft game language code.
+        /// </summary>
+        /// <remarks>
+        /// Culture name reference (language-COUNTRY):
+        ///   https://learn.microsoft.com/en-us/previous-versions/commerce-server/ee797784(v=cs.20)
+        /// Full LCID / language-tag spec (MS-LCID, includes fil-PH, nb-NO, etc.):
+        ///   https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/70feba9f-294e-491e-b6eb-56532684c37f
+        /// </remarks>
         public static string GetDefaultGameLanguage()
         {
             string gameLanguage = "en_us";
@@ -1601,6 +2033,14 @@ namespace MinecraftClient
                 case "fi-FI":
                     gameLanguage = "fi_fi";
                     break;
+                case "fil":
+                case "fil-PH":
+                    gameLanguage = "fil_ph";
+                    break;
+                case "tl":
+                case "tl-PH":
+                    gameLanguage = "tl_ph";
+                    break;
                 case "fo":
                 case "fo-FO":
                     gameLanguage = "fo_fo";
@@ -1713,6 +2153,7 @@ namespace MinecraftClient
                     gameLanguage = "mt_mt";
                     break;
                 case "nb-NO":
+                    gameLanguage = "no_no";
                     break;
                 case "nl":
                 case "nl-NL":
@@ -1725,7 +2166,7 @@ namespace MinecraftClient
                     gameLanguage = "nn_no";
                     break;
                 case "no":
-                    gameLanguage = "no_no‌";
+                    gameLanguage = "no_no";
                     break;
                 case "ns-ZA":
                     break;
@@ -1734,14 +2175,14 @@ namespace MinecraftClient
                     break;
                 case "pl":
                 case "pl-PL":
-                    gameLanguage = "pl_pl‌";
+                    gameLanguage = "pl_pl";
                     break;
                 case "pt":
                 case "pt-PT":
-                    gameLanguage = "pt_pt‌";
+                    gameLanguage = "pt_pt";
                     break;
                 case "pt-BR":
-                    gameLanguage = "pt_br‌";
+                    gameLanguage = "pt_br";
                     break;
                 case "quz-BO":
                     break;
@@ -1751,7 +2192,7 @@ namespace MinecraftClient
                     break;
                 case "ro":
                 case "ro-RO":
-                    gameLanguage = "ro_ro‌";
+                    gameLanguage = "ro_ro";
                     break;
                 case "ru":
                 case "ru-RU":
@@ -1898,8 +2339,8 @@ namespace MinecraftClient
 
         public static int DoubleToTick(double time)
         {
-            time = Math.Min(int.MaxValue / 10, time);
-            return (int)Math.Round(time * 10);
+            time = Math.Min(int.MaxValue / (double)ClientTicksPerSecond, time);
+            return (int)Math.Round(time * ClientTicksPerSecond);
         }
     }
 
@@ -1947,7 +2388,7 @@ namespace MinecraftClient
         public static string GetFullMessage(this Exception ex)
         {
             string msg = ex.Message.Replace("+", "->");
-            return ex.InnerException == null
+            return ex.InnerException is null
                  ? msg
                  : msg + "\n --> " + ex.InnerException.GetFullMessage();
         }

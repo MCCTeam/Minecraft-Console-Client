@@ -11,17 +11,8 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// <summary>
         /// Represents an individual forge mod.
         /// </summary>
-        public class ForgeMod
+        public record ForgeMod(string ModID, string Version)
         {
-            public ForgeMod(String ModID, String Version)
-            {
-                this.ModID = ModID;
-                this.Version = Version;
-            }
-
-            public readonly String ModID;
-            public readonly String Version;
-
             public override string ToString()
             {
                 return ModID + " v" + Version;
@@ -63,7 +54,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// </summary>
         /// <param name="data">The modinfo JSON tag.</param>
         /// <param name="fmlVersion">Forge protocol version</param>
-        internal ForgeInfo(Json.JSONData data, FMLVersion fmlVersion)
+        internal ForgeInfo(System.Text.Json.Nodes.JsonObject data, FMLVersion fmlVersion)
         {
             Mods = new List<ForgeMod>();
             Version = fmlVersion;
@@ -91,10 +82,10 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     //     }]
                     // }
 
-                    foreach (Json.JSONData mod in data.Properties["modList"].DataArray)
+                    foreach (var mod in data["modList"]!.AsArray())
                     {
-                        String modid = mod.Properties["modid"].StringValue;
-                        String modversion = mod.Properties["version"].StringValue;
+                        String modid = mod!["modid"]!.GetStringValue();
+                        String modversion = mod["version"]!.GetStringValue();
 
                         Mods.Add(new ForgeMod(modid, modversion));
                     }
@@ -131,10 +122,10 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     //     "fmlNetworkVersion": 2
                     // }
 
-                    foreach (Json.JSONData mod in data.Properties["mods"].DataArray)
+                    foreach (var mod in data["mods"]!.AsArray())
                     {
-                        String modid = mod.Properties["modId"].StringValue;
-                        String modmarker = mod.Properties["modmarker"].StringValue;
+                        String modid = mod!["modId"]!.GetStringValue();
+                        String modmarker = mod["modmarker"]!.GetStringValue();
 
                         Mods.Add(new ForgeMod(modid, modmarker));
                     }
@@ -142,7 +133,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     break;
                 case FMLVersion.FML3:
                     // Example ModInfo for Minecraft 1.18 and greater (FML3)
-                    
+
                     // "forgeData": {
                     //     "channels": [],
                     //     "mods": [],
@@ -157,7 +148,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     // - Here is the discussion:
                     // see https://github.com/MinecraftForge/MinecraftForge/pull/8169
 
-                    string encodedData = data.Properties["d"].StringValue;
+                    string encodedData = data["d"]!.GetStringValue();
                     Queue<byte> dataPackage = decodeOptimized(encodedData);
                     DataTypes dataTypes = new DataTypes(Protocol18Handler.MC_1_18_1_Version);
 
@@ -178,24 +169,26 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     //                                                      [   Channel Version  ][ String ]
                     //                                                      [ Required On Client ][  Bool  ]
 
-                    for (var i = 0; i < modsSize; i++) {
+                    for (var i = 0; i < modsSize; i++)
+                    {
                         var channelSizeAndVersionFlag = dataTypes.ReadNextVarInt(dataPackage);
                         var channelSize = channelSizeAndVersionFlag >> 1;
 
                         int VERSION_FLAG_IGNORESERVERONLY = 0b1;
                         var isIgnoreServerOnly = (channelSizeAndVersionFlag & VERSION_FLAG_IGNORESERVERONLY) != 0;
-                        
+
                         var modId = dataTypes.ReadNextString(dataPackage);
-                        
+
                         string IGNORESERVERONLY = "IGNORED";
                         var modVersion = isIgnoreServerOnly ? IGNORESERVERONLY : dataTypes.ReadNextString(dataPackage);
-                    
-                        for (var i1 = 0; i1 < channelSize; i1++) {
+
+                        for (var i1 = 0; i1 < channelSize; i1++)
+                        {
                             dataTypes.ReadNextString(dataPackage); // channelName
                             dataTypes.ReadNextString(dataPackage); // channelVersion
                             dataTypes.ReadNextBool(dataPackage); // requiredOnClient
                         }
- 
+
                         mods.Add(modId, modVersion);
                         Mods.Add(new ForgeMod(modId, modVersion));
                     }
@@ -222,7 +215,8 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// The code below is converted from forge source code, see:
         /// https://github.com/MinecraftForge/MinecraftForge/blob/cb12df41e13da576b781be695f80728b9594c25f/src/main/java/net/minecraftforge/network/ServerStatusPing.java#L361
         /// </para>
-        private static Queue<byte> decodeOptimized(string encodedData) {
+        private static Queue<byte> decodeOptimized(string encodedData)
+        {
             int size0 = encodedData[0];
             int size1 = encodedData[1];
             int size = size0 | (size1 << 15);

@@ -48,8 +48,9 @@ namespace MinecraftClient.ChatBots
                 Delay.min = Math.Max(1.0, Delay.min);
                 Delay.max = Math.Max(1.0, Delay.max);
 
-                Delay.min = Math.Min(int.MaxValue / 10, Delay.min);
-                Delay.max = Math.Min(int.MaxValue / 10, Delay.max);
+                double maxDelaySeconds = int.MaxValue / (double)Settings.ClientTicksPerSecond;
+                Delay.min = Math.Min(maxDelaySeconds, Delay.min);
+                Delay.max = Math.Min(maxDelaySeconds, Delay.max);
 
                 if (Delay.min > Delay.max)
                 {
@@ -64,6 +65,12 @@ namespace MinecraftClient.ChatBots
             {
                 public double min, max;
 
+                public Range()
+                {
+                    min = 0;
+                    max = 0;
+                }
+
                 public Range(int value)
                 {
                     min = max = value;
@@ -77,7 +84,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private int count, nextrun = 50;
+        private int count, nextrun = Settings.DoubleToTick(5.0);
         private bool previousSneakState = false;
         private readonly Random random = new();
 
@@ -120,7 +127,7 @@ namespace MinecraftClient.ChatBots
         private void DoAntiAfkStuff()
         {
             var isMovementLocked = BotMovementLock.Instance;
-            if (Config.Use_Terrain_Handling && GetTerrainEnabled() && isMovementLocked is {IsLocked: false})
+            if (Config.Use_Terrain_Handling && GetTerrainEnabled() && isMovementLocked is { IsLocked: false })
             {
                 var currentLocation = GetCurrentLocation();
 

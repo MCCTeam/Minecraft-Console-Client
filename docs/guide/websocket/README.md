@@ -1,142 +1,132 @@
-# Web Socket Chat Bot documentation
+# WebSocket Bot
 
-This is a documentation page on the Web Socket chat bot and on how to make a library that uses web socket to execute commands in the MCC and processes events sent by the MCC.
+The WebSocket Bot is an **external example bot** that lets you remotely control MCC over WebSocket.
+It runs a local WebSocket server inside your MCC session, accepts commands as JSON messages, and pushes game events back to connected clients in real time.
 
-Please read the [Important things](#important-things) before everything.
+::: warning External Bot
+This bot is **not** built into MCC.
+You load it as a standalone script with `/script ChatBots/WebSocketBot.cs`.
+:::
 
-# Page index
+## Quick Start
 
-- [Important things](#important-things)
-  - [Prerequisites](#prerequisites)
-  - [Limitations](#limitations)
-  - [Precision of information](#precisionvalidity-of-the-information-in-this-guide)
-- [How does it work?](#how-does-it-work)
-- [Sending commands](#sending-commands-to-mcc)
-- [Websocket Commands](Commands.md)
-- [Websocket Events](Events.md)
-- [Reference Implementation](#reference-implementation)
+1. Copy `config/ChatBots/WebSocketBot.cs` into your MCC `config/ChatBots/` folder (it ships in the repo under that path).
+2. Open the file and edit the line near the top:
+   ```csharp
+   MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "CHANGE_THIS_PASSWORD"));
+   ```
+   - Replace `127.0.0.1` with the IP to bind (use `+` or `*` for all interfaces).
+   - Replace `8043` with your preferred port.
+   - Replace `CHANGE_THIS_PASSWORD` with a strong, unique password.
+3. Optionally enable debug logging:
+   ```csharp
+   MCC.LoadBot(new WebSocketBot("127.0.0.1", 8043, "mypassword", debugMode: true));
+   ```
+4. In MCC, run: `/script ChatBots/WebSocketBot.cs`
 
-## Reference implementation
+The bot starts a WebSocket server. Connect to `ws://127.0.0.1:8043/` with any WebSocket client.
 
-I have made a reference implementation in TypeScript/JavaScript, it is avaliable here: 
+## Protocol Overview
 
-[https://github.com/milutinke/MCC.js](https://github.com/milutinke/MCC.js)
+All communication uses JSON over WebSocket text frames.
 
-It is great for better understanding how this works.
-
-## Important things
-
-### Prerequisites 
-
-This guide/documentation assumes that you have enough of programming knowledge to know:
-
-  - What Web Socket is
-  - Basics of networking and concurency
-  - What JSON is
-  - What are the various data types such as boolean, integer, long, float, double, object, dictionary/hash map
-
-Without knowing those, I highly recommend learning about those concepts before trying to implement your own library.
-
-### Limitations
-
-The Web Socket chat bot should be considered experimental and prone to change, it has not been fully tested and might change, keep an eye on updates on our official Discord server.
-
-### Precision/Validity of the information in this guide
-
-This guide has been mostly generated from the code itself, so the types are C# types, except in few cases where I have manually changed them. 
-
-For some thing you will have to dig in to the MCC C# code of the Chat Bot and various helper classes.
-
-**Some information sent by the MCC, for example entity metadata, block ids, item ids, or various other data is different for each Minecraft Version, thus you need to map it for each minecraft version.**
-
-Some events might not be that useful, eg. `OnNetworkPacket`
-
-## How does it work?
-
-So, basically, this Web Socket Chat Bot is a chat bot that has a Web Socket server running while you're connected to a minecraft server.
-
-It sends events, and listens for commands and responds to commands.
-
-It has build in authentication, which requires you to send a command to authenticate if the the password is set, if it is not set, it should automatically authenticate you on the first command.
-
-You also can name every connection (session) with an alias.
-
-The flow of the protocol is the following:
+### Authentication Flow
 
 ```
-Connect to the chat bot via web socket
-
-            |
-            |
-           \ /
-            `
-
-Optionally set a session alias/name with "ChangeSessionId" command 
-(this can be done multiple times at any point)
-
-            |
-            |
-           \ /
-            `
-
-Send an "Authenticate" command if there is a password set 
-
-            |
-            |
-           \ /
-            `
-
-Send commands and listen for events
+Connect via WebSocket
+        |
+        v
+(Optional) Send "ChangeSessionId" to set a friendly session name
+        |
+        v
+Send "Authenticate" with the configured password
+        |
+        v
+Send commands and receive events
 ```
 
-In order to implement a library that communicates witht this chat bot, you need to make a way to send commands, remember the sent commands via the `requestId` value, and listen for `OnWsCommandResponse` event in which you need to detect if your command has been executed by looking for the `requestId` that matches the one you've sent. I also recommend you put a 5-10 seconds command execution timeout, where you discard the command if it has not been executed in the given timeout range.
+### Sending Commands
 
-## Sending commands to MCC
-
-You can send text in the chat, execute client commands or execute remote procedures (WebSocket Chat Bot commands).
-
-Each thing that is sent to the chat bot results in a response through the [`OnWsCommandResponse`](#onwscommandresponse) event.
-
-### Sending chat messages
-
-To send a chat message just send a plain text with your message to via the web socket.
-
-### Executing client commands
-
-To execute a client command, just send plain text with your command.
-
-Example: `/move suth`
-
-### Execution remote procedures (WebSocket Chat Bot commands)
-
-In order to execute a remote procedure, you need to send a json encoded string in the following format:
+Commands are JSON objects with this shape:
 
 ```json
 {
-  "command": "<command name here>",
-  "requestId": "<randomly generated string for identification>",
-  "parameters": [ 1, "some string", true, "etc.." ]
+  "command": "CommandName",
+  "requestId": "any-unique-string",
+  "parameters": [1, "text", true]
 }
 ```
 
-#### `command` 
+- `command` - the procedure name (case-sensitive)
+- `requestId` - a client-generated ID so you can match responses to requests
+- `parameters` - an ordered array of arguments (types depend on the command)
 
-  Refers to the name of the command
+Every command produces an `OnWsCommandResponse` event with `success`, `requestId`, and optionally `message`.
 
-#### `requestId`
+### Sending Plain Text
 
-  Is a unique indentifier you generate on each command, it will be returned in the response of the command execution ([`OnWsCommandResponse`](#onwscommandresponse)), use it to track if a command has been successfully executed or not, and to get the return value if it has been successfully executed. (*It's recommended to generate at least 7 characters to avoid collision, best to use an UUID format*).
+You can also send plain text directly:
 
-#### `parameters`
-  
-  Are parameters (attibutes) of the procedure you're executing, they're sent as an array of data of various types, the Web Socket chat bot does parsing and conversion and returns an error if you have sent a wrong type for the given parameters, of if you haven't send enough of them.
+- Text starting with `/` is forwarded to MCC as an internal command (e.g., `/move north`).
+- Other text is sent as chat.
 
-  **Example:**
+### Receiving Events
 
-  ```json
-  {
-    "command": "Authenticate",
-    "requestId": "8w9u60-q39ik",
-    "parameters": ["wspass12345"]
-  }
-  ```
+Events arrive as JSON:
+
+```json
+{
+  "event": "EventName",
+  "data": "{ ... serialized payload ... }"
+}
+```
+
+The `data` field is a JSON string that you parse separately to get the event payload.
+
+## Enum Serialization (String Names)
+
+All enum values (ItemType, EntityType, Direction, Hand, etc.) are serialized as **string names**, not numeric IDs.
+
+For example, an entity of type `Zombie` appears as:
+
+```json
+{ "type": "Zombie", "location": { "x": 10, "y": 64, "z": -20 } }
+```
+
+When sending commands that accept enum parameters, you can pass **either** a string name or a numeric value:
+
+```json
+{ "command": "InteractEntity", "requestId": "abc", "parameters": [42, "Interact", "MainHand"] }
+```
+
+or:
+
+```json
+{ "command": "InteractEntity", "requestId": "abc", "parameters": [42, 0, 0] }
+```
+
+Two dedicated commands let you query the full mapping tables:
+
+- `GetItemTypeMappings` returns `{ "DiamondSword": 798, "Stone": 1, ... }`
+- `GetEntityTypeMappings` returns `{ "Player": 128, "Zombie": 119, ... }`
+
+These are useful if your client needs a name-to-ID lookup for the current MCC version.
+
+## Reference
+
+- [Commands](Commands.md) - full list of available commands
+- [Events](Events.md) - full list of emitted events
+
+<div class="custom-container tip"><p class="custom-container-title">⭐ Reference Implementation: MCC.js</p>
+
+[MCC.js](https://github.com/milutinke/MCC.js) is a Node.js/TypeScript library built for this bot. It handles authentication, JSON serialization, event subscriptions, and typed command wrappers out of the box.
+
+If you're writing a client in JavaScript or TypeScript, start there.
+
+</div>
+
+## Compatibility
+
+- Requires any MCC version that supports `/script` (standalone MCCScript 1.0 bots).
+- Uses only `System.Text.Json` (built into .NET), so no extra DLLs are needed.
+- Compatible with [MCC.js](https://github.com/milutinke/MCC.js) and any WebSocket client library.

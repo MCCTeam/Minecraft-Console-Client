@@ -1,11 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Brigadier.NET;
+using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.CommandHandler.Patch;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.Settings;
@@ -36,28 +39,46 @@ namespace MinecraftClient.Scripting
         //Handler will be automatically set on bot loading, don't worry about this
         public void SetHandler(McClient handler) { _handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
-        protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
+        protected void LoadBot(ChatBot bot)
+        {
+            if (ScriptOwnerKey is not null)
+                bot.SetScriptOwnerKey(ScriptOwnerKey);
+
+            if (Handler.GetLoadedChatBots().Any(loadedBot => ReferenceEquals(loadedBot, bot)))
+                Handler.BotUnLoad(bot);
+
+            Handler.BotLoad(bot);
+        }
         protected List<ChatBot> GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
         protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot); }
+        internal string? ScriptOwnerKey { get; private set; }
+        internal void SetScriptOwnerKey(string? scriptOwnerKey) { ScriptOwnerKey = scriptOwnerKey; }
         private McClient? _handler = null;
         private ChatBot? master = null;
         private readonly List<string> registeredPluginChannels = new();
-        private readonly object delayTasksLock = new();
+        private readonly List<string> registeredChatBotCommands = new();
+        private readonly Lock delayTasksLock = new();
         private readonly List<TaskWithDelay> delayedTasks = new();
+        private MccGameApi? _game;
         protected McClient Handler
         {
             get
             {
-                if (master != null)
+                if (master is not null)
                     return master.Handler;
-                if (_handler != null)
+                if (_handler is not null)
                     return _handler;
                 throw new InvalidOperationException(Translations.exception_chatbot_init);
             }
         }
 
         /// <summary>
-        /// Will be called every ~100ms.
+        /// Shared gameplay and observed-state API used by MCP and available to built-in bots and scripts.
+        /// </summary>
+        protected MccGameApi Game => _game ??= new MccGameApi(() => Handler);
+
+        /// <summary>
+        /// Will be called every client tick (~50ms at 20 TPS).
         /// </summary>
         /// <remarks>
         /// <see cref="Update"/> method can be overridden by child class so need an extra update method
@@ -117,7 +138,7 @@ namespace MinecraftClient.Scripting
         public virtual void AfterGameJoined() { }
 
         /// <summary>
-        /// Will be called every ~100ms (10fps) if loaded in MinecraftCom
+        /// Will be called every client tick (~50ms, 20 TPS) if loaded in MinecraftCom
         /// </summary>
         public virtual void Update() { }
 
@@ -146,7 +167,7 @@ namespace MinecraftClient.Scripting
         /// Any text sent by the server will be sent here by MinecraftCom (extended variant)
         /// </summary>
         /// <remarks>
-        /// You can use Json.ParseJson() to process the JSON string.
+        /// You can use Json.ParseJson() to obtain a System.Text.Json.Nodes.JsonNode for processing.
         /// </remarks>
         /// <param name="text">Text from the server</param>
         /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
@@ -194,6 +215,30 @@ namespace MinecraftClient.Scripting
         /// </summary>
         /// <param name="entity">Entity with updated location</param>
         public virtual void OnEntityMove(Entity entity) { }
+
+        /// <summary>
+        /// Called when a tracked entity receives a velocity update packet.
+        /// Velocity is expressed in blocks per tick.
+        /// </summary>
+        /// <param name="entity">Entity with updated velocity</param>
+        /// <param name="velocityX">Velocity on X axis (blocks/tick)</param>
+        /// <param name="velocityY">Velocity on Y axis (blocks/tick)</param>
+        /// <param name="velocityZ">Velocity on Z axis (blocks/tick)</param>
+        public virtual void OnEntityVelocity(Entity entity, double velocityX, double velocityY, double velocityZ) { }
+
+        /// <summary>
+        /// Called when a sound packet is received.
+        /// The sound name is null when the protocol provides only a registry id.
+        /// </summary>
+        /// <param name="soundName">Sound key when available, otherwise null</param>
+        /// <param name="location">Sound position when available</param>
+        /// <param name="category">Sound category id from packet</param>
+        /// <param name="volume">Sound volume</param>
+        /// <param name="pitch">Sound pitch</param>
+        /// <param name="sourceEntity">Source entity for entity-sound packets when tracked</param>
+        public virtual void OnSoundEffect(string? soundName, Location? location, int category, float volume, float pitch,
+            Entity? sourceEntity)
+        { }
 
         /// <summary>
         /// Called when an entity rotates
@@ -330,6 +375,13 @@ namespace MinecraftClient.Scripting
         public virtual void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags) { }
 
         /// <summary>
+        /// Called when an entity has an effect removed (expired or cleared)
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        /// <param name="effect">Effect that was removed</param>
+        public virtual void OnRemoveEntityEffect(Entity entity, Effects effect) { }
+
+        /// <summary>
         /// Called when a scoreboard objective updated
         /// </summary>
         /// <param name="objectiveName">objective name</param>
@@ -351,12 +403,30 @@ namespace MinecraftClient.Scripting
         public virtual void OnUpdateScore(string entityName, int action, string objectiveName, string objectiveDisplayName, int value, int numberFormat) { }
 
         /// <summary>
+        /// Called when a Teams packet is received from the server.
+        /// </summary>
+        /// <param name="teamName">Internal team name (up to 16 chars)</param>
+        /// <param name="method">0=create, 1=remove, 2=update, 3=add players, 4=remove players</param>
+        /// <param name="displayName">Display name (formatted). Present when method is 0 or 2.</param>
+        /// <param name="friendlyFlags">Bit 0=allowFriendlyFire, bit 1=seeFriendlyInvisibles. Present when method is 0 or 2.</param>
+        /// <param name="nameTagVisibility">Nametag visibility rule. Present when method is 0 or 2.</param>
+        /// <param name="collisionRule">Collision rule. Present when method is 0 or 2.</param>
+        /// <param name="color">ChatFormatting color value (-1=none). Present when method is 0 or 2.</param>
+        /// <param name="prefix">Member name prefix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="suffix">Member name suffix (formatted). Present when method is 0 or 2.</param>
+        /// <param name="players">Player/entity names. Present when method is 0, 3, or 4.</param>
+        public virtual void OnTeam(string teamName, byte method, string displayName, byte friendlyFlags,
+            string nameTagVisibility, string collisionRule, int color,
+            string prefix, string suffix, List<string> players)
+        { }
+
+        /// <summary>
         /// Called when the client received the Tab Header and Footer
         /// </summary>
         /// <param name="header">Header</param>
         /// <param name="footer">Footer</param>
         public virtual void OnTabListHeaderAndFooter(string header, string footer) { }
-        
+
         /// <summary>
         /// Called when an inventory/container was updated by server
         /// </summary>
@@ -400,9 +470,9 @@ namespace MinecraftClient.Scripting
         /// <param name="middleEnchantmentLevelRequirement">Levels required by player for the enchantment in the middle slot</param>
         /// <param name="bottomEnchantmentLevelRequirement">Levels required by player for the enchantment in the bottom slot</param>
         public virtual void OnEnchantments(
-            Enchantment topEnchantment,
-            Enchantment middleEnchantment,
-            Enchantment bottomEnchantment,
+            Enchantments topEnchantment,
+            Enchantments middleEnchantment,
+            Enchantments bottomEnchantment,
             short topEnchantmentLevel,
             short middleEnchantmentLevel,
             short bottomEnchantmentLevel,
@@ -503,6 +573,14 @@ namespace MinecraftClient.Scripting
         /// <param name="block">The block</param>
         public virtual void OnBlockChange(Location location, Block block) { }
 
+        /// <summary>
+        /// Called when achievement/advancement data is updated.
+        /// </summary>
+        /// <param name="updated">Achievements that were added or updated</param>
+        /// <param name="removedIds">IDs of achievements that were removed</param>
+        /// <param name="reset">Whether the achievement state was fully reset before this update</param>
+        public virtual void OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
@@ -547,7 +625,7 @@ namespace MinecraftClient.Scripting
         }
 
         /// <summary>
-        /// Remove color codes ("§c") from a text message received from the server
+        /// Remove color codes ("§c" and "§#rrggbb") from a text message received from the server
         /// </summary>
         public static string GetVerbatim(string? text)
         {
@@ -558,10 +636,20 @@ namespace MinecraftClient.Scripting
             var data = new char[text.Length];
 
             for (int i = 0; i < text.Length; i++)
+            {
                 if (text[i] != '§')
+                {
                     data[idx++] = text[i];
+                }
+                else if (i + 1 < text.Length && text[i + 1] == '#' && i + 7 < text.Length)
+                {
+                    i += 7; // skip §#rrggbb (8 chars total, loop increments once)
+                }
                 else
-                    i++;
+                {
+                    i++; // skip §x (2 chars total)
+                }
+            }
 
             return new string(data, 0, idx);
         }
@@ -784,7 +872,7 @@ namespace MinecraftClient.Scripting
                         string prefix = tmp[0];
                         string user = tmp[1];
                         string semicolon = tmp[2];
-                        if (prefix.All(c => char.IsLetterOrDigit(c) || new char[] { '*', '<', '>', '_' }.Contains(c))
+                        if (prefix.All(c => char.IsLetterOrDigit(c) || new[] { '*', '<', '>', '_' }.Contains(c))
                             && semicolon == ":")
                         {
                             message = text[(prefix.Length + user.Length + 4)..];
@@ -861,7 +949,7 @@ namespace MinecraftClient.Scripting
         protected void LogToConsole(object? text)
         {
             string botName = Translations.ResourceManager.GetString("botname." + GetType().Name) ?? GetType().Name;
-            if (_handler == null || master == null)
+            if (_handler is null || master is null)
                 ConsoleIO.WriteLogLine(string.Format("[{0}] {1}", botName, text));
             else
                 Handler.Log.Info(string.Format("[{0}] {1}", botName, text));
@@ -877,7 +965,7 @@ namespace MinecraftClient.Scripting
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, [GetTimestamp() + ' ' + text]);
             }
         }
 
@@ -897,7 +985,7 @@ namespace MinecraftClient.Scripting
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, [GetTimestamp() + ' ' + text]);
             }
         }
 
@@ -993,7 +1081,7 @@ namespace MinecraftClient.Scripting
         {
             Handler.BotLoad(chatBot);
         }
-        
+
         /// <summary>
         /// Set an App Variable
         /// </summary>
@@ -1004,7 +1092,7 @@ namespace MinecraftClient.Scripting
         {
             Config.AppVar.SetVar(name, value);
         }
-        
+
         /// <summary>
         /// Get a value from an App Variable
         /// </summary>
@@ -1014,7 +1102,7 @@ namespace MinecraftClient.Scripting
         {
             return Config.AppVar.GetVar(name);
         }
-        
+
         /// <summary>
         /// Replaces variables in text with their values from the App Var registry
         /// </summary>
@@ -1075,11 +1163,14 @@ namespace MinecraftClient.Scripting
         /// Attempt to dig a block at the specified location
         /// </summary>
         /// <param name="location">Location of block to dig</param>
+        /// <param name="direction">Example: if your player is under a block that is being destroyed, use Down</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
         /// <param name="lookAtBlock">Also look at the block before digging</param>
-        protected bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
+        /// <param name="duration">Dig duration in seconds. 0 = auto-compute for survival, or instant for creative</param>
+        protected bool DigBlock(Location location, Direction direction, bool swingArms = true, bool lookAtBlock = true,
+            double duration = 0, MiningCalculator.MiningOptions? miningOptions = null)
         {
-            return Handler.DigBlock(location, swingArms, lookAtBlock);
+            return Handler.DigBlock(location, direction, swingArms, lookAtBlock, duration, miningOptions);
         }
 
         /// <summary>
@@ -1106,6 +1197,33 @@ namespace MinecraftClient.Scripting
         protected Dictionary<int, Entity> GetEntities()
         {
             return Handler.GetEntities();
+        }
+
+        /// <summary>
+        /// Get all achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of all achievements</returns>
+        protected Achievement[] GetAchievements()
+        {
+            return Handler.GetAchievements();
+        }
+
+        /// <summary>
+        /// Get only completed achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of unlocked achievements</returns>
+        protected Achievement[] GetUnlockedAchievements()
+        {
+            return Handler.GetUnlockedAchievements();
+        }
+
+        /// <summary>
+        /// Get only incomplete achievements/advancements.
+        /// </summary>
+        /// <returns>Snapshot of locked achievements</returns>
+        protected Achievement[] GetLockedAchievements()
+        {
+            return Handler.GetLockedAchievements();
         }
 
         /// <summary>
@@ -1158,6 +1276,7 @@ namespace MinecraftClient.Scripting
         protected void LookAtLocation(Location location)
         {
             Handler.UpdateLocation(Handler.GetCurrentLocation(), location);
+            Handler.SendLocationUpdate();
         }
 
         /// <summary>
@@ -1168,6 +1287,7 @@ namespace MinecraftClient.Scripting
         protected void LookAtLocation(float yaw, float pitch)
         {
             Handler.UpdateLocation(Handler.GetCurrentLocation(), yaw, pitch);
+            Handler.SendLocationUpdate();
         }
 
         /// <summary>
@@ -1216,7 +1336,7 @@ namespace MinecraftClient.Scripting
             else
             {
                 LogToConsole("File not found: " + Path.GetFullPath(file));
-                return Array.Empty<string>();
+                return [];
             }
         }
 
@@ -1456,10 +1576,11 @@ namespace MinecraftClient.Scripting
         /// <param name="location">Location to place block to</param>
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
+        /// <param name="lookAtBlock">Also look at the block before interacting</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool SendPlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
+        public bool SendPlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand, bool lookAtBlock = false)
         {
-            return Handler.PlaceBlock(location, blockFace, hand);
+            return Handler.PlaceBlock(location, blockFace, hand, lookAtBlock);
         }
 
         /// <summary>
@@ -1634,6 +1755,15 @@ namespace MinecraftClient.Scripting
         }
 
         /// <summary>
+        /// Gets the horizontal direction of the takeoff.
+        /// </summary>
+        /// <returns>Return direction of view</returns>
+        protected Direction GetHorizontalFacing()
+        {
+            return Handler.GetHorizontalFacing();
+        }
+
+        /// <summary>
         /// Invoke a task on the main thread, wait for completion and retrieve return value.
         /// </summary>
         /// <param name="task">Task to run with any type or return value</param>
@@ -1663,11 +1793,11 @@ namespace MinecraftClient.Scripting
         /// Schedule a task to run on the main thread, and do not wait for completion
         /// </summary>
         /// <param name="task">Task to run</param>
-        /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~100ms). 0 for no delay</param>
+        /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~50ms at 20 TPS). 0 for no delay</param>
         /// <example>
-        /// <example>InvokeOnMainThread(methodThatReturnsNothing, 10);</example>
-        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument), 10);</example>
-        /// <example>InvokeOnMainThread(() => { yourCode(); }, 10);</example>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing, 20);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument), 20);</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); }, 20);</example>
         /// </example>
         protected void ScheduleOnMainThread(Action task, int delayTicks = 0)
         {
@@ -1700,6 +1830,34 @@ namespace MinecraftClient.Scripting
         public delegate string CommandRunner(string command, string[] args);
 
         /// <summary>
+        /// Register a simple ChatBot command with the Brigadier dispatcher.
+        /// The command is automatically unregistered when the bot is unloaded.
+        /// </summary>
+        /// <param name="cmdName">Name of the command (used as the literal command name)</param>
+        /// <param name="cmdDesc">Description of the command</param>
+        /// <param name="cmdUsage">Usage string for the command</param>
+        /// <param name="callback">Method to handle the command execution</param>
+        protected void RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
+        {
+            var command = new ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
+            command.RegisterCommand(McClient.dispatcher);
+            registeredChatBotCommands.Add(cmdName);
+        }
+
+        /// <summary>
+        /// Unregisters all commands that were registered via RegisterChatBotCommand.
+        /// Called automatically by McClient.BotUnLoad() during bot unload - do not call manually.
+        /// </summary>
+        internal void UnregisterChatBotCommands()
+        {
+            foreach (var cmdName in registeredChatBotCommands)
+            {
+                McClient.dispatcher.Unregister(cmdName);
+            }
+            registeredChatBotCommands.Clear();
+        }
+
+        /// <summary>
         /// Command class with constructor for creating command for ChatBots.
         /// </summary>
         public class ChatBotCommand : Command
@@ -1716,7 +1874,22 @@ namespace MinecraftClient.Scripting
 
             public override void RegisterCommand(CommandDispatcher<CmdResult> dispatcher)
             {
-
+                dispatcher.Register(l => l.Literal(_cmdName)
+                    .Then(l => l.Argument("args", Arguments.GreedyString())
+                        .Executes(r =>
+                        {
+                            string fullArgs = Arguments.GetString(r, "args");
+                            string result = Runner(
+                                $"{_cmdName} {fullArgs}",
+                                fullArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+                            return r.Source.SetAndReturn(CmdResult.Status.Done, result);
+                        }))
+                    .Executes(r =>
+                    {
+                        string result = Runner(_cmdName, Array.Empty<string>());
+                        return r.Source.SetAndReturn(CmdResult.Status.Done, result);
+                    })
+                );
             }
 
             /// <summary>

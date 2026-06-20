@@ -4,42 +4,80 @@ title: Installation
 
 # Installation
 
--   [YouTube Tutorials](#youtube-tutorials)
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
--   [Run using Docker](#using-docker)
--   [Run on Android](#run-on-android)
--   [Run MCC 24/7 on a VPS](#run-on-a-vps)
+- [Quick Install (one-liner)](#quick-install)
+- [YouTube Tutorials](#youtube-tutorials)
+- [Download a compiled binary](#download-a-compiled-binary)
+- [Building from the source code](#building-from-the-source-code)
+- [Run using Docker](#using-docker)
+- [Run on Android](#run-on-android)
+- [Run MCC 24/7 on a VPS](#run-on-a-vps)
+
+## Quick Install
+
+The quickest way to get MCC is to run the installer script for your platform. It auto-detects your OS and CPU architecture, fetches the latest release from GitHub, and saves the binary to your current directory.
+
+### Linux / macOS
+
+Open a terminal in the folder where you want MCC and run:
+
+```bash
+curl -fsSL https://mccteam.github.io/install.sh | sh
+```
+
+If you prefer `wget`:
+
+```bash
+wget -qO- https://mccteam.github.io/install.sh | sh
+```
+
+The script downloads `MinecraftClient` and marks it executable. Supported architectures: `x64`, `arm64`, `arm` (Linux only).
+
+### Windows
+
+Open **PowerShell** in the folder where you want MCC and run:
+
+```powershell
+iwr -useb https://mccteam.github.io/install.ps1 | iex
+```
+
+The script downloads `MinecraftClient.exe`. Supported architectures: `x64`, `x86`, `arm64`.
+
+::: tip
+You can also download the scripts directly and inspect them before running:
+- Linux/macOS: [install.sh](https://mccteam.github.io/install.sh)
+- Windows: [install.ps1](https://mccteam.github.io/install.ps1)
+:::
 
 ## YouTube Tutorials
 
 If you're not the kind of person that likes textual tutorials, our community has made video tutorials available on YouTube.
 
--   [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
--   [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
+- [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
+- [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
 
 ## Download a compiled binary
 
-You can download a compiled binary file of the latest build from our Releases section on Git Hub: [Download](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
+You can download a compiled binary of the latest build from the [GitHub Releases](https://github.com/MCCTeam/Minecraft-Console-Client/releases) page.
 
 ## Building from the source code
 
-We recommend you to download our precompiled binary file from [GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/releases). 
+We recommend you to download our precompiled binary file from [GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/releases).
 
 However, if you want to build the program from source code, please follow the guide.
 
 ### Windows
 
+<details>
+<summary>Windows build instructions</summary>
+
 Requirements:
 
--   [Git](https://www.git-scm.com/)
--   [.NET 7.0 or new-er](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
+- [Git](https://www.git-scm.com/)
+- [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **If you want to modify the code, and you are new to C# or in programming in general, you might want to watch some C# tutorials, we recommend the ones listed in [Creating Bots](creating-bots.md#requirements) section.**
-
-</div>
+::: note
+If you want to modify the code and you are new to C# or programming in general, the tutorials listed in [Creating Bots](creating-bots.md#requirements) are a good starting point.
+:::
 
 #### Cloning using Git
 
@@ -48,10 +86,16 @@ Install [Git](https://www.git-scm.com/)
 1. Make a new folder where you want to keep the source code
 2. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
 3. Click on `Git Bash Here` in the context menu
-4. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+4. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
+```
+
+If you cloned the repository without `--recursive`, run:
+
+```bash
+git submodule update --init --recursive
 ```
 
 5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
@@ -59,15 +103,15 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 
 #### Download translation resources (optional)
 
-1. Visit [MCC project's homepage on Crowdin](https://crowdin.com/project/minecraft-console-client).
-2. You will need to log in to your Crowdin account in order to download.
-3. Click on the language you want to download the translation for.
-4. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
-5. Click the button `•••` at the end of the line.
-6. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
-7. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
-8. Click the button `•••` at the end of the line.
-9. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
+01. Visit [MCC project's homepage on Crowdin](https://crowdin.com/project/minecraft-console-client).
+02. You will need to log in to your Crowdin account in order to download.
+03. Click on the language you want to download the translation for.
+04. Find `MinecraftClient` -> `Resources` -> `Translations` -> `MCC in-app text`
+05. Click the button `•••` at the end of the line.
+06. Click Download and save the file to folder `/MinecraftClient/Resources/Translations/`.
+07. Find `MinecraftClient` -> `Resources` -> `ConfigComments` -> `Comments in the settings file`
+08. Click the button `•••` at the end of the line.
+09. Click Download and save the file to folder `/MinecraftClient/Resources/ConfigComments/`.
 10. Find `MinecraftClient` -> `Resources` -> `AsciiArt` -> `ASCII Arts (Please use fixed-width fonts for editing)`
 11. Click the button `•••` at the end of the line.
 12. Click Download and save the file to folder `/MinecraftClient/Resources/AsciiArt/`.
@@ -83,91 +127,161 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 6. Right click on `MinecraftClient` solution in the `Solution Explorer`
 7. Click `Build`
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net7.0/win-x64/publish` folder.
+If the build succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
 
 #### Building using .NET manually without Visual Studio
 
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+If you are following the AI-assisted repo workflow, use WSL or another Unix-style shell and prefer `source tools/mcc-env.sh` followed by `mcc-build`. That path keeps MCC's session and temp-build helpers enabled. The `dotnet` commands below are the low-level manual fallback.
+
+</div>
+
 1. Open the `Minecraft-Console-Client` folder you've cloned or downloaded
 2. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
-3. Run the following command to build the project:
+3. Install the .NET 10 SDK if you do not already have it. The easiest current option on Windows is:
 
-```bash
-dotnet publish MinecraftClient -f net7.0 -r win-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
+```powershell
+winget install Microsoft.DotNet.SDK.10
 ```
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net7.0/win-x64/publish` folder.
+4. Run the following command for a normal local build:
+
+```bash
+dotnet build MinecraftClient.sln -c Release
+```
+
+5. If you want a release-like published binary that matches the repo's CI workflow, run:
+
+```bash
+source tools/mcc-env.sh
+mcc-publish --rid win-x64
+```
+
+6. Verify the SDK installation if needed:
+
+```bash
+dotnet --info
+```
+
+If the publish step succeeds, the published binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net10.0/win-x64/publish/`.
+
+</details>
 
 ### Linux, macOS
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<details>
+<summary>Linux and macOS build instructions</summary>
 
-**If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
+<div class="custom-container note"><p class="custom-container-title">Note</p>
+
+**If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)**
 
 </div>
 
 Requirements:
 
--   Git
+- Git
 
-    -   Linux:
+  - Linux:
 
-    -   [Install Git on macOS](https://git-scm.com/download/mac)
+  - [Install Git on macOS](https://git-scm.com/download/mac)
 
--   .NET SDK 7.0 or new-er
+- .NET 10 SDK
 
-    -   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
-    -   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
+  - [Install .NET on Linux](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
+  - [Install .NET on Ubuntu](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install)
+  - [Install .NET on macOS](https://learn.microsoft.com/en-us/dotnet/core/install/macos)
 
 #### Cloning using Git
 
 1. Open up a terminal emulator and navigate to the folder where you will store the MCC
-2. Recursively clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+2. Recursively clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
 3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
-4. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
-5. Run the following command to build the project:
 
-    - On Linux:
+4. Install the .NET 10 SDK.
 
-        ```bash
-        dotnet publish MinecraftClient -f net7.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
-        ```
+   - On Ubuntu 24.04 LTS, use the built-in Ubuntu package feeds:
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+     ```bash
+     sudo apt-get update && \
+       sudo apt-get install -y dotnet-sdk-10.0
+     ```
 
-        **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `-r linux-64` with an appropriate `-r RID_NAME` (Example for arm: `-r linux-arm64`)**
+   - On macOS, the normal path is to use the official installer from the [.NET download page](https://dotnet.microsoft.com/en-us/download). Pick `Arm64` for Apple Silicon and `x64` for Intel Macs.
 
-        </div>
+5. If you want to download translation resources, please check out [Download translation resources](#download-translation-resources-optional)
 
-    - On macOS:
+6. For the repo's normal local development workflow, source the helper environment and build through `mcc-build`:
 
-        ```bash
-        dotnet publish MinecraftClient -f net7.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
-        ```
+   ```bash
+   source tools/mcc-env.sh
+   mcc-build
+   ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+7. If you specifically want the low-level manual .NET command instead of the MCC wrapper, run:
 
-        **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `-r osx-64` with an appropriate `-r RID_NAME` (Example for arm: `-r osx.12-arm64`)**
+   ```bash
+   dotnet build MinecraftClient.sln -c Release
+   ```
 
-        </div>
+8. Run the following command if you want a release-like published binary that matches the repo's CI workflow:
+
+   - On Linux:
+
+     ```bash
+     source tools/mcc-env.sh
+     mcc-publish --rid linux-x64
+     ```
+
+     <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+     **If you are using Linux on ARM, 32-bit, RHEL-based distributions, or Musl, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace `-r linux-x64` with it, for example `-r linux-arm64`.**
+
+     </div>
+
+   - On macOS:
+
+     ```bash
+     source tools/mcc-env.sh
+     mcc-publish --rid osx-x64
+     ```
+
+     <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+     **If you are not using an Intel Mac, [pick the appropriate RID](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) for your processor and replace `-r osx-x64` with it, for example `-r osx-arm64`.**
+
+     </div>
 
 If the build has succeeded, the compiled binary `MinecraftClient` will be in:
 
--   Linux: `MinecraftClient/bin/Release/net7.0/linux-x64/publish/`
--   macOS: `MinecraftClient/bin/Release/net7.0/osx-x64/publish/`
+- Linux: `MinecraftClient/bin/Release/net10.0/linux-x64/publish/`
+- macOS: `MinecraftClient/bin/Release/net10.0/osx-x64/publish/`
+
+You can verify the SDK installation with:
+
+```bash
+dotnet --info
+```
+
+</details>
 
 ## Using Docker
 
+<details>
+<summary>Docker setup and usage</summary>
+
 Requirements:
 
--   Git
--   Docker
+- Git
+- Docker
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **This section is for more advanced users, if you do not know how to install git or docker, you can take a look at other sections for Git, and search on how to install Docker on your system.**
 
@@ -175,11 +289,11 @@ Requirements:
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Pay attention at warnings, Docker currently works, but you must start the containers in the interactive mode or MCC will crash, we're working on solving this.**
+**Docker works, but you need to start the container in interactive mode. Starting it in headless mode can still crash MCC.**
 
 </div>
 
-1. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+1. Clone the [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client) by running:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
@@ -196,12 +310,12 @@ docker build -t minecraft-console-client:latest .
 
 <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-**There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+**Because of a ConsoleInteractive issue, starting the container in headless mode can crash MCC. Start it with the interactive command below, then detach with `CTRL + P` followed by `CTRL + Q` if you want to leave it running in the background.**
 
 </div>
 
 ```bash
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+# You can omit -v if you do not want a mounted volume. Keeping the volume makes it much easier to edit the TOML config stored in MinecraftClient.ini from the host.
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
@@ -234,11 +348,11 @@ Remember to remove the container after usage:
 docker-compose down
 ```
 
-If you use the INI file and entered your data (username, password, server) there, you can start your container using
+If you use `MinecraftClient.ini` and entered your data there, you can start your container using
 
 ```bash
 docker-compose up
-docker-compose up -d #for deamonized running in the background
+docker-compose up -d # for daemonized background running
 ```
 
 Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
@@ -249,23 +363,25 @@ As above, you can stop and remove the container using
 docker-compose down
 ```
 
+</details>
+
 ## Run on Android
 
-It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
+It is possible to run Minecraft Console Client on Android through Termux and Ubuntu, but it requires a manual setup, so be careful not to skip any steps. Depending on your technical background, internet speed, and device speed, this can take anywhere from 10 to 20 minutes or more.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-**This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
+**This section gets a bit technical. If you run into issues, open a discussion on our GitHub repository page, or ask us on our Discord server.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
 
@@ -273,254 +389,119 @@ It is possible to run the Minecraft Console Client on Android through Termux and
 
 ### Installation
 
+<details>
+<summary>Android installation steps (Termux + Ubuntu + .NET + MCC)</summary>
+
 #### Termux
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**The Play Store version of Termux is outdated and not supported, do not use it, use the the [Github one](https://github.com/termux/termux-app/releases/latest/).**
+**The Play Store version of Termux is outdated and not supported. Install Termux from [F-Droid](https://f-droid.org/packages/com.termux/) (recommended) or from the [GitHub releases page](https://github.com/termux/termux-app/releases/latest/).**
 
 </div>
 
-Go to [the Termux Github latest release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it and run it.
+**F-Droid (recommended):** Install the [F-Droid](https://f-droid.org/) app store, search for "Termux", and install it.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+**GitHub releases:** Go to [the latest Termux GitHub release](https://github.com/termux/termux-app/releases/latest/), download the APK file whose name contains `universal` (e.g. `termux-app_v...-debug_universal.apk`), and install it.
 
-**If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-</div>
-
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
-
-**Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
+**If your file manager does not let you install APK files, install and use `File Manager +` and grant it permission to install third-party applications when asked.**
 
 </div>
 
-#### Installing Ubuntu 22.04
+<div class="custom-container danger"><p class="custom-container-title">Warning</p>
 
-At this stage, you have 2 options:
-
-1. Following this textual tutorial
-2. Watching a [Youtube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**If you decide to watch the Youtube tutorial, watch only up to `1:58`, the steps after are not needed and might just confuse you.**
+**Once you have installed Termux, open it, pull down the Android notification drawer, find the Termux notification, and expand it (swipe down on the notification) until you see `Exit | Acquire wakelock`. Tap `Acquire wakelock` and allow Termux to bypass battery optimization when prompted. Skipping this step may cause Termux to be killed by Android when running in the background.**
 
 </div>
 
-In order to install Ubuntu 22.04 in Termux you require `wget` and `proot`, we're going to install them in the next step.
+#### Installing Ubuntu
 
-Once you have Termux installed open it up and run the following command one after other (in order):
+We use `proot-distro`, an official Termux utility, to install Ubuntu. It will install the latest Ubuntu LTS release available for your device architecture.
 
-1. `pkg update`
-2. `pkg upgrade`
-3. `pkg install proot wget`
+Open Termux and run the following commands one at a time, in order:
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+1. `pkg update -y`
+2. `pkg upgrade -y`
+3. `pkg install proot-distro -y`
 
-**If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-</div>
-
-Then you need to download an installation script using the following command:
-
-```bash
-wget https://raw.githubusercontent.com/MFDGaming/ubuntu-in-termux/master/ubuntu.sh
-```
-
-Once the script has downloaded, run it with:
-
-```bash
-bash ubuntu.sh
-```
-
-Then you will be asked a question, enter `Y` and press `Enter`.
-
-Once the installation is complete, you can start Ubuntu with:
-
-```bash
-./startubuntu.sh
-```
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**Now every time you open Termux after it has been closed, in order to access Ubuntu you have to use this command**
+**If you are asked to press Y/N during the update or upgrade step, enter Y and press Enter.**
 
 </div>
 
-#### Installing .NET on ARM
-
-Since there are issues installing .NET 7.0 via the APT package manager at the time of writing, we will have to install it manually.
-
-First we need to update the APT package manager repositories and install dependencies.
-
-To update the APT repositories, run the following command:
+Now install Ubuntu:
 
 ```bash
-apt update -y && apt upgrade -y
+pd install ubuntu:26.04
 ```
 
-After you did it, we need to install dependencies for .NET, with the following command:
+Once the installation finishes, start Ubuntu with:
 
 ```bash
-apt install wget nano unzip libc6 libgcc1 libgssapi-krb5-2 libstdc++6 zlib1g libicu70 libssl3 -y
+pd login ubuntu
 ```
 
-After you have installed dependencies, it's time to install .NET, you either can follow this tutorial or the [Microsoft one](https://docs.microsoft.com/en-us/dotnet/core/install/linux-scripted-manual#manual-install).
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-Navigate to your `/root` home directory with the following command:
-
-```bash
-cd /root
-```
-
-First you need to download .NET 7.0, you can do it with the following command:
-
-```bash
-wget https://download.visualstudio.microsoft.com/download/pr/6cd2eaa7-4c06-4168-b90b-ee2d6bb40b10/4a8387eb07e17d262bfb9965f6d34462/dotnet-sdk-7.0.203-linux-arm64.tar.gz
-```
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**This tutorial assumes that you have 64 bit version of ARM processor, if you happen to have a 32-bit version replace the link in the command above with [this one](https://download.visualstudio.microsoft.com/download/pr/55972ef4-146e-47e6-b014-0163cbaca6a3/fa9713f73f44088898843016d68c5929/dotnet-sdk-7.0.203-linux-arm.tar.gz)**
+**Every time you open Termux after it has been closed, run this command to get back into Ubuntu.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+#### Installing .NET
 
-**This tutorial assumes that you're following along and using Ubuntu 22.04, if you're using a different distro, like Alpine, go to [here](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) and copy an appropriate link for your distro.**
-
-</div>
-
-Once the file has been downloaded, you need to run the following commands in order:
-
-1. `DOTNET_FILE=dotnet-sdk-7.0.203-linux-arm64.tar.gz`
-
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-    **If you're using a different download link, update the file name in this command to match your version.**
-
-    </div>
-
-2. `export DOTNET_ROOT=/root/.dotnet`
-
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-    **Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
-
-    </div>
-
-3. `mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"`
-4. `export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools`
-
-Now we need to tell our shell to know where the `dotnet` command is, for future sessions, since the commands above just tell this current session where the `dotnet` is located.
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**You will need a basic knowledge of Nano text editor, if you do not know how to use it, watch this [Youtube video tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A)**
-
-</div>
-
-To enable this, we need to edit our `/root/.bashrc` file with the following command:
+First, update the Ubuntu package lists and install a few dependencies and tools:
 
 ```bash
-nano /root/.bashrc
-```
-
-Scroll down to the bottom of the file using `Page Down` (`PGDN`) button, make a new line and paste the following text:
-
-```bash
-export DOTNET_ROOT=/root/.dotnet/
-export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
-```
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
-
-</div>
-
-Save the file usign the following combination of keys: `CTRL + X`, type `Y` and press Enter.
-
-Veryfy that .NET was installed correctly by running:
-
-```bash
-dotnet
-```
-
-You should get a help page:
-
-```bash
-root@localhost:~# dotnet
-
-Usage: dotnet [options]
-Usage: dotnet [path-to-application]
-
-Options:
-  -h|--help         Display help.
-  --info            Display .NET information.
-  --list-sdks       Display the installed SDKs.
-  --list-runtimes   Display the installed runtimes.
-
-path-to-application:
-  The path to an application .dll file to execute.
+apt update && apt upgrade -y && apt install -y dotnet-sdk-10.0 wget curl nano
 ```
 
 #### Installing MCC
 
-Finally, we can install MCC.
+Now we can install MCC.
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
-
-</div>
-
-Let's make a folder where the MCC will be stored with the following command:
+Let's make a folder where MCC will be stored:
 
 ```bash
 mkdir MinecraftConsoleClient
-```
-
-Then enter it the newly created folder:
-
-```bash
 cd MinecraftConsoleClient
 ```
 
-Download the MCC with the following command:
+Download the latest MCC binary for ARM (the script auto detects the platform):
 
 ```bash
-wget https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest/download/MinecraftClient-linux-arm64.zip
+wget -qO- https://mccteam.github.io/install.sh | sh
 ```
 
-Unzip it with the following command:
+Now you can run the MCC with this command:
 
 ```bash
-unzip MinecraftClient-linux-arm64.zip
-```
-
-You can remove the zip archive now, we do not need it anymore, with:
-
-```bash
-rm MinecraftClient-linux-arm64.zip
-```
-
-And finally run it with:
-
-```
 ./MinecraftClient
 ```
 
-#### After installation
+#### Running MCC
 
-When you run Termux next time, you need to start Ubuntu with: `./startubuntu.sh`
+When you open Termux next time, start Ubuntu with:
 
-Then you can start the MCC again with `./MinecraftClient`
+```bash
+pd login ubuntu
+```
 
-To stop MCC from running you can press `CTRL + C`
+Then enter the folder you made `cd MinecraftConsoleClient` (If you named it different, use that name).
 
-To edit the configuration/settings, you need a text editor, we recommend Nano, as it's very simple to use, if you have followed the installation steps above, you should be familiar with it, if not, check out [this tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).
+Then run MCC with: `./MinecraftClient`
+
+To stop MCC from running you can press: `CTRL + C`
+
+To edit the configuration/settings, you need a text editor, we recommend Nano, as it's very simple to use.
+
+<div class="custom-container note"><p class="custom-container-title">Note</p>
+
+**If you do not know how to use Nano, watch this [YouTube tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).**
+
+</div>
 
 For downloading files, you can use the `wget` file we have installed, simply run:
 
@@ -528,29 +509,31 @@ For downloading files, you can use the `wget` file we have installed, simply run
 
 Also, here are some linux tutorials for people who are new to it:
 
--   [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
--   [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
--   [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
--   [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
+- [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
+- [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
+- [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
+- [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
+
+</details>
 
 ## Run on a VPS
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-**This is a new section, if you find a mistake, please report it by opening an Issue in our [Github repository](https://github.com/MCCTeam/Minecraft-Console-Client). Thank you!**
+**This is a newer section. If you spot a mistake, please report it by opening an issue in our [GitHub repository](https://github.com/MCCTeam/Minecraft-Console-Client).**
 
 </div>
 
 The **Minecraft Console Client** can be run on a VPS 24 hours, 7 days a week.
 
--   [What is a VPS?](#what-is-a-vps)
--   [Prerequisites](#prerequisites)
--   [Where to get a VPS](#where-to-get-a-vps)
--   [Initial Amazon VPS setup](#initial-amazon-vps-setup)
--   [Initial VPS setup](#initial-vps-setup)
--   [Creating a new user account](#creating-a-new-user)
--   [Installing .NET Core 6](#installing-net-core-6)
--   [Installing the Minecraft Console Client](#installing-mcc-on-a-vps)
+- [What is a VPS?](#what-is-a-vps)
+- [Prerequisites](#prerequisites)
+- [Where to get a VPS](#where-to-get-a-vps)
+- [Initial Amazon VPS setup](#initial-amazon-vps-setup)
+- [Initial VPS setup](#initial-vps-setup)
+- [Creating a new user account](#creating-a-new-user)
+- [Installing .NET Core 6](#installing-net-core-6)
+- [Installing the Minecraft Console Client](#installing-mcc-on-a-vps)
 
 ### What is a VPS?
 
@@ -558,42 +541,45 @@ VPS stands for a **V**irtual **P**rivate **S**erver, it's basically a remote vir
 
 You can use a VPS for hosting a website, or a an app, or a game server, or your own VPN, or the Minecraft Console Client.
 
-Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more detail if you're interested.
+Here is a [YouTube video](https://youtu.be/42fwh_1KP_o) that explains it in more detail if you are interested.
 
 ### Prerequisites
 
-1. Gitbash (if you're on Windows)
+1. Git Bash (if you are on Windows)
 
-    Download and install [Gitbash](https://git-scm.com/downloads).
+   Download and install [Git Bash](https://git-scm.com/downloads).
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+   <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Make sure to allow the installation to add it to the context menu**
+   **Make sure to allow the installation to add it to the context menu**
 
-    </div>
+   </div>
 
-2. `ssh` and `ssh-keygen` commands (On Windows they're available with Gitbash, on macOs and Linux they should be available by default, it not, search on how to install them)
+2. `ssh` and `ssh-keygen` commands (on Windows they are available with Git Bash; on macOS and Linux they should be available by default. If not, install them first.)
 
 3. Basic knowledge of Linux shell commands, terminal emulator usage, SSH and Nano editor.
 
-    If you already know this, feel free to skip.
+   If you already know this, feel free to skip.
 
-    if you get stuck, watch those tutorials.
+   if you get stuck, watch those tutorials.
 
-    If you're new to this, you can learn about it here:
+   If you're new to this, you can learn about it here:
 
-    - [What is Linux? by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
-    - [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
-    - [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
-    - [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
-    - [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
+   - [What is Linux? by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
+   - [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
+   - [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
+   - [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
+   - [Linux Basics: How to Untar and Unzip Files (tar, gzip) by webpwnized](https://www.youtube.com/watch?v=1DF0dTscHHs)
 
 ### Where to get a VPS
 
+<details>
+<summary>VPS providers and pricing</summary>
+
 You have 2 options:
 
--   [Buying a VPS](#buying-a-vps)
--   [Getting an AWS EC2 VPS for free (12 months free trial)](#aws-ec2-vps)
+- [Buying a VPS](#buying-a-vps)
+- [Getting an AWS EC2 VPS for free (12 months free trial)](#aws-ec2-vps)
 
 #### Buying a VPS
 
@@ -607,39 +593,39 @@ The MCC is not expensive to run, so it can run on basically any hardware, you do
 
 <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
-**In this tutorial we will be using `Ubuntu 22.04`, make sure to select it as the OS when buying a VPS.**
+**In this tutorial we will be using `Ubuntu 24.04 LTS`, so pick that family when choosing your VPS image.**
 
 </div>
 
 Some of the reliable and cheap hosting providers (sorted for price/performance):
 
--   [E-Trail](https://e-trail.net/vps)
+- [E-Trail](https://e-trail.net/vps)
 
-    **Minimum price**: `2.50 EUR / month`
+  **Minimum price**: `2.50 EUR / month`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    **Does not have Ubuntu 22.04 in the dropdown menu when ordering, you will have to re-install later or ask support to do it.**
+  **If Ubuntu 24.04 LTS is not in the dropdown when ordering, you may need to reinstall later or ask support to do it.**
 
-    </div>
+  </div>
 
--   [OVH Cloud](https://www.ovhcloud.com/de/vps/)
+- [OVH Cloud](https://www.ovhcloud.com/de/vps/)
 
-    **Minimum price**: `3.57 EUR / month`
+  **Minimum price**: `3.57 EUR / month`
 
--   [Hetzner Cloud](https://www.hetzner.com/cloud)
+- [Hetzner Cloud](https://www.hetzner.com/cloud)
 
-    **Minimum price**: `4.51 EUR / month`
+  **Minimum price**: `4.51 EUR / month`
 
--   [Digital Ocean](https://www.digitalocean.com/pricing/droplets)
+- [Digital Ocean](https://www.digitalocean.com/pricing/droplets)
 
-    **Minimum price**: `4 EUR / month`
+  **Minimum price**: `4 EUR / month`
 
--   [Contabo](https://contabo.com/en/vps/)
+- [Contabo](https://contabo.com/en/vps/)
 
-    **Minimum price**: `7 EUR / month`
+  **Minimum price**: `7 EUR / month`
 
-    **More serious VPS able to host multiple applications, 4 CPU cores and 8 GB of RAM, 200 GB SSD**
+  **More serious VPS able to host multiple applications, 4 CPU cores and 8 GB of RAM, 200 GB SSD**
 
 You also may want to search for better deals.
 
@@ -663,7 +649,7 @@ You also may want to search for better deals.
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you're not banned, sometimes fetching the keys can take some time, try giving it a minute or two, if it still hangs, hit some keys to refresh the screen, or try restarting and running again. If it still happens, use tmux instead of screen.**
 
@@ -673,9 +659,14 @@ Register on AWS and enter all of your billing info and a phone number.
 
 Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an-aws-vps).
 
+</details>
+
 ### Initial Amazon VPS setup
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<details>
+<summary>AWS EC2 setup steps</summary>
+
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Skip this section if you're not using AWS. Go to [Initial VPS setup](#initial-vps-setup)**
 
@@ -683,7 +674,7 @@ Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an
 
 When you register and open the `AWS Console`, click on the Search field on the top of the page and search for: `EC2`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Make sure to select the region closest to you for the minimal latency**
 
@@ -695,7 +686,7 @@ Fill out the `Name` field with a name of your preference.
 
 ![VPS Name](/images/guide/VPS_Name.png)
 
-For the **Application and OS images** select `Ubuntu Server 22.04 LTS (HVM), SSD Volume Type`.
+For the **Application and OS images** select the current `Ubuntu Server 24.04 LTS` image. The exact AWS label may vary slightly by point release.
 
 <div class="custom-container danger"><p class="custom-container-title">Danger</p>
 
@@ -719,11 +710,11 @@ For the **Key pair (login)** click on **Create new key pair** and name it `VpsRo
 
 For the **Network settings** check the following checkboxes on:
 
--   `Allow SSH traffic from` (Anywhere)
--   `Allow HTTPs traffic from the internet`
--   `Allow HTTP traffic from the internet`
+- `Allow SSH traffic from` (Anywhere)
+- `Allow HTTPs traffic from the internet`
+- `Allow HTTP traffic from the internet`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **The SSH traffic from Anywhere is not the best thing for security, you might want to enter IP addresses of your devices from which you want to access the VPS manually.**
 
@@ -747,13 +738,13 @@ In order to login with SSH, you are going to use the following command:
 ssh -i <name of your private root key here> ubuntu@<your public dns v4 ip here>
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **`<` and `>` are not typed, that is just a notation for a placeholder!**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **`ubuntu` is a default root account username for Ubuntu on AWS!**
 
@@ -769,9 +760,14 @@ If you've provided the right info you should get `Welcome to Ubuntu 20.04.5 LTS`
 
 Now you can continue to [Creating a new user](#creating-a-new-user)
 
+</details>
+
 ### Initial VPS setup
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<details>
+<summary>Non-AWS VPS login steps</summary>
+
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **This section if for those who do not use AWS, if you use AWS skip it**
 
@@ -781,7 +777,7 @@ When you order the VPS, most likely you will be asked to provide the root accoun
 
 Other option is that you will get your login info in the email once the setup is done.
 
-Once you have the root login account info, you need [Gitbash](https://git-scm.com/downloads) on Windows and `ssh` if you're on macOS or Linux (if you do not have it by some chance, search on how to install it, it is simple).
+Once you have the root login account info, you need [Git Bash](https://git-scm.com/downloads) on Windows and `ssh` on macOS or Linux.
 
 If you're on Windows open `Git Bash`, on mac OS and Linux open a `Terminal` and type the following command:
 
@@ -789,7 +785,7 @@ If you're on Windows open `Git Bash`, on mac OS and Linux open a `Terminal` and 
 ssh <username>@<ip>
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you're given a custom port other than `22` by your host, you should add `-p <port here>` before the username (eg. `ssh -p <port here> <username>@<ip>`) or `:<port>` after the ip (eg. `ssh <username>@<ip>:<port>`)**
 
@@ -809,13 +805,18 @@ ssh -p 2233 root@142.26.73.14
 
 Once you've logged in you should see a Linux prompt and a welcome message if there is one set by your provider.
 
+</details>
+
 ### Creating a new user
+
+<details>
+<summary>User account and SSH key setup</summary>
 
 Once you've logged in to your VPS you need to create a new user and give it SSH access.
 
 In this tutorial we will be using `mcc` as a name for the user account that will be running the MCC.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You may be wondering why we're creating a separate user account and making it be accessible over SSH only. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful.**
 
@@ -833,13 +834,13 @@ Now we need to give it a password, execute the following command, type the passw
 sudo passwd mcc
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **When you're typing a password it will not be displayed on the screen, but you're typing it for real.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Make sure you have a strong password!**
 
@@ -953,9 +954,9 @@ Then find the `#AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2` l
 
 Additionally for better security you can do the following:
 
--   Set `PermitRootLogin` to `yes`
--   Change the `Port` to some number of your choice (22-65000) (Make sure it's at least 2 digits and avoid common ports used by other apps like: 21, 80, 35, 8080, 3000, etc...)
--   Uncomment `#PasswordAuthentication yes` by removing the `#` in front and set it to `yes` (This will disable password login, you will be able to login with SSH keys only!)
+- Set `PermitRootLogin` to `yes`
+- Change the `Port` to some number of your choice (22-65000) (Make sure it's at least 2 digits and avoid common ports used by other apps like: 21, 80, 35, 8080, 3000, etc...)
+- Uncomment `#PasswordAuthentication yes` by removing the `#` in front and set it to `yes` (This will disable password login, you will be able to login with SSH keys only!)
 
 Save the file with `CTRL + O`, hit Enter, close it with `CTRL + X`.
 
@@ -993,7 +994,7 @@ Example:
 ssh -i MCC_Key mcc@3.71.108.69
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If you've changed the `Port`, make sure you add a `-p <your port here>` option after the `-i <key>` option (eg. `ssh -i MCC_Key -p 8973 mcc@3.71.108.69`)!**
 
@@ -1003,19 +1004,18 @@ If did everything correctly you should see a Linux prompt and a welcome message 
 
 You can do `whoami` to see your username.
 
-Now you can install .NET Core 7 and MCC.
+Now you can install the .NET 10 SDK and MCC.
 
-### Installing .NET Core 7
+</details>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+### Installing .NET 10 SDK
+
+<details>
+<summary>.NET SDK installation on VPS</summary>
+
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **If your VPS has an ARM CPU, follow [this](#installing-net-on-arm) part of the documentation and then return to section after this one.**
-
-</div>
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**With newer versions of .NET Core 7 on Ubuntu 22.04 you might get the following error: `A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders`, if you get it, use [this solution](https://github.com/dotnet/sdk/issues/27082#issuecomment-1211143446)**
 
 </div>
 
@@ -1027,40 +1027,16 @@ Update the system packages and package manager repositories:
 sudo apt update -y && sudo apt upgrade -y
 ```
 
-Install `wget`:
+On Ubuntu 24.04 LTS, the official Microsoft docs say .NET is available directly from the Ubuntu package feeds, so you do not need to add the old Microsoft package repository for .NET 10. Install the SDK with:
 
 ```bash
-sudo apt install wget -y
+sudo apt-get update -y && sudo apt-get install -y dotnet-sdk-10.0
 ```
 
-Go to your home directory with:
+You can verify the installation with:
 
 ```bash
-cd ~
-```
-
-Download the Microsoft repository file:
-
-```bash
-wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-```
-
-Add Microsoft repositories to the package manager:
-
-```bash
-sudo dpkg -i packages-microsoft-prod.deb
-```
-
-Remove the file, we do not need it anymore:
-
-```bash
-rm packages-microsoft-prod.deb
-```
-
-Finally, install .NET Core 7:
-
-```bash
-sudo apt-get update -y && sudo apt-get install -y dotnet-sdk-7.0
+dotnet --info
 ```
 
 Run the following command to check if everything was installed correctly:
@@ -1085,21 +1061,26 @@ path-to-application:
   The path to an application .dll file to execute.
 ```
 
-If you do not get this output and the installation was not successful, [try other methods](https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2204).
+If you do not get this output and the installation was not successful, [try other methods](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install).
 
-If it was successful, you can now install the MCC.
+If it was successful, you can now install MCC.
+
+</details>
 
 ### Installing MCC on a VPS
 
-Now that you have .NET Core 7.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
+<details>
+<summary>MCC installation and screen usage</summary>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+Now that you have the .NET SDK and a user account, install the `screen` utility. You will need it if you want MCC to keep running after you close the SSH session.
+
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **There is also a Docker method, if you're using Docker, you do not need the `screen` program.**
 
 </div>
 
-You also can learn about the screen command from [this Youtube tutorial](https://youtu.be/_ZJiEX4rmN4).
+You can also learn about the `screen` command from [this YouTube tutorial](https://youtu.be/_ZJiEX4rmN4).
 
 To install the `screen` execute the following command:
 
@@ -1109,9 +1090,9 @@ sudo apt install screen -y
 
 Now you can install the MCC:
 
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
--   [Run using Docker](#using-docker) (Doesn't require the `screen` command)
+- [Download a compiled binary](#download-a-compiled-binary)
+- [Building from the source code](#building-from-the-source-code)
+- [Run using Docker](#using-docker) (Doesn't require the `screen` command)
 
 How to use the `screen` command?
 
@@ -1127,13 +1108,13 @@ To start a screen, type:
 screen -S mcc
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **`mcc` here is the name of the screen, you can use whatever you like, but if you've used a different name, make sure you use that one instead of the `mcc` in the following commands.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You need to make a screen only once, however if you reboot your VPS, you need to start it on each reboot.**
 
@@ -1162,3 +1143,5 @@ screen -ls
 ```
 
 To stop the MCC, you can hit `CTRL + D` (hit it few times).
+
+</details>

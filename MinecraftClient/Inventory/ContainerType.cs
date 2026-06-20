@@ -1,4 +1,4 @@
-﻿namespace MinecraftClient.Inventory
+namespace MinecraftClient.Inventory
 {
     // For MC 1.14 after ONLY
     public enum ContainerType
@@ -10,6 +10,7 @@
         Generic_9x5,
         Generic_9x6,
         Generic_3x3,
+        Crafter,
         Anvil,
         Beacon,
         BlastFurnace,

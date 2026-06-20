@@ -19,7 +19,7 @@ namespace MinecraftClient.Protocol
         /// Start the login procedure once connected to the server
         /// </summary>
         /// <returns>True if login was successful</returns>
-        bool Login(PlayerKeyPair? playerKeyPair, Session.SessionToken session);
+        bool Login(PlayerKeyPair? playerKeyPair, Session.SessionToken session, bool isTransfer = false);
 
         /// <summary>
         /// Disconnect from the server
@@ -47,6 +47,14 @@ namespace MinecraftClient.Protocol
         /// <param name="message">Text to send</param>
         /// <returns>True if successfully sent</returns>
         bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair = null);
+
+        /// <summary>
+        /// Send a custom click action packet introduced for dialogs in Minecraft 1.21.6.
+        /// </summary>
+        /// <param name="id">Custom action resource location</param>
+        /// <param name="payload">Optional NBT payload</param>
+        /// <returns>True if successfully sent</returns>
+        bool SendCustomClickAction(string id, Dictionary<string, object>? payload);
 
         /// <summary>
         /// Allow to respawn after death
@@ -79,10 +87,11 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="location">The new location</param>
         /// <param name="onGround">True if the player is on the ground</param>
+        /// <param name="horizontalCollision">True if the player is colliding horizontally</param>
         /// <param name="yaw">The new yaw (optional)</param>
         /// <param name="pitch">The new pitch (optional)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch);
+        bool SendLocationUpdate(Location location, bool onGround, bool horizontalCollision, float? yaw, float? pitch);
 
         /// <summary>
         /// Send a plugin channel packet to the server.
@@ -190,6 +199,26 @@ namespace MinecraftClient.Protocol
         bool ClickContainerButton(int windowId, int buttonId);
 
         /// <summary>
+        /// Send a place recipe packet to the server for the active recipe book container.
+        /// </summary>
+        /// <param name="windowId">Id of the window being clicked</param>
+        /// <param name="recipeId">Recipe identifier to craft</param>
+        /// <param name="makeAll">True to craft as many items as possible</param>
+        /// <returns>True if packet was successfully sent</returns>
+        bool SendPlaceRecipe(int windowId, string recipeId, bool makeAll);
+
+        /// <summary>
+        /// Send a book edit/sign packet for the currently held writable book.
+        /// </summary>
+        /// <param name="currentBook">Current held writable book</param>
+        /// <param name="pages">Book pages</param>
+        /// <param name="title">Title when signing, otherwise null</param>
+        /// <param name="author">Current player name when signing</param>
+        /// <param name="selectedHotbarSlot">Selected hotbar slot, 0-8</param>
+        /// <returns>True if packet was successfully sent</returns>
+        bool SendEditBook(Item currentBook, IReadOnlyList<string> pages, string? title, string author, int selectedHotbarSlot);
+
+        /// <summary>
         /// Plays animation
         /// </summary>
         /// <param name="animation">0 for left arm, 1 for right arm</param>
@@ -261,7 +290,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <returns></returns>
         bool SendPlayerSession(PlayerKeyPair? playerKeyPair);
-        
+
         /// <summary>
         /// Send the server a command to type in the item name in the Anvil inventory when it's open.
         /// </summary>
@@ -273,5 +302,18 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <returns>Net read thread ID</returns>
         int GetNetMainThreadId();
+
+        /// <summary>
+        /// Send the server a requested cookie
+        /// </summary>
+        /// <param name="name">The cookie identifier/name</param>
+        /// <param name="data">The cookie data byte array</param>
+        bool SendCookieResponse(string name, byte[]? data);
+
+        /// <summary>
+        /// Send the server known data packs
+        /// </summary>
+        /// <param name="knownDataPacks">The clist of tuples containing info about the kown data packs (namespace, id, version)</param>
+        bool SendKnownDataPacks(List<(string, string, string)> knownDataPacks);
     }
 }

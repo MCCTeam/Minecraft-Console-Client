@@ -6,15 +6,15 @@ title: Usage
 
 How to run the program:
 
--   [Running on Windows](#windows)
--   [Running on Linux, macOS](#linux-macos)
--   [Running using Docker](#docker)
+- [Running on Windows](#windows)
+- [Running on Linux, macOS](#linux-macos)
+- [Running using Docker](#docker)
 
 Using the command line parameters:
 
--   [Examples](#quick-usage-of-mcc-with-examples)
--   [Command line parameters](#command-line-parameters)
--   [Internal commands](#internal-commands)
+- [Examples](#quick-usage-of-mcc-with-examples)
+- [Command line parameters](#command-line-parameters)
+- [Internal commands](#internal-commands)
 
 ## Windows
 
@@ -47,7 +47,7 @@ screen -S mcc
 
 # Detach from the screen by pressing CTRL + A + D
 
-# Re-attach if you want to have accces again
+# Re-attach if you want access again
 screen -r mcc
 ```
 
@@ -59,9 +59,12 @@ See [Run using Docker](./installation.md#using-docker)
 
 ## Command-line usage
 
-**Minecraft Console Client** has a plethora of useful command line parameters, here you can learn about them.
+**Minecraft Console Client** has a number of useful command-line parameters. This section covers the most important ones.
 
 ### For people not familiar with the command line
+
+<details>
+<summary>Introduction to command-line basics</summary>
 
 For people who are not familiar with the usage of programs in the command line (terminal emulators), here we will explain what every single thing means, if you're already experienced you can skip this.
 
@@ -69,11 +72,11 @@ In command line (terminal emulators) you can run programs by specifying their na
 
 Command line parameters are written after the name of the program, they're separated by spaces and they can have a few different formats, examples:
 
--   `someparameter`
--   `-some-parameter`
--   `--some-other-parameter`
--   `--some-setting="some value"`
--   `-a=5`
+- `someparameter`
+- `-some-parameter`
+- `--some-other-parameter`
+- `--some-setting="some value"`
+- `-a=5`
 
 Parameters with a single dash (`-`) are usually used for a single letter (short-hand) parameters, while the ones with a double dash (`--`) are being used for parameters with a longer/full name.
 
@@ -97,9 +100,13 @@ Here is an example for using a `--help` command line parameter for MCC that will
 MinecraftClient.exe --help
 ```
 
+MCC also supports a few maintenance and debugging switches such as `--upgrade`, `--force-upgrade`, `--generate`, `--keyboard-debug`, `BasicIO`, and `BasicIO-NoColor`.
+
+</details>
+
 ### Quick usage of MCC with examples
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **On Linux and macOS, you need to type: `./MinecraftClient` instead of `MinecraftClient.exe`**
 
@@ -113,26 +120,35 @@ MinecraftClient.exe --section.setting=value [--other settings]
 MinecraftClient.exe <settings-file.ini> [--other settings]
 ```
 
+<div class="custom-container note"><p class="custom-container-title">Note</p>
+
+**Microsoft accounts use the OAuth 2.0 device code flow and do not require a password on the command line. MCC will display a code and a URL for you to sign in through your browser (with full 2FA support). You can simply omit the password or use `""` as a placeholder.**
+
+</div>
+
 Examples:
 
 ```bash
-# Logging in as a user: notch, with a password: password123 onto a server with the ip: mc.someserver.com:25565
-MinecraftClient.exe notch password123 mc.someserver.com:25565
+# Microsoft account: connect to a server (you will sign in via device code in your browser)
+MinecraftClient.exe player@example.com "" mc.someserver.com:25565
 
-# Overriding a setting from MinecraftClient.ini using a command line parameter
+# Offline account: connect with a chosen username
+MinecraftClient.exe Steve - mc.someserver.com:25565
+
+# Overriding a setting from MinecraftClient.ini using a command-line parameter
 MinecraftClient.exe --debugmessages=false
 
-# Providing a custom settings ini file and overriding a language to Chinese
+# Providing a custom settings file and overriding the language to Chinese
 MinecraftClient.exe CustomSettingsFile.ini --language=zh
 ```
 
 ### Rules of using the command line parameters
 
-You can mix and match arguments by following theses rules:
+You can mix and match arguments by following these rules:
 
--   First positional argument may be either the login or a settings file
--   Other positional arguments are read in order: login, password, server, command
--   Arguments starting with `--` can be in any order and position
+- First positional argument may be either the login or a settings file
+- Other positional arguments are read in order: login, password, server, command
+- Arguments starting with `--` can be in any order and position
 
 Examples and further explanations:
 
@@ -140,38 +156,39 @@ Examples and further explanations:
 MinecraftClient.exe <login> <password> <server>
 ```
 
--   This will automatically connect you to the chosen server.
--   You may omit password and/or server to specify e.g. only the login
--   To specify a server but ask password interactively, use `""` as password.
--   To specify offline mode with no password, use `-` as password.
+- This will automatically connect you to the chosen server.
+- You may omit password and/or server to specify e.g. only the login
+- For Microsoft accounts, password is not required (device code flow is used). Use `""` as a placeholder if you need to specify a server.
+- To specify offline mode with no password, use `-` as password.
 
 ```bash
 MinecraftClient.exe <login> <password> <server> "/mycommand"
 ```
 
--   This will automatically send `/mycommand` to the server and close.
--   To send several commands and/or stay connected, use the 1ScriptScheduler1 bot instead.
+- This will automatically send `/mycommand` to the server and close.
+- To send several commands or stay connected, use the `ScriptScheduler` bot instead.
 
 ```bash
 MinecraftClient.exe <myconfig.ini>
 ```
 
--   This will load the specified configuration file
--   If the file contains login / password / server ip, it will automatically connect.
+- This will load the specified configuration file
+- If the file contains login / server ip, it will automatically connect.
+- For Microsoft accounts, authentication happens through the device code flow (no password needed in the file).
 
 ```bash
 MinecraftClient.exe --setting=value [--other settings]
 ```
 
--   Specify settings on the command-line, see possible value in the configuration file
--   Use `--section.setting=value` for settings outside the `[Main]` section
--   Example: `--antiafk.enabled=true` for enabling the `AntiAFK` bot
+- Specify settings on the command-line, see possible value in the configuration file
+- Use `--section.setting=value` for settings outside the `[Main]` section
+- Example: `--antiafk.enabled=true` for enabling the `AntiAFK` bot
 
 ```bash
 MinecraftClient.exe <myconfig.ini> <login> <password> <server> [--other settings]
 ```
 
--   Load the specified configuration file and override some settings from the file
+- Load the specified configuration file and override some settings from the file
 
 ## Internal Commands
 
@@ -181,1003 +198,1589 @@ From chat prompt, commands must by default be prepended with a slash, eg. `/quit
 
 In scripts and remote control, no slash is needed to perform the command, eg. `quit`.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Some commands may not be documented yet or are defined in description of Chat Bots, use `/help` to list them all, or you can contribute to this page.**
 
 </div>
 
-### `animation`
+<details>
+<summary><code>animation</code></summary>
 
--   **Description:**
+- **Description:**
 
-    Swing your main or off hand.
+  Swing your main or off hand.
 
--   **Usage:**
+- **Usage:**
 
-    ```
-    /animation <mainhand|offhand>
-    ```
+  ```
+  /animation <mainhand|offhand>
+  ```
 
-### `bed`
+</details>
 
--   **Description:**
+<details>
+<summary><code>achievement</code></summary>
 
-    Allows you to make the bot sleep easily, all about sleeping in one command.
+- **Description:**
 
--   **Usage:**
+  Show the achievements or advancements currently known to MCC.
 
-    Basic usage: `bed leave|sleep <x> <y> <z>|sleep <radius>`
+  On Minecraft `1.8` to `1.11.2`, MCC tracks legacy achievements such as `achievement.openInventory`.
 
--   **Examples:**
+  On Minecraft `1.12+`, MCC tracks advancements such as `minecraft:story/root`.
 
-    Leave a bed:
+- **Usage:**
 
-    ```
-    /bed leave
-    ```
+  ```
+  /achievement
+  /achievement list
+  /achievement locked
+  /achievement unlocked
+  ```
 
-    Sleep in a bed on 124 84 76:
+- **Examples:**
 
-    ```
-    /bed sleep 124 84 76
-    ```
+  List everything MCC currently knows:
 
-    Sleep in a bed using relative coordinates:
+  ```
+  /achievement
+  ```
 
-    ```
-    /bed sleep ~ ~ ~-2
-    ```
+  Show only incomplete entries:
 
-    Automatically find a bed in radius of 50 blocks and sleep in it:
+  ```
+  /achievement locked
+  ```
 
-    ```
-    /bed sleep 50
-    ```
+  Show only completed entries:
 
-### `blockinfo`
+  ```
+  /achievement unlocked
+  ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+- **Notes:**
 
-**You need to have [Terrain And Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+  The command only shows data the server has already sent to MCC.
 
-</div>
+  Legacy achievements do not include titles or descriptions in the protocol, so older servers usually show the raw id instead.
 
--   **Description:**
+</details>
 
-    Reports the block type at the given position.
+<details>
+<summary><code>book</code></summary>
 
-    If you use the `-s` option it will report the types of blocks around the targeted blokcs.
-
--   **Usage:**
-
-    Basic usage:
-
-    ```
-    /blockinfo <x> <y> <z> [-s]
-    ```
-
-### `bots`
-
--   **Description:**
-
-    Allows you to list and unload a specific bot or all bots.
-
-    Useful when debugging and developing scripts.
-
--   **Usage:**
-
-    ```
-    /bots <list|unload <bot name|all>>
-    ```
-
--   **Examples:**
-
-    Unload a bot called CustomScript
-
-    ```
-    /bots unload CustomScript
-    ```
-
-    Unload all bots
-
-    ```
-    /bots unload all
-    ```
-
-### `changeslot`
-
--   **Description:**
-
-    Change your selected slot in the hotbar.
-
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
-
-    </div>
-
--   **Usage:**
-
-    ```
-    /changeslot <1-9>
-    ```
-
-### `chunk`
-
--   **Description:**
-
-    Displays the chunk loading status in a nice way.
-
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-    **To use this feature you need to enable the [Terrain and Movements](configuration.md#terrainandmovements)**
-
-    </div>
-
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **You need a terminal with emoji support, like Powershell 7, Windows Terminal or Alacritty, if you do not want emoji support and want to use cmd or powershell 5, disable emojis with: [`enableemoji`](configuration.md#enableemoji)**
-
-    </div>
-
--   **Usage:**
-
-    ```
-    /chunk status [chunkX chunkZ|locationX locationY locationZ]
-    ```
-
-    How it looks:
-
-    ![Chunk status](/images/guide/ChunkStatus.png)
-
-### `dig`
-
--   **Description:**
-
-    Dig a block on a specific coordinate.
-
--   **Usage:**
-
-    ```
-    /dig <x> <y> <z>
-    ```
-
--   **Example:**
-
-    ```
-    /dig 127 63 12
-    ```
-
-    Using relative coordinates:
-
-    ```
-    /dig ~ ~-1 ~2
-    ```
-
-### `dropitem`
-
--   **Description:**
-
-    Drop all items of a specific type from your inventory.
-
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
-
-    </div>
-
--   **Usage:**
-
-    ```
-    /dropitem <itemtype>
-    ```
-
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
-
-    </div>
-
--   **Example:**
-
-    ```
-    /dropitem diamond
-    ```
-
-### `enchant`
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
 </div>
 
--   **Description:**
+- **Description:**
 
-    Allows you to enchant items in an enchanting table.
+  Read the book in your main hand, or edit it if it is a writable book.
 
-    You need to first open an enchanting table and then place and item that you want to enchant and lapis in the enchanting table, and then you can execute the command.
+  In TUI mode, `/book read` opens a page viewer instead of printing the whole book to chat. The same viewer also opens automatically when the server tells the client to open a book.
 
-    To open an enchanting table you can use the [`useblock`](#useblock) command.
+  If you are holding a writable book, you can replace all pages, update one page, insert a page, delete a page, and sign the finished book.
 
--   **Usage:**
+- **Usage:**
 
-    Basic usage:
+  Read the current book or a single page:
 
-    ```
-    /enchant <top|middle|bottom>
-    ```
+  ```
+  /book read [page]
+  ```
 
-### `entity`
+  Replace the whole writable book from inline text or a file:
 
--   **Description:**
+  ```
+  /book write text <text>
+  /book write file <path>
+  ```
 
-    Attack an entity, use an entity or get a list of entities around you.
+  Open the TUI editor or edit specific pages from the command line:
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /book edit
+  /book edit page <page> <text>
+  /book edit insert <page> <text>
+  /book edit delete <page>
+  ```
 
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Entity Handling](configuration.md#entityhandling) enabled in order for this to work.**
+  Sign the writable book in your main hand:
 
-    </div>
+  ```
+  /book sign <title>
+  ```
 
--   **Usage:**
+- **Notes:**
 
-    Basic usage:
+  `read` works with a writable book or a written book in your main hand.
 
-    ```
-    /entity <id|entitytype> <attack|use>
-    ```
+  `write`, `edit`, and `sign` require a writable book in your main hand.
 
-    Get a list of entities around you:
+  Use `\n` for line breaks and `\f` for page breaks when passing inline text.
 
-    ```
-    /entity
-    ```
+  MCC checks page count, page length, and title length against the current protocol before sending the packet.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  The interactive editor is only available in TUI mode.
 
-    **All entity types can be found [here](https://mccteam.github.io/r/entity/#L15).**
+  In the TUI book view, `PageUp`/`PageDown` switches pages.
 
-    </div>
+- **Examples:**
 
--   **Examples:**
+  Read the held book:
 
-    Attack a Zombie:
+  ```
+  /book read
+  ```
 
-    ```
-    /entity Zombie attack
-    ```
+  Show only page 2:
 
-### `execif`
+  ```
+  /book read 2
+  ```
 
--   **Description:**
+  Write two pages from the command line:
 
-    Allows you to execute a command if a specific condition is met.
+  ```
+  /book write text First page\nSecond line\fSecond page
+  ```
 
-    The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used.
+  Load the book text from a file:
 
-    The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
+  ```
+  /book write file ./letter.txt
+  ```
 
-    Also the instance of MCC is available with `MCC.`.
+  Replace page 3:
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /book edit page 3 Updated text for page three
+  ```
 
-    **All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`.Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
+  Insert a new page before page 2:
 
-    </div>
+  ```
+  /book edit insert 2 This page goes before the old page 2
+  ```
 
--   **Usage:**
+  Delete page 4:
 
-    Basic usage: `/execif <condition (C# expression)> <command>`
+  ```
+  /book edit delete 4
+  ```
 
--   **Examples:**
+  Sign the current writable book:
 
-    Setting a variable and using it:
+  ```
+  /book sign Meeting Notes
+  ```
 
-    ```
-    /set test=Something
-    /execif 'test == "Something"' "send Success!"
-    ```
+</details>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<details>
+<summary><code>bed</code></summary>
 
-    **You can use single quote (`'`) to wrap your expression if the expression contains double quote (`"`)**
+- **Description:**
 
-    **Adding back-slash (`\`) before the double quote will also work (`/execif "test == \"Something\"" "send Success!"`)**
+  Allows you to make the bot sleep easily, all about sleeping in one command.
 
-    </div>
+- **Usage:**
 
-    ```
-    /set test2=1
-    /execif 'test2 == "1"' "send Success 2!"
-    ```
+  Basic usage: `bed leave|sleep <x> <y> <z>|sleep <radius>`
 
-    Basic C# expression:
+- **Examples:**
 
-    ```
-    /execif "1 + 2 + 3 == 6" "send Success!"
-    ```
+  Leave a bed:
 
-    Using MCC class:
+  ```
+  /bed leave
+  ```
 
-    ```
-    /execif "MCC.GetHealth() == 20.0" "send Success!"
-    ```
+  Sleep in a bed on 124 84 76:
 
-    Using in combination with [`execmulti`](#execmulti):
+  ```
+  /bed sleep 124 84 76
+  ```
 
-    ```
-    /execif "1 == 1" "execmulti send 1 -> send 2 -> send 3"
-    ```
+  Sleep in a bed using relative coordinates:
 
-### `execmulti`
+  ```
+  /bed sleep ~ ~ ~-2
+  ```
 
--   **Description:**
+  Automatically find a bed in radius of 50 blocks and sleep in it:
 
-    Allows you to execute multiple commands in succession on a single line, useful for debugging or when using [`execif`](#execif)
+  ```
+  /bed sleep 50
+  ```
 
-    Commands are separated by `->`
+</details>
 
--   **Usage:**
+<details>
+<summary><code>blockinfo</code></summary>
 
-    Basic usage: `execmulti <command 1> -> <command 2> -> <command 3> -> ...`
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
--   **Examples:**
+**You need to have [Terrain And Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
 
-    ```
-    /execmulti send 1 -> send 2 -> send 3 -> sneak
-    ```
+</div>
 
-### `quit`
+- **Description:**
 
--   **Alias:** `exit`
--   **Description:**
+  Reports the block type at the given position.
 
-    Disconnect from the server and close the application
+  If you use the `-s` option, it also reports the surrounding block types.
 
-### `reco`
+- **Usage:**
 
--   **Description:**
+  Basic usage:
 
-    Disconnect and reconnect to the server
+  ```
+  /blockinfo <x> <y> <z> [-s]
+  ```
 
--   **Usage:**
+</details>
 
-    ```
-    /reco [account]
-    ```
+<details>
+<summary><code>bots</code></summary>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+- **Description:**
 
-    **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
+  Allows you to list and unload a specific bot or all bots.
 
-    </div>
+  Useful when debugging and developing scripts.
 
-### `reload`
+- **Usage:**
 
--   **Description:**
+  ```
+  /bots <list|unload <bot name|all>>
+  ```
 
-    Reloads settings from MinecraftClient.ini and Chat Bots.
+- **Examples:**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  Unload a bot called CustomScript
 
-    **Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
+  ```
+  /bots unload CustomScript
+  ```
 
-    </div>
+  Unload all bots
 
--   **Usage:**
+  ```
+  /bots unload all
+  ```
 
-    ```
-    /reload
-    ```
+</details>
 
-### `connect`
+<details>
+<summary><code>changeslot</code></summary>
 
--   **Description:**
+- **Description:**
 
-    Go to the given server and resume the script
+  Change your selected slot in the hotbar.
 
--   **Usage:**
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /connect <server> [account]
-    ```
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  </div>
 
-    **`<server>` is either a server IP or a server alias defined in servers file, for more info check out [serverlist](configuration.html#serverlist)**
+- **Usage:**
 
-    </div>
+  ```
+  /changeslot <1-9>
+  ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+</details>
 
-    **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
+<details>
+<summary><code>chunk</code></summary>
 
-    </div>
+- **Description:**
 
-### `script`
+  Displays the chunk loading status in a nice way.
 
--   **Description:**
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    Run a script containing a list of commands
+  **To use this feature you need to enable the [Terrain and Movements](configuration.md#terrainandmovements)**
 
--   **Usage:**
+  </div>
 
-    ```
-    /script <script name>
-    ```
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-### `send`
+  **You need a terminal with emoji support, like Powershell 7, Windows Terminal or Alacritty, if you do not want emoji support and want to use cmd or powershell 5, disable emojis with: [`enableemoji`](configuration.md#enableemoji)**
 
--   **Description:**
+  </div>
 
-    Send a message or a command to the server
+- **Usage:**
 
--   **Usage:**
+  ```
+  /chunk status [chunkX chunkZ|locationX locationY locationZ]
+  ```
 
-    ```
-    /send <text>
-    ```
+  How it looks:
 
-### `respawn`
+  ![Chunk status](/images/guide/ChunkStatus.png)
 
--   **Description:**
+</details>
 
-    Use this to respawn if you are dead (like clicking "respawn" in-game)
+<details>
+<summary><code>dig</code></summary>
 
--   **Usage:**
+- **Description:**
 
-    ```
-    /respawn
-    ```
+  Dig a block on a specific coordinate.
 
-### `log`
+- **Usage:**
 
--   **Description:**
+  ```
+  /dig <x> <y> <z>
+  ```
 
-    Display some text in the console (useful for scripts)
+- **Example:**
 
--   **Usage:**
+  ```
+  /dig 127 63 12
+  ```
 
-    ```
-    /log <text>
-    ```
+  Using relative coordinates:
 
--   Example:
+  ```
+  /dig ~ ~-1 ~2
+  ```
 
-    ```
-    /log this is some text
-    ```
+</details>
 
-### `list`
+<details>
+<summary><code>dropitem</code></summary>
 
--   **Description:**
+- **Description:**
 
-    List players logged in to the server (uses tab list info sent by server)
+  Drop all items of a specific type from your inventory.
 
--   **Usage:**
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /list
-    ```
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
-### `set`
+  </div>
 
--   **Description:**
+- **Usage:**
 
-    Set a value which can be used as `%variable%` in further commands
+  ```
+  /dropitem <itemtype>
+  ```
 
--   **Usage:**
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /set <variable>=<value>
-    ```
+  **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
 
--   **Examples:**
+  </div>
 
-    ```
-    /set abc=123
-    ```
+- **Example:**
 
-### `setrnd`
+  ```
+  /dropitem diamond
+  ```
 
--   **Description:**
+</details>
 
-    Set a `%variable%` randomly to one of the provided values
+<details>
+<summary><code>enchant</code></summary>
 
--   **Usage:**
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /setrnd <variable> string1 "\"string2\" string3"
-    ```
+**You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
--   **Examples:**
+</div>
 
-    ```
-    /setrnd <variable> -7 to 10
-    ```
+- **Description:**
 
-    (Set a `%variable%` to a number from -7 to 10)
+  Allows you to enchant items in an enchanting table.
 
-### `sneak`
+  You need to first open an enchanting table and then place and item that you want to enchant and lapis in the enchanting table, and then you can execute the command.
 
--   **Description:**
+  To open an enchanting table you can use the [`useblock`](#useblock) command.
 
-    Toggle sneaking.
+- **Usage:**
 
--   **Usage:**
+  Basic usage:
 
-    ```
-    /Sneak
-    ```
+  ```
+  /enchant <top|middle|bottom>
+  ```
 
-### `tps`
+</details>
 
--   **Description:**
+<details>
+<summary><code>effects</code></summary>
 
-    Get the server TPS (Ticks Per Second).
+- **Description:**
 
--   **Usage:**
+  Lists the status effects currently applied to your player.
 
-    ```
-    /tps
-    ```
+- **Usage:**
 
-### `useitem`
+  ```
+  /effects
+  ```
 
--   **Description:**
+</details>
 
-    Use item in the hand, this can be used to do a right click on items which open menus on servers.
+<details>
+<summary><code>entity</code></summary>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+- **Description:**
 
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+  Attack an entity, use an entity or get a list of entities around you.
 
-    </div>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Entity Handling](configuration.md#entityhandling) enabled in order for this to work.**
 
-    **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`**
+  </div>
 
-    </div>
+- **Usage:**
 
--   **Usage:**
+  Basic usage:
 
-    ```
-    /useitem
-    ```
+  ```
+  /entity <id|entitytype> <attack|use>
+  ```
 
-### `useblock`
+  Get a list of entities around you:
 
--   **Description:**
+  ```
+  /entity
+  ```
 
-    Place a block from a hand on a specific coordinate or open an inventory:
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    -   chest/trap chest
-    -   furnace
-    -   brewing stand
-    -   dispenser/dropper
-    -   hopper
-    -   shulker
-    -   loom
+  **All entity types can be found [here](https://mccteam.github.io/r/entity/#L15).**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  </div>
 
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+- **Examples:**
 
-    </div>
+  Attack a Zombie:
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /entity Zombie attack
+  ```
 
-    **Not all inventories have a GUI representation in an ASCII art format.**
+</details>
 
-    </div>
+<details>
+<summary><code>execif</code></summary>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+- **Description:**
 
-    **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
+  Allows you to execute a command if a specific condition is met.
 
-    </div>
+  The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used.
 
--   **Usage:**
+  The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
 
-    ```
-    /useblock <x> <y> <z>
-    ```
+  Also the instance of MCC is available with `MCC`.
 
--   **Example:**
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /useblock 43 72 7
-    ```
+  **All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`.Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
 
-### `follow`
+  </div>
 
--   **Description:**
+- **Usage:**
 
-    Make the bot follow a player.
+  Basic usage: `/execif <condition (C# expression)> <command>`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+- **Examples:**
 
-    **This command is avaliable only with [Follow Player](chat-bots.md#follow-player) Chat Bot enabled.**
+  Setting a variable and using it:
 
-    </div>
+  ```
+  /set test=Something
+  /execif 'test == "Something"' "send Success!"
+  ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /set test2=1
+  /execif 'test2 == "1"' "send Success 2!"
+  ```
 
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+  Basic C# expression:
 
-    </div>
+  ```
+  /execif "1 + 2 + 3 == 6" "send Success!"
+  ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  Using MCC class:
 
-    **You need to have [Enity Handling](configuration.md#entityhandling) enabled in order for this to work.**
+  ```
+  /execif "MCC.GetHealth() == 20.0" "send Success!"
+  ```
 
-    </div>
+  Using in combination with [`execmulti`](#execmulti):
 
--   **Usage:**
+  ```
+  /execif "1 == 1" "execmulti send 1 -> send 2 -> send 3"
+  ```
 
-    ```
-    /follow <player name|stop>
-    ```
+- **Note**
 
--   **Example:**
+  **You can use single quote (`'`) to wrap your expression if the expression contains double quote (`"`)**
 
-    ```
-    /follow milutinke
-    ```
+  **Adding back-slash (`\`) before the double quote will also work (`/execif "test == \"Something\"" "send Success!"`)**
 
-### `wait`
+</details>
 
--   **Description:**
+<details>
+<summary><code>execmulti</code></summary>
 
-    Wait X ticks (10 ticks = ~1 second. Only for scripts)
+- **Description:**
 
--   **Usage:**
+  Allows you to execute multiple commands in succession on a single line, useful for debugging or when using [`execif`](#execif)
 
-    Fixed time:
+  Commands are separated by `->`
 
-    ```
-    /wait <time>
-    ```
+- **Usage:**
 
-    Random time:
+  Basic usage: `execmulti <command 1> -> <command 2> -> <command 3> -> ...`
 
-    ```
-    /wait <minimum time> to <maximum time>
-    ```
+- **Examples:**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /execmulti send 1 -> send 2 -> send 3 -> sneak
+  ```
 
-    **You can use `-` instead of `to`**
+</details>
 
-    </div>
+<details>
+<summary><code>quit</code></summary>
 
--   **Examples:**
+- **Alias:** `exit`
 
-    ```
-    /wait 20
-    ```
+- **Description:**
 
-    ```
-    /wait 20 to 100
-    ```
+  Disconnect from the server and close the application
 
-    ```
-    /wait 20-35
-    ```
+</details>
 
-### `move`
+<details>
+<summary><code>reco</code></summary>
 
--   **Description:**
+- **Description:**
 
-    Used for moving when terrain and movements feature is enabled.
+  Disconnect and reconnect to the server
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+- **Usage:**
 
-    **You need to have [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+  ```
+  /reco [account]
+  ```
 
-    </div>
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+  **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
 
-    **The [Terrain and Movements](configuration.md#terrainandmovements) is currently not supported in `1.4.6 - 1.6`.**
+  </div>
 
-    </div>
+</details>
 
--   **Usage:**
+<details>
+<summary><code>reload</code></summary>
 
-    ```
-    /move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]: walk or start walking. "-f": force unsafe movements like falling or touching fire
-    ```
+- **Description:**
 
--   **Examples:**
+  Reloads the active configuration file and chat bots.
 
-    Enable gravity
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /move gravity on
-    ```
+  **Some settings are not reloaded because they are used before client initialization. Settings passed on the command line also override file values.**
 
-    Move to coordinates:
+  </div>
 
-    ```
-    /move 125 72 34
-    ```
+- **Usage:**
 
-    Move to a center of a block:
+  ```
+  /reload
+  ```
 
-    ```
-    /move center
-    ```
+</details>
 
-### `nameitem`
+<details>
+<summary><code>recipebook</code></summary>
 
--   **Description:**
+- **Description:**
 
-    This command allows you to name an item when you have an Anvil inventory open and an item in the first slot (slot number 0),
+  List unlocked recipe book entries and ask the server to place one of them into the active crafting inventory.
 
-    After you place an item in the first slot of the anvil, use this command, and then do a click on the slot 2 to get an item from the anvil, then do a click on an empty slot in your inventory.
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
--   **Usage:**
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this command to work.**
 
-    ```
-    /nameitem <name of the item>
-    ```
+  </div>
 
--   **Example:**
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /nameitem My super duper sword 2000
-    ```
+  **`craft` and `craftall` need an active player crafting grid, crafting table, furnace, blast furnace, smoker, or stonecutter inventory.**
 
--   **Full Example with anvil:**
+  </div>
 
-    ```
-    # Open an anvil
-    /useblock 12 74 321
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-    # Click on an axe in slot 12
-    /inventory container click 12
+  **Recipe book crafting is supported on Minecraft `1.13+`.**
 
-    # Put an axe to the slot 0 in anvil
-    /inventory container click 0
+  </div>
 
-    # Set the new name
-    /nameitem My fancy axe
+  `list` shows the recipe book entries MCC is currently tracking.
 
-    # Click on the axe in slot 2 in the anvil
-    /inventory container click 2
+  On newer versions, the list can contain numeric display ids instead of plain recipe names. If you see something like `838: Oak Planks`, use `838` with `craft` or `craftall`.
 
-    # Put the axe back in your inventory in slot 12
-    /inventory container click 12
+  `craft` and `craftall` send a recipe-book request to the server. They do not automatically take the result item for you. After the recipe appears in the active inventory, take the output slot the same way you would handle any other inventory action.
 
-    # Close the anvil
-    /inventory container close
-    ```
+- **Usage:**
 
-### `look`
+  ```
+  /recipebook list
+  ```
 
--   **Description:**
+  ```
+  /recipebook craft <recipe id>
+  ```
 
-    Used for looking at direction when terrain and movements is enabled
+  ```
+  /recipebook craftall <recipe id>
+  ```
 
--   **Usage:**
+- **Examples:**
 
-    ```
-    /look <x y z|yaw pitch|up|down|east|west|north|south>
-    ```
+  Show the currently tracked recipe book entries:
 
--   **Examples:**
+  ```
+  /recipebook list
+  ```
 
-    ```
-    /look up
-    ```
+  Request one recipe placement:
 
-    ```
-    /look east
-    ```
+  ```
+  /recipebook craft minecraft:oak_planks
+  ```
 
-### `inventory`
+  On newer versions, use the numeric id shown by `/recipebook list`:
 
--   **Description:**
+  ```
+  /recipebook craftall 838
+  ```
 
-    Used for inventory manipulation.
+  If the recipe is placed in the player crafting grid, take the result from slot `0`:
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /inventory player click 0
+  ```
 
-    **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+</details>
 
-    </div>
+<details>
+<summary><code>clear-console</code></summary>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+- **Description:**
 
-    **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
+  Clear the visible console output.
 
-    </div>
+  In TUI mode this clears the log panel. In the classic console it clears the terminal screen.
 
-    MCC defines inventories as containers internally, so player's inventory, chests, droppers, dispensers, hoppers, chest minecarts, barrels, furnaces, etc... are all considered a container, and each one of them has it's ID, the words container and inventory can be used interchangeably.
+- **Usage:**
 
-    Inventory has slots and each one of them has an id.
+  ```
+  /clear-console
+  /cc
+  ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+</details>
 
-    **This command DOES NOT physically open a container (eg. chest), for that you need to use [`useblock`](#useblock) command first.**
+<details>
+<summary><code>connect</code></summary>
 
-    </div>
+- **Description:**
 
-    An example of player inventory with annotated IDs in ASCII art and a list of items:
+  Go to the given server and resume the script
 
-    ![Player Inventory](/images/guide/PlayerInventory.png "Player Inventory")
+- **Usage:**
 
--   **Usage:**
+  ```
+  /connect <server> [account]
+  ```
 
-    Basic usage:
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    ```
-    /inventory <player|container|<id>> <action> [action parameters] | /inventory <inventories/i> | /inventory <search/s> <item type> [amount]
-    ```
+  **`<server>` is either a server IP or a server alias defined in servers file, for more info check out [serverlist](configuration.html#serverlist)**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  </div>
 
-    **player and container can be simplified with p and c accordingly**
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
 
-    </div>
+  **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
 
-    Actions:
+  </div>
 
-    -   `click`
-    -   `drop`
+</details>
 
-    Show/Preview items in an inventory:
+<details>
+<summary><code>script</code></summary>
 
-    ```
-    /inventory <player|id>
-    ```
+- **Description:**
 
-    Click/Shift-Click on an item in an inventory:
+  Run a script containing a list of commands
 
-    ```
-    /inventory <player|container|<id>> <click> <slot id> [left|right|middle|Shift|ShiftRight]
-    ```
+- **Usage:**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /script <script name>
+  ```
 
-    **The default click is left click**
+</details>
 
-    </div>
+<details>
+<summary><code>send</code></summary>
 
-    Close an inventory:
+- **Description:**
 
-    ```
-    /inventory <player|container|<id>> close
-    ```
+  Send a message or a command to the server
 
-    Drop item(s) from an inventory:
+- **Usage:**
 
-    ```
-    /inventory <player|id> drop <slot id> <number of items|all>
-    ```
+  ```
+  /send <text>
+  ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+</details>
 
-    **To drop all items from a slot, you can use: `all`**
+<details>
+<summary><code>respawn</code></summary>
 
-    </div> 
+- **Description:**
 
-    Give an item to the player inventory from a creative menu when in the creative mode:
+  Use this to respawn if you are dead (like clicking "respawn" in-game)
 
-    ```
-    /inventory creativegive <slot id> <item type> <amount>
-    ```
+- **Usage:**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /respawn
+  ```
 
-    **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
+</details>
 
-    </div>
+<details>
+<summary><code>log</code></summary>
 
-    Delete an item from a player's inventory when in the creative mode:
+- **Description:**
 
-    ```
-    /inventory creativedelete <slot id>
-    ```
+  Display some text in the console (useful for scripts)
 
-    Show all available inventories:
+- **Usage:**
 
-    ```
-    /inventory inventories
-    ```
+  ```
+  /log <text>
+  ```
 
-    Search for an item of specified type in available inventories:
+- Example:
 
-    ```
-    /inventory search <item type>
-    ```
+  ```
+  /log this is some text
+  ```
 
--   **Examples:**
+</details>
 
-    Show player's inventory:
+<details>
+<summary><code>list</code></summary>
 
-    ```
-    /inventory player
-    ```
+- **Description:**
 
-    Show/Preview items in an inventory using an id:
+  List players logged in to the server (uses tab list info sent by server)
 
-    ```
-    /inventory 3
-    ```
+- **Usage:**
 
-    Click on an item in player's inventory in slot number/id `36`:
+  ```
+  /list
+  ```
 
-    ```
-    /inventory player click 36
-    ```
+</details>
 
-    Right-Click on an item in slot number/id `4` in an inventory with an id `2`:
+<details>
+<summary><code>tab</code></summary>
 
-    ```
-    /inventory 2 click 4 right
-    ```
+- **Description:**
 
-    Close an inventory with an id `2`:
+  Show the current player tab list in a more detailed format than `/list`.
 
-    ```
-    /inventory 2 close
-    ```
+  In the classic console, `/tab` prints a colored table with ping and player names. Team prefixes, suffixes, and display names are applied when the server sends them.
 
-    Drop a single item from a player's inventory in slot number/id `36`:
+  In TUI mode, `/tab` opens a live overlay that refreshes automatically while it is visible. Press `Esc` to close it.
 
-    ```
-    /inventory player drop 36 1
-    ```
+  If you want a separate team column, enable [Console.TabList.ShowTeams](configuration.md#showteams).
 
-    Drop all items from a player's inventory in slot number/id `37`:
+- **Usage:**
 
-    ```
-    /inventory player drop 37 all
-    ```
+  ```
+  /tab
+  ```
 
-    Give an item to the player inventory from a creative menu when in the creative mode:
+- **Notes:**
 
-    ```
-    /inventory creativegive 36 diamondblock 64
-    ```
+  - `/tab` uses the tab list information sent by the server, so players hidden from the server tab list will not appear here.
+  - The TUI overlay follows the live player list, so joins, leaves, ping updates, and scoreboard team updates show up without reopening it.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+</details>
 
-    **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
+<details>
+<summary><code>set</code></summary>
 
-    </div>
+- **Description:**
 
-    Delete an item from a player's inventory in slot number/id `36` when in the creative mode:
+  Set a value which can be used as `%variable%` in further commands
 
-    ```
-    /inventory creativedelete 36
-    ```
+- **Usage:**
 
-    Search for 10 Slime Blocks in available inventories:
+  ```
+  /set <variable>=<value>
+  ```
 
-    ```
-    /inventory s SlimeBlock 10
-    ```
+- **Examples:**
 
-### `debug`
+  ```
+  /set abc=123
+  ```
 
--   **Description:**
+</details>
 
-    Toggle debug messages, useful for chatbot developers.
+<details>
+<summary><code>setrnd</code></summary>
 
-### `help`
+- **Description:**
 
--   **Description:**
+  Set a `%variable%` randomly to one of the provided values
 
-    Show commands help.
+- **Usage:**
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+  ```
+  /setrnd <variable> string1 "\"string2\" string3"
+  ```
 
-    **Use "/send /help" for server help**
+- **Examples:**
 
-    </div>
+  ```
+  /setrnd <variable> -7 to 10
+  ```
+
+  (Set a `%variable%` to a number from -7 to 10)
+
+</details>
+
+<details>
+<summary><code>sneak</code></summary>
+
+- **Description:**
+
+  Toggle sneaking.
+
+- **Usage:**
+
+  ```
+  /Sneak
+  ```
+
+</details>
+
+<details>
+<summary><code>tps</code></summary>
+
+- **Description:**
+
+  Get the server TPS (Ticks Per Second).
+
+- **Usage:**
+
+  ```
+  /tps
+  ```
+
+</details>
+
+<details>
+<summary><code>teams</code></summary>
+
+- **Description:**
+
+  List all scoreboard teams the server has sent, along with their members and settings.
+
+- **Usage:**
+
+  ```
+  /teams
+  ```
+
+- **Example output:**
+
+  ```
+  Team 'RedTeam' (display: RedTeam, color: 12, prefix: '', suffix: '', nameTagVisibility: always, collisionRule: always, friendlyFire: True, seeInvisibles: True)
+    Members (2): Steve, Alex
+  Team 'BlueTeam' (display: BlueTeam, color: 9, prefix: '', suffix: '', nameTagVisibility: always, collisionRule: always, friendlyFire: True, seeInvisibles: True)
+    No members.
+  ```
+
+</details>
+
+<details>
+<summary><code>useitem</code></summary>
+
+- **Description:**
+
+  Use the item in your hand, including use-on-block actions like shovel flattening.
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+
+  </div>
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  **The [Inventory Handling](configuration.md#inventoryhandling) is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
+
+  </div>
+
+- **Usage:**
+
+  ```
+  /useitem
+  ```
+
+  Use the item from a specific hand:
+
+  ```
+  /useitem <mainhand|offhand>
+  ```
+
+  Use the item on a specific block:
+
+  ```
+  /useitem <x> <y> <z>
+  ```
+
+  Use the item from a specific hand on a specific block:
+
+  ```
+  /useitem <x> <y> <z> <mainhand|offhand>
+  ```
+
+</details>
+
+<details>
+<summary><code>useblock</code></summary>
+
+- **Description:**
+
+  Place a block from a hand on a specific coordinate or open an inventory:
+
+  - chest/trap chest
+  - furnace
+  - brewing stand
+  - dispenser/dropper
+  - hopper
+  - shulker
+  - loom
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+
+  </div>
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **Not all inventories have a GUI representation in an ASCII art format.**
+
+  </div>
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  **The [Inventory Handling](configuration.md#inventoryhandling) is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
+
+  </div>
+
+- **Usage:**
+
+  ```
+  /useblock <x> <y> <z>
+  ```
+
+- **Example:**
+
+  ```
+  /useblock 43 72 7
+  ```
+
+</details>
+
+<details>
+<summary><code>follow</code></summary>
+
+- **Description:**
+
+  Make the bot follow a player.
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **This command is available only when the [Follow Player](chat-bots.md#follow-player) chat bot is enabled.**
+
+  </div>
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+
+  </div>
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **You need to have [Entity Handling](configuration.md#entityhandling) enabled in order for this to work.**
+
+  </div>
+
+- **Usage:**
+
+  ```
+  /follow <player name|stop>
+  ```
+
+- **Example:**
+
+  ```
+  /follow milutinke
+  ```
+
+</details>
+
+<details>
+<summary><code>wait</code></summary>
+
+- **Description:**
+
+  Wait X ticks (20 ticks = ~1 second. Only for scripts)
+
+- **Usage:**
+
+  Fixed time:
+
+  ```
+  /wait <time>
+  ```
+
+  Random time:
+
+  ```
+  /wait <minimum time> to <maximum time>
+  ```
+
+  <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+  **You can use `-` instead of `to`**
+
+  </div>
+
+- **Examples:**
+
+  ```
+  /wait 20
+  ```
+
+  ```
+  /wait 20 to 100
+  ```
+
+  ```
+  /wait 20-35
+  ```
+
+</details>
+
+<details>
+<summary><code>move</code></summary>
+
+- **Description:**
+
+  Used for moving when terrain and movements feature is enabled.
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **You need to have [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+
+  </div>
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  **The [Terrain and Movements](configuration.md#terrainandmovements) is currently not supported in `1.4.6 - 1.6`.**
+
+  </div>
+
+- **Usage:**
+
+  ```
+  /move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]: walk or start walking. "-f": force unsafe movements like falling or touching fire
+  ```
+
+- **Examples:**
+
+  Enable gravity
+
+  ```
+  /move gravity on
+  ```
+
+  Move to coordinates:
+
+  ```
+  /move 125 72 34
+  ```
+
+  Move to a center of a block:
+
+  ```
+  /move center
+  ```
+
+</details>
+
+<details>
+<summary><code>nameitem</code></summary>
+
+- **Description:**
+
+  This command allows you to name an item when you have an Anvil inventory open and an item in the first slot (slot number 0),
+
+  After you place an item in the first slot of the anvil, use this command, and then do a click on the slot 2 to get an item from the anvil, then do a click on an empty slot in your inventory.
+
+- **Usage:**
+
+  ```
+  /nameitem <name of the item>
+  ```
+
+- **Example:**
+
+  ```
+  /nameitem My super duper sword 2000
+  ```
+
+- **Full Example with anvil:**
+
+  ```
+  # Open an anvil
+  /useblock 12 74 321
+
+  # Click on an axe in slot 12
+  /inventory container click 12
+
+  # Put an axe to the slot 0 in anvil
+  /inventory container click 0
+
+  # Set the new name
+  /nameitem My fancy axe
+
+  # Click on the axe in slot 2 in the anvil
+  /inventory container click 2
+
+  # Put the axe back in your inventory in slot 12
+  /inventory container click 12
+
+  # Close the anvil
+  /inventory container close
+  ```
+
+</details>
+
+<details>
+<summary><code>look</code></summary>
+
+- **Description:**
+
+  Used for looking at direction when terrain and movements is enabled
+
+- **Usage:**
+
+  ```
+  /look <x y z|yaw pitch|up|down|east|west|north|south>
+  ```
+
+- **Examples:**
+
+  ```
+  /look up
+  ```
+
+  ```
+  /look east
+  ```
+
+</details>
+
+<details>
+<summary><code>inventory</code></summary>
+
+- **Description:**
+
+  Used for inventory manipulation.
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+
+  </div>
+
+  <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+  **The [Inventory Handling](configuration.md#inventoryhandling) is currently supported on `1.8+` and is unavailable on `1.4.6 - 1.7.10`.**
+
+  </div>
+
+  MCC defines inventories as containers internally, so player's inventory, chests, droppers, dispensers, hoppers, chest minecarts, barrels, furnaces, etc... are all considered a container, and each one of them has it's ID, the words container and inventory can be used interchangeably.
+
+  Inventory has slots and each one of them has an id.
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **This command DOES NOT physically open a container (eg. chest), for that you need to use [`useblock`](#useblock) command first.**
+
+  </div>
+
+  An example of player inventory with annotated IDs in ASCII art and a list of items:
+
+  ![Player Inventory](/images/guide/PlayerInventory.png "Player Inventory")
+
+- **Usage:**
+
+  Basic usage:
+
+  ```
+  /inventory <player|container|<id>> <action> [action parameters] | /inventory <inventories/i> | /inventory <search/s> <item type> [amount]
+  ```
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **player and container can be simplified with p and c accordingly**
+
+  </div>
+
+  Actions:
+
+  - `click`
+  - `drop`
+
+  Show/Preview items in an inventory:
+
+  ```
+  /inventory <player|id>
+  ```
+
+  Click/Shift-Click on an item in an inventory:
+
+  ```
+  /inventory <player|container|<id>> <click> <slot id> [left|right|middle|Shift|ShiftRight]
+  ```
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **The default click is left click**
+
+  </div>
+
+  Close an inventory:
+
+  ```
+  /inventory <player|container|<id>> close
+  ```
+
+  Drop item(s) from an inventory:
+
+  ```
+  /inventory <player|id> drop <slot id> <number of items|all>
+  ```
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **To drop all items from a slot, you can use: `all`**
+
+  </div> 
+
+  Give an item to the player inventory from a creative menu when in the creative mode:
+
+  ```
+  /inventory creativegive <slot id> <item type> <amount>
+  ```
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
+
+  </div>
+
+  Delete an item from a player's inventory when in the creative mode:
+
+  ```
+  /inventory creativedelete <slot id>
+  ```
+
+  Show all available inventories:
+
+  ```
+  /inventory inventories
+  ```
+
+  Search for an item of specified type in available inventories:
+
+  ```
+  /inventory search <item type>
+  ```
+
+- **Examples:**
+
+  Show player's inventory:
+
+  ```
+  /inventory player
+  ```
+
+  Show/Preview items in an inventory using an id:
+
+  ```
+  /inventory 3
+  ```
+
+  Click on an item in player's inventory in slot number/id `36`:
+
+  ```
+  /inventory player click 36
+  ```
+
+  Right-Click on an item in slot number/id `4` in an inventory with an id `2`:
+
+  ```
+  /inventory 2 click 4 right
+  ```
+
+  Close an inventory with an id `2`:
+
+  ```
+  /inventory 2 close
+  ```
+
+  Drop a single item from a player's inventory in slot number/id `36`:
+
+  ```
+  /inventory player drop 36 1
+  ```
+
+  Drop all items from a player's inventory in slot number/id `37`:
+
+  ```
+  /inventory player drop 37 all
+  ```
+
+  Give an item to the player inventory from a creative menu when in the creative mode:
+
+  ```
+  /inventory creativegive 36 diamondblock 64
+  ```
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
+
+  </div>
+
+  Delete an item from a player's inventory in slot number/id `36` when in the creative mode:
+
+  ```
+  /inventory creativedelete 36
+  ```
+
+  Search for 10 Slime Blocks in available inventories:
+
+  ```
+  /inventory s SlimeBlock 10
+  ```
+
+</details>
+
+<details>
+<summary><code>console-chat</code></summary>
+
+- **Description:**
+
+  Temporarily show or hide chat in the console.
+
+  This changes the current session only. If you want the same behavior every time MCC starts, use [`Console.General.Display_Chat`](configuration.md#display_chat).
+
+- **Usage:**
+
+  ```
+  /console-chat
+  /console-chat on
+  /console-chat off
+  ```
+
+- **Examples:**
+
+  Hide chat until you turn it back on:
+
+  ```
+  /console-chat off
+  ```
+
+  Show chat again:
+
+  ```
+  /console-chat on
+  ```
+
+</details>
+
+<details>
+<summary><code>dialog</code></summary>
+
+- **Description:**
+
+  Browse and interact with dialogs sent by the server. Dialogs are popups with a title, body text, and buttons. TUI mode gives the best experience -- use `/dialog open` to view the dialog in a full-screen overlay.
+
+  When a server shows a dialog, MCC prints:
+
+  ```
+  [MCC] Server showed custom dialog: Server Notice. Use dialog show.
+  ```
+
+  Run `/dialog show` to see the full dialog. Buttons show up like this:
+
+  ```
+  Actions:
+    [1] OK (close)
+    [2] Visit (command)
+    [3] Rules (show dialog)
+  ```
+
+  The text in parentheses tells you what the button does: `(close)` closes the dialog, `(command)` sends a chat command, `(show dialog)` opens another dialog.
+
+- **Dialog types:**
+
+  Dialogs come in a few shapes. You might see these in the output of `/dialog show`:
+
+  **Notice** -- A popup with a title, optional body, and one button.
+
+  ```
+  Type: Notice
+
+  Welcome to the server!
+
+  Body: Read the rules before playing.
+
+  Actions:
+    [1] OK (close)
+  ```
+
+  **Confirmation** -- A choice between two buttons.
+
+  ```
+  Type: Confirmation
+
+  Reset your progress?
+
+  Actions:
+    [1] Yes (close)
+    [2] No (close)
+  ```
+
+  **Multi-action** -- A grid of buttons.
+
+  ```
+  Type: Multi-action
+
+  Choose a destination
+
+  Actions:
+    [1] Spawn (close)
+    [2] Shop (close)
+    [3] Arena (close)
+  ```
+
+  **Dialog list** -- A list of sub-dialogs. Clicking one opens another dialog.
+
+  ```
+  Type: Dialog list
+
+  Help Topics
+
+  Actions:
+    [1] Rules (show dialog)
+    [2] Commands (show dialog)
+  ```
+
+  **Server links** -- Shows the server's configured links as buttons. May be empty.
+
+  ```
+  Type: Server links
+
+  Server Links
+  ```
+
+- **Usage:**
+
+  ```
+  /dialog
+  /dialog show
+  /dialog open
+  /dialog click <index>
+  /dialog click-label <label>
+  /dialog set <input> <value>
+  /dialog input <input> <value>
+  /dialog cancel
+  /dialog dismiss
+  ```
+
+- **Examples:**
+
+  ```
+  /dialog show
+  /dialog click 1
+  /dialog click-label Teleport
+  /dialog set name MyPlayer
+  /dialog dismiss
+  ```
+
+  See what dialog is currently shown, click the first button, click a button by its text, fill in an input, or close the dialog.
+
+</details>
+
+<details>
+<summary><code>debug</code></summary>
+
+- **Description:**
+
+  Toggle debug messages, useful for chatbot developers.
+
+</details>
+
+<details>
+<summary><code>help</code></summary>
+
+- **Description:**
+
+  Show commands help.
+
+  <div class="custom-container note"><p class="custom-container-title">Note</p>
+
+  **Use "/send /help" for server help**
+
+  </div>
+
+</details>

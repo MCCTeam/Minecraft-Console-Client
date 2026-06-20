@@ -12,31 +12,16 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Handler for the Minecraft Forge protocol
     /// </summary>
-    class Protocol18Forge
+    class Protocol18Forge(ForgeInfo? forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
     {
-        private readonly int protocolversion;
-        private readonly DataTypes dataTypes;
-        private readonly Protocol18Handler protocol18;
-        private readonly IMinecraftComHandler mcHandler;
+        private readonly int protocolversion = protocolVersion;
+        private readonly DataTypes dataTypes = dataTypes;
+        private readonly Protocol18Handler protocol18 = protocol18;
+        private readonly IMinecraftComHandler mcHandler = mcHandler;
 
-        private readonly ForgeInfo? forgeInfo;
+        private readonly ForgeInfo? forgeInfo = forgeInfo;
         private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
-        private bool ForgeEnabled() { return forgeInfo != null; }
-
-        /// <summary>
-        /// Initialize a new Forge protocol handler
-        /// </summary>
-        /// <param name="forgeInfo">Forge Server Information</param>
-        /// <param name="protocolVersion">Minecraft protocol version</param>
-        /// <param name="dataTypes">Minecraft data types handler</param>
-        public Protocol18Forge(ForgeInfo? forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
-        {
-            this.forgeInfo = forgeInfo;
-            protocolversion = protocolVersion;
-            this.dataTypes = dataTypes;
-            this.protocol18 = protocol18;
-            this.mcHandler = mcHandler;
-        }
+        private bool ForgeEnabled() { return forgeInfo is not null; }
 
         /// <summary>
         /// Get Forge-Tagged server address
@@ -316,6 +301,8 @@ namespace MinecraftClient.Protocol.Handlers
                             for (int i = 0; i < modCount; i++)
                                 mods.Add(dataTypes.ReadNextString(packetData));
 
+                            ChatParser.LoadForgeModTranslations(mods);
+
                             Dictionary<string, string> channels = new();
                             int channelCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < channelCount; i++)
@@ -390,7 +377,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 string registryName = dataTypes.ReadNextString(packetData);
                                 ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.forge_fml2_registry, registryName));
                             }
-                            
+
                             fmlResponsePacket.AddRange(DataTypes.GetVarInt(99));
                             fmlResponseReady = true;
                             break;
@@ -423,7 +410,7 @@ namespace MinecraftClient.Protocol.Handlers
                             //                             [    Version   ][ String ]
                             //
                             // We're ignoring this packet in MCC
-                            
+
                             if (Settings.Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted("§8" + "Received FML3 Server Mod Data List");
@@ -484,7 +471,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="jsonData">JSON data returned by the server</param>
         /// <param name="forgeInfo">ForgeInfo to populate</param>
         /// <returns>True if the server is running Forge</returns>
-        public static bool ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo? forgeInfo)
+        public static bool ServerInfoCheckForge(System.Text.Json.Nodes.JsonObject jsonData, ref ForgeInfo? forgeInfo)
         {
             return ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML)   // MC 1.12 and lower
                 || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML2) // MC 1.13 to 1.17
@@ -518,7 +505,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     return new ForgeInfo(FMLVersion.FML3);
                 }
-                return new ForgeInfo(FMLVersion.FML2); 
+                return new ForgeInfo(FMLVersion.FML2);
             }
             else throw new InvalidOperationException(Translations.error_forgeforce);
         }
@@ -530,7 +517,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="forgeInfo">ForgeInfo to populate</param>
         /// <param name="fmlVersion">Forge protocol version</param>
         /// <returns>True if the server is running Forge</returns>
-        private static bool ServerInfoCheckForgeSub(Json.JSONData jsonData, ref ForgeInfo? forgeInfo, FMLVersion fmlVersion)
+        private static bool ServerInfoCheckForgeSub(System.Text.Json.Nodes.JsonObject jsonData, ref ForgeInfo? forgeInfo, FMLVersion fmlVersion)
         {
             string forgeDataTag;
             string versionField;
@@ -557,10 +544,9 @@ namespace MinecraftClient.Protocol.Handlers
                     throw new NotImplementedException("FMLVersion '" + fmlVersion + "' not implemented!");
             }
 
-            if (jsonData.Properties.ContainsKey(forgeDataTag) && jsonData.Properties[forgeDataTag].Type == Json.JSONData.DataType.Object)
+            if (jsonData[forgeDataTag] is System.Text.Json.Nodes.JsonObject modData)
             {
-                Json.JSONData modData = jsonData.Properties[forgeDataTag];
-                if (modData.Properties.ContainsKey(versionField) && modData.Properties[versionField].StringValue == versionString)
+                if (modData[versionField] is not null && modData[versionField]!.GetStringValue() == versionString)
                 {
                     forgeInfo = new ForgeInfo(modData, fmlVersion);
                     if (forgeInfo.Mods.Any())
@@ -582,6 +568,6 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return false;
-        }    
+        }
     }
 }

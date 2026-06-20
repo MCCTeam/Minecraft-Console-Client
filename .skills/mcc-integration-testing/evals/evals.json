@@ -1,0 +1,41 @@
+{
+  "skill_name": "mcc-integration-testing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run a real 1.21.11 MCC regression test in creative mode covering connect, send messages, send commands, receive messages, movement, physics, mobs, effects, and inventory, in that order.",
+      "expected_output": "The workflow uses the ordered creative-mode E2E harness on a real server, reports pass or fail for each phase, and points to the saved logs.",
+      "files": [],
+      "expectations": [
+        "The workflow uses a real 1.21.11 server.",
+        "The workflow uses the ordered creative E2E harness instead of improvising the whole scenario.",
+        "The result reports phase-by-phase outcomes in the requested order.",
+        "The result includes the log directory for the run."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Validate that MCC still works after a runtime or protocol change by running a deep single-version 1.21.11 integration test with chat, creative inventory, entity tracking, sounds, particles, TNT, and kill/respawn coverage.",
+      "expected_output": "The workflow uses the full-spectrum test runner on a real server and returns a concise pass or fail summary backed by MCC and server log evidence.",
+      "files": [],
+      "expectations": [
+        "The workflow builds MCC before the scenario unless a fresh build is explicitly reused.",
+        "The workflow uses the full-spectrum runner instead of only manual spot checks.",
+        "The result includes evidence from both MCC output and server logs.",
+        "The result points to the saved run directory."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Validate a timing-sensitive MCC change on a real 1.21.11 server by collecting tick-rate and outbound packet-cadence evidence, then summarize the results clearly.",
+      "expected_output": "The response uses a real server, a temp config, and the provided sample scripts to capture tick-rate and packet evidence instead of relying on intuition.",
+      "files": [],
+      "expectations": [
+        "The workflow uses the real 1.21.11 server.",
+        "The workflow uses the tick counter and packet capture scripts or clearly equivalent targeted instrumentation.",
+        "The workflow keeps the run isolated with a temp config.",
+        "The summary reports concrete counts or cadence evidence."
+      ]
+    }
+  ]
+}

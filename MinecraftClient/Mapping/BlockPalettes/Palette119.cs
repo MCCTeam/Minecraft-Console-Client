@@ -554,7 +554,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
                 materials[i] = Material.GraniteStairs;
             for (int i = 13044; i <= 13367; i++)
                 materials[i] = Material.GraniteWall;
-            materials[1596] = Material.Grass;
+            materials[1596] = Material.ShortGrass;
             for (int i = 8; i <= 9; i++)
                 materials[i] = Material.GrassBlock;
             materials[109] = Material.Gravel;

@@ -1,0 +1,41 @@
+{
+  "skill_name": "mcc-dev-workflow",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Build MCC, start the local 1.21.11 vanilla server from an MCC_SERVERS root, connect MCC with a temporary config, and verify a successful join plus one inventory command.",
+      "expected_output": "The workflow uses a real local server, a temp MCC config, and concrete log evidence for both the join and the MCC command.",
+      "files": [],
+      "expectations": [
+        "The workflow uses a real local 1.21.11 server instead of only reading code.",
+        "The workflow uses MCC_SERVERS-aware tooling or documents the server root explicitly.",
+        "The workflow uses a temporary MCC config instead of relying on the repo-root config.",
+        "The result includes join evidence from MCC output and the server log."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Debug a flaky local MCC startup on 1.21.11 by checking for stale tmux server sessions, waiting for server readiness, and retrying early RCON commands before blaming protocol code.",
+      "expected_output": "The response treats tmux sessions as shared state, distinguishes server startup from RCON readiness, and uses the real local workflow rather than pure speculation.",
+      "files": [],
+      "expectations": [
+        "The workflow checks or mentions stale mc-* tmux sessions.",
+        "The workflow distinguishes Done from RCON readiness.",
+        "The workflow retries or advises retrying early RCON commands.",
+        "The workflow keeps the debugging loop grounded in real local commands."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Run a repeatable local MCC debug loop for 1.21.11 that compiles the client, connects with movement, inventory, and entity handling enabled, and leaves enough evidence to inspect a regression afterward.",
+      "expected_output": "The response follows a real build-run-test-inspect loop and captures enough log evidence to support follow-up debugging.",
+      "files": [],
+      "expectations": [
+        "The workflow builds MCC before the run.",
+        "The workflow enables terrain, inventory, and entity handling for the scripted run.",
+        "The workflow captures or points to concrete log locations.",
+        "The workflow prefers a temp config for repeatability."
+      ]
+    }
+  ]
+}

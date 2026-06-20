@@ -4,17 +4,18 @@ title: Creating Chat Bots
 
 # Creating Chat Bots
 
--   [Notes](#notes)
--   [Requirements](#requirements)
--   [Quick Introduction](#quick-introduction)
--   [Examples](#examples)
--   [C# API](#c#-api)
+- [Notes](#notes)
+- [Requirements](#requirements)
+- [Quick Introduction](#quick-introduction)
+- [Examples](#examples)
+- [AI-Assisted Bot Authoring](#ai-assisted-bot-authoring)
+- [C# API](#c#-api)
 
 ## Notes
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-**For now this page contains only the bare basics of the Chat Bot API, enough of details to teach you how to make basic Chat Bots. For more details you need to take a look at the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and [Examples](#examples). This page will be improved in the future.**
+**This page covers the basics of the Chat Bot API. For the full surface area, read [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and the example scripts linked below.**
 
 </div>
 
@@ -22,27 +23,27 @@ title: Creating Chat Bots
 
 ## Requirements
 
--   A basic knowledge of C# programming language
--   A text editor
+- A basic knowledge of C# programming language
+- A text editor
 
 If you're not familiar with the C# programming language, we suggest taking a look at the following resources:
 
 Crash courses:
 
--   [C# Crash Course playlist by Teddy Smit](https://www.youtube.com/watch?v=67oWw9TanOk&list=PL82C6-O4XrHfoN_Y4MwGvJz5BntiL0z0D)
+- [C# Crash Course playlist by Teddy Smit](https://www.youtube.com/watch?v=67oWw9TanOk&list=PL82C6-O4XrHfoN_Y4MwGvJz5BntiL0z0D)
 
 More in-depth:
 
--   [Learn C# Youtube Playlist by Microsoft](https://www.youtube.com/playlist?list=PLdo4fOcmZ0oVxKLQCHpiUWun7vlJJvUiN)
--   [Getting started with C# (An index of tutorials and the documentation) by Microsoft](https://docs.microsoft.com/en-us/dotnet/csharp/)
+- [Learn C# YouTube Playlist by Microsoft](https://www.youtube.com/playlist?list=PLdo4fOcmZ0oVxKLQCHpiUWun7vlJJvUiN)
+- [Getting started with C# (an index of tutorials and documentation) by Microsoft](https://learn.microsoft.com/en-us/dotnet/csharp/)
 
 ## Quick Introduction
 
 This introduction assumes that you have the basic knowledge of C#.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
-**Here we will use terms Chat Bot and Script interchangeably**
+**In this page, "Chat Bot" and "Script" are used interchangeably.**
 
 </div>
 
@@ -59,8 +60,8 @@ MCC.LoadBot(new ExampleChatBot());
 
 // The code and comments above are defining a "Script Metadata" section
 
-// Every single chat bot (script) must be a class which extends the ChatBot class.
-// Your class must be instantiates in the "Script Metadata" section and passed to MCC.LoadBot function.
+// Every chat bot script must define a class that extends ChatBot.
+// Instantiate that class in the script metadata section and pass it to MCC.LoadBot.
 class ExampleChatBot : ChatBot
 {
     // This method will be called when the script has been initialized for the first time, it's called only once
@@ -92,7 +93,7 @@ class ExampleChatBot : ChatBot
 
 Start MCC, connect to a server and run the following internal command: `/script ExampleChatBot.cs`.
 
-If you did everything right you should see: `[Example Chat Bot] An example Chat Bot has been initialised!` message appear in your console log.
+If everything worked, you should see `[Example Chat Bot] An example Chat Bot has been initialized!` in the console.
 
 ### Structure of Chat Bots
 
@@ -111,9 +112,9 @@ Every single Chat Bot (Script) must have this section at the beginning in order 
 
 `//MCCScript 1.0` marks the beginning of the **Script Metadata** section, this must always be on the first line or the Chat Bot (Script) will not load and will throw an error.
 
-`//MCCScript Extensions` marks the end of the **Script Metadata** section, this must be defined before a Chat Bot (Script) class.
+`//MCCScript Extensions` marks the end of the **Script Metadata** section. It must appear before the Chat Bot class.
 
-In order for your Chat Bot (Script) to properly load in-between the `//MCCScript 1.0` and the `//MCCScript Extensions` lines you must instantiate your Chat Bot (Script) class and pass it to the `MCC.LoadBot` function.
+To load a Chat Bot script, instantiate the bot class between `//MCCScript 1.0` and `//MCCScript Extensions`, then pass it to `MCC.LoadBot`.
 
 Example code:
 
@@ -121,15 +122,15 @@ Example code:
 MCC.LoadBot(new YourChatBotClassNameHere());
 ```
 
-**Script Metadata** section allows for including C# packages and libraries with: `//using <namespace>` and `/dll <dll name>`.
+The **Script Metadata** section also lets you include namespaces and DLL references with `//using <namespace>` and `//dll <dll name>`.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **Avoid adding whitespace between `//` and keywords**
 
 </div>
 
-By the default the following packages are loaded:
+By default, the following namespaces are loaded:
 
 ```csharp
 using System;
@@ -167,28 +168,185 @@ MCC.LoadBot(new ExampleChatBot());
 
 ### Chat Bot Class
 
-After the end of the **Script Metadata** section, you basically can define any number of classes you like, the only limitation is that the main class of your Chat Bot (Script) must extend `ChatBot` class.
+After the **Script Metadata** section, you can define any number of helper classes. The main bot class must extend `ChatBot`.
 
 There are no required methods, everything is optional.
 
-When the Chat Bot (Script) has been initialized for the first time the `Initialize` method will be called.
+When the Chat Bot is initialized for the first time, the `Initialize` method is called.
 
-In it you can initialize variables, eg. Dictionaries, etc..
+Use it to initialize state such as dictionaries or cached values.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container note"><p class="custom-container-title">Note</p>
 
 **For allocating resources like a database connection, we recommend allocating them in `AfterGameJoined` and freeing them in `OnDisconnect`**
 
-</div>.
+</div>
 
 ## Examples
 
-You can find a lot of examples in our Git Hub Repository at [ChatBots](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/ChatBots) and [config](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config).
+You can find more examples in the [ChatBots](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/ChatBots) and [config](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config) folders in the GitHub repository.
+
+## AI-Assisted Bot Authoring
+
+If you are using an AI coding agent on this repository, use the `mcc-chatbot-authoring` skill for bot work.
+
+Skill links:
+
+- [Browse the skill on GitHub](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/.skills/mcc-chatbot-authoring)
+- [Download the skill directory](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FMCCTeam%2FMinecraft-Console-Client%2Ftree%2Fmaster%2F.skills%2Fmcc-chatbot-authoring)
+
+This skill is meant for:
+
+- standalone `/script` bots
+- built-in MCC chat bots
+- bot repairs and ports
+- event handlers, movement logic, inventory logic, and plugin-channel work
+
+Its default behavior is important: if you ask for "a bot" without saying otherwise, it should prefer a standalone `//MCCScript` bot loaded with `/script`. It should only choose a built-in bot when you explicitly ask for repo wiring, automatic config loading, or a compiled MCC bot.
+
+The skill also follows MCC-specific rules, for example:
+
+- do not send chat from `Initialize()`
+- use `AfterGameJoined()` for chat or commands after login
+- normalize chat with `GetVerbatim(text)` before `IsChatMessage(...)` or `IsPrivateMessage(...)`
+- fully clean up commands, timers, plugin channels, and movement locks
+
+### Example prompts
+
+```text
+Create a standalone MCC /script bot that watches public chat for the word "auction" and logs matching messages to the console. Use the mcc-chatbot-authoring skill.
+```
+
+```text
+Fix this existing MCC script bot so it stops sending chat from Initialize() and moves the startup command to AfterGameJoined(). Use the mcc-chatbot-authoring skill.
+```
+
+```text
+Make a built-in MCC chat bot named AutoTorch and wire it fully into the repo config and bot registration. Use the mcc-chatbot-authoring skill.
+```
+
+```text
+Create a standalone MCC /script bot that follows private messages, uses GetVerbatim(text), and replies only to bot owners. Use the mcc-chatbot-authoring skill.
+```
+
+## Achievements And Advancements
+
+Chat bots and C# scripts can read the current achievement state and react to updates.
+
+Useful methods:
+
+- `GetAchievements()`
+- `GetUnlockedAchievements()`
+- `GetLockedAchievements()`
+- `OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset)`
+
+Things worth knowing:
+
+- On `1.8` to `1.11.2`, ids use the legacy `achievement.*` format.
+- On `1.12+`, ids use advancement resource ids such as `minecraft:story/root`.
+- Legacy achievements usually have `Title = null` and `Description = null` because the server does not send display metadata in the statistics packet.
+- On newer versions, revoking an advancement may remove it from the current set instead of turning it into a locked entry, so `removedIds` matters.
+
+Example:
+
+```csharp
+//MCCScript 1.0
+
+MCC.LoadBot(new AchievementWatcher());
+
+//MCCScript Extensions
+
+public class AchievementWatcher : ChatBot
+{
+    public override void AfterGameJoined()
+    {
+        Achievement[] known = GetAchievements();
+        LogToConsole($"Known achievements: {known.Length}");
+    }
+
+    public override void OnAchievementUpdate(IReadOnlyList<Achievement> updated, IReadOnlyList<string> removedIds, bool reset)
+    {
+        LogToConsole($"Achievement update: reset={reset}, updated={updated.Count}, removed={removedIds.Count}");
+
+        foreach (Achievement achievement in updated)
+        {
+            string title = achievement.Title ?? achievement.Id;
+            string state = achievement.IsCompleted ? "done" : "todo";
+            LogToConsole($" - {title}: {state}");
+        }
+
+        foreach (string removedId in removedIds)
+            LogToConsole($" - removed: {removedId}");
+    }
+}
+```
+
+## Scoreboard teams
+
+Chat bots and C# scripts can read the current team state and react to team changes.
+
+Useful methods and events:
+
+- `GetTeams()` - returns a snapshot of all teams the server has sent
+- `GetPlayerTeam(playerName)` - returns the team a specific player is on, or `null`
+- `OnTeam(teamName, method, displayName, friendlyFlags, nameTagVisibility, collisionRule, color, prefix, suffix, players)` - called whenever a team packet arrives
+
+The `method` byte tells you what changed:
+
+- `0` - team created (includes full parameters and initial member list)
+- `1` - team removed
+- `2` - team parameters updated (display name, colors, rules)
+- `3` - players added to the team
+- `4` - players removed from the team
+
+The `color` field is a `ChatFormatting` enum ordinal. Common values: `0`=black, `9`=blue, `10`=green, `12`=red, `14`=yellow, `-1`=none/reset.
+
+The `nameTagVisibility` and `collisionRule` strings take values from the Minecraft wiki: `"always"`, `"never"`, `"hideForOtherTeams"`, `"hideForOwnTeam"` (visibility) or `"pushOtherTeams"`, `"pushOwnTeam"` (collision).
+
+Example:
+
+```csharp
+//MCCScript 1.0
+
+MCC.LoadBot(new TeamWatcher());
+
+//MCCScript Extensions
+
+public class TeamWatcher : ChatBot
+{
+    public override void AfterGameJoined()
+    {
+        foreach (var team in GetTeams().Values)
+            LogToConsole($"Team '{team.Name}' has {team.Members.Count} member(s)");
+    }
+
+    public override void OnTeam(string teamName, byte method, string displayName,
+        byte friendlyFlags, string nameTagVisibility, string collisionRule,
+        int color, string prefix, string suffix, List<string> players)
+    {
+        switch (method)
+        {
+            case 0:
+                LogToConsole($"Team '{teamName}' created with {players.Count} member(s)");
+                break;
+            case 1:
+                LogToConsole($"Team '{teamName}' removed");
+                break;
+            case 3:
+                LogToConsole($"{string.Join(", ", players)} joined team '{teamName}'");
+                break;
+            case 4:
+                LogToConsole($"{string.Join(", ", players)} left team '{teamName}'");
+                break;
+        }
+    }
+}
+```
 
 ## C# API
 
-As of the time of writing, the C# API has been changed in forks that are yet to be merged, so for now you can use the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) for reference.
+The authoritative reference for the C# API is [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs).
 
 Each method is well documented with standard C# documentation comments.
 
-In the future we will make a script to auto-generate this section based on the documentation in the code.
+This page intentionally stays focused on the basics. For newer hooks and overloads, check the source file directly.

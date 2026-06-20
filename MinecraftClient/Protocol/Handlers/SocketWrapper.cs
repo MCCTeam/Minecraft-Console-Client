@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Sockets;
 using MinecraftClient.Crypto;
 
@@ -7,7 +7,7 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Wrapper for handling unencrypted & encrypted socket
     /// </summary>
-    class SocketWrapper
+    public class SocketWrapper
     {
         readonly TcpClient c;
         AesCfb8Stream? s;
@@ -29,7 +29,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <remarks>Silently dropped connection can only be detected by attempting to read/write data</remarks>
         public bool IsConnected()
         {
-            return c.Client != null && c.Connected;
+            return c.Client is not null && c.Connected;
         }
 
         /// <summary>
@@ -90,6 +90,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="buffer">data to send</param>
         public void SendDataRAW(byte[] buffer)
         {
+            if (!IsConnected())
+                throw new SocketException((int)SocketError.NotConnected);
+
             if (encrypted)
                 s!.Write(buffer, 0, buffer.Length);
             else

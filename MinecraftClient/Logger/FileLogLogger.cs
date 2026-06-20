@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using MinecraftClient.Scripting;
 
 namespace MinecraftClient.Logger
@@ -8,7 +9,7 @@ namespace MinecraftClient.Logger
     {
         private readonly string logFile;
         private readonly bool prependTimestamp;
-        private readonly object logFileLock = new();
+        private readonly Lock logFileLock = new();
 
         public FileLogLogger(string file, bool prependTimestamp = false)
         {
@@ -71,7 +72,8 @@ namespace MinecraftClient.Logger
             {
                 if (ShouldDisplay(FilterChannel.Chat, msg))
                 {
-                    LogAndSave(msg);
+                    ConsoleIO.WriteChatLineIfVisible(msg);
+                    Save(msg);
                 }
                 else Debug("[Logger] One Chat message filtered: " + msg);
             }
@@ -80,6 +82,17 @@ namespace MinecraftClient.Logger
         public override void Debug(string msg)
         {
             if (DebugEnabled)
+            {
+                if (ShouldDisplay(FilterChannel.Debug, msg))
+                {
+                    LogAndSave("§8[DEBUG] " + msg);
+                }
+            }
+        }
+
+        public override void PacketDebug(string msg)
+        {
+            if (Settings.Config.Logging.PacketDebugMessages)
             {
                 if (ShouldDisplay(FilterChannel.Debug, msg))
                 {

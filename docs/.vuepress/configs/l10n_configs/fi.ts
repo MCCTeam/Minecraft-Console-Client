@@ -50,7 +50,7 @@ export const defaultThemeConfig_fi: DefaultThemeLocaleData = {
       
         {
             text: Translation.helpUsTranslate,
-            link: "https://crwd.in/minecraft-console-client",
+            link: "https://crowdin.com/project/minecraft-console-client",
         },
     ],
 

@@ -84,7 +84,7 @@ namespace MinecraftClient.Commands
             else
             {
                 ChatBot? bot = handler.GetLoadedChatBots().Find(bot => bot.GetType().Name.ToLower() == botName.ToLower());
-                if (bot == null)
+                if (bot is null)
                     return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_bots_notfound, botName));
                 else
                 {

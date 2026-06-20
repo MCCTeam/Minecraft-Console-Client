@@ -110,13 +110,13 @@ namespace MinecraftClient.ChatBots
                 && !string.IsNullOrEmpty(entity.Name)
                 && entity.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-            if (player == null)
+            if (player is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_follow_invalid_player);
 
             if (!CanMoveThere(player.Location))
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_follow_cant_reach_player);
 
-            if (_playerToFollow != null && _playerToFollow.Equals(name, StringComparison.OrdinalIgnoreCase))
+            if (_playerToFollow is not null && _playerToFollow.Equals(name, StringComparison.OrdinalIgnoreCase))
                 return r.SetAndReturn(CmdResult.Status.Fail,
                     string.Format(Translations.cmd_follow_already_following, _playerToFollow));
 
@@ -127,7 +127,7 @@ namespace MinecraftClient.ChatBots
 
             var result =
                 string.Format(
-                    _playerToFollow != null ? Translations.cmd_follow_switched : Translations.cmd_follow_started,
+                    _playerToFollow is not null ? Translations.cmd_follow_switched : Translations.cmd_follow_started,
                     player.Name!);
             _playerToFollow = name.ToLower();
 
@@ -152,7 +152,7 @@ namespace MinecraftClient.ChatBots
 
         private int OnCommandStop(CmdResult r)
         {
-            if (_playerToFollow == null)
+            if (_playerToFollow is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, Translations.cmd_follow_already_stopped);
 
             var movementLock = BotMovementLock.Instance;
@@ -172,7 +172,7 @@ namespace MinecraftClient.ChatBots
             if (entity.Type != EntityType.Player)
                 return;
 
-            if (_playerToFollow == null || string.IsNullOrEmpty(entity.Name))
+            if (_playerToFollow is null || string.IsNullOrEmpty(entity.Name))
                 return;
 
             if (_playerToFollow != entity.Name.ToLower())
@@ -200,7 +200,7 @@ namespace MinecraftClient.ChatBots
             if (entity.Type != EntityType.Player)
                 return;
 
-            if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) &&
+            if (_playerToFollow is not null && !string.IsNullOrEmpty(entity.Name) &&
                 _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
             {
                 LogToConsole(string.Format(Translations.cmd_follow_player_came_to_the_range, _playerToFollow));
@@ -213,7 +213,7 @@ namespace MinecraftClient.ChatBots
             if (entity.Type != EntityType.Player)
                 return;
 
-            if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) &&
+            if (_playerToFollow is not null && !string.IsNullOrEmpty(entity.Name) &&
                 _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
             {
                 LogToConsole(string.Format(Translations.cmd_follow_player_left_the_range, _playerToFollow));
@@ -223,7 +223,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnPlayerLeave(Guid uuid, string? name)
         {
-            if (_playerToFollow != null && !string.IsNullOrEmpty(name) &&
+            if (_playerToFollow is not null && !string.IsNullOrEmpty(name) &&
                 _playerToFollow.Equals(name, StringComparison.OrdinalIgnoreCase))
             {
                 LogToConsole(string.Format(Translations.cmd_follow_player_left, _playerToFollow));
@@ -235,7 +235,7 @@ namespace MinecraftClient.ChatBots
         private bool CanMoveThere(Location location)
         {
             var chunkColumn = GetWorld().GetChunkColumn(location);
-            return chunkColumn != null && chunkColumn.FullyLoaded != false;
+            return chunkColumn is not null && chunkColumn.FullyLoaded != false;
         }
     }
 }

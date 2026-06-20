@@ -1,0 +1,323 @@
+---
+name: mcc-integration-testing
+description: >-
+  Use when proving MCC behavior on a real local Minecraft server, validating
+  runtime or protocol changes end-to-end, exercising movement, physics,
+  inventory, entity, chat, or terrain behavior, or running a single-version or
+  cross-version regression sweep.
+metadata:
+  category: discipline
+  triggers:
+    - integration test
+    - real server
+    - local server
+    - regression sweep
+    - rcon
+    - tmux
+    - offline mode
+    - online mode
+    - movement
+    - physics
+    - inventory
+    - entity
+    - terrain
+    - chat
+---
+
+# MCC Integration Testing
+
+Use this skill when the task is "prove it on a real server", not just "reason about whether it should work."
+
+Read [references/online-mode.md](references/online-mode.md) when the user asks for Microsoft login, device-code auth, or an online-mode server run. Use [references/command-matrix.md](references/command-matrix.md) for stable MCC-side and RCON-side commands.
+
+## Iron Law
+
+Only say MCC was integration tested when MCC ran against a real local server and the claim is backed by real MCC output plus real server logs.
+
+Calling build-only, reasoning-only, or join-only work "integration tested" is a rules violation, not shorthand.
+
+These do not count as end-to-end proof:
+
+- static reasoning, source comparison, or build success
+- join or login success by itself
+- a long-lived idle connection by itself
+- a grep that only says there were no errors
+- testing one shared-route version and silently claiming adjacent versions also passed
+
+If the environment cannot run a real server, say so and report the result as unexecuted or inferred, not integration tested.
+
+## Default target
+
+- Use `1.21.11-Vanilla` unless the user asks for a different version or a version matrix.
+- Use `MCC_SERVERS` if it is set. Otherwise the default server root is `MinecraftOfficial/downloads`.
+
+## Guardrails
+
+- Use a real local server.
+- Launch MCC against an explicit `localhost:<server-port>` target for repeatable local tests.
+- Keep version matrices sequential in shared local environments. The tmux server harness is shared state by default.
+- Prefer generated temporary MCC configs for scripted runs so one test does not contaminate the next.
+- Default to offline auth in generated temp configs. Do not trust the repo-root `MinecraftClient.ini` account defaults.
+- If the user explicitly asks for Microsoft online login, honor that request and generate the temp config for Microsoft auth instead of offline mode.
+- For Microsoft auth, prefer an interactive TTY launch with `BasicIO-NoColor` so the device code is easy to read and relay to the user.
+- Do not use file-input mode during Microsoft auth. Launch interactively first, complete login, then switch to scripted control only if needed.
+- For online-mode tests, prefer a clean temp config with no join-time bots or scheduled tasks. Inherited `ScriptScheduler` or `DiscordRpc` settings can pollute the session and send unintended chat right after login.
+- Legacy and modern command syntax differ. Do not assume one server-command profile fits every version.
+- Use actual MCC output and actual server logs for assertions. Do not invent success strings.
+- Treat server `Done` as startup progress, not RCON readiness. Retry the first RCON command before assuming the setup is broken.
+- Run preflight before scripted test loops. On macOS, Java may be installed but not exported on PATH in the shell the harness uses.
+- If a change touches shared routing or a version range, test at least one adjacent version that shares that path, or explicitly mark adjacent versions as unexecuted and inferred.
+- For palette or version-content changes, probe at least one neighboring or existing item, entity, or block. Do not only check the headline addition.
+- Separate product failures from harness failures. Missing logs, stale tmux state, stale `stdin.pipe`, or pre-join `Connection refused` errors are usually environment problems until proven otherwise.
+
+## Choose the test mode
+
+### 1. Single-version deep smoke
+
+Use this when one supported version is enough and you want broad coverage:
+
+```bash
+.skills/mcc-integration-testing/scripts/run_full_spectrum_test.sh 1.21.11-Vanilla
+```
+
+This covers join, chat, slash commands, internal MCC commands, creative inventory, entity handling, sounds, particles, TNT, kill/respawn, and log assertions.
+
+### 2. Ordered creative-mode E2E
+
+Use this when the user asks for a regression sweep in a strict scenario order such as:
+
+- connect
+- send messages
+- send commands
+- receive messages
+- movement
+- physics
+- mobs
+- effects
+- inventory
+
+Broad validation should usually cover `connect-test`, `item-test`, `entity-test`, `terrain-test`, and `chat-test`.
+
+Command:
+
+```bash
+MCC_SERVERS=/home/anon/Minecraft/Servers bash tools/run-creative-e2e.sh 1.21.11-Vanilla 1.21.11 modern
+```
+
+For legacy targets such as `1.8` or `1.8.9`, switch the final argument to `legacy` and pass the pinned MC version.
+
+### 3. Timing or cadence validation
+
+Use this for TPS, movement-cadence, or packet-cadence work:
+
+- `MinecraftClient/config/sample-script-tick-counter.cs`
+- `MinecraftClient/config/sample-script-packet-capture.cs`
+
+Run them against a real server with a temp config and summarize counts from the captured logs.
+
+### 4. Structured components test
+
+Use this after touching any `StructuredComponents` code (registries, component
+parsers, subcomponents, codec helpers) to prove every component type in a
+version parses on the wire without error:
+
+```bash
+bash tools/run-structured-components-test.sh 1.21.11
+```
+
+Run a single version (fast, ~2 min) or a matrix:
+
+```bash
+for v in 1.20.6 1.21 1.21.2 1.21.5 1.21.11 26.1; do
+  bash tools/run-structured-components-test.sh "$v"
+done
+```
+
+The script gives items with every registered component via RCON `/give`, reads
+them back with `inventory player list`, and asserts no parse errors in the MCC
+log. Version-gated components (v1212+, v1215+, v12111+, v261) are tested only
+on the versions that support them. See `SC_Integration_Test_Report.md` for a
+reference run across all 6 version groups.
+
+### 6. Dialog integration test
+
+Use this after touching any dialog system code (packet handling, NBT parsing,
+models, TUI, command dispatch, the state machine in `DialogManager`, or the
+codec in `DialogNbtParser`). Tests all 5 dialog types, button actions (close,
+run_command, show_dialog), cancel/dismiss, click-label, and body content:
+
+```bash
+tools/run-dialog-test.sh 26.1
+```
+
+The script starts the server if needed, generates a temp MCC config, launches
+MCC with file-input mode (requires both `MCC_FILE_INPUT=1` and
+`MCC_INPUT_FILE=<path>` env vars), sends inline SNBT dialogs via RCON, and
+asserts 29 checks against the MCC log.
+
+Key requirements that differ from other test modes:
+
+- FileInputBot is loaded only when `MCC_FILE_INPUT=1` is set in the
+  environment. The `[ChatBot.FileInput]` config section is ignored at load
+  time.
+- The input file path is controlled by `MCC_INPUT_FILE`, *not* by the config
+  `File` setting.
+- Dialogs use inline SNBT syntax through `ResourceOrIdArgument`, e.g.:
+  `dialog show <player> {type:"minecraft:notice", title:{text:"Hello"}}`
+- The `ActionButton.CODEC` flattens `CommonButtonData` fields (`label`,
+  `tooltip`, `width`) into the same object as `action` — no `button` wrapper.
+
+### 5. Full inventory regression sweep
+
+Use this when touching inventory snapshots, player/container slot sync, creative inventory, item-slot serialization, packet palettes, game-mode updates, or block-use paths that open containers:
+
+```bash
+tools/run-inventory-full-sweep.sh --versions "1.21.10 1.21.11"
+```
+
+Default coverage includes:
+
+- player inventory listing and inventory discovery
+- creative give/delete
+- inventory search
+- player right/left click stack split and merge
+- player drop one and drop all
+- chest open via `useblock`
+- container listing and close
+- mirrored player slots in container windows
+- shift-click and shift-right-click transfer
+- container right/left click, cursor stack, drop one, and drop all
+- creative middle-click command path
+- log scan for packet parse failures, queue-empty crashes, unhandled exceptions, and disconnects
+
+The script writes `summary.tsv` under `RUN_ROOT` and per-version logs under `/tmp/mcc-debug/inventory-full-<version>/mcc-debug.log`.
+
+When a matrix has existing PASS rows, do not rerun them unless a later code change affects that row or the user asks for a full rerun. Derive remaining rows from summaries:
+
+```bash
+awk 'FNR>1 && $2=="PASS" {print $1}' /tmp/mcc-inventory-full-sweep/*/summary.tsv | sort -V | uniq
+```
+
+## Preconditions
+
+Before running any scenario:
+
+0. run preflight and clear stale shared state when the environment is reused
+1. configure the target server for offline testing
+2. ensure `eula=true`
+3. ensure RCON is enabled
+4. build MCC unless the task explicitly reuses a fresh build
+
+Preflight and reset helpers:
+
+```bash
+.skills/mcc-integration-testing/scripts/preflight_test_env.sh 1.21.11-Vanilla
+.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh 1.21.11-Vanilla
+```
+
+Offline configuration helper:
+
+```bash
+.skills/mcc-integration-testing/scripts/ensure_offline_server.sh 1.21.11-Vanilla
+```
+
+By default, the config helper prepares offline auth. To opt into another auth mode for a specific run, set:
+
+```bash
+MCC_TEST_ACCOUNT_TYPE=microsoft
+MCC_TEST_PASSWORD=
+```
+
+Optionally override the login name with the fourth argument to the config helper.
+
+## Scripts and tools
+
+- `.skills/mcc-integration-testing/scripts/ensure_offline_server.sh`
+  - configures persistent offline mode and RCON
+- `.skills/mcc-integration-testing/scripts/preflight_test_env.sh`
+  - verifies Java, tmux, dotnet, python3, server directories, and resolves common Java PATH issues
+- `.skills/mcc-integration-testing/scripts/reset_shared_test_state.sh`
+  - clears stale tmux sessions and stale `stdin.pipe` files before a rerun
+- `.skills/mcc-integration-testing/scripts/prepare_offline_mcc_config.sh`
+  - generates a clean temporary MCC config, prepares offline login by default, disables noisy bots, and can switch to Microsoft auth when explicitly requested
+- `.skills/mcc-integration-testing/scripts/get_server_port.sh`
+  - resolves the actual local server port from `server.properties` or the latest server log
+- `.skills/mcc-integration-testing/scripts/run_full_spectrum_test.sh`
+  - single-version deep smoke with built-in assertions
+- `.skills/mcc-integration-testing/scripts/summarize_test_run.sh`
+  - summarize the latest full-spectrum run
+- `tools/run-creative-e2e.sh`
+  - ordered creative-mode E2E regression scenario
+- `tools/run-inventory-full-sweep.sh`
+  - full inventory command/API sweep across one or more versions
+- `tools/run-structured-components-test.sh`
+  - exercises every structured component via RCON `/give` across versions 1.20.6-26.1
+- `tools/run-dialog-test.sh`
+  - dialog integration test: all 5 types, run_command/show_dialog actions,
+    cancel/dismiss/click-label, body content; 29 assertions on MCC log
+
+## Evidence Discipline
+
+In every report, separate:
+
+- `Executed`: exact scripts, commands, versions, auth mode, and whether the run was sequential or single-version
+- `Observed`: exact MCC output, exact server-log evidence, and the saved log directory
+- `Inferred`: conclusions not directly shown by that run's runtime evidence
+- `Harness issues`: setup or runner problems such as missing Java on PATH, stale tmux sessions, stale `stdin.pipe`, missing log artifacts, or failed config generation
+
+Never upgrade inferred claims to observed facts. Absence of errors is supporting evidence only; pair it with a positive assertion for the feature under test.
+
+## Red Flags
+
+Stop and fix the test plan if you are about to:
+
+- claim movement, inventory, entity, terrain, physics, or chat coverage from join success alone
+- reuse repo-root `MinecraftClient.ini` or another user-local stateful config
+- run multi-version tests in parallel in a shared tmux or shared server environment
+- let inherited bots, schedulers, or other user-local noise send chat or commands during validation
+
+## What to report back
+
+Always summarize:
+
+- which version or versions were tested
+- which port or ports were used
+- which auth mode and scenario were used
+- whether the run was sequential or single-version
+- the exact scripts or commands executed
+- pass or fail per major phase
+- concrete evidence from MCC and server logs
+- the saved log directory
+- what was not executed and what remains inferred
+- which adjacent versions were not run but were mentioned
+
+## When Not to Use
+
+- build-only verification
+- static protocol or source comparison with no real server run
+- documentation or prompt work
+- code review requests that do not ask for executed runtime proof
+
+## Troubleshooting
+
+- If the first RCON command fails, retry it before assuming the setup is broken.
+- If Java is installed but the harness still says it is missing, run `preflight_test_env.sh`. This resolves common Homebrew Java paths on macOS.
+- If MCC reaches Microsoft device-code login during an offline test, stop and inspect the generated temp config before retrying.
+- If the user explicitly requests Microsoft online login, set `MCC_TEST_ACCOUNT_TYPE=microsoft` before launching the harness.
+- If the user explicitly requests Microsoft online login, use `BasicIO-NoColor` in a real TTY, relay the device code from the TUI, and avoid pressing empty Enter at any auth prompt.
+- If the online-mode session sends unexpected chat or commands right after join, inspect inherited bot settings first. `ChatBot.ScriptScheduler` tasks and `ChatBot.DiscordRpc` are common sources of test noise in user-local configs.
+- If `dotnet run` cannot see an existing Microsoft session, check whether `SessionCache.db` and `ProfileKeyCache.ini` need to be synced from `MinecraftClient/bin/Release/net10.0/` to the repo root.
+- If Microsoft auth keeps prompting even with a valid session cache, verify `Account.Login` matches the cached username exactly.
+- If MCC reports `Connection refused`, verify the launched target matches the server's actual `server-port`.
+- If MCC reports `Connection refused` immediately after a server start, also check for stale shared state: old tmux sessions, a stale `stdin.pipe`, or a server that never actually reached `Done (`.
+- If multiple versions are being tested, do not start them in parallel unless the harness isolates tmux sessions and input files.
+- If a test assertion fails, inspect the real MCC output before changing the code or weakening the assertion.
+- If an older server behaves oddly on Linux, check `use-native-transport=false` in `server.properties`.
+- If a matrix row fails before producing `mcc.log` or a command transcript, treat it as a harness failure, fix the environment, and rerun that row before drawing product conclusions.
+- If creative inventory commands report "You must be in Creative gamemode" after RCON switched the player, inspect game-mode update parsing before assuming creative inventory is broken. Modern servers can update local game mode through game event reason `3`.
+- If an inventory row crashes with `Queue empty` or `Failed to process incoming packet`, inspect packet palette routing before changing inventory code. A single shifted packet ID can make a healthy inventory feature look broken.
+- For chest-open failures, separate product and harness causes. The player may be standing inside the chest or suffocating on older servers. Stand beside the chest, put a floor under the player, and retry `useblock`.
+- For shared local servers, a `Done` log line does not prove RCON is ready. Retry setup commands and verify the actual RCON port from `server.properties`.
+- If `tools/run-dialog-test.sh` fails with "FileInput Watching: .../mcc_input.txt" pointing to the wrong directory, the `MCC_INPUT_FILE` env var was not set in the tmux command. FileInputBot ignores the config `File` setting entirely.
+- If inline SNBT dialogs fail on the server side (`Failed to parse structure: No key ...`), check whether `ActionButton.CODEC` fields are flat (no `button` wrapper) and whether the dialog type fields match the 26.1 server (`label` not `text` in `CommonButtonData`).
+- If a dialog integration test fails on "Server showed custom dialog", the dialog packet (id=0x8C in 26.1 play phase) may not have been sent. Verify the RCON command succeeded and the server printed "Displayed dialog to ...".

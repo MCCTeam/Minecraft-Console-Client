@@ -4,7 +4,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
     public class PacketPalette18 : PacketTypePalette
     {
-        private Dictionary<int, PacketTypesIn> typeIn = new Dictionary<int, PacketTypesIn>()
+        private Dictionary<int, PacketTypesIn> typeIn = new()
         {
             { 0x00, PacketTypesIn.KeepAlive },
             { 0x01, PacketTypesIn.JoinGame },
@@ -80,7 +80,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x49, PacketTypesIn.UpdateEntityNBT }
         };
 
-        private Dictionary<int, PacketTypesOut> typeOut = new Dictionary<int, PacketTypesOut>()
+        private Dictionary<int, PacketTypesOut> typeOut = new()
         {
             { 0x00, PacketTypesOut.TeleportConfirm },
             { 0x01, PacketTypesOut.Unknown },

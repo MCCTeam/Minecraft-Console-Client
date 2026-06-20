@@ -118,9 +118,9 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x00, PacketTypesOut.TeleportConfirm },             // (Wiki name: Confirm Teleportation)
             { 0x01, PacketTypesOut.QueryBlockNBT },               // (Wiki name: Query Block Entity Tag)
             { 0x02, PacketTypesOut.SetDifficulty },               // (Wiki name: Change Difficutly)
-            { 0x03, PacketTypesOut.MessageAcknowledgment },       // 
-            { 0x04, PacketTypesOut.ChatCommand },                 // Added in 1.19
-            { 0x05, PacketTypesOut.ChatMessage },                 // Changed in 1.19 (Completely changed) (Wiki name: Chat)
+            { 0x03, PacketTypesOut.ChatCommand },                 // Added in 1.19
+            { 0x04, PacketTypesOut.ChatMessage },                 // Changed in 1.19 (Completely changed) (Wiki name: Chat)
+            { 0x05, PacketTypesOut.ChatPreview },                 // Added in 1.19 (Wiki name: Chat Preview (serverbound))
             { 0x06, PacketTypesOut.ClientStatus },                // (Wiki name: Client Command)
             { 0x07, PacketTypesOut.ClientSettings },              // (Wiki name: Client Information)
             { 0x08, PacketTypesOut.TabComplete },                 // (Wiki name: Command Suggestions Request)
@@ -147,25 +147,24 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x1D, PacketTypesOut.EntityAction },                // (Wiki name: Player Command)
             { 0x1E, PacketTypesOut.SteerVehicle },                // (Wiki name: Player Input)
             { 0x1F, PacketTypesOut.Pong },                        // (Wiki name: Pong (play))
-            { 0x20, PacketTypesOut.PlayerSession },               // Added in 1.19.3 
-            { 0x21, PacketTypesOut.SetDisplayedRecipe },          // (Wiki name: Recipe Book Change Settings)
-            { 0x22, PacketTypesOut.SetRecipeBookState },          // (Wiki name: Recipe Book Seen Recipe)
-            { 0x23, PacketTypesOut.NameItem },                    // (Wiki name: Rename Item)
-            { 0x24, PacketTypesOut.ResourcePackStatus },          // (Wiki name: Resource Pack (serverbound))
-            { 0x25, PacketTypesOut.AdvancementTab },              // (Wiki name: Seen Advancements)
-            { 0x26, PacketTypesOut.SelectTrade },                 //
-            { 0x27, PacketTypesOut.SetBeaconEffect },             // Changed in 1.19 (Added a "Secondary Effect Present" and "Secondary Effect" fields) (Wiki name: Set Beacon)  - (No need to be implemented)
-            { 0x28, PacketTypesOut.HeldItemChange },              // (Wiki name: Set Carried Item (serverbound))
-            { 0x29, PacketTypesOut.UpdateCommandBlock },          // (Wiki name: Set Command Block)
-            { 0x2A, PacketTypesOut.UpdateCommandBlockMinecart },  //
-            { 0x2B, PacketTypesOut.CreativeInventoryAction },     // (Wiki name: Set Creative Mode Slot)
-            { 0x2C, PacketTypesOut.UpdateJigsawBlock },           // (Wiki name: Set Jigsaw Block)
-            { 0x2D, PacketTypesOut.UpdateStructureBlock },        // (Wiki name: Set Structure Block)
-            { 0x2E, PacketTypesOut.UpdateSign },                  // (Wiki name: Sign Update)
-            { 0x2F, PacketTypesOut.Animation },                   // (Wiki name: Swing)
-            { 0x30, PacketTypesOut.Spectate },                    // (Wiki name: Teleport To Entity)
-            { 0x31, PacketTypesOut.PlayerBlockPlacement },        // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item On) 
-            { 0x32, PacketTypesOut.UseItem },                     // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item) 
+            { 0x20, PacketTypesOut.SetDisplayedRecipe },          // (Wiki name: Recipe Book Change Settings)
+            { 0x21, PacketTypesOut.SetRecipeBookState },          // (Wiki name: Recipe Book Seen Recipe)
+            { 0x22, PacketTypesOut.NameItem },                    // (Wiki name: Rename Item)
+            { 0x23, PacketTypesOut.ResourcePackStatus },          // (Wiki name: Resource Pack (serverbound))
+            { 0x24, PacketTypesOut.AdvancementTab },              // (Wiki name: Seen Advancements)
+            { 0x25, PacketTypesOut.SelectTrade },                 //
+            { 0x26, PacketTypesOut.SetBeaconEffect },             // Changed in 1.19 (Added a "Secondary Effect Present" and "Secondary Effect" fields) (Wiki name: Set Beacon)  - (No need to be implemented)
+            { 0x27, PacketTypesOut.HeldItemChange },              // (Wiki name: Set Carried Item (serverbound))
+            { 0x28, PacketTypesOut.UpdateCommandBlock },          // (Wiki name: Set Command Block)
+            { 0x29, PacketTypesOut.UpdateCommandBlockMinecart },  //
+            { 0x2A, PacketTypesOut.CreativeInventoryAction },     // (Wiki name: Set Creative Mode Slot)
+            { 0x2B, PacketTypesOut.UpdateJigsawBlock },           // (Wiki name: Set Jigsaw Block)
+            { 0x2C, PacketTypesOut.UpdateStructureBlock },        // (Wiki name: Set Structure Block)
+            { 0x2D, PacketTypesOut.UpdateSign },                  // (Wiki name: Sign Update)
+            { 0x2E, PacketTypesOut.Animation },                   // (Wiki name: Swing)
+            { 0x2F, PacketTypesOut.Spectate },                    // (Wiki name: Teleport To Entity)
+            { 0x30, PacketTypesOut.PlayerBlockPlacement },        // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item On) 
+            { 0x31, PacketTypesOut.UseItem },                     // Changed in 1.19 (Added a "Sequence" field) (Wiki name: Use Item) 
         };
 
         protected override Dictionary<int, PacketTypesIn> GetListIn() => typeIn;

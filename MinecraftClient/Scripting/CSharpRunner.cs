@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using MinecraftClient.Scripting.DynamicRun.Builder;
 using static MinecraftClient.Settings;
 
@@ -16,6 +17,8 @@ namespace MinecraftClient.Scripting
     {
         private static readonly Dictionary<ulong, byte[]> CompileCache = new();
 
+        private readonly record struct ScriptSourceLine(int LineNumber, string Text);
+
         /// <summary>
         /// Run the specified C# script file
         /// </summary>
@@ -26,7 +29,7 @@ namespace MinecraftClient.Scripting
         /// <param name="run">Set to false to compile and cache the script without launching it</param>
         /// <exception cref="CSharpException">Thrown if an error occured</exception>
         /// <returns>Result of the execution, returned by the script</returns>
-        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object>? localVars, bool run = true, string scriptName = "Unknown Script")
+        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object>? localVars, bool run = true, string scriptName = "Unknown Script", string? scriptOwnerKey = null)
         {
             //Script compatibility check for handling future versions differently
             if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
@@ -48,12 +51,13 @@ namespace MinecraftClient.Scripting
                 {
                     //Process different sections of the script file
                     bool scriptMain = true;
-                    List<string> script = new();
-                    List<string> extensions = new();
+                    List<ScriptSourceLine> script = new();
+                    List<ScriptSourceLine> extensions = new();
                     List<string> libs = new();
                     List<string> dlls = new();
-                    foreach (string line in lines)
+                    for (int i = 0; i < lines.Length; i++)
                     {
+                        string line = lines[i];
                         if (line.StartsWith("//using"))
                         {
                             libs.Add(line.Replace("//", "").Trim());
@@ -67,67 +71,37 @@ namespace MinecraftClient.Scripting
                             if (line.EndsWith("Extensions"))
                                 scriptMain = false;
                         }
-                        else if (scriptMain)
-                            script.Add(line);
-                        else extensions.Add(line);
+
+                        (scriptMain ? script : extensions).Add(new(i + 1, line));
                     }
 
                     //Add return statement if missing
-                    if (script.All(line => !line.StartsWith("return ") && !line.Contains(" return ")))
-                        script.Add("return null;");
+                    bool hasImplicitReturn = script.All(line => !line.Text.StartsWith("return ", StringComparison.Ordinal)
+                        && !line.Text.Contains(" return ", StringComparison.Ordinal));
 
                     //Generate a class from the given script
-                    string code = string.Join("\n", new string[]
-                    {
-                        "using System;",
-                        "using System.Collections.Generic;",
-                        "using System.Text.RegularExpressions;",
-                        "using System.Linq;",
-                        "using System.Text;",
-                        "using System.IO;",
-                        "using System.Net;",
-                        "using System.Threading;",
-                        "using MinecraftClient;",
-                        "using MinecraftClient.Scripting;",
-                        "using MinecraftClient.Mapping;",
-                        "using MinecraftClient.Inventory;",
-                        string.Join("\n", libs),
-                        "namespace ScriptLoader {",
-                        "public class Script {",
-                        "public CSharpAPI MCC;",
-                        "public object __run(CSharpAPI __apiHandler, string[] args) {",
-                            "this.MCC = __apiHandler;",
-                            string.Join("\n", script),
-                        "}",
-                            string.Join("\n", extensions),
-                        "}}",
-                    });
+                    string code = BuildScriptCode(scriptName, script, extensions, libs, hasImplicitReturn);
 
-                    ConsoleIO.WriteLogLine($"[Script] Starting compilation for {scriptName}...");
+                    ConsoleIO.WriteLogLine(string.Format(Translations.script_compile_started, scriptName));
 
                     //Compile the C# class in memory using all the currently loaded assemblies
                     var result = compiler.Compile(code, Guid.NewGuid().ToString(), dlls);
 
                     //Process compile warnings and errors
-                    if (result.Failures != null)
+                    if (result.Failures is not null)
                     {
 
-                        ConsoleIO.WriteLogLine("[Script] Compilation failed with error(s):");
+                        ConsoleIO.WriteLogLine(Translations.script_compile_failed);
 
                         foreach (var failure in result.Failures)
                         {
-                            // Get the line that contains the error:
-
-                            var loc = failure.Location.GetMappedLineSpan();
-                            var line = code.Split('\n')[loc.StartLinePosition.Line];
-                            
-                            ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, on line ({line.Trim()}): [{failure.Id}] {failure.GetMessage()}");
+                            ConsoleIO.WriteLogLine(FormatCompilationFailure(failure, scriptName));
                         }
 
                         throw new CSharpException(CSErrorType.InvalidScript, new InvalidProgramException("Compilation failed due to error(s)."));
                     }
 
-                    ConsoleIO.WriteLogLine("[Script] Compilation done with no errors.");
+                    ConsoleIO.WriteLogLine(Translations.script_compile_succeeded);
 
                     //Retrieve compiled assembly
                     assembly = result.Assembly;
@@ -143,12 +117,83 @@ namespace MinecraftClient.Scripting
             {
                 try
                 {
-                    var compiled = runner.Execute(assembly!, args, localVars, apiHandler);
+                    var compiled = runner.Execute(assembly!, args, localVars, apiHandler, scriptOwnerKey);
                     return compiled;
                 }
                 catch (Exception e) { throw new CSharpException(CSErrorType.RuntimeError, e); }
             }
             else return null;
+        }
+
+        private static string BuildScriptCode(string scriptName, IEnumerable<ScriptSourceLine> script, IEnumerable<ScriptSourceLine> extensions, IEnumerable<string> libs, bool hasImplicitReturn)
+        {
+            StringBuilder codeBuilder = new();
+            codeBuilder.AppendLine("using System;");
+            codeBuilder.AppendLine("using System.Collections.Generic;");
+            codeBuilder.AppendLine("using System.Text.RegularExpressions;");
+            codeBuilder.AppendLine("using System.Linq;");
+            codeBuilder.AppendLine("using System.Text;");
+            codeBuilder.AppendLine("using System.IO;");
+            codeBuilder.AppendLine("using System.Net;");
+            codeBuilder.AppendLine("using System.Threading;");
+            codeBuilder.AppendLine("using MinecraftClient;");
+            codeBuilder.AppendLine("using MinecraftClient.Scripting;");
+            codeBuilder.AppendLine("using MinecraftClient.Mapping;");
+            codeBuilder.AppendLine("using MinecraftClient.Inventory;");
+
+            foreach (string lib in libs)
+                codeBuilder.AppendLine(lib);
+
+            codeBuilder.AppendLine("namespace ScriptLoader {");
+            codeBuilder.AppendLine("public class Script {");
+            codeBuilder.AppendLine("public CSharpAPI MCC;");
+            codeBuilder.AppendLine("public object __run(CSharpAPI __apiHandler, string[] args) {");
+            codeBuilder.AppendLine("this.MCC = __apiHandler;");
+            AppendMappedSection(codeBuilder, scriptName, script);
+
+            if (hasImplicitReturn)
+                codeBuilder.AppendLine("return null;");
+
+            codeBuilder.AppendLine("}");
+            AppendMappedSection(codeBuilder, scriptName, extensions);
+            codeBuilder.AppendLine("}}");
+            return codeBuilder.ToString();
+        }
+
+        private static void AppendMappedSection(StringBuilder codeBuilder, string scriptName, IEnumerable<ScriptSourceLine> lines)
+        {
+            ScriptSourceLine[] sourceLines = lines.ToArray();
+            if (sourceLines.Length == 0)
+                return;
+
+            codeBuilder.AppendLine($@"#line {sourceLines[0].LineNumber} ""{EscapeLineDirectivePath(scriptName)}""");
+
+            foreach (ScriptSourceLine line in sourceLines)
+                codeBuilder.AppendLine(line.Text);
+
+            codeBuilder.AppendLine("#line default");
+        }
+
+        private static string EscapeLineDirectivePath(string path)
+        {
+            return path.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        }
+
+        private static string FormatCompilationFailure(Diagnostic failure, string scriptName)
+        {
+            if (failure.Location.IsInSource)
+            {
+                var location = failure.Location.GetMappedLineSpan();
+                string sourcePath = string.IsNullOrWhiteSpace(location.Path) ? scriptName : location.Path;
+                return string.Format(Translations.script_compile_error,
+                    sourcePath,
+                    location.StartLinePosition.Line + 1,
+                    location.StartLinePosition.Character + 1,
+                    failure.Id,
+                    failure.GetMessage());
+            }
+
+            return string.Format(Translations.script_compile_error_no_location, scriptName, failure.Id, failure.GetMessage());
         }
 
         /// <summary>
@@ -209,11 +254,17 @@ namespace MinecraftClient.Scripting
         /// <param name="apiHandler">ChatBot API Handler</param>
         /// <param name="tickHandler">ChatBot tick handler</param>
         /// <param name="localVars">Local variables passed along with the script</param>
-        public CSharpAPI(ChatBot apiHandler, Dictionary<string, object>? localVars)
+        public CSharpAPI(ChatBot apiHandler, Dictionary<string, object>? localVars, string? scriptOwnerKey = null)
         {
             SetMaster(apiHandler);
             this.localVars = localVars;
+            SetScriptOwnerKey(scriptOwnerKey);
         }
+
+        /// <summary>
+        /// Access the shared MCC gameplay API used by bots and the embedded MCP server.
+        /// </summary>
+        new public MccGameApi Game => base.Game;
 
         /* == Wrappers for ChatBot API with public visibility and call limit to one per tick for safety == */
 
@@ -309,7 +360,7 @@ namespace MinecraftClient.Scripting
         /// <returns>Value of the variable or null if no variable</returns>
         public object? GetVar(string varName)
         {
-            if (localVars != null && localVars.ContainsKey(varName))
+            if (localVars is not null && localVars.ContainsKey(varName))
                 return localVars[varName];
             else
                 return Config.AppVar.GetVar(varName);
@@ -322,7 +373,7 @@ namespace MinecraftClient.Scripting
         /// <param name="varValue">Value of the variable</param>
         public bool SetVar(string varName, object varValue)
         {
-            if (localVars != null && localVars.ContainsKey(varName))
+            if (localVars is not null && localVars.ContainsKey(varName))
                 localVars.Remove(varName);
             return Config.AppVar.SetVar(varName, varValue);
         }
@@ -339,12 +390,12 @@ namespace MinecraftClient.Scripting
             object? value = GetVar(varName);
             if (value is T Tval)
                 return Tval;
-            if (value != null)
+            if (value is not null)
             {
                 try
                 {
                     TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
-                    if (converter != null)
+                    if (converter is not null)
                         return (T?)converter.ConvertFromString(value.ToString() ?? string.Empty);
                 }
                 catch (NotSupportedException) { /* Was worth trying */ }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
@@ -92,7 +92,7 @@ namespace MinecraftClient.Commands
             sb.Append('\n');
 
             sb.AppendLine(string.Format(Translations.cmd_chunk_current, current, current.ChunkX, current.ChunkZ));
-            if (markedChunkPos != null)
+            if (markedChunkPos is not null)
             {
                 sb.Append(Translations.cmd_chunk_marked);
                 if (pos.HasValue)
@@ -100,11 +100,15 @@ namespace MinecraftClient.Commands
                 sb.AppendLine(string.Format(Translations.cmd_chunk_chunk_pos, markChunkX, markChunkZ)); ;
             }
 
-            int consoleHeight = Math.Max(Math.Max(Console.BufferHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 2, 25);
+            int safeHeight;
+            int safeWidth;
+            try { safeHeight = Console.BufferHeight; } catch { safeHeight = 50; }
+            try { safeWidth = Console.BufferWidth; } catch { safeWidth = 120; }
+            int consoleHeight = Math.Max(Math.Max(safeHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 2, 25);
             if (consoleHeight % 2 == 0)
                 --consoleHeight;
 
-            int consoleWidth = Math.Max(Math.Max(Console.BufferWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2, 17);
+            int consoleWidth = Math.Max(Math.Max(safeWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2, 17);
             if (consoleWidth % 2 == 0)
                 --consoleWidth;
 
@@ -116,7 +120,7 @@ namespace MinecraftClient.Commands
             {
                 for (int x = startX; x <= endX; ++x)
                 {
-                    if (world[x, z] != null)
+                    if (world[x, z] is not null)
                     {
                         leftMost = Math.Min(leftMost, x);
                         rightMost = Math.Max(rightMost, x);
@@ -180,7 +184,7 @@ namespace MinecraftClient.Commands
             }
 
             // Try to include the marker chunk
-            if (markedChunkPos != null &&
+            if (markedChunkPos is not null &&
                 (((Math.Max(bottomMost, markChunkZ) - Math.Min(topMost, markChunkZ) + 1) > consoleHeight) ||
                 ((Math.Max(rightMost, markChunkX) - Math.Min(leftMost, markChunkX) + 1) > consoleWidth)))
                 sb.AppendLine(Translations.cmd_chunk_outside);
@@ -208,7 +212,7 @@ namespace MinecraftClient.Commands
                         sb.Append("§§4");           // Marked chunk: background red
 
                     ChunkColumn? chunkColumn = world[x, z];
-                    if (chunkColumn == null)
+                    if (chunkColumn is null)
                         sb.Append(chunkStatusStr[0]);
                     else if (chunkColumn.FullyLoaded)
                         sb.Append(chunkStatusStr[2]);
@@ -238,10 +242,10 @@ namespace MinecraftClient.Commands
             handler.Log.Info(Translations.cmd_chunk_for_debug);
             (int chunkX, int chunkZ) = markedChunkPos ?? new(pos!.Value.ChunkX, pos!.Value.ChunkZ);
             ChunkColumn? chunkColumn = handler.GetWorld()[chunkX, chunkZ];
-            if (chunkColumn != null)
+            if (chunkColumn is not null)
                 chunkColumn.FullyLoaded = false;
 
-            if (chunkColumn == null)
+            if (chunkColumn is null)
                 return r.SetAndReturn(Status.Fail, "Fail: chunk dosen't exist!");
             else
                 return r.SetAndReturn(Status.Done, string.Format("Successfully marked chunk ({0}, {1}) as loading.", chunkX, chunkZ));
@@ -258,10 +262,10 @@ namespace MinecraftClient.Commands
             handler.Log.Info(Translations.cmd_chunk_for_debug);
             (int chunkX, int chunkZ) = markedChunkPos ?? new(pos!.Value.ChunkX, pos!.Value.ChunkZ);
             ChunkColumn? chunkColumn = handler.GetWorld()[chunkX, chunkZ];
-            if (chunkColumn != null)
+            if (chunkColumn is not null)
                 chunkColumn.FullyLoaded = false;
 
-            if (chunkColumn == null)
+            if (chunkColumn is null)
                 return r.SetAndReturn(Status.Fail, "Fail: chunk dosen't exist!");
             else
                 return r.SetAndReturn(Status.Done, string.Format("Successfully marked chunk ({0}, {1}) as loaded.", chunkX, chunkZ));

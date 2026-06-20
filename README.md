@@ -26,7 +26,25 @@
 
 ## Download
 
-Get development builds from the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
+Get the latest release from the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest).
+
+## Quick Install ⚡
+
+Open a terminal in the folder where you want MCC and run:
+
+Linux / macOS:
+
+```bash
+curl -fsSL https://mccteam.github.io/install.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+iwr -useb https://mccteam.github.io/install.ps1 | iex
+```
+
+The script detects your architecture and downloads the right binary. For more options (including `wget` and manual downloads), see the [installation guide](https://mccteam.github.io/guide/installation.html).
 
 ## How to use 📚
 
@@ -57,7 +75,7 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 
 ## Translating Minecraft Console Client 🌍
 
-To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crowdin.com/project/minecraft-console-client).
 
 ## Building from the source 🏗️
 

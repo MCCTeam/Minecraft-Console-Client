@@ -1,0 +1,168 @@
+using System.Collections.Generic;
+
+namespace MinecraftClient.Mapping.EntityPalettes
+{
+    public class EntityPalette1215 : EntityPalette
+    {
+        private static readonly Dictionary<int, EntityType> mappings = new();
+
+        static EntityPalette1215()
+        {
+            mappings[0] = EntityType.AcaciaBoat;
+            mappings[1] = EntityType.AcaciaChestBoat;
+            mappings[2] = EntityType.Allay;
+            mappings[3] = EntityType.AreaEffectCloud;
+            mappings[4] = EntityType.Armadillo;
+            mappings[5] = EntityType.ArmorStand;
+            mappings[6] = EntityType.Arrow;
+            mappings[7] = EntityType.Axolotl;
+            mappings[8] = EntityType.BambooChestRaft;
+            mappings[9] = EntityType.BambooRaft;
+            mappings[10] = EntityType.Bat;
+            mappings[11] = EntityType.Bee;
+            mappings[12] = EntityType.BirchBoat;
+            mappings[13] = EntityType.BirchChestBoat;
+            mappings[14] = EntityType.Blaze;
+            mappings[15] = EntityType.BlockDisplay;
+            mappings[16] = EntityType.Bogged;
+            mappings[17] = EntityType.Breeze;
+            mappings[18] = EntityType.BreezeWindCharge;
+            mappings[19] = EntityType.Camel;
+            mappings[20] = EntityType.Cat;
+            mappings[21] = EntityType.CaveSpider;
+            mappings[22] = EntityType.CherryBoat;
+            mappings[23] = EntityType.CherryChestBoat;
+            mappings[24] = EntityType.ChestMinecart;
+            mappings[25] = EntityType.Chicken;
+            mappings[26] = EntityType.Cod;
+            mappings[27] = EntityType.CommandBlockMinecart;
+            mappings[28] = EntityType.Cow;
+            mappings[29] = EntityType.Creaking;
+            mappings[30] = EntityType.Creeper;
+            mappings[31] = EntityType.DarkOakBoat;
+            mappings[32] = EntityType.DarkOakChestBoat;
+            mappings[33] = EntityType.Dolphin;
+            mappings[34] = EntityType.Donkey;
+            mappings[35] = EntityType.DragonFireball;
+            mappings[36] = EntityType.Drowned;
+            mappings[37] = EntityType.Egg;
+            mappings[38] = EntityType.ElderGuardian;
+            mappings[39] = EntityType.Enderman;
+            mappings[40] = EntityType.Endermite;
+            mappings[41] = EntityType.EnderDragon;
+            mappings[42] = EntityType.EnderPearl;
+            mappings[43] = EntityType.EndCrystal;
+            mappings[44] = EntityType.Evoker;
+            mappings[45] = EntityType.EvokerFangs;
+            mappings[46] = EntityType.ExperienceBottle;
+            mappings[47] = EntityType.ExperienceOrb;
+            mappings[48] = EntityType.EyeOfEnder;
+            mappings[49] = EntityType.FallingBlock;
+            mappings[50] = EntityType.Fireball;
+            mappings[51] = EntityType.FireworkRocket;
+            mappings[52] = EntityType.Fox;
+            mappings[53] = EntityType.Frog;
+            mappings[54] = EntityType.FurnaceMinecart;
+            mappings[55] = EntityType.Ghast;
+            mappings[56] = EntityType.Giant;
+            mappings[57] = EntityType.GlowItemFrame;
+            mappings[58] = EntityType.GlowSquid;
+            mappings[59] = EntityType.Goat;
+            mappings[60] = EntityType.Guardian;
+            mappings[61] = EntityType.Hoglin;
+            mappings[62] = EntityType.HopperMinecart;
+            mappings[63] = EntityType.Horse;
+            mappings[64] = EntityType.Husk;
+            mappings[65] = EntityType.Illusioner;
+            mappings[66] = EntityType.Interaction;
+            mappings[67] = EntityType.IronGolem;
+            mappings[68] = EntityType.Item;
+            mappings[69] = EntityType.ItemDisplay;
+            mappings[70] = EntityType.ItemFrame;
+            mappings[71] = EntityType.JungleBoat;
+            mappings[72] = EntityType.JungleChestBoat;
+            mappings[73] = EntityType.LeashKnot;
+            mappings[74] = EntityType.LightningBolt;
+            mappings[75] = EntityType.Llama;
+            mappings[76] = EntityType.LlamaSpit;
+            mappings[77] = EntityType.MagmaCube;
+            mappings[78] = EntityType.MangroveBoat;
+            mappings[79] = EntityType.MangroveChestBoat;
+            mappings[80] = EntityType.Marker;
+            mappings[81] = EntityType.Minecart;
+            mappings[82] = EntityType.Mooshroom;
+            mappings[83] = EntityType.Mule;
+            mappings[84] = EntityType.OakBoat;
+            mappings[85] = EntityType.OakChestBoat;
+            mappings[86] = EntityType.Ocelot;
+            mappings[87] = EntityType.OminousItemSpawner;
+            mappings[88] = EntityType.Painting;
+            mappings[89] = EntityType.PaleOakBoat;
+            mappings[90] = EntityType.PaleOakChestBoat;
+            mappings[91] = EntityType.Panda;
+            mappings[92] = EntityType.Parrot;
+            mappings[93] = EntityType.Phantom;
+            mappings[94] = EntityType.Pig;
+            mappings[95] = EntityType.Piglin;
+            mappings[96] = EntityType.PiglinBrute;
+            mappings[97] = EntityType.Pillager;
+            mappings[98] = EntityType.PolarBear;
+            mappings[99] = EntityType.SplashPotion;
+            mappings[100] = EntityType.LingeringPotion;
+            mappings[101] = EntityType.Pufferfish;
+            mappings[102] = EntityType.Rabbit;
+            mappings[103] = EntityType.Ravager;
+            mappings[104] = EntityType.Salmon;
+            mappings[105] = EntityType.Sheep;
+            mappings[106] = EntityType.Shulker;
+            mappings[107] = EntityType.ShulkerBullet;
+            mappings[108] = EntityType.Silverfish;
+            mappings[109] = EntityType.Skeleton;
+            mappings[110] = EntityType.SkeletonHorse;
+            mappings[111] = EntityType.Slime;
+            mappings[112] = EntityType.SmallFireball;
+            mappings[113] = EntityType.Sniffer;
+            mappings[114] = EntityType.Snowball;
+            mappings[115] = EntityType.SnowGolem;
+            mappings[116] = EntityType.SpawnerMinecart;
+            mappings[117] = EntityType.SpectralArrow;
+            mappings[118] = EntityType.Spider;
+            mappings[119] = EntityType.SpruceBoat;
+            mappings[120] = EntityType.SpruceChestBoat;
+            mappings[121] = EntityType.Squid;
+            mappings[122] = EntityType.Stray;
+            mappings[123] = EntityType.Strider;
+            mappings[124] = EntityType.Tadpole;
+            mappings[125] = EntityType.TextDisplay;
+            mappings[126] = EntityType.Tnt;
+            mappings[127] = EntityType.TntMinecart;
+            mappings[128] = EntityType.TraderLlama;
+            mappings[129] = EntityType.Trident;
+            mappings[130] = EntityType.TropicalFish;
+            mappings[131] = EntityType.Turtle;
+            mappings[132] = EntityType.Vex;
+            mappings[133] = EntityType.Villager;
+            mappings[134] = EntityType.Vindicator;
+            mappings[135] = EntityType.WanderingTrader;
+            mappings[136] = EntityType.Warden;
+            mappings[137] = EntityType.WindCharge;
+            mappings[138] = EntityType.Witch;
+            mappings[139] = EntityType.Wither;
+            mappings[140] = EntityType.WitherSkeleton;
+            mappings[141] = EntityType.WitherSkull;
+            mappings[142] = EntityType.Wolf;
+            mappings[143] = EntityType.Zoglin;
+            mappings[144] = EntityType.Zombie;
+            mappings[145] = EntityType.ZombieHorse;
+            mappings[146] = EntityType.ZombieVillager;
+            mappings[147] = EntityType.ZombifiedPiglin;
+            mappings[148] = EntityType.Player;
+            mappings[149] = EntityType.FishingBobber;
+        }
+
+        protected override Dictionary<int, EntityType> GetDict()
+        {
+            return mappings;
+        }
+    }
+}

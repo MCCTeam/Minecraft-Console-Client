@@ -1025,7 +1025,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[674] = ItemType.SculkSensor;
             mappings[373] = ItemType.SculkShrieker;
             mappings[371] = ItemType.SculkVein;
-            mappings[794] = ItemType.Scute;
+            mappings[794] = ItemType.TurtleScute;
             mappings[508] = ItemType.SeaLantern;
             mappings[200] = ItemType.SeaPickle;
             mappings[199] = ItemType.Seagrass;

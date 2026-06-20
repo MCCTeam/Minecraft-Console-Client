@@ -243,6 +243,9 @@
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
     <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
   </data>
+  <data name="bot.autodig.drop_low_durability" xml:space="preserve">
+    <value>Dropped low durability {0} from slot {1}.</value>
+  </data>
   <data name="bot.autodig.start" xml:space="preserve">
     <value>Automatic digging has started.</value>
   </data>
@@ -251,6 +254,9 @@
   </data>
   <data name="bot.autodig.stop" xml:space="preserve">
     <value>Auto-digging has been stopped.</value>
+  </data>
+  <data name="bot.autodig.switch" xml:space="preserve">
+    <value>Switch to {0} from slot {1}.</value>
   </data>
   <data name="bot.autoDrop.added" xml:space="preserve">
     <value>Added item {0}</value>
@@ -388,6 +394,12 @@
   <data name="bot.autoRelog.wait" xml:space="preserve">
     <value>Waiting {0:0.000} seconds before reconnecting...</value>
   </data>
+  <data name="bot.autoRelog.wait_with_retries" xml:space="preserve">
+    <value>Waiting {0:0.000} seconds before reconnecting... ({1} retries left)</value>
+  </data>
+  <data name="bot.autoRelog.retries_unlimited" xml:space="preserve">
+    <value>unlimited</value>
+  </data>
   <data name="bot.autoRespond.file_not_found" xml:space="preserve">
     <value>File not found: '{0}'</value>
   </data>
@@ -463,6 +475,27 @@ cooldown: {6}</value>
   <data name="bot.DiscordBridge.unknown_error" xml:space="preserve">
     <value>An unknown error has occured!</value>
   </data>
+  <data name="bot.DiscordRpc.missing_app_id" xml:space="preserve">
+    <value>Please provide a valid Discord Application ID! Get one at https://discord.com/developers/applications</value>
+  </data>
+  <data name="bot.DiscordRpc.connected" xml:space="preserve">
+    <value>Connected to Discord as {0}</value>
+  </data>
+  <data name="bot.DiscordRpc.connection_failed" xml:space="preserve">
+    <value>Failed to connect to Discord (pipe {0}). Is Discord running?</value>
+  </data>
+  <data name="bot.DiscordRpc.initialized" xml:space="preserve">
+    <value>Discord Rich Presence initialized successfully.</value>
+  </data>
+  <data name="bot.DiscordRpc.init_error" xml:space="preserve">
+    <value>Failed to initialize Discord Rich Presence: {0}</value>
+  </data>
+  <data name="bot.DiscordRpc.update_error" xml:space="preserve">
+    <value>Error updating Discord presence: {0}</value>
+  </data>
+  <data name="bot.DiscordRpc.invalid_interval" xml:space="preserve">
+    <value>Invalid update interval, must be at least 1 second. Using default of 10 seconds.</value>
+  </data>
   <data name="bot.farmer.already_running" xml:space="preserve">
     <value>The bot is already farming!</value>
   </data>
@@ -471,6 +504,9 @@ cooldown: {6}</value>
   </data>
   <data name="bot.farmer.crop_type" xml:space="preserve">
     <value>Crop type</value>
+  </data>
+  <data name="bot.farmer.crop_unavailable" xml:space="preserve">
+    <value>{0} is only available in Minecraft {1} and newer!</value>
   </data>
   <data name="bot.farmer.desc" xml:space="preserve">
     <value>Farming bot</value>
@@ -488,7 +524,7 @@ cooldown: {6}</value>
     <value>The Farmer bot needs Terrain Handling in order to work, please enable it!</value>
   </data>
   <data name="bot.farmer.not_implemented" xml:space="preserve">
-    <value>Not implemented bellow 1.13!</value>
+    <value>Not implemented below 1.8!</value>
   </data>
   <data name="bot.farmer.radius" xml:space="preserve">
     <value>Radius</value>
@@ -627,6 +663,12 @@ cooldown: {6}</value>
   <data name="bot.map.sent_to_telegram" xml:space="preserve">
     <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
   </data>
+  <data name="bot.map.tui_header" xml:space="preserve">
+    <value>Map #{0} ({1}x{2}) [{3}%]</value>
+  </data>
+  <data name="bot.map.tui_controls" xml:space="preserve">
+    <value>Scroll=Zoom  Drag=Pan  +/-=Zoom  Arrows=Pan  Esc/E=Close</value>
+  </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
     <value>replay command</value>
   </data>
@@ -650,6 +692,21 @@ cooldown: {6}</value>
   </data>
   <data name="bot.script.pm.loaded" xml:space="preserve">
     <value>Script '{0}' loaded.</value>
+  </data>
+  <data name="script.compile.error" xml:space="preserve">
+    <value>Error in {0} at line {1}, column {2}: [{3}] {4}</value>
+  </data>
+  <data name="script.compile.error_no_location" xml:space="preserve">
+    <value>Error in {0}: [{1}] {2}</value>
+  </data>
+  <data name="script.compile.failed" xml:space="preserve">
+    <value>[Script] Compilation failed with error(s):</value>
+  </data>
+  <data name="script.compile.started" xml:space="preserve">
+    <value>[Script] Starting compilation for {0}...</value>
+  </data>
+  <data name="script.compile.succeeded" xml:space="preserve">
+    <value>[Script] Compilation done with no errors.</value>
   </data>
   <data name="bot.scriptScheduler.loaded_task" xml:space="preserve">
     <value>Loaded task:
@@ -770,6 +827,9 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
   <data name="botname.DiscordBridge" xml:space="preserve">
     <value>DiscordBridge</value>
   </data>
+  <data name="botname.DiscordRpc" xml:space="preserve">
+    <value>DiscordRpc</value>
+  </data>
   <data name="botname.Farmer" xml:space="preserve">
     <value>Farmer</value>
   </data>
@@ -805,6 +865,45 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
   </data>
   <data name="botname.TestBot" xml:space="preserve">
     <value>TestBot</value>
+  </data>
+  <data name="mcc.banner.classic" xml:space="preserve">
+    <value>Minecraft Console Client v{0} - for MC {1} to {2} - {3}</value>
+  </data>
+  <data name="mcc.banner.star_reminder" xml:space="preserve">
+    <value>⭐ Like MCC? Star us on GitHub: https://github.com/MCCTeam/Minecraft-Console-Client</value>
+  </data>
+  <data name="mcc.banner.label_mc_versions" xml:space="preserve">
+    <value>Supported MC Versions:</value>
+  </data>
+  <data name="mcc.server_info.label_server" xml:space="preserve">
+    <value>Server:</value>
+  </data>
+  <data name="mcc.server_info.label_version" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="mcc.server_info.label_protocol" xml:space="preserve">
+    <value>Protocol: {0}</value>
+  </data>
+  <data name="mcc.server_info.label_players" xml:space="preserve">
+    <value>Players:</value>
+  </data>
+  <data name="mcc.server_info.label_ping" xml:space="preserve">
+    <value>Ping:</value>
+  </data>
+  <data name="mcc.server_info.label_ping_ms" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="mcc.server_info.label_connecting_as" xml:space="preserve">
+    <value>Connecting as:</value>
+  </data>
+  <data name="mcc.server_info.label_online" xml:space="preserve">
+    <value>Online Players:</value>
+  </data>
+  <data name="mcc.server_info.sample_more" xml:space="preserve">
+    <value>... +{0}</value>
+  </data>
+  <data name="mcc.server_info.version_upgrade" xml:space="preserve">
+    <value>Server reported protocol {0} ({1}), upgraded to {2} ({3}) for best compatibility</value>
   </data>
   <data name="cache.converting" xml:space="preserve">
     <value>Converting session cache from disk: {0}</value>
@@ -907,7 +1006,7 @@ Some messages won't be properly printed without this file.</value>
     <value>Failed to reach the bed position (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) in time (30 seconds). Giving up!</value>
   </data>
   <data name="cmd.bed.found_a_bed_at" xml:space="preserve">
-    <value>Found a bet at (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}).</value>
+    <value>Found a bed at (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}).</value>
   </data>
   <data name="cmd.bed.in" xml:space="preserve">
     <value>Succesfully laid in bed!</value>
@@ -1005,6 +1104,18 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   </data>
   <data name="cmd.connect.unknown" xml:space="preserve">
     <value>Unknown account '{0}'.</value>
+  </data>
+  <data name="cmd.console_chat.desc" xml:space="preserve">
+    <value>toggle chat visibility in the console.</value>
+  </data>
+  <data name="cmd.console_chat.state_off" xml:space="preserve">
+    <value>Console chat output is now hidden.</value>
+  </data>
+  <data name="cmd.console_chat.state_on" xml:space="preserve">
+    <value>Console chat output is now visible.</value>
+  </data>
+  <data name="cmd.clear_console.desc" xml:space="preserve">
+    <value>clear the console output.</value>
   </data>
   <data name="cmd.debug.desc" xml:space="preserve">
     <value>toggle debug messages.</value>
@@ -1213,6 +1324,33 @@ Change EnableEmoji=false in the settings if the display is confusing.</value>
   <data name="cmd.follow.usage" xml:space="preserve">
     <value>follow &lt;player name|stop&gt; [-f] (Use -f to enable un-safe walking)</value>
   </data>
+  <data name="cmd.effects.desc" xml:space="preserve">
+    <value>list your currently active effects.</value>
+  </data>
+  <data name="cmd.effects.entry" xml:space="preserve">
+    <value>- {0} ({1})</value>
+  </data>
+  <data name="cmd.effects.header" xml:space="preserve">
+    <value>Active effects:</value>
+  </data>
+  <data name="cmd.effects.none" xml:space="preserve">
+    <value>No active effects.</value>
+  </data>
+  <data name="cmd.tryout.desc" xml:space="preserve">
+    <value>try a recommended feature.</value>
+  </data>
+  <data name="cmd.tryout.list.header" xml:space="preserve">
+    <value>Available tryouts:</value>
+  </data>
+  <data name="cmd.tryout.list.tui" xml:space="preserve">
+    <value>tui: set [Console.General] ConsoleMode = "tui" for the next restart.</value>
+  </data>
+  <data name="cmd.tryout.tui.already_enabled" xml:space="preserve">
+    <value>[Console.General] ConsoleMode is already "tui" in the config. To switch back, set [Console.General] ConsoleMode = "classic". Restart MCC after changing it for the new mode to take effect.</value>
+  </data>
+  <data name="cmd.tryout.tui.enabled" xml:space="preserve">
+    <value>Updated [Console.General] ConsoleMode from "{0}" to "{1}" in the config. To switch back, set [Console.General] ConsoleMode = "classic". Restart MCC to apply the change.</value>
+  </data>
   <data name="cmd.health.desc" xml:space="preserve">
     <value>Display Health and Food saturation.</value>
   </data>
@@ -1334,7 +1472,7 @@ Note that parameters in '[]' are optional.</value>
     <value>Right</value>
   </data>
   <data name="cmd.inventory.shiftclick" xml:space="preserve">
-    <value>Shift clicking slot {0} in window #{1}</value>
+    <value>Shift</value>
   </data>
   <data name="cmd.inventory.shiftclick_fail" xml:space="preserve">
     <value>Shift click failed, this may be because this container type is not supported</value>
@@ -1344,6 +1482,30 @@ Note that parameters in '[]' are optional.</value>
   </data>
   <data name="cmd.list.players" xml:space="preserve">
     <value>PlayerList: {0}</value>
+  </data>
+  <data name="cmd.tab.desc" xml:space="preserve">
+    <value>show a vanilla-like tab list. In TUI mode, opens a live overlay.</value>
+  </data>
+  <data name="cmd.tab.no_players" xml:space="preserve">
+    <value>No listed players are currently tracked.</value>
+  </data>
+  <data name="cmd.tab.title" xml:space="preserve">
+    <value>Tab list ({0} players)</value>
+  </data>
+  <data name="cmd.tab.column_ping" xml:space="preserve">
+    <value>Ping</value>
+  </data>
+  <data name="cmd.tab.column_team" xml:space="preserve">
+    <value>Team</value>
+  </data>
+  <data name="cmd.tab.column_player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="cmd.tab.tui_opened" xml:space="preserve">
+    <value>Live tab overlay opened.</value>
+  </data>
+  <data name="cmd.tab.tui_unavailable" xml:space="preserve">
+    <value>The tab overlay is not available right now.</value>
   </data>
   <data name="cmd.log.desc" xml:space="preserve">
     <value>log some text to the console.</value>
@@ -1475,6 +1637,21 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="cmd.tps.desc" xml:space="preserve">
     <value>Display server current tps (tick per second). May not be accurate</value>
   </data>
+  <data name="cmd.teams.desc" xml:space="preserve">
+    <value>List all scoreboard teams and their members.</value>
+  </data>
+  <data name="cmd.teams.no_teams" xml:space="preserve">
+    <value>No teams are currently tracked.</value>
+  </data>
+  <data name="cmd.teams.team_header" xml:space="preserve">
+    <value>Team '{0}' (display: {1}, color: {2}, prefix: '{3}', suffix: '{4}', nameTagVisibility: {5}, collisionRule: {6}, friendlyFire: {7}, seeInvisibles: {8})</value>
+  </data>
+  <data name="cmd.teams.team_members" xml:space="preserve">
+    <value>  Members ({0}): {1}</value>
+  </data>
+  <data name="cmd.teams.team_no_members" xml:space="preserve">
+    <value>  No members.</value>
+  </data>
   <data name="cmd.useblock.desc" xml:space="preserve">
     <value>Place a block or open chest</value>
   </data>
@@ -1482,7 +1659,7 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
     <value>Useblock at ({0:0.0}, {1:0.0}, {2:0.0}) {3}.</value>
   </data>
   <data name="cmd.useitem.desc" xml:space="preserve">
-    <value>Use (left click) an item on the hand</value>
+    <value>Use the item in your hand, optionally on a specific block</value>
   </data>
   <data name="cmd.useitem.use" xml:space="preserve">
     <value>Used an item</value>
@@ -1827,6 +2004,24 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="mcc.connecting" xml:space="preserve">
     <value>Connecting to {0}...</value>
   </data>
+  <data name="mcc.console_mode_tui_recommendation" xml:space="preserve">
+    <value>Tip: try TUI mode for a cleaner interface, mouse-friendly inventory actions, and a nicer layout. Run {0}tryout tui§8 to switch [Console.General] ConsoleMode to "tui" for the next restart.</value>
+  </data>
+  <data name="mcc.tui_startup_failed" xml:space="preserve">
+    <value>MCC encountered a problem while starting TUI mode.</value>
+  </data>
+  <data name="mcc.tui_startup_fallback_classic" xml:space="preserve">
+    <value>As a fallback, MCC has automatically switched [Console.General] ConsoleMode to "classic". This will take effect after you restart MCC.</value>
+  </data>
+  <data name="mcc.report_issue" xml:space="preserve">
+    <value>Please report this issue to the MCC Team.</value>
+  </data>
+  <data name="mcc.device_code_prompt" xml:space="preserve">
+    <value>To sign in, open {0} in your browser and enter the code: §e{1}</value>
+  </data>
+  <data name="mcc.device_code_waiting" xml:space="preserve">
+    <value>Waiting for authentication to complete...</value>
+  </data>
   <data name="mcc.disconnect.login" xml:space="preserve">
     <value>Login failed :</value>
   </data>
@@ -1932,6 +2127,9 @@ Type '{0}quit' to leave the server.</value>
   <data name="mcc.restart" xml:space="preserve">
     <value>Restarting Minecraft Console Client...</value>
   </data>
+  <data name="mcc.send_text_not_connected" xml:space="preserve">
+    <value>Cannot send text: not connected to a server.</value>
+  </data>
   <data name="mcc.restart_delay" xml:space="preserve">
     <value>Waiting {0} seconds before restarting...</value>
   </data>
@@ -1946,10 +2144,10 @@ MCC is running with default settings.</value>
     <value>Server is in offline mode.</value>
   </data>
   <data name="mcc.server_protocol" xml:space="preserve">
-    <value>Server version : {0} (protocol v{1})</value>
+    <value>Server version: {0} (protocol v{1})</value>
   </data>
   <data name="mcc.server_version" xml:space="preserve">
-    <value>Server version : </value>
+    <value>Server version: </value>
   </data>
   <data name="mcc.session" xml:space="preserve">
     <value>Checking Session...</value>
@@ -2109,6 +2307,33 @@ Logging in...</value>
   <data name="cmd.nameitem.desc" xml:space="preserve">
     <value>Set an item name when an Anvil inventory is active and the item is in the first slot.</value>
   </data>
+  <data name="cmd.recipebook.craft.failed" xml:space="preserve">
+    <value>Failed to send recipe book craft request for {0}.</value>
+  </data>
+  <data name="cmd.recipebook.craft.sent" xml:space="preserve">
+    <value>Requested recipe {0}.</value>
+  </data>
+  <data name="cmd.recipebook.craftall.sent" xml:space="preserve">
+    <value>Requested recipe {0} with craft-all.</value>
+  </data>
+  <data name="cmd.recipebook.desc" xml:space="preserve">
+    <value>List unlocked recipe book recipes and craft them through the active recipe book inventory.</value>
+  </data>
+  <data name="cmd.recipebook.list" xml:space="preserve">
+    <value>Unlocked recipe book recipes</value>
+  </data>
+  <data name="cmd.recipebook.no.active.inventory" xml:space="preserve">
+    <value>You need an active player crafting grid, crafting table, furnace, blast furnace, smoker, or stonecutter inventory.</value>
+  </data>
+  <data name="cmd.recipebook.no.recipes" xml:space="preserve">
+    <value>No unlocked recipe book recipes are currently tracked.</value>
+  </data>
+  <data name="cmd.recipebook.recipe.id.empty" xml:space="preserve">
+    <value>The recipe identifier cannot be empty.</value>
+  </data>
+  <data name="cmd.recipebook.unsupported" xml:space="preserve">
+    <value>Recipe book crafting is only supported on Minecraft 1.13 and newer.</value>
+  </data>
   <data name="bot.antiafk.may.not.move" xml:space="preserve">
     <value>Bot movement lock is held by bot {0}, so the Anti AFK bot might not move!</value>
   </data>
@@ -2119,7 +2344,7 @@ Logging in...</value>
     <value>Minimum number that you have provided is bigger than the maximum, swapping them around!</value>
   </data>
   <data name="cmd.inventory.shiftrightclick" xml:space="preserve">
-    <value>Shift right-clicking slot {0} in window #{1}</value>
+    <value>Shift right</value>
   </data>
   <data name="mcc.avaliable_profiles" xml:space="preserve">
     <value>Avaliable profiles:</value>
@@ -2132,5 +2357,732 @@ Logging in...</value>
   </data>
   <data name="mcc.sentry_logging" xml:space="preserve">
     <value>MCC uses Sentry to log errors. You can opt-out by setting the EnableSentry option in the configuration file to false.</value>
+  </data>
+  <data name="mcc.use_quit_to_exit" xml:space="preserve">
+    <value>Use '{0}quit' to exit Minecraft Console Client.</value>
+  </data>
+  <data name="cmd.debug.state_header" xml:space="preserve">
+    <value>MCC Debug State</value>
+  </data>
+  <data name="cmd.debug.state_server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="cmd.debug.state_username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="cmd.debug.state_protocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="cmd.debug.state_gamemode" xml:space="preserve">
+    <value>GameMode</value>
+  </data>
+  <data name="cmd.debug.state_health" xml:space="preserve">
+    <value>Health</value>
+  </data>
+  <data name="cmd.debug.state_food" xml:space="preserve">
+    <value>Food</value>
+  </data>
+  <data name="cmd.debug.state_location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="cmd.debug.state_tps" xml:space="preserve">
+    <value>TPS</value>
+  </data>
+  <data name="cmd.debug.state_console" xml:space="preserve">
+    <value>Console</value>
+  </data>
+  <data name="cmd.debug.state_features" xml:space="preserve">
+    <value>Features</value>
+  </data>
+  <data name="cmd.debug.state_debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="cmd.debug.state_bots" xml:space="preserve">
+    <value>Bots</value>
+  </data>
+  <data name="cmd.debug.state_players" xml:space="preserve">
+    <value>Players</value>
+  </data>
+  <data name="cmd.debug.state_online" xml:space="preserve">
+    <value>{0} online</value>
+  </data>
+  <data name="cmd.inventory.help.open" xml:space="preserve">
+    <value>Open interactive TUI inventory viewer (TUI mode only).</value>
+  </data>
+  <data name="cmd.inventory.tui_only" xml:space="preserve">
+    <value>Interactive TUI is only available in TUI console mode. Use '/inventory &lt;id&gt; list' instead.</value>
+  </data>
+  <data name="cmd.inventory.tui_already_running" xml:space="preserve">
+    <value>TUI inventory viewer is already running.</value>
+  </data>
+  <data name="cmd.inventory.tui_opening" xml:space="preserve">
+    <value>Opening TUI for Inventory #{0}...</value>
+  </data>
+  <data name="cmd.inventory.tui_opened" xml:space="preserve">
+    <value>Inventory dialog opened.</value>
+  </data>
+  <data name="cmd.inventory.tui_launch_failed" xml:space="preserve">
+    <value>Failed to launch TUI inventory viewer.</value>
+  </data>
+  <data name="cmd.inventory.tui_unsupported_container" xml:space="preserve">
+    <value>TUI viewer does not support this container type (Inventory #{0}). Use '/inventory {0} list' to view its contents.</value>
+  </data>
+  <data name="tui.select_copy_hint" xml:space="preserve">
+    <value>Hold Shift + Left-click to select and copy text.</value>
+  </data>
+  <data name="tui.ctrlc_input_cleared" xml:space="preserve">
+    <value>Input cleared. Press Ctrl+C again to quit.</value>
+  </data>
+  <data name="tui.ctrlc_quit_hint" xml:space="preserve">
+    <value>Press Ctrl+C again to quit MCC.</value>
+  </data>
+  <data name="tui.inventory.item_info" xml:space="preserve">
+    <value>[ Item Info ]</value>
+  </data>
+  <data name="tui.inventory.held_item" xml:space="preserve">
+    <value>[ Held Item ]</value>
+  </data>
+  <data name="tui.inventory.controls" xml:space="preserve">
+    <value>[ Controls ]</value>
+  </data>
+  <data name="tui.inventory.controls_help" xml:space="preserve">
+    <value>LClick  Pick/Place
+RClick  Half/Place1
+Shift+C QuickMove
+Q       Drop x1
+Ctrl+Q  Drop Stack
+R       Refresh
+E/ESC   Exit</value>
+  </data>
+  <data name="tui.inventory.cursor_empty" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="tui.inventory.offhand" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="tui.inventory.output" xml:space="preserve">
+    <value>Out</value>
+  </data>
+  <data name="tui.inventory.equip_head" xml:space="preserve">
+    <value>Hd</value>
+  </data>
+  <data name="tui.inventory.equip_body" xml:space="preserve">
+    <value>Bd</value>
+  </data>
+  <data name="tui.inventory.equip_legs" xml:space="preserve">
+    <value>Lg</value>
+  </data>
+  <data name="tui.inventory.equip_feet" xml:space="preserve">
+    <value>Ft</value>
+  </data>
+  <data name="tui.inventory.hover_hint" xml:space="preserve">
+    <value>Hover over a slot to
+see item details.</value>
+  </data>
+  <data name="tui.inventory.slot_empty" xml:space="preserve">
+    <value>(Empty)</value>
+  </data>
+  <data name="tui.inventory.slot_detail" xml:space="preserve">
+    <value>Slot #{0}  Count: {1}</value>
+  </data>
+  <data name="tui.inventory.durability" xml:space="preserve">
+    <value>Durability</value>
+  </data>
+  <data name="tui.inventory.container_not_found" xml:space="preserve">
+    <value>Container not found</value>
+  </data>
+  <data name="tui.inventory.title" xml:space="preserve">
+    <value>Inventory #{0} - {1}</value>
+  </data>
+  <data name="tui.inventory.item_count" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+  <data name="tui.tab.hint" xml:space="preserve">
+    <value>Press Esc to close. Refreshes automatically.</value>
+  </data>
+  <data name="bot.effect.gained" xml:space="preserve">
+    <value>You're now under {0} effect (Duration: {1}).</value>
+  </data>
+  <data name="bot.effect.expired" xml:space="preserve">
+    <value>Effect {0} has expired</value>
+  </data>
+  <data name="effect.duration.unlimited" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+  <data name="effect.article.a" xml:space="preserve">
+    <value>a</value>
+  </data>
+  <data name="effect.article.an" xml:space="preserve">
+    <value>an</value>
+  </data>
+  <data name="effect.duration.short.hours" xml:space="preserve">
+    <value>{0}h</value>
+  </data>
+  <data name="effect.duration.short.hours_minutes" xml:space="preserve">
+    <value>{0}h {1}m</value>
+  </data>
+  <data name="effect.duration.short.minutes" xml:space="preserve">
+    <value>{0}m</value>
+  </data>
+  <data name="effect.duration.short.minutes_seconds" xml:space="preserve">
+    <value>{0}m {1}s</value>
+  </data>
+  <data name="effect.duration.short.seconds" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+  <data name="effect.duration.short.unlimited" xml:space="preserve">
+    <value>∞</value>
+  </data>
+  <data name="effect.name.with_amplifier" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="tui.container.label" xml:space="preserve">
+    <value>Container</value>
+  </data>
+  <data name="tui.furnace.input" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="tui.furnace.fuel" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="tui.furnace.output" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="tui.enchanting.item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="tui.enchanting.lapis" xml:space="preserve">
+    <value>Lapis</value>
+  </data>
+  <data name="tui.enchanting.options" xml:space="preserve">
+    <value>Enchant Options</value>
+  </data>
+  <data name="tui.enchanting.option_slot" xml:space="preserve">
+    <value>Option {0}</value>
+  </data>
+  <data name="tui.brewing.fuel" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="tui.brewing.ingredient" xml:space="preserve">
+    <value>Ingredient</value>
+  </data>
+  <data name="tui.brewing.bottle" xml:space="preserve">
+    <value>Bottle {0}</value>
+  </data>
+  <data name="tui.grindstone.input1" xml:space="preserve">
+    <value>Input 1</value>
+  </data>
+  <data name="tui.grindstone.input2" xml:space="preserve">
+    <value>Input 2</value>
+  </data>
+  <data name="tui.crafting.grid" xml:space="preserve">
+    <value>Crafting</value>
+  </data>
+  <data name="botname.McpServer" xml:space="preserve">
+    <value>McpServer</value>
+  </data>
+  <data name="bot.mcpserver.starting" xml:space="preserve">
+    <value>Starting embedded MCP server...</value>
+  </data>
+  <data name="bot.mcpserver.started" xml:space="preserve">
+    <value>Embedded MCP server started on {0}</value>
+  </data>
+  <data name="bot.mcpserver.start_failed" xml:space="preserve">
+    <value>Failed to start embedded MCP server: {0}</value>
+  </data>
+  <data name="bot.mcpserver.missing_auth_token" xml:space="preserve">
+    <value>Embedded MCP auth token is required but environment variable {0} is empty.</value>
+  </data>
+  <data name="bot.mcpserver.stopped" xml:space="preserve">
+    <value>Embedded MCP server stopped.</value>
+  </data>
+  <data name="bot.mcpserver.stop_failed" xml:space="preserve">
+    <value>Failed to stop embedded MCP server cleanly: {0}</value>
+  </data>
+  <data name="cmd.minimap.desc" xml:space="preserve">
+    <value>Toggle the TUI minimap overlay, or adjust its zoom level.</value>
+  </data>
+  <data name="cmd.minimap.enabled" xml:space="preserve">
+    <value>Minimap enabled.</value>
+  </data>
+  <data name="cmd.minimap.disabled" xml:space="preserve">
+    <value>Minimap disabled.</value>
+  </data>
+  <data name="cmd.minimap.zoom_set" xml:space="preserve">
+    <value>Minimap zoom set to {0}:1 (blocks per pixel).</value>
+  </data>
+  <data name="cmd.minimap.zoom_current" xml:space="preserve">
+    <value>Current minimap zoom: {0}:1 blocks/px (range 1-{1}).</value>
+  </data>
+  <data name="cmd.minimap.tui_only" xml:space="preserve">
+    <value>The minimap command is only available in TUI mode.</value>
+  </data>
+  <data name="tui.minimap.legend.hostile" xml:space="preserve">
+    <value>Hostile</value>
+  </data>
+  <data name="tui.minimap.legend.passive" xml:space="preserve">
+    <value>Passive</value>
+  </data>
+  <data name="tui.minimap.legend.neutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="tui.minimap.legend.player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="cmd.minimap.names_status" xml:space="preserve">
+    <value>Name display -- Players: {0}, Hostile: {1}, Neutral: {2}, Passive: {3}</value>
+  </data>
+  <data name="cmd.minimap.names_all_on" xml:space="preserve">
+    <value>All entity name labels enabled.</value>
+  </data>
+  <data name="cmd.minimap.names_all_off" xml:space="preserve">
+    <value>All entity name labels disabled.</value>
+  </data>
+  <data name="cmd.minimap.names_cat" xml:space="preserve">
+    <value>{0} name display: {1}</value>
+  </data>
+  <data name="cmd.minimap.names_cat_set" xml:space="preserve">
+    <value>{0} name display set to {1}.</value>
+  </data>
+  <data name="cmd.minimap.position_current" xml:space="preserve">
+    <value>Current minimap position: {0}</value>
+  </data>
+  <data name="cmd.minimap.position_set" xml:space="preserve">
+    <value>Minimap position set to: {0}</value>
+  </data>
+  <data name="cmd.minimap.cave_current" xml:space="preserve">
+    <value>Current cave mode: {0}</value>
+  </data>
+  <data name="cmd.minimap.cave_set" xml:space="preserve">
+    <value>Cave mode set to: {0}</value>
+  </data>
+  <data name="cmd.achievement.desc" xml:space="preserve">
+    <value>list achievements/advancements from the server.</value>
+  </data>
+  <data name="cmd.achievement.none" xml:space="preserve">
+    <value>No achievements/advancements received yet.</value>
+  </data>
+  <data name="cmd.achievement.none_unlocked" xml:space="preserve">
+    <value>No completed achievements/advancements.</value>
+  </data>
+  <data name="cmd.achievement.none_locked" xml:space="preserve">
+    <value>No incomplete achievements/advancements.</value>
+  </data>
+  <data name="cmd.achievement.header" xml:space="preserve">
+    <value>Achievements/Advancements:</value>
+  </data>
+  <data name="cmd.achievement.header_unlocked" xml:space="preserve">
+    <value>Completed achievements/advancements:</value>
+  </data>
+  <data name="cmd.achievement.header_locked" xml:space="preserve">
+    <value>Incomplete achievements/advancements:</value>
+  </data>
+  <data name="cmd.achievement.done" xml:space="preserve">
+    <value>[DONE]</value>
+  </data>
+  <data name="cmd.achievement.todo" xml:space="preserve">
+    <value>[TODO]</value>
+  </data>
+  <data name="cmd.achievement.entry_titled" xml:space="preserve">
+    <value>{0} {1} ({2}) [{3}]</value>
+  </data>
+  <data name="cmd.achievement.entry" xml:space="preserve">
+    <value>{0} {1} [{2}]</value>
+  </data>
+  <data name="cmd.book.usage" xml:space="preserve">
+    <value>book &lt;read|write|edit|sign&gt;</value>
+  </data>
+  <data name="cmd.book.desc" xml:space="preserve">
+    <value>read, write, edit, and sign the book held in your main hand.</value>
+  </data>
+  <data name="cmd.book.help_read" xml:space="preserve">
+    <value>/book read [page]</value>
+  </data>
+  <data name="cmd.book.help_write" xml:space="preserve">
+    <value>/book write text &lt;text&gt; or /book write file &lt;path&gt;. Use \n for line breaks and \f for page breaks.</value>
+  </data>
+  <data name="cmd.book.help_edit" xml:space="preserve">
+    <value>/book edit, /book edit page &lt;page&gt; &lt;text&gt;, /book edit insert &lt;page&gt; &lt;text&gt;, or /book edit delete &lt;page&gt;.</value>
+  </data>
+  <data name="cmd.book.help_sign" xml:space="preserve">
+    <value>/book sign &lt;title&gt;</value>
+  </data>
+  <data name="cmd.book.not_holding_book" xml:space="preserve">
+    <value>You are not holding a book.</value>
+  </data>
+  <data name="cmd.book.not_holding_writable" xml:space="preserve">
+    <value>You must hold a writable book in your main hand.</value>
+  </data>
+  <data name="cmd.book.already_signed" xml:space="preserve">
+    <value>Book already signed.</value>
+  </data>
+  <data name="cmd.book.cannot_edit_signed" xml:space="preserve">
+    <value>You cannot edit a signed book.</value>
+  </data>
+  <data name="cmd.book.tui_opened" xml:space="preserve">
+    <value>Book TUI opened.</value>
+  </data>
+  <data name="cmd.book.tui_required" xml:space="preserve">
+    <value>The book editor is only available in TUI mode.</value>
+  </data>
+  <data name="cmd.book.write_sent" xml:space="preserve">
+    <value>Book write packet sent.</value>
+  </data>
+  <data name="cmd.book.edit_sent" xml:space="preserve">
+    <value>Book edit packet sent.</value>
+  </data>
+  <data name="cmd.book.sign_sent" xml:space="preserve">
+    <value>Book sign packet sent.</value>
+  </data>
+  <data name="cmd.book.write_failed" xml:space="preserve">
+    <value>Book packet could not be sent.</value>
+  </data>
+  <data name="cmd.book.file_not_found" xml:space="preserve">
+    <value>Book file not found: {0}</value>
+  </data>
+  <data name="cmd.book.page_out_of_range" xml:space="preserve">
+    <value>Page {0} is outside the current page range 1-{1}.</value>
+  </data>
+  <data name="cmd.book.too_many_pages" xml:space="preserve">
+    <value>Book has {0} pages, but this version supports at most {1} pages.</value>
+  </data>
+  <data name="cmd.book.page_too_long" xml:space="preserve">
+    <value>Page {0} has {1} characters, but this version supports at most {2} characters per page.</value>
+  </data>
+  <data name="cmd.book.title_invalid" xml:space="preserve">
+    <value>Book title must be 1-{0} characters.</value>
+  </data>
+  <data name="cmd.book.header_signed" xml:space="preserve">
+    <value>Written book: {0} by {1}</value>
+  </data>
+  <data name="cmd.book.header_writable" xml:space="preserve">
+    <value>Writable book</value>
+  </data>
+  <data name="cmd.book.page_header" xml:space="preserve">
+    <value>Page {0}/{1}</value>
+  </data>
+  <data name="tui.book.title_watermark" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="tui.book.prev" xml:space="preserve">
+    <value>Prev</value>
+  </data>
+  <data name="tui.book.next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="tui.book.insert" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="tui.book.delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="tui.book.save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="tui.book.sign" xml:space="preserve">
+    <value>Sign</value>
+  </data>
+  <data name="tui.book.close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="tui.book.saved" xml:space="preserve">
+    <value>Saved.</value>
+  </data>
+  <data name="tui.book.save_failed" xml:space="preserve">
+    <value>Book packet could not be sent.</value>
+  </data>
+  <data name="tui.book.signed" xml:space="preserve">
+    <value>Signed.</value>
+  </data>
+  <data name="tui.book.page_header" xml:space="preserve">
+    <value>Book page {0}/{1}</value>
+  </data>
+  <data name="tui.book.editing" xml:space="preserve">
+    <value>Editing writable book.</value>
+  </data>
+  <data name="tui.book.reading" xml:space="preserve">
+    <value>Reading book.</value>
+  </data>
+  <data name="tui.book.edit_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
+  </data>
+  <data name="tui.book.page_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
+  </data>
+  <data name="debug.packet.incoming" xml:space="preserve">
+    <value>[S -&gt; C] state={0} id=0x{1:X2} type={2} payload={3} frame={4} compression={5}</value>
+  </data>
+  <data name="debug.packet.outgoing" xml:space="preserve">
+    <value>[C -&gt; S] state={0} id=0x{1:X2} type={2} payload={3} compression_threshold={4}</value>
+  </data>
+  <data name="debug.packet.state_change" xml:space="preserve">
+    <value>Protocol state changed: {0} -&gt; {1}</value>
+  </data>
+  <data name="debug.packet.unknown_type" xml:space="preserve">
+    <value>Unknown(0x{0:X2})</value>
+  </data>
+  <data name="debug.packet.compression.disabled" xml:space="preserve">
+    <value>disabled</value>
+  </data>
+  <data name="debug.packet.compression.uncompressed" xml:space="preserve">
+    <value>uncompressed</value>
+  </data>
+  <data name="debug.packet.compression.compressed" xml:space="preserve">
+    <value>compressed, uncompressed={0}</value>
+  </data>
+  <data name="debug.packet.loop_exit" xml:space="preserve">
+    <value>{0} exited: reason={1}, state={2}, socket_connected={3}</value>
+  </data>
+  <data name="debug.packet.loop_reason.queue_completed" xml:space="preserve">
+    <value>packet queue completed</value>
+  </data>
+  <data name="debug.packet.loop_reason.socket_closed" xml:space="preserve">
+    <value>socket closed</value>
+  </data>
+  <data name="debug.packet.loop_reason.cancelled" xml:space="preserve">
+    <value>cancelled</value>
+  </data>
+  <data name="cmd.dialog.usage" xml:space="preserve">
+    <value>dialog [show|open|set|click|click-label|cancel|dismiss]</value>
+  </data>
+  <data name="cmd.dialog.desc" xml:space="preserve">
+    <value>View and interact with the current server custom dialog.</value>
+  </data>
+  <data name="dialog.received" xml:space="preserve">
+    <value>Server showed custom dialog: {0}. Use /dialog show.</value>
+  </data>
+  <data name="dialog.cleared" xml:space="preserve">
+    <value>Server cleared the custom dialog.</value>
+  </data>
+  <data name="dialog.none" xml:space="preserve">
+    <value>No custom dialog is active.</value>
+  </data>
+  <data name="dialog.dismissed" xml:space="preserve">
+    <value>Dialog dismissed locally.</value>
+  </data>
+  <data name="dialog.unresolved_title" xml:space="preserve">
+    <value>Unresolved dialog {0}</value>
+  </data>
+  <data name="dialog.unresolved_body" xml:space="preserve">
+    <value>The server referenced dialog registry entry {0}, but MCC has no data for it.</value>
+  </data>
+  <data name="dialog.unresolved_action_disabled" xml:space="preserve">
+    <value>This dialog could not be resolved, so actions are disabled.</value>
+  </data>
+  <data name="dialog.input_unknown" xml:space="preserve">
+    <value>Unknown dialog input: {0}</value>
+  </data>
+  <data name="dialog.input_set" xml:space="preserve">
+    <value>Dialog input {0} set to {1}.</value>
+  </data>
+  <data name="dialog.input_too_long" xml:space="preserve">
+    <value>Input {0} is longer than {1} characters.</value>
+  </data>
+  <data name="dialog.input_boolean_invalid" xml:space="preserve">
+    <value>Input {0} expects true or false.</value>
+  </data>
+  <data name="dialog.input_option_invalid" xml:space="preserve">
+    <value>Input {0} expects one of the listed option IDs.</value>
+  </data>
+  <data name="dialog.input_number_invalid" xml:space="preserve">
+    <value>Input {0} expects a number.</value>
+  </data>
+  <data name="dialog.input_number_range_invalid" xml:space="preserve">
+    <value>Input {0} must be between {1} and {2}.</value>
+  </data>
+  <data name="dialog.action_unknown" xml:space="preserve">
+    <value>Unknown dialog action index: {0}</value>
+  </data>
+  <data name="dialog.action_label_unknown" xml:space="preserve">
+    <value>Unknown dialog action label: {0}</value>
+  </data>
+  <data name="dialog.action_label_ambiguous" xml:space="preserve">
+    <value>Dialog action label is ambiguous: {0}</value>
+  </data>
+  <data name="dialog.cannot_cancel" xml:space="preserve">
+    <value>This dialog cannot be closed with cancel.</value>
+  </data>
+  <data name="dialog.action_closed" xml:space="preserve">
+    <value>Dialog action closed locally.</value>
+  </data>
+  <data name="dialog.action_command_not_in_play" xml:space="preserve">
+    <value>This dialog command action is only available in play state.</value>
+  </data>
+  <data name="dialog.action_invalid" xml:space="preserve">
+    <value>Dialog action is invalid.</value>
+  </data>
+  <data name="dialog.action_custom_failed" xml:space="preserve">
+    <value>Custom dialog action packet could not be sent.</value>
+  </data>
+  <data name="dialog.action_command_sent" xml:space="preserve">
+    <value>Dialog command sent: {0}</value>
+  </data>
+  <data name="dialog.action_custom_sent" xml:space="preserve">
+    <value>Dialog custom action sent: {0}</value>
+  </data>
+  <data name="dialog.action_nested_opened" xml:space="preserve">
+    <value>Nested dialog opened.</value>
+  </data>
+  <data name="dialog.action_open_url" xml:space="preserve">
+    <value>Dialog URL action: {0}</value>
+  </data>
+  <data name="dialog.action_suggest_command" xml:space="preserve">
+    <value>Dialog suggested command: {0}</value>
+  </data>
+  <data name="dialog.action_copy" xml:space="preserve">
+    <value>Dialog copy action: {0}</value>
+  </data>
+  <data name="dialog.action_unsupported" xml:space="preserve">
+    <value>Unsupported dialog action: {0}</value>
+  </data>
+  <data name="dialog.tui_pending" xml:space="preserve">
+    <value>Custom dialog is pending. Use dialog open after closing the current overlay.</value>
+  </data>
+  <data name="dialog.tui_unavailable" xml:space="preserve">
+    <value>Dialog TUI is unavailable.</value>
+  </data>
+  <data name="dialog.tui_opened" xml:space="preserve">
+    <value>Dialog TUI opened.</value>
+  </data>
+  <data name="dialog.action_unnamed" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="dialog.action_ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="dialog.item_body" xml:space="preserve">
+    <value>Item preview</value>
+  </data>
+  <data name="dialog.server_link.report_bug" xml:space="preserve">
+    <value>Report bug</value>
+  </data>
+  <data name="dialog.server_link.community_guidelines" xml:space="preserve">
+    <value>Community guidelines</value>
+  </data>
+  <data name="dialog.server_link.support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="dialog.server_link.status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="dialog.server_link.feedback" xml:space="preserve">
+    <value>Feedback</value>
+  </data>
+  <data name="dialog.server_link.community" xml:space="preserve">
+    <value>Community</value>
+  </data>
+  <data name="dialog.server_link.website" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="dialog.server_link.forums" xml:space="preserve">
+    <value>Forums</value>
+  </data>
+  <data name="dialog.server_link.news" xml:space="preserve">
+    <value>News</value>
+  </data>
+  <data name="dialog.server_link.announcements" xml:space="preserve">
+    <value>Announcements</value>
+  </data>
+  <data name="tui.dialog.cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="dialog.render.header" xml:space="preserve">
+    <value>Dialog #{0} [{1}]: {2}</value>
+  </data>
+  <data name="dialog.render.type" xml:space="preserve">
+    <value>Type: {0}</value>
+  </data>
+  <data name="dialog.render.body" xml:space="preserve">
+    <value>Body: {0}</value>
+  </data>
+  <data name="dialog.render.inputs" xml:space="preserve">
+    <value>Inputs:</value>
+  </data>
+  <data name="dialog.render.input" xml:space="preserve">
+    <value>  {0} ({1}) {2} = {3} [{4}]</value>
+  </data>
+  <data name="dialog.render.actions" xml:space="preserve">
+    <value>Actions:</value>
+  </data>
+  <data name="dialog.render.action" xml:space="preserve">
+    <value>  [{0}] {1} ({2})</value>
+  </data>
+  <data name="dialog.render.cancel_hint" xml:space="preserve">
+    <value>Use /dialog cancel to close or run the cancel action.</value>
+  </data>
+  <data name="dialog.input_desc_text" xml:space="preserve">
+    <value>max {0} chars</value>
+  </data>
+  <data name="dialog.input_desc_boolean" xml:space="preserve">
+    <value>Yes={0}, No={1}</value>
+  </data>
+  <data name="dialog.input_desc_options" xml:space="preserve">
+    <value>options: {0}</value>
+  </data>
+  <data name="dialog.input_desc_number" xml:space="preserve">
+    <value>range {0}..{1}</value>
+  </data>
+  <data name="dialog.input_desc_unknown" xml:space="preserve">
+    <value>unknown input</value>
+  </data>
+  <data name="dialog.action_desc_close" xml:space="preserve">
+    <value>close</value>
+  </data>
+  <data name="dialog.action_desc_command" xml:space="preserve">
+    <value>command</value>
+  </data>
+  <data name="dialog.action_desc_custom" xml:space="preserve">
+    <value>custom</value>
+  </data>
+  <data name="dialog.action_desc_show_dialog" xml:space="preserve">
+    <value>show dialog</value>
+  </data>
+  <data name="dialog.action_desc_open_url" xml:space="preserve">
+    <value>open URL</value>
+  </data>
+  <data name="dialog.action_desc_suggest" xml:space="preserve">
+    <value>suggest command</value>
+  </data>
+  <data name="dialog.action_desc_copy" xml:space="preserve">
+    <value>copy</value>
+  </data>
+  <data name="dialog.action_desc_unknown" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="dialog.type.notice" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="dialog.type.confirmation" xml:space="preserve">
+    <value>Confirmation</value>
+  </data>
+  <data name="dialog.type.multi_action" xml:space="preserve">
+    <value>Multi Action</value>
+  </data>
+  <data name="dialog.type.dialog_list" xml:space="preserve">
+    <value>Dialog list</value>
+  </data>
+  <data name="dialog.type.server_links" xml:space="preserve">
+    <value>Server links</value>
+  </data>
+  <data name="dialog.type.unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="dialog.input_kind.text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="dialog.input_kind.boolean" xml:space="preserve">
+    <value>Check box</value>
+  </data>
+  <data name="dialog.input_kind.options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="dialog.input_kind.number" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="dialog.input_kind.unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="dialog.render.help_hint" xml:space="preserve">
+    <value>Use /dialog help for a list of commands.</value>
   </data>
 </root>

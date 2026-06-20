@@ -46,7 +46,7 @@ class MineCube : ChatBot
 
         LogToConsole("Mining bot created by Daenges.");
 
-        Handler.dispatcher.Register(l => l.Literal(CommandName)
+        McClient.dispatcher.Register(l => l.Literal(CommandName)
             .Then(l => l.Argument("Commands", Arguments.GreedyString())
                 .Executes(r => {
                     EvaluateMineCommand(CommandName + ' ' + Arguments.GetString(r, "Commands"), Arguments.GetString(r, "Commands").Split(' ', StringSplitOptions.TrimEntries));
@@ -57,7 +57,7 @@ class MineCube : ChatBot
 
     public override void OnUnload()
     {
-        Handler.dispatcher.Unregister(CommandName);
+        McClient.dispatcher.Unregister(CommandName);
     }
 
     /// <summary>

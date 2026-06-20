@@ -50,7 +50,7 @@ export const defaultThemeConfig_en: DefaultThemeLocaleData = {
       
         {
             text: Translation.helpUsTranslate,
-            link: "https://crwd.in/minecraft-console-client",
+            link: "https://crowdin.com/project/minecraft-console-client",
         },
     ],
 
@@ -62,6 +62,16 @@ export const defaultThemeConfig_en: DefaultThemeLocaleData = {
         "/guide/creating-text-script.md",
         "/guide/chat-bots.md", 
         "/guide/creating-bots.md", 
+        {
+            text: "WebSocket Bot",
+            collapsible: true,
+            children: [
+                "/guide/websocket/README.md",
+                "/guide/websocket/Commands.md",
+                "/guide/websocket/Events.md",
+            ],
+        },
+        "/guide/ai-assisted-development.md",
         "/guide/contibuting.md"
     ],
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Sockets;
@@ -70,24 +71,41 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void Updater(object? o)
         {
-            if (((CancellationToken)o!).IsCancellationRequested)
+            var cancelToken = (CancellationToken)o!;
+
+            if (cancelToken.IsCancellationRequested)
                 return;
 
             try
             {
-                while (!((CancellationToken)o!).IsCancellationRequested)
+                Stopwatch stopWatch = Stopwatch.StartNew();
+                long nextUpdateDue = 0;
+
+                while (!cancelToken.IsCancellationRequested)
                 {
-                    do
+                    cancelToken.ThrowIfCancellationRequested();
+
+                    long elapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    while (elapsedMilliseconds >= nextUpdateDue)
                     {
-                        Thread.Sleep(100);
-                    } while (Update());
+                        if (!Update())
+                            return;
+
+                        nextUpdateDue += ClientTickIntervalMilliseconds;
+                        elapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    }
+
+                    long sleepLength = nextUpdateDue - stopWatch.ElapsedMilliseconds;
+                    if (sleepLength > 1)
+                        Thread.Sleep((int)Math.Min(sleepLength, ClientTickIntervalMilliseconds));
                 }
             }
             catch (System.IO.IOException) { }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
+            catch (OperationCanceledException) { }
 
-            if (((CancellationToken)o!).IsCancellationRequested)
+            if (cancelToken.IsCancellationRequested)
                 return;
 
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
@@ -114,6 +132,7 @@ namespace MinecraftClient.Protocol.Handlers
                     byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
                     Receive(keepalive, 1, 4, SocketFlags.None);
                     handler.OnServerKeepAlive();
+                    handler.SetCanSendMessage(true);
                     Send(keepalive); break;
                 case 0x01: ReadData(4); ReadNextString(); ReadData(5); break;
                 case 0x02: ReadData(1); ReadNextString(); ReadNextString(); ReadData(4); break;
@@ -190,7 +209,8 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xC9:
                     string name = ReadNextString(); bool online = ReadNextByte() != 0x00; ReadData(2);
                     Guid FakeUUID = new(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                    if (online) { handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID)); } else { handler.OnPlayerLeave(FakeUUID); }
+                    if (online) handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID));
+                    else handler.OnPlayerLeave(FakeUUID);
                     break;
                 case 0xCA: if (protocolversion >= 72) { ReadData(9); } else ReadData(3); break;
                 case 0xCB:
@@ -233,14 +253,29 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetMainThreadId()
         {
-            return netRead != null ? netRead.Item1.ManagedThreadId : -1;
+            return netRead is not null ? netRead.Item1.ManagedThreadId : -1;
+        }
+
+        public bool SendCookieResponse(string name, byte[]? data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SendKnownDataPacks(List<(string, string, string)> knownDataPacks)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SendCustomClickAction(string id, Dictionary<string, object>? payload)
+        {
+            return false;
         }
 
         public void Dispose()
         {
             try
             {
-                if (netRead != null)
+                if (netRead is not null)
                 {
                     netRead.Item2.Cancel();
                     c.Close();
@@ -522,13 +557,13 @@ namespace MinecraftClient.Protocol.Handlers
             if (Settings.Config.Logging.DebugMessages)
                 ConsoleIO.WriteLineFormatted("§8" + Translations.debug_crypto, acceptnewlines: true);
 
-            if (serverIDhash != "-")
+            if (serverIDhash != "-" && !string.IsNullOrWhiteSpace(sessionID))
             {
                 ConsoleIO.WriteLine(Translations.mcc_session);
                 string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
 
                 bool needCheckSession = true;
-                if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
+                if (session.ServerPublicKey is not null && session.SessionPreCheckTask is not null
                     && serverIDhash == session.ServerIDhash && Enumerable.SequenceEqual(serverPublicKey, session.ServerPublicKey))
                 {
                     session.SessionPreCheckTask.Wait();
@@ -590,7 +625,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session)
+        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session, bool isTransfer = false)
         {
             if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
             {
@@ -668,7 +703,8 @@ namespace MinecraftClient.Protocol.Handlers
 
         public int GetMaxChatMessageLength()
         {
-            return 100;
+            int configOverride = Settings.MainConfigHelper.Config.Advanced.MaxChatMessageLength;
+            return configOverride > 0 ? configOverride : 100;
         }
 
         public int GetProtocolVersion()
@@ -727,7 +763,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch)
+        public bool SendLocationUpdate(Location location, bool onGround, bool horizontalCollision, float? yaw, float? pitch)
         {
             return false; //Currently not implemented
         }
@@ -780,6 +816,16 @@ namespace MinecraftClient.Protocol.Handlers
         public bool ClickContainerButton(int windowId, int buttonId)
         {
             return false; //Currently not implemented
+        }
+
+        public bool SendPlaceRecipe(int windowId, string recipeId, bool makeAll)
+        {
+            return false; //MC 1.8-1.12.1 recipe book not supported
+        }
+
+        public bool SendEditBook(Item currentBook, IReadOnlyList<string> pages, string? title, string author, int selectedHotbarSlot)
+        {
+            return false; //MC 1.4.6-1.6.4 book editing is not supported
         }
 
         public bool SendCloseWindow(int windowId)
@@ -910,7 +956,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
-        
+
         public bool SendRenameItem(string itemName)
         {
             return false;

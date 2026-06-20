@@ -101,7 +101,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[86] = ItemType.DetectorRail;
             mappings[87] = ItemType.StickyPiston;
             mappings[88] = ItemType.Cobweb;
-            mappings[89] = ItemType.Grass;
+            mappings[89] = ItemType.ShortGrass;
             mappings[90] = ItemType.Fern;
             mappings[91] = ItemType.DeadBush;
             mappings[92] = ItemType.Seagrass;
@@ -583,7 +583,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[568] = ItemType.StructureBlock;
             mappings[569] = ItemType.Jigsaw;
             mappings[570] = ItemType.TurtleHelmet;
-            mappings[571] = ItemType.Scute;
+            mappings[571] = ItemType.TurtleScute;
             mappings[572] = ItemType.FlintAndSteel;
             mappings[573] = ItemType.Apple;
             mappings[574] = ItemType.Bow;

@@ -14,7 +14,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             {
                 if (DictReverse.ContainsKey(entry.Value))
                     continue;
-                
+
                 DictReverse.Add(entry.Value, entry.Key);
             }
 

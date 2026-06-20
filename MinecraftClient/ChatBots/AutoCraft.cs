@@ -106,6 +106,13 @@ namespace MinecraftClient.ChatBots
             {
                 public double X, Y, Z;
 
+                public LocationConfig()
+                {
+                    X = 0;
+                    Y = 0;
+                    Z = 0;
+                }
+
                 public LocationConfig(double X, double Y, double Z)
                 {
                     this.X = X;
@@ -116,7 +123,7 @@ namespace MinecraftClient.ChatBots
 
             public enum OnFailConfig { abort, wait }
 
-            public class RecipeConfig
+            public record RecipeConfig
             {
                 public string Name = "Recipe Name";
 
@@ -153,9 +160,9 @@ namespace MinecraftClient.ChatBots
         private Recipe? recipeInUse;
         private readonly List<ActionStep> actionSteps = new();
 
-        private int updateDebounceValue = 2;
+        private int updateDebounceValue = Settings.DoubleToTick(0.2);
         private int updateDebounce = 0;
-        private readonly int updateTimeoutValue = 10;
+        private readonly int updateTimeoutValue = Settings.ClientTicksPerSecond;
         private int updateTimeout = 0;
         private string timeoutAction = "unspecified";
 
@@ -234,7 +241,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Represent a crafting recipe
         /// </summary>
-        private class Recipe
+        private record Recipe
         {
             /// <summary>
             /// The results item of this recipe
@@ -269,7 +276,7 @@ namespace MinecraftClient.ChatBots
             /// <remarks>so that it can be used in crafting table</remarks>
             public static Recipe ConvertToCraftingTable(Recipe recipe)
             {
-                if (recipe.CraftingAreaType == ContainerType.PlayerInventory && recipe.Materials != null)
+                if (recipe.CraftingAreaType == ContainerType.PlayerInventory && recipe.Materials is not null)
                 {
                     if (recipe.Materials.ContainsKey(4))
                     {
@@ -493,7 +500,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            if (recipe.Materials != null)
+            if (recipe.Materials is not null)
             {
                 foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
                 {

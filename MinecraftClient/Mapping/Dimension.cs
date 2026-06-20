@@ -129,7 +129,7 @@ namespace MinecraftClient.Mapping
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
 
-            if (nbt == null)
+            if (nbt is null)
                 throw new ArgumentNullException(nameof(nbt));
 
             if (nbt.ContainsKey("piglin_safe"))

@@ -116,6 +116,12 @@ namespace MinecraftClient.ChatBots
                     public bool Enable = false;
                     public TimeSpan[] Times;
 
+                    public TriggerOnTimeConfig()
+                    {
+                        Enable = false;
+                        Times = Array.Empty<TimeSpan>();
+                    }
+
                     public TriggerOnTimeConfig(bool Enable, TimeSpan[] Time)
                     {
                         this.Enable = Enable;
@@ -133,6 +139,13 @@ namespace MinecraftClient.ChatBots
                 {
                     public bool Enable = false;
                     public double MinTime, MaxTime;
+
+                    public TriggerOnIntervalConfig()
+                    {
+                        Enable = false;
+                        MinTime = 0;
+                        MaxTime = 0;
+                    }
 
                     public TriggerOnIntervalConfig(double value)
                     {
@@ -167,67 +180,57 @@ namespace MinecraftClient.ChatBots
         private static bool firstlogin_done = false;
 
         private bool serverlogin_done = false;
-        private int verifytasks_timeleft = 10;
-        private readonly int verifytasks_delay = 10;
+        private int verifytasks_timeleft = Settings.ClientTicksPerSecond;
+        private readonly int verifytasks_delay = Settings.ClientTicksPerSecond;
+
+        public override void AfterGameJoined()
+        {
+            if (serverlogin_done)
+                return;
+
+            serverlogin_done = true;
+            verifytasks_timeleft = verifytasks_delay;
+            RunLoginTasks();
+        }
 
         public override void Update()
         {
+            if (!serverlogin_done)
+                return;
+
             if (verifytasks_timeleft <= 0)
             {
                 verifytasks_timeleft = verifytasks_delay;
-                if (serverlogin_done)
+                for (int taskIndex = 0; taskIndex < Config.TaskList.Length; taskIndex++)
                 {
-                    foreach (TaskConfig task in Config.TaskList)
+                    TaskConfig task = Config.TaskList[taskIndex];
+                    if (task.Trigger_On_Times.Enable)
                     {
-                        if (task.Trigger_On_Times.Enable)
-                        {
-                            bool matching_time_found = false;
+                        bool matching_time_found = false;
 
-                            foreach (TimeSpan time in task.Trigger_On_Times.Times)
+                        foreach (TimeSpan time in task.Trigger_On_Times.Times)
+                        {
+                            if (time.Hours == DateTime.Now.Hour && time.Minutes == DateTime.Now.Minute)
                             {
-                                if (time.Hours == DateTime.Now.Hour && time.Minutes == DateTime.Now.Minute)
+                                matching_time_found = true;
+                                if (!task.Trigger_On_Time_Already_Triggered)
                                 {
-                                    matching_time_found = true;
-                                    if (!task.Trigger_On_Time_Already_Triggered)
-                                    {
-                                        task.Trigger_On_Time_Already_Triggered = true;
-                                        LogDebugToConsole(string.Format(Translations.bot_scriptScheduler_running_time, task.Action));
-                                        CmdResult response = new();
-                                        PerformInternalCommand(task.Action, ref response);
-                                        if (response.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(response.result))
-                                            LogToConsole(response);
-                                    }
+                                    task.Trigger_On_Time_Already_Triggered = true;
+                                    RunTaskAction(task, taskIndex, string.Format(Translations.bot_scriptScheduler_running_time, task.Action));
                                 }
                             }
-
-                            if (!matching_time_found)
-                                task.Trigger_On_Time_Already_Triggered = false;
                         }
 
+                        if (!matching_time_found)
+                            task.Trigger_On_Time_Already_Triggered = false;
                     }
-                }
-                else
-                {
-                    foreach (TaskConfig task in Config.TaskList)
-                    {
-                        if (task.Trigger_On_Login || (firstlogin_done == false && task.Trigger_On_First_Login))
-                        {
-                            LogDebugToConsole(string.Format(Translations.bot_scriptScheduler_running_login, task.Action));
-                            CmdResult response = new();
-                            PerformInternalCommand(task.Action, ref response);
-                            if (response.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(response.result))
-                                LogToConsole(response);
-                        }
-                    }
-
-                    firstlogin_done = true;
-                    serverlogin_done = true;
                 }
             }
             else verifytasks_timeleft--;
 
-            foreach (TaskConfig task in Config.TaskList)
+            for (int taskIndex = 0; taskIndex < Config.TaskList.Length; taskIndex++)
             {
+                TaskConfig task = Config.TaskList[taskIndex];
                 if (task.Trigger_On_Interval.Enable)
                 {
                     if (task.Trigger_On_Interval_Countdown == 0)
@@ -235,11 +238,7 @@ namespace MinecraftClient.ChatBots
                         task.Trigger_On_Interval_Countdown = random.Next(
                             Settings.DoubleToTick(task.Trigger_On_Interval.MinTime), Settings.DoubleToTick(task.Trigger_On_Interval.MaxTime)
                         );
-                        LogDebugToConsole(string.Format(Translations.bot_scriptScheduler_running_inverval, task.Action));
-                        CmdResult response = new();
-                        PerformInternalCommand(task.Action, ref response);
-                        if (response.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(response.result))
-                            LogToConsole(response);
+                        RunTaskAction(task, taskIndex, string.Format(Translations.bot_scriptScheduler_running_inverval, task.Action));
                     }
                     else task.Trigger_On_Interval_Countdown--;
                 }
@@ -250,6 +249,58 @@ namespace MinecraftClient.ChatBots
         {
             serverlogin_done = false;
             return false;
+        }
+
+        private void RunLoginTasks()
+        {
+            bool isFirstLogin = !firstlogin_done;
+
+            for (int taskIndex = 0; taskIndex < Config.TaskList.Length; taskIndex++)
+            {
+                TaskConfig task = Config.TaskList[taskIndex];
+                if (task.Trigger_On_Login || (isFirstLogin && task.Trigger_On_First_Login))
+                    RunTaskAction(task, taskIndex, string.Format(Translations.bot_scriptScheduler_running_login, task.Action));
+            }
+
+            firstlogin_done = true;
+        }
+
+        private void RunTaskAction(TaskConfig task, int taskIndex, string debugMessage)
+        {
+            LogDebugToConsole(debugMessage);
+
+            if (TryRunOwnedScript(task, taskIndex))
+                return;
+
+            CmdResult response = new();
+            PerformInternalCommand(task.Action, ref response);
+            if (response.status != CmdResult.Status.Done || !string.IsNullOrWhiteSpace(response.result))
+                LogToConsole(response);
+        }
+
+        private bool TryRunOwnedScript(TaskConfig task, int taskIndex)
+        {
+            string action = task.Action.Trim();
+            const string scriptCommand = "script";
+            if (!action.StartsWith(scriptCommand, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (action.Length == scriptCommand.Length || !char.IsWhiteSpace(action[scriptCommand.Length]))
+                return false;
+
+            string scriptArgs = action[scriptCommand.Length..].Trim();
+            if (string.IsNullOrWhiteSpace(scriptArgs))
+                return false;
+
+            string scriptOwnerKey = BuildScriptOwnerKey(task, taskIndex);
+            Handler.UnloadBotsByScriptOwnerKey(scriptOwnerKey);
+            Handler.BotLoad(new Script(scriptArgs, null, null, scriptOwnerKey));
+            return true;
+        }
+
+        private static string BuildScriptOwnerKey(TaskConfig task, int taskIndex)
+        {
+            return $"{nameof(ScriptScheduler)}:{taskIndex}:{task.Task_Name}:{task.Action.Trim()}";
         }
 
         private static string Task2String(TaskConfig task)
