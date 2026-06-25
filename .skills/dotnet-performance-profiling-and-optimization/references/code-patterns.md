@@ -6,6 +6,8 @@ metadata:
 
 # Code Patterns
 
+> **See also:** for pattern-by-pattern detection recipes with measured impact numbers and ❌/✅ pairs, see the topic catalogs: [critical-patterns.md](critical-patterns.md), [async-patterns.md](async-patterns.md), [memory-and-strings.md](memory-and-strings.md), [collections-and-linq.md](collections-and-linq.md), [regex-patterns.md](regex-patterns.md), [io-and-serialization.md](io-and-serialization.md), [structural-patterns.md](structural-patterns.md). This file covers the conceptual framing (when/why), those files cover the catalog (what/how-much).
+
 Use this reference after a profile or benchmark identifies a hot path. Do not apply these patterns speculatively.
 
 ## Table Of Contents
@@ -99,9 +101,10 @@ Keep deferred execution unless you need a snapshot, repeated traversal, indexing
 
 ### Do not blanket-rewrite LINQ to loops
 
-- .NET 10 improved many LINQ operations substantially.
+- .NET 10 improved many LINQ operations substantially through JIT array-interface devirtualisation — operations like `Skip`/`Take`/`Sum` on arrays and `ReadOnlyCollection<T>` got roughly 50% faster *for free*. See Stephen Toub, [Performance Improvements in .NET 10](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/).
+- On `net8.0` LINQ has the historical performance characteristics described in [Performance Improvements in .NET 8](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/) — fast paths exist for `Count`, `ToList`, `ToArray` on `ICollection<T>`, but indexed access via `ElementAt`/`Skip`/`Take` is not as cheap as on .NET 10.
 - Start with analyzer-backed fixes and measurement.
-- Replace LINQ with hand-written loops only when a benchmark or trace shows that the remaining cost matters.
+- Replace LINQ with hand-written loops only when a benchmark or trace shows that the remaining cost matters — on either target.
 
 ### Use `TryGetNonEnumeratedCount` when count is optional
 
