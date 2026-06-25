@@ -1,14 +1,46 @@
 ---
-name: csharp-best-practices
+name: dotnet-csharp-best-practices
 description: >
-  C# 14 / .NET 10 coding conventions, idiomatic patterns, and performance best practices
-  for the Minecraft Console Client codebase. Use when writing, reviewing, or modifying C# code.
+  C# coding conventions, idiomatic patterns, performance, and async best practices for both .NET 8 (C# 12) and .NET 10 (C# 14). Use when writing, reviewing, refactoring, or designing C# code — including async code that uses Task, Task<T>, ValueTask, CancellationToken, Task.WhenAll/WhenAny, Task.Run, ConfigureAwait, async void, or fire-and-forget. Trigger on `.Result`, `.Wait()`, deadlocks, cancellation propagation, ASP.NET Core background work, UI responsiveness, exception flow, and performance-sensitive async API design.
+metadata:
+  category: technique
+  platform: ".NET 8 (C# 12) and .NET 10 (C# 14)"
+  triggers:
+    - c#
+    - csharp
+    - .net
+    - .net 8
+    - .net 10
+    - async
+    - task
+    - valuetask
+    - cancellationtoken
+    - configureawait
+    - .result
+    - .wait()
+    - async void
+    - fire-and-forget
+    - task.run
+    - whenall
+    - whenany
+    - asp.net core
+    - deadlock
 ---
 
-# C# 14 / .NET 10 Best Practices
+# C# Best Practices — .NET 8 + .NET 10
 
-Target: **.NET 10**, **C# 14**, nullable enabled.
-Sources: [MS C# Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) · [.NET Runtime Style](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md) · [C# 14 Proposals](https://github.com/dotnet/csharplang/blob/main/Language-Version-History.md) · [C# 13 Docs](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-13)
+Target: **.NET 8 (C# 12)** *and* **.NET 10 (C# 14)**, nullable enabled. GrECo has no .NET 9 projects.
+
+## Step 0 — Detect the target framework
+
+**Before** emitting code, follow `../../references/detect-target-framework.md`. The detection result decides which examples below apply:
+
+- `net8.0` → emit the **.NET 8 / C# 12** code block in every side-by-side pair; **never** use the C# 14-only syntax (`field`, `extension(...)`, `?.` assignment, partial constructors) or .NET 10-only APIs (`HybridCache`, `AddValidation`, EF Core named filters, first-party `Microsoft.AspNetCore.OpenApi`, Identity passkeys).
+- `net10.0` → prefer the **.NET 10 / C# 14** code block.
+- Multi-target (`<TargetFrameworks>net8.0;net10.0</TargetFrameworks>`) → emit the .NET 8 version, or wrap .NET 10-only code in `#if NET10_0_OR_GREATER`.
+- Unknown → ask the user.
+
+Sources: [MS C# Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) · [.NET Runtime Style](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md) · [C# language versioning](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-versioning) · [C# 14 What's New](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-14) · [C# 12 What's New](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-12)
 
 ## Naming
 
@@ -21,7 +53,7 @@ Sources: [MS C# Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fun
 | Thread-static field | `t_camelCase` | `t_cachedBuffer` |
 | Local, parameter | camelCase | `packetId` |
 | Type parameter | `T` + PascalCase | `TResult` |
-| Namespace | PascalCase | `MinecraftClient.Protocol` |
+| Namespace | PascalCase | `SomeNamespace.SomeClasses` |
 | Async methods | Suffix `Async` | `ConnectAsync()`, `ReadPacketAsync()` |
 
 ```csharp
@@ -40,14 +72,16 @@ public int packet_count { get; set; }                // snake_case
 public async Task<bool> Connect(CancellationToken ct) { }  // missing Async suffix
 ```
 
-## C# 14 Features
+## C# 14 Features (.NET 10 only — with .NET 8 / C# 12 fallbacks)
 
-### Extension Members (C# 14)
+Every feature in this section requires `<TargetFramework>net10.0</TargetFramework>`. On `net8.0` use the fallback shown alongside. Authoritative reference: [C# 14 what's new](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-14).
 
-Declare extension methods, properties, and operators inside `extension(...)` blocks. Replaces `this`-parameter pattern for new extensions.
+### Extension Members
+
+Declare extension methods, properties, and operators inside `extension(...)` blocks.
 
 ```csharp
-// CORRECT: extension property + method (C# 14)
+// .NET 10 / C# 14 — extension property + method
 public static class EntityExtensions
 {
     extension(Entity entity)
@@ -63,19 +97,27 @@ public static class EntityExtensions
 ```
 
 ```csharp
-// WRONG: classic extension method when C# 14 extension block is available
-public static bool IsAlive(this Entity entity) => entity.Health > 0;
+// .NET 8 / C# 12 — classic static extension class (only option)
+public static class EntityExtensions
+{
+    public static bool IsAlive(this Entity entity) => entity.Health > 0;
+    public static void Heal(this Entity entity, int amount)
+        => entity.Health = Math.Min(entity.Health + amount, 20);
+
+    public static bool IsEmpty<T>(this IEnumerable<T> items)
+        => !items.GetEnumerator().MoveNext();
+}
+// Extension properties do not exist in C# 12 — expose them as methods or compute inline.
 ```
 
-### `field` Keyword in Properties (C# 14)
+### `field` Keyword in Properties
 
-Access the auto-generated backing field without declaring it. Mix auto and full accessors.
+Access the auto-generated backing field without declaring it.
 
 ```csharp
-// CORRECT: lazy init with field keyword
+// .NET 10 / C# 14 — field keyword
 public string DisplayName => field ??= ComputeDisplayName();
 
-// CORRECT: INotifyPropertyChanged pattern
 public bool IsConnected
 {
     get;
@@ -89,128 +131,170 @@ public bool IsConnected
 ```
 
 ```csharp
-// WRONG: manual backing field when field keyword suffices
+// .NET 8 / C# 12 — manual backing field (only option)
 private string? _displayName;
 public string DisplayName => _displayName ??= ComputeDisplayName();
+
+private bool _isConnected;
+public bool IsConnected
+{
+    get => _isConnected;
+    set
+    {
+        if (_isConnected == value) return;
+        _isConnected = value;
+        OnPropertyChanged();
+    }
+}
 ```
 
-### Null-Conditional Assignment (C# 14)
-
-Assign through `?.` — RHS is only evaluated when receiver is non-null.
+### Null-Conditional Assignment
 
 ```csharp
-// CORRECT: null-conditional assignment
+// .NET 10 / C# 14 — assign / compound-assign through ?.
 player?.Health = 20;
 connection?.OnDisconnect += HandleDisconnect;
 inventory?[slot] = newItem;
 ```
 
 ```csharp
-// WRONG: manual null check for simple assignment
-if (player is not null)
-    player.Health = 20;
+// .NET 8 / C# 12 — manual null check
+if (player is not null) player.Health = 20;
+if (connection is not null) connection.OnDisconnect += HandleDisconnect;
+if (inventory is not null) inventory[slot] = newItem;
 ```
 
-### Simple Lambda Parameters with Modifiers (C# 14)
-
-Omit types on lambda parameters while still applying modifiers.
+### Simple Lambda Parameters with Modifiers
 
 ```csharp
-// CORRECT: modifiers without explicit types
+// .NET 10 / C# 14 — modifiers without explicit types
 TryParse<int> parse = (text, out result) => int.TryParse(text, out result);
-ReadOnlySpan<int> data = [1, 2, 3];
 ProcessSpan((scoped span) => span.Length);
 ```
 
 ```csharp
-// WRONG: fully explicit types just for a modifier
+// .NET 8 / C# 12 — full parameter types required when modifiers are present
 TryParse<int> parse = (string text, out int result) => int.TryParse(text, out result);
+ProcessSpan((scoped ReadOnlySpan<int> span) => span.Length);
 ```
 
-### First-Class Span Types (C# 14)
-
-Implicit conversions between `T[]`, `Span<T>`, and `ReadOnlySpan<T>` — no explicit cast needed. Extension methods on `ReadOnlySpan<T>` apply to arrays and spans automatically.
+### First-Class Span Types
 
 ```csharp
-// CORRECT: pass array where ReadOnlySpan<T> is expected (C# 14)
+// .NET 10 / C# 14 — implicit T[] → ReadOnlySpan<T>
 int[] data = [1, 2, 3];
-bool found = data.StartsWith(1);  // ReadOnlySpan<int> extension resolved
+bool found = data.StartsWith(1);             // ReadOnlySpan<int> extension auto-resolves
 ReadOnlySpan<byte> span = stackalloc byte[4];
 ```
 
-### Unbound Generics in `nameof` (C# 14)
+```csharp
+// .NET 8 / C# 12 — call .AsSpan() explicitly at the boundary
+int[] data = [1, 2, 3];
+bool found = data.AsSpan().StartsWith(stackalloc int[] { 1 });  // explicit conversion
+ReadOnlySpan<byte> span = stackalloc byte[4];                   // stackalloc → ReadOnlySpan already works
+```
+
+### Unbound Generics in `nameof`
 
 ```csharp
-// CORRECT: no need to pick a dummy type argument
-string name = nameof(Dictionary<,>);  // "Dictionary"
-string prop = nameof(List<>.Count);   // "Count"
+// .NET 10 / C# 14
+string name = nameof(Dictionary<,>);   // "Dictionary"
+string prop = nameof(List<>.Count);    // "Count"
 ```
 
 ```csharp
-// WRONG: arbitrary type argument just to satisfy nameof
-string name = nameof(Dictionary<object, object>);
+// .NET 8 / C# 12 — pick any closed type argument
+string name = nameof(Dictionary<object, object>);   // "Dictionary"
+string prop = nameof(List<int>.Count);              // "Count"
 ```
 
-### Partial Events and Constructors (C# 14)
-
-Separate declaration from implementation for source-generator scenarios.
+### Partial Events and Constructors
 
 ```csharp
-// CORRECT: partial constructor for source-gen interop
+// .NET 10 / C# 14 — partial constructor for source-gen interop
 partial class ServerConnection
 {
     partial ServerConnection(string host, int port);
 }
 partial class ServerConnection
 {
-    partial ServerConnection(string host, int port) { /* generated */ }
+    partial ServerConnection(string host, int port) { /* generated body */ }
 }
 ```
 
-### `#:` Ignored Directives (C# 14)
+```csharp
+// .NET 8 / C# 12 — partial constructors do not exist.
+// Either declare a regular constructor and call a private generated helper,
+// or put the constructor body in a single file:
+partial class ServerConnection
+{
+    public ServerConnection(string host, int port) => InitGenerated(host, port);
+    private partial void InitGenerated(string host, int port);   // partial methods are C# 9+
+}
+partial class ServerConnection
+{
+    private partial void InitGenerated(string host, int port) { /* generated body */ }
+}
+```
 
-For file-based `dotnet run app.cs` programs — ignored by the compiler.
+### `#:` Ignored Directives / file-based programs
+
+C# 14 / .NET 10 SDK only — no .NET 8 equivalent. `dotnet run app.cs` requires the .NET 10 SDK.
 
 ```csharp
+// .NET 10 only — file-based program with inline package reference
 #!/usr/bin/dotnet run
 #:package System.CommandLine@2.0.0-*
 Console.WriteLine("Hello");
 ```
 
-## C# 13 Features
+```csharp
+// .NET 8 — create a full project (dotnet new console -f net8.0) and reference
+// System.CommandLine in the .csproj. There is no inline-package syntax.
+```
 
-### `Lock` Object (C# 13)
+## C# 13 Features — require .NET 9+ (NOT available on .NET 8)
 
-Use `System.Threading.Lock` instead of `lock(obj)` on arbitrary objects.
+GrECo has no .NET 9 projects, so the only way to use C# 13 features in production is to be on .NET 10. On .NET 8, use the .NET 8 fallback shown below.
+
+### `Lock` Object
 
 ```csharp
-// CORRECT: dedicated Lock type
-private readonly Lock _lock = new();
-public void Enqueue(ChatMessage msg) { lock (_lock) _queue.Add(msg); }
+// .NET 10 / C# 13+ — dedicated System.Threading.Lock type
+private readonly Lock _gate = new();
+public void Enqueue(ChatMessage msg) { lock (_gate) _queue.Add(msg); }
 ```
 
 ```csharp
-// WRONG: locking on an object reference
-private readonly object _syncRoot = new();
-lock (_syncRoot) { }
+// .NET 8 / C# 12 — lock on a plain object reference (the only option)
+private readonly object _gate = new();
+public void Enqueue(ChatMessage msg) { lock (_gate) _queue.Add(msg); }
 ```
 
-### `params` Collections (C# 13)
+### `params` Collections (`params ReadOnlySpan<T>`)
 
-`params` now works with `ReadOnlySpan<T>`, `Span<T>`, `IEnumerable<T>`, and other collection types.
+The runtime overloads accepting `params ReadOnlySpan<T>` ship in the .NET 9 BCL. On .NET 8 use `params T[]`.
 
 ```csharp
-// CORRECT: params span avoids array allocation
+// .NET 10 / C# 13+ — params span avoids the array allocation
 public void Log(params ReadOnlySpan<string> messages)
 {
     foreach (var msg in messages) Console.WriteLine(msg);
 }
 ```
 
-### Partial Properties (C# 13)
+```csharp
+// .NET 8 / C# 12 — params array (one heap allocation per call)
+public void Log(params string[] messages)
+{
+    foreach (var msg in messages) Console.WriteLine(msg);
+}
+```
+
+### Partial Properties
 
 ```csharp
-// CORRECT: partial property for source generators
+// .NET 10 / C# 13+ — partial property for source generators
 partial class Config
 {
     public partial string Host { get; set; }
@@ -222,7 +306,16 @@ partial class Config
 }
 ```
 
-## C# 12 Features
+```csharp
+// .NET 8 / C# 12 — partial properties do not exist; declare a normal property
+// and let the source generator emit the backing field or a helper method.
+partial class Config
+{
+    public string Host { get; set; } = "";
+}
+```
+
+## C# 12 Features (.NET 8+ — available on both targets)
 
 ### Primary Constructors
 
@@ -292,16 +385,16 @@ var greet = (string name, string prefix = "Player") => $"{prefix} {name}";
 
 ```csharp
 // CORRECT: file-scoped namespace — one per file, less nesting
-namespace MinecraftClient.ChatBots;
+namespace SomeNamespace.SomeClasses;
 
-public class MyBot : ChatBot { }
+public class SomeClass : SomeInterface { }
 ```
 
 ```csharp
 // WRONG: block-scoped namespace adds unnecessary nesting
-namespace MinecraftClient.ChatBots
+namespace SomeNamespace.SomeClasses
 {
-    public class MyBot : ChatBot { }
+    public class SomeClass : SomeInterface { }
 }
 ```
 
@@ -512,6 +605,34 @@ public string GetName(Player? player)
 
 ## Async / Await
 
+<priority-order>
+1. correctness and cancellation semantics
+2. context-specific API design (library vs app, UI vs ASP.NET Core)
+3. concurrency behavior and failure handling
+4. performance tuning only when the hot path is real
+</priority-order>
+
+Treat blanket advice as suspect. Separate official runtime behavior from expert interpretation and from your own recommendation for the case at hand.
+
+### Review defaults
+
+Start from these defaults unless case-specific evidence says otherwise:
+
+| Topic | Default judgment |
+|---|---|
+| Blocking on async (`.Result`, `.Wait`, `GetAwaiter().GetResult()`) | usually a defect or interop boundary smell |
+| `async void` | only acceptable for event handlers |
+| `ValueTask` | avoid by default; justify with measurements or a very hot path |
+| `ConfigureAwait(false)` | good library default, not an app-wide default |
+| `Task.Run` | use to offload CPU work when needed, not to fake async I/O |
+| Fire-and-forget | assume unsafe until lifecycle, scope, and exception handling are explicit |
+| `Task.WhenAll` | prefer for independent concurrent operations |
+| `Task.WhenAny` | always inspect the winner task and define what happens to losers |
+| Cancellation | accept and propagate the token until the point of no cancellation |
+| Method naming | `Async` suffix for awaitable-returning methods (unless an interface/event contract dictates otherwise) |
+
+### Concrete patterns
+
 ```csharp
 // CORRECT: propagate CancellationToken through every async I/O call
 public async Task<string> FetchDataAsync(Uri uri, CancellationToken ct = default)
@@ -531,13 +652,16 @@ public async Task<string> FetchDataAsync(Uri uri)
 ```
 
 ```csharp
-// CORRECT: ValueTask when result is often available synchronously
+// CORRECT: ValueTask when result is often available synchronously and the call is on a hot path
 public ValueTask<int> GetCachedCountAsync()
 {
     if (_cache.TryGetValue("count", out int count))
         return ValueTask.FromResult(count);
     return new ValueTask<int>(LoadCountFromDbAsync());
 }
+
+// Note: do not await the same ValueTask twice, do not call AsTask() multiple times,
+// and do not mix consumption techniques on the same instance — undefined behavior.
 ```
 
 ```csharp
@@ -551,19 +675,15 @@ public async Task<int> GetCachedCountAsync()
 ```
 
 ```csharp
-// CORRECT: async Task for async event handlers
+// CORRECT: async Task for async event handlers exposed as awaitable
 public async Task HandleEventAsync(GameEvent e, CancellationToken ct)
-{
-    await notificationService.SendAsync(e.PlayerId, ct);
-}
+    => await notificationService.SendAsync(e.PlayerId, ct);
 ```
 
 ```csharp
 // WRONG: async void — exceptions are unobservable, cannot be awaited
 public async void HandleEvent(GameEvent e)
-{
-    await notificationService.SendAsync(e.PlayerId, default);
-}
+    => await notificationService.SendAsync(e.PlayerId, default);
 ```
 
 ```csharp
@@ -572,15 +692,25 @@ var packet = await reader.ReadPacketAsync(ct);
 ```
 
 ```csharp
-// WRONG: .Result / .Wait() causes deadlocks
+// WRONG: .Result / .Wait() / GetAwaiter().GetResult() — deadlocks and thread pool starvation
 var packet = reader.ReadPacketAsync(ct).Result;
 var packet2 = reader.ReadPacketAsync(ct).GetAwaiter().GetResult();
 ```
 
 ```csharp
-// CORRECT: ConfigureAwait(false) in library code
+// CORRECT: ConfigureAwait(false) in general-purpose library code
 var data = await stream.ReadAsync(buffer, ct).ConfigureAwait(false);
+```
 
+```csharp
+// CORRECT: Task.WhenAll for independent concurrent I/O
+var userTask = repo.GetUserAsync(id, ct);
+var ordersTask = repo.GetOrdersAsync(id, ct);
+await Task.WhenAll(userTask, ordersTask);
+return new Dashboard(await userTask, await ordersTask);
+```
+
+```csharp
 // CORRECT: IAsyncEnumerable for streaming
 public async IAsyncEnumerable<ChatMessage> ReadChatStreamAsync(
     [EnumeratorCancellation] CancellationToken ct = default)
@@ -592,6 +722,53 @@ public async IAsyncEnumerable<ChatMessage> ReadChatStreamAsync(
 // CORRECT: await using for async disposal
 await using var conn = new McConnection(host, port);
 ```
+
+### Common traps
+
+- Calling `.Result`, `.Wait()`, or `GetAwaiter().GetResult()` inside normal async-capable code
+- Recommending `ConfigureAwait(false)` everywhere because "it is .NET Core" or "it prevents deadlocks"
+- Recommending `Task.Run` inside ASP.NET Core request code just to make code "more async" — request code already runs on the thread pool
+- Recommending `ValueTask` for every hot-looking method without checking completion behavior, call frequency, or single-consumer assumptions
+- Ignoring cancellation after plumbing a `CancellationToken` (accepting it but never checking or propagating)
+- Using `Task.WhenAny` without awaiting the returned winner task or handling the remaining tasks
+- Treating fire-and-forget as harmless when it touches scoped services, `HttpContext`, or unobserved failures
+- Awaiting the same `ValueTask` twice, or mixing `AsTask()` with `await` on the same instance
+
+### Rationalization traps
+
+| Rationalization | Better reasoning |
+|---|---|
+| "It works, so `.Result` is fine." | Lack of failure under one context does not make blocking safe or scalable. |
+| "`ValueTask` is always faster." | It trades simplicity for niche allocation wins and stricter consumption rules. |
+| "`ConfigureAwait(false)` everywhere is modern guidance." | Library and app code have different constraints. Blanket rules are weak. |
+| "`Task.Run` makes server code asynchronous." | It only queues work; it does not turn blocking I/O into true async I/O. |
+| "Fire-and-forget is okay because logging exists." | Logging does not solve scope lifetime, shutdown, retries, or error propagation. |
+
+### Hard boundaries
+
+- Do not endorse sync-over-async as a normal design choice
+- Do not suggest `async void` except for event handlers
+- Do not suggest `ValueTask` unless single-consumer / hot-path / measurement constraints are met
+- Do not claim `ConfigureAwait(false)` is always needed or always unnecessary
+- Do not approve fire-and-forget unless ownership, exception handling, and lifetime are explicit
+
+### Output contract for review and design
+
+When you review or design async code, label your reasoning:
+
+- **Fact** — official runtime or API behavior
+- **Expert guidance** — interpretation from strong experts (Stephen Toub, Stephen Cleary, Andrew Arnott) when it adds design meaning
+- **Synthesis** — your recommendation for this exact case
+
+Do not present contextual advice as a universal law.
+
+### References for deep async work
+
+Load on demand:
+
+- [references/async-core-guidance.md](references/async-core-guidance.md) — fact / expert / synthesis for `Task` vs `ValueTask`, blocking, cancellation, exception flow, `WhenAll` / `WhenAny`
+- [references/async-context-and-tradeoffs.md](references/async-context-and-tradeoffs.md) — library vs app, UI vs ASP.NET Core, `Task.Run` boundaries, fire-and-forget alternatives, `ConfigureAwait` strong vs weak recommendations, throttling
+- [references/async-source-notes.md](references/async-source-notes.md) — source attribution and authority breakdown
 
 ## LINQ
 
@@ -699,7 +876,11 @@ for (int i = 0; i < data.Length; i++)
 int found = data.ToArray().Count(b => b == target);
 ```
 
-## Performance (.NET 8+)
+## Performance (.NET 8+ — works on both targets)
+
+All APIs below ship in .NET 8 and continued unchanged in .NET 10. For benchmarks and rationale see Stephen Toub's deep dives:
+[Performance Improvements in .NET 8](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/) ·
+[Performance Improvements in .NET 10](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/) (covers JIT array-interface devirtualisation that speeds up many LINQ paths in .NET 10).
 
 ### Span\<T\> / Memory\<T\>
 
@@ -803,7 +984,7 @@ foreach (var s in items) combined += s + ", ";
 | Immutable snapshots | `ImmutableDictionary<K,V>` | Persistent structure |
 | Membership test | `HashSet<T>` / `FrozenSet<T>` | FrozenSet for static |
 | Priority queue | `PriorityQueue<E,P>` | .NET 6+ |
-| Synchronization | `System.Threading.Lock` | C# 13; prefer over `lock(obj)` |
+| Synchronization | `System.Threading.Lock` / `lock(object)` | `Lock` is .NET 9+ only — on .NET 8 use `private readonly object _gate = new();` |
 | Producer-consumer | `Channel<T>` | Over `BlockingCollection<T>` |
 | Temp buffer | `ArrayPool<T>` / `stackalloc` | Zero/low alloc |
 
@@ -960,10 +1141,14 @@ public bool IsAlive => Health > 0;
 _ = int.TryParse(s, out int result);
 (_, int y, _) = GetCoordinates();
 
-// CORRECT: nameof for resilient refactoring (unbound generics in C# 14)
+// CORRECT: nameof for resilient refactoring
 throw new ArgumentException("Invalid value", nameof(packetId));
 LogToConsole($"{nameof(AutoEat)}: eating {item.Name}");
-string typeName = nameof(Dictionary<,>);  // "Dictionary"
+
+// .NET 10 / C# 14 — unbound generic in nameof
+string typeName10 = nameof(Dictionary<,>);          // "Dictionary"
+// .NET 8 / C# 12 — use any closed generic instead
+string typeName8 = nameof(Dictionary<object, object>);  // "Dictionary"
 
 // CORRECT: static lambdas prevent accidental closure allocations
 list.Sort(static (a, b) => a.Id.CompareTo(b.Id));

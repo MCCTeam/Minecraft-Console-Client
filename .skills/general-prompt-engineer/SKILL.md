@@ -1,6 +1,8 @@
 ---
 name: general-prompt-engineer
 description: create, repair, compress, and optimize prompts, system messages, tool instructions, schemas, and eval rubrics for general tasks across writing, research, coding, analysis, planning, tutoring, automation, and agent workflows. use when the user wants a new prompt, wants an existing prompt improved, wants prompt failures debugged, or needs better structure for grounding, tool use, output format, or reliability.
+model: claude-opus-4-8
+effort: xhigh
 ---
 
 # Prompt Engineer
