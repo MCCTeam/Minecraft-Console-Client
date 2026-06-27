@@ -795,7 +795,8 @@ public sealed class MccGameApi
                 {
                     Slot = item.Key,
                     Type = item.Value.Type.ToString(),
-                    Count = item.Value.Count
+                    Count = item.Value.Count,
+                    Nbt = MccGameCommon.BuildNbt(item.Value)
                 })
                 .ToArray();
 
@@ -856,7 +857,8 @@ public sealed class MccGameApi
                                 TypeLabel = pair.Value.GetTypeString(),
                                 Count = pair.Value.Count,
                                 IsPlayerInventory = entry.Key == 0,
-                                HotbarSlot = isHotbar ? hotbar + 1 : null
+                                HotbarSlot = isHotbar ? hotbar + 1 : null,
+                                Nbt = MccGameCommon.BuildNbt(pair.Value)
                             };
                         });
                 })

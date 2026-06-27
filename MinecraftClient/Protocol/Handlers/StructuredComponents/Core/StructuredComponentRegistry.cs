@@ -37,6 +37,7 @@ public abstract class StructuredComponentRegistry(DataTypes dataTypes, ItemPalet
                     ?? throw new InvalidOperationException($"Could not instantiate a parser for a structured component type {name}");
 
                 component.TypeId = id;
+                component.ComponentName = name;
                 component.Parse(data);
                 return component;
             }

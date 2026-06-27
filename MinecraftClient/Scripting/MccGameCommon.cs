@@ -35,6 +35,7 @@ public sealed class MccItemStackSnapshot
 {
     public required string Type { get; init; }
     public required int Count { get; init; }
+    public Dictionary<string, object>? Nbt { get; init; }
 }
 
 /// <summary>
@@ -177,8 +178,24 @@ public static class MccGameCommon
         return new MccItemStackSnapshot
         {
             Type = item.Type.ToString(),
-            Count = item.Count
+            Count = item.Count,
+            Nbt = BuildNbt(item)
         };
+    }
+
+    public static Dictionary<string, object>? BuildNbt(Item item)
+    {
+        if (item.Components is { Count: > 0 })
+        {
+            return item.Components
+                .Where(c => !string.IsNullOrEmpty(c.ComponentName))
+                .ToDictionary(
+                    c => c.ComponentName,
+                    c => (object)System.Text.Json.JsonSerializer.SerializeToElement(c, c.GetType())
+                );
+        }
+
+        return item.NBT is { Count: > 0 } ? item.NBT : null;
     }
 
     public static bool TryParseBlockQuery(string? query, out int? blockId, out int? blockMeta)
