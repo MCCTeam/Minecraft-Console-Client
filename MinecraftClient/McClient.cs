@@ -551,8 +551,33 @@ namespace MinecraftClient
 
             if (!consoleReadThreadOwned)
             {
-                ConsoleIO.Backend.BeginReadThread();
-                consoleReadThreadOwned = true;
+                try
+                {
+                    ConsoleIO.Backend.BeginReadThread();
+                    consoleReadThreadOwned = true;
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        ConsoleIO.Backend.StopReadThread();
+                    }
+                    catch (Exception stopEx)
+                    {
+                        ConsoleIO.WriteLineFormatted($"§c[MCC] Failed to stop stale console input thread during reconnect: {stopEx.Message}");
+                    }
+
+                    try
+                    {
+                        ConsoleIO.Backend.BeginReadThread();
+                        consoleReadThreadOwned = true;
+                    }
+                    catch (Exception retryEx)
+                    {
+                        ConsoleIO.WriteLineFormatted($"§c[MCC] Failed to start console input thread after reconnect retry: {retryEx.Message}");
+                        consoleReadThreadOwned = false;
+                    }
+                }
             }
 
             if (!consoleHandlersAttached)
