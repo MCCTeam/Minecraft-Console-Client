@@ -56,6 +56,7 @@ namespace MinecraftClient
         private static bool useMcVersionOnce = false;
         private static Thread? _restartThread = null;
         private static readonly object _restartLock = new();
+        private static bool _restartInProgress = false;
         private static string settingsIniPath = "MinecraftClient.ini";
 
         // [SENTRY]
@@ -919,26 +920,78 @@ namespace MinecraftClient
                 if (HasRestartPendingForAnotherThreadNoLock())
                     return false;
 
-                ConsoleIO.Backend?.StopReadThread();
+                _restartInProgress = true;
+                StopReadThreadSafely("restart", TimeSpan.FromSeconds(1));
+                ConsoleIO.WriteLine("[MCC] Restart requested; starting restart thread.");
                 var thread = new Thread(new ThreadStart(delegate
                 {
                     try
                     {
-                        if (client is not null) { client.Disconnect(); ConsoleIO.Reset(); }
-                        if (offlinePrompt is not null)
+                        ConsoleIO.WriteLine("[MCC] Restart thread started.");
+                        try
                         {
-                            if (ConsoleIO.Backend is not null)
-                                ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
-                            offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset();
+                            var currentClient = client;
+                            client = null;
+                            if (currentClient is not null)
+                            {
+                                var disconnectThread = new Thread(() =>
+                                {
+                                    try
+                                    {
+                                        currentClient.Disconnect();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ConsoleIO.WriteLineFormatted($"§c[MCC] Client disconnect during restart failed: {ex.Message}");
+                                    }
+                                })
+                                {
+                                    IsBackground = true,
+                                    Name = "MCC client disconnect during restart"
+                                };
+                                disconnectThread.Start();
+                                if (!disconnectThread.Join(TimeSpan.FromSeconds(2)))
+                                    ConsoleIO.WriteLine("[MCC] Client disconnect during restart timed out; continuing.");
+                                ConsoleIO.Reset();
+                            }
+                            if (offlinePrompt is not null)
+                            {
+                                if (ConsoleIO.Backend is not null)
+                                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                                offlinePrompt.Item2.Cancel();
+                                if (Thread.CurrentThread != offlinePrompt.Item1)
+                                    offlinePrompt.Item1.Join(TimeSpan.FromSeconds(1));
+                                offlinePrompt = null; ConsoleIO.Reset();
+                            }
                         }
+                        catch (Exception ex)
+                        {
+                            ConsoleIO.WriteLineFormatted($"§c[MCC] Restart cleanup failed: {ex.Message}");
+                        }
+
                         if (delaySeconds > 0)
                         {
                             ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
-                            Thread.Sleep(delaySeconds * 1000);
+                            try
+                            {
+                                Thread.Sleep(delaySeconds * 1000);
+                            }
+                            catch (ThreadInterruptedException)
+                            {
+                                ConsoleIO.WriteLine("[MCC] Restart delay interrupted; continuing.");
+                            }
                         }
-                        ConsoleIO.WriteLine(Translations.mcc_restart);
-                        ReloadSettings(keepAccountAndServerSettings);
-                        InitializeClient();
+                        ConsoleIO.WriteLine("[MCC] Restarting client now.");
+                        try
+                        {
+                            ReloadSettings(keepAccountAndServerSettings);
+                            InitializeClient();
+                        }
+                        catch (Exception ex)
+                        {
+                            ConsoleIO.WriteLineFormatted($"§c[MCC] Restart initialization failed: {ex.Message}");
+                            ConsoleIO.WriteLine(ex.ToString());
+                        }
                     }
                     finally
                     {
@@ -946,6 +999,8 @@ namespace MinecraftClient
                         {
                             if (_restartThread == Thread.CurrentThread)
                                 _restartThread = null;
+                            _restartInProgress = false;
+                            ConsoleIO.WriteLine("[MCC] Restart thread finished.");
                         }
                     }
                 }));
@@ -957,9 +1012,34 @@ namespace MinecraftClient
 
         private static bool HasRestartPendingForAnotherThreadNoLock()
         {
-            return _restartThread is not null
-                && _restartThread.IsAlive
-                && _restartThread != Thread.CurrentThread;
+            return _restartInProgress && _restartThread is not null && _restartThread.IsAlive;
+        }
+
+        private static void StopReadThreadSafely(string context, TimeSpan timeout)
+        {
+            if (ConsoleIO.Backend is null)
+                return;
+
+            var backend = ConsoleIO.Backend;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    backend.StopReadThread();
+                }
+                catch (Exception)
+                {
+                    ConsoleIO.WriteLineFormatted($"§c[MCC] Failed to stop {context} input thread.");
+                }
+            })
+            {
+                IsBackground = true,
+                Name = $"MCC stop read thread ({context})"
+            };
+
+            thread.Start();
+            if (!thread.Join(timeout))
+                ConsoleIO.WriteLine($"[MCC] Stopping the {context} input thread timed out; continuing.");
         }
 
         public static void DoExit(int exitcode = 0)
@@ -1046,7 +1126,7 @@ namespace MinecraftClient
 
                 if (offlinePrompt is null)
                 {
-                    ConsoleIO.Backend?.StopReadThread();
+                    StopReadThreadSafely("offline prompt", TimeSpan.FromSeconds(1));
                     if (ConsoleIO.Backend is not null)
                         ConsoleIO.Backend.OnInputChange += ConsoleIO.OfflineAutocompleteHandler;
 
