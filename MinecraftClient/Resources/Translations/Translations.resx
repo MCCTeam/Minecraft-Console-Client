@@ -397,6 +397,9 @@
   <data name="bot.autoRelog.wait_with_retries" xml:space="preserve">
     <value>Waiting {0:0.000} seconds before reconnecting... ({1} retries left)</value>
   </data>
+  <data name="bot.autoRelog.restart_already_pending" xml:space="preserve">
+    <value>Restart already pending; not scheduling another reconnect.</value>
+  </data>
   <data name="bot.autoRelog.retries_unlimited" xml:space="preserve">
     <value>unlimited</value>
   </data>
