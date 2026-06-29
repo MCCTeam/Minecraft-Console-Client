@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
@@ -47,7 +47,7 @@ namespace MinecraftClient.Commands
                 if (!Settings.Config.Main.Advanced.SetAccount(account))
                     return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_connect_unknown, account));
             }
-            Program.Restart(keepAccountAndServerSettings: true);
+            Program.Reconnect();
             return r.SetAndReturn(CmdResult.Status.Done);
         }
 
@@ -62,7 +62,7 @@ namespace MinecraftClient.Commands
                     return string.Format(Translations.cmd_connect_unknown, account);
                 }
             }
-            Program.Restart(keepAccountAndServerSettings: true);
+            Program.Reconnect();
             return String.Empty;
         }
     }
