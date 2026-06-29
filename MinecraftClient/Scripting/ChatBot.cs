@@ -1020,11 +1020,11 @@ namespace MinecraftClient.Scripting
         }
 
         /// <summary>
-        /// Disconnect from the server and restart the program
-        /// It will unload and reload all the bots and then reconnect to the server
+        /// Disconnect from the server and reconnect to the current server session
+        /// It will unload and reload all bots and then reconnect using existing settings
         /// </summary>
         /// <param name="ExtraAttempts">In case of failure, maximum extra attempts before aborting</param>
-        /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
+        /// <param name="delaySeconds">Optional delay, in seconds, before reconnecting</param>
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
             if (Config.Logging.DebugMessages)
@@ -1033,7 +1033,7 @@ namespace MinecraftClient.Scripting
                 ConsoleIO.WriteLogLine(string.Format(Translations.chatbot_reconnect, botName));
             }
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds, keepAccountAndServerSettings);
+            Program.Reconnect(delaySeconds);
         }
 
         /// <summary>
