@@ -571,6 +571,14 @@ namespace MinecraftClient
             bool skipPassword = useBrowser || useDeviceCode;
             if (string.IsNullOrWhiteSpace(InternalConfig.Account.Login) && !useBrowser)
             {
+                // During restart, don't prompt for login - abort instead
+                if (_restartInProgress)
+                {
+                    ConsoleIO.WriteLineFormatted("§c[MCC] Error: Login not configured; restart aborted.");
+                    HandleFailure(Translations.error_login_blocked, false, ChatBot.DisconnectReason.LoginRejected);
+                    return;
+                }
+                
                 ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.mcc_login_basic_io : Translations.mcc_login);
                 InternalConfig.Account.Login = ConsoleIO.ReadLine().Trim();
                 if (string.IsNullOrWhiteSpace(InternalConfig.Account.Login))
@@ -693,6 +701,13 @@ namespace MinecraftClient
 
                 if (InternalConfig.ServerIP == string.Empty)
                 {
+                    // During restart, don't prompt for server IP - abort instead
+                    if (_restartInProgress)
+                    {
+                        ConsoleIO.WriteLineFormatted("§c[MCC] Error: ServerIP not configured; restart aborted.");
+                        return;
+                    }
+                    
                     ConsoleIO.WriteLine(Translations.mcc_ip);
                     string addressInput = ConsoleIO.ReadLine();
                     if (addressInput.StartsWith("realms:"))
@@ -841,6 +856,12 @@ namespace MinecraftClient
                     {
                         throw;
                     }
+                    catch (AutoRelogReconnectRequestedException)
+                    {
+                        // AutoRelog requested a reconnect during client initialization.
+                        // The reconnect was already scheduled by AutoRelog, so do not fall back to the normal failure handler.
+                        return;
+                    }
                     catch (Exception e)
                     {
                         // [SENTRY]
@@ -904,12 +925,171 @@ namespace MinecraftClient
             TryRestart(delaySeconds, keepAccountAndServerSettings);
         }
 
+        public static void Reconnect(int delaySeconds = 0)
+        {
+            TryReconnect(delaySeconds);
+        }
+
+        internal static bool TryReconnect(int delaySeconds = 0)
+        {
+            lock (_restartLock)
+            {
+                if (HasRestartPendingForAnotherThreadNoLock() && Thread.CurrentThread != _restartThread)
+                    return false;
+
+                _restartInProgress = true;
+                StopReadThreadSafely("reconnect", TimeSpan.FromSeconds(1));
+                ConsoleIO.WriteLine("[MCC] Reconnect requested; starting reconnect thread.");
+                var thread = new Thread(new ThreadStart(delegate
+                {
+                    try
+                    {
+                        ConsoleIO.WriteLine("[MCC] Reconnect thread started.");
+
+                        // Cleanup phase
+                        try
+                        {
+                            var currentClient = client;
+                            client = null;
+                            if (currentClient is not null)
+                            {
+                                try
+                                {
+                                    var disconnectThread = new Thread(() =>
+                                    {
+                                        try
+                                        {
+                                            currentClient.ForceClose();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            try { ConsoleIO.WriteLineFormatted($"§c[MCC] Client force-close failed: {ex.Message}"); } catch { }
+                                        }
+                                    })
+                                    {
+                                        IsBackground = true,
+                                        Name = "MCC client reconnect"
+                                    };
+                                    disconnectThread.Start();
+                                    if (!disconnectThread.Join(TimeSpan.FromSeconds(2)))
+                                    {
+                                        try { ConsoleIO.WriteLine("[MCC] Client reconnect cleanup timed out."); } catch { }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    try { ConsoleIO.WriteLineFormatted($"§c[MCC] Error stopping client during reconnect: {ex.Message}"); } catch { }
+                                }
+                                try { ConsoleIO.Reset(); } catch { }
+                            }
+
+                            if (offlinePrompt is not null)
+                            {
+                                try
+                                {
+                                    if (ConsoleIO.Backend is not null)
+                                        ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                                    offlinePrompt.Item2.Cancel();
+                                    if (Thread.CurrentThread != offlinePrompt.Item1)
+                                        offlinePrompt.Item1.Join(TimeSpan.FromSeconds(1));
+                                    offlinePrompt = null;
+                                }
+                                catch (Exception ex)
+                                {
+                                    try { ConsoleIO.WriteLineFormatted($"§c[MCC] Error stopping offline prompt: {ex.Message}"); } catch { }
+                                }
+                                try { ConsoleIO.Reset(); } catch { }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            try { ConsoleIO.WriteLineFormatted($"§c[MCC] Cleanup phase error: {ex.Message}"); } catch { }
+                        }
+
+                        // Delay phase
+                        if (delaySeconds > 0)
+                        {
+                            try
+                            {
+                                try { ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds)); } catch { }
+                                Thread.Sleep(delaySeconds * 1000);
+                            }
+                            catch (ThreadInterruptedException)
+                            {
+                                try { ConsoleIO.WriteLine("[MCC] Reconnect delay interrupted."); } catch { }
+                            }
+                            catch (Exception ex)
+                            {
+                                try { ConsoleIO.WriteLineFormatted($"§c[MCC] Delay phase error: {ex.Message}"); } catch { }
+                            }
+                        }
+
+                        try { ConsoleIO.WriteLine("[MCC] Reconnecting client now."); } catch { }
+
+                        try
+                        {
+                            InitializeClient();
+                        }
+                        catch (Exception ex)
+                        {
+                            try
+                            {
+                                ConsoleIO.WriteLineFormatted($"§c[MCC] Client init error: {ex.Message}");
+                                ConsoleIO.WriteLine($"[MCC] Details: {ex}");
+                            }
+                            catch { }
+
+                            if (offlinePrompt is null)
+                            {
+                                try
+                                {
+                                    HandleFailure(ex.Message);
+                                }
+                                catch { }
+                            }
+
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            ConsoleIO.WriteLineFormatted($"§c[MCC] CRITICAL: Reconnect thread unhandled exception: {ex}");
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    finally
+                    {
+                        lock (_restartLock)
+                        {
+                            if (_restartThread == Thread.CurrentThread)
+                            {
+                                _restartThread = null;
+                                _restartInProgress = false;
+                            }
+                            ConsoleIO.WriteLine("[MCC] Reconnect thread finished.");
+                        }
+                    }
+                }))
+                {
+                    IsBackground = false,
+                    Name = "MCC reconnect thread"
+                };
+                _restartThread = thread;
+                thread.Start();
+                return true;
+            }
+        }
+
         internal static bool HasRestartPendingForAnotherThread
         {
             get
             {
                 lock (_restartLock)
-                    return HasRestartPendingForAnotherThreadNoLock();
+                    return HasRestartPendingForAnotherThreadNoLock() && Thread.CurrentThread != _restartThread;
             }
         }
 
@@ -917,7 +1097,7 @@ namespace MinecraftClient
         {
             lock (_restartLock)
             {
-                if (HasRestartPendingForAnotherThreadNoLock())
+                if (HasRestartPendingForAnotherThreadNoLock() && Thread.CurrentThread != _restartThread)
                     return false;
 
                 _restartInProgress = true;
@@ -928,69 +1108,155 @@ namespace MinecraftClient
                     try
                     {
                         ConsoleIO.WriteLine("[MCC] Restart thread started.");
+                        
+                        // Cleanup phase
                         try
                         {
                             var currentClient = client;
                             client = null;
                             if (currentClient is not null)
                             {
-                                var disconnectThread = new Thread(() =>
+                                try
                                 {
-                                    try
+                                    var disconnectThread = new Thread(() =>
                                     {
-                                        currentClient.Disconnect();
-                                    }
-                                    catch (Exception ex)
+                                        try
+                                        {
+                                            currentClient.Disconnect();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            try { ConsoleIO.WriteLineFormatted($"§c[MCC] Client disconnect failed: {ex.Message}"); } catch { }
+                                        }
+                                    })
                                     {
-                                        ConsoleIO.WriteLineFormatted($"§c[MCC] Client disconnect during restart failed: {ex.Message}");
+                                        IsBackground = true,
+                                        Name = "MCC client disconnect"
+                                    };
+                                    disconnectThread.Start();
+                                    if (!disconnectThread.Join(TimeSpan.FromSeconds(2)))
+                                    {
+                                        try { ConsoleIO.WriteLine("[MCC] Client disconnect timed out."); } catch { }
+                                        try
+                                        {
+                                            ConsoleIO.WriteLine("[MCC] Forcing stale client cleanup.");
+                                            currentClient.ForceClose();
+                                        }
+                                        catch { }
                                     }
-                                })
+                                }
+                                catch (Exception ex)
                                 {
-                                    IsBackground = true,
-                                    Name = "MCC client disconnect during restart"
-                                };
-                                disconnectThread.Start();
-                                if (!disconnectThread.Join(TimeSpan.FromSeconds(2)))
-                                    ConsoleIO.WriteLine("[MCC] Client disconnect during restart timed out; continuing.");
-                                ConsoleIO.Reset();
+                                    try { ConsoleIO.WriteLineFormatted($"§c[MCC] Error stopping client: {ex.Message}"); } catch { }
+                                }
+                                try { ConsoleIO.Reset(); } catch { }
                             }
+                            
                             if (offlinePrompt is not null)
                             {
-                                if (ConsoleIO.Backend is not null)
-                                    ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
-                                offlinePrompt.Item2.Cancel();
-                                if (Thread.CurrentThread != offlinePrompt.Item1)
-                                    offlinePrompt.Item1.Join(TimeSpan.FromSeconds(1));
-                                offlinePrompt = null; ConsoleIO.Reset();
+                                try
+                                {
+                                    if (ConsoleIO.Backend is not null)
+                                        ConsoleIO.Backend.OnInputChange -= ConsoleIO.OfflineAutocompleteHandler;
+                                    offlinePrompt.Item2.Cancel();
+                                    if (Thread.CurrentThread != offlinePrompt.Item1)
+                                        offlinePrompt.Item1.Join(TimeSpan.FromSeconds(1));
+                                    offlinePrompt = null;
+                                }
+                                catch (Exception ex)
+                                {
+                                    try { ConsoleIO.WriteLineFormatted($"§c[MCC] Error stopping offline prompt: {ex.Message}"); } catch { }
+                                }
+                                try { ConsoleIO.Reset(); } catch { }
                             }
                         }
                         catch (Exception ex)
                         {
-                            ConsoleIO.WriteLineFormatted($"§c[MCC] Restart cleanup failed: {ex.Message}");
+                            try { ConsoleIO.WriteLineFormatted($"§c[MCC] Cleanup phase error: {ex.Message}"); } catch { }
                         }
 
+                        // Delay phase
                         if (delaySeconds > 0)
                         {
-                            ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds));
                             try
                             {
+                                try { ConsoleIO.WriteLine(string.Format(Translations.mcc_restart_delay, delaySeconds)); } catch { }
                                 Thread.Sleep(delaySeconds * 1000);
                             }
                             catch (ThreadInterruptedException)
                             {
-                                ConsoleIO.WriteLine("[MCC] Restart delay interrupted; continuing.");
+                                try { ConsoleIO.WriteLine("[MCC] Restart delay interrupted."); } catch { }
+                            }
+                            catch (Exception ex)
+                            {
+                                try { ConsoleIO.WriteLineFormatted($"§c[MCC] Delay phase error: {ex.Message}"); } catch { }
                             }
                         }
-                        ConsoleIO.WriteLine("[MCC] Restarting client now.");
+
+                        try { ConsoleIO.WriteLine("[MCC] Restarting client now."); } catch { }
+                        
+                        // Save current state
+                        string savedServerIP = InternalConfig.ServerIP;
+                        string savedUsername = InternalConfig.Username;
+                        
+                        // Settings reload phase
                         try
                         {
                             ReloadSettings(keepAccountAndServerSettings);
+                        }
+                        catch (Exception ex)
+                        {
+                            try { ConsoleIO.WriteLineFormatted($"§c[MCC] Settings reload failed: {ex.Message}"); } catch { }
+                            try { ConsoleIO.WriteLineFormatted("§c[MCC] Restart aborted."); } catch { }
+                            return;
+                        }
+                        
+                        // Restore saved config to prevent prompts
+                        try
+                        {
+                            if (InternalConfig.ServerIP == string.Empty && !string.IsNullOrEmpty(savedServerIP))
+                                InternalConfig.ServerIP = savedServerIP;
+                            if (InternalConfig.Username == string.Empty && !string.IsNullOrEmpty(savedUsername))
+                                InternalConfig.Username = savedUsername;
+                        }
+                        catch (Exception ex)
+                        {
+                            try { ConsoleIO.WriteLineFormatted($"§c[MCC] Config restore failed: {ex.Message}"); } catch { }
+                        }
+                        
+                        // Client initialization phase
+                        try
+                        {
                             InitializeClient();
                         }
                         catch (Exception ex)
                         {
-                            ConsoleIO.WriteLineFormatted($"§c[MCC] Restart initialization failed: {ex.Message}");
-                            ConsoleIO.WriteLine(ex.ToString());
+                            try
+                            {
+                                ConsoleIO.WriteLineFormatted($"§c[MCC] Client init error: {ex.Message}");
+                                ConsoleIO.WriteLine($"[MCC] Details: {ex}");
+                            }
+                            catch { }
+                            // Restore and abort - prevent infinite loops
+                            try
+                            {
+                                InternalConfig.ServerIP = savedServerIP;
+                                InternalConfig.Username = savedUsername;
+                            }
+                            catch { }
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Catch-all for any uncaught exception in restart thread
+                        try
+                        {
+                            ConsoleIO.WriteLineFormatted($"§c[MCC] CRITICAL: Restart thread unhandled exception: {ex}");
+                        }
+                        catch
+                        {
+                            // Even logging failed, nothing we can do
                         }
                     }
                     finally
@@ -998,12 +1264,18 @@ namespace MinecraftClient
                         lock (_restartLock)
                         {
                             if (_restartThread == Thread.CurrentThread)
+                            {
                                 _restartThread = null;
-                            _restartInProgress = false;
+                                _restartInProgress = false;
+                            }
                             ConsoleIO.WriteLine("[MCC] Restart thread finished.");
                         }
                     }
-                }));
+                }))
+                {
+                    IsBackground = false,  // Foreground thread ensures proper shutdown
+                    Name = "MCC restart thread"
+                };
                 _restartThread = thread;
                 thread.Start();
                 return true;
@@ -1080,6 +1352,13 @@ namespace MinecraftClient
         /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
         public static void HandleFailure(string? errorMessage = null, bool versionError = false, ChatBot.DisconnectReason? disconnectReason = null)
         {
+            if (_restartInProgress && Thread.CurrentThread != _restartThread)
+            {
+                if (!string.IsNullOrEmpty(errorMessage))
+                    ConsoleIO.WriteLine("[MCC] Failure ignored because restart is already in progress.");
+                return;
+            }
+
             bool autoRelogHandled = false;
 
             if (!string.IsNullOrEmpty(errorMessage))
@@ -1118,7 +1397,7 @@ namespace MinecraftClient
                     }
                 }
 
-                if (!autoRelogHandled && disconnectReason.HasValue)
+                if (!autoRelogHandled && disconnectReason.HasValue && !_restartInProgress)
                 {
                     if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage!))
                         return;
