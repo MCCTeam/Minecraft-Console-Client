@@ -131,7 +131,7 @@ namespace MinecraftClient.ChatBots
             else if (CanReconnect())
             {
                 message = GetVerbatim(message);
-                string comp = message.ToLower();
+                string compareMessage = message;
 
                 LogDebugToConsole(string.Format(Translations.bot_autoRelog_disconnect_msg, message));
 
@@ -140,9 +140,17 @@ namespace MinecraftClient.ChatBots
                     return LaunchDelayedReconnection(null);
                 }
 
+                string localizedConnectionLost = Translations.mcc_disconnect_lost;
+                if (reason == DisconnectReason.ConnectionLost &&
+                    (string.IsNullOrEmpty(compareMessage) ||
+                     (!string.IsNullOrEmpty(localizedConnectionLost) && compareMessage.IndexOf(localizedConnectionLost, StringComparison.OrdinalIgnoreCase) >= 0)))
+                {
+                    return LaunchDelayedReconnection(string.IsNullOrEmpty(compareMessage) ? null : Translations.mcc_disconnect_lost);
+                }
+
                 foreach (string msg in Config.Kick_Messages)
                 {
-                    if (comp.Contains(msg))
+                    if (compareMessage.IndexOf(msg, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         return LaunchDelayedReconnection(msg);
                     }
@@ -223,14 +231,15 @@ namespace MinecraftClient.ChatBots
                 : retriesLeft.ToString();
 
             McClient.ReconnectionAttemptsLeft = retriesLeft;
-            if (Program.TryRestart((int)Math.Floor(delay), true))
+            if (Program.TryReconnect((int)Math.Floor(delay)))
             {
                 LogToConsole(string.Format(Translations.bot_autoRelog_wait_with_retries, delay, retriesDisplay));
                 return true;
             }
 
             RollBackReconnectAttempt();
-            return true;
+            LogToConsole(Translations.bot_autoRelog_restart_already_pending);
+            return false;
         }
 
         public static bool OnDisconnectStatic(DisconnectReason reason, string message)
