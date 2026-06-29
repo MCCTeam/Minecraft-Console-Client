@@ -907,6 +907,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restart already pending; not scheduling another reconnect.
+        /// </summary>
+        internal static string bot_autoRelog_restart_already_pending {
+            get {
+                return ResourceManager.GetString("bot.autoRelog.restart_already_pending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to unlimited.
         /// </summary>
         internal static string bot_autoRelog_retries_unlimited {
