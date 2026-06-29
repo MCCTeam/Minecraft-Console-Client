@@ -29,6 +29,14 @@ using static MinecraftClient.Settings;
 
 namespace MinecraftClient
 {
+    internal class AutoRelogReconnectRequestedException : Exception
+    {
+        public AutoRelogReconnectRequestedException()
+            : base("AutoRelog requested reconnect")
+        {
+        }
+    }
+
     /// <summary>
     /// The main client class, used to connect to a Minecraft server.
     /// </summary>
@@ -375,7 +383,7 @@ namespace MinecraftClient
                     Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Program.Reconnect();
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
@@ -391,7 +399,7 @@ namespace MinecraftClient
                 // Use the same "Connection has been lost" message that OnConnectionLost uses
                 // for ConnectionLost, so it matches the default Kick_Messages.
                 if (AutoRelog.OnDisconnectStatic(ChatBot.DisconnectReason.ConnectionLost, Translations.mcc_disconnect_lost))
-                    return; // AutoRelog is triggering a restart
+                    throw new AutoRelogReconnectRequestedException(); // AutoRelog is triggering a restart
 
                 // AutoRelog chose not to reconnect (e.g., message didn't match
                 // kick messages and Ignore_Kick_Message is false, or retry limit reached)
@@ -498,7 +506,7 @@ namespace MinecraftClient
                     Log.Info($"Reconnecting... Attempts left: {ReconnectionAttemptsLeft}");
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Program.Reconnect();
                 }
                 else if (InternalConfig.InteractiveMode)
                 {
@@ -608,8 +616,18 @@ namespace MinecraftClient
 
             if (consoleReadThreadOwned)
             {
-                ConsoleIO.Backend.StopReadThread();
-                consoleReadThreadOwned = false;
+                try
+                {
+                    ConsoleIO.Backend.StopReadThread();
+                }
+                catch (Exception ex)
+                {
+                    ConsoleIO.WriteLineFormatted($"§c[MCC] Failed to stop console input thread during session teardown: {ex.Message}");
+                }
+                finally
+                {
+                    consoleReadThreadOwned = false;
+                }
             }
         }
 
@@ -893,6 +911,9 @@ namespace MinecraftClient
         {
             instance = null;
 
+            // Ensure console session cleanup before disconnecting the network and bots.
+            StopConsoleSession();
+
             DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
 
             foreach (ChatBot bot in bots.Where(bot => bot.ScriptOwnerKey is not null).ToList())
@@ -924,23 +945,96 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Force stops the current client without raising bot disconnect events.
+        /// Used by restart cleanup when the normal disconnect path has timed out.
+        /// </summary>
+        public void ForceClose()
+        {
+            instance = null;
+
+            try
+            {
+                StopConsoleSession();
+            }
+            catch { }
+
+            try
+            {
+                foreach (ChatBot bot in bots.Where(bot => bot.ScriptOwnerKey is not null).ToList())
+                    BotUnLoad(bot);
+
+                botsOnHold.Clear();
+                botsOnHold.AddRange(bots.Where(bot => bot.ScriptOwnerKey is null));
+            }
+            catch { }
+
+            try
+            {
+                if (handler is not null)
+                {
+                    handler.Disconnect();
+                    handler.Dispose();
+                }
+            }
+            catch { }
+
+            try
+            {
+                if (timeoutdetector is not null)
+                {
+                    timeoutdetector.Item2.Cancel();
+                    timeoutdetector = null;
+                }
+            }
+            catch { }
+
+            try
+            {
+                client?.Close();
+            }
+            catch { }
+        }
+
+        /// <summary>
         /// When connection has been lost, login was denied or played was kicked from the server
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            if (Program.HasRestartPendingForAnotherThread)
+            {
+                Log.Info("[MCC] Connection lost event ignored because a restart is already in progress.");
+                return;
+            }
+
             instance = null;
 
-            ConsoleIO.CancelAutocomplete();
+            try
+            {
+                ConsoleIO.CancelAutocomplete();
+            }
+            catch { }
 
-            handler.Dispose();
+            try
+            {
+                handler?.Dispose();
+            }
+            catch { }
+            finally
+            {
+                handler = null;
+            }
 
             world.Clear();
             ClearKnownSigns();
 
             if (timeoutdetector is not null)
             {
-                if (timeoutdetector is not null && Thread.CurrentThread != timeoutdetector.Item1)
-                    timeoutdetector.Item2.Cancel();
+                try
+                {
+                    if (Thread.CurrentThread != timeoutdetector.Item1)
+                        timeoutdetector.Item2.Cancel();
+                }
+                catch { }
                 timeoutdetector = null;
             }
 
