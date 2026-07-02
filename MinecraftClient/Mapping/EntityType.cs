@@ -150,6 +150,7 @@ namespace MinecraftClient.Mapping
         Squid,
         Stray,
         Strider,
+        SulfurCube,
         Tadpole,
         TextDisplay,
         Tnt,
