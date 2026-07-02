@@ -1,5 +1,5 @@
 {
-  "version": "26.1-rc-2",
+  "version": "26.2",
   "colors": {
     "AcaciaDoor": [
       216,
@@ -696,6 +696,11 @@
       119,
       72
     ],
+    "ChiseledCinnabar": [
+      153,
+      51,
+      51
+    ],
     "ChiseledNetherBricks": [
       112,
       2,
@@ -726,6 +731,11 @@
       112,
       112
     ],
+    "ChiseledSulfur": [
+      229,
+      229,
+      51
+    ],
     "ChorusFlower": [
       127,
       63,
@@ -735,6 +745,46 @@
       127,
       63,
       178
+    ],
+    "Cinnabar": [
+      153,
+      51,
+      51
+    ],
+    "CinnabarBrickSlab": [
+      153,
+      51,
+      51
+    ],
+    "CinnabarBrickStairs": [
+      153,
+      51,
+      51
+    ],
+    "CinnabarBrickWall": [
+      153,
+      51,
+      51
+    ],
+    "CinnabarBricks": [
+      153,
+      51,
+      51
+    ],
+    "CinnabarSlab": [
+      153,
+      51,
+      51
+    ],
+    "CinnabarStairs": [
+      153,
+      51,
+      51
+    ],
+    "CinnabarWall": [
+      153,
+      51,
+      51
     ],
     "Clay": [
       164,
@@ -2526,6 +2576,26 @@
       25,
       25
     ],
+    "PolishedCinnabar": [
+      153,
+      51,
+      51
+    ],
+    "PolishedCinnabarSlab": [
+      153,
+      51,
+      51
+    ],
+    "PolishedCinnabarStairs": [
+      153,
+      51,
+      51
+    ],
+    "PolishedCinnabarWall": [
+      153,
+      51,
+      51
+    ],
     "PolishedDiorite": [
       255,
       252,
@@ -2536,6 +2606,26 @@
       109,
       77
     ],
+    "PolishedSulfur": [
+      229,
+      229,
+      51
+    ],
+    "PolishedSulfurSlab": [
+      229,
+      229,
+      51
+    ],
+    "PolishedSulfurStairs": [
+      229,
+      229,
+      51
+    ],
+    "PolishedSulfurWall": [
+      229,
+      229,
+      51
+    ],
     "Poppy": [
       0,
       124,
@@ -2545,6 +2635,11 @@
       0,
       124,
       0
+    ],
+    "PotentSulfur": [
+      250,
+      238,
+      77
     ],
     "PowderSnow": [
       255,
@@ -3120,6 +3215,51 @@
       0,
       124,
       0
+    ],
+    "Sulfur": [
+      229,
+      229,
+      51
+    ],
+    "SulfurBrickSlab": [
+      229,
+      229,
+      51
+    ],
+    "SulfurBrickStairs": [
+      229,
+      229,
+      51
+    ],
+    "SulfurBrickWall": [
+      229,
+      229,
+      51
+    ],
+    "SulfurBricks": [
+      229,
+      229,
+      51
+    ],
+    "SulfurSlab": [
+      229,
+      229,
+      51
+    ],
+    "SulfurSpike": [
+      229,
+      229,
+      51
+    ],
+    "SulfurStairs": [
+      229,
+      229,
+      51
+    ],
+    "SulfurWall": [
+      229,
+      229,
+      51
     ],
     "Sunflower": [
       0,
