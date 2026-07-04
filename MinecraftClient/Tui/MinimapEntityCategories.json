@@ -1,5 +1,5 @@
 {
-  "version": "26.1-rc-2",
+  "version": "26.2",
   "hostile": [
     "Blaze",
     "Bogged",
@@ -30,6 +30,7 @@
     "Skeleton",
     "Slime",
     "Stray",
+    "SulfurCube",
     "Vex",
     "Vindicator",
     "Warden",
