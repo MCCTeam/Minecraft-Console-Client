@@ -216,6 +216,7 @@ public sealed class MccInventorySnapshotSlot
     public required int Slot { get; init; }
     public required string Type { get; init; }
     public required int Count { get; init; }
+    public Dictionary<string, object>? Nbt { get; init; }
 }
 
 public sealed class MccInventorySnapshotResult
@@ -239,6 +240,7 @@ public sealed class MccInventorySearchMatch
     public required int Count { get; init; }
     public required bool IsPlayerInventory { get; init; }
     public int? HotbarSlot { get; init; }
+    public Dictionary<string, object>? Nbt { get; init; }
 }
 
 public sealed class MccInventorySearchResult
