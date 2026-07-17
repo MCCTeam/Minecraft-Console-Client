@@ -685,7 +685,7 @@ Coordinate = { x = 145, y = 64, z = 2045 }
 
 - **Description:**
 
-  This setting allows you to define if your want to disable pauses on error, for using MCC in non-interactive scripts
+  Exit immediately with a nonzero status when a connection or login failure occurs. This bypasses MCC reconnect handling, including AutoRelog, so an external supervisor can restart MCC.
 
 - **Type:** `boolean`
 
