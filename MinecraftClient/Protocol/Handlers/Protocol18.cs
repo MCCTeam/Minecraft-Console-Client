@@ -4085,16 +4085,37 @@ namespace MinecraftClient.Protocol.Handlers
                 if (netMain is not null)
                 {
                     netMain.Item2.Cancel();
+                    netMain = null;
                 }
 
                 if (netReader is not null)
                 {
                     netReader.Item2.Cancel();
-                    socketWrapper.Disconnect();
+                    netReader = null;
                 }
             }
             catch
             {
+            }
+            finally
+            {
+                try
+                {
+                    socketWrapper.Disconnect();
+                }
+                catch
+                {
+                    // Best effort; the old protocol loop should not block shutdown.
+                }
+
+                try
+                {
+                    packetQueue.CompleteAdding();
+                }
+                catch
+                {
+                    // Best effort; the queue may already be completed.
+                }
             }
         }
 

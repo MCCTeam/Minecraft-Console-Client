@@ -131,7 +131,7 @@ namespace MinecraftClient.ChatBots
             else if (CanReconnect())
             {
                 message = GetVerbatim(message);
-                string comp = message.ToLower();
+                string comp = message.ToLowerInvariant();
 
                 LogDebugToConsole(string.Format(Translations.bot_autoRelog_disconnect_msg, message));
 

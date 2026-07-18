@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
 using MinecraftClient.Crypto;
 
@@ -61,10 +62,31 @@ namespace MinecraftClient.Protocol.Handlers
             int read = 0;
             while (read < offset)
             {
-                if (encrypted)
-                    read += s!.Read(buffer, start + read, offset - read);
-                else
-                    read += c.Client.Receive(buffer, start + read, offset - read, f);
+                int received;
+                try
+                {
+                    if (encrypted)
+                        received = s!.Read(buffer, start + read, offset - read);
+                    else
+                        received = c.Client.Receive(buffer, start + read, offset - read, f);
+                }
+                catch (SocketException)
+                {
+                    throw;
+                }
+                catch (ObjectDisposedException)
+                {
+                    throw;
+                }
+                catch (IOException)
+                {
+                    throw;
+                }
+
+                if (received <= 0)
+                    throw new IOException("Socket closed while reading from the server.");
+
+                read += received;
             }
         }
 

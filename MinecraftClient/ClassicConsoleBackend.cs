@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace MinecraftClient
 {
@@ -109,9 +110,32 @@ namespace MinecraftClient
 
         public void StopReadThread()
         {
-            ConsoleInteractive.ConsoleReader.StopReadThread();
-            ConsoleInteractive.ConsoleReader.MessageReceived -= ForwardMessage;
-            ConsoleInteractive.ConsoleReader.OnInputChange -= ForwardInputChange;
+            Thread stopThread = new(() =>
+            {
+                try
+                {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                }
+                catch
+                {
+                    // Best-effort shutdown; do not block the caller thread during reconnect/restart.
+                }
+
+                try
+                {
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ForwardMessage;
+                    ConsoleInteractive.ConsoleReader.OnInputChange -= ForwardInputChange;
+                }
+                catch
+                {
+                    // Ignore detach failures.
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "ClassicConsoleBackend.StopReadThread"
+            };
+            stopThread.Start();
         }
 
         public string RequestImmediateInput()

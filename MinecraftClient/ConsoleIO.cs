@@ -93,6 +93,29 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Read a line from the standard input but return quickly if the backend stalls.
+        /// This is used by the offline prompt so disconnect/reconnect handling cannot hang forever.
+        /// </summary>
+        public static string ReadLineWithTimeout(TimeSpan timeout)
+        {
+            if (BasicIO)
+                return Console.ReadLine() ?? String.Empty;
+
+            try
+            {
+                var inputTask = Task.Run(() => Backend.RequestImmediateInput());
+                if (inputTask.Wait(timeout))
+                    return inputTask.Result;
+            }
+            catch
+            {
+                // Ignore backend stalls and fall back to an empty input so the reconnect flow can continue.
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Debug routine: print all keys pressed in the console
         /// </summary>
         public static void DebugReadInput()

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -151,6 +152,15 @@ namespace MinecraftClient
             public string? LegacyBackupPath { get; init; }
         }
 
+        private static Mutex AcquireSettingsFileMutex(string filepath)
+        {
+            string fullPath = Path.GetFullPath(filepath);
+            string normalizedPath = fullPath.Replace(Path.DirectorySeparatorChar, '/').ToLowerInvariant();
+            byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedPath));
+            string mutexName = "MCC.Settings." + Convert.ToHexString(hashBytes)[..16];
+            return new Mutex(false, mutexName);
+        }
+
         public static ConfigLoadResult LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
         {
             bool keepAccountSettings = InternalConfig.KeepAccountSettings;
@@ -158,117 +168,141 @@ namespace MinecraftClient
             if (keepAccountAndServerSettings)
                 InternalConfig.KeepAccountSettings = InternalConfig.KeepServerSettings = true;
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            TomlDocument document;
+            using var settingsMutex = AcquireSettingsFileMutex(filepath);
+            settingsMutex.WaitOne();
             try
             {
-                document = TomlParser.ParseFile(filepath);
-                Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
-
-                Config = TomletMain.To<GlobalConfig>(document);
-            }
-            catch (Exception ex)
-            {
-                Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
+                Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+                TomlDocument document;
                 try
                 {
-                    string configString = File.ReadAllText(filepath);
-                    if (configString.Contains("Some settings missing here after an upgrade?"))
-                    {
-                        string newFilePath = Path.ChangeExtension(filepath, ".old.ini");
-                        File.Copy(filepath, newFilePath, true);
-                        return new ConfigLoadResult
-                        {
-                            Success = false,
-                            NeedWriteDefault = true,
-                            IsLegacyUpgrade = true,
-                            LegacyBackupPath = newFilePath
-                        };
-                    }
+                    document = TomlParser.ParseFile(filepath);
+                    Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
+
+                    Config = TomletMain.To<GlobalConfig>(document);
                 }
-                catch { }
-                return new ConfigLoadResult
+                catch (Exception ex)
                 {
-                    Success = false,
-                    NeedWriteDefault = false,
-                    ErrorMessage = ex.GetFullMessage()
-                };
+                    Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
+                    try
+                    {
+                        string configString = File.ReadAllText(filepath);
+                        if (configString.Contains("Some settings missing here after an upgrade?"))
+                        {
+                            string newFilePath = Path.ChangeExtension(filepath, ".old.ini");
+                            File.Copy(filepath, newFilePath, true);
+                            return new ConfigLoadResult
+                            {
+                                Success = false,
+                                NeedWriteDefault = true,
+                                IsLegacyUpgrade = true,
+                                LegacyBackupPath = newFilePath
+                            };
+                        }
+                    }
+                    catch { }
+                    return new ConfigLoadResult
+                    {
+                        Success = false,
+                        NeedWriteDefault = false,
+                        ErrorMessage = ex.GetFullMessage()
+                    };
+                }
+                finally
+                {
+                    if (!keepAccountSettings)
+                        InternalConfig.KeepAccountSettings = false;
+                    if (!keepServerSettings)
+                        InternalConfig.KeepServerSettings = false;
+                }
+                return new ConfigLoadResult { Success = true, NeedWriteDefault = false };
             }
             finally
             {
-                if (!keepAccountSettings)
-                    InternalConfig.KeepAccountSettings = false;
-                if (!keepServerSettings)
-                    InternalConfig.KeepServerSettings = false;
+                settingsMutex.ReleaseMutex();
             }
-            return new ConfigLoadResult { Success = true, NeedWriteDefault = false };
         }
 
         public static void WriteToFile(string filepath, bool backupOldFile)
         {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            string tomlString = TomletMain.TomlStringFrom(Config);
-            Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
-
-            string[] tomlList = tomlString.Split('\n');
-            StringBuilder newConfig = new();
-            foreach (string line in tomlList)
+            using var settingsMutex = AcquireSettingsFileMutex(filepath);
+            settingsMutex.WaitOne();
+            try
             {
-                Match matchComment = CommentRegex.Match(line);
-                if (matchComment.Success && matchComment.Groups.Count == 3)
+                Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+                string tomlString = TomletMain.TomlStringFrom(Config);
+                Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
+
+                string[] tomlList = tomlString.Split('\n');
+                StringBuilder newConfig = new();
+                foreach (string line in tomlList)
                 {
-                    string config = matchComment.Groups[1].Value, comment = matchComment.Groups[2].Value;
-                    if (config.Length > 0)
-                        newConfig.Append(config).Append(' ', Math.Max(1, CommentsAlignPosition - config.Length) - 1);
-                    string? comment_trans = ConfigComments.ResourceManager.GetString(comment);
-                    if (string.IsNullOrEmpty(comment_trans))
-                        newConfig.Append("# ").AppendLine(comment.ReplaceLineEndings());
+                    Match matchComment = CommentRegex.Match(line);
+                    if (matchComment.Success && matchComment.Groups.Count == 3)
+                    {
+                        string config = matchComment.Groups[1].Value, comment = matchComment.Groups[2].Value;
+                        if (config.Length > 0)
+                            newConfig.Append(config).Append(' ', Math.Max(1, CommentsAlignPosition - config.Length) - 1);
+                        string? comment_trans = ConfigComments.ResourceManager.GetString(comment);
+                        if (string.IsNullOrEmpty(comment_trans))
+                            newConfig.Append("# ").AppendLine(comment.ReplaceLineEndings());
+                        else
+                            newConfig.Append("# ").AppendLine(comment_trans.Replace("\n", "\n# ").ReplaceLineEndings());
+                    }
                     else
-                        newConfig.Append("# ").AppendLine(comment_trans.Replace("\n", "\n# ").ReplaceLineEndings());
-                }
-                else
-                {
-                    newConfig.AppendLine(line);
-                }
-            }
-
-            bool needUpdate = true;
-            byte[] newConfigByte = Encoding.UTF8.GetBytes(newConfig.ToString());
-            if (File.Exists(filepath))
-            {
-                try
-                {
-                    if (new FileInfo(filepath).Length == newConfigByte.Length)
-                        if (File.ReadAllBytes(filepath).SequenceEqual(newConfigByte))
-                            needUpdate = false;
-                }
-                catch { }
-            }
-
-            if (needUpdate)
-            {
-                bool backupSuccessed = true;
-                if (backupOldFile && File.Exists(filepath))
-                {
-                    string backupFilePath = Path.ChangeExtension(filepath, ".backup.ini");
-                    try { File.Copy(filepath, backupFilePath, true); }
-                    catch (Exception ex)
                     {
-                        backupSuccessed = false;
-                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.config_backup_fail, backupFilePath));
-                        ConsoleIO.WriteLine(ex.Message);
+                        newConfig.AppendLine(line);
                     }
                 }
 
-                if (backupSuccessed)
+                bool needUpdate = true;
+                byte[] newConfigByte = Encoding.UTF8.GetBytes(newConfig.ToString());
+                if (File.Exists(filepath))
                 {
-                    try { File.WriteAllBytes(filepath, newConfigByte); }
-                    catch (Exception ex)
+                    try
                     {
-                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.config_write_fail, filepath));
-                        ConsoleIO.WriteLine(ex.Message);
+                        if (new FileInfo(filepath).Length == newConfigByte.Length)
+                            if (File.ReadAllBytes(filepath).SequenceEqual(newConfigByte))
+                                needUpdate = false;
+                    }
+                    catch { }
+                }
+
+                if (needUpdate)
+                {
+                    bool backupSuccessed = true;
+                    if (backupOldFile && File.Exists(filepath))
+                    {
+                        string backupFilePath = Path.ChangeExtension(filepath, ".backup.ini");
+                        try { File.Copy(filepath, backupFilePath, true); }
+                        catch (Exception ex)
+                        {
+                            backupSuccessed = false;
+                            ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.config_backup_fail, backupFilePath));
+                            ConsoleIO.WriteLine(ex.Message);
+                        }
+                    }
+
+                    if (backupSuccessed)
+                    {
+                        string tempFilePath = filepath + ".tmp";
+                        try
+                        {
+                            File.WriteAllBytes(tempFilePath, newConfigByte);
+                            File.Move(tempFilePath, filepath, true);
+                        }
+                        catch (Exception ex)
+                        {
+                            try { File.Delete(tempFilePath); } catch { }
+                            ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.config_write_fail, filepath));
+                            ConsoleIO.WriteLine(ex.Message);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                settingsMutex.ReleaseMutex();
             }
         }
 
