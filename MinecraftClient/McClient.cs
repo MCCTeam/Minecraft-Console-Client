@@ -368,6 +368,13 @@ namespace MinecraftClient
                 timeoutdetector = null;
             }
 
+            if (!InternalConfig.InteractiveMode)
+            {
+                StopConsoleSession();
+                Program.HandleFailure(null, false, ChatBot.DisconnectReason.ConnectionLost);
+                return;
+            }
+
             if (!Config.ChatBot.AutoRelog.Enabled)
             {
                 if (ReconnectionAttemptsLeft > 0)
@@ -376,33 +383,22 @@ namespace MinecraftClient
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
-                }
-                else if (InternalConfig.InteractiveMode)
-                {
-                    StopConsoleSession();
-                    Program.HandleFailure();
+                    return;
                 }
 
-                throw new Exception("Initialization failed.");
+                StopConsoleSession();
+                Program.HandleFailure();
+                return;
             }
-            else
-            {
-                // AutoRelog is enabled - invoke its static handler to trigger reconnection.
-                // Use the same "Connection has been lost" message that OnConnectionLost uses
-                // for ConnectionLost, so it matches the default Kick_Messages.
-                if (AutoRelog.OnDisconnectStatic(ChatBot.DisconnectReason.ConnectionLost, Translations.mcc_disconnect_lost))
-                    return; // AutoRelog is triggering a restart
 
-                // AutoRelog chose not to reconnect (e.g., message didn't match
-                // kick messages and Ignore_Kick_Message is false, or retry limit reached)
-                if (InternalConfig.InteractiveMode)
-                {
-                    StopConsoleSession();
-                    Program.HandleFailure();
-                }
+            // AutoRelog is enabled - invoke its static handler to trigger reconnection.
+            // Use the same "Connection has been lost" message that OnConnectionLost uses
+            // for ConnectionLost, so it matches the default Kick_Messages.
+            if (AutoRelog.OnDisconnectStatic(ChatBot.DisconnectReason.ConnectionLost, Translations.mcc_disconnect_lost))
+                return;
 
-                throw new Exception("Initialization failed.");
-            }
+            StopConsoleSession();
+            Program.HandleFailure();
         }
 
         public void Transfer(string newHost, int newPort)
@@ -493,20 +489,24 @@ namespace MinecraftClient
                     timeoutdetector = null;
                 }
 
+                if (!InternalConfig.InteractiveMode)
+                {
+                    StopConsoleSession();
+                    Program.HandleFailure(null, false, ChatBot.DisconnectReason.ConnectionLost);
+                    return;
+                }
+
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     Log.Info($"Reconnecting... Attempts left: {ReconnectionAttemptsLeft}");
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
-                }
-                else if (InternalConfig.InteractiveMode)
-                {
-                    StopConsoleSession();
-                    Program.HandleFailure();
+                    return;
                 }
 
-                throw new Exception("Transfer failed and reconnection attempts exhausted.", ex);
+                StopConsoleSession();
+                Program.HandleFailure();
             }
             finally
             {
@@ -919,6 +919,7 @@ namespace MinecraftClient
                 timeoutdetector = null;
             }
 
+            bool exitOnFailure = Program.PrepareExitOnFailure();
             bool will_restart = false;
 
             switch (reason)
@@ -950,7 +951,9 @@ namespace MinecraftClient
             {
                 try
                 {
-                    will_restart |= bot.OnDisconnect(reason, message);
+                    bool botWillRestart = bot.OnDisconnect(reason, message);
+                    if (!exitOnFailure)
+                        will_restart |= botWillRestart;
                 }
                 catch (Exception e)
                 {

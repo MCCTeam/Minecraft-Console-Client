@@ -56,6 +56,7 @@ namespace MinecraftClient
         private static bool useMcVersionOnce = false;
         private static Thread? _restartThread = null;
         private static readonly object _restartLock = new();
+        private static int exitOnFailurePending;
         private static string settingsIniPath = "MinecraftClient.ini";
 
         // [SENTRY]
@@ -916,6 +917,9 @@ namespace MinecraftClient
         {
             lock (_restartLock)
             {
+                if (Volatile.Read(ref exitOnFailurePending) != 0)
+                    return false;
+
                 if (HasRestartPendingForAnotherThreadNoLock())
                     return false;
 
@@ -960,6 +964,19 @@ namespace MinecraftClient
             return _restartThread is not null
                 && _restartThread.IsAlive
                 && _restartThread != Thread.CurrentThread;
+        }
+
+        /// <summary>
+        /// Marks the current failure as terminal when MCC is running under an external supervisor.
+        /// Further restart requests are rejected so disconnect cleanup cannot revive the process.
+        /// </summary>
+        internal static bool PrepareExitOnFailure()
+        {
+            if (InternalConfig.InteractiveMode)
+                return false;
+
+            Interlocked.Exchange(ref exitOnFailurePending, 1);
+            return true;
         }
 
         public static void DoExit(int exitcode = 0)
@@ -1015,13 +1032,19 @@ namespace MinecraftClient
                     catch { }
                 }
                 ConsoleIO.WriteLine(errorMessage);
+            }
 
-                if (disconnectReason.HasValue)
-                {
-                    autoRelogHandled = true;
-                    if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage))
-                        return;
-                }
+            if (PrepareExitOnFailure())
+            {
+                Exit(GetFailureExitCode(disconnectReason));
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(errorMessage) && disconnectReason.HasValue)
+            {
+                autoRelogHandled = true;
+                if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage))
+                    return;
             }
 
             if (InternalConfig.InteractiveMode)
@@ -1123,20 +1146,17 @@ namespace MinecraftClient
                     offlinePrompt.Item1.Start();
                 }
             }
-            else
-            {
-                // Not in interactive mode, just exit and let the calling script handle the failure
-                if (disconnectReason.HasValue)
-                {
-                    // Return distinct exit codes for known failures.
-                    if (disconnectReason.Value == ChatBot.DisconnectReason.UserLogout) Exit(1);
-                    if (disconnectReason.Value == ChatBot.DisconnectReason.InGameKick) Exit(2);
-                    if (disconnectReason.Value == ChatBot.DisconnectReason.ConnectionLost) Exit(3);
-                    if (disconnectReason.Value == ChatBot.DisconnectReason.LoginRejected) Exit(4);
-                }
-                Exit();
-            }
+        }
 
+        private static int GetFailureExitCode(ChatBot.DisconnectReason? disconnectReason)
+        {
+            return disconnectReason switch
+            {
+                ChatBot.DisconnectReason.InGameKick => 2,
+                ChatBot.DisconnectReason.ConnectionLost => 3,
+                ChatBot.DisconnectReason.LoginRejected => 4,
+                _ => 1,
+            };
         }
 
         /// <summary>
