@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
 using MinecraftClient.Crypto;
 
@@ -38,7 +39,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if data is available to read</returns>
         public bool HasDataAvailable()
         {
-            return c.Client.Available > 0;
+            return c.Client.Available > 0 || c.Client.Poll(0, SelectMode.SelectRead);
         }
 
         /// <summary>
@@ -61,10 +62,16 @@ namespace MinecraftClient.Protocol.Handlers
             int read = 0;
             while (read < offset)
             {
+                int bytesRead;
                 if (encrypted)
-                    read += s!.Read(buffer, start + read, offset - read);
+                    bytesRead = s!.Read(buffer, start + read, offset - read);
                 else
-                    read += c.Client.Receive(buffer, start + read, offset - read, f);
+                    bytesRead = c.Client.Receive(buffer, start + read, offset - read, f);
+
+                if (bytesRead == 0)
+                    throw new EndOfStreamException();
+
+                read += bytesRead;
             }
         }
 

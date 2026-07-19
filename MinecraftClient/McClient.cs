@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Brigadier.NET;
 using Brigadier.NET.Exceptions;
 using MinecraftClient.ChatBots;
@@ -228,12 +229,11 @@ namespace MinecraftClient
         TcpClient client = null!;
         IMinecraftCom handler = null!;
         SessionToken _sessionToken;
-        CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
-        private Thread? basicIOReadThread;
         private int transferInProgress = 0;
-        private bool consoleReadThreadOwned = false;
-        private bool consoleHandlersAttached = false;
+        private int disconnectState;
+        private int disconnectOwnerThreadId;
+        private readonly TaskCompletionSource<bool> disconnectCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ILogger Log;
         public DialogManager Dialogs { get; }
@@ -530,75 +530,12 @@ namespace MinecraftClient
 
         private void StartConsoleSession()
         {
-            cmdprompt = new CancellationTokenSource();
-
-            if (ConsoleIO.BasicIO || ConsoleIO.Backend is null)
-            {
-                if (!consoleReadThreadOwned)
-                {
-                    CancellationToken token = cmdprompt.Token;
-                    basicIOReadThread = new Thread(() => BasicIOReadLoop(token))
-                    {
-                        IsBackground = true,
-                        Name = "MCC BasicIO read thread"
-                    };
-                    basicIOReadThread.Start();
-                    consoleReadThreadOwned = true;
-                }
-
-                return;
-            }
-
-            if (!consoleReadThreadOwned)
-            {
-                ConsoleIO.Backend.BeginReadThread();
-                consoleReadThreadOwned = true;
-            }
-
-            if (!consoleHandlersAttached)
-            {
-                ConsoleIO.Backend.MessageReceived += ConsoleReaderOnMessageReceived;
-                ConsoleIO.Backend.OnInputChange += ConsoleIO.AutocompleteHandler;
-                consoleHandlersAttached = true;
-            }
+            ConsoleInputRouter.RouteToClient(this);
         }
 
         private void StopConsoleSession()
         {
-            if (ConsoleIO.BasicIO || ConsoleIO.Backend is null)
-            {
-                cmdprompt?.Cancel();
-                basicIOReadThread = null;
-                consoleReadThreadOwned = false;
-                consoleHandlersAttached = false;
-                return;
-            }
-
-            if (consoleHandlersAttached)
-            {
-                ConsoleIO.Backend.MessageReceived -= ConsoleReaderOnMessageReceived;
-                ConsoleIO.Backend.OnInputChange -= ConsoleIO.AutocompleteHandler;
-                consoleHandlersAttached = false;
-            }
-
-            if (consoleReadThreadOwned)
-            {
-                ConsoleIO.Backend.StopReadThread();
-                consoleReadThreadOwned = false;
-            }
-        }
-
-        private void BasicIOReadLoop(CancellationToken token)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                string? input = Console.ReadLine();
-                if (input is null)
-                    return;
-
-                if (!token.IsCancellationRequested)
-                    ConsoleReaderOnMessageReceived(this, input);
-            }
+            ConsoleInputRouter.ClearClient(this);
         }
 
         private void ResetStateForTransfer()
@@ -866,36 +803,21 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
-            instance = null;
-
-            DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
-
-            foreach (ChatBot bot in bots.Where(bot => bot.ScriptOwnerKey is not null).ToList())
-                BotUnLoad(bot);
-
-            botsOnHold.Clear();
-            botsOnHold.AddRange(bots.Where(bot => bot.ScriptOwnerKey is null));
-
-            if (handler is not null)
+            if (!TryBeginDisconnect())
             {
-                handler.Disconnect();
-                handler.Dispose();
+                if (Volatile.Read(ref disconnectOwnerThreadId) != Environment.CurrentManagedThreadId)
+                    disconnectCompletion.Task.GetAwaiter().GetResult();
+                return;
             }
 
-            if (cmdprompt is not null)
+            try
             {
-                cmdprompt.Cancel();
-                cmdprompt = null;
+                DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, string.Empty));
             }
-
-            if (timeoutdetector is not null)
+            finally
             {
-                timeoutdetector.Item2.Cancel();
-                timeoutdetector = null;
+                CompleteDisconnect(sendDisconnectPacket: true);
             }
-
-            if (client is not null)
-                client.Close();
         }
 
         /// <summary>
@@ -903,74 +825,133 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
-            instance = null;
+            if (reason == ChatBot.DisconnectReason.UserLogout)
+                throw new InvalidOperationException(Translations.exception_user_logout);
 
-            ConsoleIO.CancelAutocomplete();
+            if (!TryBeginDisconnect())
+                return;
 
-            handler.Dispose();
-
-            world.Clear();
-            ClearKnownSigns();
-
-            if (timeoutdetector is not null)
+            bool restartScheduled = false;
+            try
             {
-                if (timeoutdetector is not null && Thread.CurrentThread != timeoutdetector.Item1)
-                    timeoutdetector.Item2.Cancel();
-                timeoutdetector = null;
-            }
+                ConsoleIO.CancelAutocomplete();
 
-            bool exitOnFailure = Program.PrepareExitOnFailure();
-            bool will_restart = false;
+                world.Clear();
+                ClearKnownSigns();
 
-            switch (reason)
-            {
-                case ChatBot.DisconnectReason.ConnectionLost:
-                    message = Translations.mcc_disconnect_lost;
-                    Log.Info(message);
-                    break;
+                bool exitOnFailure = Program.PrepareExitOnFailure();
 
-                case ChatBot.DisconnectReason.InGameKick:
-                    Log.Info(Translations.mcc_disconnect_server);
-                    Log.Info(message);
-                    break;
-
-                case ChatBot.DisconnectReason.LoginRejected:
-                    Log.Info(Translations.mcc_disconnect_login);
-                    Log.Info(message);
-                    break;
-
-                case ChatBot.DisconnectReason.UserLogout:
-                    throw new InvalidOperationException(Translations.exception_user_logout);
-            }
-
-            //Process AutoRelog last to make sure other bots can perform their cleanup tasks first (issue #1517)
-            List<ChatBot> onDisconnectBotList = bots.Where(bot => bot is not AutoRelog).ToList();
-            onDisconnectBotList.AddRange(bots.Where(bot => bot is AutoRelog));
-
-            foreach (ChatBot bot in onDisconnectBotList)
-            {
-                try
+                switch (reason)
                 {
-                    bool botWillRestart = bot.OnDisconnect(reason, message);
-                    if (!exitOnFailure)
-                        will_restart |= botWillRestart;
+                    case ChatBot.DisconnectReason.ConnectionLost:
+                        message = Translations.mcc_disconnect_lost;
+                        Log.Info(message);
+                        break;
+
+                    case ChatBot.DisconnectReason.InGameKick:
+                        Log.Info(Translations.mcc_disconnect_server);
+                        Log.Info(message);
+                        break;
+
+                    case ChatBot.DisconnectReason.LoginRejected:
+                        Log.Info(Translations.mcc_disconnect_login);
+                        Log.Info(message);
+                        break;
                 }
-                catch (Exception e)
+
+                // Process AutoRelog last so every other bot can complete cleanup first.
+                List<ChatBot> onDisconnectBotList = bots.Where(bot => bot is not AutoRelog).ToList();
+                onDisconnectBotList.AddRange(bots.Where(bot => bot is AutoRelog));
+
+                foreach (ChatBot bot in onDisconnectBotList)
                 {
-                    if (e is not ThreadAbortException)
+                    try
                     {
-                        Log.Warn("OnDisconnect: Got error from " + bot.ToString() + ": " + e.ToString());
+                        _ = bot.OnDisconnect(reason, message);
                     }
-                    else throw; //ThreadAbortException should not be caught
+                    catch (Exception exception) when (exception is not ThreadAbortException)
+                    {
+                        Log.Warn("OnDisconnect: Got error from " + bot + ": " + exception);
+                    }
                 }
+
+                restartScheduled = !exitOnFailure && Program.HasRestartPending;
+            }
+            finally
+            {
+                CompleteDisconnect(sendDisconnectPacket: false);
             }
 
-            SentrySdk.EndSession();
-
-            if (!will_restart)
-            {
-                StopConsoleSession();
+            if (!restartScheduled)
                 Program.HandleFailure(null, false, reason);
+        }
+
+        private bool TryBeginDisconnect()
+        {
+            if (Interlocked.CompareExchange(ref disconnectState, 1, 0) != 0)
+                return false;
+
+            Volatile.Write(ref disconnectOwnerThreadId, Environment.CurrentManagedThreadId);
+            instance = null;
+            StopConsoleSession();
+            return true;
+        }
+
+        private void CompleteDisconnect(bool sendDisconnectPacket)
+        {
+            try
+            {
+                foreach (ChatBot bot in bots.Where(bot => bot.ScriptOwnerKey is not null).ToList())
+                {
+                    try
+                    {
+                        BotUnLoad(bot);
+                    }
+                    catch (Exception exception) when (exception is not ThreadAbortException)
+                    {
+                        Log.Warn(exception.ToString());
+                    }
+                }
+
+                botsOnHold.Clear();
+                botsOnHold.AddRange(bots.Where(bot => bot.ScriptOwnerKey is null));
+
+                if (timeoutdetector is not null)
+                {
+                    CancellationTokenSource timeoutCancellation = timeoutdetector.Item2;
+                    timeoutdetector = null;
+                    RunDisconnectCleanup(timeoutCancellation.Cancel);
+                }
+
+                if (handler is not null)
+                {
+                    if (sendDisconnectPacket)
+                        RunDisconnectCleanup(handler.Disconnect);
+                    RunDisconnectCleanup(handler.Dispose);
+                }
+
+                if (client is not null)
+                    RunDisconnectCleanup(client.Close);
+                ClearTasks();
+                RunDisconnectCleanup(() => SentrySdk.EndSession());
+            }
+            finally
+            {
+                Volatile.Write(ref disconnectState, 2);
+                Volatile.Write(ref disconnectOwnerThreadId, 0);
+                disconnectCompletion.TrySetResult(true);
+            }
+        }
+
+        private void RunDisconnectCleanup(Action cleanup)
+        {
+            try
+            {
+                cleanup();
+            }
+            catch (Exception exception) when (exception is not ThreadAbortException)
+            {
+                Log.Warn(exception.ToString());
             }
         }
 
@@ -980,19 +961,16 @@ namespace MinecraftClient
 
         private void ConsoleReaderOnMessageReceived(object? sender, string e)
         {
-
             if (client.Client is null)
                 return;
 
             if (client.Client.Connected)
-            {
-                new Thread(() =>
-                {
-                    InvokeOnMainThread(() => HandleCommandPromptText(e));
-                }).Start();
-            }
-            else
-                return;
+                InvokeOnMainThreadAsync(() => HandleCommandPromptText(e));
+        }
+
+        internal void RouteConsoleInput(string input)
+        {
+            ConsoleReaderOnMessageReceived(this, input);
         }
 
         /// <summary>
@@ -1219,6 +1197,23 @@ namespace MinecraftClient
         public void InvokeOnMainThread(Action task)
         {
             InvokeOnMainThread(() => { task(); return true; });
+        }
+
+        /// <summary>
+        /// Queue work for the network main thread without blocking the calling thread.
+        /// </summary>
+        internal void InvokeOnMainThreadAsync(Action task)
+        {
+            ArgumentNullException.ThrowIfNull(task);
+
+            if (!InvokeRequired)
+            {
+                task();
+                return;
+            }
+
+            lock (threadTasksLock)
+                threadTasks.Enqueue(task);
         }
 
         /// <summary>
