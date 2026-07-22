@@ -1318,7 +1318,9 @@ redirectFrom:
 
 - **Description:**
 
-  Make MCC automatically relog when disconnected by the server, for example because the server is restating.
+  Make MCC reconnect after a network interruption or a matching server kick.
+
+  A lost TCP connection always triggers Auto Relog when the bot is enabled. `Kick_Messages` only filters server kick and login rejection messages. Logging out with an MCC command never triggers Auto Relog.
 
 - **Settings:**
 
@@ -1343,9 +1345,9 @@ redirectFrom:
 
   - **Description:**
 
-    The delay time before joining the server.
+    The delay before the next connection attempt.
 
-    If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`)
+    If `min` and `max` are equal, every attempt uses that delay. Otherwise, MCC picks a random value in the range. Values are seconds and may include a fractional part, such as `0.5` or `37.0`.
 
   - **Format:** `{ min = <seconds (double)>, max = <seconds (double)> }`
 
@@ -1365,9 +1367,9 @@ redirectFrom:
 
   - **Description:**
 
-    Number of retries.
+    Number of connection attempts after a disconnect. `0` disables retries, and a positive value is used as an exact limit.
 
-    Use `-1` for infinite retries.
+    Use `-1` for unlimited retries. MCC resets the count after the connection has remained stable for 60 seconds. A restart request that MCC rejects as a duplicate does not consume an attempt.
 
   - **Default:** `-1`
 
@@ -1375,7 +1377,7 @@ redirectFrom:
 
   - **Description:**
 
-    This settings specifies if the `Kick_Messages` setting will be ignored, if set to `true` it will auto relog regardless of the kick messages.
+    Reconnect after any server kick or login rejection instead of checking `Kick_Messages`. This setting does not affect network interruptions, which always trigger Auto Relog.
 
   - **Type:** `boolean`
 
@@ -1385,7 +1387,7 @@ redirectFrom:
 
   - **Description:**
 
-    A list of words which should trigger the Auto Reconnect Chat Bot.
+    Text fragments that trigger Auto Relog for server kicks and login rejections. Matching is case-insensitive.
 
   - **Format:** `[ "<keyword>", "<keyword>", ... ]`
 

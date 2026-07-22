@@ -77,6 +77,22 @@ namespace MinecraftClient
         /// </summary>
         public static string? ReadPassword()
         {
+            if (ConsoleInputRouter.IsStarted)
+            {
+                if (BasicIO || Backend is null)
+                    return ConsoleInputRouter.ReadLine();
+
+                Backend.SetInputVisible(false);
+                try
+                {
+                    return ConsoleInputRouter.ReadLine();
+                }
+                finally
+                {
+                    Backend.SetInputVisible(true);
+                }
+            }
+
             if (BasicIO)
                 return Console.ReadLine();
             return Backend.ReadPassword();
@@ -87,6 +103,9 @@ namespace MinecraftClient
         /// </summary>
         public static string ReadLine()
         {
+            if (ConsoleInputRouter.IsStarted)
+                return ConsoleInputRouter.ReadLine();
+
             if (BasicIO)
                 return Console.ReadLine() ?? String.Empty;
             return Backend.RequestImmediateInput();

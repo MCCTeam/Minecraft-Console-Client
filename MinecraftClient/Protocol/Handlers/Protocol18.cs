@@ -4082,19 +4082,18 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                if (netMain is not null)
+                netMain?.Item2.Cancel();
+            }
+            finally
+            {
+                try
                 {
-                    netMain.Item2.Cancel();
+                    netReader?.Item2.Cancel();
                 }
-
-                if (netReader is not null)
+                finally
                 {
-                    netReader.Item2.Cancel();
                     socketWrapper.Disconnect();
                 }
-            }
-            catch
-            {
             }
         }
 
