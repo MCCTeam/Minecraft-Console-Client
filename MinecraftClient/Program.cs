@@ -628,7 +628,7 @@ namespace MinecraftClient
                 ConsoleIO.WriteLineFormatted("§8" + Translations.mcc_offline, acceptnewlines: true);
                 result = ProtocolHandler.LoginResult.Success;
                 session.PlayerID = "0";
-                session.PlayerName = InternalConfig.Username;
+                session.PlayerName = InternalConfig.Account.Login;
             }
             else
             {
