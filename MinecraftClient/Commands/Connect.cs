@@ -47,8 +47,9 @@ namespace MinecraftClient.Commands
 
             if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHelper.MainConfig.ServerInfoConfig(server), true))
             {
-                Program.Restart(keepAccountAndServerSettings: true);
-                return r.SetAndReturn(Status.Done);
+                return r.SetAndReturn(Program.TryRestart(keepAccountAndServerSettings: true)
+                    ? Status.Done
+                    : Status.Fail);
             }
             else
             {
@@ -64,8 +65,9 @@ namespace MinecraftClient.Commands
 
             if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHelper.MainConfig.ServerInfoConfig(args[0]), true))
             {
-                Program.Restart(keepAccountAndServerSettings: true);
-                return string.Empty;
+                return Program.TryRestart(keepAccountAndServerSettings: true)
+                    ? string.Empty
+                    : Translations.general_fail;
             }
             else
             {

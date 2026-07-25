@@ -9,7 +9,14 @@ namespace MinecraftClient
     internal readonly record struct RestartRequest(
         long ConnectionAttempt,
         TimeSpan Delay,
-        bool KeepAccountAndServerSettings);
+        bool KeepAccountAndServerSettings,
+        RestartSettingsSnapshot? SettingsSnapshot = null,
+        long RequestId = 0);
+
+    internal readonly record struct RestartSettingsSnapshot(
+        Settings.MainConfigHelper.MainConfig.AccountInfoConfig Account,
+        string ServerIP,
+        ushort ServerPort);
 
     internal sealed class RestartCoordinator : IDisposable
     {
@@ -19,8 +26,9 @@ namespace MinecraftClient
         private readonly Func<RestartRequest, CancellationToken, Task> restart;
         private readonly Action<Exception> reportFailure;
         private readonly Task worker;
-        private readonly HashSet<long> pendingAttempts = [];
+        private readonly Dictionary<long, long> pendingAttempts = [];
         private long highestScheduledAttempt = -1;
+        private long nextRequestId;
         private bool stopped;
 
         internal RestartCoordinator(
@@ -44,22 +52,28 @@ namespace MinecraftClient
         internal bool HasScheduledRestart(long connectionAttempt)
         {
             lock (stateLock)
-                return !stopped && pendingAttempts.Contains(connectionAttempt);
+                return !stopped && pendingAttempts.ContainsKey(connectionAttempt);
         }
 
         internal bool TrySchedule(RestartRequest request)
         {
             lock (stateLock)
             {
-                if (stopped || request.ConnectionAttempt <= highestScheduledAttempt)
+                bool hasPendingRequest = pendingAttempts.TryGetValue(request.ConnectionAttempt, out long previousRequestId);
+                if (stopped || request.ConnectionAttempt < highestScheduledAttempt
+                    || (request.ConnectionAttempt == highestScheduledAttempt && !hasPendingRequest))
                     return false;
 
-                highestScheduledAttempt = request.ConnectionAttempt;
-                pendingAttempts.Add(request.ConnectionAttempt);
+                highestScheduledAttempt = Math.Max(highestScheduledAttempt, request.ConnectionAttempt);
+                request = request with { RequestId = ++nextRequestId };
+                pendingAttempts[request.ConnectionAttempt] = request.RequestId;
                 if (requests.Writer.TryWrite(request))
                     return true;
 
-                pendingAttempts.Remove(request.ConnectionAttempt);
+                if (hasPendingRequest)
+                    pendingAttempts[request.ConnectionAttempt] = previousRequestId;
+                else
+                    pendingAttempts.Remove(request.ConnectionAttempt);
                 return false;
             }
         }
@@ -84,6 +98,13 @@ namespace MinecraftClient
             {
                 await foreach (RestartRequest request in requests.Reader.ReadAllAsync(shutdown.Token).ConfigureAwait(false))
                 {
+                    lock (stateLock)
+                    {
+                        if (!pendingAttempts.TryGetValue(request.ConnectionAttempt, out long requestId)
+                            || requestId != request.RequestId)
+                            continue;
+                    }
+
                     try
                     {
                         await restart(request, shutdown.Token).ConfigureAwait(false);
@@ -99,7 +120,11 @@ namespace MinecraftClient
                     finally
                     {
                         lock (stateLock)
-                            pendingAttempts.Remove(request.ConnectionAttempt);
+                        {
+                            if (pendingAttempts.TryGetValue(request.ConnectionAttempt, out long requestId)
+                                && requestId == request.RequestId)
+                                pendingAttempts.Remove(request.ConnectionAttempt);
+                        }
                     }
                 }
             }

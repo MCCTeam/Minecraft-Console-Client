@@ -628,7 +628,7 @@ namespace MinecraftClient
                 ConsoleIO.WriteLineFormatted("§8" + Translations.mcc_offline, acceptnewlines: true);
                 result = ProtocolHandler.LoginResult.Success;
                 session.PlayerID = "0";
-                session.PlayerName = InternalConfig.Username;
+                session.PlayerName = InternalConfig.Account.Login;
             }
             else
             {
@@ -923,10 +923,15 @@ namespace MinecraftClient
             if (delay < TimeSpan.Zero)
                 delay = TimeSpan.Zero;
 
+            RestartSettingsSnapshot? settingsSnapshot = keepAccountAndServerSettings
+                ? new RestartSettingsSnapshot(InternalConfig.Account, InternalConfig.ServerIP, InternalConfig.ServerPort)
+                : null;
+
             return restartCoordinator.TrySchedule(new RestartRequest(
                 Volatile.Read(ref connectionAttempt),
                 delay,
-                keepAccountAndServerSettings));
+                keepAccountAndServerSettings,
+                settingsSnapshot));
         }
 
         private static async Task ExecuteRestartAsync(RestartRequest request, CancellationToken cancellationToken)
@@ -951,6 +956,12 @@ namespace MinecraftClient
             cancellationToken.ThrowIfCancellationRequested();
             ConsoleIO.WriteLine(Translations.mcc_restart);
             ReloadSettings(request.KeepAccountAndServerSettings);
+            if (request.SettingsSnapshot is RestartSettingsSnapshot settingsSnapshot)
+            {
+                InternalConfig.Account = settingsSnapshot.Account;
+                InternalConfig.ServerIP = settingsSnapshot.ServerIP;
+                InternalConfig.ServerPort = settingsSnapshot.ServerPort;
+            }
             InitializeClient();
         }
 

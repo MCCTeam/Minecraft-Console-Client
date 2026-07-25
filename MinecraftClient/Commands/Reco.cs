@@ -47,8 +47,9 @@ namespace MinecraftClient.Commands
                 if (!Settings.Config.Main.Advanced.SetAccount(account))
                     return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_connect_unknown, account));
             }
-            Program.Restart(keepAccountAndServerSettings: true);
-            return r.SetAndReturn(CmdResult.Status.Done);
+            return r.SetAndReturn(Program.TryRestart(keepAccountAndServerSettings: true)
+                ? CmdResult.Status.Done
+                : CmdResult.Status.Fail);
         }
 
         internal static string DoReconnect(string command)
@@ -62,8 +63,9 @@ namespace MinecraftClient.Commands
                     return string.Format(Translations.cmd_connect_unknown, account);
                 }
             }
-            Program.Restart(keepAccountAndServerSettings: true);
-            return String.Empty;
+            return Program.TryRestart(keepAccountAndServerSettings: true)
+                ? String.Empty
+                : Translations.general_fail;
         }
     }
 }
