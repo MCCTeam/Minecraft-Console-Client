@@ -304,7 +304,10 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 Stopwatch stopWatch = Stopwatch.StartNew();
                 long nextUpdateDue = 0;
-                while (!packetQueue.IsAddingCompleted)
+                // Continue until the reader has finished and every queued packet has been handled.
+                // A server can close immediately after a Disconnect packet, completing the queue
+                // while that final packet is still waiting to be processed.
+                while (!packetQueue.IsCompleted)
                 {
                     cancelToken.ThrowIfCancellationRequested();
 
