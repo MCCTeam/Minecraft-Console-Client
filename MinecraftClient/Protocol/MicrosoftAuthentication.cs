@@ -153,7 +153,7 @@ namespace MinecraftClient.Protocol
                 // Extract email from JWT id_token
                 string payload = JwtPayloadDecode.GetPayload(jsonData["id_token"]!.GetStringValue());
                 var jsonPayload = Json.ParseJson(payload);
-                string email = jsonPayload!["email"]!.GetStringValue();
+                string email = jsonPayload?["email"]?.GetStringValue() ?? string.Empty;
 
                 return new LoginResponse()
                 {
@@ -195,7 +195,7 @@ namespace MinecraftClient.Protocol
                 // Extract email from JWT
                 string payload = JwtPayloadDecode.GetPayload(jsonData["id_token"]!.GetStringValue());
                 var jsonPayload = Json.ParseJson(payload);
-                string email = jsonPayload!["email"]!.GetStringValue();
+                string email = jsonPayload?["email"]?.GetStringValue() ?? string.Empty;
                 return new LoginResponse()
                 {
                     Email = email,

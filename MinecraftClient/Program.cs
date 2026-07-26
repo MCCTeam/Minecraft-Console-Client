@@ -58,6 +58,7 @@ namespace MinecraftClient
         private static int offlinePromptActive;
         private static int exitOnFailurePending;
         private static string settingsIniPath = "MinecraftClient.ini";
+        private static AuthenticationSelection? pendingAuthenticationSelection;
 
         // [SENTRY]
         // Setting this string to an empty string will disable Sentry
@@ -565,15 +566,19 @@ namespace MinecraftClient
             // Setup exit cleaning code
             ExitCleanUp.Add(() => { DoExit(); });
 
+            if (HasNoConfiguredLoginDetails())
+            {
+                if (!PromptForAuthenticationSelection())
+                    return;
+            }
+
             //Asking the user to type in missing data such as Username and Password
             bool useBrowser = Config.Main.General.AccountType == LoginType.microsoft && Config.Main.General.Method == LoginMethod.browser;
             bool useDeviceCode = Config.Main.General.AccountType == LoginType.microsoft && Config.Main.General.Method == LoginMethod.mcc;
             bool skipPassword = useBrowser || useDeviceCode;
-            if (string.IsNullOrWhiteSpace(InternalConfig.Account.Login) && !useBrowser)
+            if (string.IsNullOrWhiteSpace(InternalConfig.Account.Login) && !skipPassword)
             {
-                ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.mcc_login_basic_io : Translations.mcc_login);
-                InternalConfig.Account.Login = ConsoleIO.ReadLine().Trim();
-                if (string.IsNullOrWhiteSpace(InternalConfig.Account.Login))
+                if (!RequestLogin())
                 {
                     HandleFailure(Translations.error_login_blocked, false, ChatBot.DisconnectReason.LoginRejected);
                     return;
@@ -602,6 +607,145 @@ namespace MinecraftClient
             else
                 InternalConfig.Account.Password = password;
         }
+
+        private static bool HasNoConfiguredLoginDetails()
+            => string.IsNullOrWhiteSpace(InternalConfig.Account.Login)
+               && string.IsNullOrWhiteSpace(InternalConfig.Account.Password);
+
+        private static bool PromptForAuthenticationSelection()
+        {
+            while (true)
+            {
+                ConsoleIO.WriteLine(Translations.mcc_auth_method_prompt);
+                string selection = ConsoleIO.ReadLine().Trim();
+
+                switch (selection.ToLowerInvariant())
+                {
+                    case "1":
+                    case "offline":
+                        BeginAuthenticationSelection(LoginType.mojang, LoginMethod.mcc);
+                        if (!RequestLogin())
+                        {
+                            DiscardAuthenticationSelection();
+                            HandleFailure(Translations.error_login_blocked, false, ChatBot.DisconnectReason.LoginRejected);
+                            return false;
+                        }
+
+                        InternalConfig.Account.Password = "-";
+                        return true;
+
+                    case "2":
+                    case "online":
+                    case "microsoft":
+                        BeginAuthenticationSelection(LoginType.microsoft, LoginMethod.mcc);
+                        return true;
+
+                    case "3":
+                    case "yggdrasil":
+                        BeginAuthenticationSelection(LoginType.yggdrasil, LoginMethod.mcc);
+                        if (!RequestLogin() || !RequestRequiredPassword())
+                        {
+                            DiscardAuthenticationSelection();
+                            HandleFailure(Translations.error_login_blocked, false, ChatBot.DisconnectReason.LoginRejected);
+                            return false;
+                        }
+
+                        if (!RequestAuthlibServer())
+                        {
+                            DiscardAuthenticationSelection();
+                            return false;
+                        }
+
+                        return true;
+
+                    default:
+                        ConsoleIO.WriteLine(Translations.mcc_auth_method_invalid);
+                        break;
+                }
+            }
+        }
+
+        private static void BeginAuthenticationSelection(LoginType accountType, LoginMethod method)
+        {
+            pendingAuthenticationSelection ??= new AuthenticationSelection(
+                Config.Main.General.AccountType,
+                Config.Main.General.Method,
+                Config.Main.General.AuthServerUrl);
+
+            Config.Main.General.AccountType = accountType;
+            Config.Main.General.Method = method;
+        }
+
+        private static bool RequestLogin()
+        {
+            ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.mcc_login_basic_io : Translations.mcc_login);
+            InternalConfig.Account.Login = ConsoleIO.ReadLine().Trim();
+            return !string.IsNullOrWhiteSpace(InternalConfig.Account.Login);
+        }
+
+        private static bool RequestRequiredPassword()
+        {
+            ConsoleIO.WriteLine(ConsoleIO.BasicIO ? string.Format(Translations.mcc_password_basic_io, InternalConfig.Account.Login) + "\n" : Translations.mcc_password_hidden);
+            string? password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            if (string.IsNullOrWhiteSpace(password))
+                return false;
+
+            InternalConfig.Account.Password = password;
+            return true;
+        }
+
+        private static bool RequestAuthlibServer()
+        {
+            while (true)
+            {
+                ConsoleIO.WriteLine(Translations.mcc_yggdrasil_url);
+                string authServerUrl = ConsoleIO.ReadLine().Trim();
+                if (!Config.Main.General.TrySetAuthServerUrl(authServerUrl)
+                    || !Config.Main.General.TryGetAuthServerUri(out Uri? authServerUri))
+                {
+                    ConsoleIO.WriteLine(Translations.mcc_yggdrasil_invalid_url);
+                    continue;
+                }
+
+                switch (ProtocolHandler.ValidateAuthlibServer(authServerUri))
+                {
+                    case ProtocolHandler.AuthlibServerValidationResult.Valid:
+                        return true;
+                    case ProtocolHandler.AuthlibServerValidationResult.Unreachable:
+                        ConsoleIO.WriteLine(Translations.mcc_yggdrasil_server_unreachable);
+                        break;
+                    default:
+                        ConsoleIO.WriteLine(Translations.mcc_yggdrasil_server_invalid);
+                        break;
+                }
+            }
+        }
+
+        private static void PersistAuthenticationSelection(SessionToken session)
+        {
+            if (pendingAuthenticationSelection is null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(InternalConfig.Account.Login))
+                InternalConfig.Account.Login = session.PlayerName;
+
+            Config.Main.General.Account = InternalConfig.Account;
+            WriteBackSettings();
+            pendingAuthenticationSelection = null;
+        }
+
+        private static void DiscardAuthenticationSelection()
+        {
+            if (pendingAuthenticationSelection is not AuthenticationSelection selection)
+                return;
+
+            Config.Main.General.AccountType = selection.AccountType;
+            Config.Main.General.Method = selection.Method;
+            Config.Main.General.AuthServerUrl = selection.AuthServerUrl;
+            pendingAuthenticationSelection = null;
+        }
+
+        private sealed record AuthenticationSelection(LoginType AccountType, LoginMethod Method, string AuthServerUrl);
 
         /// <summary>
         /// Start a new Client
@@ -664,16 +808,25 @@ namespace MinecraftClient
 
                 if (result != ProtocolHandler.LoginResult.Success)
                 {
-                    ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : (Config.Main.General.AccountType == LoginType.microsoft ? "Microsoft" : Config.Main.General.AuthServer.Host)));
+                    ConsoleIO.WriteLine(string.Format(Translations.mcc_connecting, Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : (Config.Main.General.AccountType == LoginType.microsoft ? "Microsoft" : Config.Main.General.AuthServerUrl)));
                     result = ProtocolHandler.GetLogin(InternalConfig.Account.Login, InternalConfig.Account.Password, Config.Main.General.AccountType, out session);
                 }
 
-                if (result == ProtocolHandler.LoginResult.Success && Config.Main.Advanced.SessionCache != CacheType.none)
-                    SessionCache.Store(loginLower, session);
+                if (result == ProtocolHandler.LoginResult.Success)
+                {
+                    PersistAuthenticationSelection(session);
+                    loginLower = ToLowerIfNeed(InternalConfig.Account.Login);
+
+                    if (Config.Main.Advanced.SessionCache != CacheType.none)
+                        SessionCache.Store(loginLower, session);
+                }
 
                 if (result == ProtocolHandler.LoginResult.Success)
                     session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck(Config.Main.General.AccountType));
             }
+
+            if (result == ProtocolHandler.LoginResult.Success)
+                PersistAuthenticationSelection(session);
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
@@ -859,6 +1012,7 @@ namespace MinecraftClient
             }
             else
             {
+                DiscardAuthenticationSelection();
                 string failureMessage = Translations.error_login;
                 string failureReason = result switch
                 {

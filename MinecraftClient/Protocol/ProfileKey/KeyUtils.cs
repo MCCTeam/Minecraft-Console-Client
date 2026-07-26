@@ -26,9 +26,10 @@ namespace MinecraftClient.Protocol.ProfileKey
             ProxiedWebRequest.Response? response = null;
             try
             {
-                var authServer = Settings.Config.Main.General.AuthServer;
-                var request = new ProxiedWebRequest(
-                    (authServer.UseHttps ? "https" : "http") + "://" + authServer.Host + ":" + authServer.Port + authServer.AuthlibInjectorAPIPath)
+                if (!Settings.Config.Main.General.TryGetAuthServerUri(out Uri? authServerUri))
+                    return false;
+
+                var request = new ProxiedWebRequest(authServerUri.AbsoluteUri)
                 {
                     Accept = "application/json"
                 };
@@ -66,9 +67,10 @@ namespace MinecraftClient.Protocol.ProfileKey
             string certificatesURL = "https://api.minecraftservices.com/player/certificates";
             if (isYggdrasil)
             {
-                var authServer = Settings.Config.Main.General.AuthServer;
-                certificatesURL = (authServer.UseHttps ? "https" : "http") + "://" + authServer.Host + ":" + authServer.Port +
-                    authServer.AuthlibInjectorAPIPath + "/minecraftservices/player/certificates";
+                if (!Settings.Config.Main.General.TryGetAuthServerUri(out Uri? authServerUri))
+                    return null;
+
+                certificatesURL = new Uri(authServerUri, "minecraftservices/player/certificates").AbsoluteUri;
             }
 
             ProxiedWebRequest.Response? response = null;
