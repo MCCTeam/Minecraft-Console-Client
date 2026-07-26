@@ -138,6 +138,16 @@ Coordinate = { x = 145, y = 64, z = 2045 }
   AccountType = "microsoft"
   ```
 
+#### Interactive login
+
+If both `Account.Login` and `Account.Password` are empty when MCC starts, it asks which account type to use instead of assuming Microsoft login.
+
+- Choose Offline to enter an in-game username. MCC saves the account as an offline account.
+- Choose Online (Microsoft) to continue with the device-code sign-in. MCC shows the code and link, then opens the sign-in page in your browser.
+- Choose Yggdrasil to enter the username, password, and authlib-injector URL for the account server. MCC checks the URL before it continues. If the address is malformed, unreachable, or does not return authlib-injector metadata, MCC explains the problem and asks for another URL.
+
+After a successful login, MCC saves the account details and selected account type in the configuration file. Later starts use those saved details and do not show this prompt. To choose a different method, edit or clear the account settings in the configuration file.
+
 #### `Method`
 
 - **Description:**
@@ -154,52 +164,32 @@ Coordinate = { x = 145, y = 64, z = 2045 }
   Method = "mcc"
   ```
 
-#### `AuthServer`
+#### `AuthServerUrl`
 
 - **Description:**
 
-  This subsection is used when `AccountType` is set to `yggdrasil`. It points MCC at the authlib/Yggdrasil server used for login, session checks, and profile key requests.
+  Use this setting with `AccountType = "yggdrasil"`. It is the complete base URL of the authlib-injector or Yggdrasil service MCC uses for login, session checks, and profile key requests.
 
-  MCC now writes this as a dedicated TOML subsection instead of an inline table:
+  The URL must start with `http://` or `https://` and include any path used by the service. For example, an authlib-injector server may use `/authlib-injector/` as its base path.
 
-  ```toml
-  [Main.General.AuthServer]
-  ```
+  An existing multi-field Yggdrasil configuration is converted to this URL automatically. When MCC writes the configuration after migration, it removes the previous Yggdrasil section.
 
-  `Host` accepts either a plain host name or a `host:port` pair. If you include the port there, MCC updates `Port` to match.
+- **Type:** `string`
 
-  `AuthlibInjectorAPIPath` defaults to `/api/yggdrasil`. Change it if your authlib-injector server uses a different prefix, such as `/authlib-injector`.
-
-  `UseHttps` defaults to `true`. Set it to `false` if your local or development auth server only exposes plain HTTP.
-
-- **Type:** `section`
-
-- **Default:**
-
-  ```toml
-  [Main.General.AuthServer]
-  Port = 443
-  AuthlibInjectorAPIPath = "/api/yggdrasil"
-  UseHttps = true
-  Host = ""
-  ```
+- **Default:** `""`
 
 - **Example:**
 
-  ```
-  [Main.General.AuthServer]
-  Host = "auth.example.com"
-  Port = 443
-  AuthlibInjectorAPIPath = "/api/yggdrasil"
-  UseHttps = true
+  ```toml
+  Account = { Login = "player@example.com", Password = "password" }
+  AccountType = "yggdrasil"
+  AuthServerUrl = "https://auth.example.com/api/yggdrasil/"
   ```
 
-  ```
-  [Main.General.AuthServer]
-  Host = "127.0.0.1"
-  Port = 25585
-  AuthlibInjectorAPIPath = "/authlib-injector"
-  UseHttps = false
+  ```toml
+  Account = { Login = "player", Password = "password" }
+  AccountType = "yggdrasil"
+  AuthServerUrl = "http://127.0.0.1:25585/authlib-injector/"
   ```
 
 #### `AuthUser`

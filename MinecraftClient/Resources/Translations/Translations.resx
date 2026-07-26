@@ -2004,6 +2004,27 @@ You can use "/chunk status {0:0.0} {1:0.0} {2:0.0}" to check the chunk loading s
   <data name="mcc.connecting" xml:space="preserve">
     <value>Connecting to {0}...</value>
   </data>
+  <data name="mcc.auth_method_prompt" xml:space="preserve">
+    <value>Select a login method: [1] Offline, [2] Online (Microsoft), [3] Yggdrasil</value>
+  </data>
+  <data name="mcc.auth_method_invalid" xml:space="preserve">
+    <value>Please choose 1, 2, or 3.</value>
+  </data>
+  <data name="mcc.yggdrasil_url" xml:space="preserve">
+    <value>Authlib-injector URL:</value>
+  </data>
+  <data name="mcc.yggdrasil_invalid_url" xml:space="preserve">
+    <value>The authlib-injector URL must be an absolute HTTP or HTTPS URL.</value>
+  </data>
+  <data name="mcc.yggdrasil_server_unreachable" xml:space="preserve">
+    <value>Could not reach the authlib-injector server. Check the URL and try again.</value>
+  </data>
+  <data name="mcc.yggdrasil_server_invalid" xml:space="preserve">
+    <value>The server did not return valid authlib-injector metadata. Check the URL and try again.</value>
+  </data>
+  <data name="config.auth_server_url_invalid" xml:space="preserve">
+    <value>The configured authlib-injector URL must be an absolute HTTP or HTTPS URL.</value>
+  </data>
   <data name="mcc.console_mode_tui_recommendation" xml:space="preserve">
     <value>Tip: try TUI mode for a cleaner interface, mouse-friendly inventory actions, and a nicer layout. Run {0}tryout tui§8 to switch [Console.General] ConsoleMode to "tui" for the next restart.</value>
   </data>
@@ -2096,6 +2117,27 @@ Type '{0}quit' to leave the server.</value>
   </data>
   <data name="mcc.password_hidden" xml:space="preserve">
     <value>Password(invisible): </value>
+  </data>
+  <data name="mcc.yggdrasil_host" xml:space="preserve">
+    <value>Authlib server host:</value>
+  </data>
+  <data name="mcc.yggdrasil_port" xml:space="preserve">
+    <value>Authlib server port [{0}]:</value>
+  </data>
+  <data name="mcc.yggdrasil_api_path" xml:space="preserve">
+    <value>Authlib-Injector API path [{0}]:</value>
+  </data>
+  <data name="mcc.yggdrasil_use_https" xml:space="preserve">
+    <value>Use HTTPS? [Y/n]</value>
+  </data>
+  <data name="mcc.yggdrasil_invalid_host" xml:space="preserve">
+    <value>The authlib server host cannot be empty.</value>
+  </data>
+  <data name="mcc.yggdrasil_invalid_port" xml:space="preserve">
+    <value>The authlib server port must be between 1 and 65535.</value>
+  </data>
+  <data name="mcc.yggdrasil_invalid_yes_no" xml:space="preserve">
+    <value>Please answer yes or no.</value>
   </data>
   <data name="mcc.player_dead" xml:space="preserve">
     <value>You are dead. Type '{0}respawn' to respawn.</value>

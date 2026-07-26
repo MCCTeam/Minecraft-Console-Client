@@ -2011,6 +2011,15 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("Main.General.AuthlibServer", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Authlib-injector URL to use for Yggdrasil accounts. It must use http or https and include any required path..
+        /// </summary>
+        internal static string Main_General_AuthServerUrl {
+            get {
+                return ResourceManager.GetString("Main.General.AuthServerUrl", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Yggdrasil authlib multi-user selection..

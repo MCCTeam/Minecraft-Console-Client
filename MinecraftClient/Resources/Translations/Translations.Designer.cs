@@ -5998,6 +5998,24 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("mcc.connecting", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Select a login method: [1] Offline, [2] Online (Microsoft), [3] Yggdrasil.
+        /// </summary>
+        internal static string mcc_auth_method_prompt {
+            get {
+                return ResourceManager.GetString("mcc.auth_method_prompt", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Please choose 1, 2, or 3..
+        /// </summary>
+        internal static string mcc_auth_method_invalid {
+            get {
+                return ResourceManager.GetString("mcc.auth_method_invalid", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Tip: try TUI mode for a cleaner interface, mouse-friendly container actions, and a nicer layout. Run {0}feature tui§8 to switch [Console.General] ConsoleMode to &quot;tui&quot; for the next restart..
@@ -6269,6 +6287,114 @@ namespace MinecraftClient {
         internal static string mcc_password_hidden {
             get {
                 return ResourceManager.GetString("mcc.password_hidden", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Authlib server host:.
+        /// </summary>
+        internal static string mcc_yggdrasil_host {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_host", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Authlib server port [{0}]:.
+        /// </summary>
+        internal static string mcc_yggdrasil_port {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_port", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Authlib-Injector API path [{0}]:.
+        /// </summary>
+        internal static string mcc_yggdrasil_api_path {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_api_path", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Use HTTPS? [Y/n].
+        /// </summary>
+        internal static string mcc_yggdrasil_use_https {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_use_https", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The authlib server host cannot be empty..
+        /// </summary>
+        internal static string mcc_yggdrasil_invalid_host {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_invalid_host", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The authlib server port must be between 1 and 65535..
+        /// </summary>
+        internal static string mcc_yggdrasil_invalid_port {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_invalid_port", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Please answer yes or no..
+        /// </summary>
+        internal static string mcc_yggdrasil_invalid_yes_no {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_invalid_yes_no", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Authlib-injector URL:.
+        /// </summary>
+        internal static string mcc_yggdrasil_url {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_url", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The authlib-injector URL must be an absolute HTTP or HTTPS URL..
+        /// </summary>
+        internal static string mcc_yggdrasil_invalid_url {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_invalid_url", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not reach the authlib-injector server. Check the URL and try again..
+        /// </summary>
+        internal static string mcc_yggdrasil_server_unreachable {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_server_unreachable", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The server did not return valid authlib-injector metadata. Check the URL and try again..
+        /// </summary>
+        internal static string mcc_yggdrasil_server_invalid {
+            get {
+                return ResourceManager.GetString("mcc.yggdrasil_server_invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The configured authlib-injector URL must be an absolute HTTP or HTTPS URL..
+        /// </summary>
+        internal static string config_auth_server_url_invalid {
+            get {
+                return ResourceManager.GetString("config.auth_server_url_invalid", resourceCulture);
             }
         }
         
