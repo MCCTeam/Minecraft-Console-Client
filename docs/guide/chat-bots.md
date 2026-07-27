@@ -1322,6 +1322,8 @@ redirectFrom:
 
   A lost TCP connection always triggers Auto Relog when the bot is enabled. `Kick_Messages` only filters server kick and login rejection messages. Logging out with an MCC command never triggers Auto Relog.
 
+  One logical disconnect or login rejection consumes one retry. `Ignore_Kick_Message` controls filtering, but it does not create additional restart decisions for the same failure.
+
 - **Settings:**
 
   **Section:** **`ChatBot.AutoRelog`**
@@ -1348,6 +1350,8 @@ redirectFrom:
     The delay before the next connection attempt.
 
     If `min` and `max` are equal, every attempt uses that delay. Otherwise, MCC picks a random value in the range. Values are seconds and may include a fractional part, such as `0.5` or `37.0`.
+
+    For multi-process deployments, use a nonzero range such as `{ min = 3.0, max = 10.0 }` so clients do not reconnect in lockstep during maintenance. Equal values remain supported when a fixed interval is required.
 
   - **Format:** `{ min = <seconds (double)>, max = <seconds (double)> }`
 

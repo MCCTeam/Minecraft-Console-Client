@@ -3,55 +3,163 @@ namespace MinecraftClient.Tests;
 public sealed class RestartCoordinatorTests
 {
     [Fact]
-    public async Task ReplacesQueuedSameAttemptAndQueuesNewerAttempt()
+    public async Task AutomaticSameAttemptIsCoalescedWhileQueued()
     {
-        var firstStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var replacementCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var secondCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var executedAccounts = new List<string>();
+        var blockerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseBlocker = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var queuedCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int queuedExecutions = 0;
 
-        using var coordinator = new RestartCoordinator(
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
             async (request, cancellationToken) =>
             {
                 if (request.ConnectionAttempt == 9)
                 {
-                    firstStarted.SetResult();
-                    await releaseFirst.Task.WaitAsync(cancellationToken);
+                    blockerStarted.SetResult();
+                    await releaseBlocker.Task.WaitAsync(cancellationToken);
+                    return;
                 }
-                else if (request.ConnectionAttempt == 10)
-                {
-                    executedAccounts.Add(request.SettingsSnapshot?.Account.Login ?? string.Empty);
-                    replacementCompleted.SetResult();
-                }
-                else if (request.ConnectionAttempt == 11)
-                {
-                    secondCompleted.SetResult();
-                }
+
+                Interlocked.Increment(ref queuedExecutions);
+                Assert.True(coordinator.TryBeginCommit(request, out _));
+                queuedCompleted.SetResult();
             },
             exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
 
         Assert.True(coordinator.TrySchedule(new RestartRequest(9, TimeSpan.Zero, true)));
-        await firstStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await blockerStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        Assert.True(coordinator.TrySchedule(new RestartRequest(10, TimeSpan.Zero, true, CreateSettingsSnapshot("first"))));
-        Assert.True(coordinator.TrySchedule(new RestartRequest(10, TimeSpan.Zero, true, CreateSettingsSnapshot("replacement"))));
-        Assert.True(coordinator.TrySchedule(new RestartRequest(11, TimeSpan.Zero, true)));
-        Assert.True(coordinator.HasScheduledRestart(11));
+        Assert.True(coordinator.TrySchedule(new RestartRequest(10, TimeSpan.Zero, true)));
+        Assert.False(coordinator.TrySchedule(new RestartRequest(10, TimeSpan.Zero, true)));
+        Assert.True(coordinator.HasScheduledRestart(10));
 
-        releaseFirst.SetResult();
-        await replacementCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await secondCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        releaseBlocker.SetResult();
+        await queuedCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        Assert.Equal(["replacement"], executedAccounts);
+        Assert.Equal(1, queuedExecutions);
+    }
+
+    [Fact]
+    public async Task AutomaticSameAttemptIsCoalescedDuringCallback()
+    {
+        var callbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var callbackCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int executions = 0;
+
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
+            async (request, cancellationToken) =>
+            {
+                Interlocked.Increment(ref executions);
+                callbackStarted.SetResult();
+                await releaseCallback.Task.WaitAsync(cancellationToken);
+                Assert.True(coordinator.TryBeginCommit(request, out _));
+                callbackCompleted.SetResult();
+            },
+            exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
+
+        Assert.True(coordinator.TrySchedule(new RestartRequest(42, TimeSpan.Zero, true)));
+        await callbackStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.False(coordinator.TrySchedule(new RestartRequest(42, TimeSpan.Zero, true)));
+
+        releaseCallback.SetResult();
+        await callbackCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Equal(1, executions);
+    }
+
+    [Fact]
+    public async Task ExplicitReplacementDuringDelayUsesLatestSnapshotWithoutAnotherExecution()
+    {
+        var callbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowCommit = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var callbackCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        RestartRequest committedRequest = default;
+        int executions = 0;
+
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
+            async (request, cancellationToken) =>
+            {
+                Interlocked.Increment(ref executions);
+                callbackStarted.SetResult();
+                await allowCommit.Task.WaitAsync(cancellationToken);
+                Assert.True(coordinator.TryBeginCommit(request, out committedRequest));
+                callbackCompleted.SetResult();
+            },
+            exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
+
+        Assert.True(coordinator.TrySchedule(new RestartRequest(
+            50,
+            TimeSpan.FromSeconds(10),
+            true,
+            CreateSettingsSnapshot("first"))));
+        await callbackStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.True(coordinator.TrySchedule(new RestartRequest(
+            50,
+            TimeSpan.Zero,
+            true,
+            CreateSettingsSnapshot("replacement"),
+            ReplaceUntilCommit: true)));
+
+        allowCommit.SetResult();
+        await callbackCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Equal(1, executions);
+        Assert.Equal("replacement", committedRequest.SettingsSnapshot?.Account.Login);
+    }
+
+    [Fact]
+    public async Task RejectsSameAttemptReplacementAfterCommit()
+    {
+        var commitStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCommit = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        RestartRequest committedRequest = default;
+
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
+            async (request, cancellationToken) =>
+            {
+                Assert.True(coordinator.TryBeginCommit(request, out committedRequest));
+                commitStarted.SetResult();
+                await releaseCommit.Task.WaitAsync(cancellationToken);
+            },
+            exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
+
+        Assert.True(coordinator.TrySchedule(new RestartRequest(
+            60,
+            TimeSpan.Zero,
+            true,
+            CreateSettingsSnapshot("committed"))));
+        await commitStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.False(coordinator.TrySchedule(new RestartRequest(
+            60,
+            TimeSpan.Zero,
+            true,
+            CreateSettingsSnapshot("rejected"),
+            ReplaceUntilCommit: true)));
+        Assert.Equal("committed", committedRequest.SettingsSnapshot?.Account.Login);
+
+        releaseCommit.SetResult();
     }
 
     [Fact]
     public void RejectsStaleAttempt()
     {
-        using var coordinator = new RestartCoordinator(
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
             (_, _) => Task.CompletedTask,
             exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
 
         Assert.True(coordinator.TrySchedule(new RestartRequest(20, TimeSpan.Zero, true)));
         Assert.False(coordinator.TrySchedule(new RestartRequest(19, TimeSpan.Zero, true)));
@@ -61,13 +169,16 @@ public sealed class RestartCoordinatorTests
     public async Task RejectsCompletedAttempt()
     {
         var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var coordinator = new RestartCoordinator(
-            (_, _) =>
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
+            (request, cancellationToken) =>
             {
+                Assert.True(coordinator.TryBeginCommit(request, out _));
                 completed.SetResult();
                 return Task.CompletedTask;
             },
             exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
 
         Assert.True(coordinator.TrySchedule(new RestartRequest(20, TimeSpan.Zero, true)));
         await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -77,15 +188,23 @@ public sealed class RestartCoordinatorTests
     }
 
     [Fact]
-    public void TerminalStopRejectsFurtherRestarts()
+    public async Task TerminalStopCancelsInFlightWorkAndRejectsFurtherRestarts()
     {
+        var callbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var coordinator = new RestartCoordinator(
-            (_, _) => Task.CompletedTask,
+            async (_, cancellationToken) =>
+            {
+                callbackStarted.SetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            },
             exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+
+        Assert.True(coordinator.TrySchedule(new RestartRequest(1, TimeSpan.Zero, true)));
+        await callbackStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         coordinator.Stop();
 
-        Assert.False(coordinator.TrySchedule(new RestartRequest(1, TimeSpan.Zero, true)));
+        Assert.False(coordinator.TrySchedule(new RestartRequest(2, TimeSpan.Zero, true)));
         Assert.False(coordinator.HasScheduledRestart(1));
     }
 

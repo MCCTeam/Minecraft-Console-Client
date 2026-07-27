@@ -78,6 +78,7 @@ namespace MinecraftClient.ChatBots
         }
 
         private static readonly AutoRelogRetryPolicy s_retryPolicy = new(TimeProvider.System);
+        private readonly long? sourceConnectionAttempt;
 
         /// <summary>
         /// This bot automatically re-join the server if kick message contains predefined string
@@ -85,8 +86,13 @@ namespace MinecraftClient.ChatBots
         /// <param name="DelayBeforeRelogMin">Minimum delay before re-joining the server (in seconds)</param>
         /// <param name="DelayBeforeRelogMax">Maximum delay before re-joining the server (in seconds)</param>
         /// <param name="retries">Number of retries if connection fails (-1 = infinite)</param>
-        public AutoRelog()
+        public AutoRelog() : this(null)
         {
+        }
+
+        private AutoRelog(long? sourceConnectionAttempt)
+        {
+            this.sourceConnectionAttempt = sourceConnectionAttempt;
             LogDebugToConsole(string.Format(Translations.bot_autoRelog_launch, Config.Retries));
         }
 
@@ -163,21 +169,27 @@ namespace MinecraftClient.ChatBots
                 : retriesLeft.ToString();
 
             McClient.ReconnectionAttemptsLeft = retriesLeft;
-            if (Program.TryRestart(TimeSpan.FromSeconds(delay), true))
+            long connectionAttempt = sourceConnectionAttempt ?? Handler.ConnectionAttempt;
+            if (Program.TryRestart(connectionAttempt, TimeSpan.FromSeconds(delay), true))
             {
                 LogToConsole(string.Format(Translations.bot_autoRelog_wait_with_retries, delay, retriesDisplay));
                 return true;
             }
 
             s_retryPolicy.RollBackReservedAttempt();
-            return Program.HasRestartPending;
+            return Program.HasRestartPending(connectionAttempt);
         }
 
         public static bool OnDisconnectStatic(DisconnectReason reason, string message)
         {
+            return OnDisconnectStatic(reason, message, Program.CurrentConnectionAttempt);
+        }
+
+        internal static bool OnDisconnectStatic(DisconnectReason reason, string message, long sourceConnectionAttempt)
+        {
             if (Config.Enabled)
             {
-                AutoRelog bot = new();
+                AutoRelog bot = new(sourceConnectionAttempt);
                 bot.Initialize();
                 return bot.OnDisconnect(reason, message);
             }

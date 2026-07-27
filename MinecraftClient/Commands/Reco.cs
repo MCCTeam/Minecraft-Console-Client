@@ -41,19 +41,30 @@ namespace MinecraftClient.Commands
 
         private int DoReconnect(CmdResult r, string account)
         {
+            RestartSettingsSnapshot previousSettings = Program.CaptureRestartSettings();
             if (!string.IsNullOrWhiteSpace(account))
             {
                 account = account.Trim();
                 if (!Settings.Config.Main.Advanced.SetAccount(account))
                     return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_connect_unknown, account));
             }
-            return r.SetAndReturn(Program.TryRestart(keepAccountAndServerSettings: true)
-                ? CmdResult.Status.Done
-                : CmdResult.Status.Fail);
+
+            if (Program.TryRestart(
+                    Program.CurrentConnectionAttempt,
+                    TimeSpan.Zero,
+                    keepAccountAndServerSettings: true,
+                    replaceUntilCommit: true))
+            {
+                return r.SetAndReturn(CmdResult.Status.Done);
+            }
+
+            Program.RestoreRestartSettings(previousSettings);
+            return r.SetAndReturn(CmdResult.Status.Fail);
         }
 
         internal static string DoReconnect(string command)
         {
+            RestartSettingsSnapshot previousSettings = Program.CaptureRestartSettings();
             string[] args = GetArgs(command);
             if (args.Length > 0)
             {
@@ -63,9 +74,18 @@ namespace MinecraftClient.Commands
                     return string.Format(Translations.cmd_connect_unknown, account);
                 }
             }
-            return Program.TryRestart(keepAccountAndServerSettings: true)
-                ? String.Empty
-                : Translations.general_fail;
+
+            if (Program.TryRestart(
+                    Program.CurrentConnectionAttempt,
+                    TimeSpan.Zero,
+                    keepAccountAndServerSettings: true,
+                    replaceUntilCommit: true))
+            {
+                return string.Empty;
+            }
+
+            Program.RestoreRestartSettings(previousSettings);
+            return Translations.general_fail;
         }
     }
 }

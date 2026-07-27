@@ -231,12 +231,13 @@ namespace MinecraftClient
         SessionToken _sessionToken;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
         private int transferInProgress = 0;
-        private int disconnectState;
+        private readonly ConnectionAttemptLifecycle connectionLifecycle = new();
         private int disconnectOwnerThreadId;
         private readonly TaskCompletionSource<bool> disconnectCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ILogger Log;
         public DialogManager Dialogs { get; }
+        internal long ConnectionAttempt { get; }
 
         private static IMinecraftComHandler? instance;
         public static IMinecraftComHandler? Instance => instance;
@@ -251,9 +252,22 @@ namespace MinecraftClient
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
         public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo)
+            : this(session, playerKeyPair, server_ip, port, protocolversion, forgeInfo, Program.CurrentConnectionAttempt)
+        {
+        }
+
+        internal McClient(
+            SessionToken session,
+            PlayerKeyPair? playerKeyPair,
+            string server_ip,
+            ushort port,
+            int protocolversion,
+            ForgeInfo? forgeInfo,
+            long connectionAttempt)
         {
             CmdResult.currentHandler = this;
             instance = this;
+            ConnectionAttempt = connectionAttempt;
 
             terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
             inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
@@ -311,7 +325,13 @@ namespace MinecraftClient
             LoadCommands();
 
             if (botsOnHold.Count == 0)
+            {
                 RegisterBots();
+            }
+            else
+            {
+                ConnectionAttemptLifecycle.RestoreHeldBots(botsOnHold, bot => BotLoad(bot, false));
+            }
 
             try
             {
@@ -331,10 +351,6 @@ namespace MinecraftClient
                 {
                     if (handler.Login(this.playerKeyPair, session))
                     {
-                        foreach (ChatBot bot in botsOnHold)
-                            BotLoad(bot, false);
-                        botsOnHold.Clear();
-
                         Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
                         StartConsoleSession();
@@ -368,6 +384,9 @@ namespace MinecraftClient
                 timeoutdetector = null;
             }
 
+            if (connectionLifecycle.IsFailureClaimed)
+                return;
+
             if (!InternalConfig.InteractiveMode)
             {
                 StopConsoleSession();
@@ -391,14 +410,8 @@ namespace MinecraftClient
                 return;
             }
 
-            // AutoRelog is enabled - invoke its static handler to trigger reconnection.
-            // Use the same "Connection has been lost" message that OnConnectionLost uses
-            // for ConnectionLost, so it matches the default Kick_Messages.
-            if (AutoRelog.OnDisconnectStatic(ChatBot.DisconnectReason.ConnectionLost, Translations.mcc_disconnect_lost))
-                return;
-
-            StopConsoleSession();
-            Program.HandleFailure();
+            OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.mcc_disconnect_lost);
+            return;
         }
 
         public void Transfer(string newHost, int newPort)
@@ -530,6 +543,7 @@ namespace MinecraftClient
 
         private void StartConsoleSession()
         {
+            Program.EndOfflinePrompt(ConnectionAttempt);
             ConsoleInputRouter.RouteToClient(this);
         }
 
@@ -875,7 +889,7 @@ namespace MinecraftClient
                     }
                 }
 
-                restartScheduled = !exitOnFailure && Program.HasRestartPending;
+                restartScheduled = !exitOnFailure && Program.HasRestartPending(ConnectionAttempt);
             }
             finally
             {
@@ -888,7 +902,7 @@ namespace MinecraftClient
 
         private bool TryBeginDisconnect()
         {
-            if (Interlocked.CompareExchange(ref disconnectState, 1, 0) != 0)
+            if (!connectionLifecycle.TryBeginDisconnect())
                 return false;
 
             Volatile.Write(ref disconnectOwnerThreadId, Environment.CurrentManagedThreadId);
@@ -937,7 +951,7 @@ namespace MinecraftClient
             }
             finally
             {
-                Volatile.Write(ref disconnectState, 2);
+                connectionLifecycle.CompleteDisconnect();
                 Volatile.Write(ref disconnectOwnerThreadId, 0);
                 disconnectCompletion.TrySetResult(true);
             }
