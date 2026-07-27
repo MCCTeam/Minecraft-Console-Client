@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MinecraftClient.Protocol.Handlers;
 using Tomlet;
 using Tomlet.Models;
 using static MinecraftClient.Settings;
@@ -36,33 +37,49 @@ namespace MinecraftClient.Protocol.Message
 
         public static Dictionary<int, MessageType>? ChatId2Type;
 
+        internal enum ChatTypeParameter
+        {
+            Sender,
+            Target,
+            Content
+        }
+
+        internal sealed record ChatTypeDecoration(string TranslationKey, ChatTypeParameter[] Parameters);
+
+        private static readonly Dictionary<int, ChatTypeDecoration> ChatId2Decoration = new();
+
+        internal static void ClearChatTypeDecorations()
+        {
+            ChatId2Decoration.Clear();
+        }
+
         // Used to store Chat Types in 1.20.6+
-        public static void ReadChatType(Dictionary<int, string> data)
+        public static void ReadChatType(int chatId, string chatName, Dictionary<string, object>? chatTypeData)
         {
             var chatTypeDictionary = ChatId2Type ?? new Dictionary<int, MessageType>();
 
-            foreach (var (chatId, chatName) in data)
+            chatTypeDictionary[chatId] = chatName switch
             {
-                chatTypeDictionary[chatId] = chatName switch
-                {
-                    "minecraft:chat" => MessageType.CHAT,
-                    "minecraft:emote_command" => MessageType.EMOTE_COMMAND,
-                    "minecraft:msg_command_incoming" => MessageType.MSG_COMMAND_INCOMING,
-                    "minecraft:msg_command_outgoing" => MessageType.MSG_COMMAND_OUTGOING,
-                    "minecraft:say_command" => MessageType.SAY_COMMAND,
-                    "minecraft:team_msg_command_incoming" => MessageType.TEAM_MSG_COMMAND_INCOMING,
-                    "minecraft:team_msg_command_outgoing" => MessageType.TEAM_MSG_COMMAND_OUTGOING,
-                    _ => MessageType.CHAT,
-                };
-            }
+                "minecraft:chat" => MessageType.CHAT,
+                "minecraft:emote_command" => MessageType.EMOTE_COMMAND,
+                "minecraft:msg_command_incoming" => MessageType.MSG_COMMAND_INCOMING,
+                "minecraft:msg_command_outgoing" => MessageType.MSG_COMMAND_OUTGOING,
+                "minecraft:say_command" => MessageType.SAY_COMMAND,
+                "minecraft:team_msg_command_incoming" => MessageType.TEAM_MSG_COMMAND_INCOMING,
+                "minecraft:team_msg_command_outgoing" => MessageType.TEAM_MSG_COMMAND_OUTGOING,
+                _ => MessageType.CHAT,
+            };
 
             ChatId2Type = chatTypeDictionary;
+
+            if (TryReadChatTypeDecoration(chatTypeData, out var decoration))
+                ChatId2Decoration[chatId] = decoration;
+            else
+                ChatId2Decoration.Remove(chatId);
         }
 
         public static void ReadChatType(Dictionary<string, object> registryCodec)
         {
-            Dictionary<int, MessageType> chatTypeDictionary = ChatId2Type ?? new();
-
             // Check if the chat type registry is in the correct format
             if (!registryCodec.ContainsKey("minecraft:chat_type"))
             {
@@ -84,25 +101,80 @@ namespace MinecraftClient.Protocol.Message
             }
 
             var chatTypeListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:chat_type"])["value"]);
-            foreach (var (chatName, chatId) in from Dictionary<string, object> chatTypeNbt in chatTypeListNbt
-                                               let chatName = (string)chatTypeNbt["name"]
-                                               let chatId = (int)chatTypeNbt["id"]
-                                               select (chatName, chatId))
+            foreach (Dictionary<string, object> chatTypeNbt in chatTypeListNbt)
             {
-                chatTypeDictionary[chatId] = chatName switch
+                string chatName = (string)chatTypeNbt["name"];
+                int chatId = (int)chatTypeNbt["id"];
+                var chatTypeData = chatTypeNbt.TryGetValue("element", out var element)
+                    ? element as Dictionary<string, object>
+                    : null;
+                ReadChatType(chatId, chatName, chatTypeData);
+            }
+        }
+
+        internal static int ReadChatTypeHolder(
+            DataTypes dataTypes,
+            Queue<byte> packetData,
+            int protocolVersion,
+            out ChatTypeDecoration? directDecoration)
+        {
+            int encodedId = dataTypes.ReadNextVarInt(packetData);
+            directDecoration = null;
+
+            if (protocolVersion < Protocol18Handler.MC_1_21_Version)
+                return encodedId;
+
+            if (encodedId > 0)
+                return encodedId - 1;
+
+            directDecoration = ReadNetworkChatTypeDecoration(dataTypes, packetData);
+            _ = ReadNetworkChatTypeDecoration(dataTypes, packetData); // Narration decoration
+            return -1;
+        }
+
+        private static ChatTypeDecoration ReadNetworkChatTypeDecoration(
+            DataTypes dataTypes,
+            Queue<byte> packetData)
+        {
+            string translationKey = dataTypes.ReadNextString(packetData);
+            int parameterCount = dataTypes.ReadNextVarInt(packetData);
+            var parameters = new ChatTypeParameter[parameterCount];
+
+            for (int i = 0; i < parameterCount; i++)
+                parameters[i] = (ChatTypeParameter)dataTypes.ReadNextVarInt(packetData);
+
+            _ = dataTypes.ReadNextNbtTag(packetData); // Style
+            return new ChatTypeDecoration(translationKey, parameters);
+        }
+
+        private static bool TryReadChatTypeDecoration(
+            Dictionary<string, object>? chatTypeData,
+            [NotNullWhen(true)] out ChatTypeDecoration? decoration)
+        {
+            decoration = null;
+            if (chatTypeData is null
+                || !chatTypeData.TryGetValue("chat", out var chat)
+                || chat is not Dictionary<string, object> chatDecoration
+                || !chatDecoration.TryGetValue("translation_key", out var translationKey)
+                || translationKey is not string translationKeyText
+                || !chatDecoration.TryGetValue("parameters", out var parameters)
+                || parameters is not object[] parameterList)
+                return false;
+
+            var parsedParameters = new ChatTypeParameter[parameterList.Length];
+            for (int i = 0; i < parameterList.Length; i++)
+            {
+                parsedParameters[i] = parameterList[i] switch
                 {
-                    "minecraft:chat" => MessageType.CHAT,
-                    "minecraft:emote_command" => MessageType.EMOTE_COMMAND,
-                    "minecraft:msg_command_incoming" => MessageType.MSG_COMMAND_INCOMING,
-                    "minecraft:msg_command_outgoing" => MessageType.MSG_COMMAND_OUTGOING,
-                    "minecraft:say_command" => MessageType.SAY_COMMAND,
-                    "minecraft:team_msg_command_incoming" => MessageType.TEAM_MSG_COMMAND_INCOMING,
-                    "minecraft:team_msg_command_outgoing" => MessageType.TEAM_MSG_COMMAND_OUTGOING,
-                    _ => MessageType.CHAT,
+                    "sender" => ChatTypeParameter.Sender,
+                    "target" => ChatTypeParameter.Target,
+                    "content" => ChatTypeParameter.Content,
+                    _ => ChatTypeParameter.Sender
                 };
             }
 
-            ChatId2Type = chatTypeDictionary;
+            decoration = new ChatTypeDecoration(translationKeyText, parsedParameters);
+            return true;
         }
 
         /// <summary>
@@ -146,6 +218,26 @@ namespace MinecraftClient.Protocol.Message
 
             string text;
             List<string> usingData = new();
+
+            ChatTypeDecoration? decoration = message.chatTypeDecoration;
+            if (decoration is null)
+                ChatId2Decoration.TryGetValue(message.chatTypeId, out decoration);
+
+            if (decoration is not null)
+            {
+                foreach (var parameter in decoration.Parameters)
+                {
+                    usingData.Add(parameter switch
+                    {
+                        ChatTypeParameter.Sender => sender,
+                        ChatTypeParameter.Target => message.teamName ?? string.Empty,
+                        ChatTypeParameter.Content => content,
+                        _ => string.Empty
+                    });
+                }
+
+                return TranslateString(decoration.TranslationKey, usingData);
+            }
 
             MessageType chatType;
             if (message.chatTypeId == -1)
@@ -557,48 +649,47 @@ namespace MinecraftClient.Protocol.Message
                 RulesInitialized = true;
             }
 
-            if (TryGetTranslationRule(rulename, out string? rule))
-            {
-                int using_idx = 0;
-                StringBuilder result = new();
-                for (int i = 0; i < rule.Length; i++)
-                {
-                    if (rule[i] == '%' && i + 1 < rule.Length)
-                    {
-                        //Using string or int with %s or %d
-                        if (rule[i + 1] == 's' || rule[i + 1] == 'd')
-                        {
-                            if (using_data.Count > using_idx)
-                            {
-                                result.Append(using_data[using_idx]);
-                                using_idx++;
-                                i += 1;
-                                continue;
-                            }
-                        }
+            if (!TryGetTranslationRule(rulename, out string? rule))
+                rule = rulename;
 
-                        //Using specified string or int with %1$s, %2$s...
-                        else if (char.IsDigit(rule[i + 1])
-                                 && i + 3 < rule.Length && rule[i + 2] == '$'
-                                 && (rule[i + 3] == 's' || rule[i + 3] == 'd'))
+            int using_idx = 0;
+            StringBuilder result = new();
+            for (int i = 0; i < rule.Length; i++)
+            {
+                if (rule[i] == '%' && i + 1 < rule.Length)
+                {
+                    //Using string or int with %s or %d
+                    if (rule[i + 1] == 's' || rule[i + 1] == 'd')
+                    {
+                        if (using_data.Count > using_idx)
                         {
-                            int specified_idx = rule[i + 1] - '1';
-                            if (using_data.Count > specified_idx)
-                            {
-                                result.Append(using_data[specified_idx]);
-                                using_idx++;
-                                i += 3;
-                                continue;
-                            }
+                            result.Append(using_data[using_idx]);
+                            using_idx++;
+                            i += 1;
+                            continue;
                         }
                     }
 
-                    result.Append(rule[i]);
+                    //Using specified string or int with %1$s, %2$s...
+                    else if (char.IsDigit(rule[i + 1])
+                             && i + 3 < rule.Length && rule[i + 2] == '$'
+                             && (rule[i + 3] == 's' || rule[i + 3] == 'd'))
+                    {
+                        int specified_idx = rule[i + 1] - '1';
+                        if (using_data.Count > specified_idx)
+                        {
+                            result.Append(using_data[specified_idx]);
+                            using_idx++;
+                            i += 3;
+                            continue;
+                        }
+                    }
                 }
 
-                return result.ToString();
+                result.Append(rule[i]);
             }
-            else return "[" + rulename + "] " + string.Join(" ", using_data);
+
+            return result.ToString();
         }
 
         private static bool TryGetTranslationRule(string rulename, [NotNullWhen(true)] out string? result)

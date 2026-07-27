@@ -3127,4 +3127,7 @@ see item details.</value>
   <data name="dialog.render.help_hint" xml:space="preserve">
     <value>Use /dialog help for a list of commands.</value>
   </data>
+  <data name="protocol.chat.raw_message" xml:space="preserve">
+    <value>Raw server chat message: {0}</value>
+  </data>
 </root>
