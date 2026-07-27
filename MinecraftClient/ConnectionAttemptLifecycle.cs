@@ -47,13 +47,13 @@ namespace MinecraftClient
             }
         }
 
-        internal bool TryActivate(long connectionAttempt, Action activate)
+        internal bool TryActivate(long connectionAttempt, long currentConnectionAttempt, Action activate)
         {
             ArgumentNullException.ThrowIfNull(activate);
 
             lock (stateLock)
             {
-                if (ownerAttempt >= connectionAttempt)
+                if (connectionAttempt < currentConnectionAttempt || ownerAttempt >= connectionAttempt)
                     return false;
 
                 ownerAttempt = connectionAttempt;

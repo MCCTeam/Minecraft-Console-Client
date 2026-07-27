@@ -3,6 +3,90 @@ namespace MinecraftClient.Tests;
 public sealed class RestartCoordinatorTests
 {
     [Fact]
+    public async Task PreparationCompletesBeforeRequestCanExecute()
+    {
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bool prepared = false;
+
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
+            (request, cancellationToken) =>
+            {
+                Assert.True(Volatile.Read(ref prepared));
+                Assert.True(coordinator.TryBeginCommit(request, out _));
+                completed.SetResult();
+                return Task.CompletedTask;
+            },
+            exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
+
+        Assert.True(coordinator.TrySchedule(
+            new RestartRequest(1, TimeSpan.Zero, true),
+            () =>
+            {
+                Volatile.Write(ref prepared, true);
+                return true;
+            }));
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task RejectedPreparationDoesNotPublishOrAdvanceAttempt()
+    {
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int executions = 0;
+
+        RestartCoordinator coordinator = null!;
+        coordinator = new RestartCoordinator(
+            (request, cancellationToken) =>
+            {
+                Interlocked.Increment(ref executions);
+                Assert.True(coordinator.TryBeginCommit(request, out _));
+                completed.SetResult();
+                return Task.CompletedTask;
+            },
+            exception => throw new Xunit.Sdk.XunitException(exception.ToString()));
+        using var cleanup = coordinator;
+
+        Assert.False(coordinator.TrySchedule(
+            new RestartRequest(2, TimeSpan.Zero, true),
+            () => false));
+        Assert.False(coordinator.HasScheduledRestart(2));
+
+        Assert.True(coordinator.TrySchedule(new RestartRequest(2, TimeSpan.Zero, true)));
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Equal(1, executions);
+    }
+
+    [Fact]
+    public async Task FaultedSourceCleanupPreventsRestartExecution()
+    {
+        var failureReported = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        int executions = 0;
+
+        using var coordinator = new RestartCoordinator(
+            (_, _) =>
+            {
+                Interlocked.Increment(ref executions);
+                return Task.CompletedTask;
+            },
+            exception => failureReported.SetResult(exception));
+
+        var cleanupFailure = new InvalidOperationException("cleanup failed");
+        Assert.True(coordinator.TrySchedule(new RestartRequest(
+            3,
+            TimeSpan.Zero,
+            true,
+            SourceCleanupCompletion: Task.FromException(cleanupFailure))));
+
+        Exception reportedException = await failureReported.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Same(cleanupFailure, reportedException);
+        Assert.Equal(0, executions);
+    }
+
+    [Fact]
     public async Task AutomaticSameAttemptIsCoalescedWhileQueued()
     {
         var blockerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

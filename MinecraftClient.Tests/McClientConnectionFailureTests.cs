@@ -55,8 +55,8 @@ public sealed class McClientConnectionFailureTests
         int activations = 0;
         int deactivations = 0;
 
-        Assert.True(route.TryActivate(7, () => activations++));
-        Assert.False(route.TryActivate(7, () => activations++));
+        Assert.True(route.TryActivate(7, 7, () => activations++));
+        Assert.False(route.TryActivate(7, 7, () => activations++));
         Assert.True(route.TryTransfer(7, 8));
         Assert.False(route.TryDeactivate(7, () => deactivations++));
         Assert.Equal(8, route.OwnerAttempt);
@@ -73,10 +73,22 @@ public sealed class McClientConnectionFailureTests
         var route = new AttemptOwnedRoute();
         int activations = 0;
 
-        Assert.True(route.TryActivate(0, () => activations++));
+        Assert.True(route.TryActivate(0, 0, () => activations++));
 
         Assert.Equal(1, activations);
         Assert.Equal(0, route.OwnerAttempt);
+    }
+
+    [Fact]
+    public void OlderAttemptCannotTakeAnEmptyOfflineRoute()
+    {
+        var route = new AttemptOwnedRoute();
+        int activations = 0;
+
+        Assert.False(route.TryActivate(4, 5, () => activations++));
+
+        Assert.Equal(0, activations);
+        Assert.Equal(-1, route.OwnerAttempt);
     }
 
     [Fact]
@@ -85,8 +97,8 @@ public sealed class McClientConnectionFailureTests
         var route = new AttemptOwnedRoute();
         int deactivations = 0;
 
-        Assert.True(route.TryActivate(10, () => { }));
-        Assert.True(route.TryActivate(11, () => { }));
+        Assert.True(route.TryActivate(10, 10, () => { }));
+        Assert.True(route.TryActivate(11, 11, () => { }));
         Assert.False(route.TryDeactivate(10, () => deactivations++));
 
         Assert.Equal(11, route.OwnerAttempt);

@@ -238,6 +238,7 @@ namespace MinecraftClient
         public ILogger Log;
         public DialogManager Dialogs { get; }
         internal long ConnectionAttempt { get; }
+        internal Task DisconnectCompletion => disconnectCompletion.Task;
 
         private static IMinecraftComHandler? instance;
         public static IMinecraftComHandler? Instance => instance;

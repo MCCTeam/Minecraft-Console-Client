@@ -12,6 +12,7 @@ namespace MinecraftClient
         bool KeepAccountAndServerSettings,
         RestartSettingsSnapshot? SettingsSnapshot = null,
         bool ReplaceUntilCommit = false,
+        Task? SourceCleanupCompletion = null,
         long RequestId = 0);
 
     internal readonly record struct RestartSettingsSnapshot(
@@ -67,7 +68,7 @@ namespace MinecraftClient
                 return !stopped && pendingAttempts.ContainsKey(connectionAttempt);
         }
 
-        internal bool TrySchedule(RestartRequest request)
+        internal bool TrySchedule(RestartRequest request, Func<bool>? beforePublish = null)
         {
             lock (stateLock)
             {
@@ -79,7 +80,11 @@ namespace MinecraftClient
                     if (pendingRequest.State != RestartRequestState.Replaceable || !request.ReplaceUntilCommit)
                         return false;
 
-                    request = request with { RequestId = pendingRequest.RequestId };
+                    request = request with
+                    {
+                        RequestId = pendingRequest.RequestId,
+                        SourceCleanupCompletion = pendingRequest.Request.SourceCleanupCompletion,
+                    };
                     pendingAttempts[request.ConnectionAttempt] = pendingRequest with { Request = request };
                     return true;
                 }
@@ -87,14 +92,30 @@ namespace MinecraftClient
                 if (request.ConnectionAttempt <= highestScheduledAttempt)
                     return false;
 
-                highestScheduledAttempt = Math.Max(highestScheduledAttempt, request.ConnectionAttempt);
                 request = request with { RequestId = ++nextRequestId };
                 pendingAttempts[request.ConnectionAttempt] = new PendingRestart(
                     request.RequestId,
                     request,
                     RestartRequestState.Replaceable);
-                if (requests.Writer.TryWrite(request))
-                    return true;
+                try
+                {
+                    if (beforePublish is not null && !beforePublish())
+                    {
+                        pendingAttempts.Remove(request.ConnectionAttempt);
+                        return false;
+                    }
+
+                    if (requests.Writer.TryWrite(request))
+                    {
+                        highestScheduledAttempt = Math.Max(highestScheduledAttempt, request.ConnectionAttempt);
+                        return true;
+                    }
+                }
+                catch
+                {
+                    pendingAttempts.Remove(request.ConnectionAttempt);
+                    throw;
+                }
 
                 pendingAttempts.Remove(request.ConnectionAttempt);
                 return false;
@@ -152,6 +173,9 @@ namespace MinecraftClient
 
                     try
                     {
+                        if (request.SourceCleanupCompletion is Task sourceCleanupCompletion)
+                            await sourceCleanupCompletion.WaitAsync(shutdown.Token).ConfigureAwait(false);
+
                         await restart(request, shutdown.Token).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException) when (shutdown.IsCancellationRequested)

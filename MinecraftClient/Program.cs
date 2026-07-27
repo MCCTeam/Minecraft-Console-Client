@@ -1095,9 +1095,13 @@ namespace MinecraftClient
             long sourceConnectionAttempt,
             TimeSpan delay,
             bool keepAccountAndServerSettings = false,
-            bool replaceUntilCommit = false)
+            bool replaceUntilCommit = false,
+            Task? sourceCleanupCompletion = null)
         {
             if (Volatile.Read(ref exitOnFailurePending) != 0)
+                return false;
+
+            if (sourceConnectionAttempt != CurrentConnectionAttempt)
                 return false;
 
             if (delay < TimeSpan.Zero)
@@ -1107,14 +1111,15 @@ namespace MinecraftClient
                 ? CaptureRestartSettings()
                 : null;
 
-            bool scheduled = restartCoordinator.TrySchedule(new RestartRequest(
-                sourceConnectionAttempt,
-                delay,
-                keepAccountAndServerSettings,
-                settingsSnapshot,
-                replaceUntilCommit));
-            if (scheduled)
-                BeginOfflinePrompt(sourceConnectionAttempt);
+            bool scheduled = restartCoordinator.TrySchedule(
+                new RestartRequest(
+                    sourceConnectionAttempt,
+                    delay,
+                    keepAccountAndServerSettings,
+                    settingsSnapshot,
+                    replaceUntilCommit,
+                    sourceCleanupCompletion),
+                () => BeginOfflinePrompt(sourceConnectionAttempt));
             return scheduled;
         }
 
@@ -1265,9 +1270,13 @@ namespace MinecraftClient
             }
         }
 
-        private static void BeginOfflinePrompt(long connectionAttempt)
+        private static bool BeginOfflinePrompt(long connectionAttempt)
         {
-            offlinePromptRoute.TryActivate(connectionAttempt, () =>
+            long currentConnectionAttempt = CurrentConnectionAttempt;
+            if (connectionAttempt != currentConnectionAttempt)
+                return false;
+
+            if (offlinePromptRoute.TryActivate(connectionAttempt, currentConnectionAttempt, () =>
             {
                 ConsoleInputRouter.RouteOffline(HandleOfflineCommand);
                 ConsoleIO.WriteLine(string.Empty);
@@ -1276,7 +1285,12 @@ namespace MinecraftClient
                     ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_quit_to_exit, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                 else
                     ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
-            });
+            }))
+            {
+                return true;
+            }
+
+            return offlinePromptRoute.OwnerAttempt == connectionAttempt;
         }
 
         private static void EndOfflinePrompt()

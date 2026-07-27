@@ -170,7 +170,11 @@ namespace MinecraftClient.ChatBots
 
             McClient.ReconnectionAttemptsLeft = retriesLeft;
             long connectionAttempt = sourceConnectionAttempt ?? Handler.ConnectionAttempt;
-            if (Program.TryRestart(connectionAttempt, TimeSpan.FromSeconds(delay), true))
+            if (Program.TryRestart(
+                    connectionAttempt,
+                    TimeSpan.FromSeconds(delay),
+                    keepAccountAndServerSettings: true,
+                    sourceCleanupCompletion: sourceConnectionAttempt.HasValue ? null : Handler.DisconnectCompletion))
             {
                 LogToConsole(string.Format(Translations.bot_autoRelog_wait_with_retries, delay, retriesDisplay));
                 return true;
