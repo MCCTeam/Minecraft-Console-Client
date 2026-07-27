@@ -1,4 +1,5 @@
-﻿using Brigadier.NET;
+﻿using System;
+using Brigadier.NET;
 using Brigadier.NET.Builder;
 using MinecraftClient.CommandHandler;
 using static MinecraftClient.CommandHandler.CmdResult;
@@ -42,35 +43,55 @@ namespace MinecraftClient.Commands
 
         private int DoConnect(CmdResult r, string server, string account)
         {
+            RestartSettingsSnapshot previousSettings = Program.CaptureRestartSettings();
             if (!string.IsNullOrWhiteSpace(account) && !Settings.Config.Main.Advanced.SetAccount(account))
                 return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_connect_unknown, account));
 
             if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHelper.MainConfig.ServerInfoConfig(server), true))
             {
-                return r.SetAndReturn(Program.TryRestart(keepAccountAndServerSettings: true)
-                    ? Status.Done
-                    : Status.Fail);
+                if (Program.TryRestart(
+                        Program.CurrentConnectionAttempt,
+                        TimeSpan.Zero,
+                        keepAccountAndServerSettings: true,
+                        replaceUntilCommit: true))
+                {
+                    return r.SetAndReturn(Status.Done);
+                }
+
+                Program.RestoreRestartSettings(previousSettings);
+                return r.SetAndReturn(Status.Fail);
             }
             else
             {
+                Program.RestoreRestartSettings(previousSettings);
                 return r.SetAndReturn(Status.Fail, string.Format(Translations.cmd_connect_invalid_ip, server));
             }
         }
 
         internal static string DoConnect(string command)
         {
+            RestartSettingsSnapshot previousSettings = Program.CaptureRestartSettings();
             string[] args = GetArgs(command);
             if (args.Length > 1 && !Settings.Config.Main.Advanced.SetAccount(args[1]))
                 return string.Format(Translations.cmd_connect_unknown, args[1]);
 
             if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHelper.MainConfig.ServerInfoConfig(args[0]), true))
             {
-                return Program.TryRestart(keepAccountAndServerSettings: true)
-                    ? string.Empty
-                    : Translations.general_fail;
+                if (Program.TryRestart(
+                        Program.CurrentConnectionAttempt,
+                        TimeSpan.Zero,
+                        keepAccountAndServerSettings: true,
+                        replaceUntilCommit: true))
+                {
+                    return string.Empty;
+                }
+
+                Program.RestoreRestartSettings(previousSettings);
+                return Translations.general_fail;
             }
             else
             {
+                Program.RestoreRestartSettings(previousSettings);
                 return string.Format(Translations.cmd_connect_invalid_ip, args[0]);
             }
         }

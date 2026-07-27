@@ -63,6 +63,37 @@ public sealed class AutoRelogRetryPolicyTests
     }
 
     [Fact]
+    public void CoalescedDuplicateRollsBackOnlyItsOwnReservation()
+    {
+        var policy = new AutoRelogRetryPolicy(new ManualTimeProvider());
+
+        Assert.True(policy.TryReserveAttempt(2, out int firstRetriesLeft));
+        Assert.True(policy.TryReserveAttempt(2, out int duplicateRetriesLeft));
+        policy.RollBackReservedAttempt();
+
+        Assert.Equal(1, firstRetriesLeft);
+        Assert.Equal(0, duplicateRetriesLeft);
+        Assert.Equal(1, policy.Attempts);
+        Assert.True(policy.TryReserveAttempt(2, out int secondFailureRetriesLeft));
+        Assert.Equal(0, secondFailureRetriesLeft);
+        Assert.False(policy.TryReserveAttempt(2, out _));
+    }
+
+    [Fact]
+    public void UnlimitedDuplicateRollbackKeepsUnlimitedBudget()
+    {
+        var policy = new AutoRelogRetryPolicy(new ManualTimeProvider());
+
+        Assert.True(policy.TryReserveAttempt(-1, out _));
+        Assert.True(policy.TryReserveAttempt(-1, out _));
+        policy.RollBackReservedAttempt();
+
+        Assert.Equal(1, policy.Attempts);
+        Assert.True(policy.TryReserveAttempt(-1, out int retriesLeft));
+        Assert.Equal(-1, retriesLeft);
+    }
+
+    [Fact]
     public void StableConnectionResetsRetryBudget()
     {
         var timeProvider = new ManualTimeProvider();

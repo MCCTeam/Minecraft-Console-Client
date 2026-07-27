@@ -55,7 +55,7 @@ namespace MinecraftClient
         private static bool useMcVersionOnce = false;
         private static readonly RestartCoordinator restartCoordinator = new(ExecuteRestartAsync, ReportRestartFailure);
         private static long connectionAttempt;
-        private static int offlinePromptActive;
+        private static readonly AttemptOwnedRoute offlinePromptRoute = new();
         private static int exitOnFailurePending;
         private static string settingsIniPath = "MinecraftClient.ini";
         private static AuthenticationSelection? pendingAuthenticationSelection;
@@ -747,12 +747,14 @@ namespace MinecraftClient
 
         private sealed record AuthenticationSelection(LoginType AccountType, LoginMethod Method, string AuthServerUrl);
 
+        internal static long CurrentConnectionAttempt => Volatile.Read(ref connectionAttempt);
+
         /// <summary>
         /// Start a new Client
         /// </summary>
         private static void InitializeClient()
         {
-            Interlocked.Increment(ref connectionAttempt);
+            long attempt = Interlocked.Increment(ref connectionAttempt);
 
             // Ensure that we use the provided Minecraft version if we can't connect automatically.
             //
@@ -984,7 +986,7 @@ namespace MinecraftClient
                     try
                     {
                         //Start the main TCP client
-                        client = new McClient(session, playerKeyPair, InternalConfig.ServerIP, InternalConfig.ServerPort, protocolversion, forgeInfo);
+                        client = new McClient(session, playerKeyPair, InternalConfig.ServerIP, InternalConfig.ServerPort, protocolversion, forgeInfo, attempt);
 
                         //Update console title
                         if (OperatingSystem.IsWindows() && !string.IsNullOrWhiteSpace(Config.Main.Advanced.ConsoleTitle))
@@ -1062,7 +1064,22 @@ namespace MinecraftClient
             TryRestart(TimeSpan.FromSeconds(Math.Max(0, delaySeconds)), keepAccountAndServerSettings);
         }
 
-        internal static bool HasRestartPending => restartCoordinator.HasScheduledRestart(Volatile.Read(ref connectionAttempt));
+        internal static bool HasRestartPending(long sourceConnectionAttempt)
+        {
+            return restartCoordinator.HasScheduledRestart(sourceConnectionAttempt);
+        }
+
+        internal static RestartSettingsSnapshot CaptureRestartSettings()
+        {
+            return new RestartSettingsSnapshot(InternalConfig.Account, InternalConfig.ServerIP, InternalConfig.ServerPort);
+        }
+
+        internal static void RestoreRestartSettings(RestartSettingsSnapshot settingsSnapshot)
+        {
+            InternalConfig.Account = settingsSnapshot.Account;
+            InternalConfig.ServerIP = settingsSnapshot.ServerIP;
+            InternalConfig.ServerPort = settingsSnapshot.ServerPort;
+        }
 
         internal static bool TryRestart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
@@ -1071,25 +1088,46 @@ namespace MinecraftClient
 
         internal static bool TryRestart(TimeSpan delay, bool keepAccountAndServerSettings = false)
         {
+            return TryRestart(CurrentConnectionAttempt, delay, keepAccountAndServerSettings);
+        }
+
+        internal static bool TryRestart(
+            long sourceConnectionAttempt,
+            TimeSpan delay,
+            bool keepAccountAndServerSettings = false,
+            bool replaceUntilCommit = false,
+            Task? sourceCleanupCompletion = null)
+        {
             if (Volatile.Read(ref exitOnFailurePending) != 0)
+                return false;
+
+            if (sourceConnectionAttempt != CurrentConnectionAttempt)
                 return false;
 
             if (delay < TimeSpan.Zero)
                 delay = TimeSpan.Zero;
 
             RestartSettingsSnapshot? settingsSnapshot = keepAccountAndServerSettings
-                ? new RestartSettingsSnapshot(InternalConfig.Account, InternalConfig.ServerIP, InternalConfig.ServerPort)
+                ? CaptureRestartSettings()
                 : null;
 
-            return restartCoordinator.TrySchedule(new RestartRequest(
-                Volatile.Read(ref connectionAttempt),
-                delay,
-                keepAccountAndServerSettings,
-                settingsSnapshot));
+            bool scheduled = restartCoordinator.TrySchedule(
+                new RestartRequest(
+                    sourceConnectionAttempt,
+                    delay,
+                    keepAccountAndServerSettings,
+                    settingsSnapshot,
+                    replaceUntilCommit,
+                    sourceCleanupCompletion),
+                () => BeginOfflinePrompt(sourceConnectionAttempt));
+            return scheduled;
         }
 
         private static async Task ExecuteRestartAsync(RestartRequest request, CancellationToken cancellationToken)
         {
+            if (request.ConnectionAttempt != CurrentConnectionAttempt)
+                return;
+
             McClient? disconnectedClient = client;
             if (disconnectedClient is not null)
             {
@@ -1098,7 +1136,6 @@ namespace MinecraftClient
                     client = null;
             }
 
-            EndOfflinePrompt();
             ConsoleIO.Reset();
 
             if (request.Delay > TimeSpan.Zero)
@@ -1108,14 +1145,22 @@ namespace MinecraftClient
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+            if (request.ConnectionAttempt != CurrentConnectionAttempt
+                || !restartCoordinator.TryBeginCommit(request, out RestartRequest latestRequest)
+                || latestRequest.ConnectionAttempt != CurrentConnectionAttempt)
+            {
+                return;
+            }
+
             ConsoleIO.WriteLine(Translations.mcc_restart);
-            ReloadSettings(request.KeepAccountAndServerSettings);
-            if (request.SettingsSnapshot is RestartSettingsSnapshot settingsSnapshot)
+            ReloadSettings(latestRequest.KeepAccountAndServerSettings);
+            if (latestRequest.SettingsSnapshot is RestartSettingsSnapshot settingsSnapshot)
             {
                 InternalConfig.Account = settingsSnapshot.Account;
                 InternalConfig.ServerIP = settingsSnapshot.ServerIP;
                 InternalConfig.ServerPort = settingsSnapshot.ServerPort;
             }
+            TransferOfflinePrompt(latestRequest.ConnectionAttempt, latestRequest.ConnectionAttempt + 1);
             InitializeClient();
         }
 
@@ -1197,7 +1242,7 @@ namespace MinecraftClient
             if (!string.IsNullOrEmpty(errorMessage) && disconnectReason.HasValue)
             {
                 autoRelogHandled = true;
-                if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage))
+                if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage, CurrentConnectionAttempt))
                     return;
             }
 
@@ -1217,35 +1262,58 @@ namespace MinecraftClient
 
                 if (!autoRelogHandled && disconnectReason.HasValue)
                 {
-                    if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage!))
+                    if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage!, CurrentConnectionAttempt))
                         return;
                 }
 
-                BeginOfflinePrompt();
+                BeginOfflinePrompt(CurrentConnectionAttempt);
             }
         }
 
-        private static void BeginOfflinePrompt()
+        private static bool BeginOfflinePrompt(long connectionAttempt)
         {
-            if (Interlocked.CompareExchange(ref offlinePromptActive, 1, 0) != 0)
-                return;
+            long currentConnectionAttempt = CurrentConnectionAttempt;
+            if (connectionAttempt != currentConnectionAttempt)
+                return false;
 
-            ConsoleInputRouter.RouteOffline(HandleOfflineCommand);
-            ConsoleIO.WriteLine(string.Empty);
-            ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_disconnected, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-            if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
-                ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_quit_to_exit, Config.Main.Advanced.InternalCmdChar.ToLogString()));
-            else
-                ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
+            if (offlinePromptRoute.TryActivate(connectionAttempt, currentConnectionAttempt, () =>
+            {
+                ConsoleInputRouter.RouteOffline(HandleOfflineCommand);
+                ConsoleIO.WriteLine(string.Empty);
+                ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_disconnected, Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                if (ConsoleIO.Backend is Tui.TuiConsoleBackend)
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_quit_to_exit, Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                else
+                    ConsoleIO.WriteLineFormatted(Translations.mcc_press_exit, acceptnewlines: true);
+            }))
+            {
+                return true;
+            }
+
+            return offlinePromptRoute.OwnerAttempt == connectionAttempt;
         }
 
         private static void EndOfflinePrompt()
         {
-            if (Interlocked.Exchange(ref offlinePromptActive, 0) == 0)
-                return;
+            offlinePromptRoute.TryDeactivate(() =>
+            {
+                ConsoleInputRouter.ClearOfflineRoute(HandleOfflineCommand);
+                ConsoleIO.Reset();
+            });
+        }
 
-            ConsoleInputRouter.ClearOfflineRoute(HandleOfflineCommand);
-            ConsoleIO.Reset();
+        internal static void EndOfflinePrompt(long connectionAttempt)
+        {
+            offlinePromptRoute.TryDeactivate(connectionAttempt, () =>
+            {
+                ConsoleInputRouter.ClearOfflineRoute(HandleOfflineCommand);
+                ConsoleIO.Reset();
+            });
+        }
+
+        private static void TransferOfflinePrompt(long sourceConnectionAttempt, long targetConnectionAttempt)
+        {
+            offlinePromptRoute.TryTransfer(sourceConnectionAttempt, targetConnectionAttempt);
         }
 
         private static void HandleOfflineCommand(string input)
@@ -1269,19 +1337,13 @@ namespace MinecraftClient
             {
                 message = Commands.Reco.DoReconnect(Config.AppVar.ExpandVars(command));
                 if (message.Length == 0)
-                {
-                    EndOfflinePrompt();
                     return;
-                }
             }
             else if (command.StartsWith("connect", StringComparison.Ordinal))
             {
                 message = Commands.Connect.DoConnect(Config.AppVar.ExpandVars(command));
                 if (message.Length == 0)
-                {
-                    EndOfflinePrompt();
                     return;
-                }
             }
             else if (command.StartsWith("exit", StringComparison.Ordinal)
                      || command.StartsWith("quit", StringComparison.Ordinal))
