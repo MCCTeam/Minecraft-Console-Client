@@ -8296,5 +8296,9 @@ namespace MinecraftClient {
             get { return ResourceManager.GetString("dialog.render.help_hint", resourceCulture); }
         }
 
+        internal static string protocol_chat_raw_message {
+            get { return ResourceManager.GetString("protocol.chat.raw_message", resourceCulture); }
+        }
+
     }
 }

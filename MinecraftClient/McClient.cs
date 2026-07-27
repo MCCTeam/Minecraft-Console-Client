@@ -3796,6 +3796,8 @@ namespace MinecraftClient
         {
             UpdateKeepAlive();
 
+            Log.Debug(string.Format(Translations.protocol_chat_raw_message, message.content));
+
             List<string> links = new();
             string messageText;
 
