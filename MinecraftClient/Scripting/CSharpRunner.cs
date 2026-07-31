@@ -60,7 +60,7 @@ namespace MinecraftClient.Scripting
                         string line = lines[i];
                         if (line.StartsWith("//using"))
                         {
-                            libs.Add(line.Replace("//", "").Trim());
+                            libs.Add(NormalizeUsingDirective(line));
                         }
                         else if (line.StartsWith("//dll"))
                         {
@@ -123,6 +123,12 @@ namespace MinecraftClient.Scripting
                 catch (Exception e) { throw new CSharpException(CSErrorType.RuntimeError, e); }
             }
             else return null;
+        }
+
+        internal static string NormalizeUsingDirective(string line)
+        {
+            string directive = line[2..].Trim();
+            return directive.EndsWith(';') ? directive : $"{directive};";
         }
 
         private static string BuildScriptCode(string scriptName, IEnumerable<ScriptSourceLine> script, IEnumerable<ScriptSourceLine> extensions, IEnumerable<string> libs, bool hasImplicitReturn)
