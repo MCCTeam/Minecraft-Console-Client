@@ -176,6 +176,7 @@ namespace MinecraftClient
                     return;
                 }
                 output.Append(str);
+                output.Append("§r");
                 Backend.WriteLineFormatted(output.ToString());
             }
         }
