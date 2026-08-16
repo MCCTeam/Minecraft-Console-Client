@@ -73,21 +73,25 @@ namespace MinecraftClient.ChatBots
                     saveOther = true;
                     savePrivate = true;
                     saveChat = true;
+                    saveInternal = true;
                     break;
                 case Configs.MessageFilter.messages:
                     saveOther = false;
                     savePrivate = true;
                     saveChat = true;
+                    saveInternal = true;
                     break;
                 case Configs.MessageFilter.chat:
                     saveOther = false;
                     savePrivate = false;
                     saveChat = true;
+                    saveInternal = false;
                     break;
                 case Configs.MessageFilter.private_chat:
                     saveOther = false;
                     savePrivate = true;
                     saveChat = false;
+                    saveInternal = false;
                     break;
                 case Configs.MessageFilter.internal_msg:
                     saveOther = false;
