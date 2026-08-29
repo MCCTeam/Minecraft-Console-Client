@@ -20,6 +20,15 @@
 
 </div>
 
+> [!IMPORTANT]
+> ## 📢 Major News
+>
+> After 13 years of active development, we are rewriting MCC from the ground up to make development faster and enable powerful new features. The rewrite is currently being led by [@milutinke](https://github.com/milutinke). Along the refactoring, the client is being polished, the UX and UI are being improved, new features are being added and existing ones improved. ✨
+>
+> The current version will continue to receive only critical updates until the new client replaces it. Afterwards the old client will remain available to use but will no longer be updated. The new client is expected for public testing in the coming weeks. 🚀
+>
+> Follow progress in [#🚀refactor-updates](https://discord.com/channels/1018553894831403028/1543210248439992461) on our [Discord server](https://discord.gg/sfBv4TtpC9)!
+
 ## **About ℹ️**
 
 **Minecraft Console Client (MCC)** is a lightweight cross-platform open-source Minecraft TUI client for **Java** edition that allows you to connect to any Minecraft Java server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game.
