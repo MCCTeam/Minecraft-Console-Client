@@ -68,7 +68,9 @@ namespace MinecraftClient.Commands
                     .Then(l => l.Literal("close")
                         .Executes(r => DoCloseAction(r.Source, Arguments.GetInteger(r, "InventoryId"))))
                     .Then(l => l.Literal("list")
-                        .Executes(r => DoListAction(r.Source, Arguments.GetInteger(r, "InventoryId"))))
+                        .Executes(r => DoListAction(r.Source, Arguments.GetInteger(r, "InventoryId")))
+                        .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
+                            .Executes(r => DoListAction(r.Source, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot")))))
                     .Then(l => l.Literal("click")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
                             .Executes(r => DoClickAction(r.Source, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
@@ -81,7 +83,9 @@ namespace MinecraftClient.Commands
                                 .Executes(r => DoDropAction(r.Source, Arguments.GetInteger(r, "InventoryId"), Arguments.GetInteger(r, "Slot"), WindowActionType.DropItemStack))))))
                 .Then(l => l.Literal("player")
                     .Then(l => l.Literal("list")
-                        .Executes(r => DoListAction(r.Source, inventoryId: 0)))
+                        .Executes(r => DoListAction(r.Source, inventoryId: 0))
+                        .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
+                            .Executes(r => DoListAction(r.Source, inventoryId: 0, Arguments.GetInteger(r, "Slot")))))
                     .Then(l => l.Literal("click")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
                             .Executes(r => DoClickAction(r.Source, inventoryId: 0, Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
@@ -96,7 +100,9 @@ namespace MinecraftClient.Commands
                     .Then(l => l.Literal("close")
                         .Executes(r => DoCloseAction(r.Source, inventoryId: null)))
                     .Then(l => l.Literal("list")
-                        .Executes(r => DoListAction(r.Source, inventoryId: null)))
+                        .Executes(r => DoListAction(r.Source, inventoryId: null))
+                        .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
+                            .Executes(r => DoListAction(r.Source, inventoryId: null, Arguments.GetInteger(r, "Slot")))))
                     .Then(l => l.Literal("click")
                         .Then(l => l.Argument("Slot", MccArguments.InventorySlot())
                             .Executes(r => DoClickAction(r.Source, inventoryId: null, Arguments.GetInteger(r, "Slot"), WindowActionType.LeftClick))
@@ -120,7 +126,7 @@ namespace MinecraftClient.Commands
             {
 #pragma warning disable format // @formatter:off
                 "open"           => Translations.cmd_inventory_help_open           + usageStr + "/inventory <id> open",
-                "list"           => Translations.cmd_inventory_help_list           + usageStr + "/inventory <player|container|<id>> list",
+                "list"           => Translations.cmd_inventory_help_list           + usageStr + "/inventory <player|container|<id>> list [slot]",
                 "close"          => Translations.cmd_inventory_help_close          + usageStr + "/inventory <player|container|<id>> close",
                 "click"          => Translations.cmd_inventory_help_click          + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle|shift|shiftright]\nDefault is left click",
                 "drop"           => Translations.cmd_inventory_help_drop           + usageStr + "/inventory <player|container|<id>> drop <slot> [all]\nAll means drop full stack",
@@ -292,7 +298,7 @@ namespace MinecraftClient.Commands
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_inventory_close_fail, inventoryId));
         }
 
-        private int DoListAction(CmdResult r, int? inventoryId)
+        private int DoListAction(CmdResult r, int? inventoryId, int? slot = null)
         {
             McClient handler = CmdResult.currentHandler!;
             if (!handler.GetInventoryEnabled())
@@ -308,6 +314,31 @@ namespace MinecraftClient.Commands
             Container? inventory = handler.GetInventory(inventoryId.Value);
             if (inventory is null)
                 return r.SetAndReturn(CmdResult.Status.Fail, string.Format(Translations.cmd_inventory_not_exist, inventoryId));
+
+            if (slot.HasValue)
+            {
+                StringBuilder single = new();
+                single.Append(Translations.cmd_inventory_inventory);
+                single.AppendLine(String.Format(" #{0} - {1}§8", inventoryId, inventory.Title));
+
+                if (inventory.Items.TryGetValue(slot.Value, out Item? singleItem) && singleItem is not null)
+                {
+                    int selectedHotbarSlot = handler.GetCurrentSlot() + 1;
+                    bool isHotbar = inventory.IsHotbar(slot.Value, out int hotbar);
+                    string hotbarString = isHotbar ? (hotbar + 1).ToString() : " ";
+                    if ((hotbar + 1) == selectedHotbarSlot)
+                        hotbarString = ">" + hotbarString;
+                    single.AppendLine(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, slot.Value, singleItem.ToFullString()));
+                }
+                else
+                {
+                    single.AppendLine(String.Format("#{0}: _", slot.Value));
+                }
+
+                single.Remove(single.Length - 1, 1); // Remove last '\n'
+                handler.Log.Info(single.ToString());
+                return r.SetAndReturn(CmdResult.Status.Done);
+            }
 
             StringBuilder response = new();
             response.Append(Translations.cmd_inventory_inventory);
