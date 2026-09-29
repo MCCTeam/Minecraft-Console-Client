@@ -3237,12 +3237,16 @@ namespace MinecraftClient.Protocol.Handlers
                             teamPrefix = dataTypes.ReadNextString(packetData);
                             teamSuffix = dataTypes.ReadNextString(packetData);
                             teamFriendlyFlags = dataTypes.ReadNextByte(packetData);
-                            teamNameTagVisibility = dataTypes.ReadNextString(packetData);
+                            
+                            if (protocolVersion >= MC_1_8_Version)
+                            {
+                                teamNameTagVisibility = dataTypes.ReadNextString(packetData);
 
-                            if (protocolVersion >= MC_1_9_Version)
-                                teamCollisionRule = dataTypes.ReadNextString(packetData);
+                                if (protocolVersion >= MC_1_9_Version)
+                                    teamCollisionRule = dataTypes.ReadNextString(packetData);
 
-                            teamColor = unchecked((sbyte)dataTypes.ReadNextByte(packetData));
+                                teamColor = unchecked((sbyte)dataTypes.ReadNextByte(packetData));
+                            }
                         }
                         else if (protocolVersion >= MC_26_2_Version)
                         {
@@ -3327,7 +3331,9 @@ namespace MinecraftClient.Protocol.Handlers
                     var teamPlayers = new List<string>();
                     if (teamMethod is 0 or 3 or 4)
                     {
-                        int playerCount = dataTypes.ReadNextVarInt(packetData);
+                        int playerCount = protocolVersion < MC_1_8_Version
+                            ? dataTypes.ReadNextShort(packetData)
+                            : dataTypes.ReadNextVarInt(packetData);
                         for (int i = 0; i < playerCount; i++)
                             teamPlayers.Add(dataTypes.ReadNextString(packetData));
                     }
