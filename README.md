@@ -25,7 +25,7 @@
 >
 > After 13 years of active development, we are rewriting MCC from the ground up to make development faster and enable powerful new features. The rewrite is currently being led by [@milutinke](https://github.com/milutinke). Along the refactoring, the client is being polished, the UX and UI are being improved, new features are being added and existing ones improved. ✨
 >
-> **Update (25.09.2026)** The early access build (No. 9) for the 2.0 client is available for download: https://github.com/MCCTeam/Minecraft-Console-Client/releases/tag/MCC-2.0-early-access-build-9
+> **Update (29.09.2026)** The early access build (No. 10) for the 2.0 client is available for download: [here](https://github.com/MCCTeam/Minecraft-Console-Client/releases/tag/MCC-2.0-early-access-build-10)
 >
 > Please leave feedback on Discord.
 >
