@@ -7,6 +7,8 @@ description: >-
   response, strings, startup, and metrics.
 metadata:
   category: technique
+  version: 1.1.0
+  platform: ".NET 8 and .NET 10 (no .NET 9 projects in scope)"
   triggers:
     - dotnet-counters
     - dotnet-trace
@@ -38,8 +40,6 @@ metadata:
     - json serialization
     - httpclient
     - middleware
-version: 1.1.0
-platform: ".NET 8 and .NET 10 (no .NET 9 projects in scope)"
 ---
 
 # .NET Performance: Diagnostic & Code Review
@@ -48,9 +48,7 @@ Unified C#/.NET performance skill targeting **.NET 8 and .NET 10**. Two modes: l
 
 ## Step 0 — Detect the target framework
 
-Before recommending APIs, follow `../../references/detect-target-framework.md`. Many .NET 9+ APIs (`HybridCache`, `MemoryExtensions.Split` for spans, `Dictionary.GetAlternateLookup`, `params ReadOnlySpan<T>`) do **not** exist on .NET 8 — the references below mark the floor for each pattern, and you must downgrade to the .NET 8 fallback when the target is `net8.0`. Stephen Toub's posts are the primary benchmark source:
-[Performance Improvements in .NET 8](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/) ·
-[Performance Improvements in .NET 10](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/).
+Before recommending APIs, inspect `Directory.Build.props` and the target project. This repository targets .NET 10. When reviewing external multi-targeted code, use the oldest target's supported API. Stephen Toub's posts are the primary benchmark source: [Performance Improvements in .NET 8](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/) · [Performance Improvements in .NET 10](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/).
 
 ## References
 
@@ -153,7 +151,7 @@ dotnet-dump analyze <dump> -c "dumpheap -stat" -c "exit"
 Minimal BenchmarkDotNet pattern:
 ```csharp
 [MemoryDiagnoser]
-[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
 public class CandidateBench
 {
     [Benchmark(Baseline = true)]

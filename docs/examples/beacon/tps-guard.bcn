@@ -1,0 +1,6 @@
+# beacon 1
+# needs: chat.send
+
+on tps cooldown 300 seconds named "tps-warn" when tps < 15
+  say "Heads up: server TPS is {tps} ({server.mspt} ms/tick). Easy on the farms."
+end on

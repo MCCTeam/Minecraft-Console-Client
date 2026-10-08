@@ -1,0 +1,3 @@
+# beacon 1
+# setting prefix = "Hello" ; Greeting text
+show settings.prefix

@@ -1,85 +1,63 @@
-# Minecraft Console Client - Installer for Windows
-# Downloads the latest MinecraftClient binary for your Windows architecture.
-# Usage (PowerShell): iwr -useb https://mccteam.github.io/install.ps1 | iex
-
+# MCC 2.0 installer for Windows. Save this file, then run it with PowerShell.
+param(
+    [string]$Version = 'latest',
+    [string]$Destination = (Join-Path $env:LOCALAPPDATA 'MCC'),
+    [ValidateSet('win-x86','win-x64','win-arm64')][string]$Rid,
+    [switch]$PrintRid
+)
 $ErrorActionPreference = 'Stop'
-
-$REPO   = "MCCTeam/Minecraft-Console-Client"
-$OUTPUT = "MinecraftClient.exe"
-
-# --- Detect CPU architecture ---
-$arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-$archId = switch ($arch) {
-    'X64'   { 'x64'   }
-    'X86'   { 'x86'   }
-    'Arm64' { 'arm64' }
-    default {
-        Write-Error "Unsupported CPU architecture: $arch"
-        exit 1
-    }
+if (-not $Rid) {
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant()
+    if ($arch -notin @('x86','x64','arm64')) { throw "Unsupported process architecture: $arch" }
+    $Rid = "win-$arch"
 }
-
-$suffix = "win-$archId"
-
-# --- Fetch latest release metadata from GitHub API ---
-$apiUrl = "https://api.github.com/repos/$REPO/releases/latest"
-Write-Host "Fetching latest release information..."
-$release = Invoke-RestMethod -Uri $apiUrl -UseBasicParsing
-
-# --- Locate the correct asset ---
-$asset = $release.assets | Where-Object { $_.name -match "^MinecraftClient-.*-$([regex]::Escape($suffix))\.exe$" } | Select-Object -First 1
-
-if (-not $asset) {
-    Write-Error "Could not find a release asset for '$suffix'."
-    exit 1
-}
-
-$downloadUrl = $asset.browser_download_url
-$tag         = $release.tag_name
-
-Write-Host "Downloading MinecraftClient $tag ($suffix)..."
-
-# Download with a built-in ASCII progress bar (no external tools required).
-# HttpWebRequest streams the body on the main thread so we can update the
-# progress bar inline without any Runspace or thread-safety concerns.
-$outPath  = Join-Path (Get-Location).Path $OUTPUT
-$request  = [System.Net.HttpWebRequest]::Create($downloadUrl)
-$response = $request.GetResponse()
-$totalBytes = $response.ContentLength
-
-$responseStream = $response.GetResponseStream()
-$fileStream     = [System.IO.File]::Create($outPath)
-$buffer    = New-Object byte[] 32768
-$totalRead = 0
-
+if ($PrintRid) { Write-Output $Rid; exit 0 }
+$endpoint = if ($Version -eq 'latest') { 'latest' } else { 'tags/' + [Uri]::EscapeDataString($Version) }
+$release = Invoke-RestMethod -Uri "https://api.github.com/repos/MCCTeam/Minecraft-Console-Client/releases/$endpoint"
+$tag = $release.tag_name
+if ($tag -notmatch '^v?2\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw 'The selected release is not MCC 2.0. Build from source until an MCC 2.0 release is published.' }
+$name = "Mcc-$tag-$Rid.zip"
+$asset = @($release.assets | Where-Object name -eq $name)
+$checksum = @($release.assets | Where-Object name -eq 'SHA256SUMS')
+if ($asset.Count -ne 1 -or $checksum.Count -ne 1) { throw "Release must contain $name and SHA256SUMS." }
+$Destination = [IO.Path]::GetFullPath($Destination)
+$target = Join-Path $Destination "releases/$tag/$Rid"
+if (Test-Path $target) { throw "Already installed: $target. Select another version or installation directory." }
+$scratch = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString())
+New-Item -ItemType Directory -Path $scratch | Out-Null
 try {
-    while ($true) {
-        $read = $responseStream.Read($buffer, 0, $buffer.Length)
-        if ($read -le 0) { break }
-        $fileStream.Write($buffer, 0, $read)
-        $totalRead += $read
-        if ($totalBytes -gt 0) {
-            $pct    = [int]($totalRead * 100 / $totalBytes)
-            $filled = '=' * [int]($pct / 2)
-            $bar    = $filled.PadRight(50)
-            $recv   = [math]::Round($totalRead  / 1MB, 1)
-            $total  = [math]::Round($totalBytes / 1MB, 1)
-            # Use [Console]::Write with an explicit \r so the cursor returns to
-            # column 0 and overwrites the previous bar. Write-Host -NoNewline
-            # does not reliably reposition the cursor when the script is run
-            # via iex (pipe mode), producing multiple bars on one line.
-            $line = "`r[{0}] {1,3}%  {2,6:N1} / {3,6:N1} MB" -f $bar, $pct, $recv, $total
-            [Console]::Write($line)
+    $archive = Join-Path $scratch $name
+    $sumFile = Join-Path $scratch 'SHA256SUMS'
+    Invoke-WebRequest -Uri $asset[0].browser_download_url -OutFile $archive -UseBasicParsing
+    Invoke-WebRequest -Uri $checksum[0].browser_download_url -OutFile $sumFile -UseBasicParsing
+    $line = @(Get-Content $sumFile | Where-Object { $_ -match ('^[0-9a-fA-F]{64}\s+\*?' + [regex]::Escape($name) + '$') })
+    if ($line.Count -ne 1) { throw "No unique checksum for $name." }
+    $expected = ($line[0] -split '\s+')[0]
+    if ((Get-FileHash $archive -Algorithm SHA256).Hash -ne $expected) { throw 'Archive checksum does not match.' }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $package = [IO.Compression.ZipFile]::OpenRead($archive)
+    $stage = Join-Path $scratch 'payload'
+    New-Item -ItemType Directory -Path $stage | Out-Null
+    try {
+        foreach ($entry in $package.Entries) {
+            $entryName = $entry.FullName.Replace('\','/')
+            if ($entryName.StartsWith('/') -or $entryName.Contains(':') -or ($entryName.Split('/') -contains '..')) { throw "Unsafe archive path: $entryName" }
+            if (($entry.ExternalAttributes -shr 16 -band 61440) -eq 40960) { throw 'Archive links are not allowed.' }
         }
+    } finally { $package.Dispose() }
+    [IO.Compression.ZipFile]::ExtractToDirectory($archive, $stage)
+    if (-not (Test-Path (Join-Path $stage 'Mcc.Cli.exe')) -or -not (Test-Path (Join-Path $stage 'Mcc.Cli.dll'))) { throw 'Archive does not contain MCC executable and assemblies.' }
+    New-Item -ItemType Directory -Path (Split-Path $target) -Force | Out-Null
+    Move-Item $stage $target
+    $launcher = Join-Path $Destination 'mcc.cmd'
+    $binary = "`"%~dp0releases\$tag\$Rid\Mcc.Cli.exe`""
+    $content = "@echo off`r`ncd /d `"%~dp0`"`r`n"
+    foreach ($mode in @('run','lint','format','--validate-plugin','--validate-marketplace','--help','--help-short')) {
+        $content += "if `"%~1`"==`"$mode`" goto tool`r`n"
     }
-} finally {
-    $fileStream.Close()
-    $responseStream.Close()
-    $response.Close()
-}
-
-[Console]::WriteLine()   # end the progress line
-
-Write-Host ""
-Write-Host "Downloaded: .\$OUTPUT"
-Write-Host "Run with:   .\$OUTPUT --help"
+    $content += "$binary --configurations `"%~dp0configurations`" %*`r`nexit /b %errorlevel%`r`n:tool`r`n$binary %*`r`n"
+    [IO.File]::WriteAllText($launcher, $content, [Text.Encoding]::ASCII)
+    Write-Output "Installed $tag for $Rid."
+    Write-Output "Run: $launcher --help"
+    Write-Output 'Existing configuration, plugins and scripts were preserved.'
+} finally { Remove-Item -Recurse -Force $scratch }

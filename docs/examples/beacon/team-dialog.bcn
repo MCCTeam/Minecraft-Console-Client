@@ -1,0 +1,14 @@
+# beacon 1
+# needs: dialog.read dialog.write
+# setting team = "blue"
+on dialog as d when d.input_keys contains "team_choice"
+  try
+    if dialog.answer({team_choice: settings.team}, 2)
+      show "Team answer submitted."
+    else
+      show "Team answer refused."
+    end if
+  catch err
+    show "Team dialog failed: {err.message}"
+  end try
+end on

@@ -63,7 +63,7 @@ Use for micro-optimizations on hot paths (MEM, LINQ, JSON, STR categories).
 **Minimum setup**:
 ```csharp
 [MemoryDiagnoser]
-[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
 public class MyBenchmark
 {
     [Benchmark(Baseline = true)]

@@ -1,0 +1,11 @@
+# beacon 1
+# needs: chat.send
+# wants: shop.calculate
+extern subtotal from "shop-tools"
+on chat when message is "!subtotal"
+  try
+    say "Four items at three coins each cost {subtotal(3, 4)} coins."
+  catch err
+    show "Pricing unavailable: {err.message}"
+  end try
+end on

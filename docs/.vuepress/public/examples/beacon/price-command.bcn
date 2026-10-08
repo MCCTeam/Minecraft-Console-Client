@@ -1,0 +1,10 @@
+# beacon 1
+# needs: chat.send
+
+# desc: Look up today's price.
+# example: /price bread
+command "/price <item>"
+  set target to arg("item") or "bread"
+  set p to saved("price_" + target) or 10
+  say "{target} costs {p} coins today."
+end command

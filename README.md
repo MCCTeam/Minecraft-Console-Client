@@ -1,114 +1,121 @@
 <div align="center">
 
-<img src="https://i.pics.rs/LLDhE.png" alt="Logo"/>
+<img src="docs/.vuepress/public/images/MCC_logo.png" alt="Minecraft Console Client logo" width="280" />
 
-# Minecraft Console Client (MCC)
+# Minecraft Console Client 2.0 (MCC)
 
-[Documentation](https://mccteam.github.io/) | [Download](#download) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage.html)
+[Documentation](docs/index.md) | [Download](#download) | [Installation](docs/getting-started/installation.md) | [Configuration](docs/client/configuration.md) | [Usage](docs/getting-started/first-session.md)
 
-</div>
-
-<div align="center">
-
-[English](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README.md) | [Nederlands](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Dutch.md) | [Русский](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Russian.md) | [Српски](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Serbian_Cyrillic.md) | [Türkçe](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Turkish.md) | [Tiếng Việt](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Vietnamese.md) | [简体中文](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Chinese_Simplified.md) | [繁體中文](https://github.com/MCCTeam/MCCTeam.github.io/blob/master/MCC-README/README-Chinese_Traditional.md)
-
-</div>
-
-<div align="center">
-
-[![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
+[![Build and tests](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/mcc.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/mcc.yml)
+[![Discord](https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white)](https://discord.gg/sfBv4TtpC9)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 
 </div>
 
-> [!IMPORTANT]
-> ## 📢 Major News
->
-> After 13 years of active development, we are rewriting MCC from the ground up to make development faster and enable powerful new features. The rewrite is currently being led by [@milutinke](https://github.com/milutinke). Along the refactoring, the client is being polished, the UX and UI are being improved, new features are being added and existing ones improved. ✨
->
-> **Update (29.09.2026)** The early access build (No. 10) for the 2.0 client is available for download: [here](https://github.com/MCCTeam/Minecraft-Console-Client/releases/tag/MCC-2.0-early-access-build-10)
->
-> Please leave feedback on Discord.
->
-> After the release of the Minecraft Console Client 2.0, the old client will remain available to use but will no longer be updated. The new client is expected for public testing in the coming weeks. 🚀
->
-> Follow progress in [#🚀refactor-updates](https://discord.com/channels/1018553894831403028/1543210248439992461) on our [Discord server](https://discord.gg/sfBv4TtpC9)!
+> [!WARNING]
+> MCC 2.0 is an early development build. Features can change. Keep a copy of your configuration before an update.
 
-## **About ℹ️**
+## About
 
-**Minecraft Console Client (MCC)** is a lightweight cross-platform open-source Minecraft TUI client for **Java** edition that allows you to connect to any Minecraft Java server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game.
+**Minecraft Console Client (MCC)** is an open-source terminal client for **Minecraft Java Edition**. Connect to servers, send chat and commands, and automate tasks without opening the graphical Minecraft client.
+
+MCC runs on Windows, Linux, and macOS. Choose the classic console or the terminal UI (TUI).
+
+- Manage accounts, saved servers, and reconnect settings.
+- Inspect players, entities, inventories, and world data.
+- Use the TUI's menus, inventory views, maps, and entity browser.
+- Automate tasks with Beacon `.bcn` scripts and plugins.
+- Install source or compiled plugins from versioned marketplaces.
+- Run unattended with file input or Docker Compose.
 
 ## Download
 
-Get the latest release from the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest).
+Find published builds in the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases). Follow the [MCC 2.0 installation guide](docs/getting-started/installation.md) to choose your platform and start the client.
 
-## Quick Install ⚡
+This checkout contains the new MCC 2.0 CLI. Its installers require matching MCC 2.0 release archives. Until those archives are published, [build this checkout from source](#building-from-source). Older builds can use different configuration and plugin formats.
 
-Open a terminal in the folder where you want MCC and run:
+## Quick install
 
-Linux / macOS:
+Once matching MCC 2.0 assets and the updated installers are published, download the installer for your platform.
+
+Linux or macOS, with [Python](https://www.python.org/downloads/) 3.10 or later:
 
 ```bash
-curl -fsSL https://mccteam.github.io/install.sh | sh
+curl -fsSLo install.sh https://mccteam.github.io/install.sh
+sh install.sh
 ```
 
-Windows (PowerShell):
+Windows PowerShell:
 
 ```powershell
-iwr -useb https://mccteam.github.io/install.ps1 | iex
+Invoke-WebRequest -UseBasicParsing https://mccteam.github.io/install.ps1 -OutFile install.ps1
+.\install.ps1
 ```
 
-The script detects your architecture and downloads the right binary. For more options (including `wget` and manual downloads), see the [installation guide](https://mccteam.github.io/guide/installation.html).
+The new installer selects one archive for your platform, checks its SHA-256 checksum, and keeps your existing configuration and plugin data. See [installation](docs/getting-started/installation.md) for manual downloads, version selection, and other options.
 
-## How to use 📚
+## How to use
 
--   🌐 [Full Documentation](https://mccteam.github.io/)
--   📦 [Installation](https://mccteam.github.io/guide/installation.html)
--   📖 [Usage](https://mccteam.github.io/guide/usage.html)
--   ⚙️ [Configuration](https://mccteam.github.io/guide/configuration.html)
--   🤖 [Chat Bots](https://mccteam.github.io/guide/chat-bots.html)
--   📝 [Sample configuration files](MinecraftClient/config/)
+- [Full documentation](docs/index.md)
+- [Your first session](docs/getting-started/first-session.md)
+- [Configuration](docs/client/configuration.md)
+- [Command reference](docs/commands/index.md)
+- [Beacon scripts and step-by-step tutorial](docs/beacon/index.md)
+- [Official plugins and plugin development](docs/plugins/index.md)
+- [Using and creating marketplaces](docs/marketplaces/index.md)
+- [Docker Compose](docs/deployment/docker.md)
 
-## Getting Help 🙋
+## Getting help
 
-Check out the [Website](https://mccteam.github.io/), [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section.
+Read the documentation and search existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions). If you need help, open a [new discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new).
+
+Report bugs in [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues). Include your MCC version, operating system, server version, and steps to reproduce the problem. Remove credentials from any files you share.
 
 ## Discord
 
-We now have a Discord server, click [here](https://discord.gg/sfBv4TtpC9) to join.
+Join the [MCC Discord server](https://discord.gg/sfBv4TtpC9) to ask questions, share scripts and plugins, and follow development.
 
-## Helping Us ❤️
+## Helping us
 
-We are a small community so we need help to implement upgrades for new Minecraft versions, fixing bugs and expanding the project. We are always looking for motivated people to contribute. If you feel like it could be you, please have a look at the [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) section :)
+You can help by testing MCC 2.0, reporting bugs, improving the documentation, translating, or writing plugins. Browse the [open issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) to find work that interests you.
 
-## How to contribute 📝
+## How to contribute
 
-If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the _Master_ branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io).
+Fork the repository and submit a pull request. Read the [contribution guide](docs/contributing/index.md) for setup and checks.
 
-![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
+MCC's documentation lives in this repository. The [Beacon tutorial](docs/beacon/guide/index.md) and [plugin tutorial](docs/plugins/development/tutorial/index.md) provide examples you can build on.
 
-## Translating Minecraft Console Client 🌍
+## Translating MCC
 
-To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crowdin.com/project/minecraft-console-client).
+Help translate the client and its documentation through [Crowdin](https://crowdin.com/project/minecraft-console-client). Read the [translation guide](docs/contributing/translations.md) for resource files, placeholders, and documentation fallback.
 
-## Building from the source 🏗️
+## Building from source
 
-This section has been moved to our new [Documentation website](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
+Install the [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) selected by `global.json`, currently `10.0.401`, and [Git](https://git-scm.com/downloads/).
 
-## License ⚖️
+On Linux, macOS, or Windows with WSL:
 
-Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
-The main terms of the CDDL-1.0 license are basically the following:
+```bash
+git submodule update --init ConsoleInteractive
+source tools/mcc-env.sh
+mcc-build
+mcc-test
+mcc-run --help
+```
 
--   You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
--   However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
--   In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
+For Windows development, we recommend [WSL](docs/contributing/windows.md#recommended-wsl). Native PowerShell helpers are available in [tools/windows](tools/windows/README.md):
 
-More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html
-Full license at http://opensource.org/licenses/CDDL-1.0
+```powershell
+.\tools\windows\build.ps1
+.\tools\windows\test.ps1
+.\tools\windows\run.ps1 -ClientArguments @('--help')
+```
 
-## Uses technologies from
-<div align="center">
-<a href="https://sentry.io/welcome/">
-  <img src="https://github.com/breadbyte/Minecraft-Console-Client/assets/14045257/411e9a2f-cd9b-4bb5-b7e9-cd7529c76b88" alt="Sentry"  />
-</a>
-</div>
+See [building from source](docs/getting-started/installation.md#build-the-development-branch) for runtime folders, publishing, and platform requirements. The [Windows guide](docs/contributing/windows.md) covers both WSL and native PowerShell.
+
+Read the [source architecture guide](src/README.md) for the project layout and runtime flow.
+
+## License
+
+MCC 2.0 uses the [MIT license](LICENSE.md). External dependencies retain their own licenses.

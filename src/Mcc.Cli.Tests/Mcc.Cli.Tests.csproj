@@ -1,0 +1,2 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><AssemblyName>Mcc.Cli.Tests</AssemblyName><IsTestProject>true</IsTestProject><IsPackable>false</IsPackable></PropertyGroup>
+<ItemGroup><ProjectReference Include="../Mcc.Cli/Mcc.Cli.csproj"/><PackageReference Include="DMCBK.Testing"/><PackageReference Include="Microsoft.NET.Test.Sdk"/><PackageReference Include="xunit"/><PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all"/></ItemGroup></Project>

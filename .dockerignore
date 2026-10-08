@@ -1,0 +1,16 @@
+.git
+**/bin
+**/obj
+**/node_modules
+docs
+.skills
+.claude
+.agents
+.codex
+artifacts
+configurations
+plugins
+data
+MinecraftOfficial
+**/.env
+**/auth-tokens

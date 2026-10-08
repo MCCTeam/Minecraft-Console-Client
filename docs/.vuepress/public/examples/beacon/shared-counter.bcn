@@ -1,0 +1,6 @@
+# beacon 1
+lock shared
+  set n to shared["quiz.plays"] or 0
+  set shared["quiz.plays"] to n + 1
+end lock
+show "Shared count: {shared["quiz.plays"]}"

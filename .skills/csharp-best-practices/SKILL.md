@@ -1,7 +1,7 @@
 ---
-name: dotnet-csharp-best-practices
+name: csharp-best-practices
 description: >
-  C# coding conventions, idiomatic patterns, performance, and async best practices for both .NET 8 (C# 12) and .NET 10 (C# 14). Use when writing, reviewing, refactoring, or designing C# code — including async code that uses Task, Task<T>, ValueTask, CancellationToken, Task.WhenAll/WhenAny, Task.Run, ConfigureAwait, async void, or fire-and-forget. Trigger on `.Result`, `.Wait()`, deadlocks, cancellation propagation, ASP.NET Core background work, UI responsiveness, exception flow, and performance-sensitive async API design.
+  C# coding conventions, idiomatic patterns, performance, and async best practices for both .NET 8 (C# 12) and .NET 10 (C# 14). Use when writing, reviewing, refactoring, or designing C# code — including async code that uses Task, generic Task results, ValueTask, CancellationToken, Task.WhenAll/WhenAny, Task.Run, ConfigureAwait, async void, or fire-and-forget. Trigger on `.Result`, `.Wait()`, deadlocks, cancellation propagation, ASP.NET Core background work, UI responsiveness, exception flow, and performance-sensitive async API design.
 metadata:
   category: technique
   platform: ".NET 8 (C# 12) and .NET 10 (C# 14)"
@@ -29,11 +29,11 @@ metadata:
 
 # C# Best Practices — .NET 8 + .NET 10
 
-Target: **.NET 8 (C# 12)** *and* **.NET 10 (C# 14)**, nullable enabled. GrECo has no .NET 9 projects.
+Target this repository's **.NET 10 / C# 14** projects with nullable reference types enabled.
 
 ## Step 0 — Detect the target framework
 
-**Before** emitting code, follow `../../references/detect-target-framework.md`. The detection result decides which examples below apply:
+Before emitting code, inspect `Directory.Build.props` and the target project. The detected target framework decides which examples below apply:
 
 - `net8.0` → emit the **.NET 8 / C# 12** code block in every side-by-side pair; **never** use the C# 14-only syntax (`field`, `extension(...)`, `?.` assignment, partial constructors) or .NET 10-only APIs (`HybridCache`, `AddValidation`, EF Core named filters, first-party `Microsoft.AspNetCore.OpenApi`, Identity passkeys).
 - `net10.0` → prefer the **.NET 10 / C# 14** code block.
@@ -255,7 +255,7 @@ Console.WriteLine("Hello");
 
 ## C# 13 Features — require .NET 9+ (NOT available on .NET 8)
 
-GrECo has no .NET 9 projects, so the only way to use C# 13 features in production is to be on .NET 10. On .NET 8, use the .NET 8 fallback shown below.
+This repository targets .NET 10. Use the .NET 8 fallback only when reviewing external multi-targeted code.
 
 ### `Lock` Object
 
@@ -878,9 +878,7 @@ int found = data.ToArray().Count(b => b == target);
 
 ## Performance (.NET 8+ — works on both targets)
 
-All APIs below ship in .NET 8 and continued unchanged in .NET 10. For benchmarks and rationale see Stephen Toub's deep dives:
-[Performance Improvements in .NET 8](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/) ·
-[Performance Improvements in .NET 10](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/) (covers JIT array-interface devirtualisation that speeds up many LINQ paths in .NET 10).
+All APIs below ship in .NET 8 and continued unchanged in .NET 10. For benchmarks and rationale see Stephen Toub's deep dives: [Performance Improvements in .NET 8](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/) · [Performance Improvements in .NET 10](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/) (covers JIT array-interface devirtualisation that speeds up many LINQ paths in .NET 10).
 
 ### Span\<T\> / Memory\<T\>
 

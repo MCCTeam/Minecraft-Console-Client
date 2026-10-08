@@ -1,0 +1,253 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="tui.book.close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="tui.book.delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="tui.book.edit_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
+  </data>
+  <data name="tui.book.editing" xml:space="preserve">
+    <value>Editing writable book.</value>
+  </data>
+  <data name="tui.book.insert" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="tui.book.next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="tui.book.page_header" xml:space="preserve">
+    <value>Book page {0}/{1}</value>
+  </data>
+  <data name="tui.book.page_shortcut_tip" xml:space="preserve">
+    <value>PageUp/PageDown: previous/next page</value>
+  </data>
+  <data name="tui.book.prev" xml:space="preserve">
+    <value>Prev</value>
+  </data>
+  <data name="tui.book.reading" xml:space="preserve">
+    <value>Reading book.</value>
+  </data>
+  <data name="tui.book.save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="tui.book.save_failed" xml:space="preserve">
+    <value>Book packet could not be sent.</value>
+  </data>
+  <data name="tui.book.saved" xml:space="preserve">
+    <value>Saved.</value>
+  </data>
+  <data name="tui.book.sign" xml:space="preserve">
+    <value>Sign</value>
+  </data>
+  <data name="tui.book.signed" xml:space="preserve">
+    <value>Signed.</value>
+  </data>
+  <data name="tui.book.title_watermark" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="tui.brewing.bottle" xml:space="preserve">
+    <value>Bottle {0}</value>
+  </data>
+  <data name="tui.brewing.fuel" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="tui.brewing.ingredient" xml:space="preserve">
+    <value>Ingredient</value>
+  </data>
+  <data name="tui.container.label" xml:space="preserve">
+    <value>Container</value>
+  </data>
+  <data name="tui.crafting.grid" xml:space="preserve">
+    <value>Crafting</value>
+  </data>
+  <data name="tui.ctrlc_input_cleared" xml:space="preserve">
+    <value>Input cleared. Press Ctrl+C again to quit.</value>
+  </data>
+  <data name="tui.ctrlc_quit_hint" xml:space="preserve">
+    <value>Press Ctrl+C again to quit MCC.</value>
+  </data>
+  <data name="tui.dialog.cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="tui.enchanting.item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="tui.enchanting.lapis" xml:space="preserve">
+    <value>Lapis</value>
+  </data>
+  <data name="tui.enchanting.option_slot" xml:space="preserve">
+    <value>Option {0}</value>
+  </data>
+  <data name="tui.enchanting.options" xml:space="preserve">
+    <value>Enchant Options</value>
+  </data>
+  <data name="tui.furnace.fuel" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="tui.furnace.input" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="tui.furnace.output" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="tui.grindstone.input1" xml:space="preserve">
+    <value>Input 1</value>
+  </data>
+  <data name="tui.grindstone.input2" xml:space="preserve">
+    <value>Input 2</value>
+  </data>
+  <data name="tui.inventory.container_not_found" xml:space="preserve">
+    <value>Container not found</value>
+  </data>
+  <data name="tui.inventory.controls" xml:space="preserve">
+    <value>[ Controls ]</value>
+  </data>
+  <data name="tui.inventory.controls_help" xml:space="preserve">
+    <value>LClick  Pick/Place
+RClick  Half/Place1
+Shift+C QuickMove
+Q       Drop x1
+Ctrl+Q  Drop Stack
+R       Refresh
+E/ESC   Exit</value>
+  </data>
+  <data name="tui.inventory.cursor_empty" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="tui.inventory.durability" xml:space="preserve">
+    <value>Durability</value>
+  </data>
+  <data name="tui.inventory.equip_body" xml:space="preserve">
+    <value>Bd</value>
+  </data>
+  <data name="tui.inventory.equip_feet" xml:space="preserve">
+    <value>Ft</value>
+  </data>
+  <data name="tui.inventory.equip_head" xml:space="preserve">
+    <value>Hd</value>
+  </data>
+  <data name="tui.inventory.equip_legs" xml:space="preserve">
+    <value>Lg</value>
+  </data>
+  <data name="tui.inventory.held_item" xml:space="preserve">
+    <value>[ Held Item ]</value>
+  </data>
+  <data name="tui.inventory.hover_hint" xml:space="preserve">
+    <value>Hover over a slot to
+see item details.</value>
+  </data>
+  <data name="tui.inventory.item_count" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+  <data name="tui.inventory.item_info" xml:space="preserve">
+    <value>[ Item Info ]</value>
+  </data>
+  <data name="tui.inventory.offhand" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="tui.inventory.output" xml:space="preserve">
+    <value>Out</value>
+  </data>
+  <data name="tui.inventory.slot_detail" xml:space="preserve">
+    <value>Slot #{0}  Count: {1}</value>
+  </data>
+  <data name="tui.inventory.slot_empty" xml:space="preserve">
+    <value>(Empty)</value>
+  </data>
+  <data name="tui.inventory.title" xml:space="preserve">
+    <value>Inventory #{0} - {1}</value>
+  </data>
+  <data name="tui.minimap.legend.hostile" xml:space="preserve">
+    <value>Hostile</value>
+  </data>
+  <data name="tui.minimap.legend.neutral" xml:space="preserve">
+    <value>Neutral</value>
+  </data>
+  <data name="tui.minimap.legend.passive" xml:space="preserve">
+    <value>Passive</value>
+  </data>
+  <data name="tui.minimap.legend.player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="tui.select_copy_hint" xml:space="preserve">
+    <value>Hold Shift + Left-click to select and copy text.</value>
+  </data>
+  <data name="tui.tab.hint" xml:space="preserve">
+    <value>Press Esc to close. Refreshes automatically.</value>
+  </data>
+  <data name="cli.menu.description" xml:space="preserve">
+    <value>Open the TUI management menu.</value>
+  </data>
+  <data name="cli.menu.usage" xml:space="preserve">
+    <value>open the main launcher for MCC management workspaces</value>
+  </data>
+  <data name="cli.menu.unavailable" xml:space="preserve">
+    <value>This browser needs the TUI. Use the command without 'ui' for the text version.</value>
+  </data>
+  <data name="tui.plugins.version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="tui.plugins.target" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="tui.plugins.hash" xml:space="preserve">
+    <value>SHA-256</value>
+  </data>
+  <data name="tui.plugins.versions" xml:space="preserve">
+    <value>Versions</value>
+  </data>
+  <data name="tui.plugins.rollback" xml:space="preserve">
+    <value>Rollback</value>
+  </data>
+  <data name="tui.plugins.version_help" xml:space="preserve">
+    <value>Choose an exact version and publisher. Required dependencies are reviewed before installation.</value>
+  </data>
+  <data name="tui.plugins.source" xml:space="preserve">
+    <value>Prefer source</value>
+  </data>
+  <data name="tui.plugins.source_fallback" xml:space="preserve">
+    <value>Allow source fallback for mixed releases</value>
+  </data>
+  <data name="tui.plugins.prerelease" xml:space="preserve">
+    <value>Include prereleases</value>
+  </data>
+  <data name="tui.plugins.yanked" xml:space="preserve">
+    <value>Yanked</value>
+  </data>
+  <data name="tui.plugins.rollback_help" xml:space="preserve">
+    <value>Restore the package graph from before a completed transaction. Settings and plugin data are preserved.</value>
+  </data>
+  <data name="tui.plugins.rollback_empty" xml:space="preserve">
+    <value>No completed transactions are available.</value>
+  </data>
+  <data name="tui.plugins.empty_graph" xml:space="preserve">
+    <value>Empty plugin graph</value>
+  </data>
+  <data name="tui.plugins.rollback_done" xml:space="preserve">
+    <value>Package graph restored.</value>
+  </data>
+  <data name="marketplace.validation.usage" xml:space="preserve">
+    <value>Usage: --validate-marketplace &lt;index-file-or-marketplace-folder&gt;</value>
+  </data>
+  <data name="marketplace.validation.success" xml:space="preserve">
+    <value>Validated marketplace {0} ({1} plugins).</value>
+  </data>
+  <data name="marketplace.validation.failure" xml:space="preserve">
+    <value>Marketplace validation failed: {0}</value>
+  </data>
+</root>

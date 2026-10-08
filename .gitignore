@@ -445,3 +445,16 @@ server.pid
 
 # Crowdin translation automation working directory
 /.crowdin-translate/
+
+# MCC 2.0 generated output and private runtime state
+/artifacts/
+/configurations/
+/plugins/
+/.env
+**/.env
+
+# MCC 2.0 site and container state
+/data/
+/docs/l10n/
+/docs/.vuepress/ui/*.json
+!/docs/.vuepress/ui/en.json

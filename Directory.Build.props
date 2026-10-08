@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/bin/**;**/obj/**</DefaultItemExcludes>
   </PropertyGroup>
 

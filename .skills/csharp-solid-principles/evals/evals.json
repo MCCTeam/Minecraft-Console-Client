@@ -1,0 +1,66 @@
+{
+  "skill_name": "csharp-solid-principles",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this ASP.NET Core OrderService for SOLID issues. It validates orders, calculates discounts, opens a SqlConnection, charges Stripe through HttpClient, writes an audit CSV, and emails the customer. I don't want a giant Clean Architecture rewrite\u2014show the smallest refactor that improves maintainability.",
+      "expected_output": "Prioritizes SRP and DIP based on concrete mixed responsibilities, preserves orchestration, avoids over-engineering, proposes focused seams and incremental tests.",
+      "files": [],
+      "expectations": [
+        "Explains at least one SRP finding using independent reasons to change rather than line count.",
+        "Explains at least one DIP finding involving direct infrastructure coupling.",
+        "Recommends an incremental refactor rather than a wholesale architecture rewrite.",
+        "Includes behavior-preserving tests or characterization tests."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have an IPaymentProcessor interface whose ProcessAsync contract accepts any supported currency. One implementation throws InvalidOperationException for all non-US payments. Is that actually an LSP problem in C#, even though it compiles? Show me a better design.",
+      "expected_output": "Explains behavioral substitutability, identifies strengthened precondition / surprising failure semantics, and models the geographic restriction explicitly rather than hiding it in an implementation.",
+      "files": [],
+      "expectations": [
+        "States that compile-time interface compatibility is insufficient for LSP.",
+        "Identifies the non-US restriction as a stronger precondition or incompatible behavioral contract.",
+        "Provides a C# redesign that makes eligibility/capability explicit.",
+        "Does not claim inheritance itself is forbidden."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Teach me all five SOLID principles for modern C#. For each one give me a realistic bad example and a good example, but also tell me when NOT to apply the principle. Please don't use the Rectangle/Square example.",
+      "expected_output": "Covers all five with realistic C# scenarios, bad vs good code, and anti-overengineering caveats; distinguishes DIP from DI.",
+      "files": [],
+      "expectations": [
+        "Covers SRP, OCP, LSP, ISP, and DIP.",
+        "Includes a Bad and Good C# example for each principle.",
+        "Includes a caveat against over-application for each principle.",
+        "Explicitly distinguishes Dependency Inversion from Dependency Injection.",
+        "Does not use Rectangle/Square as the LSP example."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our team says every class should have an interface because DIP. We now have IUserValidator/IUserValidatorImpl, IPriceMath/IPriceMathImpl, and interfaces around simple records. Is that good SOLID? Give us a rule of thumb for when an interface is actually useful in .NET.",
+      "expected_output": "Pushes back on cargo-cult interfaces, explains DIP as dependency direction rather than interface count, and gives concrete seams where abstractions help.",
+      "files": [],
+      "expectations": [
+        "Rejects the claim that every class requires an interface for DIP.",
+        "Explains useful abstraction seams such as external infrastructure, role contracts, or proven variation points.",
+        "Mentions that concrete value objects/pure components can be direct dependencies.",
+        "Uses pragmatic tradeoffs rather than a rigid rule."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review this DI setup: AddDbContext<AppDbContext>(); AddSingleton<ReportCache>(); ReportCache takes AppDbContext in its constructor. Is this a SOLID issue or something else? How should I fix it?",
+      "expected_output": "Identifies the scoped-into-singleton captive dependency as a .NET DI lifetime correctness issue, connects it to dependency design without forcing a SOLID label, and proposes correct lifetime/scope options.",
+      "files": [],
+      "expectations": [
+        "Identifies AppDbContext as scoped by default and ReportCache as singleton.",
+        "Explains the captive dependency / lifetime mismatch as a correctness issue.",
+        "Provides at least one valid fix such as making the cache scoped or creating a scope/factory appropriately.",
+        "Does not mislabel every DI lifetime issue as a SOLID violation."
+      ]
+    }
+  ]
+}

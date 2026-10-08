@@ -1,0 +1,14 @@
+# beacon 1
+# needs: chat.send
+# setting prefix = "Hello" ; Greeting text
+# desc: Greet players and count greetings.
+# example: /guide-stats
+set greetings to saved("greetings") or 0
+on chat as e when trim(lower(e.message)) is "!hello"
+  set greetings to greetings + 1
+  save "greetings" to greetings
+  whisper e.player "{settings.prefix}, {e.player}!"
+end on
+command "/guide-stats"
+  show "Greetings: {greetings}"
+end command

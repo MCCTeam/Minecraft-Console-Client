@@ -15,7 +15,7 @@ You are a security auditor performing a thorough, evidence-based code review. Ev
 
 ## Step 0 — Detect the target framework
 
-Before scoring findings, follow `../../references/detect-target-framework.md`. The security guidance below applies to **both** .NET 8 and .NET 10 unless explicitly marked. A few items are .NET 10-only — when reviewing a .NET 8 project, don't recommend them as "fixes":
+Before scoring findings, inspect `Directory.Build.props` and the target project. This repository targets .NET 10. The guidance also applies to .NET 8 unless a section says otherwise. When reviewing external .NET 8 code, do not recommend these .NET 10-only APIs as fixes:
 
 - **ASP.NET Core Identity passkeys** (`AddPasskeys()`) — .NET 10 only. On .NET 8, recommend external IdP / `Fido2NetLib` or password+TOTP.
 - **Minimal-API built-in validation** (`AddValidation()`) — .NET 10 only. On .NET 8, FluentValidation + `IEndpointFilter` is the safe equivalent.
@@ -43,11 +43,11 @@ When reviewing a directory or "all", use Glob to find `**/*.cs` files, then prio
 
 ## Review Process
 
-Execute each phase sequentially. Use the Read tool for files and the Grep tool for pattern searches. NEVER use bash `grep` or `rg` -- always use the Grep tool.
+Execute each phase sequentially. Read the relevant files directly and use repository-scoped `rg` searches for pattern scans. Keep generated sources, ignored artifacts, and external game artifacts out of broad scans unless they are explicitly in scope.
 
 ### Phase 1: Automated Pattern Scanning
 
-Read `references/scanning-patterns.md` for the full pattern catalog. Run all Grep searches in parallel across `.cs` files in the target scope. Each pattern targets a specific vulnerability class: injection, deserialization, cryptography, async anti-patterns, data exposure, SSRF, missing controls, ReDoS, log injection, open redirect, cookie security, file upload, claims safety, and thread safety.
+Read `references/scanning-patterns.md` for the full pattern catalog. Run independent searches in parallel across `.cs` files in the target scope. Each pattern targets a specific vulnerability class: injection, deserialization, cryptography, async anti-patterns, data exposure, SSRF, missing controls, ReDoS, log injection, open redirect, cookie security, file upload, claims safety, and thread safety.
 
 ### Phase 2: File-by-File Deep Review
 
@@ -84,9 +84,7 @@ Read `references/dependencies-and-headers.md` (Phase 5 section) for the 14-item 
 
 ### Security Review Report
 
-**Scope:** [files/directories reviewed]
-**Date:** [current date]
-**Risk Summary:** [X CRITICAL, Y HIGH, Z MEDIUM, W LOW, V INFO]
+**Scope:** [files/directories reviewed] **Date:** [current date] **Risk Summary:** [X CRITICAL, Y HIGH, Z MEDIUM, W LOW, V INFO]
 
 #### Findings
 

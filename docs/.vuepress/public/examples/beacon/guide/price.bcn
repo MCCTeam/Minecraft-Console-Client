@@ -1,0 +1,11 @@
+# beacon 1
+# desc: Calculate the current bread order.
+# example: /guide-price bread
+command "/guide-price <item>"
+  set item to lower(arg("item"))
+  if item is "bread" then
+    show "Bread costs 3 coins"
+  else
+    show "Unknown item: {item}"
+  end if
+end command

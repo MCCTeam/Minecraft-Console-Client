@@ -1,0 +1,64 @@
+<Project>
+  <!-- Central package versions for the application and tests under src/.
+  Library dependencies are restored through NuGet; sibling source checkouts are not required. -->
+  <ItemGroup>
+    <!-- Pin the complete UMPK runtime graph, including dependencies supplied by DMCBK. -->
+    <PackageVersion Include="Umpk.Auth" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Client" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Commands" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Core" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Data.Java" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Data.Lang" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Game" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Nbt" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Pathfinding" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Physics" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Protocol.Java" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Realms" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Text" Version="0.9.0-beta.4" />
+  </ItemGroup>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="DMCBK.Core" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.Commands" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.Configuration" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.Beacon" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.PluginSdk" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.Plugins" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.Marketplace" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.Testing" Version="0.1.0-preview.3" />
+    <!-- Microsoft.Extensions.*, floated UP to 10.0.11 from UMPK's 10.0.9. BoxOfYellow.ConsoleMarkdownRenderer.Spectre pulls Microsoft.Extensions.Http 10.0.11, which requires Logging.Abstractions >= 10.0.11; leaving these at 10.0.9 is a package DOWNGRADE (NU1605) and this tree builds warnings-as-errors.
+    Raising MCC's floor rather than UMPK's is deliberate: an app-level upgrade over a project reference is silent and safe, while a downgrade is not, so UMPK stays pinned where it is and nothing cross-repo has to move in lockstep. -->
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
+    <!-- TOML configuration; pinned here to avoid solution surprises. -->
+    <PackageVersion Include="Samboy063.Tomlet" Version="6.2.0" />
+    <!-- Roslyn for the .cs plugin compile path (collectible-ALC). -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+    <!-- Brigadier command dispatcher; pinned identically to umpk/Directory.Packages.props (cross-repo skew). -->
+    <PackageVersion Include="Brigadier.NET" Version="2.0.15-beta" />
+    <!-- Consolonia (Avalonia-rendered-to-terminal) for the TUI backend.
+    Referenced by Mcc.Cli ONLY: Mcc.Core and Mcc.PluginSdk must stay free of Avalonia/Consolonia (DependencyGuardTests enforces it). -->
+    <PackageVersion Include="Consolonia" Version="11.3.12.3" />
+    <PackageVersion Include="Consolonia.ManagedWindows" Version="11.3.12.3" />
+    <!-- Markdown rendering for /man in the classic host.
+    Only the .Spectre package: the top-level BoxOfYellow.ConsoleMarkdownRenderer adds an interactive Displayer that writes to AnsiConsole itself and prompts for link selection, which would bypass ConsoleWriter and desynchronise the suggestion popup's recent-message ring (see HostConsole.cs).
+    This one is a pure markdown -> Spectre object tree transform and touches no console.
+    Markdig is taken directly as well: the TUI parses the same markdown and renders it into Consolonia controls, with no Spectre involved. -->
+    <PackageVersion Include="BoxOfYellow.ConsoleMarkdownRenderer.Spectre" Version="0.12.5" />
+    <PackageVersion Include="Markdig" Version="1.3.2" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
+    <!-- Analyzers (dependency guard) aligned with UMPK. -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
+    <!-- Test stack aligned with UMPK. -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+  </ItemGroup>
+</Project>

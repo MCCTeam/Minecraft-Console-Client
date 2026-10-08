@@ -1,0 +1,8 @@
+# beacon 1
+set prices to [3, 5, 7]
+set total to 0
+for each price in prices
+  set total to total + price
+end for
+assert(total is 15, "total")
+show "Total: {total}"

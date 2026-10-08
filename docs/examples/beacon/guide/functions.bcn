@@ -1,0 +1,8 @@
+# beacon 1
+function subtotal(price, count)
+  return price * count
+end function
+set result to subtotal(3, 4)
+assert(result is 12, "subtotal")
+assert(subtotal(3, 0) is 0, "empty order")
+show "Subtotal: {result}"
