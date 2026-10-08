@@ -70,6 +70,9 @@ internal sealed partial class MarkdownConsoleRenderer
             Out = new AnsiConsoleOutput(writer),
         });
 
+        // Spectre's GitHub Actions enricher can re-enable ANSI after creation.
+        // MCC's explicit output setting takes precedence over environment detection.
+        console.Profile.Capabilities.Ansi = _colors != ColorSystem.NoColors;
         console.Profile.Width = width;
         console.Write(root);
 

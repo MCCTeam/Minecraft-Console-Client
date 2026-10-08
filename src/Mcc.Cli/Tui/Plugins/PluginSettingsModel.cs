@@ -200,14 +200,17 @@ internal static class PluginSettingsModel
         if (edits.Count == 0)
             return original;
 
-        bool endsWithNewline = original.EndsWith('\n');
-        string[] lines = original.ReplaceLineEndings("\n").Split('\n');
+        // Keep each line's CR suffix so LF, CRLF and mixed files retain their bytes.
+        string[] lines = original.Split('\n');
         foreach (SettingEdit edit in edits)
         {
             if (edit.LineIndex < 0 || edit.LineIndex >= lines.Length)
                 continue;
 
             string line = lines[edit.LineIndex];
+            string carriageReturn = line.EndsWith('\r') ? "\r" : string.Empty;
+            if (carriageReturn.Length > 0)
+                line = line[..^1];
             int equals = IndexOfKeyEquals(line);
             if (equals < 0)
                 continue;
@@ -221,7 +224,7 @@ internal static class PluginSettingsModel
             int commentAt = CommentStart(line, equals + 1);
             if (commentAt < 0)
             {
-                lines[edit.LineIndex] = line[..valueStart] + edit.RenderedValue;
+                lines[edit.LineIndex] = line[..valueStart] + edit.RenderedValue + carriageReturn;
                 continue;
             }
 
@@ -229,14 +232,10 @@ internal static class PluginSettingsModel
             while (gap > valueStart && line[gap - 1] is ' ' or '\t')
                 gap--;
 
-            lines[edit.LineIndex] = line[..valueStart] + edit.RenderedValue + line[gap..commentAt] + line[commentAt..];
+            lines[edit.LineIndex] = line[..valueStart] + edit.RenderedValue + line[gap..commentAt] + line[commentAt..] + carriageReturn;
         }
 
-        string merged = string.Join('\n', lines);
-        if (endsWithNewline && !merged.EndsWith('\n'))
-            merged += '\n';
-
-        return merged;
+        return string.Join('\n', lines);
     }
 
     private static string Join(List<string> pending, string inline = "")

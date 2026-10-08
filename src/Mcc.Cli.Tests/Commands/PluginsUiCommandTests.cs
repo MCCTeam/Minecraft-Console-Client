@@ -281,6 +281,39 @@ public sealed class PluginsUiCommandTests
         Assert.Contains("deep.key = 1", merged, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("\n", false)]
+    [InlineData("\n", true)]
+    [InlineData("\r\n", false)]
+    [InlineData("\r\n", true)]
+    public void ApplyEdits_PreservesLineEndings(string newline, bool finalNewline)
+    {
+        string original = string.Join(newline,
+            "# Keep this comment", "Enabled = true # Inline comment", "Count = 3", "deep.key = 1");
+        if (finalNewline)
+            original += newline;
+        string expected = original
+            .Replace("Enabled = true", "Enabled = false", StringComparison.Ordinal)
+            .Replace("Count = 3", "Count = 4", StringComparison.Ordinal);
+
+        string merged = PluginSettingsModel.ApplyEdits(original,
+            [new SettingEdit(1, "false"), new SettingEdit(2, "4")]);
+
+        Assert.Equal(expected, merged);
+    }
+
+    [Fact]
+    public void ApplyEdits_PreservesMixedLineEndings()
+    {
+        const string original = "# Keep this comment\r\nEnabled = true # Inline comment\nCount = 3\r\n";
+        const string expected = "# Keep this comment\r\nEnabled = false # Inline comment\nCount = 4\r\n";
+
+        string merged = PluginSettingsModel.ApplyEdits(original,
+            [new SettingEdit(1, "false"), new SettingEdit(2, "4")]);
+
+        Assert.Equal(expected, merged);
+    }
+
     private sealed class NoDialogHost : IHostInterface
     {
         public IUserPrompt? Prompt => null;
