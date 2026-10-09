@@ -4,6 +4,7 @@
 **/node_modules
 docs
 .skills
+MCC-Skills
 .claude
 .agents
 .codex

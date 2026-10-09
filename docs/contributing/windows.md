@@ -40,15 +40,13 @@ Use a separate Windows checkout if you also build natively in PowerShell. Do not
 
 ### Build and run
 
-The branch must be published before these clone instructions work. Until then, use your provided local checkout inside WSL.
+Clone the `feat/mcc-2.0` branch with both submodules:
 
 ```bash
 mkdir -p ~/projects
 cd ~/projects
-git clone https://github.com/MCCTeam/Minecraft-Console-Client.git
+git clone --branch feat/mcc-2.0 --recurse-submodules https://github.com/MCCTeam/Minecraft-Console-Client.git
 cd Minecraft-Console-Client
-git switch feat/mcc-2.0
-git submodule update --init ConsoleInteractive
 source tools/mcc-env.sh
 mcc-build
 mcc-test
@@ -73,6 +71,8 @@ Copy the complete output folder to Windows before running `Mcc.Cli.exe` from Pow
 ## Native PowerShell alternative
 
 Install [Git for Windows](https://git-scm.com/downloads/win) and the [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) on Windows.
+
+Before cloning with native Git, prepare [symbolic-link support](agent-skills.md#use-skills-in-this-checkout) for the skill discovery folders.
 
 Open PowerShell in your Windows checkout. The helpers under `tools/windows/` locate the repository through their own paths.
 

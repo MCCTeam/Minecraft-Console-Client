@@ -86,7 +86,7 @@ Fork the repository and submit a pull request. Read the [contribution guide](doc
 
 MCC's documentation lives in this repository. The [Beacon tutorial](docs/beacon/guide/index.md) and [plugin tutorial](docs/plugins/development/tutorial/index.md) provide examples you can build on.
 
-Use [MCC Skills](https://github.com/MCCTeam/MCC-Skills) with `npx skills` for agent-assisted development. Read the [installation guide](docs/contributing/agent-skills.md) to select a skill.
+The checkout includes [MCC Skills](https://github.com/MCCTeam/MCC-Skills) as a pinned submodule for agent-assisted development. Read the [skill guide](docs/contributing/agent-skills.md) for setup, available skills and `npx skills` installation in other projects.
 
 ## Translating MCC
 
@@ -99,7 +99,7 @@ Install the [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 
 On Linux, macOS, or Windows with WSL:
 
 ```bash
-git submodule update --init ConsoleInteractive
+git submodule update --init ConsoleInteractive MCC-Skills
 source tools/mcc-env.sh
 mcc-build
 mcc-test

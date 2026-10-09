@@ -11,12 +11,32 @@ MCC 2.0 is a cross-platform console and terminal UI client for Minecraft Java Ed
 - The legacy client, GUI, debug tools, Docker setup and old skills were removed. Current Docker files and skills target MCC 2.0.
 - MCC code uses MIT. Preserve external dependencies' licenses and attribution.
 
+## Local skills
+
+Initialize the shared skills with `git submodule update --init MCC-Skills`.
+
+| Skill | Use for |
+| --- | --- |
+| `.skills/beacon-scripting/SKILL.md` | Beacon syntax, examples and script checks |
+| `.skills/dmcbk-plugin-authoring/SKILL.md` | Plugin contracts, lifecycle, packaging and tests |
+| `.skills/dmcbk-marketplace-authoring/SKILL.md` | Schema-2 catalogues, assets and release procedures |
+| `.skills/csharp-best-practices/SKILL.md` | C# implementation, naming and async review |
+| `.skills/csharp-solid-principles/SKILL.md` | Design, refactoring and API boundaries |
+| `.skills/dotnet-performance-profiling-and-optimization/SKILL.md` | Measured performance diagnosis |
+| `.skills/dotnet-security-review/SKILL.md` | Security and dependency review |
+| `.skills/asd-ste100/SKILL.md` | Clear procedures, diagnostics and agent instructions |
+| `.skills/humanizer/SKILL.md` | Natural, direct prose |
+
+Seven `.skills` entries link to the pinned [MCC Skills](https://github.com/MCCTeam/MCC-Skills) submodule under `MCC-Skills/skills`. ASD-STE100 and Humanizer remain local. `.claude/skills`, `.agents/skills`, `.codex/skill` and `.codex/skills` link to `.skills`.
+
+Read the relevant `SKILL.md` before applying a skill. Resolve relative references from its directory. Edit shared skills in MCC Skills rather than creating another local copy.
+
 ## Build, run and test
 
 Use .NET SDK `10.0.401` from `global.json`.
 
 ```bash
-git submodule update --init ConsoleInteractive
+git submodule update --init ConsoleInteractive MCC-Skills
 source tools/mcc-env.sh
 mcc-build
 mcc-test
@@ -81,7 +101,7 @@ DMCBK owns client lifecycle, commands, typed configuration, Beacon, plugins and 
 - Update tests and documentation when behavior changes; run the CLI tests before completion.
 - Do not modify `ConsoleInteractive/` or add library source dependencies.
 - The documentation describes MCC 2.0. Check source and examples before changing a guide. Run tools/check_docs.py and the documentation build.
-- Current skills live in .skills, with discovery symlinks for Claude, Codex and Agents. Read the relevant skill before use.
+- Read the relevant skill in `.skills` before use. See [agent skills](docs/contributing/agent-skills.md) for setup and revision updates.
 - Use Humanizer for prose and ASD-STE100 principles for instructions. Keep translated code and placeholders unchanged.
 - Container files are Dockerfile and compose.yml. Do not put runtime secrets in images.
 - Run tools/test_installers.py when changing installers or release packaging.

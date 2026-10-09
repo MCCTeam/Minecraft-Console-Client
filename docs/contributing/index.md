@@ -15,7 +15,7 @@ Read the [review and checks](review.md) for the validation scope and changes fro
 
 ## Agent skills
 
-Use [MCC Skills](agent-skills.md) for agent-assisted Beacon, plugin, marketplace, and C# tasks. The guide includes `npx skills` installation commands.
+Use [MCC Skills](agent-skills.md) for agent-assisted Beacon, plugin, marketplace, and C# tasks. The shared skills are included as a pinned submodule. The guide covers initialization, revision updates and `npx skills` installation for other projects.
 
 ## Source architecture
 

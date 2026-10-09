@@ -71,20 +71,20 @@ Do not extract an archive with a different checksum. Download it again from the 
 
 ## Build the development branch
 
-The commands below require a published `feat/mcc-2.0` branch. Until it is published, use the provided local checkout instead of cloning and switching.
+These commands select the `feat/mcc-2.0` development branch.
 
 You need [Git](https://git-scm.com/downloads/) and the [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) version `10.0.401`, as selected by `global.json`. MCC restores DMCBK and UMPK through NuGet. You do not need their source repositories.
 
-On Windows, we recommend [WSL for development](../contributing/windows.md#recommended-wsl). Install Git and the SDK inside WSL for that workflow. Native PowerShell remains an alternative, with helpers under `tools/windows/`.
+On Windows, we recommend [WSL for development](../contributing/windows.md#recommended-wsl). Install Git and the SDK inside WSL for that workflow. Native PowerShell remains an alternative, with helpers under `tools/windows/`. For native Git, prepare [symbolic-link support](../contributing/agent-skills.md#use-skills-in-this-checkout) before cloning.
 
 Run the checkout commands in your chosen development terminal:
 
 ```bash
-git clone https://github.com/MCCTeam/Minecraft-Console-Client.git
+git clone --branch feat/mcc-2.0 --recurse-submodules https://github.com/MCCTeam/Minecraft-Console-Client.git
 cd Minecraft-Console-Client
-git switch feat/mcc-2.0
-git submodule update --init ConsoleInteractive
 ```
+
+The recursive clone initializes ConsoleInteractive and MCC Skills. For an existing checkout, run `git submodule update --init ConsoleInteractive MCC-Skills`. Library dependencies restore through NuGet.
 
 Linux, macOS, or Windows with WSL:
 
