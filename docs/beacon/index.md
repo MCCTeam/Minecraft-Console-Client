@@ -45,3 +45,13 @@ The host and the Minecraft server are separate programs. The host can accept a r
 ## Documentation source
 
 This guide adapts the MIT-licensed [DMCBK Beacon documentation](https://github.com/MCCTeam/DMCBK/tree/master/docs/beacon) for MCC. The interpreter and language contract belong to DMCBK. MCC provides the terminal commands and live-session adapters.
+
+## Agent skills
+
+Install the [Beacon scripts authoring skill](https://github.com/MCCTeam/MCC-Skills/tree/master/skills/beacon-scripting) for your coding agent:
+
+```bash
+npx skills add MCCTeam/MCC-Skills --skill beacon-scripting
+```
+
+The skill includes standalone references and examples. Read [agent skill installation](../contributing/agent-skills.md) for agent selection and installation scope.

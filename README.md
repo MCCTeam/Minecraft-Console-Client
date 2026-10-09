@@ -86,6 +86,8 @@ Fork the repository and submit a pull request. Read the [contribution guide](doc
 
 MCC's documentation lives in this repository. The [Beacon tutorial](docs/beacon/guide/index.md) and [plugin tutorial](docs/plugins/development/tutorial/index.md) provide examples you can build on.
 
+Use [MCC Skills](https://github.com/MCCTeam/MCC-Skills) with `npx skills` for agent-assisted development. Read the [installation guide](docs/contributing/agent-skills.md) to select a skill.
+
 ## Translating MCC
 
 Help translate the client and its documentation through [Crowdin](https://crowdin.com/project/minecraft-console-client). Read the [translation guide](docs/contributing/translations.md) for resource files, placeholders, and documentation fallback.

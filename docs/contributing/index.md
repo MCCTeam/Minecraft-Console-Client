@@ -13,6 +13,10 @@ Keep changes in the repository that owns their behavior. Do not copy protocol im
 
 Read the [review and checks](review.md) for the validation scope and changes from the reader council.
 
+## Agent skills
+
+Use [MCC Skills](agent-skills.md) for agent-assisted Beacon, plugin, marketplace, and C# tasks. The guide includes `npx skills` installation commands.
+
 ## Source architecture
 
 Open `src/README.md` in your checkout for the application and library boundaries, startup sequence, command flow, and feature ownership.

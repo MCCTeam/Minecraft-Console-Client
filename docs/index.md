@@ -22,6 +22,7 @@ MCC 2.0 is an early development build. Features can change. Keep a copy of your 
 | Add or create a marketplace | [Marketplace guide](marketplaces/index.md) |
 | Run MCC in a container | [Docker Compose](deployment/docker.md) |
 | Fix a problem | [Troubleshooting](troubleshooting/index.md) |
+| Use a coding agent for scripts or plugins | [Agent skills](contributing/agent-skills.md) |
 | Translate MCC or these pages | [Translations](contributing/translations.md) |
 
 ## Choose a learning path

@@ -49,3 +49,13 @@ Use [MCC plugin management](../managing.md) to load a local package. You do not 
 
 
 This chapter follows the [DMCBK plugin guide](https://github.com/MCCTeam/DMCBK/tree/master/docs/plugins). MCC uses the same SDK and package formats.
+
+## Agent skills
+
+Install the [plugins authoring skill](https://github.com/MCCTeam/MCC-Skills/tree/master/skills/dmcbk-plugin-authoring) for your coding agent:
+
+```bash
+npx skills add MCCTeam/MCC-Skills --skill dmcbk-plugin-authoring
+```
+
+The skill includes standalone references and examples. Read [agent skill installation](../../contributing/agent-skills.md) for agent selection and installation scope.
