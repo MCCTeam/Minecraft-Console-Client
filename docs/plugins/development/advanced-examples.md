@@ -4,7 +4,7 @@ These examples follow the [chaptered plugin guide](tutorial/index.md). They show
 
 Use the complete [AdvancedExamples sample](https://github.com/MCCTeam/DMCBK/blob/master/samples/PluginAuthoring/AdvancedExamples/README.md) to execute the checks. Each C# block below identifies its source file. The sample includes the manifests and project files.
 
-All projects target .NET 10 and DMCBK `0.1.0-preview.5`. Build the verifier in Release configuration. It uses pinned NuGet packages rather than DMCBK or MCC source references.
+All projects target .NET 10 and DMCBK `0.1.0-preview.6`. Build the verifier in Release configuration. It uses pinned NuGet packages rather than DMCBK or MCC source references.
 
 ## Example 1: A service and typed messages between plugins
 

@@ -6,7 +6,7 @@ This plugin counts successful session starts. It stores the count outside the pa
 
 1. Install the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
 2. Create a class library named `SessionCounter`.
-3. Add `DMCBK.PluginSdk` version `0.1.0-preview.5`.
+3. Add `DMCBK.PluginSdk` version `0.1.0-preview.6`.
 4. Replace the generated class with this file.
 
 ```csharp

@@ -22,14 +22,14 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="DMCBK.Core" Version="0.1.0-preview.5" />
-    <PackageVersion Include="DMCBK.Commands" Version="0.1.0-preview.5" />
-    <PackageVersion Include="DMCBK.Configuration" Version="0.1.0-preview.5" />
-    <PackageVersion Include="DMCBK.Beacon" Version="0.1.0-preview.5" />
-    <PackageVersion Include="DMCBK.PluginSdk" Version="0.1.0-preview.5" />
-    <PackageVersion Include="DMCBK.Plugins" Version="0.1.0-preview.5" />
-    <PackageVersion Include="DMCBK.Marketplace" Version="0.1.0-preview.5" />
-    <PackageVersion Include="DMCBK.Testing" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.Core" Version="0.1.0-preview.6" />
+    <PackageVersion Include="DMCBK.Commands" Version="0.1.0-preview.6" />
+    <PackageVersion Include="DMCBK.Configuration" Version="0.1.0-preview.6" />
+    <PackageVersion Include="DMCBK.Beacon" Version="0.1.0-preview.6" />
+    <PackageVersion Include="DMCBK.PluginSdk" Version="0.1.0-preview.6" />
+    <PackageVersion Include="DMCBK.Plugins" Version="0.1.0-preview.6" />
+    <PackageVersion Include="DMCBK.Marketplace" Version="0.1.0-preview.6" />
+    <PackageVersion Include="DMCBK.Testing" Version="0.1.0-preview.6" />
     <!-- Microsoft.Extensions.*, floated UP to 10.0.11 from UMPK's 10.0.9. BoxOfYellow.ConsoleMarkdownRenderer.Spectre pulls Microsoft.Extensions.Http 10.0.11, which requires Logging.Abstractions >= 10.0.11; leaving these at 10.0.9 is a package DOWNGRADE (NU1605) and this tree builds warnings-as-errors.
     Raising MCC's floor rather than UMPK's is deliberate: an app-level upgrade over a project reference is silent and safe, while a downgrade is not, so UMPK stays pinned where it is and nothing cross-repo has to move in lockstep. -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />

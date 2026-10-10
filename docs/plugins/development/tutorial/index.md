@@ -17,7 +17,7 @@ Follow the chapters in order. The [complete sample](https://github.com/MCCTeam/D
 | [7. Package compiled output](07-package-and-release.md) | A portable compiled asset |
 | [8. Maintain the plugin](08-maintenance.md) | A method for debugging and safe updates |
 
-The guide uses .NET 10, DMCBK `0.1.0-preview.5`, UMPK `0.9.0-beta.6`, API `1.0`, and manifest schema `2`. Pin these versions while following it.
+The guide uses .NET 10, DMCBK `0.1.0-preview.6`, UMPK `0.9.0-beta.6`, API `1.0`, and manifest schema `2`. Pin these versions while following it.
 
 ## Words used in this guide
 
