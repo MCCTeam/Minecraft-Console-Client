@@ -46,7 +46,7 @@ try {
         }
     } finally { $package.Dispose() }
     [IO.Compression.ZipFile]::ExtractToDirectory($archive, $stage)
-    if (-not (Test-Path (Join-Path $stage 'Mcc.Cli.exe')) -or -not (Test-Path (Join-Path $stage 'Mcc.Cli.dll'))) { throw 'Archive does not contain MCC executable and assemblies.' }
+    if (-not (Test-Path (Join-Path $stage 'Mcc.Cli.exe') -PathType Leaf)) { throw 'Archive does not contain the MCC executable.' }
     New-Item -ItemType Directory -Path (Split-Path $target) -Force | Out-Null
     Move-Item $stage $target
     $launcher = Join-Path $Destination 'mcc.cmd'

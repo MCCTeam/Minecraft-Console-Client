@@ -1,10 +1,10 @@
 # Create a release package
 
-The MCC installers need a complete archive. A single executable does not contain the managed assemblies required by source plugins.
+Release archives contain one self-contained MCC executable and `LICENSE.md`. The executable bundles the .NET runtime, managed assemblies and language resources. On first startup, .NET extracts dependencies into its per-user bundle cache so source plugins can compile against them.
 
 This page describes local packaging and the early-access release workflow. Obtain the owner's authorization before publishing.
 
-You need the pinned [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), [Python](https://www.python.org/downloads/) 3.10 or later, and [Node.js with npm](https://nodejs.org/en/download).
+You need the pinned [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), [Python](https://www.python.org/downloads/) 3.11 or later, and [Node.js with npm](https://nodejs.org/en/download).
 
 ## Build one target
 
@@ -16,7 +16,8 @@ You need the pinned [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotne
 ```bash
 git submodule update --init ConsoleInteractive
 source tools/mcc-env.sh
-mcc-publish --rid linux-x64 -- -o /tmp/mcc-publish/linux-x64
+mcc-publish --rid linux-x64 -- -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=false -o /tmp/mcc-publish/linux-x64
+cp LICENSE.md /tmp/mcc-publish/linux-x64/LICENSE.md
 ```
 
 Use a fresh output folder for each target. Do not place runtime configuration, tokens, scripts or installed plugin data in it.
@@ -24,10 +25,10 @@ Use a fresh output folder for each target. Do not place runtime configuration, t
 ## Create an archive
 
 ```bash
-python3 tools/package-release.py /tmp/mcc-publish/linux-x64 --tag v2.0.0-preview.1 --rid linux-x64 --output artifacts/releases
+python3 tools/package-release.py /tmp/mcc-publish/linux-x64 --tag v2.0.0-preview.1 --rid linux-x64 --single-file --output artifacts/releases
 ```
 
-The tool verifies the executable, managed assembly, dependency manifest and runtime configuration. It keeps every published file in the archive.
+With `--single-file`, the tool requires the executable and rejects loose dependencies. Keep `IncludeAllContentForSelfExtract=true` and trimming disabled to preserve source-plugin compilation and reflection. The default development helper still creates a directory distribution; omit `--single-file` when packaging that layout.
 
 Release assets use these names:
 
@@ -55,7 +56,7 @@ Publish only targets that you can validate. Cross-building does not prove that a
 
 ## Publish an early-access build through CI
 
-The `build-and-release.yml` workflow on `feat/mcc-2.0` builds all 11 targets in the table. It runs the CLI tests and extracted-archive startup checks on seven native targets. Linux ARM32 and the musl targets receive cross-build checks. The workflow keeps complete publish directories, validates every archive checksum and publishes a prerelease only after all build and documentation jobs pass.
+The `build-and-release.yml` workflow on `feat/mcc-2.0` builds single-file executables for all 11 targets in the table. It runs the CLI tests, extracted-archive startup and source-plugin compilation checks on seven native targets. The smoke test clears .NET runtime and SDK discovery and checks plugin commands before and after reload. Linux ARM32 and the musl targets receive cross-build checks. The workflow validates every archive checksum and publishes a prerelease only after all build and documentation jobs pass.
 
 Add release notes at `docs/deployment/early-access-<number>.md`. Update the expected CLI test count in the workflow when tests are intentionally added or removed. After publication is authorized, dispatch the registered workflow with the branch and build number:
 
@@ -77,7 +78,7 @@ The publisher creates an annotated tag for the validated commit, stages a draft 
 6. Extract each archive in an empty directory.
 7. Run its help command on the target platform.
 8. Check classic and TUI startup on supported terminals.
-9. Verify that translated resource assemblies remain in their culture directories.
+9. Verify that source plugins compile and reload from the bundled dependencies.
 
 After the owner approves publication, upload the archives and their shared `SHA256SUMS` file to the matching GitHub release tag.
 

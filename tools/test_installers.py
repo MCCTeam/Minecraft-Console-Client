@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import io
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -29,9 +30,11 @@ def release(payload, rid='linux-x64', expected=None):
         return checksums.encode() if url == 'fixture://hashes' else payload
     return metadata, download, requests
 
-def archive(extra=None, windows=False):
+def archive(extra=None, windows=False, single_file=False):
     stream=io.BytesIO()
-    files={'Mcc.Cli.exe' if windows else 'Mcc.Cli':b'executable','Mcc.Cli.dll':b'assembly'}
+    files={'Mcc.Cli.exe' if windows else 'Mcc.Cli':b'executable'}
+    if not single_file:
+        files['Mcc.Cli.dll']=b'assembly'
     if extra:
         files.update(extra)
     if windows:
@@ -46,6 +49,15 @@ def archive(extra=None, windows=False):
     return stream.getvalue()
 
 class InstallTests(unittest.TestCase):
+    def test_single_file_release_installs_without_loose_assemblies(self):
+        for rid in ('linux-x64', 'win-x64'):
+            with self.subTest(rid=rid), tempfile.TemporaryDirectory() as scratch:
+                metadata, download, _ = release(archive(windows=rid.startswith('win-'), single_file=True), rid)
+                launcher = installer.install(metadata, rid, scratch, download)
+                self.assertTrue(launcher.is_file())
+                payload = Path(scratch)/'releases'/'v2.0.0-preview.1'/rid
+                self.assertEqual(1, len(list(payload.iterdir())))
+
     def test_selected_asset_only_and_user_data_preserved(self):
         metadata,download,requests=release(archive())
         with tempfile.TemporaryDirectory() as scratch:
@@ -121,6 +133,40 @@ class InstallTests(unittest.TestCase):
         source=Path(__file__).with_name('install_mcc.py').read_text()
         shell=Path(__file__).resolve().parents[1]/'docs/.vuepress/public/install.sh'
         self.assertIn(source,shell.read_text())
+
+class ReleasePackageTests(unittest.TestCase):
+    def test_single_file_package_keeps_only_binary_and_license(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            payload = root/'publish'
+            payload.mkdir()
+            (payload/'Mcc.Cli').write_bytes(b'executable')
+            (payload/'LICENSE.md').write_text('MIT license')
+            result = self.package(payload, root/'releases')
+            self.assertEqual(0, result.returncode, result.stderr)
+            archive = root/'releases'/'Mcc-v2.0.0-preview.1-linux-x64.tar.gz'
+            with tarfile.open(archive) as package:
+                self.assertEqual({'Mcc.Cli', 'LICENSE.md'}, set(package.getnames()))
+            expected = hashlib.sha256(archive.read_bytes()).hexdigest()
+            self.assertEqual(expected+'  '+archive.name+'\n', (root/'releases'/'SHA256SUMS').read_text())
+
+    def test_single_file_package_rejects_loose_dependencies(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            payload = root/'publish'
+            payload.mkdir()
+            (payload/'Mcc.Cli').write_bytes(b'executable')
+            (payload/'dependency.dll').write_bytes(b'loose assembly')
+            result = self.package(payload, root/'releases')
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn('loose dependencies', result.stderr)
+            self.assertFalse((root/'releases').exists())
+
+    @staticmethod
+    def package(payload, output):
+        return subprocess.run([sys.executable, str(Path(__file__).with_name('package-release.py')), str(payload),
+            '--tag', 'v2.0.0-preview.1', '--rid', 'linux-x64', '--single-file', '--output', str(output)],
+            capture_output=True, text=True)
 
 if __name__=='__main__':
     unittest.main()

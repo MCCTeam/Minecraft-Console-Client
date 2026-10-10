@@ -147,46 +147,22 @@ jobs:
           assert int(counts['failed']) == 0, counts
           print('All 918 CLI tests passed without skips.')
           PY
-      - name: Publish complete distribution
+      - name: Publish self-contained single-file executable
         run: |
-          dotnet publish src/Mcc.Cli/Mcc.Cli.csproj -c Release -r "$RELEASE_RID" --self-contained true -p:UseAppHost=true -p:PublishSingleFile=false -p:DebugType=Embedded -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false -o artifacts/publish
+          dotnet publish src/Mcc.Cli/Mcc.Cli.csproj -c Release -r "$RELEASE_RID" --self-contained true -p:UseAppHost=true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=false -p:DebugType=Embedded -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false -o artifacts/publish
+          cp LICENSE.md artifacts/publish/LICENSE.md
       - name: Package archive and checksum
         run: |
-          python3 tools/package-release.py artifacts/publish --tag "$RELEASE_TAG" --rid "$RELEASE_RID" --output artifacts/releases
+          python3 tools/package-release.py artifacts/publish --tag "$RELEASE_TAG" --rid "$RELEASE_RID" --single-file --output artifacts/releases
           mv artifacts/releases/SHA256SUMS "artifacts/releases/SHA256SUMS-$RELEASE_RID"
       - name: Test the extracted distribution on its target
         if: matrix.execute
         run: |
           python3 - <<'PY'
-          import os, subprocess, tarfile, tempfile, tomllib, zipfile
+          import os, subprocess
           from pathlib import Path
           archive = next(path for path in Path('artifacts/releases').iterdir() if path.suffix in ('.zip', '.gz'))
-          with tempfile.TemporaryDirectory(prefix='mcc-release-smoke-') as temporary:
-              root = Path(temporary)
-              payload = root / 'payload'
-              payload.mkdir()
-              if archive.suffix == '.zip':
-                  with zipfile.ZipFile(archive) as package:
-                      package.extractall(payload)
-              else:
-                  with tarfile.open(archive) as package:
-                      package.extractall(payload, filter='data')
-              executable = payload / ('Mcc.Cli.exe' if os.name == 'nt' else 'Mcc.Cli')
-              subprocess.run([str(executable), '--help-short'], cwd=root, check=True, timeout=30)
-              inputs = root / 'input.txt'
-              inputs.write_text('/plugins marketplace list\nexit\n')
-              environment = os.environ.copy()
-              environment.pop('MCC_PLUGINS', None)
-              environment.update(MCC_FILE_INPUT='1', MCC_INPUT_FILE=str(inputs))
-              result = subprocess.run([str(executable), 'ReleaseSmoke', '-', '--configurations', str(root / 'configurations'), '--connection.auto-connect=false'], cwd=root, env=environment, check=True, capture_output=True, text=True, timeout=60)
-              transcript = result.stdout + result.stderr
-              print(transcript)
-              assert f'Minecraft Console Client v{os.environ["RELEASE_STAMP"]} -' in transcript
-              registry = tomllib.loads((root / 'configurations/marketplaces.toml').read_text())
-              assert registry['schema-version'] == 2
-              assert len(registry['marketplaces']) == 1
-              assert registry['marketplaces'][0]['id'] == 'official'
-              assert registry['marketplaces'][0]['auto-update'] == 'off'
+          subprocess.run(['python3', 'tools/smoke-release.py', str(archive), '--stamp', os.environ['RELEASE_STAMP']], check=True)
           PY
       - uses: actions/upload-artifact@v6
         with:

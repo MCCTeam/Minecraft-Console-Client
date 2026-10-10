@@ -46,7 +46,7 @@ mcc-publish --rid linux-x64
 
 Windows development should use WSL when practical. Native PowerShell helpers live in `tools/windows/`: build, test, run, publish and clean. Read that directory's README. These helpers restore the caller's directory and propagate failures.
 
-`mcc-publish` creates a local distribution without uploading it. Keep `PublishSingleFile=false` so source plugins can access compilation references.
+`mcc-publish` creates a local distribution without uploading it. The development helper uses `PublishSingleFile=false`. Release builds use `PublishSingleFile=true` with `IncludeNativeLibrariesForSelfExtract=true` and `IncludeAllContentForSelfExtract=true` so source plugins can access extracted compilation references. Keep trimming disabled for plugin hosts.
 
 `mcc-run` starts the new CLI. `mcc-tui` starts its TUI. Both use a temporary working directory by default. Set `MCC_RUN_ROOT` to select a persistent directory. Pass absolute paths for configurations and scripts because these helpers change the working directory.
 

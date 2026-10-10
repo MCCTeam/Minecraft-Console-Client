@@ -114,8 +114,8 @@ def install(release, target, destination, download=fetch):
         stage.mkdir()
         unpack(archive, stage)
         executable = "Mcc.Cli.exe" if target.startswith("win-") else "Mcc.Cli"
-        if not (stage/executable).is_file() or not (stage/"Mcc.Cli.dll").is_file():
-            raise ValueError("Archive does not contain the MCC executable and managed assemblies")
+        if not (stage/executable).is_file():
+            raise ValueError("Archive does not contain the MCC executable")
         version.parent.mkdir(parents=True, exist_ok=True)
         stage.rename(version)
     if target.startswith("win-"):

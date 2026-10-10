@@ -37,7 +37,7 @@ Windows PowerShell:
 .\Mcc.Cli.exe --help
 ```
 
-The installer creates an `mcc` launcher. Extracted archives use `Mcc.Cli` directly. Keep the archive's DLLs beside the executable. MCC needs accessible managed assemblies to compile source plugins. Copy the complete distribution when you move it.
+The installer creates an `mcc` launcher. Extracted archives use `Mcc.Cli` directly. Release archives contain one MCC executable and the license file. The executable includes its dependencies, which .NET extracts into a per-user cache on startup. Source plugins can compile against those extracted assemblies.
 
 A self-contained distribution includes the .NET runtime. A framework-dependent build requires the [.NET 10 and ASP.NET Core runtimes](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
 
