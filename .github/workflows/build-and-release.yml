@@ -248,7 +248,6 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, os, subprocess
           from pathlib import Path
-          from urllib.parse import quote
           def gh(*arguments):
               return subprocess.check_output(['gh', *arguments], text=True)
           tag = os.environ['RELEASE_TAG']
@@ -264,12 +263,13 @@ jobs:
               subprocess.run(['git', 'push', 'origin', reference], check=True)
           else:
               raise SystemExit('Cannot check the release tag.')
-          endpoint = f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases/tags/{quote(tag, safe="")}'
-          lookup = subprocess.run(['gh', 'api', endpoint], capture_output=True, text=True)
+          lookup = subprocess.run(['gh', 'release', 'view', tag, '--json', 'apiUrl'], capture_output=True, text=True)
           if lookup.returncode:
-              if 'HTTP 404' not in lookup.stderr:
+              if 'release not found' not in lookup.stderr.lower():
                   raise SystemExit(lookup.stderr)
               gh('release', 'create', tag, '--verify-tag', '--draft', '--prerelease', '--title', os.environ['RELEASE_TITLE'], '--notes-file', os.environ['RELEASE_NOTES'])
+          # The tag REST endpoint excludes drafts. Resolve their stable numeric API URL through gh.
+          endpoint = json.loads(gh('release', 'view', tag, '--json', 'apiUrl'))['apiUrl']
           release = json.loads(gh('api', endpoint))
           assets = {asset['name']: asset for asset in release['assets']}
           files = sorted(Path('artifacts/releases').iterdir())
