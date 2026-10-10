@@ -1,0 +1,294 @@
+name: MCC 2.0 early-access release
+run-name: MCC 2.0 Early Access Build ${{ inputs.build_number }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: Early-access build number
+        required: true
+        default: '12'
+        type: string
+
+permissions:
+  contents: read
+concurrency:
+  group: mcc-early-access-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.plan.outputs.tag }}
+      title: ${{ steps.plan.outputs.title }}
+      stamp: ${{ steps.plan.outputs.stamp }}
+      notes: ${{ steps.plan.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - id: plan
+        env:
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          if os.environ['GITHUB_REF'] != 'refs/heads/feat/mcc-2.0':
+              raise SystemExit('Run this workflow on feat/mcc-2.0.')
+          number = os.environ['BUILD_NUMBER']
+          if not re.fullmatch(r'[1-9][0-9]{0,4}', number):
+              raise SystemExit('Use a positive build number with at most five digits.')
+          notes = f'docs/deployment/early-access-{number}.md'
+          if not Path(notes).is_file():
+              raise SystemExit(f'Missing release notes: {notes}')
+          values = {
+              'tag': f'v2.0.0-early-access.{number}',
+              'title': f'MCC 2.0 Early Access Build {number}',
+              'stamp': f'2.0.0+early-access.{number}.{os.environ["GITHUB_SHA"]}',
+              'notes': notes,
+          }
+          with Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
+              for key, value in values.items():
+                  output.write(f'{key}={value}\n')
+          PY
+
+  documentation:
+    needs: plan
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - run: python tools/test_installers.py
+      - run: python tools/check_docs.py
+      - run: python tools/localization/generate_strings.py --check
+      - run: npm --prefix docs ci
+      - run: npm --prefix docs run docs:build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+
+  build:
+    needs: plan
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {rid: win-x86, os: windows-2025, execute: true}
+          - {rid: win-x64, os: windows-2025, execute: true}
+          - {rid: win-arm64, os: windows-11-arm, execute: true}
+          - {rid: osx-x64, os: macos-15-intel, execute: true}
+          - {rid: osx-arm64, os: macos-15, execute: true}
+          - {rid: linux-x64, os: ubuntu-24.04, execute: true}
+          - {rid: linux-arm64, os: ubuntu-24.04-arm, execute: true}
+          - {rid: linux-arm, os: ubuntu-24.04, execute: false}
+          - {rid: linux-musl-x64, os: ubuntu-24.04, execute: false}
+          - {rid: linux-musl-arm64, os: ubuntu-24.04, execute: false}
+          - {rid: linux-musl-arm, os: ubuntu-24.04, execute: false}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+      RELEASE_STAMP: ${{ needs.plan.outputs.stamp }}
+      RELEASE_RID: ${{ matrix.rid }}
+      DOTNET_NOLOGO: true
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - run: git submodule update --init ConsoleInteractive
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.401
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Install x86 test runtimes
+        if: matrix.rid == 'win-x86'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $env:RUNNER_TEMP/dotnet-install.ps1
+          foreach ($runtime in @('dotnet', 'aspnetcore')) {
+            & $env:RUNNER_TEMP/dotnet-install.ps1 -Channel 10.0 -Runtime $runtime -Architecture x86 -InstallDir "$env:RUNNER_TEMP/dotnet-x86" -NoPath
+            if (-not $?) { throw "x86 runtime installation failed" }
+          }
+          "DOTNET_ROOT_X86=$env:RUNNER_TEMP/dotnet-x86" >> $env:GITHUB_ENV
+      - name: Build and test on native targets
+        if: matrix.execute
+        run: |
+          dotnet build Mcc.slnx -c Release -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false
+          if [[ "$RELEASE_RID" == win-x86 ]]; then
+            dotnet test src/Mcc.Cli.Tests/Mcc.Cli.Tests.csproj -c Release --arch x86 -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false --logger 'trx;LogFileName=mcc.trx' --results-directory artifacts/test-results
+          else
+            dotnet test src/Mcc.Cli.Tests/Mcc.Cli.Tests.csproj -c Release --no-build --logger 'trx;LogFileName=mcc.trx' --results-directory artifacts/test-results
+          fi
+      - name: Verify every CLI test executed
+        if: matrix.execute
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          root = ET.parse('artifacts/test-results/mcc.trx').getroot()
+          counts = next(item.attrib for item in root.iter() if item.tag.rsplit('}', 1)[-1] == 'Counters')
+          for key in ('total', 'executed', 'passed'):
+              assert int(counts[key]) == 918, counts
+          assert int(counts['failed']) == 0, counts
+          print('All 918 CLI tests passed without skips.')
+          PY
+      - name: Publish complete distribution
+        run: |
+          dotnet publish src/Mcc.Cli/Mcc.Cli.csproj -c Release -r "$RELEASE_RID" --self-contained true -p:UseAppHost=true -p:PublishSingleFile=false -p:DebugType=Embedded -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false -o artifacts/publish
+      - name: Package archive and checksum
+        run: |
+          python3 tools/package-release.py artifacts/publish --tag "$RELEASE_TAG" --rid "$RELEASE_RID" --output artifacts/releases
+          mv artifacts/releases/SHA256SUMS "artifacts/releases/SHA256SUMS-$RELEASE_RID"
+      - name: Test the extracted distribution on its target
+        if: matrix.execute
+        run: |
+          python3 - <<'PY'
+          import os, subprocess, tarfile, tempfile, tomllib, zipfile
+          from pathlib import Path
+          archive = next(path for path in Path('artifacts/releases').iterdir() if path.suffix in ('.zip', '.gz'))
+          with tempfile.TemporaryDirectory(prefix='mcc-release-smoke-') as temporary:
+              root = Path(temporary)
+              payload = root / 'payload'
+              payload.mkdir()
+              if archive.suffix == '.zip':
+                  with zipfile.ZipFile(archive) as package:
+                      package.extractall(payload)
+              else:
+                  with tarfile.open(archive) as package:
+                      package.extractall(payload, filter='data')
+              executable = payload / ('Mcc.Cli.exe' if os.name == 'nt' else 'Mcc.Cli')
+              subprocess.run([str(executable), '--help-short'], cwd=root, check=True, timeout=30)
+              inputs = root / 'input.txt'
+              inputs.write_text('/plugins marketplace list\nexit\n')
+              environment = os.environ.copy()
+              environment.pop('MCC_PLUGINS', None)
+              environment.update(MCC_FILE_INPUT='1', MCC_INPUT_FILE=str(inputs))
+              result = subprocess.run([str(executable), 'ReleaseSmoke', '-', '--configurations', str(root / 'configurations'), '--connection.auto-connect=false'], cwd=root, env=environment, check=True, capture_output=True, text=True, timeout=60)
+              transcript = result.stdout + result.stderr
+              print(transcript)
+              assert f'Minecraft Console Client v{os.environ["RELEASE_STAMP"]} -' in transcript
+              registry = tomllib.loads((root / 'configurations/marketplaces.toml').read_text())
+              assert registry['schema-version'] == 2
+              assert len(registry['marketplaces']) == 1
+              assert registry['marketplaces'][0]['id'] == 'official'
+              assert registry['marketplaces'][0]['auto-update'] == 'off'
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: mcc-release-${{ matrix.rid }}
+          path: artifacts/releases/*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v6
+        if: always() && matrix.execute
+        with:
+          name: mcc-tests-${{ matrix.rid }}
+          path: artifacts/test-results
+
+  publish:
+    needs: [plan, documentation, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+      RELEASE_TITLE: ${{ needs.plan.outputs.title }}
+      RELEASE_NOTES: ${{ needs.plan.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: mcc-release-*
+          path: artifacts/releases
+          merge-multiple: true
+      - name: Verify the complete archive set
+        run: |
+          python3 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          directory = Path('artifacts/releases')
+          targets = ['win-x86', 'win-x64', 'win-arm64', 'osx-x64', 'osx-arm64', 'linux-x64', 'linux-arm64', 'linux-arm', 'linux-musl-x64', 'linux-musl-arm64', 'linux-musl-arm']
+          checksums = []
+          expected = set()
+          for target in targets:
+              extension = '.zip' if target.startswith('win-') else '.tar.gz'
+              name = f'Mcc-{os.environ["RELEASE_TAG"]}-{target}{extension}'
+              archive = directory / name
+              with archive.open('rb') as stream:
+                  digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+              line = f'{digest}  {name}\n'
+              sidecar = directory / f'SHA256SUMS-{target}'
+              assert sidecar.read_text() == line, target
+              checksums.append(line)
+              expected.update((name, sidecar.name))
+          assert {path.name for path in directory.iterdir()} == expected
+          (directory / 'SHA256SUMS').write_text(''.join(sorted(checksums)))
+          for sidecar in directory.glob('SHA256SUMS-*'):
+              sidecar.unlink()
+          PY
+      - name: Publish immutable early-access release
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          from urllib.parse import quote
+          def gh(*arguments):
+              return subprocess.check_output(['gh', *arguments], text=True)
+          tag = os.environ['RELEASE_TAG']
+          reference = 'refs/tags/' + tag
+          existing = subprocess.run(['git', 'show-ref', '--verify', '--quiet', reference])
+          if existing.returncode == 0:
+              revision = subprocess.check_output(['git', 'rev-parse', reference + '^{commit}'], text=True).strip()
+              assert revision == os.environ['GITHUB_SHA'], 'Release tag belongs to another commit.'
+          elif existing.returncode == 1:
+              subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
+              subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+              subprocess.run(['git', 'tag', '-a', tag, os.environ['GITHUB_SHA'], '-m', os.environ['RELEASE_TITLE']], check=True)
+              subprocess.run(['git', 'push', 'origin', reference], check=True)
+          else:
+              raise SystemExit('Cannot check the release tag.')
+          endpoint = f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases/tags/{quote(tag, safe="")}'
+          lookup = subprocess.run(['gh', 'api', endpoint], capture_output=True, text=True)
+          if lookup.returncode:
+              if 'HTTP 404' not in lookup.stderr:
+                  raise SystemExit(lookup.stderr)
+              gh('release', 'create', tag, '--verify-tag', '--draft', '--prerelease', '--title', os.environ['RELEASE_TITLE'], '--notes-file', os.environ['RELEASE_NOTES'])
+          release = json.loads(gh('api', endpoint))
+          assets = {asset['name']: asset for asset in release['assets']}
+          files = sorted(Path('artifacts/releases').iterdir())
+          assert not (set(assets) - {path.name for path in files}), 'Unexpected existing release assets.'
+          for path in files:
+              with path.open('rb') as stream:
+                  digest = 'sha256:' + hashlib.file_digest(stream, 'sha256').hexdigest()
+              if path.name in assets:
+                  assert assets[path.name].get('digest') == digest, 'Existing release bytes differ.'
+              else:
+                  assert release['draft'], 'A published release cannot gain new assets.'
+                  gh('release', 'upload', tag, str(path))
+          uploaded = json.loads(gh('api', endpoint))['assets']
+          assert len(uploaded) == 12
+          for asset in uploaded:
+              path = Path('artifacts/releases') / asset['name']
+              with path.open('rb') as stream:
+                  digest = 'sha256:' + hashlib.file_digest(stream, 'sha256').hexdigest()
+              assert asset.get('digest') == digest, 'Uploaded asset checksum differs.'
+          gh('release', 'edit', tag, '--draft=false', '--prerelease', '--latest=false')
+          print(gh('release', 'view', tag, '--json', 'url', '--jq', '.url'))
+          PY

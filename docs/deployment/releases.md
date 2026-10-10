@@ -2,7 +2,7 @@
 
 The MCC installers need a complete archive. A single executable does not contain the managed assemblies required by source plugins.
 
-This page describes local packaging. It does not grant permission to publish a GitHub release.
+This page describes local packaging and the early-access release workflow. Obtain the owner's authorization before publishing.
 
 You need the pinned [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), [Python](https://www.python.org/downloads/) 3.10 or later, and [Node.js with npm](https://nodejs.org/en/download).
 
@@ -52,6 +52,20 @@ The checksum file covers each archive in the output folder. The tool refuses to 
 | macOS | `osx-x64`, `osx-arm64` |
 
 Publish only targets that you can validate. Cross-building does not prove that a binary runs on its target system.
+
+## Publish an early-access build through CI
+
+The `build-and-release.yml` workflow on `feat/mcc-2.0` builds all 11 targets in the table. It runs the CLI tests and extracted-archive startup checks on seven native targets. Linux ARM32 and the musl targets receive cross-build checks. The workflow keeps complete publish directories, validates every archive checksum and publishes a prerelease only after all build and documentation jobs pass.
+
+Add release notes at `docs/deployment/early-access-<number>.md`. Update the expected CLI test count in the workflow when tests are intentionally added or removed. After publication is authorized, dispatch the registered workflow with the branch and build number:
+
+```sh
+gh workflow run build-and-release.yml --ref feat/mcc-2.0 -f build_number=12
+```
+
+Build 12 uses tag `v2.0.0-early-access.12` and title `MCC 2.0 Early Access Build 12`. The executable records the build number and source commit in its version metadata. The default installers select stable releases, so specify the preview tag when installing this build.
+
+The publisher creates an annotated tag for the validated commit, stages a draft release, verifies the uploaded asset digests and then makes the prerelease public. It does not replace existing assets or move an existing tag. If publication fails, rerun the failed publication job to reuse its original build artifacts. Changed source or release bytes require a new build number.
 
 ## Check before publication
 
