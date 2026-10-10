@@ -66,7 +66,7 @@ Create a small packaging tool. Run these commands from the repository root:
 
 ```sh
 dotnet new console --framework net10.0 --output tools/PackRelease
-dotnet add tools/PackRelease package DMCBK.Marketplace --version 0.1.0-preview.3
+dotnet add tools/PackRelease package DMCBK.Marketplace --version 0.1.0-preview.5
 ```
 
 Replace `tools/PackRelease/Program.cs` with:

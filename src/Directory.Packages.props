@@ -3,33 +3,33 @@
   Library dependencies are restored through NuGet; sibling source checkouts are not required. -->
   <ItemGroup>
     <!-- Pin the complete UMPK runtime graph, including dependencies supplied by DMCBK. -->
-    <PackageVersion Include="Umpk.Auth" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Client" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Commands" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Core" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Data.Java" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Data.Lang" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Game" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Nbt" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Pathfinding" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Physics" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Protocol.Java" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Realms" Version="0.9.0-beta.4" />
-    <PackageVersion Include="Umpk.Text" Version="0.9.0-beta.4" />
+    <PackageVersion Include="Umpk.Auth" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Client" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Commands" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Core" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Data.Java" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Data.Lang" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Game" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Nbt" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Pathfinding" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Physics" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Protocol.Java" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Realms" Version="0.9.0-beta.6" />
+    <PackageVersion Include="Umpk.Text" Version="0.9.0-beta.6" />
   </ItemGroup>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="DMCBK.Core" Version="0.1.0-preview.3" />
-    <PackageVersion Include="DMCBK.Commands" Version="0.1.0-preview.3" />
-    <PackageVersion Include="DMCBK.Configuration" Version="0.1.0-preview.3" />
-    <PackageVersion Include="DMCBK.Beacon" Version="0.1.0-preview.3" />
-    <PackageVersion Include="DMCBK.PluginSdk" Version="0.1.0-preview.3" />
-    <PackageVersion Include="DMCBK.Plugins" Version="0.1.0-preview.3" />
-    <PackageVersion Include="DMCBK.Marketplace" Version="0.1.0-preview.3" />
-    <PackageVersion Include="DMCBK.Testing" Version="0.1.0-preview.3" />
+    <PackageVersion Include="DMCBK.Core" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.Commands" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.Configuration" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.Beacon" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.PluginSdk" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.Plugins" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.Marketplace" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DMCBK.Testing" Version="0.1.0-preview.5" />
     <!-- Microsoft.Extensions.*, floated UP to 10.0.11 from UMPK's 10.0.9. BoxOfYellow.ConsoleMarkdownRenderer.Spectre pulls Microsoft.Extensions.Http 10.0.11, which requires Logging.Abstractions >= 10.0.11; leaving these at 10.0.9 is a package DOWNGRADE (NU1605) and this tree builds warnings-as-errors.
     Raising MCC's floor rather than UMPK's is deliberate: an app-level upgrade over a project reference is silent and safe, while a downgrade is not, so UMPK stays pinned where it is and nothing cross-repo has to move in lockstep. -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />

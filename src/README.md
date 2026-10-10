@@ -220,7 +220,7 @@ When adding event subscriptions, UI controllers, timers, or background tasks, gi
 
 [Directory.Build.props](Directory.Build.props) selects .NET 10, nullable references, deterministic builds, warnings as errors, and the MCC application version. It imports the root build settings so `MCC_BUILD_ROOT` can route intermediate and output files outside the checkout.
 
-[Directory.Packages.props](Directory.Packages.props) pins the package graph for both projects. DMCBK is currently `0.1.0-preview.3`; UMPK is `0.9.0-beta.4`. Update package versions there instead of putting versions into individual project references.
+[Directory.Packages.props](Directory.Packages.props) pins the package graph for both projects. DMCBK is currently `0.1.0-preview.5`; UMPK is `0.9.0-beta.6`. Update package versions there instead of putting versions into individual project references.
 
 The CLI also references `Microsoft.AspNetCore.App`, Consolonia, and the terminal/Markdown packages. These are application dependencies. Keep them out of the reusable DMCBK library boundary. Publish with accessible managed assemblies because source plugin compilation needs reference assets; the current helper sets `PublishSingleFile=false`.
 
