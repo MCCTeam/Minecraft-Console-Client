@@ -1,0 +1,7 @@
+# beacon 1
+in 5 seconds do
+  show "One-shot timer"
+end in
+every 60 seconds
+  show "Recurring timer"
+end every

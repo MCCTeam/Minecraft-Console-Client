@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Mcc.Cli</RootNamespace>
+    <AssemblyName>Mcc.Cli</AssemblyName>
+    <!-- The classic console host; System.Console usage is allowed here (and only here). -->
+    <!-- Consolonia transitively pulls in Avalonia build tasks.
+    The TUI uses no XAML resources, so disable the transitive Avalonia compilation to avoid the file-lock race the legacy csproj notes. -->
+    <EnableAvaloniaCompilationByDefault>false</EnableAvaloniaCompilationByDefault>
+    <!-- The targeting pack's prune data is not installed with this SDK layout; pruning only trims self-contained output size and is irrelevant to resolving the shared framework at build. -->
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DMCBK.Core" />
+<PackageReference Include="DMCBK.Commands" />
+<PackageReference Include="DMCBK.Configuration" />
+<PackageReference Include="DMCBK.Beacon" />
+<PackageReference Include="DMCBK.PluginSdk" />
+<PackageReference Include="DMCBK.Plugins" />
+<PackageReference Include="DMCBK.Marketplace" />
+    <!-- The classic host's rich line editor / suggestion UI.
+    Only Mcc.Cli may reference ConsoleInteractive; Mcc.Core and Mcc.PluginSdk must stay console-free (enforced by DependencyGuardTests). -->
+    <ProjectReference Include="../../ConsoleInteractive/ConsoleInteractive/ConsoleInteractive/ConsoleInteractive.csproj" />
+    <!-- Shared-framework reference so in-process plugins can host ASP.NET Core endpoints (the McpServer plugin's Streamable-HTTP listener) from their collectible load contexts: the framework assemblies live in the default context and the plugin load context falls back to them, instead of each plugin shipping its own Kestrel.
+    Mcc.Core, Mcc.PluginSdk and Mcc.HostSample stay web-free (DependencyGuardTests walks those closures, not this host's). -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Mcc.Cli.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Samboy063.Tomlet" />
+    <!-- TUI backend.
+    Only Mcc.Cli references Consolonia/Avalonia; the core stays UI-free. -->
+    <PackageReference Include="Consolonia" />
+    <!-- Native terminal windows used by floating tools such as the movable minimap. -->
+    <PackageReference Include="Consolonia.ManagedWindows" />
+    <!-- /man rendering.
+    Classic host: markdown -> Spectre renderable -> ANSI string -> HostConsole.
+    TUI: the same markdown parsed by Markdig into Consolonia controls.
+    Mcc.Core owns the page SOURCE and never renders, which is what keeps it console-free. -->
+    <PackageReference Include="BoxOfYellow.ConsoleMarkdownRenderer.Spectre" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+
+  <!-- Minimap data owned by the TUI host (block-color + entity-category tables), ported from the legacy tree as embedded resources.
+  The core exposes world/entity data only; color/classification stay host-side. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Tui/Minimap/MinimapBlockColors.json">
+      <LogicalName>Mcc.Cli.Tui.Minimap.MinimapBlockColors.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tui/Minimap/MinimapEntityCategories.json">
+      <LogicalName>Mcc.Cli.Tui.Minimap.MinimapEntityCategories.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="../../LICENSE.md" Link="LICENSE.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

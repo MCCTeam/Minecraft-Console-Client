@@ -1,0 +1,16 @@
+# beacon 1
+# needs: chat.send world.read world.search
+on chat when message is "!chests"
+  try
+    set found to world.find_blocks("chest", 32, 5)
+    if found is empty
+      say "No tracked chests within 32 blocks."
+    else
+      for each c in found
+        say "Chest at {c.x} {c.y} {c.z}."
+      end for
+    end if
+  catch err
+    show "Chest search failed: {err.message}"
+  end try
+end on

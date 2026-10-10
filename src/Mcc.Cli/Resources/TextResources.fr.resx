@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <data name="cli.text.literal_57aae658b1a7" xml:space="preserve">
+    <value>Pour vous connecter, ouvrez {0} dans un navigateur et saisissez le code : {1}</value>
+  </data>
+  <data name="cli.text.literal_30a6a4781908" xml:space="preserve">
+    <value>Mot de passe : </value>
+  </data>
+</root>

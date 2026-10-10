@@ -1,0 +1,61 @@
+name: Translations
+on:
+  workflow_dispatch:
+    inputs:
+      upload_sources:
+        description: Upload the current MCC 2.0 sources to Crowdin
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  translations:
+    runs-on: ubuntu-latest
+    env:
+      CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+      CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: git submodule update --init ConsoleInteractive
+      - name: Require Crowdin credentials
+        shell: bash
+        run: test -n "$CROWDIN_PROJECT_ID" && test -n "$CROWDIN_PERSONAL_TOKEN"
+      - name: Download reviewed translations
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: ${{ inputs.upload_sources }}
+          upload_translations: false
+          download_translations: true
+          export_only_approved: true
+          skip_untranslated_files: true
+          push_translations: false
+          push_sources: false
+          create_pull_request: false
+          skip_ref_checkout: true
+          config: crowdin.yml
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.401
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Compile and test translated resources
+        shell: bash
+        run: source tools/mcc-env.sh && mcc-test
+      - run: python tools/localization/generate_strings.py --check
+      - run: npm --prefix docs ci
+      - run: npm --prefix docs run docs:build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcc-reviewed-translations
+          path: |
+            src/Mcc.Cli/**/*.*.resx
+            src/Mcc.Cli/bin/Release/net10.0/**/Mcc.Cli.resources.dll
+            docs/l10n
+            docs/.vuepress/ui
+            docs/.vuepress/dist

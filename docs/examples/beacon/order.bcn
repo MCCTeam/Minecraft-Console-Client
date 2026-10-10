@@ -1,0 +1,3 @@
+# beacon 1
+import "lib/math.bcn" as math
+show math.subtotal(3, 4)

@@ -1,0 +1,7 @@
+# beacon 1
+in 5 seconds do
+  show "One reminder"
+end in
+every 10 seconds
+  show "Status check"
+end every

@@ -1,0 +1,50 @@
+name: MCC CLI validation
+on:
+  push:
+    branches: [master, main, feat/mcc-2.0]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Initialize console dependency
+        run: git submodule update --init ConsoleInteractive
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.401
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Build
+        if: runner.os != 'Windows'
+        run: dotnet build Mcc.slnx -c Release -p:ShouldUnsetParentConfigurationAndPlatform=false
+      - name: Unit tests
+        if: runner.os != 'Windows'
+        run: dotnet test src/Mcc.Cli.Tests/Mcc.Cli.Tests.csproj -c Release --no-build --logger "trx;LogFileName=mcc.trx" --results-directory artifacts/test-results
+      - name: Build with Windows helper
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\tools\windows\build.ps1
+      - name: Test with Windows helper
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\tools\windows\test.ps1 -NoBuild -DotnetArguments @('--logger', 'trx;LogFileName=mcc.trx', '--results-directory', 'artifacts/test-results')
+      - name: Smoke test Windows run helper
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\tools\windows\run.ps1 -ClientArguments @('--help-short')
+      - name: Check localization
+        run: python tools/localization/generate_strings.py --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mcc-test-results-${{ matrix.os }}
+          path: artifacts/test-results

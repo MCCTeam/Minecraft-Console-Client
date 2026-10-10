@@ -1,0 +1,5 @@
+# beacon 1
+set count to saved("count") or 0
+set count to count + 1
+save "count" to count
+show "Run count: {count}"

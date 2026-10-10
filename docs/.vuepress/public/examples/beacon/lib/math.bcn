@@ -1,0 +1,4 @@
+# beacon 1
+function subtotal(price, count)
+  return price * count
+end function

@@ -1,0 +1,26 @@
+<Project>
+
+  <!-- Import the repo-root props FIRST so the worktree-local build routing (MCC_BUILD_ROOT) and DefaultItemExcludes still apply to the src/ tree, then layer the new-client settings on top. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
+
+  <!--
+    MCC 2.0 is semver. This one property stamps AssemblyVersion and FileVersion and,
+    with the SDK's automatic SourceRevisionId suffix, AssemblyInformationalVersion as "2.0.0+<sha>".
+    Mcc.Core's MccVersion reads that attribute back, and a plugin's plugin.toml "mcc" range is compared
+    against it. The 1.x date-and-build tag becomes build metadata, never part of a comparison.
+  -->
+  <PropertyGroup>
+    <Version>2.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+
+</Project>

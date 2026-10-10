@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/ConsoleInteractive/">
+    <Project Path="ConsoleInteractive/ConsoleInteractive/ConsoleInteractive/ConsoleInteractive.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Mcc.Cli/Mcc.Cli.csproj" />
+    <Project Path="src/Mcc.Cli.Tests/Mcc.Cli.Tests.csproj" />
+  </Folder>
+</Solution>

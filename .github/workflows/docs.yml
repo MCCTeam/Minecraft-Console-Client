@@ -1,0 +1,31 @@
+name: Documentation
+on:
+  push:
+    branches: [master, main, feat/mcc-2.0]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: python tools/test_installers.py
+      - run: python tools/check_docs.py
+      - run: npm --prefix docs ci
+      - run: npm --prefix docs run docs:build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcc-documentation
+          path: docs/.vuepress/dist

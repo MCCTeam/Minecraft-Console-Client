@@ -1,0 +1,14 @@
+# beacon 1
+set customer to "Alice"
+set prices to [3, 5, 7]
+set total to 0
+for each price in prices
+  set total to total + price
+end for
+if total >= 10 then
+  show "{customer}: large order"
+else
+  show "{customer}: small order"
+end if
+assert(total is 15, "order total")
+show "Total: {total}"

@@ -1,0 +1,13 @@
+# beacon 1
+# needs: inventory.read
+on chat when message is "!inventory"
+  try
+    show "Carrying {inv.count("torch")} torches."
+    for each s in inv.list()
+      show "#{s.slot} {s.count}x {s.name} ({s.type})"
+    end for
+    show "Wearing: {inv.armor()}"
+  catch err
+    show "Inventory report failed: {err.message}"
+  end try
+end on

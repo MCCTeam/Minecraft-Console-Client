@@ -1,0 +1,23 @@
+# beacon 1
+# needs: chat.send
+
+set quiz to {running: no, q: "", a: "", wins: {}}
+
+on chat when message is "!quiz"
+  if quiz.running is yes
+    whisper player "A round is already running: {quiz.q}"
+    stop event
+  end if
+  set quiz.running to yes
+  set quiz.q to "What mob explodes when it gets close?"
+  set quiz.a to "creeper"
+  say "Quiz! {quiz.q} First correct whisper wins."
+end on
+
+on whisper when quiz.running is yes and lower(trim(message)) is quiz.a
+  set quiz.running to no
+  set wins to quiz.wins
+  set wins[player] to (wins[player] or 0) + 1
+  set quiz.wins to wins
+  say "{player} got it! Wins total: {wins[player]}. Say !quiz for another round."
+end on

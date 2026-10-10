@@ -1,246 +1,270 @@
-name: Build MCC and Documents
+name: MCC 2.0 early-access release
+run-name: MCC 2.0 Early Access Build ${{ inputs.build_number }}
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
-  
-env:
-  PROJECT: "MinecraftClient"
-  target-version: "net10.0"
-  dotnet-version: "10.0.x"
-  compile-flags: "--self-contained=true -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=Embedded -p:PublishSingleFile=true"
+    inputs:
+      build_number:
+        description: Early-access build number
+        required: true
+        default: '12'
+        type: string
+
+permissions:
+  contents: read
+concurrency:
+  group: mcc-early-access-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  determine-build:
-    runs-on: ubuntu-slim
+  plan:
+    runs-on: ubuntu-24.04
     outputs:
-      skip: ${{ steps.check-skip.outputs.skip }}
+      tag: ${{ steps.plan.outputs.tag }}
+      title: ${{ steps.plan.outputs.title }}
+      stamp: ${{ steps.plan.outputs.stamp }}
+      notes: ${{ steps.plan.outputs.notes }}
     steps:
-    - name: Check skip CI
-      id: check-skip
-      run: |
-        LOWER=$(echo "$COMMIT_MSG" | tr '[:upper:]' '[:lower:]')
-        if echo "$LOWER" | grep -qE 'skip.?ci|ci.?skip'; then
-          echo "skip=true" >> $GITHUB_OUTPUT
-        else
-          echo "skip=false" >> $GITHUB_OUTPUT
-        fi
-      env:
-        COMMIT_MSG: ${{ github.event.head_commit.message }}
-
-  fetch-translations:
-    strategy:
-      fail-fast: true
-    runs-on: ubuntu-latest
-    needs: determine-build
-
-    if: ${{ needs.determine-build.outputs.skip != 'true' }}
-
-    timeout-minutes: 15
-
-    steps:
-    - name: Check cache
-      uses: actions/cache/restore@v3
-      id: cache-check
-      with:
-        path: ${{ github.workspace }}/*
-        key: "translation-${{ github.sha }}"
-        lookup-only: true
-        restore-keys: "translation-"
-
-    - name: Checkout
-      if: steps.cache-check.outputs.cache-hit != 'true'
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: 'true'
-
-    - name: Check Crowdin secrets
-      id: crowdin-check
-      run: |
-        if [ -z "$CROWDIN_PROJECT_ID" ] || [ -z "$CROWDIN_PERSONAL_TOKEN" ]; then
-          echo "available=false" >> $GITHUB_OUTPUT
-        else
-          echo "available=true" >> $GITHUB_OUTPUT
-        fi
-      env:
-        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
-        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
-
-    - name: Download translations from crowdin
-      uses: crowdin/github-action@v2.4.0
-      if: steps.cache-check.outputs.cache-hit != 'true' && steps.crowdin-check.outputs.available == 'true'
-      with:
-        upload_sources: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
-        upload_translations: false
-        download_translations: true
-
-        localization_branch_name: l10n_master
-        create_pull_request: false 
-        push_translations: false
-
-        base_path: ${{ github.workspace }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
-        CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
-      
-    - name: Save cache
-      uses: actions/cache/save@v3
-      if: steps.cache-check.outputs.cache-hit != 'true'
-      with:
-        path:  ${{ github.workspace }}/*
-        key: "translation-${{ github.sha }}"
-
-  create-tag:
-    runs-on: ubuntu-slim
-    timeout-minutes: 5 # Wait 5 minutes in case of network issues/etc
-    needs: determine-build
-    if: ${{ needs.determine-build.outputs.skip != 'true' }}
-    steps:
-      - id: make-tag
-        run: |
-          TAG="$(date -u +'%Y%m%d')-${{ github.run_number }}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "TAG=$TAG" >> $GITHUB_ENV
-      
-      - name: Create Release Tag
-        uses: actions/github-script@v7
+      - uses: actions/checkout@v5
         with:
-          script: |
-            const tag = process.env.TAG;
-            try {
-                await github.rest.git.createRef({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: `refs/tags/${tag}`,
-                  sha: context.sha
-                });
-              } catch(error) {
-                if (error.message.includes('already exists')) {
-                  console.log(`Tag ${tag} already exists`);
-                } else {
-                  throw error;
-                }
-              }
-    outputs:
-      build-tag: ${{ steps.make-tag.outputs.tag }}
+          persist-credentials: false
+      - id: plan
+        env:
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          if os.environ['GITHUB_REF'] != 'refs/heads/feat/mcc-2.0':
+              raise SystemExit('Run this workflow on feat/mcc-2.0.')
+          number = os.environ['BUILD_NUMBER']
+          if not re.fullmatch(r'[1-9][0-9]{0,4}', number):
+              raise SystemExit('Use a positive build number with at most five digits.')
+          notes = f'docs/deployment/early-access-{number}.md'
+          if not Path(notes).is_file():
+              raise SystemExit(f'Missing release notes: {notes}')
+          values = {
+              'tag': f'v2.0.0-early-access.{number}',
+              'title': f'MCC 2.0 Early Access Build {number}',
+              'stamp': f'2.0.0+early-access.{number}.{os.environ["GITHUB_SHA"]}',
+              'notes': notes,
+          }
+          with Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
+              for key, value in values.items():
+                  output.write(f'{key}={value}\n')
+          PY
+
+  documentation:
+    needs: plan
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - run: python tools/test_installers.py
+      - run: python tools/check_docs.py
+      - run: python tools/localization/generate_strings.py --check
+      - run: npm --prefix docs ci
+      - run: npm --prefix docs run docs:build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
 
   build:
-    runs-on: ubuntu-latest
-    # Check if we're not skipping build, tag is created, and translations successfully fetched (or skipped)
-    if: ${{ needs.determine-build.outputs.skip != 'true' &&
-            needs.create-tag.result == 'success' &&
-            (needs.fetch-translations.result == 'success' || needs.fetch-translations.result == 'skipped')
-          }}
-    needs: [determine-build, fetch-translations, create-tag]
-    timeout-minutes: 15
+    needs: plan
+    timeout-minutes: 30
     strategy:
+      fail-fast: false
       matrix:
-        target: [win-x86, win-x64, win-arm64, linux-x64, linux-arm, linux-arm64, osx-x64, osx-arm64]
-
+        include:
+          - {rid: win-x86, os: windows-2025, execute: true}
+          - {rid: win-x64, os: windows-2025, execute: true}
+          - {rid: win-arm64, os: windows-11-arm, execute: true}
+          - {rid: osx-x64, os: macos-15-intel, execute: true}
+          - {rid: osx-arm64, os: macos-15, execute: true}
+          - {rid: linux-x64, os: ubuntu-24.04, execute: true}
+          - {rid: linux-arm64, os: ubuntu-24.04-arm, execute: true}
+          - {rid: linux-arm, os: ubuntu-24.04, execute: false}
+          - {rid: linux-musl-x64, os: ubuntu-24.04, execute: false}
+          - {rid: linux-musl-arm64, os: ubuntu-24.04, execute: false}
+          - {rid: linux-musl-arm, os: ubuntu-24.04, execute: false}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+      RELEASE_STAMP: ${{ needs.plan.outputs.stamp }}
+      RELEASE_RID: ${{ matrix.rid }}
+      DOTNET_NOLOGO: true
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: 'true'
-        
-    - name: Get Current Date
-      run: |
-        echo date_dashed=$(date -u +'%Y-%m-%d') >> $GITHUB_ENV
-        
-    - name: Restore Translations (if available)
-      uses: actions/cache/restore@v3
-      with:
-        path: ${{ github.workspace }}/*
-        key: "translation-${{ github.sha }}"
-        restore-keys: "translation-"
-          
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.dotnet-version }}
-        
-    - name: Setup Environment Variables
-      run: |
-        PROJECT_PATH=${{ github.workspace }}/${{ env.PROJECT }}
-        FILE_EXT=${{ (startsWith(matrix.target, 'win') && '.exe') || '' }}
-        TARGET_OUT_PATH=$PROJECT_PATH/bin/Release/${{ env.target-version }}/${{ matrix.target }}/publish/
-    
-        echo "project-path=$PROJECT_PATH" >> $GITHUB_ENV
-        echo "file-ext=$FILE_EXT" >> $GITHUB_ENV
-        echo "target-out-path=$TARGET_OUT_PATH" >> $GITHUB_ENV
-        echo "assembly-info=$PROJECT_PATH/Properties/AssemblyInfo.cs" >> $GITHUB_ENV
-        echo "build-version-info=${{ needs.create-tag.outputs.build-tag }}" >> $GITHUB_ENV
-        echo "commit=$(echo ${{ github.sha }} | cut -c 1-7)" >> $GITHUB_ENV
-        
-    - name: Setup Binaries Path
-      run: |
-        echo built-executable-path=${{ env.target-out-path }}${{ env.PROJECT }}${{ env.file-ext }} >> $GITHUB_ENV
-
-    - name: Set Version Info
-      run: |
-        echo '' >> ${{ env.assembly-info }}
-        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ env.date_dashed }} from commit ${{ env.commit }}\")]" >> ${{ env.assembly-info }}
-        
-    - name: Inject Sentry DSN (if applicable)
-      if: ${{ github.repository == 'MCCTeam/Minecraft-Console-Client' }}
-      run: |
-        grep -q 'SentryDSN = "";' ${{ env.project-path }}/Program.cs || { echo "SentryDSN pattern not found in Program.cs"; exit 1; }
-        sed -i -e 's|SentryDSN = "";|SentryDSN = "${{ secrets.SENTRY_DSN }}";|g' ${{ env.project-path }}/Program.cs
-
-    - name: Build Target
-      run: dotnet publish ${{ env.project-path }}/${{ env.PROJECT }}.csproj -f ${{ env.target-version }} -r ${{ matrix.target }} ${{ env.compile-flags }}
-      env:
-        DOTNET_NOLOGO: true
-
-    - name: Rename Binary
-      run: |
-        mv ${{ env.built-executable-path }} ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ env.file-ext }}
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}
-        path: ${{ env.PROJECT }}-${{ env.build-version-info }}-${{ matrix.target }}${{ env.file-ext }}
-        if-no-files-found: error
-
-  create-release:
-    runs-on: ubuntu-slim
-    needs: [create-tag, build]
-    if: ${{ needs.build.result == 'success' && needs.create-tag.result == 'success' }}
-    steps:
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v5
         with:
-          path: artifacts/
-          merge-multiple: true
-
-      - name: Truncate commit message for release name
-        id: release-name
+          persist-credentials: false
+      - run: git submodule update --init ConsoleInteractive
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.401
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Install x86 test runtimes
+        if: matrix.rid == 'win-x86'
+        shell: pwsh
         run: |
-           SUBJECT=$(echo "$COMMIT_MSG" | head -n 1)
-           MAX=220
-           TRUNCATED="${SUBJECT:0:$MAX}"
-           echo "name=${BUILD_TAG}: $TRUNCATED" >> $GITHUB_OUTPUT
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-          BUILD_TAG: ${{ needs.create-tag.outputs.build-tag }}
-          
-      - name: Create Release
-        uses: ncipollo/release-action@v1.14.0
+          Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $env:RUNNER_TEMP/dotnet-install.ps1
+          foreach ($runtime in @('dotnet', 'aspnetcore')) {
+            & $env:RUNNER_TEMP/dotnet-install.ps1 -Channel 10.0 -Runtime $runtime -Architecture x86 -InstallDir "$env:RUNNER_TEMP/dotnet-x86" -NoPath
+            if (-not $?) { throw "x86 runtime installation failed" }
+          }
+          "DOTNET_ROOT_X86=$env:RUNNER_TEMP/dotnet-x86" >> $env:GITHUB_ENV
+      - name: Build and test on native targets
+        if: matrix.execute
+        run: |
+          dotnet build Mcc.slnx -c Release -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false
+          if [[ "$RELEASE_RID" == win-x86 ]]; then
+            dotnet test src/Mcc.Cli.Tests/Mcc.Cli.Tests.csproj -c Release --arch x86 -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false --logger 'trx;LogFileName=mcc.trx' --results-directory artifacts/test-results
+          else
+            dotnet test src/Mcc.Cli.Tests/Mcc.Cli.Tests.csproj -c Release --no-build --logger 'trx;LogFileName=mcc.trx' --results-directory artifacts/test-results
+          fi
+      - name: Verify every CLI test executed
+        if: matrix.execute
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          root = ET.parse('artifacts/test-results/mcc.trx').getroot()
+          counts = next(item.attrib for item in root.iter() if item.tag.rsplit('}', 1)[-1] == 'Counters')
+          for key in ('total', 'executed', 'passed'):
+              assert int(counts[key]) == 918, counts
+          assert int(counts['failed']) == 0, counts
+          print('All 918 CLI tests passed without skips.')
+          PY
+      - name: Publish self-contained single-file executable
+        run: |
+          dotnet publish src/Mcc.Cli/Mcc.Cli.csproj -c Release -r "$RELEASE_RID" --self-contained true -p:UseAppHost=true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=false -p:DebugType=Embedded -p:ShouldUnsetParentConfigurationAndPlatform=false -p:InformationalVersion="$RELEASE_STAMP" -p:IncludeSourceRevisionInInformationalVersion=false -o artifacts/publish
+          cp LICENSE.md artifacts/publish/LICENSE.md
+      - name: Package archive and checksum
+        run: |
+          python3 tools/package-release.py artifacts/publish --tag "$RELEASE_TAG" --rid "$RELEASE_RID" --single-file --output artifacts/releases
+          mv artifacts/releases/SHA256SUMS "artifacts/releases/SHA256SUMS-$RELEASE_RID"
+      - name: Test the extracted distribution on its target
+        if: matrix.execute
+        run: |
+          python3 - <<'PY'
+          import os, subprocess
+          from pathlib import Path
+          archive = next(path for path in Path('artifacts/releases').iterdir() if path.suffix in ('.zip', '.gz'))
+          subprocess.run(['python3', 'tools/smoke-release.py', str(archive), '--stamp', os.environ['RELEASE_STAMP']], check=True)
+          PY
+      - uses: actions/upload-artifact@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: "artifacts/**/*"
-          tag: ${{ needs.create-tag.outputs.build-tag }}
-          name: ${{ steps.release-name.outputs.name }}
-          generateReleaseNotes: true
-          artifactErrorsFailBuild: true
-          allowUpdates: true
-          makeLatest: true
-          omitBodyDuringUpdate: true
-          omitNameDuringUpdate: true
-          replacesArtifacts: true
+          name: mcc-release-${{ matrix.rid }}
+          path: artifacts/releases/*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v6
+        if: always() && matrix.execute
+        with:
+          name: mcc-tests-${{ matrix.rid }}
+          path: artifacts/test-results
+
+  publish:
+    needs: [plan, documentation, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+      RELEASE_TITLE: ${{ needs.plan.outputs.title }}
+      RELEASE_NOTES: ${{ needs.plan.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: mcc-release-*
+          path: artifacts/releases
+          merge-multiple: true
+      - name: Verify the complete archive set
+        run: |
+          python3 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          directory = Path('artifacts/releases')
+          targets = ['win-x86', 'win-x64', 'win-arm64', 'osx-x64', 'osx-arm64', 'linux-x64', 'linux-arm64', 'linux-arm', 'linux-musl-x64', 'linux-musl-arm64', 'linux-musl-arm']
+          checksums = []
+          expected = set()
+          for target in targets:
+              extension = '.zip' if target.startswith('win-') else '.tar.gz'
+              name = f'Mcc-{os.environ["RELEASE_TAG"]}-{target}{extension}'
+              archive = directory / name
+              with archive.open('rb') as stream:
+                  digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+              line = f'{digest}  {name}\n'
+              sidecar = directory / f'SHA256SUMS-{target}'
+              assert sidecar.read_text() == line, target
+              checksums.append(line)
+              expected.update((name, sidecar.name))
+          assert {path.name for path in directory.iterdir()} == expected
+          (directory / 'SHA256SUMS').write_text(''.join(sorted(checksums)))
+          for sidecar in directory.glob('SHA256SUMS-*'):
+              sidecar.unlink()
+          PY
+      - name: Publish immutable early-access release
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          def gh(*arguments):
+              return subprocess.check_output(['gh', *arguments], text=True)
+          tag = os.environ['RELEASE_TAG']
+          reference = 'refs/tags/' + tag
+          existing = subprocess.run(['git', 'show-ref', '--verify', '--quiet', reference])
+          if existing.returncode == 0:
+              revision = subprocess.check_output(['git', 'rev-parse', reference + '^{commit}'], text=True).strip()
+              assert revision == os.environ['GITHUB_SHA'], 'Release tag belongs to another commit.'
+          elif existing.returncode == 1:
+              subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
+              subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+              subprocess.run(['git', 'tag', '-a', tag, os.environ['GITHUB_SHA'], '-m', os.environ['RELEASE_TITLE']], check=True)
+              subprocess.run(['git', 'push', 'origin', reference], check=True)
+          else:
+              raise SystemExit('Cannot check the release tag.')
+          lookup = subprocess.run(['gh', 'release', 'view', tag, '--json', 'apiUrl'], capture_output=True, text=True)
+          if lookup.returncode:
+              if 'release not found' not in lookup.stderr.lower():
+                  raise SystemExit(lookup.stderr)
+              gh('release', 'create', tag, '--verify-tag', '--draft', '--prerelease', '--title', os.environ['RELEASE_TITLE'], '--notes-file', os.environ['RELEASE_NOTES'])
+          # The tag REST endpoint excludes drafts. Resolve their stable numeric API URL through gh.
+          endpoint = json.loads(gh('release', 'view', tag, '--json', 'apiUrl'))['apiUrl']
+          release = json.loads(gh('api', endpoint))
+          assets = {asset['name']: asset for asset in release['assets']}
+          files = sorted(Path('artifacts/releases').iterdir())
+          assert not (set(assets) - {path.name for path in files}), 'Unexpected existing release assets.'
+          for path in files:
+              with path.open('rb') as stream:
+                  digest = 'sha256:' + hashlib.file_digest(stream, 'sha256').hexdigest()
+              if path.name in assets:
+                  assert assets[path.name].get('digest') == digest, 'Existing release bytes differ.'
+              else:
+                  assert release['draft'], 'A published release cannot gain new assets.'
+                  gh('release', 'upload', tag, str(path))
+          uploaded = json.loads(gh('api', endpoint))['assets']
+          assert len(uploaded) == 12
+          for asset in uploaded:
+              path = Path('artifacts/releases') / asset['name']
+              with path.open('rb') as stream:
+                  digest = 'sha256:' + hashlib.file_digest(stream, 'sha256').hexdigest()
+              assert asset.get('digest') == digest, 'Uploaded asset checksum differs.'
+          gh('release', 'edit', tag, '--draft=false', '--prerelease', '--latest=false')
+          print(gh('release', 'view', tag, '--json', 'url', '--jq', '.url'))
+          PY

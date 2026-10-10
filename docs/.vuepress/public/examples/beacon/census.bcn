@@ -1,0 +1,18 @@
+# beacon 1
+# needs: chat.send entity.read
+
+function census()
+  set cows to entities.count("cow", 48)
+  set sheep to entities.count("sheep", 48)
+  set pigs to entities.count("pig", 48)
+
+  return "Pasture census: {cows} cows, {sheep} sheep, {pigs} pigs."
+end function
+
+every 300 seconds
+  say census()
+end every
+
+on chat when message is "!census"
+  say census()
+end on

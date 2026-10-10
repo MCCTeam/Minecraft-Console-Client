@@ -2,3 +2,6 @@
 	path = ConsoleInteractive
 	url = https://github.com/breadbyte/ConsoleInteractive
 	branch = main
+[submodule "MCC-Skills"]
+	path = MCC-Skills
+	url = https://github.com/MCCTeam/MCC-Skills.git

@@ -1,0 +1,2588 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <data name="cli.text.literal_011d5f42c7d0" xml:space="preserve">
+    <value>' to connect to {address}, or '</value>
+  </data>
+  <data name="cli.text.literal_014fef6a36cc" xml:space="preserve">
+    <value>{key} ({kind})</value>
+  </data>
+  <data name="cli.text.literal_01c1f0250884" xml:space="preserve">
+    <value>Remove {name}?</value>
+  </data>
+  <data name="cli.text.literal_021dc3258a3a" xml:space="preserve">
+    <value>Save changes before leaving the editor?</value>
+    <comment>MCC host text used by Strings.ScriptsUiDirtyClose. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_030829f1c604" xml:space="preserve">
+    <value>Insert command</value>
+    <comment>MCC host text used by Strings.BrowserInsertCommand. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_036ee33ecacd" xml:space="preserve">
+    <value>Open the movable terrain and entity map.</value>
+    <comment>MCC host text used by Strings.MccMenuMinimapDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0406c066cb31" xml:space="preserve">
+    <value>Could not open the log file: {message}</value>
+  </data>
+  <data name="cli.text.literal_04ad10be4d22" xml:space="preserve">
+    <value>never refreshed</value>
+    <comment>MCC host text used by Strings.PmNeverRefreshed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_04cf542f6b9f" xml:space="preserve">
+    <value>Open manual</value>
+    <comment>MCC host text used by Strings.BrowserOpenManual. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_06c28640fd5b" xml:space="preserve">
+    <value>Tab move · Enter install · Esc back</value>
+    <comment>MCC host text used by Strings.PmSearchResultsHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_070057ec8a67" xml:space="preserve">
+    <value>COMMAND &amp; MANUAL BROWSER</value>
+    <comment>MCC host text used by Strings.BrowserTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0720696bf189" xml:space="preserve">
+    <value>Hierarchy, criteria progress, and generated recipe unlocks</value>
+    <comment>MCC host text used by Strings.AdvancementUiSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_080f6943b359" xml:space="preserve">
+    <value>Commands &amp; manual</value>
+    <comment>MCC host text used by Strings.MccMenuCommands. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_087fbe073393" xml:space="preserve">
+    <value>Server:</value>
+    <comment>MCC host text used by Strings.ServerInfoLabelServer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_08a502f18362" xml:space="preserve">
+    <value>Carried item</value>
+    <comment>MCC host text used by Strings.EntityUiCarried. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_095d4dec8887" xml:space="preserve">
+    <value>Dialog button ran '{command}'.</value>
+  </data>
+  <data name="cli.text.literal_09934820ac06" xml:space="preserve">
+    <value> Settings and saved state are kept.</value>
+    <comment>MCC host text used by Strings.ScriptsUiDeleteWarning. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_09f97eb435a3" xml:space="preserve">
+    <value>This script declares no settings.</value>
+    <comment>MCC host text used by Strings.ScriptsUiNoSettings. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0a2d2b31a5e0" xml:space="preserve">
+    <value>Manage catalogue sources and browse available plugins.</value>
+    <comment>MCC host text used by Strings.MccMenuMarketplacesDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0b52fe31b4fd" xml:space="preserve">
+    <value>This rewrites settings.toml from the defaults. Your values are lost.</value>
+    <comment>MCC host text used by Strings.PmResetBody. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0c82fd59c506" xml:space="preserve">
+    <value>Unexpected argument '{arg}'. MCC takes &lt;username&gt; &lt;password|-&gt; &lt;host[:port]&gt;; pass a configurations folder as --configurations &lt;folder&gt;.</value>
+  </data>
+  <data name="cli.text.literal_0d0b006d5285" xml:space="preserve">
+    <value>No advancements match this view.</value>
+    <comment>MCC host text used by Strings.AdvancementUiNoMatches. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0f8b8c44303c" xml:space="preserve">
+    <value>Remove marketplace?</value>
+    <comment>MCC host text used by Strings.PmRemoveMarketTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0fdf605ea721" xml:space="preserve">
+    <value>Esc close</value>
+    <comment>MCC host text used by Strings.TuiTabControls. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_10a549a45b2c" xml:space="preserve">
+    <value>Inspect and interact with the items you are carrying.</value>
+    <comment>MCC host text used by Strings.MccMenuInventoryDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_115676b586cc" xml:space="preserve">
+    <value>local (installed by hand, not managed by MCC)</value>
+    <comment>MCC host text used by Strings.PmInfoLocal. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1193005329ba" xml:space="preserve">
+    <value>No plugins discovered.</value>
+    <comment>MCC host text used by Strings.PmNoneDiscovered. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_11c94d5e264d" xml:space="preserve">
+    <value>({total} gap(s) this session).</value>
+  </data>
+  <data name="cli.text.literal_139c93a1894d" xml:space="preserve">
+    <value>yes: it does useful work with no server connected</value>
+    <comment>MCC host text used by Strings.PmInfoOfflineYes. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_147ef18f8f99" xml:space="preserve">
+    <value>[{index}] {label}</value>
+  </data>
+  <data name="cli.text.literal_14a9c2c3c63f" xml:space="preserve">
+    <value>Connection failed: {message}</value>
+  </data>
+  <data name="cli.text.literal_1610025343ae" xml:space="preserve">
+    <value>Player inventory</value>
+    <comment>MCC host text used by Strings.MccMenuInventory. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_166e7a880257" xml:space="preserve">
+    <value>Enter a name to save this server.</value>
+    <comment>MCC host text used by Strings.TuiConnectNeedsName. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_177786188ec1" xml:space="preserve">
+    <value>Explore scopes, completion, and individual criteria.</value>
+    <comment>MCC host text used by Strings.MccMenuAdvancementsDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_18f74b565455" xml:space="preserve">
+    <value>To sign in, open this link in your browser, then enter the code below:</value>
+    <comment>MCC host text used by Strings.TuiAuthDeviceBody. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1bc4db23e417" xml:space="preserve">
+    <value>Exit client</value>
+    <comment>MCC host text used by Strings.TuiConnectExitClient. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1bfcaef4640b" xml:space="preserve">
+    <value>Live loaded-chunk coverage around the player</value>
+    <comment>MCC host text used by Strings.ChunkUiSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1cb931d63aa2" xml:space="preserve">
+    <value>)}{(where.Length == 0 ? </value>
+  </data>
+  <data name="cli.text.literal_1d5e8f8b9206" xml:space="preserve">
+    <value>Nothing to report.</value>
+    <comment>MCC host text used by Strings.PmDoctorHealthy. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1da9bb50224f" xml:space="preserve">
+    <value> Lv {level} ({total} XP)</value>
+  </data>
+  <data name="cli.text.literal_1daf3993ad5f" xml:space="preserve">
+    <value>Page {page} has {length} characters, but this version supports at most {max} characters per page.</value>
+  </data>
+  <data name="cli.text.literal_1e9ff4643d45" xml:space="preserve">
+    <value>Press Ctrl+C again to quit.</value>
+    <comment>MCC host text used by Strings.TuiQuitHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1f4e1943ca5c" xml:space="preserve">
+    <value>Load plugin</value>
+    <comment>MCC host text used by Strings.PmLoadTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1f7471a28717" xml:space="preserve">
+    <value>Tab move · Enter install/uninstall · Esc back</value>
+    <comment>MCC host text used by Strings.PmAvailablePluginsHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_20a5e12b0cb6" xml:space="preserve">
+    <value>No configuration folder is known, so there is nowhere to save.</value>
+    <comment>MCC host text used by Strings.TuiConnectNoConfig. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_216bdce038dd" xml:space="preserve">
+    <value>Line {0}, column {1}</value>
+    <comment>MCC host text used by Strings.ScriptsUiLineColumn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_21e9f4a77b3e" xml:space="preserve">
+    <value>Line {line}, column {column}</value>
+  </data>
+  <data name="cli.text.literal_2314b6665840" xml:space="preserve">
+    <value>Unsaved changes. Press Esc again to discard.</value>
+    <comment>MCC host text used by Strings.TuiBookUnsavedConfirm. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2364766974ef" xml:space="preserve">
+    <value>Install plugin</value>
+    <comment>MCC host text used by Strings.PmInstallTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_239e4be77c97" xml:space="preserve">
+    <value>Saved; reload to apply.</value>
+    <comment>MCC host text used by Strings.ScriptsUiSavedReload. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_250b3576c200" xml:space="preserve">
+    <value>Reset {id} settings?</value>
+  </data>
+  <data name="cli.text.literal_257944b2214b" xml:space="preserve">
+    <value>{title} (window {windowId})</value>
+  </data>
+  <data name="cli.text.literal_268b3ddc3773" xml:space="preserve">
+    <value>Browse every plugin in the catalogues stored on disk.</value>
+    <comment>MCC host text used by Strings.PmAvailablePluginsSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_26fb66648f72" xml:space="preserve">
+    <value>Open a compatible crafting menu first.</value>
+    <comment>MCC host text used by Strings.RecipeUiNoMenu. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_276c1c4f657d" xml:space="preserve">
+    <value>Menu  Ctrl+M</value>
+    <comment>MCC host text used by Strings.TuiMainMenuButton. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_27821e54e753" xml:space="preserve">
+    <value>PLUGIN ECOSYSTEM</value>
+    <comment>MCC host text used by Strings.PmManagerKicker. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_278fa6fc9085" xml:space="preserve">
+    <value>Generated default configuration in {folder}. MCC asks which account to use on the first connect.</value>
+  </data>
+  <data name="cli.text.literal_28900be5201e" xml:space="preserve">
+    <value>Minecraft Console Client</value>
+    <comment>MCC host text used by Strings.TuiBannerTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_28e1e023b0cd" xml:space="preserve">
+    <value>{id}: valid, with {warnings} warning(s).</value>
+  </data>
+  <data name="cli.text.literal_2993468edad6" xml:space="preserve">
+    <value>Chunk data is unavailable.</value>
+    <comment>MCC host text used by Strings.ChunkUiNoData. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2abe6b361115" xml:space="preserve">
+    <value>Connecting as:</value>
+    <comment>MCC host text used by Strings.ServerInfoLabelConnectingAs. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2b91701b6f31" xml:space="preserve">
+    <value>Fetch, review and install an extension from a trusted source.</value>
+    <comment>MCC host text used by Strings.PmInstallSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2cb7f7a23b8e" xml:space="preserve">
+    <value>No tracked entities match this view.</value>
+    <comment>MCC host text used by Strings.EntityUiNoEntities. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2ccca9fea8d6" xml:space="preserve">
+    <value>Clear the console screen.</value>
+    <comment>MCC host text used by Strings.ClearConsoleDesc. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2d700107fb15" xml:space="preserve">
+    <value>That button carries no action, so the dialog only closed.</value>
+    <comment>MCC host text used by Strings.TuiDialogClosedOnly. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2f94d3cd3dc7" xml:space="preserve">
+    <value>Enter a folder or .cs path.</value>
+    <comment>MCC host text used by Strings.PmLoadNeedsPath. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2fe4c900846e" xml:space="preserve">
+    <value>{discovered} discovered · {enabled} enabled · {loaded} loaded</value>
+  </data>
+  <data name="cli.text.literal_30a6a4781908" xml:space="preserve">
+    <value>Yggdrasil password: </value>
+    <comment>MCC host text used by Strings.YggdrasilPasswordPrompt. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3175cc0386c2" xml:space="preserve">
+    <value>Ping:</value>
+    <comment>MCC host text used by Strings.ServerInfoLabelPing. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_31786be3db06" xml:space="preserve">
+    <value>Browse plugins</value>
+    <comment>MCC host text used by Strings.PmBrowsePlugins. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_31b71d84f2ca" xml:space="preserve">
+    <value>load error: {message}</value>
+  </data>
+  <data name="cli.text.literal_32a723fa23c1" xml:space="preserve">
+    <value>Plugin ID</value>
+    <comment>MCC host text used by Strings.PmFieldPluginId. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3385a58998c9" xml:space="preserve">
+    <value>Nothing matches '{text}'.</value>
+  </data>
+  <data name="cli.text.literal_343aead3417e" xml:space="preserve">
+    <value>Yggdrasil login</value>
+    <comment>MCC host text used by Strings.TuiLoginYggdrasilTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3466c1c0c085" xml:space="preserve">
+    <value>Save and connect</value>
+    <comment>MCC host text used by Strings.TuiConnectSaveConnect. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_34fb3e82d101" xml:space="preserve">
+    <value>The recipe placement was rejected before sending.</value>
+    <comment>MCC host text used by Strings.RecipeUiRejected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_35756388a438" xml:space="preserve">
+    <value>Book title must be 1-{max} characters.</value>
+  </data>
+  <data name="cli.text.literal_35feebc7dd4a" xml:space="preserve">
+    <value>No scoreboard objectives.</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowEmpty. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_368b710c794b" xml:space="preserve">
+    <value>Opening map #{mapId}...</value>
+  </data>
+  <data name="cli.text.literal_3add28dc8e36" xml:space="preserve">
+    <value>Could not save the server: {reason}.</value>
+  </data>
+  <data name="cli.text.literal_3afd98ae5281" xml:space="preserve">
+    <value>=== exercise {name}: start ===</value>
+  </data>
+  <data name="cli.text.literal_3beb074204a9" xml:space="preserve">
+    <value>Enter a server host.</value>
+    <comment>MCC host text used by Strings.TuiConnectNeedsHost. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3c0c7d587f15" xml:space="preserve">
+    <value>Sign-in failed:</value>
+    <comment>MCC host text used by Strings.TuiAuthFailedHeading. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3c128b5436b6" xml:space="preserve">
+    <value>Refresh all</value>
+    <comment>MCC host text used by Strings.PmRefreshAll. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3d18e0ac324b" xml:space="preserve">
+    <value>This server requires a resource pack to play:
+{url}
+Accept it? (yes/no): </value>
+  </data>
+  <data name="cli.text.literal_3e5e51281010" xml:space="preserve">
+    <value>Runtime state, provenance and capabilities</value>
+    <comment>MCC host text used by Strings.PmPluginDetailSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_400a8f708b09" xml:space="preserve">
+    <value>Recipe placement sent.</value>
+    <comment>MCC host text used by Strings.RecipeUiPlaced. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_40b2b1811390" xml:space="preserve">
+    <value>Craft one</value>
+    <comment>MCC host text used by Strings.RecipeUiCraftOne. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_414627b6a45d" xml:space="preserve">
+    <value>note </value>
+    <comment>MCC host text used by Strings.PmSeverityNote. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_41d780ed369b" xml:space="preserve">
+    <value>That button is a client-side action this client does not perform, so nothing was sent.</value>
+    <comment>MCC host text used by Strings.TuiDialogNotPerformed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_431a072dfae4" xml:space="preserve">
+    <value>Review available versions and control what may move.</value>
+    <comment>MCC host text used by Strings.PmUpdatesSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_43c6313dc39b" xml:space="preserve">
+    <value>Chat is now hidden.</value>
+    <comment>MCC host text used by Strings.ConsoleChatOff. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_43cdd65eaebb" xml:space="preserve">
+    <value>Initiating a transfer to: {host}:{port}</value>
+  </data>
+  <data name="cli.text.literal_43f8c35b983c" xml:space="preserve">
+    <value>Signed in as {profile}. Type '/connect &lt;host[:port]&gt;' to join a server.</value>
+  </data>
+  <data name="cli.text.literal_44ddb93f39ae" xml:space="preserve">
+    <value>Enter a plugin id.</value>
+    <comment>MCC host text used by Strings.PmNewNeedsId. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_478c6e2bc5a4" xml:space="preserve">
+    <value>Network id: {id}</value>
+  </data>
+  <data name="cli.text.literal_489e6c6bb556" xml:space="preserve">
+    <value>SCRIPT WORKBENCH</value>
+    <comment>MCC host text used by Strings.ScriptsUiTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_494f35043626" xml:space="preserve">
+    <value>A plugin folder (with plugin.toml) or a bare .cs entry file.</value>
+    <comment>MCC host text used by Strings.PmLoadHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_49a0053f3b0d" xml:space="preserve">
+    <value>Copy code</value>
+    <comment>MCC host text used by Strings.TuiPromptCopyCode. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4a2bb4fe4263" xml:space="preserve">
+    <value>Using configured account '{name}'.</value>
+  </data>
+  <data name="cli.text.literal_4a53f75d0c97" xml:space="preserve">
+    <value>Early test build.</value>
+    <comment>MCC host text used by Strings.TuiWelcomeEarlyBuild. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4a9a9c6b858d" xml:space="preserve">
+    <value>Plugins: {discovered} discovered, {loaded} loaded.</value>
+  </data>
+  <data name="cli.text.literal_4ab023787049" xml:space="preserve">
+    <value>Structured advancement data is unavailable for this protocol snapshot.</value>
+    <comment>MCC host text used by Strings.AdvancementUiUnavailable. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4ae128701098" xml:space="preserve">
+    <value>Checked {count} plugin(s); {bad} of them will not work as written.</value>
+  </data>
+  <data name="cli.text.literal_4bead9e5e32d" xml:space="preserve">
+    <value>No plugins are available. Add or refresh a marketplace first.</value>
+    <comment>MCC host text used by Strings.PmNoAvailablePlugins. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4c5726ee16ee" xml:space="preserve">
+    <value>Version:</value>
+    <comment>MCC host text used by Strings.ServerInfoLabelVersion. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4cae8073b25c" xml:space="preserve">
+    <value>Run, edit, lint, format, and configure Beacon scripts.</value>
+    <comment>MCC host text used by Strings.MccMenuScriptsDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4cd6787da191" xml:space="preserve">
+    <value>Disconnect cleanly and close MCC.</value>
+    <comment>MCC host text used by Strings.MccMenuExitDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4cf2acafe5cc" xml:space="preserve">
+    <value>New script</value>
+    <comment>MCC host text used by Strings.ScriptsUiNew. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4d7780d70025" xml:space="preserve">
+    <value>Manage installed plugins, settings, updates, and diagnostics.</value>
+    <comment>MCC host text used by Strings.MccMenuPluginsDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4e333c2c3090" xml:space="preserve">
+    <value>F5 refresh · Esc close</value>
+    <comment>MCC host text used by Strings.ChunkUiHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4e3a0301db7c" xml:space="preserve">
+    <value>Players ({count})</value>
+  </data>
+  <data name="cli.text.literal_4e3b4907cdcd" xml:space="preserve">
+    <value>/connect &lt;server&gt;</value>
+    <comment>MCC host text used by Strings.IdleAutoConnectOff. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4e69944ec126" xml:space="preserve">
+    <value> Caused by: </value>
+    <comment>MCC host text used by Strings.Describe. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4f226465d464" xml:space="preserve">
+    <value>MCC 2.0 is unfinished. Some features are missing; others may behave badly or change without notice. Expect bugs.</value>
+    <comment>MCC host text used by Strings.TuiWelcomeUnfinished. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4fb602e50744" xml:space="preserve">
+    <value>Quit MCC, with an optional exit code.</value>
+    <comment>MCC host text used by Strings.ExitDesc. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_51b5361ef685" xml:space="preserve">
+    <value>Like MCC? Star us on GitHub: https://github.com/MCCTeam/Minecraft-Console-Client</value>
+    <comment>MCC host text used by Strings.StarUs. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_51e16d7565e5" xml:space="preserve">
+    <value>=== exercise {name}: {passed} passed, {failed} failed, {skipped} skipped ===</value>
+  </data>
+  <data name="cli.text.literal_54b8e7314b9c" xml:space="preserve">
+    <value>Edit values in place; comments and unsupported TOML stay unchanged.</value>
+    <comment>MCC host text used by Strings.PmSettingsSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_54d0cc40c478" xml:space="preserve">
+    <value>No active server session.</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowDisconnected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_564aa182db5e" xml:space="preserve">
+    <value>Lower-case letters, digits and '-', starting with a letter. Written disabled.</value>
+    <comment>MCC host text used by Strings.PmNewHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_58ac63c063bd" xml:space="preserve">
+    <value>[MCC] </value>
+    <comment>MCC host text used by Strings.HostPrefix. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_59f600b959d8" xml:space="preserve">
+    <value>Not connected: no server is configured. Type '</value>
+    <comment>MCC host text used by Strings.IdleNoServer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5a60e60d1fd2" xml:space="preserve">
+    <value>Name (to save)</value>
+    <comment>MCC host text used by Strings.TuiFieldServerName. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5b29a829c23c" xml:space="preserve">
+    <value>Ctrl+Enter evaluate · Ctrl+↑/↓ history · Tab move · Esc back</value>
+    <comment>MCC host text used by Strings.ScriptsUiReplHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5b93bc89a7ed" xml:space="preserve">
+    <value>{id}: {errors} error(s). It will not load, or will print key names instead of text.</value>
+  </data>
+  <data name="cli.text.literal_5c820c59051e" xml:space="preserve">
+    <value>No marketplaces are added.</value>
+    <comment>MCC host text used by Strings.PmNoMarkets. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5e18fd6f1107" xml:space="preserve">
+    <value>{id} - settings.toml</value>
+  </data>
+  <data name="cli.text.literal_5e583f0b7f95" xml:space="preserve">
+    <value>This dialog has no buttons.</value>
+    <comment>MCC host text used by Strings.TuiDialogNoButtons. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5f013f9c5592" xml:space="preserve">
+    <value>Deleted script '{id}'.</value>
+  </data>
+  <data name="cli.text.literal_5f4e42b2a00b" xml:space="preserve">
+    <value>Protocol: {protocol}</value>
+  </data>
+  <data name="cli.text.literal_5fc9a5746d36" xml:space="preserve">
+    <value>  {id}: ok</value>
+  </data>
+  <data name="cli.text.literal_6029fe008077" xml:space="preserve">
+    <value>Search command syntax, examples, and complete manual pages.</value>
+    <comment>MCC host text used by Strings.MccMenuCommandsDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_60849ef36f59" xml:space="preserve">
+    <value>+ {count} more</value>
+  </data>
+  <data name="cli.text.literal_6241144ff83a" xml:space="preserve">
+    <value>The server referenced registered dialog #{registryId}; its body is not available in this build.</value>
+  </data>
+  <data name="cli.text.literal_62a2dc1bd597" xml:space="preserve">
+    <value>Open in browser</value>
+    <comment>MCC host text used by Strings.TuiPromptOpenBrowser. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6385098592f9" xml:space="preserve">
+    <value>TUI mode (Consolonia). Type a command or chat, Enter to send.</value>
+    <comment>MCC host text used by Strings.TuiBannerSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_64528d336a1d" xml:space="preserve">
+    <value>Could not reach the clipboard. Copy the code by hand.</value>
+    <comment>MCC host text used by Strings.TuiAuthCopyFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_656ad04310e1" xml:space="preserve">
+    <value>Marketplaces ({count})</value>
+  </data>
+  <data name="cli.text.literal_658a3cd75401" xml:space="preserve">
+    <value>Open a management workspace</value>
+    <comment>MCC host text used by Strings.MccMenuSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_659063b405ca" xml:space="preserve">
+    <value>Created {id}.</value>
+  </data>
+  <data name="cli.text.literal_65b78f608119" xml:space="preserve">
+    <value>Login aborted.</value>
+    <comment>MCC host text used by Strings.LoginAborted. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_668b11a3802c" xml:space="preserve">
+    <value>Enter a marketplace source.</value>
+    <comment>MCC host text used by Strings.PmAddMarketNeedsSource. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_66bce4bdb48e" xml:space="preserve">
+    <value>Reconnecting...</value>
+    <comment>MCC host text used by Strings.Reconnecting. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_66c0345ec0ab" xml:space="preserve">
+    <value>Sign-in will be requested when you connect to a server. Type '/connect &lt;host[:port]&gt;', or add one to servers.toml.</value>
+    <comment>MCC host text used by Strings.GuidedOnlineDeferred. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_66e13d2a1483" xml:space="preserve">
+    <value>PASS {check} {detail}</value>
+  </data>
+  <data name="cli.text.literal_676b33dbcd67" xml:space="preserve">
+    <value>Edit the inputs, then click a button to answer. Esc close</value>
+    <comment>MCC host text used by Strings.TuiDialogControls. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6a6939604d95" xml:space="preserve">
+    <value>Version (empty = hold current)</value>
+    <comment>MCC host text used by Strings.PmFieldPinVersion. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6ae6376a7b27" xml:space="preserve">
+    <value>Catalogue entries from {marketplace}.</value>
+  </data>
+  <data name="cli.text.literal_6af3e3548f1f" xml:space="preserve">
+    <value>RECIPE BOOK</value>
+    <comment>MCC host text used by Strings.RecipeUiTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6b5ab252a652" xml:space="preserve">
+    <value>{label} [{key}, {kind}]</value>
+  </data>
+  <data name="cli.text.literal_6b8ab90b76e5" xml:space="preserve">
+    <value>New server...</value>
+    <comment>MCC host text used by Strings.TuiConnectNewServer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6bca824282e4" xml:space="preserve">
+    <value>[chat] The server withheld a message from {sender}.</value>
+  </data>
+  <data name="cli.text.literal_6c42f30e9aa6" xml:space="preserve">
+    <value>Browse unlocked recipes and place them into an open crafting menu.</value>
+    <comment>MCC host text used by Strings.MccMenuRecipesDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6c575c6335d3" xml:space="preserve">
+    <value>Enter settings · E enable/disable · R reload · P pin/unpin · U uninstall · Esc back</value>
+    <comment>MCC host text used by Strings.PmDetailHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6d23aebea4dd" xml:space="preserve">
+    <value>This version supports at most {max} pages.</value>
+  </data>
+  <data name="cli.text.literal_6dfc960eea70" xml:space="preserve">
+    <value>Book saved.</value>
+    <comment>MCC host text used by Strings.TuiBookSaved. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6f3f5c181e0a" xml:space="preserve">
+    <value>enabled, loaded</value>
+    <comment>MCC host text used by Strings.PmStateEnabledLoaded. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6f7301c0cbf8" xml:space="preserve">
+    <value>📌 pinned (held)</value>
+    <comment>MCC host text used by Strings.PmPinnedTag. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6fb2a189d815" xml:space="preserve">
+    <value>Switch server</value>
+    <comment>MCC host text used by Strings.MccMenuServers. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_701c26c9d9f7" xml:space="preserve">
+    <value>', or add one to servers.toml.</value>
+    <comment>MCC host text used by Strings.IdleNoServer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_703cda97767d" xml:space="preserve">
+    <value>  {(error ? </value>
+  </data>
+  <data name="cli.text.literal_71bd00226766" xml:space="preserve">
+    <value>This host has no plugin host attached.</value>
+    <comment>MCC host text used by Strings.PmNoHost. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7375f51a9b05" xml:space="preserve">
+    <value>{completed} of {total} complete</value>
+  </data>
+  <data name="cli.text.literal_740efc3fa94b" xml:space="preserve">
+    <value>catalogue sources</value>
+    <comment>MCC host text used by Strings.MccMenuMarketplacesHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_746db9d85336" xml:space="preserve">
+    <value>Pin {id}</value>
+  </data>
+  <data name="cli.text.literal_7473b20bd659" xml:space="preserve">
+    <value>Installed extensions, catalogues, updates and runtime health</value>
+    <comment>MCC host text used by Strings.PmManagerSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_747c50ac20b9" xml:space="preserve">
+    <value>Distance: {distance:0.00}</value>
+  </data>
+  <data name="cli.text.literal_74e720b47e33" xml:space="preserve">
+    <value>Attack sent.</value>
+    <comment>MCC host text used by Strings.EntityUiAttacked. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_75efa2eee091" xml:space="preserve">
+    <value>New plugin</value>
+    <comment>MCC host text used by Strings.PmNewTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7639ac54989d" xml:space="preserve">
+    <value>Usage: Mcc.Cli [&lt;username&gt;] [&lt;password|-&gt;] [&lt;host[:port]&gt;]
+               [--configurations &lt;folder&gt;] [-v &lt;version&gt;] [--auth &lt;mode&gt;]
+               [--auth-server &lt;host&gt;] [--exercise &lt;name&gt;] [--section.setting=value ...]
+  &lt;username&gt;        overrides the active account login (offline username, max 16 chars)
+  &lt;password|-&gt;      '-' forces offline; other values are accepted but unused (online auth is interactive)
+  &lt;host[:port]&gt;     overrides the server address; port defaults to 25565
+  --configurations &lt;folder&gt;  path to a configurations/ folder (or a client.toml inside one);
+                    default ./configurations, generated with commented defaults on first run
+  -v &lt;version&gt;      pin a Minecraft version (e.g. 1.21.5); omit to use config/auto-detect
+  --auth &lt;mode&gt;     offline | microsoft | microsoft-browser | yggdrasil
+                    microsoft = device code (enter a short code on a Microsoft page)
+                    microsoft-browser = sign in in a browser, then paste back the code it shows
+  --auth-server &lt;h&gt; Yggdrasil (authlib-injector) base URL or host; used with --auth yggdrasil
+  --exercise &lt;name&gt; run a scripted diagnostic after joining (known: smoke), then exit
+  --section.setting=value  override a client.toml value (highest precedence)
+  --console.table.key=value  override a console.toml value (e.g. --console.General.Timestamps=true)
+Positionals override config; dotted flags override positionals.
+Type 'quit' or 'exit' at the prompt (or set MCC_FILE_INPUT=1 to drive from MCC_INPUT_FILE) to disconnect.</value>
+    <comment>MCC host text used by Strings.Usage. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_76e5b8337dfd" xml:space="preserve">
+    <value>Player Inventory</value>
+    <comment>MCC host text used by Strings.TuiPlayerInventoryTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7706ead850a1" xml:space="preserve">
+    <value>Position and motion</value>
+    <comment>MCC host text used by Strings.EntityUiPosition. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_793cad45c795" xml:space="preserve">
+    <value>No settings file yet. Save once to create it, or Reset to write the defaults.</value>
+    <comment>MCC host text used by Strings.PmNoSettingsFile. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_79b625bc8cb2" xml:space="preserve">
+    <value>Run, inspect, and edit top-level Beacon scripts</value>
+    <comment>MCC host text used by Strings.ScriptsUiSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7a2b568831f9" xml:space="preserve">
+    <value>No scores yet.</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowNoScores. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7a58b275b614" xml:space="preserve">
+    <value>/chunk ui</value>
+    <comment>MCC host text used by Strings.MccMenuChunksHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7b34d7b5feb1" xml:space="preserve">
+    <value>Protocol: ?</value>
+    <comment>MCC host text used by Strings.ServerInfoProtocolUnknown. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7bc051be68bb" xml:space="preserve">
+    <value>1 objective</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowObjectives. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7dea3e7d64a6" xml:space="preserve">
+    <value>Unknown exercise '{name}'. Known exercises: smoke.</value>
+  </data>
+  <data name="cli.text.literal_7e8c87bb0fac" xml:space="preserve">
+    <value>Usage: {PluginValidateOneShot.Flag} &lt;plugin folder&gt;. Checks one folder and exits; nothing else runs.</value>
+  </data>
+  <data name="cli.text.literal_7f04063b7412" xml:space="preserve">
+    <value>SKIP {check} {reason}</value>
+  </data>
+  <data name="cli.text.literal_7f6ed768d12f" xml:space="preserve">
+    <value>Unlocked recipes from the live session</value>
+    <comment>MCC host text used by Strings.RecipeUiSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7f8a220454ac" xml:space="preserve">
+    <value>Configuration error: {message}</value>
+  </data>
+  <data name="cli.text.literal_80fb7ca33083" xml:space="preserve">
+    <value>No players listed.</value>
+    <comment>MCC host text used by Strings.TuiTabNoPlayers. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_81c5614c093e" xml:space="preserve">
+    <value>Paste the code from the sign-in page here: </value>
+    <comment>MCC host text used by Strings.BrowserCodePrompt. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_83d5e87e7cce" xml:space="preserve">
+    <value>The server sent opaque recipe additions, so this visible list is incomplete.</value>
+    <comment>MCC host text used by Strings.RecipeUiIncomplete. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_87038c5aa35d" xml:space="preserve">
+    <value>Cancel dialog</value>
+    <comment>MCC host text used by Strings.TuiDialogCancel. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_87ee3dd0bfd9" xml:space="preserve">
+    <value>Enter something to search for.</value>
+    <comment>MCC host text used by Strings.PmSearchNeedsQuery. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8827235226ce" xml:space="preserve">
+    <value>Server was successfully joined</value>
+    <comment>MCC host text used by Strings.ServerJoined. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8858646c693d" xml:space="preserve">
+    <value>Select a login method</value>
+    <comment>MCC host text used by Strings.TuiLoginTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_89c3a063c5e2" xml:space="preserve">
+    <value>Full id</value>
+    <comment>MCC host text used by Strings.AdvancementUiFullId. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_89d98f48ee39" xml:space="preserve">
+    <value>Yggdrasil username: </value>
+    <comment>MCC host text used by Strings.YggdrasilUsernamePrompt. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8a4ef2e87bb1" xml:space="preserve">
+    <value>[chat] Missed a chat message from the server: expected index {expected}, got {actual} </value>
+  </data>
+  <data name="cli.text.literal_8acf446e9110" xml:space="preserve">
+    <value>Keep live objectives and ranked scores in a movable window.</value>
+    <comment>MCC host text used by Strings.MccMenuScoreboardDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8b89f8059ef4" xml:space="preserve">
+    <value>Add marketplace</value>
+    <comment>MCC host text used by Strings.PmAddMarketplace. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8c554ac73cf3" xml:space="preserve">
+    <value>Sort: name</value>
+    <comment>MCC host text used by Strings.EntityUiSortName. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8cc0b18d51e6" xml:space="preserve">
+    <value>{x}, {y}, {z}  {arrow}  {zoom}:1  ▼</value>
+  </data>
+  <data name="cli.text.literal_8d5f90188a5f" xml:space="preserve">
+    <value>Live, searchable snapshots with safe single-target actions</value>
+    <comment>MCC host text used by Strings.EntityUiSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8e8a6c4ccdcf" xml:space="preserve">
+    <value>{filter} ({count})</value>
+  </data>
+  <data name="cli.text.literal_8fc7e5384f87" xml:space="preserve">
+    <value>Minecraft Console Client v{clientVersion} - for MC {lowVersion} to {highVersion}</value>
+  </data>
+  <data name="cli.text.literal_90587ae5a23f" xml:space="preserve">
+    <value>Could not open the link automatically. Copy it into your browser.</value>
+    <comment>MCC host text used by Strings.TuiAuthBrowserFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_90e26659ac78" xml:space="preserve">
+    <value>Script '{id}' no longer exists.</value>
+  </data>
+  <data name="cli.text.literal_9247a396bd27" xml:space="preserve">
+    <value>Regenerate comments</value>
+    <comment>MCC host text used by Strings.PmRegenComments. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9260a2229e12" xml:space="preserve">
+    <value>Port (optional)</value>
+    <comment>MCC host text used by Strings.TuiFieldPort. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_92fa49e98832" xml:space="preserve">
+    <value>Sign in with Microsoft</value>
+    <comment>MCC host text used by Strings.TuiAuthDeviceTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_92fd07450408" xml:space="preserve">
+    <value>Player list</value>
+    <comment>MCC host text used by Strings.MccMenuPlayers. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_93c84327ecf9" xml:space="preserve">
+    <value>All scopes</value>
+    <comment>MCC host text used by Strings.AdvancementUiEveryScope. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_94f55ee6a53f" xml:space="preserve">
+    <value>[outdated → {version}]</value>
+  </data>
+  <data name="cli.text.literal_94fc003ef60b" xml:space="preserve">
+    <value>Authentication failed: {message}</value>
+  </data>
+  <data name="cli.text.literal_95e50255e771" xml:space="preserve">
+    <value>Update all</value>
+    <comment>MCC host text used by Strings.PmUpdateAll. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9797ee183b2b" xml:space="preserve">
+    <value>CHUNK MAP</value>
+    <comment>MCC host text used by Strings.ChunkUiTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_97b9b840bfd9" xml:space="preserve">
+    <value>Could not parse '{path}': {message}. Using defaults.</value>
+  </data>
+  <data name="cli.text.literal_981bc21a0a9b" xml:space="preserve">
+    <value>Players:</value>
+    <comment>MCC host text used by Strings.ServerInfoLabelPlayers. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_98b1024757db" xml:space="preserve">
+    <value>not connected</value>
+    <comment>MCC host text used by Strings.TuiStatusOffline. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_98f14325c58e" xml:space="preserve">
+    <value>No diagnostics.</value>
+    <comment>MCC host text used by Strings.ScriptsUiNoDiagnostics. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_98f6f0a1802b" xml:space="preserve">
+    <value>UUID: {uuid}</value>
+  </data>
+  <data name="cli.text.literal_99358baba8f3" xml:space="preserve">
+    <value>- not loaded: {status}</value>
+  </data>
+  <data name="cli.text.literal_99b922f03ddd" xml:space="preserve">
+    <value>Reconnected.</value>
+    <comment>MCC host text used by Strings.Reconnected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9a36b45e04a7" xml:space="preserve">
+    <value>/inventory player open</value>
+    <comment>MCC host text used by Strings.MccMenuInventoryHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9a69ce80d2d9" xml:space="preserve">
+    <value>Action failed: {reason}</value>
+  </data>
+  <data name="cli.text.literal_9a88cf919e5e" xml:space="preserve">
+    <value>Named recipe</value>
+    <comment>MCC host text used by Strings.RecipeUiNamedKind. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9b3cce951d61" xml:space="preserve">
+    <value>Search the catalogues already stored on disk.</value>
+    <comment>MCC host text used by Strings.PmSearchSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9b5e38ab83c4" xml:space="preserve">
+    <value>To sign in, open this URL in your browser:
+{url}
+After signing in, the page shows a code. Copy it (and keep it secret).</value>
+  </data>
+  <data name="cli.text.literal_9d2c8c742253" xml:space="preserve">
+    <value> The running script will also stop.</value>
+    <comment>MCC host text used by Strings.ScriptsUiDeleteWarning. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9d6440a4d5c8" xml:space="preserve">
+    <value>Reset settings?</value>
+    <comment>MCC host text used by Strings.PmResetTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a074a149bd17" xml:space="preserve">
+    <value>Nothing here can answer that question (input is not interactive), so the install was declined. Put the 'yes' keyword on the command to answer it up front.</value>
+    <comment>MCC host text used by Strings.PluginInstallNotInteractive. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a0881a435b56" xml:space="preserve">
+    <value>/help ui</value>
+    <comment>MCC host text used by Strings.MccMenuCommandsHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a1422fd46fe9" xml:space="preserve">
+    <value>Map #{mapId}  scale {scale}:1  zoom {zoomPercent}%  +/- zoom, arrows pan, Esc close</value>
+  </data>
+  <data name="cli.text.literal_a1c65c12bef9" xml:space="preserve">
+    <value>Could not open this workspace: {reason}</value>
+  </data>
+  <data name="cli.text.literal_a2013da8a768" xml:space="preserve">
+    <value>↑↓ select · Enter update · P pin/unpin · Esc back</value>
+    <comment>MCC host text used by Strings.PmUpdatesHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a29e86447750" xml:space="preserve">
+    <value>Purge - also delete settings.toml and data/</value>
+    <comment>MCC host text used by Strings.PmPurgeLabel. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a35e954d941d" xml:space="preserve">
+    <value>Catalogue sources, refresh state and startup policy.</value>
+    <comment>MCC host text used by Strings.PmMarketsSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a49264deb916" xml:space="preserve">
+    <value>Inspect the loaded chunk region around the player.</value>
+    <comment>MCC host text used by Strings.MccMenuChunksDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a7094b8d7523" xml:space="preserve">
+    <value>EXTEND MCC</value>
+    <comment>MCC host text used by Strings.MccMenuExtend. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a798a7fd29d1" xml:space="preserve">
+    <value>held at {version}</value>
+  </data>
+  <data name="cli.text.literal_a999ab924579" xml:space="preserve">
+    <value>Nothing to save: no value changed.</value>
+    <comment>MCC host text used by Strings.PmSettingsSavedNothing. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a9cc0583b2ae" xml:space="preserve">
+    <value>needed by</value>
+    <comment>MCC host text used by Strings.PmInfoNeededBy. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_aa18f9d7270a" xml:space="preserve">
+    <value>Open the live tab list with player names, latency, and game mode.</value>
+    <comment>MCC host text used by Strings.MccMenuPlayersDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ab8df759e408" xml:space="preserve">
+    <value>This protocol cannot place this recipe form.</value>
+    <comment>MCC host text used by Strings.RecipeUiWrongForm. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ae197a8f92b5" xml:space="preserve">
+    <value>The marketplace auto-update pass failed.</value>
+    <comment>MCC host text used by Strings.MarketAutoUpdateFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ae493e21cd43" xml:space="preserve">
+    <value>Settings saved.</value>
+    <comment>MCC host text used by Strings.ScriptsUiSettingsSaved. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ae50f39ae8ae" xml:space="preserve">
+    <value>PgUp/PgDn page, Ctrl+S save, Ctrl+G sign, Esc close</value>
+    <comment>MCC host text used by Strings.TuiBookControls. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_aeb3301229c9" xml:space="preserve">
+    <value>Could not refresh scoreboard: {reason}</value>
+  </data>
+  <data name="cli.text.literal_af09632242f3" xml:space="preserve">
+    <value>Copied to clipboard.</value>
+    <comment>MCC host text used by Strings.TuiAuthCopied. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_afbf8a3a4b55" xml:space="preserve">
+    <value>Yggdrasil sign-in</value>
+    <comment>MCC host text used by Strings.TuiAuthYggdrasilTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b0dc3cce35b4" xml:space="preserve">
+    <value>send failed: {message}</value>
+  </data>
+  <data name="cli.text.literal_b210586c2ae1" xml:space="preserve">
+    <value>LEARN &amp; AUTOMATE</value>
+    <comment>MCC host text used by Strings.MccMenuLearn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b26ec8d25965" xml:space="preserve">
+    <value>Choose a saved server or connect to a new address.</value>
+    <comment>MCC host text used by Strings.MccMenuServersDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b3fb96f408fc" xml:space="preserve">
+    <value>Login rejected: {message}</value>
+  </data>
+  <data name="cli.text.literal_b43126151f1b" xml:space="preserve">
+    <value>Install a known plugin directly, or browse everything in your added marketplaces.</value>
+    <comment>MCC host text used by Strings.PmInstallChoiceHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b4e3d866b94f" xml:space="preserve">
+    <value>↑↓ select · Enter plugins · R refresh · P policy · Del remove (confirms) · Esc back</value>
+    <comment>MCC host text used by Strings.PmMarketsHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b50ddca27305" xml:space="preserve">
+    <value>Numeric recipe id</value>
+    <comment>MCC host text used by Strings.RecipeUiNumericKind. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b555c0909c19" xml:space="preserve">
+    <value>/minimap on</value>
+    <comment>MCC host text used by Strings.MccMenuMinimapHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b63ea5df4a64" xml:space="preserve">
+    <value>Updates ({available} available, {held} held)</value>
+  </data>
+  <data name="cli.text.literal_b668f75bb737" xml:space="preserve">
+    <value>{running} running · {stopped} stopped</value>
+  </data>
+  <data name="cli.text.literal_b89c37f11d7e" xml:space="preserve">
+    <value>Show installed</value>
+    <comment>MCC host text used by Strings.PmShowInstalled. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b8ab919b2aa7" xml:space="preserve">
+    <value>No longer tracked.</value>
+    <comment>MCC host text used by Strings.EntityUiGone. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b964ecd32465" xml:space="preserve">
+    <value>Install by ID</value>
+    <comment>MCC host text used by Strings.PmInstallById. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_bab60aea2a05" xml:space="preserve">
+    <value>Every managed plugin is up to date.</value>
+    <comment>MCC host text used by Strings.PmNoUpdates. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_bbb1a6b92032" xml:space="preserve">
+    <value>No plugin is {filter}.</value>
+  </data>
+  <data name="cli.text.literal_bbc51279c8cb" xml:space="preserve">
+    <value>Attack blocked: the target is not both ahead and visible.</value>
+    <comment>MCC host text used by Strings.EntityUiNotVisible. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_bbfeea01bf02" xml:space="preserve">
+    <value>Supported MC Versions:</value>
+    <comment>MCC host text used by Strings.TuiBannerVersionsLabel. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_bc17373957c3" xml:space="preserve">
+    <value>ENTITY TRACKER</value>
+    <comment>MCC host text used by Strings.EntityUiTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_bd58fb6584e0" xml:space="preserve">
+    <value>PASS {check}</value>
+  </data>
+  <data name="cli.text.literal_bdaace8d8c1e" xml:space="preserve">
+    <value>Chat is now visible.</value>
+    <comment>MCC host text used by Strings.ConsoleChatOn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_be376588b89e" xml:space="preserve">
+    <value>Unsupported flag '{flag}'. Try --help for the friendly guide, or --help-short for the compact reference.</value>
+  </data>
+  <data name="cli.text.literal_beb0272f6cc3" xml:space="preserve">
+    <value>Left/Right click a slot, Q drop, Ctrl+Q drop stack, E/Esc close, R refresh</value>
+    <comment>MCC host text used by Strings.TuiContainerControls. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_bed009065403" xml:space="preserve">
+    <value>Session diagnostics written to {path}</value>
+  </data>
+  <data name="cli.text.literal_bf22b2a9ece7" xml:space="preserve">
+    <value>... +{count}</value>
+  </data>
+  <data name="cli.text.literal_bfd402b2f6f3" xml:space="preserve">
+    <value>Sign in</value>
+    <comment>MCC host text used by Strings.TuiPromptSignIn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c0424120b36f" xml:space="preserve">
+    <value>Nothing matches this search.</value>
+    <comment>MCC host text used by Strings.MgmtNoMatches. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c1f83da0aa22" xml:space="preserve">
+    <value>No unlocked recipes are visible.</value>
+    <comment>MCC host text used by Strings.RecipeUiNoRecipes. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c219a07ebf3b" xml:space="preserve">
+    <value>Disconnected: {reason}</value>
+  </data>
+  <data name="cli.text.literal_c238a3a25e64" xml:space="preserve">
+    <value>Tab/↑↓ move · Space toggle · Save writes values (comments kept) + reloads plugin · Esc back without saving</value>
+    <comment>MCC host text used by Strings.PmSettingsHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c26693a684c8" xml:space="preserve">
+    <value>This file changed on disk after the editor opened it.</value>
+    <comment>MCC host text used by Strings.ScriptsUiSaveConflict. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c2ee50f7d4b2" xml:space="preserve">
+    <value>New server</value>
+    <comment>MCC host text used by Strings.TuiConnectNewTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c30c7308a726" xml:space="preserve">
+    <value>(signed, read-only)</value>
+    <comment>MCC host text used by Strings.TuiBookSigned. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c3e446ef62b7" xml:space="preserve">
+    <value>Provider URL</value>
+    <comment>MCC host text used by Strings.TuiFieldProviderUrl. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c3fc3d49cff9" xml:space="preserve">
+    <value>Set pin</value>
+    <comment>MCC host text used by Strings.PmSetPin. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c7756cbe54c9" xml:space="preserve">
+    <value>{id}: valid.</value>
+  </data>
+  <data name="cli.text.literal_c7e977ea6f45" xml:space="preserve">
+    <value>This permanently removes '{id}.bcn'.</value>
+  </data>
+  <data name="cli.text.literal_c85297c6699c" xml:space="preserve">
+    <value>Live command metadata and the complete MCC manual</value>
+    <comment>MCC host text used by Strings.BrowserSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c8b4b901d631" xml:space="preserve">
+    <value>LIVE SESSION</value>
+    <comment>MCC host text used by Strings.MccMenuLive. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ca62b4f70fb3" xml:space="preserve">
+    <value>{ms} ms</value>
+  </data>
+  <data name="cli.text.literal_ca74b1c38569" xml:space="preserve">
+    <value>/connect &lt;host[:port]&gt;</value>
+    <comment>MCC host text used by Strings.IdleNoServer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ca7a97253579" xml:space="preserve">
+    <value>Uninstall {id}?</value>
+  </data>
+  <data name="cli.text.literal_cac8bcb8ed81" xml:space="preserve">
+    <value>{x}, {y}, {z}  {arrow}  {zoom}:1</value>
+  </data>
+  <data name="cli.text.literal_cb2c04faa36f" xml:space="preserve">
+    <value>Book has {count} pages, but this version supports at most {max} pages.</value>
+  </data>
+  <data name="cli.text.literal_cb6f44b8e237" xml:space="preserve">
+    <value>Dialog response sent.</value>
+    <comment>MCC host text used by Strings.TuiDialogSent. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cbb030ad09e9" xml:space="preserve">
+    <value>The editor buffer is already formatted.</value>
+    <comment>MCC host text used by Strings.ScriptsUiFormatClean. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cbd1c49223b6" xml:space="preserve">
+    <value>Apply to editor</value>
+    <comment>MCC host text used by Strings.ScriptsUiApplyBuffer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cd0033cb5f84" xml:space="preserve">
+    <value>Open a fullscreen view of the last received map.</value>
+    <comment>MCC host text used by Strings.MapDesc. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ce0d8a33904c" xml:space="preserve">
+    <value>/scoreboard ui</value>
+    <comment>MCC host text used by Strings.MccMenuScoreboardHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ce49e1d964f9" xml:space="preserve">
+    <value>Working without a session: {plugins}.</value>
+  </data>
+  <data name="cli.text.literal_d090e1113d4a" xml:space="preserve">
+    <value>/advancements ui</value>
+    <comment>MCC host text used by Strings.MccMenuAdvancementsHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d0a7c8ede4ee" xml:space="preserve">
+    <value>Fix the errors before saving.</value>
+    <comment>MCC host text used by Strings.ScriptsUiSaveBlocked. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d0c19d475c30" xml:space="preserve">
+    <value>Inspect tracked entities and use safe single-target actions.</value>
+    <comment>MCC host text used by Strings.MccMenuEntitiesDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d152a8d6b066" xml:space="preserve">
+    <value>Craft all</value>
+    <comment>MCC host text used by Strings.RecipeUiCraftAll. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d21c7921a7b4" xml:space="preserve">
+    <value>Read-only diagnostics from the plugin host.</value>
+    <comment>MCC host text used by Strings.PmReportsSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d291bf6d1c5b" xml:space="preserve">
+    <value>Online Players:</value>
+    <comment>MCC host text used by Strings.ServerInfoLabelOnlinePlayers. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d371e0e23d27" xml:space="preserve">
+    <value>Install it? [y/N]</value>
+    <comment>MCC host text used by Strings.PluginInstallQuestion. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d3789239dbcd" xml:space="preserve">
+    <value>all marketplaces</value>
+    <comment>MCC host text used by Strings.PmMarketplaceAll. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d4288839841c" xml:space="preserve">
+    <value>Reload from disk</value>
+    <comment>MCC host text used by Strings.ScriptsUiReloadDisk. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d6765360f43a" xml:space="preserve">
+    <value>Sort: distance</value>
+    <comment>MCC host text used by Strings.EntityUiSortDistance. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d6ee4272fa92" xml:space="preserve">
+    <value>Installed plugins</value>
+    <comment>MCC host text used by Strings.PmLibrary. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d71130424881" xml:space="preserve">
+    <value>Without purge they move to plugins/.removed/{id}/.</value>
+  </data>
+  <data name="cli.text.literal_d7246d846775" xml:space="preserve">
+    <value>No server address configured. Set it in client.toml (or servers.toml), or pass it as the last positional.</value>
+    <comment>MCC host text used by Strings.NoServerConfigured. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d751bbf6cec5" xml:space="preserve">
+    <value>↑↓ select · Enter open · Ctrl+F search · F5 refresh · Esc back/close</value>
+    <comment>MCC host text used by Strings.MgmtHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d826c8f48693" xml:space="preserve">
+    <value>enabled, not loaded</value>
+    <comment>MCC host text used by Strings.PmStateEnabledNotLoaded. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d86543290ca8" xml:space="preserve">
+    <value>Reads on-disk catalogues: empty can mean a stale catalogue.</value>
+    <comment>MCC host text used by Strings.PmSearchStaleHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d88880ee7441" xml:space="preserve">
+    <value>This protocol does not expose a sendable recipe placement form.</value>
+    <comment>MCC host text used by Strings.RecipeUiUnsupported. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_db4e38dc7a83" xml:space="preserve">
+    <value>This host has no plugin market attached, so plugins can only be loaded from disk.</value>
+    <comment>MCC host text used by Strings.PmNoMarket. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ddb6cce313b3" xml:space="preserve">
+    <value>Interaction sent.</value>
+    <comment>MCC host text used by Strings.EntityUiUsed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ddc385e3edc0" xml:space="preserve">
+    <value>' for another one.</value>
+    <comment>MCC host text used by Strings.IdleAutoConnectOff. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_de6cce08571e" xml:space="preserve">
+    <value>Connect to server</value>
+    <comment>MCC host text used by Strings.TuiConnectTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_de93db002f73" xml:space="preserve">
+    <value>/entity ui</value>
+    <comment>MCC host text used by Strings.MccMenuEntitiesHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_df08b7498d9a" xml:space="preserve">
+    <value>Search plugins</value>
+    <comment>MCC host text used by Strings.PmSearchTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_df5c0f506268" xml:space="preserve">
+    <value>not loaded</value>
+    <comment>MCC host text used by Strings.PmInfoNotLoaded. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e04bd59364aa" xml:space="preserve">
+    <value>Saved server '{name}' ({host}:{port}).</value>
+  </data>
+  <data name="cli.text.literal_e04c086d0170" xml:space="preserve">
+    <value>{marketplace} plugins</value>
+  </data>
+  <data name="cli.text.literal_e106a897fe57" xml:space="preserve">
+    <value>/recipebook ui</value>
+    <comment>MCC host text used by Strings.MccMenuRecipesHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e1dedc12ba51" xml:space="preserve">
+    <value>No plugins match the current filters.</value>
+    <comment>MCC host text used by Strings.PmNoFilteredPlugins. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e2010c88047b" xml:space="preserve">
+    <value>blocked: {reason}</value>
+  </data>
+  <data name="cli.text.literal_e240e635ff6d" xml:space="preserve">
+    <value>Reset to defaults</value>
+    <comment>MCC host text used by Strings.PmResetDefaults. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e26b005266a8" xml:space="preserve">
+    <value>installed {version}</value>
+  </data>
+  <data name="cli.text.literal_e30575a3f50c" xml:space="preserve">
+    <value>FAIL {check} {detail}</value>
+  </data>
+  <data name="cli.text.literal_e54eba71caf1" xml:space="preserve">
+    <value>No plugins are available from {marketplace}.</value>
+  </data>
+  <data name="cli.text.literal_e5acb7f00e4f" xml:space="preserve">
+    <value>MCC MAIN MENU</value>
+    <comment>MCC host text used by Strings.MccMenuTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e649494b74f8" xml:space="preserve">
+    <value>Enter a plugin source.</value>
+    <comment>MCC host text used by Strings.PmInstallNeedsSource. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e6e8f04c2b08" xml:space="preserve">
+    <value>Use id or id@marketplace. Advanced sources such as a git URL, archive URL, or folder also work. Empty version = catalogue default.</value>
+    <comment>MCC host text used by Strings.PmInstallHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e75c0d0b05a4" xml:space="preserve">
+    <value>Not connected: connection.auto-connect is false. Type '</value>
+    <comment>MCC host text used by Strings.IdleAutoConnectOff. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e77b86276405" xml:space="preserve">
+    <value>Offline login</value>
+    <comment>MCC host text used by Strings.TuiLoginUsernameTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e77e5fe18d84" xml:space="preserve">
+    <value>To sign in, open {url} in a browser and enter the code: {code}</value>
+  </data>
+  <data name="cli.text.literal_e794a50785f8" xml:space="preserve">
+    <value>Sort: type</value>
+    <comment>MCC host text used by Strings.EntityUiSortType. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e8e234bd5ab0" xml:space="preserve">
+    <value>{completed} / {total}</value>
+  </data>
+  <data name="cli.text.literal_e8e53908445d" xml:space="preserve">
+    <value>↑↓ select · Enter details · E enable · D disable · R reload · U uninstall · Esc close</value>
+    <comment>MCC host text used by Strings.PmListHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ea07968abff7" xml:space="preserve">
+    <value>Flag '{flag}' requires a value.</value>
+  </data>
+  <data name="cli.text.literal_eb2701d29d4d" xml:space="preserve">
+    <value>{count} objectives</value>
+  </data>
+  <data name="cli.text.literal_eb61adafded9" xml:space="preserve">
+    <value>This Minecraft version has no book-edit packet this client can send, so the book was not saved.</value>
+    <comment>MCC host text used by Strings.TuiBookEditUnsupported. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_eb7a919815a0" xml:space="preserve">
+    <value>Seed (optional)</value>
+    <comment>MCC host text used by Strings.ScriptsUiSeed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ec2de4436bff" xml:space="preserve">
+    <value>Script id</value>
+    <comment>MCC host text used by Strings.ScriptsUiId. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ec4a64869fc7" xml:space="preserve">
+    <value>Delete script '{id}'?</value>
+  </data>
+  <data name="cli.text.literal_ec5c40e4d832" xml:space="preserve">
+    <value>Online (Microsoft)</value>
+    <comment>MCC host text used by Strings.TuiLoginOnline. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ecd11fd9f6ba" xml:space="preserve">
+    <value>Title:</value>
+    <comment>MCC host text used by Strings.TuiBookTitleLabel. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ed221c90d771" xml:space="preserve">
+    <value>refreshed {when}</value>
+  </data>
+  <data name="cli.text.literal_ed6c2dba26a2" xml:space="preserve">
+    <value>No scripts found. Create one to get started.</value>
+    <comment>MCC host text used by Strings.ScriptsUiNoScripts. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_edbd752fd104" xml:space="preserve">
+    <value>Checked {count} plugin(s); all of them are sound.</value>
+  </data>
+  <data name="cli.text.literal_ee3cd35fc960" xml:space="preserve">
+    <value>server picker</value>
+    <comment>MCC host text used by Strings.MccMenuServersHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ef149ba14b11" xml:space="preserve">
+    <value>Format preview</value>
+    <comment>MCC host text used by Strings.ScriptsUiFormatPreview. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ef2daf086595" xml:space="preserve">
+    <value>Equipment and effects</value>
+    <comment>MCC host text used by Strings.EntityUiEquipment. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ef30ee1d9535" xml:space="preserve">
+    <value>type a command or chat message</value>
+    <comment>MCC host text used by Strings.TuiInputWatermark. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ef64534c449c" xml:space="preserve">
+    <value>Enter a host or host:port.</value>
+    <comment>MCC host text used by Strings.TuiConnectBadAddress. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f0e75c0191d0" xml:space="preserve">
+    <value>Page {page}/{total}</value>
+  </data>
+  <data name="cli.text.literal_f10065532fb3" xml:space="preserve">
+    <value>Install {id}?</value>
+  </data>
+  <data name="cli.text.literal_f14720f4deb6" xml:space="preserve">
+    <value>XYZ {x:0.0} {y:0.0} {z:0.0} · chunk {chunkX}, {chunkZ} · {loaded}/{total} loaded</value>
+  </data>
+  <data name="cli.text.literal_f16fe4b4115f" xml:space="preserve">
+    <value>Create and edit</value>
+    <comment>MCC host text used by Strings.ScriptsUiCreate. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f2cda7d5cb08" xml:space="preserve">
+    <value>Tab/Shift+Tab or arrows move · Enter opens · Esc closes</value>
+    <comment>MCC host text used by Strings.MccMenuHints. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f3176c4bb18f" xml:space="preserve">
+    <value>Its plugins stay installed and become unmanaged.</value>
+    <comment>MCC host text used by Strings.PmRemoveMarketBody. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f3ad4062daf9" xml:space="preserve">
+    <value>/plugins ui</value>
+    <comment>MCC host text used by Strings.MccMenuPluginsHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f3d25c9265aa" xml:space="preserve">
+    <value>Showing {shown} of {total}</value>
+  </data>
+  <data name="cli.text.literal_f4054366eac0" xml:space="preserve">
+    <value>Enter a title, then Ctrl+G to sign:</value>
+    <comment>MCC host text used by Strings.TuiBookSignPrompt. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f46ee86a068c" xml:space="preserve">
+    <value>Script settings</value>
+    <comment>MCC host text used by Strings.ScriptsUiSettingsTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f488614e4cab" xml:space="preserve">
+    <value>Version resolution failed: {message}</value>
+  </data>
+  <data name="cli.text.literal_f4a8c472746d" xml:space="preserve">
+    <value>Reload all</value>
+    <comment>MCC host text used by Strings.PmReloadAll. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f53ba8d00194" xml:space="preserve">
+    <value>Updates live · drag to move · Esc closes</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f5544c46132d" xml:space="preserve">
+    <value>Available plugins</value>
+    <comment>MCC host text used by Strings.PmAvailablePluginsTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f682fbfa11cd" xml:space="preserve">
+    <value>owner/repo, git URL, catalogue URL, or folder. Empty name = catalogue's own name.</value>
+    <comment>MCC host text used by Strings.PmAddMarketHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f767c0971b20" xml:space="preserve">
+    <value>/scripts ui</value>
+    <comment>MCC host text used by Strings.MccMenuScriptsHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f7b4bc2d1872" xml:space="preserve">
+    <value>No map data received yet. Hold a filled map and walk around so the server sends map pixels.</value>
+    <comment>MCC host text used by Strings.TuiMapNoData. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fa247349fa85" xml:space="preserve">
+    <value>Manual topic</value>
+    <comment>MCC host text used by Strings.BrowserManualTopic. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fa790a976eff" xml:space="preserve">
+    <value>This server offers an optional resource pack:
+{url}
+Accept it? (yes/no): </value>
+  </data>
+  <data name="cli.text.literal_fab025c6f831" xml:space="preserve">
+    <value>warn </value>
+    <comment>MCC host text used by Strings.ValidatePluginProblem. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fca046ccd586" xml:space="preserve">
+    <value>Saved.</value>
+    <comment>MCC host text used by Strings.ScriptsUiSaved. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fd45b4af4698" xml:space="preserve">
+    <value>Show or hide incoming chat in the console.</value>
+    <comment>MCC host text used by Strings.ConsoleChatDesc. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fd528823e8d3" xml:space="preserve">
+    <value>cursor:</value>
+    <comment>MCC host text used by Strings.TuiCursorLabel. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fe5e99a6cf4d" xml:space="preserve">
+    <value>Available plugins ({count})</value>
+  </data>
+  <data name="cli.text.literal_00086e26bbe9" xml:space="preserve">
+    <value>Script '{0}' no longer exists.</value>
+    <comment>MCC host text used by Strings.ScriptsUiDeleteMissing. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_00d60e31a4e6" xml:space="preserve">
+    <value>Run</value>
+    <comment>MCC host text used by Strings.ScriptsUiRun. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0343b13708cd" xml:space="preserve">
+    <value>dll</value>
+    <comment>MCC host text used by Strings.PmEntryDll. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_034a00624882" xml:space="preserve">
+    <value>folder</value>
+    <comment>MCC host text used by Strings.PmInfoFolder. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0429a401109a" xml:space="preserve">
+    <value> Lv {0} ({1} XP)</value>
+    <comment>MCC host text used by Strings.TuiExperienceValue. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0575f29df888" xml:space="preserve">
+    <value>Template</value>
+    <comment>MCC host text used by Strings.ScriptsUiTemplate. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0ad582b75c07" xml:space="preserve">
+    <value>{0}: valid.</value>
+    <comment>MCC host text used by Strings.ValidatePluginOk. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0ade84f4935b" xml:space="preserve">
+    <value>' to connect to {0}, or '</value>
+    <comment>MCC host text used by Strings.IdleAutoConnectOff. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0da51150b9ef" xml:space="preserve">
+    <value>No plugins are available from {0}.</value>
+    <comment>MCC host text used by Strings.PmNoMarketplacePlugins. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0e570ca6fabe" xml:space="preserve">
+    <value>Source</value>
+    <comment>MCC host text used by Strings.PmFieldSource. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0e9161011702" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>MCC host text used by Strings.PmRefresh. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0e9b07982161" xml:space="preserve">
+    <value>{0} objectives</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowObjectives. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_0ef3e11d6ec1" xml:space="preserve">
+    <value>The server referenced registered dialog #{0}; its body is not available in this build.</value>
+    <comment>MCC host text used by Strings.TuiDialogRegistryOnly. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_117c132e939b" xml:space="preserve">
+    <value>Coordinates</value>
+    <comment>MCC host text used by Strings.EntityUiCoordinates. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1211d86597cd" xml:space="preserve">
+    <value>Version resolution failed: {0}</value>
+    <comment>MCC host text used by Strings.VersionResolutionFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_12156e921bdb" xml:space="preserve">
+    <value>Id</value>
+    <comment>MCC host text used by Strings.PmFieldId. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_133c49456b65" xml:space="preserve">
+    <value>STOPPED</value>
+    <comment>MCC host text used by Strings.ScriptsUiStopped. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_143b270a3260" xml:space="preserve">
+    <value>Complete</value>
+    <comment>MCC host text used by Strings.AdvancementUiComplete. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1509f561f241" xml:space="preserve">
+    <value>Save</value>
+    <comment>MCC host text used by Strings.PmSave. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_17ccfa5b681e" xml:space="preserve">
+    <value>Maintenance</value>
+    <comment>MCC host text used by Strings.PmMaintenance. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_17eb3c0168d0" xml:space="preserve">
+    <value>disabled</value>
+    <comment>MCC host text used by Strings.PmStateDisabled. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_18fdd549b2ed" xml:space="preserve">
+    <value>New</value>
+    <comment>MCC host text used by Strings.PmNew. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_19766ed6ccb2" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>MCC host text used by Strings.TuiPromptCancel. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1a2303ede074" xml:space="preserve">
+    <value>Connect</value>
+    <comment>MCC host text used by Strings.TuiConnectConnect. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1bd67236c50a" xml:space="preserve">
+    <value>+ {0} more</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowMore. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1c34f88707b5" xml:space="preserve">
+    <value>verified</value>
+    <comment>MCC host text used by Strings.ChatStandingLabelVerified. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1c6ac69f1e5d" xml:space="preserve">
+    <value>Neutral</value>
+    <comment>MCC host text used by Strings.EntityUiNeutral. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1d92dae504a7" xml:space="preserve">
+    <value>insecure</value>
+    <comment>MCC host text used by Strings.ChatStandingLabelInsecure. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1de62af373e4" xml:space="preserve">
+    <value>Checked {0} plugin(s); all of them are sound.</value>
+    <comment>MCC host text used by Strings.PmValidateHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_1e20e6151ed1" xml:space="preserve">
+    <value>Could not parse '{0}': {1}. Using defaults.</value>
+    <comment>MCC host text used by Strings.ConsoleConfigParseFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_20633c969e94" xml:space="preserve">
+    <value>blocked: {0}</value>
+    <comment>MCC host text used by Strings.PmBlockedTagFor. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_20fa24bbaee4" xml:space="preserve">
+    <value>FAIL {0} {1}</value>
+    <comment>MCC host text used by Strings.ExerciseFail. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_21fec9c32445" xml:space="preserve">
+    <value>Reset {0} settings?</value>
+    <comment>MCC host text used by Strings.PmResetTitleFor. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_22e2bada8f1c" xml:space="preserve">
+    <value>Updates</value>
+    <comment>MCC host text used by Strings.PmUpdates. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_24669ff48290" xml:space="preserve">
+    <value>Doctor</value>
+    <comment>MCC host text used by Strings.PmDoctor. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_24d7aa0926fe" xml:space="preserve">
+    <value>Minecraft Console Client v{0} - for MC {1} to {2}</value>
+    <comment>MCC host text used by Strings.ClassicBanner. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_263ae31c6de8" xml:space="preserve">
+    <value>[outdated → {0}]</value>
+    <comment>MCC host text used by Strings.PmOutdatedTag. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_268f14bbfe11" xml:space="preserve">
+    <value>Diagnostics</value>
+    <comment>MCC host text used by Strings.ScriptsUiDiagnostics. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2816495bcf28" xml:space="preserve">
+    <value>/reco</value>
+    <comment>MCC host text used by Strings.IdleAutoConnectOff. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2afa9dcec49d" xml:space="preserve">
+    <value>held at {0}</value>
+    <comment>MCC host text used by Strings.PmInfoPinnedAtVersion. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2c30f266c726" xml:space="preserve">
+    <value>Scaffold</value>
+    <comment>MCC host text used by Strings.PmScaffold. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2cab953f2b36" xml:space="preserve">
+    <value>loaded</value>
+    <comment>MCC host text used by Strings.ChunkUiLoaded. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2cfbc93920cd" xml:space="preserve">
+    <value>Install {0}?</value>
+    <comment>MCC host text used by Strings.PmConfirmInstallTitleFor. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_2f343666aaa8" xml:space="preserve">
+    <value>Format</value>
+    <comment>MCC host text used by Strings.ScriptsUiFormat. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_31fbef162594" xml:space="preserve">
+    <value>Continue</value>
+    <comment>MCC host text used by Strings.TuiPromptContinue. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_340f463033e0" xml:space="preserve">
+    <value>Code</value>
+    <comment>MCC host text used by Strings.TuiFieldCode. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_34731889fd4a" xml:space="preserve">
+    <value>Book has {0} pages, but this version supports at most {1} pages.</value>
+    <comment>MCC host text used by Strings.TuiBookTooManyPages. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_358511c8c098" xml:space="preserve">
+    <value>Effects</value>
+    <comment>MCC host text used by Strings.EntityUiEffects. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_358db8f28af8" xml:space="preserve">
+    <value>- not loaded: {0}</value>
+    <comment>MCC host text used by Strings.PmNotLoadedTag. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_36752d6cd147" xml:space="preserve">
+    <value>Numeric</value>
+    <comment>MCC host text used by Strings.RecipeUiNumeric. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_36bde66f289a" xml:space="preserve">
+    <value>manual</value>
+    <comment>MCC host text used by Strings.PmInfoManual. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_36ecb4f86691" xml:space="preserve">
+    <value>Input</value>
+    <comment>MCC host text used by Strings.ScriptsUiInput. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3ae3ab393e8f" xml:space="preserve">
+    <value>{0} plugins</value>
+    <comment>MCC host text used by Strings.PmMarketplacePluginsTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3d2ef2ed56ad" xml:space="preserve">
+    <value>Opening map #{0}...</value>
+    <comment>MCC host text used by Strings.TuiMapOpening. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3e0c5140a0a8" xml:space="preserve">
+    <value>No plugin is {0}.</value>
+    <comment>MCC host text used by Strings.PmListEmpty. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3f41e4fd31c2" xml:space="preserve">
+    <value>{0} (window {1})</value>
+    <comment>MCC host text used by Strings.TuiContainerTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_3fab5c181bd2" xml:space="preserve">
+    <value>pinned</value>
+    <comment>MCC host text used by Strings.PmInfoPinned. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_40611abbdda2" xml:space="preserve">
+    <value>Validate</value>
+    <comment>MCC host text used by Strings.PmValidate. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_40f0b3ac0363" xml:space="preserve">
+    <value>REPL</value>
+    <comment>MCC host text used by Strings.ScriptsUiRepl. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_419a5b45a39c" xml:space="preserve">
+    <value>Unsupported flag '{0}'. Try --help for the friendly guide, or --help-short for the compact reference.</value>
+    <comment>MCC host text used by Strings.BadFlag. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_41cf6794ba42" xml:space="preserve">
+    <value>source</value>
+    <comment>MCC host text used by Strings.PmEntrySource. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_45ca56d179d4" xml:space="preserve">
+    <value>Related</value>
+    <comment>MCC host text used by Strings.BrowserRelated. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_464c4ffd019e" xml:space="preserve">
+    <value>Edit</value>
+    <comment>MCC host text used by Strings.ScriptsUiEdit. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_476febb183e8" xml:space="preserve">
+    <value>UUID: {0}</value>
+    <comment>MCC host text used by Strings.EntityUiUuid. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4946a654ee0b" xml:space="preserve">
+    <value>Working without a session: {0}.</value>
+    <comment>MCC host text used by Strings.IdleOfflinePlugins. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_49c266baaaa7" xml:space="preserve">
+    <value>Search</value>
+    <comment>MCC host text used by Strings.PmSearch. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4a823118b9ba" xml:space="preserve">
+    <value>Host</value>
+    <comment>MCC host text used by Strings.TuiFieldHost. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4b4e49dd2de5" xml:space="preserve">
+    <value>exports</value>
+    <comment>MCC host text used by Strings.PmInfoExports. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4bad6cff07d2" xml:space="preserve">
+    <value>Minimap</value>
+    <comment>MCC host text used by Strings.MinimapWindowTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4cd548f3cc29" xml:space="preserve">
+    <value>Attack</value>
+    <comment>MCC host text used by Strings.EntityUiAttack. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4e1cb9d75815" xml:space="preserve">
+    <value>load error: {0}</value>
+    <comment>MCC host text used by Strings.PluginsLoadError. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_4e9c1df6bf02" xml:space="preserve">
+    <value>Network id: {0}</value>
+    <comment>MCC host text used by Strings.EntityUiId. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_503e99a7f80a" xml:space="preserve">
+    <value>Map #{0}  scale {1}:1  zoom {2}%  +/- zoom, arrows pan, Esc close</value>
+    <comment>MCC host text used by Strings.TuiMapFooter. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_504397f7b316" xml:space="preserve">
+    <value>Session diagnostics written to {0}</value>
+    <comment>MCC host text used by Strings.DiagnosticsBundleWritten. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_50d7026e31bc" xml:space="preserve">
+    <value>CLIENT</value>
+    <comment>MCC host text used by Strings.MccMenuClient. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_526e0087cc3f" xml:space="preserve">
+    <value>Description</value>
+    <comment>MCC host text used by Strings.AdvancementUiDescription. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_531c7b28abf2" xml:space="preserve">
+    <value>Unlocked</value>
+    <comment>MCC host text used by Strings.AdvancementUiUnlocked. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5326d7d8cd0b" xml:space="preserve">
+    <value>Nothing matches '{0}'.</value>
+    <comment>MCC host text used by Strings.PmSearchNone. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5342e09f2729" xml:space="preserve">
+    <value>Enable</value>
+    <comment>MCC host text used by Strings.PmEnable. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5370aac4cefe" xml:space="preserve">
+    <value>[chat] The server withheld a message from {0}.</value>
+    <comment>MCC host text used by Strings.ChatMessageWithheld. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5474eef8d0f1" xml:space="preserve">
+    <value>Working…</value>
+    <comment>MCC host text used by Strings.PmWorking. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_558d3d2cf486" xml:space="preserve">
+    <value>Created {0}.</value>
+    <comment>MCC host text used by Strings.ScriptsUiCreated. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_565339bc4d33" xml:space="preserve">
+    <value>OK</value>
+    <comment>MCC host text used by Strings.TuiPromptOk. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_569ca49f4aaf" xml:space="preserve">
+    <value>Install</value>
+    <comment>MCC host text used by Strings.PmInstall. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_57aae658b1a7" xml:space="preserve">
+    <value>To sign in, open {0} in a browser and enter the code: {1}</value>
+    <comment>MCC host text used by Strings.DeviceCode. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_57b5e2fc1bba" xml:space="preserve">
+    <value>Rotation</value>
+    <comment>MCC host text used by Strings.EntityUiRotation. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_582967534d0f" xml:space="preserve">
+    <value>in</value>
+    <comment>MCC host text used by Strings.PmFieldMarketplace. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5985039f106d" xml:space="preserve">
+    <value>Team</value>
+    <comment>MCC host text used by Strings.TuiTabColumnTeam. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5d94d942f99c" xml:space="preserve">
+    <value>Delete script '{0}'?</value>
+    <comment>MCC host text used by Strings.ScriptsUiDeleteConfirm. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5f8242f5669e" xml:space="preserve">
+    <value>Plugins: {0} discovered, {1} loaded.</value>
+    <comment>MCC host text used by Strings.PmDoctorHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_5f8cdaefc1c9" xml:space="preserve">
+    <value>Disconnected: {0}</value>
+    <comment>MCC host text used by Strings.DisconnectedRemotely. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_62b59354741e" xml:space="preserve">
+    <value>Refreshed</value>
+    <comment>MCC host text used by Strings.PmRefreshedColumn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_62fa5a5b0d3c" xml:space="preserve">
+    <value>Path</value>
+    <comment>MCC host text used by Strings.PmFieldPath. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_64aee8c6cbd0" xml:space="preserve">
+    <value>Player</value>
+    <comment>MCC host text used by Strings.TuiTabColumnPlayer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6521f377d71f" xml:space="preserve">
+    <value>refreshed {0}</value>
+    <comment>MCC host text used by Strings.PmRefreshedAt. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_67ef2dcac50d" xml:space="preserve">
+    <value>XYZ {0:0.0} {1:0.0} {2:0.0} · chunk {3}, {4} · {5}/{6} loaded</value>
+    <comment>MCC host text used by Strings.ChunkUiSummary. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_67fd141b49bc" xml:space="preserve">
+    <value>Pin {0}</value>
+    <comment>MCC host text used by Strings.PmPinTitleFor. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6a4c3a4483b0" xml:space="preserve">
+    <value>Ping</value>
+    <comment>MCC host text used by Strings.TuiTabColumnPing. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6b88fe530b0a" xml:space="preserve">
+    <value>Unload</value>
+    <comment>MCC host text used by Strings.PmUnload. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6c01cf3d6673" xml:space="preserve">
+    <value>{0} running · {1} stopped</value>
+    <comment>MCC host text used by Strings.ScriptsUiCount. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6cb574fa10b6" xml:space="preserve">
+    <value>languages</value>
+    <comment>MCC host text used by Strings.PmInfoLanguages. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_6d26bd224630" xml:space="preserve">
+    <value># {0}Minecraft Console Client
+
+A Minecraft client that runs in your terminal. Type to chat, run `/commands`, and automate things with plugins.
+
+Shorter version of the Help page: `Mcc.Cli --help-short`
+
+&gt; [!NOTE]
+&gt; Never used a terminal program before? You only need one line to start. Everything else is optional.
+
+## {1}New here? Start here
+
+1. Run `Mcc.Cli` with no arguments.
+2. MCC creates a `configurations/` folder with commented examples on the first run.
+3. It asks how you want to sign in, then connects you.
+
+That is it. Come back to this page later when you want shortcuts.
+
+## {2}How to run it
+
+```text
+Mcc.Cli [&lt;username&gt;] [&lt;password|-&gt;] [&lt;host[:port]&gt;]
+        [--configurations &lt;folder&gt;] [-v &lt;version&gt;] [--auth &lt;mode&gt;]
+        [--auth-server &lt;host&gt;] [--exercise &lt;name&gt;]
+        [--section.setting=value ...]
+```
+
+The words after `Mcc.Cli` are called **arguments**. Order matters: the first word is always
+the username, the second the password, the third the server address. Anything in `[brackets]`
+is optional, so `Mcc.Cli` alone is valid. To reach a later slot, fill the earlier ones:
+use `-` for the password when you have nothing for it.
+
+## {3}The 3 arguments, in order
+
+| # | What to type | What it does | Example |
+| --- | --- | --- | --- |
+| 1 | `username` | Who to sign in as. Offline names hold 16 chars max. | `Steve` |
+| 2 | `password` or `-` | `-` forces offline mode. Anything else is accepted but unused, because online sign-in is interactive. | `-` |
+| 3 | `host[:port]` | Which server to join. The port defaults to `25565`. | `play.example.com:25565` |
+
+Your settings live in `./configurations` unless you pass `--configurations &lt;folder&gt;`
+(a folder, or a `client.toml` file inside one).
+
+&gt; [!TIP]
+&gt; The shortest full command names all three: `Mcc.Cli Steve - play.example.com`.
+
+## {4}Options you can add
+
+| Option | What it does |
+| --- | --- |
+| `--configurations &lt;folder&gt;` | Use another settings folder instead of `./configurations`. |
+| `-v &lt;version&gt;` | Pin a Minecraft version, like `1.21.5`. Leave it out for auto-detect. |
+| `--auth &lt;mode&gt;` | How to sign in. See the signing-in section below. |
+| `--auth-server &lt;host&gt;` | Custom login server URL. Only used with `--auth yggdrasil`. |
+| `--exercise &lt;name&gt;` | Run a self-check after joining, then quit. Known value: `smoke`. |
+| `--section.setting=value` | Change one `client.toml` setting for this run only. Wins over everything else. |
+| `--console.table.key=value` | Change one `console.toml` setting, for example `--console.General.Timestamps=true`. |
+
+Short flags (`-v`) and long flags (`--auth`) are the same idea: extra instructions
+that start with dashes so MCC knows they are not usernames or addresses.
+
+## {5}Signing in, explained
+
+| Mode | Pick it when | What happens |
+| --- | --- | --- |
+| `offline` | You play on a test or offline-mode server. | No password. Just joins. |
+| `microsoft` | You have a normal Microsoft account. | Shows a short code and a Microsoft link. Open the link, enter the code. |
+| `microsoft-browser` | The code flow does not work for you. | Shows a link. Sign in in your browser, then paste back the code it shows. |
+| `yggdrasil` | Your server uses its own login (authlib-injector). | Asks for a username and password, and needs `--auth-server`. |
+
+Passwords are never saved to disk. Microsoft uses a browser step, Yggdrasil asks each time.
+
+## {6}Tweaking settings without editing files
+
+Your settings live in `client.toml` and `console.toml`. Flags let you try a change once:
+
+```text
+Mcc.Cli --connection.auto-connect=false
+Mcc.Cli --gameplay.terrain=false Steve - play.example.com
+Mcc.Cli --console.General.Timestamps=true
+```
+
+The rule is simple: config file &lt; arguments &lt; `--dotted.flags`. The rightmost flag wins.
+
+## {7}Examples you can copy
+
+```text
+Mcc.Cli
+Mcc.Cli Steve - play.example.com
+Mcc.Cli --configurations ./my-config Steve - play.example.com:25565
+Mcc.Cli --auth microsoft Steve - play.example.com
+Mcc.Cli -v 1.21.5 Steve - play.example.com
+Mcc.Cli --exercise smoke Steve - play.example.com
+```
+
+## {8}When you are inside
+
+- Type chat and press Enter to talk, or type `/help` to list commands.
+- Type `quit` or `exit` to disconnect.
+- For scripts: set `MCC_FILE_INPUT=1` and point `MCC_INPUT_FILE` at a file of commands.
+
+## {9}Need more help?
+
+- Inside MCC, `/help &lt;command&gt;` and `/man &lt;topic&gt;` explain the rest.</value>
+    <comment>MCC host text used by Strings.HelpMarkdown. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_71708699acf8" xml:space="preserve">
+    <value>Criteria</value>
+    <comment>MCC host text used by Strings.AdvancementUiCriteria. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7205994f06cd" xml:space="preserve">
+    <value>Available plugins ({0})</value>
+    <comment>MCC host text used by Strings.PmAvailablePluginsHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_74a883a037bc" xml:space="preserve">
+    <value>Settings</value>
+    <comment>MCC host text used by Strings.PmSettings. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_75081b593d15" xml:space="preserve">
+    <value>Disabled</value>
+    <comment>MCC host text used by Strings.PmFilterDisabled. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_75f33cdfc8e5" xml:space="preserve">
+    <value>Incomplete</value>
+    <comment>MCC host text used by Strings.AdvancementUiIncomplete. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_76900f1bfd16" xml:space="preserve">
+    <value>Back</value>
+    <comment>MCC host text used by Strings.TuiPromptBack. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_77632ee14cf1" xml:space="preserve">
+    <value>This version supports at most {0} pages.</value>
+    <comment>MCC host text used by Strings.TuiBookMaxPagesReached. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_783ece18206a" xml:space="preserve">
+    <value>/exit</value>
+    <comment>MCC host text used by Strings.MccMenuExitHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_78c04330e989" xml:space="preserve">
+    <value>Passive</value>
+    <comment>MCC host text used by Strings.EntityUiPassive. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7a9536ae1ecd" xml:space="preserve">
+    <value>[unverified]</value>
+    <comment>MCC host text used by Strings.ChatStandingUnverified. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7abc49dfa87b" xml:space="preserve">
+    <value>Inputs</value>
+    <comment>MCC host text used by Strings.TuiDialogInputs. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7c9db3996a40" xml:space="preserve">
+    <value>Could not open this workspace: {0}</value>
+    <comment>MCC host text used by Strings.MccMenuOpenFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7d9eb7acb13e" xml:space="preserve">
+    <value>Close</value>
+    <comment>MCC host text used by Strings.TuiPromptClose. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7e2372f4115c" xml:space="preserve">
+    <value>neutral</value>
+    <comment>MCC host text used by Strings.MinimapLegendNeutral. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7f0a1e21b931" xml:space="preserve">
+    <value>/tab</value>
+    <comment>MCC host text used by Strings.MccMenuPlayersHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7fc1756bbb9b" xml:space="preserve">
+    <value>signature-rejected</value>
+    <comment>MCC host text used by Strings.ChatStandingLabelRejected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_7fdb3ccec0e0" xml:space="preserve">
+    <value>Entities</value>
+    <comment>MCC host text used by Strings.MccMenuEntities. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8044e38905ec" xml:space="preserve">
+    <value>This server offers an optional resource pack:
+{0}
+Accept it? (yes/no): </value>
+    <comment>MCC host text used by Strings.ResourcePackQuestion. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_822b2ae4542b" xml:space="preserve">
+    <value>Find</value>
+    <comment>MCC host text used by Strings.PmFieldQuery. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_82a7300f878b" xml:space="preserve">
+    <value>[signature-rejected]</value>
+    <comment>MCC host text used by Strings.ChatStandingRejected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_83cb7d76bcbe" xml:space="preserve">
+    <value>Configuration error: {0}</value>
+    <comment>MCC host text used by Strings.ConfigError. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_84e12ac655dd" xml:space="preserve">
+    <value>Players</value>
+    <comment>MCC host text used by Strings.EntityUiPlayers. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8605605ae026" xml:space="preserve">
+    <value>Named</value>
+    <comment>MCC host text used by Strings.RecipeUiNamed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_861ff60d86e3" xml:space="preserve">
+    <value>Marketplaces ({0})</value>
+    <comment>MCC host text used by Strings.PmMarketsHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_86263ca0365c" xml:space="preserve">
+    <value>Updates ({0} available, {1} held)</value>
+    <comment>MCC host text used by Strings.PmUpdatesHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_88c03de25a8b" xml:space="preserve">
+    <value>Page {0}/{1}</value>
+    <comment>MCC host text used by Strings.TuiBookPageHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8965cdc71634" xml:space="preserve">
+    <value>Velocity</value>
+    <comment>MCC host text used by Strings.EntityUiVelocity. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_89aa6bd39b61" xml:space="preserve">
+    <value>(offline)</value>
+    <comment>MCC host text used by Strings.PmOfflineTag. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8a6bdb6b18da" xml:space="preserve">
+    <value>Load</value>
+    <comment>MCC host text used by Strings.PmLoad. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8c31e6e72230" xml:space="preserve">
+    <value>Local</value>
+    <comment>MCC host text used by Strings.PmFilterLocal. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8cc4ec25f1c0" xml:space="preserve">
+    <value>unloaded</value>
+    <comment>MCC host text used by Strings.ChunkUiUnloaded. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8d0b457c6907" xml:space="preserve">
+    <value>Page {0} has {1} characters, but this version supports at most {2} characters per page.</value>
+    <comment>MCC host text used by Strings.TuiBookPageTooLong. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8d0e6b4ab605" xml:space="preserve">
+    <value>Scripts</value>
+    <comment>MCC host text used by Strings.MccMenuScripts. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8d59829c1e15" xml:space="preserve">
+    <value>Usage</value>
+    <comment>MCC host text used by Strings.BrowserUsage. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8d752d83f14d" xml:space="preserve">
+    <value>Checked {0} plugin(s); {1} of them will not work as written.</value>
+    <comment>MCC host text used by Strings.PmValidateHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8dd6857baf02" xml:space="preserve">
+    <value>Mute</value>
+    <comment>MCC host text used by Strings.ScriptsUiMute. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8e2c7ac50813" xml:space="preserve">
+    <value>offline</value>
+    <comment>MCC host text used by Strings.PmInfoOffline. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_8f383ccddc6f" xml:space="preserve">
+    <value>hostile</value>
+    <comment>MCC host text used by Strings.MinimapLegendHostile. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_90db4e4d2862" xml:space="preserve">
+    <value>Unknown exercise '{0}'. Known exercises: smoke.</value>
+    <comment>MCC host text used by Strings.UnknownExercise. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_914923a34ac0" xml:space="preserve">
+    <value>Signed in as {0}. Type '/connect &lt;host[:port]&gt;' to join a server.</value>
+    <comment>MCC host text used by Strings.TuiLoginSignedIn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_923fe53966c6" xml:space="preserve">
+    <value>entry</value>
+    <comment>MCC host text used by Strings.PmInfoEntry. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_92c1cdfdf4cb" xml:space="preserve">
+    <value>Enabled</value>
+    <comment>MCC host text used by Strings.PmFilterEnabled. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_92eaedf3b7ff" xml:space="preserve">
+    <value>Distance: {0:0.00}</value>
+    <comment>MCC host text used by Strings.EntityUiDistance. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9345808c614e" xml:space="preserve">
+    <value>Uninstall {0}?</value>
+    <comment>MCC host text used by Strings.PmUninstallTitleFor. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_93d8a5e2f01a" xml:space="preserve">
+    <value>Lint</value>
+    <comment>MCC host text used by Strings.ScriptsUiLint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_947addf1de01" xml:space="preserve">
+    <value>Players ({0})</value>
+    <comment>MCC host text used by Strings.TuiTabHeader. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9514b7ff4860" xml:space="preserve">
+    <value>Plugins</value>
+    <comment>MCC host text used by Strings.PmTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_966591fe7e17" xml:space="preserve">
+    <value>Evaluate</value>
+    <comment>MCC host text used by Strings.ScriptsUiEvaluate. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_976d6318e648" xml:space="preserve">
+    <value>not-applicable</value>
+    <comment>MCC host text used by Strings.ChatStandingLabelNotApplicable. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_978a6092f1e3" xml:space="preserve">
+    <value>{0} ms</value>
+    <comment>MCC host text used by Strings.ServerInfoPingMs. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_978c2f894135" xml:space="preserve">
+    <value>tags</value>
+    <comment>MCC host text used by Strings.PmInfoTags. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_97b7e2db799e" xml:space="preserve">
+    <value>unverified</value>
+    <comment>MCC host text used by Strings.ChatStandingLabelUnverified. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_981476a511f2" xml:space="preserve">
+    <value>=== exercise {0}: start ===</value>
+    <comment>MCC host text used by Strings.ExerciseStart. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_999f23fcd7be" xml:space="preserve">
+    <value>Identity</value>
+    <comment>MCC host text used by Strings.EntityUiIdentity. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9a5fe6fd8de5" xml:space="preserve">
+    <value>[insecure]</value>
+    <comment>MCC host text used by Strings.ChatStandingInsecure. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9d64ce84e2c3" xml:space="preserve">
+    <value>Remove {0}?</value>
+    <comment>MCC host text used by Strings.PmRemoveMarketTitleFor. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_9df3adfa5292" xml:space="preserve">
+    <value>Saved server '{0}' ({1}:{2}).</value>
+    <comment>MCC host text used by Strings.TuiConnectSaved. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a1794783aab7" xml:space="preserve">
+    <value>Offline</value>
+    <comment>MCC host text used by Strings.TuiLoginOffline. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a1a935b98150" xml:space="preserve">
+    <value>{0} of {1} complete</value>
+    <comment>MCC host text used by Strings.AdvancementUiProgress. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a3938a08cc29" xml:space="preserve">
+    <value>Protocol: {0}</value>
+    <comment>MCC host text used by Strings.ServerInfoLabelProtocol. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a424e33d9093" xml:space="preserve">
+    <value>Locked</value>
+    <comment>MCC host text used by Strings.AdvancementUiLocked. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a4262e1c9bcb" xml:space="preserve">
+    <value>about</value>
+    <comment>MCC host text used by Strings.PmInfoAbout. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a51a6c19a1ff" xml:space="preserve">
+    <value>installed</value>
+    <comment>MCC host text used by Strings.PmInfoInstalled. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a52ace420f21" xml:space="preserve">
+    <value>All</value>
+    <comment>MCC host text used by Strings.PmFilterAll. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a5c5a15eec44" xml:space="preserve">
+    <value>homepage</value>
+    <comment>MCC host text used by Strings.PmInfoHomepage. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a5e1cb9e180a" xml:space="preserve">
+    <value>Generated default configuration in {0}. MCC asks which account to use on the first connect.</value>
+    <comment>MCC host text used by Strings.ConfigGenerated. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a62394ba4acc" xml:space="preserve">
+    <value>Vehicle</value>
+    <comment>MCC host text used by Strings.EntityUiVehicle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a71e75732446" xml:space="preserve">
+    <value>Watch</value>
+    <comment>MCC host text used by Strings.ScriptsUiWatch. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a7f1d7bc2124" xml:space="preserve">
+    <value>passive</value>
+    <comment>MCC host text used by Strings.MinimapLegendPassive. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_a8184dba5c5c" xml:space="preserve">
+    <value>Locals</value>
+    <comment>MCC host text used by Strings.ScriptsUiLocals. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_aa7a6310dda5" xml:space="preserve">
+    <value>Flag '{0}' requires a value.</value>
+    <comment>MCC host text used by Strings.MissingFlagValue. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ae3bff5011b3" xml:space="preserve">
+    <value>Passengers</value>
+    <comment>MCC host text used by Strings.EntityUiPassengers. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_af4e46e97125" xml:space="preserve">
+    <value>Login rejected: {0}</value>
+    <comment>MCC host text used by Strings.LoginRejected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b073f6c68ef8" xml:space="preserve">
+    <value>Scope</value>
+    <comment>MCC host text used by Strings.AdvancementUiScope. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b0b9fe24ffa9" xml:space="preserve">
+    <value>Manual</value>
+    <comment>MCC host text used by Strings.BrowserManualTab. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b2439bcb8dee" xml:space="preserve">
+    <value>Output</value>
+    <comment>MCC host text used by Strings.ScriptsUiOutput. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b24963ea2cbc" xml:space="preserve">
+    <value>Overwrite</value>
+    <comment>MCC host text used by Strings.ScriptsUiOverwrite. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b269dc4e81a5" xml:space="preserve">
+    <value>Commands</value>
+    <comment>MCC host text used by Strings.BrowserCommandsTab. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b322d0389f38" xml:space="preserve">
+    <value>Using configured account '{0}'.</value>
+    <comment>MCC host text used by Strings.UsingConfiguredAccount. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b3478c03ae8f" xml:space="preserve">
+    <value>Hostile</value>
+    <comment>MCC host text used by Strings.EntityUiHostile. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b37e2fc666ae" xml:space="preserve">
+    <value>Chunks</value>
+    <comment>MCC host text used by Strings.MccMenuChunks. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b38c62c3420f" xml:space="preserve">
+    <value>Initiating a transfer to: {0}:{1}</value>
+    <comment>MCC host text used by Strings.TransferInitiated. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b4dc66dde806" xml:space="preserve">
+    <value>off</value>
+    <comment>MCC host text used by Strings.MgmtOff. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b544807dcc8d" xml:space="preserve">
+    <value>This server requires a resource pack to play:
+{0}
+Accept it? (yes/no): </value>
+    <comment>MCC host text used by Strings.ResourcePackQuestion. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b57a5b51368c" xml:space="preserve">
+    <value>PASS {0}</value>
+    <comment>MCC host text used by Strings.ExercisePass. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b7e3e4aa4257" xml:space="preserve">
+    <value>Disable</value>
+    <comment>MCC host text used by Strings.PmDisable. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b80012851cf0" xml:space="preserve">
+    <value>modified</value>
+    <comment>MCC host text used by Strings.ScriptsUiDirty. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b8d31e852725" xml:space="preserve">
+    <value>on</value>
+    <comment>MCC host text used by Strings.MgmtOn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_b9014eaab626" xml:space="preserve">
+    <value>requires</value>
+    <comment>MCC host text used by Strings.PmInfoRequires. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ba3814e14961" xml:space="preserve">
+    <value>Deleted script '{0}'.</value>
+    <comment>MCC host text used by Strings.ScriptsUiDeleted. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_baaddf70fb5d" xml:space="preserve">
+    <value>Type</value>
+    <comment>MCC host text used by Strings.EntityUiType. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_bdc090ec61e3" xml:space="preserve">
+    <value>Reload</value>
+    <comment>MCC host text used by Strings.PmReload. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_be4bd5677277" xml:space="preserve">
+    <value>errors</value>
+    <comment>MCC host text used by Strings.PmInfoErrors. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c097b4180ebc" xml:space="preserve">
+    <value>[chat] Missed a chat message from the server: expected index {0}, got {1} </value>
+    <comment>MCC host text used by Strings.ChatStreamGapDetected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c1c1009d3f37" xml:space="preserve">
+    <value>Update</value>
+    <comment>MCC host text used by Strings.PmUpdate. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c36d819e7bc6" xml:space="preserve">
+    <value>Use</value>
+    <comment>MCC host text used by Strings.EntityUiUse. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c3812fc4acb8" xml:space="preserve">
+    <value>Remove</value>
+    <comment>MCC host text used by Strings.PmRemove. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c42af114cb44" xml:space="preserve">
+    <value>Could not open the log file: {0}</value>
+    <comment>MCC host text used by Strings.LogFileError. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c611981fab98" xml:space="preserve">
+    <value>Policy</value>
+    <comment>MCC host text used by Strings.PmPolicyLabel. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c759f42e4568" xml:space="preserve">
+    <value>Outdated</value>
+    <comment>MCC host text used by Strings.PmFilterOutdated. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_c8fa8a64d9c8" xml:space="preserve">
+    <value>=== exercise {0}: {1} passed, {2} failed, {3} skipped ===</value>
+    <comment>MCC host text used by Strings.ExerciseSummary. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ca00fccfb408" xml:space="preserve">
+    <value>error</value>
+    <comment>MCC host text used by Strings.ValidatePluginProblem. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ca09727312a7" xml:space="preserve">
+    <value>  {0}: ok</value>
+    <comment>MCC host text used by Strings.PmValidateSubjectOk. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cae7d57bc067" xml:space="preserve">
+    <value>Stop</value>
+    <comment>MCC host text used by Strings.ScriptsUiStop. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cb62d73f87fc" xml:space="preserve">
+    <value>Authentication failed: {0}</value>
+    <comment>MCC host text used by Strings.AuthFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cc28b0f9edc9" xml:space="preserve">
+    <value>https://github.com/MCCTeam/Minecraft-Console-Client</value>
+    <comment>MCC host text used by Strings.TuiBannerHint. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cdb59355f3ba" xml:space="preserve">
+    <value>player</value>
+    <comment>MCC host text used by Strings.MinimapLegendPlayer. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_cf7377489912" xml:space="preserve">
+    <value>PASS {0} {1}</value>
+    <comment>MCC host text used by Strings.ExercisePass. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d0b50e064a4f" xml:space="preserve">
+    <value>Frame</value>
+    <comment>MCC host text used by Strings.AdvancementUiFrame. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d135d8be42b5" xml:space="preserve">
+    <value>Advancements</value>
+    <comment>MCC host text used by Strings.MccMenuAdvancements. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d29a0939bcb5" xml:space="preserve">
+    <value>(empty)</value>
+    <comment>MCC host text used by Strings.TuiContainerEmpty. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d38e8fa77059" xml:space="preserve">
+    <value>&gt; [!WARNING]
+&gt; **Early test build**
+&gt;
+&gt; MCC 2.0 is unfinished. Some features are missing; others may behave badly or change without notice. Expect bugs.</value>
+    <comment>MCC host text used by Strings.EarlyBuildWarningMarkdown. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d4a33d5b78bc" xml:space="preserve">
+    <value>Discover</value>
+    <comment>MCC host text used by Strings.PmDiscover. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d4b1ea5708dd" xml:space="preserve">
+    <value>Overview</value>
+    <comment>MCC host text used by Strings.PmOverview. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d664282e62e4" xml:space="preserve">
+    <value>Recipes</value>
+    <comment>MCC host text used by Strings.MccMenuRecipes. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d745ea32f80c" xml:space="preserve">
+    <value>{0}: valid, with {1} warning(s).</value>
+    <comment>MCC host text used by Strings.ValidatePluginOk. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d80ffc8dc079" xml:space="preserve">
+    <value>RUNNING</value>
+    <comment>MCC host text used by Strings.ScriptsUiRunning. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_d968213dc0e3" xml:space="preserve">
+    <value>SKIP {0} {1}</value>
+    <comment>MCC host text used by Strings.ExerciseSkip. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_daee7606b339" xml:space="preserve">
+    <value>Reset</value>
+    <comment>MCC host text used by Strings.PmReset. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_dc937b598926" xml:space="preserve">
+    <value>None</value>
+    <comment>MCC host text used by Strings.BrowserNone. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_dcd1d5223f73" xml:space="preserve">
+    <value>Name</value>
+    <comment>MCC host text used by Strings.PmFieldMarketName. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_dd167905de0d" xml:space="preserve">
+    <value>Version</value>
+    <comment>MCC host text used by Strings.PmFieldVersion. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_dfe262442ec7" xml:space="preserve">
+    <value>Marketplaces</value>
+    <comment>MCC host text used by Strings.PmMarketplaces. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e0cdd07f6a27" xml:space="preserve">
+    <value>Requirements</value>
+    <comment>MCC host text used by Strings.BrowserRequirements. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e2d0a54968ea" xml:space="preserve">
+    <value>Delete</value>
+    <comment>MCC host text used by Strings.ScriptsUiDelete. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e3b89e9d33f8" xml:space="preserve">
+    <value>Username</value>
+    <comment>MCC host text used by Strings.TuiFieldUsername. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e4368fc759a5" xml:space="preserve">
+    <value>send failed: {0}</value>
+    <comment>MCC host text used by Strings.SendFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e4657cd4751b" xml:space="preserve">
+    <value>Usage: {0} &lt;plugin folder&gt;. Checks one folder and exits; nothing else runs.</value>
+    <comment>MCC host text used by Strings.ValidatePluginUsage. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e4d693d24e64" xml:space="preserve">
+    <value>market</value>
+    <comment>MCC host text used by Strings.PmInfoMarket. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e4fb7d364272" xml:space="preserve">
+    <value>Book title must be 1-{0} characters.</value>
+    <comment>MCC host text used by Strings.TuiBookTitleTooLong. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e5488e0793cc" xml:space="preserve">
+    <value>Dialog button ran '{0}'.</value>
+    <comment>MCC host text used by Strings.TuiDialogCommandRun. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e68ee04dff59" xml:space="preserve">
+    <value>Examples</value>
+    <comment>MCC host text used by Strings.BrowserExamples. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e72b5fa2648c" xml:space="preserve">
+    <value>ADVANCEMENTS</value>
+    <comment>MCC host text used by Strings.AdvancementUiTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e7b53c341932" xml:space="preserve">
+    <value>Yggdrasil</value>
+    <comment>MCC host text used by Strings.TuiLoginYggdrasil. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_e7cf3ef4f17c" xml:space="preserve">
+    <value>Password</value>
+    <comment>MCC host text used by Strings.TuiFieldPassword. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_eb1a70e39274" xml:space="preserve">
+    <value>Discard</value>
+    <comment>MCC host text used by Strings.ScriptsUiDiscard. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ec91fdd9256c" xml:space="preserve">
+    <value>optional</value>
+    <comment>MCC host text used by Strings.PmInfoOptional. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ed6ef39d1654" xml:space="preserve">
+    <value>installed {0}</value>
+    <comment>MCC host text used by Strings.PmSearchInstalled. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ee3c71613054" xml:space="preserve">
+    <value>Unpin</value>
+    <comment>MCC host text used by Strings.PmUnpin. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ee4026a4e450" xml:space="preserve">
+    <value>Catalogue entries from {0}.</value>
+    <comment>MCC host text used by Strings.PmMarketplacePluginsSubtitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ef2af81f497d" xml:space="preserve">
+    <value>Showing {0} of {1}</value>
+    <comment>MCC host text used by Strings.MgmtShowing. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ef367c6d59fc" xml:space="preserve">
+    <value>Action failed: {0}</value>
+    <comment>MCC host text used by Strings.ScriptsUiFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f27f13d02192" xml:space="preserve">
+    <value>Pose</value>
+    <comment>MCC host text used by Strings.EntityUiPose. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f330a88293b2" xml:space="preserve">
+    <value>Could not refresh scoreboard: {0}</value>
+    <comment>MCC host text used by Strings.ScoreboardWindowError. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f38d9950af4f" xml:space="preserve">
+    <value>Flags</value>
+    <comment>MCC host text used by Strings.BrowserFlags. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f45ef872f71e" xml:space="preserve">
+    <value>({0} gap(s) this session).</value>
+    <comment>MCC host text used by Strings.ChatStreamGapDetected. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f480ffb2979d" xml:space="preserve">
+    <value>uses</value>
+    <comment>MCC host text used by Strings.PmInfoUses. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f48570f44b23" xml:space="preserve">
+    <value>Scoreboard</value>
+    <comment>MCC host text used by Strings.MccMenuScoreboard. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f80c3c143795" xml:space="preserve">
+    <value>Connection failed: {0}</value>
+    <comment>MCC host text used by Strings.ConnectFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f823ed1195ca" xml:space="preserve">
+    <value>{0}: {1} error(s). It will not load, or will print key names instead of text.</value>
+    <comment>MCC host text used by Strings.ValidatePluginFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_f97e9da0e3b8" xml:space="preserve">
+    <value>Other</value>
+    <comment>MCC host text used by Strings.EntityUiOther. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fb8bdb06a970" xml:space="preserve">
+    <value>Unexpected argument '{0}'. MCC takes &lt;username&gt; &lt;password|-&gt; &lt;host[:port]&gt;; pass a configurations folder as --configurations &lt;folder&gt;.</value>
+    <comment>MCC host text used by Strings.UnexpectedArgument. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fcef7f185767" xml:space="preserve">
+    <value>Could not save the server: {0}.</value>
+    <comment>MCC host text used by Strings.TuiConnectSaveFailed. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fd52ea6c7220" xml:space="preserve">
+    <value>Without purge they move to plugins/.removed/{0}/.</value>
+    <comment>MCC host text used by Strings.PmPurgeNote. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fe199528850a" xml:space="preserve">
+    <value>Uninstall</value>
+    <comment>MCC host text used by Strings.PmUninstall. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fe44835079a0" xml:space="preserve">
+    <value>This permanently removes '{0}.bcn'.</value>
+    <comment>MCC host text used by Strings.ScriptsUiDeleteWarning. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fe64251edaa2" xml:space="preserve">
+    <value>To sign in, open this URL in your browser:
+{0}
+After signing in, the page shows a code. Copy it (and keep it secret).</value>
+    <comment>MCC host text used by Strings.BrowserSignIn. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_fed9f52dcd92" xml:space="preserve">
+    <value>{0} - settings.toml</value>
+    <comment>MCC host text used by Strings.PmSettingsTitle. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ff1cee744146" xml:space="preserve">
+    <value>Pin</value>
+    <comment>MCC host text used by Strings.PmPin. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ff8059dc6752" xml:space="preserve">
+    <value>Actions</value>
+    <comment>MCC host text used by Strings.PmActions. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+  <data name="cli.text.literal_ffbdc682dff5" xml:space="preserve">
+    <value>{0} discovered · {1} enabled · {2} loaded</value>
+    <comment>MCC host text used by Strings.PmLibrarySummary. Preserve numbered placeholders, format suffixes, command names and code examples.</comment>
+  </data>
+</root>

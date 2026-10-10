@@ -1,0 +1,5 @@
+# beacon 1
+# needs: chat.send
+on chat as e when trim(lower(e.message)) is "!hello"
+  whisper e.player "Hello, {e.player}!"
+end on

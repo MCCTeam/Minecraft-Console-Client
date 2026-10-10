@@ -1,0 +1,4 @@
+# beacon 1
+set total to call "shop.subtotal"(3, 4)
+assert(total is 12, "provider result")
+show "Provider total: {total}"
