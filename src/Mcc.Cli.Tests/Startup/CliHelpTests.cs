@@ -13,6 +13,7 @@ namespace Mcc.Cli.Tests.Startup;
 /// The <c>--help</c> / <c>--help-short</c> one-shots and the friendly page itself.
 /// The page's examples are <c>Mcc.Cli</c> invocations, so the content assertions pin the exact contract the parser implements: a stale example here is a lie the user can copy.
 /// </summary>
+[Collection("console-io")]
 public sealed class CliHelpTests
 {
     [Theory]

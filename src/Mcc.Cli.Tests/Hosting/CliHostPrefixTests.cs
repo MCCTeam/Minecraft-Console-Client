@@ -13,6 +13,7 @@ namespace Mcc.Cli.Tests.Hosting;
 /// MCC's own words carry <c>[MCC]</c> so they scan apart from typed input and server output, and the two notices a fresh user must act on carry color.
 /// Plain text when color is off, so redirected logs and <c>NO_COLOR</c> runs stay clean.
 /// </summary>
+[Collection("console-io")]
 public sealed class CliHostPrefixTests
 {
     [Fact]

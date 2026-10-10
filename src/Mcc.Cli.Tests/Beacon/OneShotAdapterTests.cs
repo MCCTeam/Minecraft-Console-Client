@@ -9,14 +9,14 @@ namespace Mcc.Cli.Tests.Beacon;
 /// Adapter characterization for the three Beacon one-shot Console adapters (lint, run, format).
 /// Pins only the transport contract: exact argv[0] matching, stdin read only after a successful requested parse, nonempty stdout before nonempty stderr with WriteLine newlines, empty streams left unwritten, and usage and execution exit codes.
 /// Engine behavior stays covered by LintTests, FormatTests, and ScriptToolingTests.
-/// All Console redirection lives in the non-parallel collection below and every saved stream is restored in finally.
+/// Tests that redirect Console share this non-parallel collection and restore every saved stream in finally.
 /// </summary>
-[CollectionDefinition("beacon-oneshot-console", DisableParallelization = true)]
-public sealed class BeaconOneShotConsoleCollection
+[CollectionDefinition("console-io", DisableParallelization = true)]
+public sealed class ConsoleIoCollection
 {
 }
 
-[Collection("beacon-oneshot-console")]
+[Collection("console-io")]
 public sealed class OneShotAdapterTests : IDisposable
 {
     private readonly List<string> _roots = [];
