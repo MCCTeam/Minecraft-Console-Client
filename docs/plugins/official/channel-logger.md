@@ -1,5 +1,7 @@
 # Channel logger
 
+Channel Logger is not included in the official Marketplace. This page documents the older standalone plugin.
+
 Records inbound play-phase plugin-channel payloads to a log file.
 
 | Package ID | Plugin release | Manifest capabilities |
@@ -12,15 +14,12 @@ The plugin lives in the separate [DMCBK-Plugins repository](https://github.com/M
 
 Use the [plugin management guide](../managing.md) to install a released archive or local package. A source checkout by itself is not a compiled plugin package.
 
-If a publisher already offers this release in a marketplace named `official`, enter:
+Import a compiled package from your chosen publisher with the [plugin management guide](../managing.md). After it loads, enter:
 
 ```text
-/plugins install channel-logger@official 2.0.0
 /plugins enable channel-logger
 /plugins info channel-logger
 ```
-
-These commands depend on that publisher having uploaded working release assets. The repository catalogue alone does not prove that a downloadable release exists.
 
 1. Check that `/plugins list` shows `channel-logger` as loaded.
 2. Open `plugins/userdata/channel-logger/settings.toml` under your plugin root.

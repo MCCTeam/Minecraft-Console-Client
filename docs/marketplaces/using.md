@@ -2,7 +2,25 @@
 
 Start with a publisher you trust. A plugin runs with ordinary access to the MCC process, files, and network. A marketplace checksum checks that an archive matches the publisher metadata. It does not prove that the plugin code is safe.
 
-## Add a publisher
+## Use the official marketplace
+
+MCC registers the [MCC Marketplace](https://github.com/MCCTeam/Marketplace) as `official` when your configuration has no marketplace registry. Enter:
+
+```text
+/plugins search fishing in official
+/plugins install auto-fishing@official
+/plugins info auto-fishing
+```
+
+Read the [plugin manual](../plugins/official/auto-fishing.md) before enabling its behavior. Automatic updates start off, and startup does not download or install plugins. Use `/plugins marketplace refresh official` to fetch current metadata. If you removed `official`, MCC preserves that choice. Existing custom or empty registries stay as you configured them.
+
+To add it again, enter:
+
+```text
+/plugins marketplace add https://raw.githubusercontent.com/MCCTeam/Marketplace/master/marketplace/mcc-marketplace.toml as official
+```
+
+## Add another publisher
 
 1. Obtain the publisher schema-2 index URL.
 2. Enter `/plugins marketplace add <index-url> as community`.
@@ -13,7 +31,7 @@ Start with a publisher you trust. A plugin runs with ordinary access to the MCC 
 
 Replace `<index-url>` with the real URL. A local folder containing `mcc-marketplace.toml` also works. Repository imports must expose a valid index where the marketplace importer expects it. Prefer a direct index URL when a repository stores the index in a subdirectory.
 
-The official source repository uses `marketplace/mcc-marketplace.toml`. Check that its catalogue assets exist before adding its index for ordinary installation. This documentation does not promise that unpublished release assets are available.
+The official repository stores its index at `marketplace/mcc-marketplace.toml`. Use the direct index URL shown above.
 
 ## Install a particular release
 

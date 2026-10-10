@@ -17,7 +17,7 @@ You can test calculations without a Minecraft server. Game actions need a live s
 | [Standard library](standard-library.md) | Function signatures, results, prerequisites, and examples |
 | [MCC operations and testing](hosting-and-testing.md) | Discovery, editing, diagnostics, reload, REPL and test boundaries |
 
-The examples target Beacon syntax version `1`, DMCBK `0.1.0-preview.6` and UMPK `0.9.0-beta.6`.
+The examples target Beacon syntax version `1`, DMCBK `0.1.0-preview.7` and UMPK `0.9.0-beta.6`.
 
 Beacon scripts and C# plugins serve different needs. Scripts express automation directly. Plugins add compiled behavior and reusable services through the [plugin SDK](../plugins/index.md).
 

@@ -4,23 +4,21 @@ Walks towards nearby dropped items to collect them.
 
 | Package ID | Plugin release | Manifest capabilities |
 | --- | --- | --- |
-| `items-collector` | `2.0.0` | `commands` |
+| `items-collector` | `2.0.2` | `commands` |
 
-The plugin lives in the separate [DMCBK-Plugins repository](https://github.com/MCCTeam/DMCBK-Plugins/tree/main/src/ItemsCollector). It is not built into MCC. Its declared game/resource usage is `movement`, `entities`, `terrain`. These declarations describe usage, not permission boundaries.
+The plugin lives in the separate [Marketplace repository](https://github.com/MCCTeam/Marketplace/tree/master/src/ItemsCollector). It is not built into MCC. Its declared game/resource usage is `movement`, `entities`, `terrain`. These declarations describe usage, not permission boundaries.
 
 ## Install and activate
 
 Use the [plugin management guide](../managing.md) to install a released archive or local package. A source checkout by itself is not a compiled plugin package.
 
-If a publisher already offers this release in a marketplace named `official`, enter:
+The official marketplace is registered by default. Enter:
 
 ```text
-/plugins install items-collector@official 2.0.0
+/plugins install items-collector@official 2.0.2
 /plugins enable items-collector
 /plugins info items-collector
 ```
-
-These commands depend on that publisher having uploaded working release assets. The repository catalogue alone does not prove that a downloadable release exists.
 
 1. Check that `/plugins list` shows `items-collector` as loaded.
 2. Open `plugins/userdata/items-collector/settings.toml` under your plugin root.

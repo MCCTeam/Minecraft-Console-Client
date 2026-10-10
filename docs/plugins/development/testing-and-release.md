@@ -5,7 +5,7 @@ Compilation checks syntax and references. Runtime tests also check loading, call
 ## Test a source plugin
 
 1. Create a .NET 10 test project.
-2. Add `DMCBK.Testing` version `0.1.0-preview.6`.
+2. Add `DMCBK.Testing` version `0.1.0-preview.7`.
 3. Load the real source entry through `PluginTestHost`.
 4. Check the individual plugin's loaded state.
 5. Run an in-memory session.

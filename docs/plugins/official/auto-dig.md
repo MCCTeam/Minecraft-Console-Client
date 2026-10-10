@@ -4,23 +4,21 @@ Breaks a selected block or a configured list of block positions.
 
 | Package ID | Plugin release | Manifest capabilities |
 | --- | --- | --- |
-| `auto-dig` | `2.0.0` | `commands` |
+| `auto-dig` | `2.0.2` | `commands` |
 
-The plugin lives in the separate [DMCBK-Plugins repository](https://github.com/MCCTeam/DMCBK-Plugins/tree/main/src/AutoDig). It is not built into MCC. Its declared game/resource usage is `terrain`, `inventory`, `interaction`. These declarations describe usage, not permission boundaries.
+The plugin lives in the separate [Marketplace repository](https://github.com/MCCTeam/Marketplace/tree/master/src/AutoDig). It is not built into MCC. Its declared game/resource usage is `terrain`, `inventory`, `interaction`. These declarations describe usage, not permission boundaries.
 
 ## Install and activate
 
 Use the [plugin management guide](../managing.md) to install a released archive or local package. A source checkout by itself is not a compiled plugin package.
 
-If a publisher already offers this release in a marketplace named `official`, enter:
+The official marketplace is registered by default. Enter:
 
 ```text
-/plugins install auto-dig@official 2.0.0
+/plugins install auto-dig@official 2.0.2
 /plugins enable auto-dig
 /plugins info auto-dig
 ```
-
-These commands depend on that publisher having uploaded working release assets. The repository catalogue alone does not prove that a downloadable release exists.
 
 1. Check that `/plugins list` shows `auto-dig` as loaded.
 2. Open `plugins/userdata/auto-dig/settings.toml` under your plugin root.

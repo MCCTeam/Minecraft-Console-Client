@@ -6,7 +6,7 @@ MCC 2.0 is a cross-platform console and terminal UI client for Minecraft Java Ed
 
 - Active solution: `Mcc.slnx`.
 - Host implementation: `src/Mcc.Cli/`. Host tests: `src/Mcc.Cli.Tests/`.
-- DMCBK packages: `0.1.0-preview.6`. UMPK packages: `0.9.0-beta.6`.
+- DMCBK packages: `0.1.0-preview.7`. UMPK packages: `0.9.0-beta.6`.
 - Restore libraries through NuGet. Do not add sibling project references or copy DMCBK, UMPK or official plugin implementations into this repository.
 - The legacy client, GUI, debug tools, Docker setup and old skills were removed. Current Docker files and skills target MCC 2.0.
 - MCC code uses MIT. Preserve external dependencies' licenses and attribution.
@@ -77,7 +77,7 @@ Feature folders and namespaces must match under `Mcc.Cli`; the enclosing `src` f
 | `Tui/` | Terminal UI adapters, presentation and feature views. |
 | `ConsoleInteractive/` | External submodule. Do not modify its source. |
 
-DMCBK owns client lifecycle, commands, typed configuration, Beacon, plugins and marketplace transactions. UMPK owns protocol support, world data, physics and pathfinding. Official plugins belong to DMCBK-Plugins.
+DMCBK owns client lifecycle, commands, typed configuration, Beacon, plugins and marketplace transactions. UMPK owns protocol support, world data, physics and pathfinding. Official plugins belong to [Marketplace](https://github.com/MCCTeam/Marketplace).
 
 ## Runtime and localization
 

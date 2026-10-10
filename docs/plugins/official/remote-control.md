@@ -4,23 +4,21 @@ Accepts MCC commands sent in private messages by configured bot owners.
 
 | Package ID | Plugin release | Manifest capabilities |
 | --- | --- | --- |
-| `remote-control` | `2.0.0` | `commands` |
+| `remote-control` | `2.0.2` | `commands` |
 
-The plugin lives in the separate [DMCBK-Plugins repository](https://github.com/MCCTeam/DMCBK-Plugins/tree/main/src/RemoteControl). It is not built into MCC. Its declared game/resource usage is `chat`, `commands`. These declarations describe usage, not permission boundaries.
+The plugin lives in the separate [Marketplace repository](https://github.com/MCCTeam/Marketplace/tree/master/src/RemoteControl). It is not built into MCC. Its declared game/resource usage is `chat`, `commands`. These declarations describe usage, not permission boundaries.
 
 ## Install and activate
 
 Use the [plugin management guide](../managing.md) to install a released archive or local package. A source checkout by itself is not a compiled plugin package.
 
-If a publisher already offers this release in a marketplace named `official`, enter:
+The official marketplace is registered by default. Enter:
 
 ```text
-/plugins install remote-control@official 2.0.0
+/plugins install remote-control@official 2.0.2
 /plugins enable remote-control
 /plugins info remote-control
 ```
-
-These commands depend on that publisher having uploaded working release assets. The repository catalogue alone does not prove that a downloadable release exists.
 
 1. Check that `/plugins list` shows `remote-control` as loaded.
 2. Open `plugins/userdata/remote-control/settings.toml` under your plugin root.

@@ -33,7 +33,7 @@ my-plugins/
 5. Build the plugin without sibling source references.
 6. Execute its source and compiled loading tests.
 
-Plugin authors need NuGet packages, not MCC source or a submodule. The official plugin repository demonstrates packaging. Its checkout currently contains older preview pins. Update and test those pins in your own repository before using it as a build template for this MCC version.
+Plugin authors need NuGet packages, not MCC source or a submodule. The [Marketplace repository](https://github.com/MCCTeam/Marketplace) demonstrates packaging with the published library versions used by MCC. Pin and test your own dependencies before publishing.
 
 ## Chapter 2: Define the release contract
 
@@ -66,7 +66,7 @@ Create a small packaging tool. Run these commands from the repository root:
 
 ```sh
 dotnet new console --framework net10.0 --output tools/PackRelease
-dotnet add tools/PackRelease package DMCBK.Marketplace --version 0.1.0-preview.6
+dotnet add tools/PackRelease package DMCBK.Marketplace --version 0.1.0-preview.7
 ```
 
 Replace `tools/PackRelease/Program.cs` with:

@@ -1,10 +1,10 @@
 # Official plugin reference
 
-Official plugins live in [DMCBK-Plugins](https://github.com/MCCTeam/DMCBK-Plugins). MCC supplies the host. Install only the plugins that your task needs.
+Official plugins live in [Marketplace](https://github.com/MCCTeam/Marketplace). MCC supplies the host. Install only the plugins that your task needs.
 
 Each page explains its package ID, installation, settings, commands, a first test, and known limits. Package IDs differ from the C# source folder names.
 
-A marketplace may list release metadata before its publisher uploads the assets. Check published release availability before relying on an install command. You can also build and package a plugin locally.
+MCC registers this marketplace as `official` by default. Enter `/plugins search <text> in official` to find a plugin and `/plugins install <id>@official` to install it. See [marketplace usage](../marketplaces/using.md) for refresh, updates and removal.
 
 | Plugin | Package ID | Purpose |
 | --- | --- | --- |
@@ -18,7 +18,6 @@ A marketplace may list release metadata before its publisher uploads the assets.
 | [Auto-fishing](official/auto-fishing.md) | `auto-fishing` | Casts a rod, detects a bite, reels the rod, and repeats. |
 | [Auto-relog](official/auto-relog.md) | `auto-relog` | Attempts a new connection after selected unexpected disconnects. |
 | [Auto-respond](official/auto-respond.md) | `auto-respond` | Matches chat rules and dispatches an MCC command for each matching rule. |
-| [Channel logger](official/channel-logger.md) | `channel-logger` | Records inbound play-phase plugin-channel payloads to a log file. |
 | [Chat log](official/chat-log.md) | `chat-log` | Writes selected chat and internal messages to a file. |
 | [Discord bridge](official/discord-bridge.md) | `discord-bridge` | Relays Minecraft and Discord messages and lets authorized Discord users run MCC commands. |
 | [Discord rich presence](official/discord-rpc.md) | `discord-rpc` | Displays selected session information on your Discord profile. |
@@ -34,7 +33,7 @@ A marketplace may list release metadata before its publisher uploads the assets.
 | [Script scheduler](official/script-scheduler.md) | `script-scheduler` | Runs MCC commands at login, a dialog event, a time of day, or a repeating interval. |
 | [Telegram bridge](official/telegram-bridge.md) | `telegram-bridge` | Relays game chat to Telegram and accepts commands from authorized Telegram chats. |
 
-The internal TestBot, VelocityForwarding, HumanMotion, and LlmTest plugins are outside this user reference.
+The developer plugin `llm-test` is outside this user reference. Channel Logger, Velocity Forwarding, Human Motion and Test Bot are not included in this marketplace.
 
 ## Choose plugins that work together
 

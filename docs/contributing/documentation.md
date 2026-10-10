@@ -14,7 +14,7 @@ Examples must match the current CLI, DMCBK version and plugin source. A plausibl
 
 ## Source ownership
 
-The Beacon and plugin authoring sections adapt DMCBK's documentation. The official plugin pages describe source, manifests, settings and manuals from DMCBK-Plugins.
+The Beacon and plugin authoring sections adapt DMCBK's documentation. The official plugin pages describe source, manifests, settings and manuals from Marketplace.
 
 Keep the source attribution in those indexes. When an API changes, update the source documentation and its MCC adaptation together.
 

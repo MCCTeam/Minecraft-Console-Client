@@ -4,23 +4,21 @@ Runs MCC commands at login, a dialog event, a time of day, or a repeating interv
 
 | Package ID | Plugin release | Manifest capabilities |
 | --- | --- | --- |
-| `script-scheduler` | `2.0.0` | `commands` |
+| `script-scheduler` | `2.0.2` | `commands` |
 
-The plugin lives in the separate [DMCBK-Plugins repository](https://github.com/MCCTeam/DMCBK-Plugins/tree/main/src/ScriptScheduler). It is not built into MCC. Its declared game/resource usage is `commands`. These declarations describe usage, not permission boundaries.
+The plugin lives in the separate [Marketplace repository](https://github.com/MCCTeam/Marketplace/tree/master/src/ScriptScheduler). It is not built into MCC. Its declared game/resource usage is `commands`. These declarations describe usage, not permission boundaries.
 
 ## Install and activate
 
 Use the [plugin management guide](../managing.md) to install a released archive or local package. A source checkout by itself is not a compiled plugin package.
 
-If a publisher already offers this release in a marketplace named `official`, enter:
+The official marketplace is registered by default. Enter:
 
 ```text
-/plugins install script-scheduler@official 2.0.0
+/plugins install script-scheduler@official 2.0.2
 /plugins enable script-scheduler
 /plugins info script-scheduler
 ```
-
-These commands depend on that publisher having uploaded working release assets. The repository catalogue alone does not prove that a downloadable release exists.
 
 1. Check that `/plugins list` shows `script-scheduler` as loaded.
 2. Open `plugins/userdata/script-scheduler/settings.toml` under your plugin root.

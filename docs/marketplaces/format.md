@@ -139,7 +139,7 @@ A plugin with `inherit` follows its marketplace binding. `check` reports availab
 
 ## Authoring and local development
 
-Use the templates and `PluginPack` in DMCBK-Plugins. Build against pinned NuGet packages with no MCC, DMCBK or UMPK checkout. For unpublished preview development, supply an explicit local package feed and use an isolated NuGet cache whenever replacing packages at the same preview version.
+Use the templates and `PluginPack` in [Marketplace](https://github.com/MCCTeam/Marketplace). Build against pinned NuGet packages with no MCC, DMCBK or UMPK checkout. For unpublished preview development, supply an explicit local package feed and use an isolated NuGet cache whenever replacing packages at the same preview version.
 
 Local folder, archive, direct URL and Git imports use the same manifest checks and immutable installation layout. Git imports record the selected commit. These paths are development sources. Marketplace dependencies still need explicit source bindings.
 

@@ -4,23 +4,21 @@ Records protocol session data in a ReplayMod archive.
 
 | Package ID | Plugin release | Manifest capabilities |
 | --- | --- | --- |
-| `replay-capture` | `2.0.0` | `commands` |
+| `replay-capture` | `2.0.2` | `commands` |
 
-The plugin lives in the separate [DMCBK-Plugins repository](https://github.com/MCCTeam/DMCBK-Plugins/tree/main/src/ReplayCapture). It is not built into MCC. Its declared game/resource usage is `session`, `files`. These declarations describe usage, not permission boundaries.
+The plugin lives in the separate [Marketplace repository](https://github.com/MCCTeam/Marketplace/tree/master/src/ReplayCapture). It is not built into MCC. Its declared game/resource usage is `session`, `files`. These declarations describe usage, not permission boundaries.
 
 ## Install and activate
 
 Use the [plugin management guide](../managing.md) to install a released archive or local package. A source checkout by itself is not a compiled plugin package.
 
-If a publisher already offers this release in a marketplace named `official`, enter:
+The official marketplace is registered by default. Enter:
 
 ```text
-/plugins install replay-capture@official 2.0.0
+/plugins install replay-capture@official 2.0.2
 /plugins enable replay-capture
 /plugins info replay-capture
 ```
-
-These commands depend on that publisher having uploaded working release assets. The repository catalogue alone does not prove that a downloadable release exists.
 
 1. Check that `/plugins list` shows `replay-capture` as loaded.
 2. Open `plugins/userdata/replay-capture/settings.toml` under your plugin root.

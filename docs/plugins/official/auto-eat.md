@@ -4,23 +4,21 @@ Uses food when the player food level falls to the configured threshold.
 
 | Package ID | Plugin release | Manifest capabilities |
 | --- | --- | --- |
-| `auto-eat` | `2.0.0` | `commands` |
+| `auto-eat` | `2.0.2` | `commands` |
 
-The plugin lives in the separate [DMCBK-Plugins repository](https://github.com/MCCTeam/DMCBK-Plugins/tree/main/src/AutoEat). It is not built into MCC. Its declared game/resource usage is `inventory`, `interaction`. These declarations describe usage, not permission boundaries.
+The plugin lives in the separate [Marketplace repository](https://github.com/MCCTeam/Marketplace/tree/master/src/AutoEat). It is not built into MCC. Its declared game/resource usage is `inventory`, `interaction`. These declarations describe usage, not permission boundaries.
 
 ## Install and activate
 
 Use the [plugin management guide](../managing.md) to install a released archive or local package. A source checkout by itself is not a compiled plugin package.
 
-If a publisher already offers this release in a marketplace named `official`, enter:
+The official marketplace is registered by default. Enter:
 
 ```text
-/plugins install auto-eat@official 2.0.0
+/plugins install auto-eat@official 2.0.2
 /plugins enable auto-eat
 /plugins info auto-eat
 ```
-
-These commands depend on that publisher having uploaded working release assets. The repository catalogue alone does not prove that a downloadable release exists.
 
 1. Check that `/plugins list` shows `auto-eat` as loaded.
 2. Open `plugins/userdata/auto-eat/settings.toml` under your plugin root.

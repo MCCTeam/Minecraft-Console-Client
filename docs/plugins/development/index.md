@@ -15,7 +15,7 @@ Plugin authors restore NuGet packages. They do not need MCC source, a Git submod
 
 Start with one source file for a small plugin. Use a compiled project when you need several source files, NuGet dependencies or native libraries.
 
-All examples use API `1.0`, schema `2`, DMCBK `0.1.0-preview.6`, UMPK `0.9.0-beta.6` and .NET 10.
+All examples use API `1.0`, schema `2`, DMCBK `0.1.0-preview.7`, UMPK `0.9.0-beta.6` and .NET 10.
 
 Marketplace v2 rejects old manifests. Existing MCC binary plugins must be rebuilt against DMCBK. See [marketplace v2](../../marketplaces/format.md) for installation and release formats.
 

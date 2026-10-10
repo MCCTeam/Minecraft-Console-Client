@@ -1,5 +1,7 @@
 # Marketplaces
 
+MCC includes the [official Marketplace](https://github.com/MCCTeam/Marketplace) as its default publisher. Search it with `/plugins search <text> in official` and install with `/plugins install <id>@official`. Automatic updates start off.
+
 A marketplace is a publisher catalogue. It lists plugin identities, release versions, dependencies, and download assets. It does not need to store every binary inside Git.
 
 [Use a marketplace in MCC](using.md) explains installation, version selection, updates, and recovery. [Create a marketplace](creating.md) explains repository layout and publication. The [format reference](format.md) defines schema 2 and the shared DMCBK APIs.

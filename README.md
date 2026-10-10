@@ -66,6 +66,8 @@ The new installer selects one archive for your platform, checks its SHA-256 chec
 - [Using and creating marketplaces](docs/marketplaces/index.md)
 - [Docker Compose](docs/deployment/docker.md)
 
+The [official Marketplace](https://github.com/MCCTeam/Marketplace) is registered by default. Try `/plugins search fishing in official`, then `/plugins install auto-fishing@official`. Read the plugin manual to configure it. Automatic updates start off; existing marketplace choices are preserved.
+
 ## Getting help
 
 Read the documentation and search existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions). If you need help, open a [new discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new).

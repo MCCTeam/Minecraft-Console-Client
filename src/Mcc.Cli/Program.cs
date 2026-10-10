@@ -397,6 +397,7 @@ internal static class CliHost
 
         // The market attaches itself to the client.
         // All this host supplies is how the install question gets asked, which is the part DMCBK.Core cannot own: console-free code cannot read a line.
+        DefaultMarketplace.EnsureRegistry(folder);
         using var marketplaceHttp = new HttpClient();
         var pluginMarket = new MarketplaceService(client, pluginsRoot,
             Path.Combine(folder, "marketplaces.toml"), marketplaceHttp, pluginHost)
