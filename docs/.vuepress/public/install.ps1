@@ -8,14 +8,20 @@ $REPO   = "MCCTeam/Minecraft-Console-Client"
 $OUTPUT = "MinecraftClient.exe"
 
 # --- Detect CPU architecture ---
-$arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+# PROCESSOR_ARCHITEW6432 identifies the native architecture when a 32-bit
+# PowerShell process is running on 64-bit Windows.
+$arch = $env:PROCESSOR_ARCHITEW6432
+if (-not $arch) {
+    $arch = $env:PROCESSOR_ARCHITECTURE
+}
+
 $archId = switch ($arch) {
     'X64'   { 'x64'   }
-    'X86'   { 'x86'   }
-    'Arm64' { 'arm64' }
+    'AMD64' { 'x64'   }
+    'x86'   { 'x86'   }
+    'ARM64' { 'arm64' }
     default {
-        Write-Error "Unsupported CPU architecture: $arch"
-        exit 1
+        throw "Unsupported CPU architecture: $arch"
     }
 }
 
