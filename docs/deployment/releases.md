@@ -61,10 +61,10 @@ The `build-and-release.yml` workflow on `feat/mcc-2.0` builds single-file execut
 Add release notes at `docs/deployment/early-access-<number>.md`. Update the expected CLI test count in the workflow when tests are intentionally added or removed. After publication is authorized, dispatch the registered workflow with the branch and build number:
 
 ```sh
-gh workflow run build-and-release.yml --ref feat/mcc-2.0 -f build_number=12
+gh workflow run build-and-release.yml --ref feat/mcc-2.0 -f build_number=13
 ```
 
-Build 12 uses tag `v2.0.0-early-access.12` and title `MCC 2.0 Early Access Build 12`. The executable records the build number and source commit in its version metadata. The default installers select stable releases, so specify the preview tag when installing this build.
+Build 13 uses tag `v2.0.0-early-access.13` and title `MCC 2.0 Early Access Build 13`. The executable records the build number and source commit in its version metadata. The default installers select stable releases, so specify the preview tag when installing this build.
 
 The publisher creates an annotated tag for the validated commit, stages a draft release, verifies the uploaded asset digests and then makes the prerelease public. It does not replace existing assets or move an existing tag. If publication fails, rerun the failed publication job to reuse its original build artifacts. Changed source or release bytes require a new build number.
 

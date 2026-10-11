@@ -7,7 +7,7 @@ on:
       build_number:
         description: Early-access build number
         required: true
-        default: '12'
+        default: '13'
         type: string
 
 permissions:
