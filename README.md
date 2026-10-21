@@ -94,6 +94,17 @@ To improve translations for MCC, please visit: [Crowdin - Minecraft Console Clie
 
 This section has been moved to our new [Documentation website](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
 
+## Community projects 🧩
+
+Tools built by the community around MCC. They are not maintained by the MCC Team — report
+issues in their own trackers.
+
+-   **[MCC GUI V2](https://github.com/AnonBOTpl/MCC-GUI-V2)** — a Windows 11 desktop app
+    that runs many accounts at once: one MCC process per connection, a tab with a live
+    coloured log for each account, and chat or commands sent to one account or to all of
+    them. It does not bundle or modify MCC, it starts the `MinecraftClient.exe` you point
+    it at, and it works with MCC 1.x. Free and open source (MIT).
+
 ## License ⚖️
 
 Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
