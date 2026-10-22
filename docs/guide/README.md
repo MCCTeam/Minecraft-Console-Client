@@ -19,6 +19,7 @@ title: About & Features
     - [Inventory, Terrain and Entity Handling](#inventory-terrain-and-entity-handling)
     - [Path-Finding and Physics](#path-finding-and-physics)
   - [Credits](#credits)
+  - [Community projects](#community-projects)
   - [Disclaimer](#disclaimer)
   - [License](#license)
 
@@ -208,6 +209,17 @@ Minecraft Console Client also borrows code from the following libraries:
 | Biko        | Proxy handling   | Benton Stark     | MIT     |
 | Heijden.Dns | DNS SRV Lookup   | Geoffrey Huntley | MIT     |
 | DotNetZip   | Zlib compression | Dino Chiesa      | MS-PL   |
+
+## Community projects
+
+Tools built by the community around MCC. They are not maintained by the MCC Team — report
+issues in their own trackers.
+
+- **[MCC GUI V2](https://github.com/AnonBOTpl/MCC-GUI-V2)** — a Windows 11 desktop app that
+  runs many accounts at once, one MCC process per connection, with a tab and a live coloured
+  log per account and chat or commands sent to one account or to all of them. It does not
+  bundle or modify MCC and starts the `MinecraftClient.exe` you point it at. Free and open
+  source (MIT); works with MCC 1.x.
 
 ## Disclaimer
 
