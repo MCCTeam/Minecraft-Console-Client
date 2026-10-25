@@ -67,13 +67,27 @@ jobs:
         CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
         CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
 
-    - name: Deploy Documentation Site
-      uses: jenkey2011/vuepress-deploy@master
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Install Yarn
+      run: npm install --global yarn@1.22.22
+
+    - name: Install documentation dependencies
+      run: yarn --cwd docs install --frozen-lockfile
+
+    - name: Build Documentation Site
+      run: yarn --cwd docs docs:build
       env:
-        ACCESS_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
-        TARGET_REPO: MCCTeam/MCCTeam.github.io
-        TARGET_BRANCH: master
-        BUILD_SCRIPT: export NODE_OPTIONS=--max-old-space-size=8192 && yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
-        BUILD_DIR: docs/.vuepress/dist
-        COMMIT_MESSAGE: Build from ${{ github.sha }}
-        CNAME: https://mccteam.github.io
+        NODE_OPTIONS: --max-old-space-size=8192
+
+    - name: Deploy Documentation Site
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        personal_token: ${{ secrets.GH_PAGES_TOKEN }}
+        external_repository: MCCTeam/MCCTeam.github.io
+        publish_branch: master
+        publish_dir: docs/.vuepress/dist
+        full_commit_message: Build from ${{ github.sha }}
