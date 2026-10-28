@@ -1,5 +1,6 @@
 ﻿using System;
 using MinecraftClient.CommandHandler;
+using MinecraftClient.Dialogs;
 using MinecraftClient.Scripting;
 using Tomlet.Attributes;
 using static MinecraftClient.ChatBots.ScriptScheduler.Configs;
@@ -29,6 +30,7 @@ namespace MinecraftClient.ChatBots
                     Trigger_On_Login: false,
                     Trigger_On_Times: new(true, new TimeSpan[] { new(14, 00, 00) }),
                     Trigger_On_Interval: new(true, 3.6, 4.8),
+                    Trigger_On_Dialog: new(false, "", ""),
                     Action: "send /hello"
                 ),
                 new TaskConfig(
@@ -37,6 +39,7 @@ namespace MinecraftClient.ChatBots
                     Trigger_On_Login: true,
                     Trigger_On_Times: new(false, Array.Empty<TimeSpan>() ),
                     Trigger_On_Interval: new(false, 1, 10),
+                    Trigger_On_Dialog: new(false, "", ""),
                     Action: "send /login pass"
                 ),
             };
@@ -91,6 +94,7 @@ namespace MinecraftClient.ChatBots
                 public bool Trigger_On_Login = false;
                 public TriggerOnTimeConfig Trigger_On_Times = new(false, new TimeSpan[] { new(23, 59, 59) });
                 public TriggerOnIntervalConfig Trigger_On_Interval = new(false, 1, 10);
+                public TriggerOnDialogConfig Trigger_On_Dialog = new(false, "", "");
                 public string Action = "send /hello";
 
                 [NonSerialized]
@@ -101,13 +105,14 @@ namespace MinecraftClient.ChatBots
 
                 public TaskConfig() { }
 
-                public TaskConfig(string Task_Name, bool Trigger_On_First_Login, bool Trigger_On_Login, TriggerOnTimeConfig Trigger_On_Times, TriggerOnIntervalConfig Trigger_On_Interval, string Action)
+                public TaskConfig(string Task_Name, bool Trigger_On_First_Login, bool Trigger_On_Login, TriggerOnTimeConfig Trigger_On_Times, TriggerOnIntervalConfig Trigger_On_Interval, TriggerOnDialogConfig Trigger_On_Dialog, string Action)
                 {
                     this.Task_Name = Task_Name;
                     this.Trigger_On_First_Login = Trigger_On_First_Login;
                     this.Trigger_On_Login = Trigger_On_Login;
                     this.Trigger_On_Times = Trigger_On_Times;
                     this.Trigger_On_Interval = Trigger_On_Interval;
+                    this.Trigger_On_Dialog = Trigger_On_Dialog;
                     this.Action = Action;
                 }
 
@@ -172,6 +177,29 @@ namespace MinecraftClient.ChatBots
                         this.MaxTime = max;
                     }
                 }
+
+                public struct TriggerOnDialogConfig
+                {
+                    public bool Enable = false;
+                    public string Type;
+                    public string Title;
+
+                    public TriggerOnDialogConfig()
+                    {
+                        Enable = false;
+                        Type = "";
+                        Title = "";
+                    }
+
+                    public TriggerOnDialogConfig(bool Enable, string Type, string Title)
+                    {
+                        this.Enable = Enable;
+                        this.Type = Type;
+                        this.Title = Title;
+                    }
+
+                }
+
             }
         }
 
@@ -182,6 +210,14 @@ namespace MinecraftClient.ChatBots
         private bool serverlogin_done = false;
         private int verifytasks_timeleft = Settings.ClientTicksPerSecond;
         private readonly int verifytasks_delay = Settings.ClientTicksPerSecond;
+
+        public override void Initialize() {
+            Handler.Dialogs.DialogShown += RunDialogTasks;
+        }
+
+        public override void BeforeReconnect() {
+            Handler.Dialogs.DialogShown += RunDialogTasks;
+        }
 
         public override void AfterGameJoined()
         {
@@ -263,6 +299,19 @@ namespace MinecraftClient.ChatBots
             }
 
             firstlogin_done = true;
+        }
+
+        private void RunDialogTasks(DialogInstance dialog)
+        {
+            var dialogDef = dialog.Definition;
+            LogDebugToConsole($"OnDialogShown: '{dialogDef.Type}', '{GetVerbatim(dialogDef.Title)}'");
+            for (int taskIndex = 0; taskIndex < Config.TaskList.Length; taskIndex++)
+            {
+                TaskConfig task = Config.TaskList[taskIndex];
+                var trigger = task.Trigger_On_Dialog;
+                if (trigger.Enable && trigger.Type == dialogDef.Type && trigger.Title == GetVerbatim(dialogDef.Title)) 
+                    RunTaskAction(task, taskIndex, string.Format(Translations.bot_scriptScheduler_running_dialog, task.Action));
+            }
         }
 
         private void RunTaskAction(TaskConfig task, int taskIndex, string debugMessage)

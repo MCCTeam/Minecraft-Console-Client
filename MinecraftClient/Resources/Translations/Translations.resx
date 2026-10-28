@@ -729,6 +729,9 @@ cooldown: {6}</value>
   <data name="bot.scriptScheduler.running_time" xml:space="preserve">
     <value>Time / Running action: {0}</value>
   </data>
+  <data name="bot.scriptScheduler.running_dialog" xml:space="preserve">
+    <value>Dialog / Running action: {0}</value>
+  </data>
   <data name="bot.scriptScheduler.task" xml:space="preserve">
     <value>triggeronfirstlogin: {0}
  triggeronlogin: {1}
