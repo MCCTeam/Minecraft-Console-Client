@@ -332,7 +332,7 @@ namespace MinecraftClient
             }
             else
             {
-                ConnectionAttemptLifecycle.RestoreHeldBots(botsOnHold, bot => BotLoad(bot, false));
+                ConnectionAttemptLifecycle.RestoreHeldBots(botsOnHold, bot => BotLoad(bot, false, true));
             }
 
             try
@@ -1281,7 +1281,7 @@ namespace MinecraftClient
         /// <summary>
         /// Load a new bot
         /// </summary>
-        public void BotLoad(ChatBot b, bool init = true)
+        public void BotLoad(ChatBot b, bool init = true, bool reco = false)
         {
             if (InvokeRequired)
             {
@@ -1293,6 +1293,8 @@ namespace MinecraftClient
             bots.Add(b);
             if (init)
                 DispatchBotEvent(bot => bot.Initialize(), [b]);
+            if (reco)
+                DispatchBotEvent(bot => bot.BeforeReconnect(), [b]);
             if (CanSendMessage)
                 DispatchBotEvent(bot => bot.AfterGameJoined(), [b]);
         }

@@ -129,6 +129,14 @@ namespace MinecraftClient.Scripting
         public virtual void OnUnload() { }
 
         /// <summary>
+        /// will be called on load by MinecraftCom
+        ///
+        /// NOTE: Chat messages cannot be sent at this point in the login process.
+        /// If you want to send a message when the bot is loaded, use AfterGameJoined.
+        /// </summary>
+        public virtual void BeforeReconnect() { }
+
+        /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.
         /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
         ///
