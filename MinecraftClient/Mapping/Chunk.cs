@@ -65,7 +65,7 @@ namespace MinecraftClient.Mapping
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void FillWithBlock(Block block)
+        public void FillWithBlock(Block block)
         {
             Array.Fill(blocks, block);
         }
