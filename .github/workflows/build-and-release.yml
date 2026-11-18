@@ -1,3 +1,4 @@
+# Minecraft Console Client CI/CD Build and Release Automation
 name: Build MCC and Documents
 
 on:
