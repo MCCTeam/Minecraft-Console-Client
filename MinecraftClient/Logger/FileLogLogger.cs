@@ -38,12 +38,10 @@ namespace MinecraftClient.Logger
                     Directory.CreateDirectory(directory);
                 lock (logFileLock)
                 {
-                    FileStream stream = new(logFile, FileMode.OpenOrCreate);
-                    StreamWriter writer = new(stream);
+                    using FileStream stream = new(logFile, FileMode.OpenOrCreate);
+                    using StreamWriter writer = new(stream);
                     stream.Seek(0, SeekOrigin.End);
                     writer.WriteLine(msg);
-                    writer.Dispose();
-                    stream.Close();
                 }
             }
             catch (Exception e)

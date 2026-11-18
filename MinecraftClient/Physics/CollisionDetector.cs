@@ -81,6 +81,11 @@ namespace MinecraftClient.Physics
             return accumulated;
         }
 
+        private static readonly int[] OrderYZX = { 1, 2, 0 };
+        private static readonly int[] OrderYXZ = { 1, 0, 2 };
+        private static readonly int[] OrderXYZ = { 0, 1, 2 };
+        private static readonly int[] OrderZYX = { 2, 1, 0 };
+
         /// <summary>
         /// Get axis processing order: Y first if moving down, otherwise smallest absolute movement first.
         /// Vanilla uses Direction.axisStepOrder(Vec3) which returns axes sorted by absolute movement.
@@ -94,18 +99,18 @@ namespace MinecraftClient.Physics
             if (absX > absZ)
             {
                 if (absZ > absY)
-                    return new[] { 1, 2, 0 }; // Y Z X
+                    return OrderYZX; // Y Z X
                 if (absX > absY)
-                    return new[] { 1, 0, 2 }; // Y X Z
-                return new[] { 0, 1, 2 }; // X Y Z
+                    return OrderYXZ; // Y X Z
+                return OrderXYZ; // X Y Z
             }
             else
             {
                 if (absX > absY)
-                    return new[] { 1, 0, 2 }; // Y X Z
+                    return OrderYXZ; // Y X Z
                 if (absZ > absY)
-                    return new[] { 1, 2, 0 }; // Y Z X
-                return new[] { 2, 1, 0 }; // Z Y X
+                    return OrderYZX; // Y Z X
+                return OrderZYX; // Z Y X
             }
         }
 

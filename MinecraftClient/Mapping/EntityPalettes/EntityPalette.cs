@@ -26,20 +26,19 @@ namespace MinecraftClient.Mapping.EntityPalettes
         /// <returns>EntityType corresponding to the specified ID</returns>
         public EntityType FromId(int id, bool living)
         {
-            Dictionary<int, EntityType> entityTypes = GetDict();
             Dictionary<int, EntityType>? entityTypesNonLiving = GetDictNonLiving();
 
             if (entityTypesNonLiving is not null && !living)
             {
                 //Pre-1.14 non-living entities have a different set of IDs (entityTypesNonLiving is not null)
-                if (entityTypesNonLiving.ContainsKey(id))
-                    return entityTypesNonLiving[id];
+                if (entityTypesNonLiving.TryGetValue(id, out EntityType nonLivingType))
+                    return nonLivingType;
             }
             else
             {
                 //1.14+ entities have the same set of IDs regardless of living status
-                if (entityTypes.ContainsKey(id))
-                    return entityTypes[id];
+                if (GetDict().TryGetValue(id, out EntityType livingType))
+                    return livingType;
             }
 
             throw new System.IO.InvalidDataException("Unknown Entity ID " + id + ". Is Entity Palette up to date for this Minecraft version?");

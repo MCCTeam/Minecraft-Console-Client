@@ -71,7 +71,9 @@ namespace MinecraftClient.Protocol.ProfileKey
         /// <returns>TRUE if keys are seeded from file</returns>
         public static bool InitializeDiskCache()
         {
+            cachemonitor?.Dispose();
             cachemonitor = new FileMonitor(AppDomain.CurrentDomain.BaseDirectory, KeysCacheFilePlaintext, new FileSystemEventHandler(OnChanged));
+            updatetimer.Elapsed -= HandlePending;
             updatetimer.Elapsed += HandlePending;
             return LoadFromDisk();
         }

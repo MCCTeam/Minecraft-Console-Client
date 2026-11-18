@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
@@ -27,32 +29,55 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
     /// </remarks>
     public abstract class PacketTypePalette
     {
+        private sealed record ReverseMappings(
+            Dictionary<PacketTypesIn, int> In,
+            Dictionary<PacketTypesOut, int> Out,
+            Dictionary<ConfigurationPacketTypesIn, int> ConfigIn,
+            Dictionary<ConfigurationPacketTypesOut, int> ConfigOut);
+
+        private static readonly ConcurrentDictionary<Type, ReverseMappings> s_reverseMappingsCache = new();
+
         protected abstract Dictionary<int, PacketTypesIn> GetListIn();
         protected abstract Dictionary<int, PacketTypesOut> GetListOut();
         protected abstract Dictionary<int, ConfigurationPacketTypesIn> GetConfigurationListIn();
         protected abstract Dictionary<int, ConfigurationPacketTypesOut> GetConfigurationListOut();
 
-        private readonly Dictionary<PacketTypesIn, int> reverseMappingIn = new();
-        private readonly Dictionary<PacketTypesOut, int> reverseMappingOut = new();
+        private readonly Dictionary<PacketTypesIn, int> reverseMappingIn;
+        private readonly Dictionary<PacketTypesOut, int> reverseMappingOut;
 
-        private readonly Dictionary<ConfigurationPacketTypesIn, int> configurationReverseMappingIn = new();
-        private readonly Dictionary<ConfigurationPacketTypesOut, int> configurationReverseMappingOut = new();
+        private readonly Dictionary<ConfigurationPacketTypesIn, int> configurationReverseMappingIn;
+        private readonly Dictionary<ConfigurationPacketTypesOut, int> configurationReverseMappingOut;
 
         private bool forgeEnabled = false;
 
         public PacketTypePalette()
         {
-            foreach (var p in GetListIn())
-                reverseMappingIn.Add(p.Value, p.Key);
+            var mappings = s_reverseMappingsCache.GetOrAdd(GetType(), _ =>
+            {
+                var revIn = new Dictionary<PacketTypesIn, int>();
+                var revOut = new Dictionary<PacketTypesOut, int>();
+                var revCfgIn = new Dictionary<ConfigurationPacketTypesIn, int>();
+                var revCfgOut = new Dictionary<ConfigurationPacketTypesOut, int>();
 
-            foreach (var p in GetListOut())
-                reverseMappingOut.Add(p.Value, p.Key);
+                foreach (var p in GetListIn())
+                    revIn.Add(p.Value, p.Key);
 
-            foreach (var p in GetConfigurationListIn())
-                configurationReverseMappingIn.Add(p.Value, p.Key);
+                foreach (var p in GetListOut())
+                    revOut.Add(p.Value, p.Key);
 
-            foreach (var p in GetConfigurationListOut())
-                configurationReverseMappingOut.Add(p.Value, p.Key);
+                foreach (var p in GetConfigurationListIn())
+                    revCfgIn.Add(p.Value, p.Key);
+
+                foreach (var p in GetConfigurationListOut())
+                    revCfgOut.Add(p.Value, p.Key);
+
+                return new ReverseMappings(revIn, revOut, revCfgIn, revCfgOut);
+            });
+
+            reverseMappingIn = mappings.In;
+            reverseMappingOut = mappings.Out;
+            configurationReverseMappingIn = mappings.ConfigIn;
+            configurationReverseMappingOut = mappings.ConfigOut;
         }
 
         /// <summary>

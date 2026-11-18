@@ -102,6 +102,9 @@ namespace MinecraftClient.ChatBots
             McClient.dispatcher.Unregister(CommandName);
             McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             Disconnect();
+            if (instance == this)
+                instance = null;
+            GC.SuppressFinalize(this);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -154,6 +157,8 @@ namespace MinecraftClient.ChatBots
                 {
                     SendMessage(Translations.bot_TelegramBridge_disconnected);
                     cancellationToken?.Cancel();
+                    cancellationToken?.Dispose();
+                    cancellationToken = null;
                     botClient = null;
                 }
                 catch (Exception e)
@@ -164,6 +169,9 @@ namespace MinecraftClient.ChatBots
 
                 IsConnected = false;
             }
+
+            if (instance == this)
+                instance = null;
         }
 
         public static TelegramBridge? GetInstance()
@@ -238,7 +246,7 @@ namespace MinecraftClient.ChatBots
             {
                 string fileName = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
 
-                Stream stream = File.OpenRead(filePath);
+                using Stream stream = File.OpenRead(filePath);
                 botClient!.SendDocument(
                     Config.ChannelId.Trim(),
                     document: InputFile.FromStream(stream, fileName),

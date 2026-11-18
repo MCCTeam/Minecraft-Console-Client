@@ -18,10 +18,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
         /// <returns>Material corresponding to the specified ID</returns>
         public Material FromId(int id)
         {
-            Dictionary<int, Material> materials = GetDict();
-            if (materials.ContainsKey(id))
-                return materials[id];
-            return Material.Air;
+            return GetDict().TryGetValue(id, out Material material) ? material : Material.Air;
         }
 
         /// <summary>

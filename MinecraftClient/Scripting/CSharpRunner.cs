@@ -15,7 +15,9 @@ namespace MinecraftClient.Scripting
     /// </summary>
     class CSharpRunner
     {
+        private const int MaxCompileCacheEntries = 128;
         private static readonly Dictionary<ulong, byte[]> CompileCache = new();
+        private static readonly Queue<ulong> CompileCacheOrder = new();
 
         private readonly record struct ScriptSourceLine(int LineNumber, string Text);
 
@@ -106,7 +108,15 @@ namespace MinecraftClient.Scripting
                     //Retrieve compiled assembly
                     assembly = result.Assembly;
                     if (Config.Main.Advanced.CacheScript)
+                    {
+                        if (!CompileCache.ContainsKey(scriptHash))
+                        {
+                            if (CompileCache.Count >= MaxCompileCacheEntries && CompileCacheOrder.TryDequeue(out ulong oldestHash))
+                                CompileCache.Remove(oldestHash);
+                            CompileCacheOrder.Enqueue(scriptHash);
+                        }
                         CompileCache[scriptHash] = assembly!;
+                    }
                 }
                 else if (Config.Main.Advanced.CacheScript)
                     assembly = CompileCache[scriptHash];

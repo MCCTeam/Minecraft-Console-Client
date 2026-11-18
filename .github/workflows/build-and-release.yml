@@ -5,7 +5,10 @@ on:
     branches:
       - master
   workflow_dispatch:
-  
+
+permissions:
+  contents: write
+
 env:
   PROJECT: "MinecraftClient"
   target-version: "net10.0"
@@ -14,7 +17,7 @@ env:
 
 jobs:
   determine-build:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.check-skip.outputs.skip }}
     steps:
@@ -95,7 +98,7 @@ jobs:
         key: "translation-${{ github.sha }}"
 
   create-tag:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     timeout-minutes: 5 # Wait 5 minutes in case of network issues/etc
     needs: determine-build
     if: ${{ needs.determine-build.outputs.skip != 'true' }}
@@ -209,7 +212,7 @@ jobs:
         if-no-files-found: error
 
   create-release:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     needs: [create-tag, build]
     if: ${{ needs.build.result == 'success' && needs.create-tag.result == 'success' }}
     steps:

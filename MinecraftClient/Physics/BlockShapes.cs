@@ -21,6 +21,7 @@ namespace MinecraftClient.Physics
         private static readonly Aabb[] EmptyArray = Array.Empty<Aabb>();
 
         private static FrozenDictionary<int, Aabb[]>? stateToShape;
+        private static Type? initializedPaletteType;
         private static Dictionary<string, object>? prismarineBlocks;
         private static Dictionary<int, Aabb[]>? prismarineShapes;
 
@@ -30,8 +31,15 @@ namespace MinecraftClient.Physics
         /// </summary>
         public static void Initialize()
         {
+            Type? currentPaletteType = Block.Palette?.GetType();
+            if (stateToShape is not null && currentPaletteType is not null && initializedPaletteType == currentPaletteType)
+                return;
+
             LoadPrismarineData();
             BuildStateMap();
+            initializedPaletteType = currentPaletteType;
+            prismarineBlocks = null;
+            prismarineShapes = null;
         }
 
         /// <summary>

@@ -296,79 +296,96 @@ namespace MinecraftClient
                     DoClearSuggestions();
                     return;
                 }
-                _cancellationTokenSource?.Cancel();
-                using var cts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _cancellationTokenSource, null);
+                if (oldCts is not null)
+                {
+                    try { oldCts.Cancel(); } catch { }
+                    oldCts.Dispose();
+                }
+                var cts = new CancellationTokenSource();
                 _cancellationTokenSource = cts;
                 var previousTask = _latestTask;
                 var newTask = new Task(async () =>
                 {
-                    string command = fullCommand[offset..];
-                    if (command.Length == 0)
+                    try
                     {
-                        List<ConsoleInteractive.ConsoleSuggestion.Suggestion> sugList = new();
-
-                        sugList.Add(new("/"));
-
-                        var childs = McClient.dispatcher.GetRoot().Children;
-                        if (childs is not null)
-                            foreach (var child in childs)
-                                sugList.Add(new(child.Name));
-
-                        foreach (var cmd in Commands)
-                            sugList.Add(new(cmd));
-
-                        SendSuggestions(sugList.ToArray(), new(offset, offset));
-                    }
-                    else if (command.Length > 0 && command[0] == '/' && !command.Contains(' '))
-                    {
-                        var sorted = Process.ExtractSorted(command[1..], Commands);
-                        var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[sorted.Count()];
-
-                        int index = 0;
-                        foreach (var sug in sorted)
-                            sugList[index++] = new(sug.Value);
-                        SendSuggestions(sugList, new(offset, offset + command.Length));
-                    }
-                    else
-                    {
-                        CommandDispatcher<CmdResult>? dispatcher = McClient.dispatcher;
-                        if (dispatcher is null)
-                            return;
-
-                        ParseResults<CmdResult> parse = dispatcher.Parse(command, CmdResult.Empty);
-
-                        Brigadier.NET.Suggestion.Suggestions suggestions = await dispatcher.GetCompletionSuggestions(parse, buffer.CursorPosition - offset);
-
-                        int sugLen = suggestions.List.Count;
-                        if (sugLen == 0)
+                        string command = fullCommand[offset..];
+                        if (command.Length == 0)
                         {
-                            DoClearSuggestions();
-                            return;
+                            List<ConsoleInteractive.ConsoleSuggestion.Suggestion> sugList = new();
+
+                            sugList.Add(new("/"));
+
+                            var childs = McClient.dispatcher.GetRoot().Children;
+                            if (childs is not null)
+                                foreach (var child in childs)
+                                    sugList.Add(new(child.Name));
+
+                            foreach (var cmd in Commands)
+                                sugList.Add(new(cmd));
+
+                            SendSuggestions(sugList.ToArray(), new(offset, offset));
                         }
+                        else if (command.Length > 0 && command[0] == '/' && !command.Contains(' '))
+                        {
+                            var sorted = Process.ExtractSorted(command[1..], Commands);
+                            var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[sorted.Count()];
 
-                        Dictionary<string, string?> dictionary = new();
-                        foreach (var sug in suggestions.List)
-                            dictionary.Add(sug.Text, sug.Tooltip?.String);
+                            int index = 0;
+                            foreach (var sug in sorted)
+                                sugList[index++] = new(sug.Value);
+                            SendSuggestions(sugList, new(offset, offset + command.Length));
+                        }
+                        else
+                        {
+                            CommandDispatcher<CmdResult>? dispatcher = McClient.dispatcher;
+                            if (dispatcher is null)
+                                return;
 
-                        var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[sugLen];
-                        if (cts.IsCancellationRequested)
-                            return;
+                            ParseResults<CmdResult> parse = dispatcher.Parse(command, CmdResult.Empty);
 
-                        Tuple<int, int> range = new(suggestions.Range.Start + offset, suggestions.Range.End + offset);
-                        var sorted = Process.ExtractSorted(fullCommand[range.Item1..range.Item2], dictionary.Keys);
-                        if (cts.IsCancellationRequested)
-                            return;
+                            Brigadier.NET.Suggestion.Suggestions suggestions = await dispatcher.GetCompletionSuggestions(parse, buffer.CursorPosition - offset);
 
-                        int index = 0;
-                        foreach (var sug in sorted)
-                            sugList[index++] = new(sug.Value, dictionary[sug.Value] ?? string.Empty);
+                            int sugLen = suggestions.List.Count;
+                            if (sugLen == 0)
+                            {
+                                DoClearSuggestions();
+                                return;
+                            }
 
-                        SendSuggestions(sugList, range);
+                            Dictionary<string, string?> dictionary = new();
+                            foreach (var sug in suggestions.List)
+                                dictionary.Add(sug.Text, sug.Tooltip?.String);
+
+                            var sugList = new ConsoleInteractive.ConsoleSuggestion.Suggestion[sugLen];
+                            if (cts.IsCancellationRequested)
+                                return;
+
+                            Tuple<int, int> range = new(suggestions.Range.Start + offset, suggestions.Range.End + offset);
+                            var sorted = Process.ExtractSorted(fullCommand[range.Item1..range.Item2], dictionary.Keys);
+                            if (cts.IsCancellationRequested)
+                                return;
+
+                            int index = 0;
+                            foreach (var sug in sorted)
+                                sugList[index++] = new(sug.Value, dictionary[sug.Value] ?? string.Empty);
+
+                            SendSuggestions(sugList, range);
+                        }
+                    }
+                    finally
+                    {
+                        if (Interlocked.CompareExchange(ref _cancellationTokenSource, null, cts) == cts)
+                            cts.Dispose();
                     }
                 }, cts.Token);
                 _latestTask = newTask;
-                try { newTask.Start(); } catch { }
-                if (_cancellationTokenSource == cts) _cancellationTokenSource = null;
+                try { newTask.Start(); }
+                catch
+                {
+                    if (Interlocked.CompareExchange(ref _cancellationTokenSource, null, cts) == cts)
+                        cts.Dispose();
+                }
             }
             else
             {

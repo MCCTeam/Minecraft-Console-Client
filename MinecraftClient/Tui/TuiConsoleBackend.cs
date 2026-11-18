@@ -210,7 +210,7 @@ namespace MinecraftClient.Tui
                 return string.Empty;
             }
 
-            var mre = new ManualResetEventSlim(false);
+            using var mre = new ManualResetEventSlim(false);
             string? result = null;
 
             void Handler(object? sender, string e)

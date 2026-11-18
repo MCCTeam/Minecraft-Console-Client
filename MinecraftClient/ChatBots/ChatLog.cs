@@ -140,12 +140,10 @@ namespace MinecraftClient.ChatBots
                 string? directory = Path.GetDirectoryName(Log_File_Full);
                 if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
-                FileStream stream = new(Log_File_Full, FileMode.OpenOrCreate);
-                StreamWriter writer = new(stream);
+                using FileStream stream = new(Log_File_Full, FileMode.OpenOrCreate);
+                using StreamWriter writer = new(stream);
                 stream.Seek(0, SeekOrigin.End);
                 writer.WriteLine(tosave);
-                writer.Dispose();
-                stream.Close();
             }
         }
     }

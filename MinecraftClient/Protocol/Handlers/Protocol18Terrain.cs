@@ -44,10 +44,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 // Warning: If you need to support modification of block data, you need to create 4096 objects here
                 Chunk chunk = new();
-                for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                    for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                        for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                            chunk.SetWithoutCheck(blockX, blockY, blockZ, block);
+                chunk.FillWithBlock(block);
                 return chunk;
             }
             else
@@ -145,25 +142,26 @@ namespace MinecraftClient.Protocol.Handlers
                 // 1.17 and above chunk format
                 // Unloading chunks is handled by a separate packet
 
-                for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
+                int lastChunkY;
+                if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
                 {
-                    int lastChunkY;
-                    if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
+                    lastChunkY = 0;
+                    for (int i = verticalStripBitmask!.Length - 1; i >= 0; --i)
                     {
-                        lastChunkY = 0;
-                        for (int i = verticalStripBitmask!.Length - 1; i >= 0; --i)
+                        if (verticalStripBitmask![i] != 0)
                         {
-                            if (verticalStripBitmask![i] != 0)
-                            {
-                                lastChunkY = (sizeof(ulong) * 8 * i) + (sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount(verticalStripBitmask![i]));
-                                break;
-                            }
+                            lastChunkY = (sizeof(ulong) * 8 * i) + (sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount(verticalStripBitmask![i]));
+                            break;
                         }
                     }
-                    else
-                    {
-                        lastChunkY = chunkColumnSize - 1;
-                    }
+                }
+                else
+                {
+                    lastChunkY = chunkColumnSize - 1;
+                }
+
+                for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
+                {
 
                     // 1.18 and above always contains all chunk section in data
                     // 1.17 and 1.17.1 need vertical strip bitmask to know if the chunk section is included

@@ -136,6 +136,7 @@ namespace MinecraftClient
                                 HttpResponseMessage response = await httpClient.GetAsync(downloadUrl + fileName, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                                 if (!response.IsSuccessStatusCode)
                                 {
+                                    response.Dispose();
                                     fileName = fileNameWithoutExtension + ".zip";
                                     response = await httpClient.GetAsync(downloadUrl + fileName, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                                     if (!response.IsSuccessStatusCode)

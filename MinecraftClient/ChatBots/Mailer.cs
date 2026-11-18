@@ -283,6 +283,8 @@ namespace MinecraftClient.ChatBots
 
         public override void OnUnload()
         {
+            mailDbFileMonitor?.Dispose();
+            ignoreListFileMonitor?.Dispose();
             McClient.dispatcher.Unregister(CommandName);
             McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
         }

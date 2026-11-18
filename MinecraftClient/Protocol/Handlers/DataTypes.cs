@@ -27,6 +27,19 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         public int ProtocolVersion => protocolversion;
 
+        private StructuredComponentsHandler? _cachedComponentsHandler;
+        private ItemPalette? _cachedComponentsPalette;
+
+        private StructuredComponentsHandler GetStructuredComponentsHandler(ItemPalette itemPalette)
+        {
+            if (_cachedComponentsHandler is null || !ReferenceEquals(_cachedComponentsPalette, itemPalette))
+            {
+                _cachedComponentsHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
+                _cachedComponentsPalette = itemPalette;
+            }
+            return _cachedComponentsHandler;
+        }
+
         /// <summary>
         /// Read some data from a cache of bytes and remove it from the cache
         /// </summary>
@@ -304,7 +317,7 @@ namespace MinecraftClient.Protocol.Handlers
             byte b;
             while (true)
             {
-                b = socket.ReadDataRAW(1)[0];
+                b = socket.ReadByteRAW();
                 i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
                 if ((b & 0x80) != 128) break;
@@ -458,7 +471,6 @@ namespace MinecraftClient.Protocol.Handlers
             var itemCount = 0;
             var nbt = null as Dictionary<string, object>;
             var item = null as Item;
-            var strcturedComponentsToAdd = new List<StructuredComponent>();
 
             switch (protocolversion)
             {
@@ -473,36 +485,46 @@ namespace MinecraftClient.Protocol.Handlers
 
                     var numberOfComponentsToAdd = ReadNextVarInt(cache);
                     var numberofComponentsToRemove = ReadNextVarInt(cache);
-                    var structuredComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
-                    var parsedComponents = new List<string>(numberOfComponentsToAdd);
 
-                    for (var i = 0; i < numberOfComponentsToAdd; i++)
+                    if (numberOfComponentsToAdd > 0)
                     {
-                        var componentTypeId = ReadNextVarInt(cache);
-                        var componentName = structuredComponentHandler.GetComponentName(componentTypeId);
-                        parsedComponents.Add($"{i}:{componentTypeId}:{componentName}:next={GetQueuePreview(cache, 24)}");
+                        var structuredComponentHandler = GetStructuredComponentsHandler(itemPalette);
+                        var strcturedComponentsToAdd = new List<StructuredComponent>(numberOfComponentsToAdd);
 
-                        try
+                        for (var i = 0; i < numberOfComponentsToAdd; i++)
                         {
-                            strcturedComponentsToAdd.Add(structuredComponentHandler.Parse(componentTypeId, cache));
+                            var componentTypeId = ReadNextVarInt(cache);
+
+                            try
+                            {
+                                strcturedComponentsToAdd.Add(structuredComponentHandler.Parse(componentTypeId, cache));
+                            }
+                            catch (Exception ex)
+                            {
+                                var componentName = structuredComponentHandler.GetComponentName(componentTypeId);
+                                var preview = GetQueuePreview(cache, 48);
+                                var parsedComponents = new List<string>(strcturedComponentsToAdd.Count + 1);
+                                for (var j = 0; j < strcturedComponentsToAdd.Count; j++)
+                                {
+                                    var parsed = strcturedComponentsToAdd[j];
+                                    parsedComponents.Add($"{j}:{parsed.TypeId}:{parsed.ComponentName}");
+                                }
+                                parsedComponents.Add($"{i}:{componentTypeId}:{componentName}");
+                                throw new System.IO.InvalidDataException(
+                                    $"Failed to decode item component {componentTypeId} ({componentName}) for itemId {itemId}, " +
+                                    $"itemCount {itemCount}, addCount {numberOfComponentsToAdd}, removeCount {numberofComponentsToRemove}, " +
+                                    $"componentIndex {i}, remainingBytes {cache.Count}, nextBytes {preview}, " +
+                                    $"componentTrace [{string.Join(" | ", parsedComponents)}].",
+                                    ex);
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            var preview = GetQueuePreview(cache, 48);
-                            throw new System.IO.InvalidDataException(
-                                $"Failed to decode item component {componentTypeId} ({componentName}) for itemId {itemId}, " +
-                                $"itemCount {itemCount}, addCount {numberOfComponentsToAdd}, removeCount {numberofComponentsToRemove}, " +
-                                $"componentIndex {i}, remainingBytes {cache.Count}, nextBytes {preview}, " +
-                                $"componentTrace [{string.Join(" | ", parsedComponents)}].",
-                                ex);
-                        }
+
+                        if (strcturedComponentsToAdd.Count > 0)
+                            item.Components = strcturedComponentsToAdd;
                     }
 
                     for (var i = 0; i < numberofComponentsToRemove; i++)
                         ReadNextVarInt(cache);
-
-                    if (strcturedComponentsToAdd.Count > 0)
-                        item.Components = strcturedComponentsToAdd;
 
                     return item;
                 case >= Protocol18Handler.MC_1_13_2_Version:
@@ -1434,7 +1456,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (componentCount > 0)
             {
-                var structuredComponentHandler = new StructuredComponentsHandler(protocolversion, this, itemPalette);
+                var structuredComponentHandler = GetStructuredComponentsHandler(itemPalette);
                 var components = new List<StructuredComponent>(componentCount);
                 for (var i = 0; i < componentCount; i++)
                 {

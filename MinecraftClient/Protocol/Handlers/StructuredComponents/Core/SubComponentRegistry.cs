@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -6,6 +7,7 @@ namespace MinecraftClient.Protocol.Handlers.StructuredComponents.Core;
 
 public abstract class SubComponentRegistry(DataTypes dataTypes)
 {
+    private static readonly ConcurrentDictionary<Type, MethodInfo?> s_parseMethods = new();
     private readonly Dictionary<string, Type> _subComponentParsers = new();
 
     protected void RegisterSubComponent<T>(string name) where T : SubComponent
@@ -29,7 +31,9 @@ public abstract class SubComponentRegistry(DataTypes dataTypes)
         var instance = Activator.CreateInstance(subComponentParserType, dataTypes, this) as SubComponent ??
             throw new InvalidOperationException($"Could not create instance of a sub component parser type: {subComponentParserType.Name}");
 
-        var parseMethod = instance.GetType().GetMethod("Parse", BindingFlags.Instance | BindingFlags.NonPublic);
+        var parseMethod = s_parseMethods.GetOrAdd(
+            subComponentParserType,
+            static t => t.GetMethod("Parse", BindingFlags.Instance | BindingFlags.NonPublic));
 
         if (parseMethod is null)
             throw new InvalidOperationException($"Sub component parser type {subComponentParserType.Name} does not have a Parse method.");

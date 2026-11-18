@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Frozen;
+using System.Collections.Generic;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Mapping
@@ -8,7 +9,7 @@ namespace MinecraftClient.Mapping
         // Made with the following ressources: https://minecraft.wiki/w/Breaking
         // Sorted in alphabetical order.
         // Minable by Any Pickaxe.
-        private static readonly List<Material> pickaxeTier0 = new()
+        private static readonly FrozenSet<Material> pickaxeTier0 = new Material[]
         {
             Material.ActivatorRail,
             Material.Andesite,
@@ -279,9 +280,9 @@ namespace MinecraftClient.Mapping
             Material.YellowGlazedTerracotta,
             Material.YellowShulkerBox,
             Material.YellowTerracotta,
-        };
+        }.ToFrozenSet();
         // Minable by Stone, iron, diamond, netherite.
-        private static readonly List<Material> pickaxeTier1 = new()
+        private static readonly FrozenSet<Material> pickaxeTier1 = new Material[]
         {
             Material.CopperOre,
             Material.CopperBlock,
@@ -327,9 +328,9 @@ namespace MinecraftClient.Mapping
             Material.WeatheredCutCopperSlab,
             Material.WeatheredCutCopperStairs,
             Material.WeatheredCutCopper,
-        };
+        }.ToFrozenSet();
         // Minable by Iron, diamond, netherite.
-        private static readonly List<Material> pickaxeTier2 = new()
+        private static readonly FrozenSet<Material> pickaxeTier2 = new Material[]
         {
             Material.DeepslateDiamondOre,
             Material.DeepslateEmeraldOre,
@@ -343,19 +344,19 @@ namespace MinecraftClient.Mapping
             Material.GoldOre,
             Material.RawGoldBlock,
             Material.RedstoneOre,
-        };
+        }.ToFrozenSet();
         // Minable by Diamond, Netherite.
-        private static readonly List<Material> pickaxeTier3 = new()
+        private static readonly FrozenSet<Material> pickaxeTier3 = new Material[]
         {
             Material.AncientDebris,
             Material.CryingObsidian,
             Material.NetheriteBlock,
             Material.Obsidian,
             Material.RespawnAnchor
-        };
+        }.ToFrozenSet();
 
         // Every shovel can mine every block (speed difference).
-        private static readonly List<Material> shovel = new()
+        private static readonly FrozenSet<Material> shovel = new Material[]
         {
             Material.BlackConcretePowder,
             Material.BlueConcretePowder,
@@ -392,9 +393,9 @@ namespace MinecraftClient.Mapping
             Material.SoulSoil,
             Material.WhiteConcretePowder,
             Material.YellowConcretePowder,
-        };
+        }.ToFrozenSet();
         // Every axe can mine every block (speed difference).
-        private static readonly List<Material> axe = new()
+        private static readonly FrozenSet<Material> axe = new Material[]
         {
             Material.AcaciaButton,
             Material.AcaciaDoor,
@@ -577,9 +578,9 @@ namespace MinecraftClient.Mapping
             Material.WhiteWallBanner,
             Material.YellowBanner,
             Material.YellowWallBanner,
-        };
+        }.ToFrozenSet();
         // Every block a shear can mine.
-        private static readonly List<Material> shears = new()
+        private static readonly FrozenSet<Material> shears = new Material[]
         {
             Material.AcaciaLeaves,
             Material.AzaleaLeaves,
@@ -606,9 +607,9 @@ namespace MinecraftClient.Mapping
             Material.SpruceLeaves,
             Material.WhiteWool,
             Material.YellowWool,
-        };
+        }.ToFrozenSet();
         // Every block that is mined with a sword.
-        private static readonly List<Material> sword = new()
+        private static readonly FrozenSet<Material> sword = new Material[]
         {
             Material.Bamboo,
             Material.Cobweb,
@@ -619,9 +620,9 @@ namespace MinecraftClient.Mapping
             Material.InfestedMossyStoneBricks,
             Material.InfestedStone,
             Material.InfestedStoneBricks,
-        };
+        }.ToFrozenSet();
         // Every block that can be mined with a hoe.
-        private static readonly List<Material> hoe = new()
+        private static readonly FrozenSet<Material> hoe = new Material[]
         {
             Material.AcaciaLeaves,
             Material.BirchLeaves,
@@ -638,16 +639,16 @@ namespace MinecraftClient.Mapping
             Material.Target,
             Material.WarpedWartBlock,
             Material.WetSponge,
-        };
+        }.ToFrozenSet();
         // Liquids
-        private static readonly List<Material> bucket = new()
+        private static readonly FrozenSet<Material> bucket = new Material[]
         {
             Material.Lava,
             Material.Water
-        };
+        }.ToFrozenSet();
 
         // Unbreakable Blocks
-        private static readonly List<Material> unbreakable = new()
+        private static readonly FrozenSet<Material> unbreakable = new Material[]
         {
             Material.Air,
             Material.Barrier,
@@ -663,7 +664,7 @@ namespace MinecraftClient.Mapping
             Material.RepeatingCommandBlock,
             Material.StructureBlock,
             Material.StructureVoid
-        };
+        }.ToFrozenSet();
 
         /// <summary>
         /// Evaluates the right tool for the job

@@ -172,6 +172,15 @@ namespace MinecraftClient.Protocol
             }
         }
 
+        private static readonly int[] SupportedVersionsProtocol16 = { 51, 60, 61, 72, 73, 74, 78 };
+
+        private static readonly int[] SupportedVersionsProtocol18 =
+        {
+            4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573,
+            575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
+            769, 770, 771, 772, 773, 774, 775, 776
+        };
+
         /// <summary>
         /// Get a protocol handler for the specified Minecraft version
         /// </summary>
@@ -185,19 +194,10 @@ namespace MinecraftClient.Protocol
         {
             int normalizedVersion = NormalizeSnapshotProtocol(protocolVersion);
 
-            int[] suppoertedVersionsProtocol16 = { 51, 60, 61, 72, 73, 74, 78 };
-
-            if (Array.IndexOf(suppoertedVersionsProtocol16, normalizedVersion) > -1)
+            if (Array.IndexOf(SupportedVersionsProtocol16, normalizedVersion) > -1)
                 return new Protocol16Handler(client, normalizedVersion, handler);
 
-            int[] suppoertedVersionsProtocol18 =
-            {
-                4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573,
-                575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
-                769, 770, 771, 772, 773, 774, 775, 776
-            };
-
-            if (Array.IndexOf(suppoertedVersionsProtocol18, normalizedVersion) > -1)
+            if (Array.IndexOf(SupportedVersionsProtocol18, normalizedVersion) > -1)
                 return new Protocol18Handler(client, normalizedVersion, handler, forgeInfo, protocolVersion);
 
             throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, protocolVersion));
@@ -1361,13 +1361,13 @@ namespace MinecraftClient.Protocol
                     handler.ConnectCallback = async (ctx, ct) =>
                     {
                         TcpClient client = ProxyHandler.NewTcpClient(host, port, true);
-                        return client.GetStream();
+                        return new NetworkStream(client.Client, ownsSocket: true);
                     };
 
                     using HttpClient client = new HttpClient(handler);
 
                     string scheme = useHttps ? "https" : "http";
-                    var request = new HttpRequestMessage(method, scheme + "://" + host + ":" + port + path);
+                    using var request = new HttpRequestMessage(method, scheme + "://" + host + ":" + port + path);
 
                     var contentType = "text/plain";
                     foreach (var header in headers)
@@ -1383,7 +1383,7 @@ namespace MinecraftClient.Protocol
                     if (Settings.Config.Logging.DebugMessages)
                         ConsoleIO.WriteLineFormatted("§8> " + request);
 
-                    HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
+                    using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
                     statusCode = (int)response.StatusCode;
 
                     postResult = statusCode == 204

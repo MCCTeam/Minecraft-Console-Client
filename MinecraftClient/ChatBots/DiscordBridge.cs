@@ -129,6 +129,9 @@ namespace MinecraftClient.ChatBots
             McClient.dispatcher.GetRoot().GetChild("help").RemoveChild(CommandName);
             StopAggregation();
             Disconnect();
+            if (instance == this)
+                instance = null;
+            GC.SuppressFinalize(this);
         }
 
         private int OnCommandHelp(CmdResult r, string? cmd)
@@ -227,8 +230,13 @@ namespace MinecraftClient.ChatBots
                 }
 
                 discordBotClient.DisconnectAsync().Wait();
+                discordBotClient.Dispose();
+                discordBotClient = null;
                 IsConnected = false;
             }
+
+            if (instance == this)
+                instance = null;
         }
 
         public static DiscordBridge? GetInstance()

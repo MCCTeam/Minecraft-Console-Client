@@ -95,15 +95,13 @@ namespace MinecraftClient.Inventory
                     return null;
                 }
 
-                if (NBT is not null && NBT.ContainsKey("display"))
+                if (NBT is not null && NBT.TryGetValue("display", out object? displayObj) &&
+                    displayObj is Dictionary<string, object> displayProperties &&
+                    displayProperties.TryGetValue("Name", out object? nameObj))
                 {
-                    if (NBT["display"] is Dictionary<string, object> displayProperties &&
-                        displayProperties.ContainsKey("Name"))
-                    {
-                        string? displayName = displayProperties["Name"] as string;
-                        if (!String.IsNullOrEmpty(displayName))
-                            return ChatParser.ParseText(displayProperties["Name"].ToString() ?? string.Empty);
-                    }
+                    string? displayName = nameObj as string;
+                    if (!String.IsNullOrEmpty(displayName))
+                        return ChatParser.ParseText(nameObj.ToString() ?? string.Empty);
                 }
 
                 return null;
@@ -126,18 +124,16 @@ namespace MinecraftClient.Inventory
                     return null;
                 }
 
-                List<string> lores = new();
-                if (NBT is not null && NBT.ContainsKey("display"))
+                if (NBT is not null && NBT.TryGetValue("display", out object? displayObj) &&
+                    displayObj is Dictionary<string, object> displayProperties &&
+                    displayProperties.TryGetValue("Lore", out object? loreObj))
                 {
-                    if (NBT["display"] is Dictionary<string, object> displayProperties &&
-                        displayProperties.ContainsKey("Lore"))
-                    {
-                        object[] displayName = (object[])displayProperties["Lore"];
-                        lores.AddRange(from string st in displayName
-                                       let str = ChatParser.ParseText(st.ToString())
-                                       select str);
-                        return lores.ToArray();
-                    }
+                    object[] displayName = (object[])loreObj;
+                    List<string> lores = new(displayName.Length);
+                    lores.AddRange(from string st in displayName
+                                   let str = ChatParser.ParseText(st.ToString())
+                                   select str);
+                    return lores.ToArray();
                 }
 
                 return null;
@@ -160,14 +156,10 @@ namespace MinecraftClient.Inventory
                     return 0;
                 }
 
-                if (NBT is not null && NBT.ContainsKey("Damage"))
+                if (NBT is not null && NBT.TryGetValue("Damage", out object? damage) && damage is not null)
                 {
-                    object damage = NBT["Damage"];
-                    if (damage is not null)
-                    {
-                        return int.Parse(damage.ToString() ?? string.Empty, NumberStyles.Any,
-                            CultureInfo.CurrentCulture);
-                    }
+                    return int.Parse(damage.ToString() ?? string.Empty, NumberStyles.Any,
+                        CultureInfo.CurrentCulture);
                 }
 
                 return 0;

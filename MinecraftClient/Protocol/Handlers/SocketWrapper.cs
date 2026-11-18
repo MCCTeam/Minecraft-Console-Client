@@ -13,6 +13,7 @@ namespace MinecraftClient.Protocol.Handlers
         readonly TcpClient c;
         AesCfb8Stream? s;
         bool encrypted = false;
+        private readonly byte[] singleByteBuffer = new byte[1];
 
         /// <summary>
         /// Initialize a new SocketWrapper
@@ -76,6 +77,16 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a single byte from the server without allocating a new array.
+        /// </summary>
+        /// <returns>The byte read from the network</returns>
+        public byte ReadByteRAW()
+        {
+            Receive(singleByteBuffer, 0, 1, SocketFlags.None);
+            return singleByteBuffer[0];
+        }
+
+        /// <summary>
         /// Read some data from the server.
         /// </summary>
         /// <param name="length">Amount of bytes to read</param>
@@ -113,6 +124,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
+                s?.Dispose();
                 c.Close();
             }
             catch (SocketException) { }

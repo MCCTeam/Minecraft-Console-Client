@@ -25,8 +25,8 @@ namespace MinecraftClient.Crypto
 
             byte[] SeqOID = { 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
 
-            System.IO.MemoryStream ms = new(x509key);
-            System.IO.BinaryReader reader = new(ms);
+            using System.IO.MemoryStream ms = new(x509key);
+            using System.IO.BinaryReader reader = new(ms);
 
             if (reader.ReadByte() == 0x30)
                 ReadASNLength(reader); //skip the size
@@ -120,7 +120,7 @@ namespace MinecraftClient.Crypto
 
         public static byte[] GenerateAESPrivateKey()
         {
-            Aes AES = Aes.Create();
+            using Aes AES = Aes.Create();
             AES.KeySize = 128;
             AES.GenerateKey();
             return AES.Key;
@@ -152,7 +152,7 @@ namespace MinecraftClient.Crypto
 
         private static byte[] Digest(byte[][] tohash)
         {
-            SHA1 sha1 = SHA1.Create();
+            using SHA1 sha1 = SHA1.Create();
             for (int i = 0; i < tohash.Length; i++)
                 sha1.TransformBlock(tohash[i], 0, tohash[i].Length, tohash[i], 0);
             sha1.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
@@ -167,10 +167,7 @@ namespace MinecraftClient.Crypto
 
         private static string GetHexString(byte[] p)
         {
-            string result = string.Empty;
-            for (int i = 0; i < p.Length; i++)
-                result += p[i].ToString("x2");
-            return result;
+            return Convert.ToHexStringLower(p);
         }
 
         /// <summary>

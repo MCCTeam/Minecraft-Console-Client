@@ -387,6 +387,11 @@ namespace MinecraftClient.Protocol.Handlers
                     exitReason = nameof(OperationCanceledException);
                     break;
                 }
+                catch (ObjectDisposedException)
+                {
+                    exitReason = nameof(ObjectDisposedException);
+                    break;
+                }
                 catch (System.IO.IOException)
                 {
                     exitReason = nameof(System.IO.IOException);
@@ -421,7 +426,24 @@ namespace MinecraftClient.Protocol.Handlers
                 exitReason = Translations.debug_packet_loop_reason_cancelled;
 
             LogNetworkLoopExit(nameof(PacketReader), exitReason);
-            packetQueue.CompleteAdding();
+            try { packetQueue.CompleteAdding(); } catch (ObjectDisposedException) { }
+        }
+
+        private static int ReadNextVarIntFromArray(byte[] data, ref int offset)
+        {
+            int i = 0;
+            int j = 0;
+            byte b;
+            do
+            {
+                if (offset >= data.Length)
+                    throw new InvalidOperationException("Queue empty.");
+                b = data[offset++];
+                i |= (b & 0x7F) << j++ * 7;
+                if (j > 5) throw new OverflowException("VarInt too big");
+            } while ((b & 0x80) == 128);
+
+            return i;
         }
 
         /// <summary>
@@ -433,7 +455,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             var size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
             var rawBytes = socketWrapper.ReadDataRAW(size);
-            Queue<byte> packetData = new(rawBytes); //Packet contents
+            Queue<byte> packetData; //Packet contents
             var compressed = false;
             var sizeUncompressed = 0;
 
@@ -441,14 +463,24 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolVersion >= MC_1_8_Version
                 && compression_treshold >= 0)
             {
-                sizeUncompressed = dataTypes.ReadNextVarInt(packetData);
+                int offset = 0;
+                sizeUncompressed = ReadNextVarIntFromArray(rawBytes, ref offset);
                 if (sizeUncompressed != 0) // != 0 means compressed, let's decompress
                 {
-                    var toDecompress = packetData.ToArray();
-                    var uncompressed = ZlibUtils.Decompress(toDecompress, sizeUncompressed);
+                    var uncompressed = ZlibUtils.Decompress(rawBytes, offset, rawBytes.Length - offset, sizeUncompressed);
                     packetData = new Queue<byte>(uncompressed);
                     compressed = true;
                 }
+                else
+                {
+                    packetData = new Queue<byte>(rawBytes.Length - offset);
+                    for (int i = offset; i < rawBytes.Length; i++)
+                        packetData.Enqueue(rawBytes[i]);
+                }
+            }
+            else
+            {
+                packetData = new Queue<byte>(rawBytes);
             }
 
             if (packetData.Count == 0)
@@ -474,9 +506,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetId, Queue<byte> packetData)
         {
-            // This copy is necessary because by the time we get to the catch block,
-            // the packetData queue will have been processed and the data will be lost
-            var _copy = packetData.ToArray();
+            // Only copy packetData when Sentry is enabled for exception breadcrumbs
+            var _copy = SentrySdk.IsEnabled ? packetData.ToArray() : Array.Empty<byte>();
 
             try
             {
@@ -4110,16 +4141,23 @@ namespace MinecraftClient.Protocol.Handlers
             try
             {
                 netMain?.Item2.Cancel();
+                netMain?.Item2.Dispose();
             }
+            catch { }
             finally
             {
                 try
                 {
                     netReader?.Item2.Cancel();
+                    netReader?.Item2.Dispose();
                 }
+                catch { }
                 finally
                 {
+                    try { packetQueue.CompleteAdding(); } catch { }
+                    try { packetQueue.Dispose(); } catch { }
                     socketWrapper.Disconnect();
+                    randomGen.Dispose();
                     McClient.Instance?.DeleteAllCookies();
                 }
             }
@@ -4545,7 +4583,7 @@ namespace MinecraftClient.Protocol.Handlers
         private bool StartEncryption(string uuid, string sessionID, LoginType type, byte[] token, string serverIDhash,
             byte[] serverPublicKey, PlayerKeyPair? playerKeyPair, SessionToken session, bool shouldAuthetnicate)
         {
-            var RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
+            using var RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             var secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             log.PacketDebug($"§8{Translations.debug_crypto}");

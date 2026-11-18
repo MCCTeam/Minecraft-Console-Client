@@ -64,6 +64,12 @@ namespace MinecraftClient.Mapping
             blocks[(blockY << 8) | (blockZ << 4) | blockX] = block;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void FillWithBlock(Block block)
+        {
+            Array.Fill(blocks, block);
+        }
+
         /// <summary>
         /// Get block at the specified location
         /// </summary>
