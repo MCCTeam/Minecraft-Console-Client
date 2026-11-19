@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -109,42 +110,51 @@ namespace MinecraftClient.Crypto
 
             Span<byte> blockOutput = stackalloc byte[blockSize];
 
-            byte[] inputBuf = new byte[blockSize + required];
-            Array.Copy(ReadStreamIV, inputBuf, blockSize);
-
-            for (int readed = 0, curRead; readed < required; readed += curRead)
+            byte[] inputBuf = ArrayPool<byte>.Shared.Rent(blockSize + required);
+            try
             {
-                curRead = BaseStream.Read(inputBuf, blockSize + readed, required - readed);
-                if (curRead == 0)
+                Array.Copy(ReadStreamIV, inputBuf, blockSize);
+
+                for (int readed = 0, curRead; readed < required; readed += curRead)
                 {
-                    inStreamEnded = true;
-                    return readed;
+                    curRead = BaseStream.Read(inputBuf, blockSize + readed, required - readed);
+                    if (curRead == 0)
+                    {
+                        inStreamEnded = true;
+                        if (readed > 0)
+                            Array.Copy(inputBuf, readed, ReadStreamIV, 0, blockSize);
+                        return readed;
+                    }
+
+                    int processEnd = readed + curRead;
+                    if (FastAes is not null)
+                    {
+                        for (int idx = readed; idx < processEnd; idx++)
+                        {
+                            ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
+                            FastAes.EncryptEcb(blockInput, blockOutput);
+                            buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
+                        }
+                    }
+                    else
+                    {
+                        for (int idx = readed; idx < processEnd; idx++)
+                        {
+                            ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
+                            Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);
+                            buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
+                        }
+                    }
                 }
 
-                int processEnd = readed + curRead;
-                if (FastAes is not null)
-                {
-                    for (int idx = readed; idx < processEnd; idx++)
-                    {
-                        ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
-                        FastAes.EncryptEcb(blockInput, blockOutput);
-                        buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
-                    }
-                }
-                else
-                {
-                    for (int idx = readed; idx < processEnd; idx++)
-                    {
-                        ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
-                        Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);
-                        buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
-                    }
-                }
+                Array.Copy(inputBuf, required, ReadStreamIV, 0, blockSize);
+
+                return required;
             }
-
-            Array.Copy(inputBuf, required, ReadStreamIV, 0, blockSize);
-
-            return required;
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(inputBuf);
+            }
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -194,6 +204,15 @@ namespace MinecraftClient.Crypto
             BaseStream.WriteAsync(outputBuf, blockSize, required);
 
             Array.Copy(outputBuf, required, WriteStreamIV, 0, blockSize);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Aes?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

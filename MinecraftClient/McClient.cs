@@ -383,7 +383,18 @@ namespace MinecraftClient
             if (timeoutdetector is not null)
             {
                 timeoutdetector.Item2.Cancel();
+                timeoutdetector.Item2.Dispose();
                 timeoutdetector = null;
+            }
+
+            if (handler is not null)
+            {
+                try { handler.Dispose(); } catch { }
+            }
+
+            if (client is not null)
+            {
+                try { client.Close(); } catch { }
             }
 
             if (connectionLifecycle.IsFailureClaimed)
@@ -511,6 +522,7 @@ namespace MinecraftClient
                 if (timeoutdetector is not null)
                 {
                     timeoutdetector.Item2.Cancel();
+                    timeoutdetector.Item2.Dispose();
                     timeoutdetector = null;
                 }
 
@@ -740,20 +752,28 @@ namespace MinecraftClient
             // Check for expired effects
             if (playerEffects.Count > 0)
             {
-                var expiredEffects = playerEffects
-                    .Where(e => e.Value.IsExpired)
-                    .Select(e => e.Key)
-                    .ToList();
-
-                foreach (var effect in expiredEffects)
+                List<Effects>? expiredEffects = null;
+                foreach (var kvp in playerEffects)
                 {
-                    if (!playerEffects.Remove(effect, out var effectData))
-                        continue;
+                    if (kvp.Value.IsExpired)
+                    {
+                        expiredEffects ??= new List<Effects>();
+                        expiredEffects.Add(kvp.Key);
+                    }
+                }
 
-                    AnnouncePlayerEffectExpired(effectData);
+                if (expiredEffects is not null)
+                {
+                    foreach (var effect in expiredEffects)
+                    {
+                        if (!playerEffects.Remove(effect, out var effectData))
+                            continue;
 
-                    if (entities.TryGetValue(playerEntityID, out var playerEntity))
-                        playerEntity.ActiveEffects.Remove(effect);
+                        AnnouncePlayerEffectExpired(effectData);
+
+                        if (entities.TryGetValue(playerEntityID, out var playerEntity))
+                            playerEntity.ActiveEffects.Remove(effect);
+                    }
                 }
             }
 
@@ -947,6 +967,7 @@ namespace MinecraftClient
                     CancellationTokenSource timeoutCancellation = timeoutdetector.Item2;
                     timeoutdetector = null;
                     RunDisconnectCleanup(timeoutCancellation.Cancel);
+                    RunDisconnectCleanup(timeoutCancellation.Dispose);
                 }
 
                 if (handler is not null)
@@ -1423,6 +1444,7 @@ namespace MinecraftClient
                 inventoryHandlingEnabled = false;
                 inventoryHandlingRequested = false;
                 inventories.Clear();
+                inventoriesWithFullContents.Clear();
                 ClearUnlockedRecipes();
             }
             return true;
@@ -3641,7 +3663,7 @@ namespace MinecraftClient
         /// <returns>true if a movement is currently handled</returns>
         public bool ClientIsMoving()
         {
-            return terrainAndMovementsEnabled && locationReceived && path is not null && path.Count > 0;
+            return terrainAndMovementsEnabled && locationReceived && (pathTarget is not null || (path is not null && path.Count > 0));
         }
 
         /// <summary>
@@ -3650,7 +3672,10 @@ namespace MinecraftClient
         /// <returns>Current goal of movement. Location.Zero if not set.</returns>
         public Location GetCurrentMovementGoal()
         {
-            return (ClientIsMoving() || path is null) ? Location.Zero : path.Last();
+            if (!ClientIsMoving())
+                return Location.Zero;
+
+            return path is not null && path.Count > 0 ? path.Last() : pathTarget!.Value;
         }
 
         /// <summary>
@@ -3661,6 +3686,8 @@ namespace MinecraftClient
         {
             bool success = ClientIsMoving();
             path = null;
+            pathTarget = null;
+            physicsInput.Reset();
             return success;
         }
 
@@ -5221,7 +5248,22 @@ namespace MinecraftClient
 
         private static bool IsSignMaterial(Material material)
         {
-            return material.ToString().Contains("Sign", StringComparison.Ordinal);
+            return material switch
+            {
+                Material.AcaciaHangingSign or Material.AcaciaSign or Material.AcaciaWallHangingSign or Material.AcaciaWallSign or
+                Material.BambooHangingSign or Material.BambooSign or Material.BambooWallHangingSign or Material.BambooWallSign or
+                Material.BirchHangingSign or Material.BirchSign or Material.BirchWallHangingSign or Material.BirchWallSign or
+                Material.CherryHangingSign or Material.CherrySign or Material.CherryWallHangingSign or Material.CherryWallSign or
+                Material.CrimsonHangingSign or Material.CrimsonSign or Material.CrimsonWallHangingSign or Material.CrimsonWallSign or
+                Material.DarkOakHangingSign or Material.DarkOakSign or Material.DarkOakWallHangingSign or Material.DarkOakWallSign or
+                Material.JungleHangingSign or Material.JungleSign or Material.JungleWallHangingSign or Material.JungleWallSign or
+                Material.MangroveHangingSign or Material.MangroveSign or Material.MangroveWallHangingSign or Material.MangroveWallSign or
+                Material.OakHangingSign or Material.OakSign or Material.OakWallHangingSign or Material.OakWallSign or
+                Material.PaleOakHangingSign or Material.PaleOakSign or Material.PaleOakWallHangingSign or Material.PaleOakWallSign or
+                Material.SpruceHangingSign or Material.SpruceSign or Material.SpruceWallHangingSign or Material.SpruceWallSign or
+                Material.WarpedHangingSign or Material.WarpedSign or Material.WarpedWallHangingSign or Material.WarpedWallSign => true,
+                _ => false,
+            };
         }
 
         private static (int x, int y, int z) ToBlockKey(Location location)

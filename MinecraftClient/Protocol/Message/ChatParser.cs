@@ -426,8 +426,9 @@ namespace MinecraftClient.Protocol.Message
             {
                 try
                 {
+                    using FileStream stream = File.OpenRead(languageFilePath);
                     TranslationRules =
-                        JsonSerializer.Deserialize<Dictionary<string, string>>(File.OpenRead(languageFilePath))!;
+                        JsonSerializer.Deserialize<Dictionary<string, string>>(stream)!;
                 }
                 catch (IOException)
                 {
@@ -1332,8 +1333,10 @@ namespace MinecraftClient.Protocol.Message
                     }
 
                     // Strip any formatting codes that appear before the last §r, since §r resets all
-                    // prior formatting. The greedy .* matches up to the last §r in the string.
-                    formatting = Regex.Replace(formatting, ".*(§r.*)", "$1");
+                    // prior formatting.
+                    int lastResetIndex = formatting.LastIndexOf("§r", StringComparison.Ordinal);
+                    if (lastResetIndex > 0)
+                        formatting = formatting[lastResetIndex..];
 
                     if (obj.ContainsKey("text"))
                     {

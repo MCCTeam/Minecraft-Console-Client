@@ -7,9 +7,9 @@ namespace MinecraftClient
     /// Holds an asynchronous task with return value
     /// </summary>
     /// <typeparam name="T">Type of the return value</typeparam>
-    public class TaskWithResult<T>
+    public class TaskWithResult<T> : IDisposable
     {
-        private readonly AutoResetEvent resultEvent = new(false);
+        private readonly ManualResetEventSlim resultEvent = new(false);
         private readonly Func<T> task;
         private T? result = default;
         private Exception? exception = null;
@@ -101,22 +101,35 @@ namespace MinecraftClient
         /// <exception cref="System.Exception">Any exception thrown by the task</exception>
         public T WaitGetResult()
         {
-            // Wait only if the result is not available yet
-            bool mustWait = false;
-            lock (taskRunLock)
+            try
             {
-                mustWait = !taskRun;
+                // Wait only if the result is not available yet
+                bool mustWait = false;
+                lock (taskRunLock)
+                {
+                    mustWait = !taskRun;
+                }
+                if (mustWait)
+                {
+                    resultEvent.Wait();
+                }
+
+                // Receive exception from task
+                if (exception is not null)
+                    throw exception;
+
+                return result!;
             }
-            if (mustWait)
+            finally
             {
-                resultEvent.WaitOne();
+                Dispose();
             }
+        }
 
-            // Receive exception from task
-            if (exception is not null)
-                throw exception;
-
-            return result!;
+        public void Dispose()
+        {
+            resultEvent.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

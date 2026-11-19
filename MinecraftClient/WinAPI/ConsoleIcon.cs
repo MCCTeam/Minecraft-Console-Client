@@ -19,6 +19,9 @@ namespace MinecraftClient.WinAPI
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetConsoleIcon(IntPtr hIcon);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool DestroyIcon(IntPtr hIcon);
+
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
         private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
 
@@ -33,7 +36,8 @@ namespace MinecraftClient.WinAPI
 
         private static void SetWindowIcon(System.Drawing.Icon icon)
         {
-            IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+            using var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+            IntPtr mwHandle = currentProcess.MainWindowHandle;
             SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
             SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
         }
@@ -45,24 +49,32 @@ namespace MinecraftClient.WinAPI
         {
             Thread t = new(new ThreadStart(delegate
             {
-                HttpClient httpClient = new();
+                using HttpClient httpClient = new();
                 try
                 {
-                    Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
+                    using Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
                     httpWebRequest.Wait();
-                    Stream imageStream = httpWebRequest.Result;
+                    using Stream imageStream = httpWebRequest.Result;
                     try
                     {
-                        Bitmap skin = new(Image.FromStream(imageStream)); //Read skin from network
-                        SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
-                        SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
+                        using Image loadedImage = Image.FromStream(imageStream);
+                        using Bitmap skin = new(loadedImage); //Read skin from network
+                        IntPtr hIcon = skin.GetHicon();
+                        try
+                        {
+                            using Icon icon = Icon.FromHandle(hIcon);
+                            SetWindowIcon(icon); // Windows 10+ (New console)
+                            SetConsoleIcon(hIcon); // Windows 8 and lower (Older console)
+                        }
+                        finally
+                        {
+                            DestroyIcon(hIcon);
+                        }
                     }
                     catch (ArgumentException)
                     {
                         /* Invalid image in HTTP response */
                     }
-                    imageStream.Dispose();
-                    httpWebRequest.Dispose();
                 }
                 catch (AggregateException ae)
                 {
@@ -79,10 +91,6 @@ namespace MinecraftClient.WinAPI
                 {
                     RevertToMCCIcon();
                 }
-                finally
-                {
-                    httpClient.Dispose();
-                }
             }
             ))
             {
@@ -98,9 +106,12 @@ namespace MinecraftClient.WinAPI
         {
             try
             {
-                Icon defaultIcon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!)!;
-                SetWindowIcon(Icon.FromHandle(defaultIcon.Handle)); // Windows 10+ (New console)
-                SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
+                using Icon? defaultIcon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!);
+                if (defaultIcon is not null)
+                {
+                    SetWindowIcon(defaultIcon); // Windows 10+ (New console)
+                    SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
+                }
             }
             catch { }
         }

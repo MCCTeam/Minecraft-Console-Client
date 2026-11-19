@@ -346,8 +346,12 @@ namespace MinecraftClient.ChatBots
                                 // Delete the temporary file
                                 if (File.Exists(newFileName))
                                     File.Delete(newFileName);
+                                break;
                             }
-                            catch (IOException) { }
+                            catch (IOException)
+                            {
+                                await Task.Delay(100);
+                            }
                         }
                     });
                 }

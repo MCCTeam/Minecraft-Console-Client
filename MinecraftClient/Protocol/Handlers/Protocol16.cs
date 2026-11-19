@@ -208,7 +208,7 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 0xC9:
                     string name = ReadNextString(); bool online = ReadNextByte() != 0x00; ReadData(2);
-                    Guid FakeUUID = new(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                    Guid FakeUUID = new(MD5.HashData(Encoding.UTF8.GetBytes(name)));
                     if (online) handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID));
                     else handler.OnPlayerLeave(FakeUUID);
                     break;
@@ -279,7 +279,9 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     netRead.Item2.Cancel();
                     c.Close();
+                    netRead.Item2.Dispose();
                 }
+                s?.Dispose();
             }
             catch { }
         }
@@ -551,7 +553,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool StartEncryption(string uuid, string username, string sessionID, LoginType type, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
         {
-            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
+            using RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.Config.Logging.DebugMessages)

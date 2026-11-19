@@ -7,6 +7,11 @@ namespace MinecraftClient.Logger
     {
         protected enum FilterChannel { Debug, Chat }
 
+        private string? cachedChatFilterPattern;
+        private Regex? cachedChatFilterRegex;
+        private string? cachedDebugFilterPattern;
+        private Regex? cachedDebugFilterRegex;
+
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
             if (Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.disable)
@@ -19,16 +24,34 @@ namespace MinecraftClient.Logger
                 case FilterChannel.Chat:
                     string chat = Config.Logging.ChatFilterRegex;
                     if (string.IsNullOrEmpty(chat))
+                    {
                         regexToUse = null;
+                    }
                     else
-                        regexToUse = new(chat);
+                    {
+                        if (chat != cachedChatFilterPattern || cachedChatFilterRegex is null)
+                        {
+                            cachedChatFilterPattern = chat;
+                            cachedChatFilterRegex = new Regex(chat);
+                        }
+                        regexToUse = cachedChatFilterRegex;
+                    }
                     break;
                 case FilterChannel.Debug:
                     string debug = Config.Logging.DebugFilterRegex;
                     if (string.IsNullOrEmpty(debug))
+                    {
                         regexToUse = null;
+                    }
                     else
-                        regexToUse = new(debug);
+                    {
+                        if (debug != cachedDebugFilterPattern || cachedDebugFilterRegex is null)
+                        {
+                            cachedDebugFilterPattern = debug;
+                            cachedDebugFilterRegex = new Regex(debug);
+                        }
+                        regexToUse = cachedDebugFilterRegex;
+                    }
                     break;
             }
             if (regexToUse is not null)

@@ -209,9 +209,9 @@ public class ItemsCollector : ChatBot
     private bool WaitForMoveToLocation(Location location, float tolerance = 1f)
     {
         if (!MoveToLocation(location)) return false;
-        while (GetCurrentLocation().Distance(location) > tolerance)
+        while (running && ClientIsMoving() && GetCurrentLocation().Distance(location) > tolerance)
             Thread.Sleep(200);
 
-        return true;
+        return GetCurrentLocation().Distance(location) <= tolerance;
     }
 }

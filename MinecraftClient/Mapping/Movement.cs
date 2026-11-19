@@ -44,6 +44,9 @@ namespace MinecraftClient.Mapping
             return location;
         }
 
+        private static readonly Direction[] AllDirections = Enum.GetValues<Direction>();
+        private static readonly Direction[] HorizontalCardinals = { Direction.East, Direction.West, Direction.North, Direction.South };
+
         /// <summary>
         /// Return a list of possible moves for the player
         /// </summary>
@@ -58,7 +61,7 @@ namespace MinecraftClient.Mapping
             List<Location> availableMoves = new();
             if (IsOnGround(world, location) || IsSwimming(world, location))
             {
-                foreach (Direction dir in Enum.GetValues(typeof(Direction)))
+                foreach (Direction dir in AllDirections)
                 {
                     Location dest = Move(location, dir);
                     if (CanMove(world, location, dir) && (allowUnsafe || IsSafe(world, dest)))
@@ -67,10 +70,13 @@ namespace MinecraftClient.Mapping
             }
             else
             {
-                foreach (Direction dir in new[] { Direction.East, Direction.West, Direction.North, Direction.South })
-                    if (CanMove(world, location, dir) && IsOnGround(world, Move(location, dir)) &&
-                        (allowUnsafe || IsSafe(world, Move(location, dir))))
-                        availableMoves.Add(Move(location, dir));
+                foreach (Direction dir in HorizontalCardinals)
+                {
+                    Location dest = Move(location, dir);
+                    if (CanMove(world, location, dir) && IsOnGround(world, dest) &&
+                        (allowUnsafe || IsSafe(world, dest)))
+                        availableMoves.Add(dest);
+                }
                 availableMoves.Add(Move(location, Direction.Down));
             }
 
@@ -100,16 +106,13 @@ namespace MinecraftClient.Mapping
             {
                 //Use MC-Like falling algorithm
                 double y = start.Y;
-                Queue<Location> fallSteps = new();
-                fallSteps.Enqueue(start);
                 motionY -= 0.08D;
                 motionY *= 0.9800000190734863D;
                 y += motionY;
 
-                if (y < goal.Y)
-                    return new Queue<Location>(new[] { goal });
-
-                return new Queue<Location>(new[] { new Location(start.X, y, start.Z) });
+                Queue<Location> fallSteps = new(1);
+                fallSteps.Enqueue(y < goal.Y ? goal : new Location(start.X, y, start.Z));
+                return fallSteps;
             }
             else
             {
@@ -121,13 +124,17 @@ namespace MinecraftClient.Mapping
 
                 if (totalStepsDouble >= 1)
                 {
-                    Queue<Location> movementSteps = new();
+                    Queue<Location> movementSteps = new(totalSteps);
                     for (int i = 1; i <= totalSteps; i++)
                         movementSteps.Enqueue(start + step * i);
                     return movementSteps;
                 }
                 else
-                    return new Queue<Location>(new[] { goal });
+                {
+                    Queue<Location> singleStep = new(1);
+                    singleStep.Enqueue(goal);
+                    return singleStep;
+                }
             }
         }
 
@@ -150,7 +157,7 @@ namespace MinecraftClient.Mapping
         public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe,
             int maxOffset, int minOffset, TimeSpan timeout)
         {
-            CancellationTokenSource cts = new();
+            using CancellationTokenSource cts = new();
             Task<Queue<Location>?> pathfindingTask = Task.Factory.StartNew(() =>
                 CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
             pathfindingTask.Wait(timeout);
@@ -274,10 +281,10 @@ namespace MinecraftClient.Mapping
 
             // Generate intermediate paths
             totalPath.Add(current.ToCenter());
-            while (cameFrom.ContainsKey(current))
+            while (cameFrom.TryGetValue(current, out Location prev))
             {
                 ++midPathCnt;
-                current = cameFrom[current];
+                current = prev;
                 totalPath.Add(current.ToCenter());
             }
 

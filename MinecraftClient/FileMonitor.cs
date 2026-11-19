@@ -11,8 +11,9 @@ namespace MinecraftClient
     /// </summary>
     public class FileMonitor : IDisposable
     {
-        private readonly Tuple<FileSystemWatcher, CancellationTokenSource>? monitor = null;
+        private readonly FileSystemWatcher? monitor = null;
         private readonly Tuple<Thread, CancellationTokenSource>? polling = null;
+        private readonly FileSystemEventHandler? handler = null;
 
         /// <summary>
         /// Create a new FileMonitor and start monitoring
@@ -22,6 +23,7 @@ namespace MinecraftClient
         /// <param name="handler">Callback for file changes</param>
         public FileMonitor(string folder, string filename, FileSystemEventHandler handler)
         {
+            this.handler = handler;
             if (Settings.Config.Logging.DebugMessages)
             {
                 string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
@@ -30,13 +32,15 @@ namespace MinecraftClient
 
             try
             {
-                monitor = new Tuple<FileSystemWatcher, CancellationTokenSource>(new FileSystemWatcher(), new CancellationTokenSource());
-                monitor.Item1.Path = folder;
-                monitor.Item1.IncludeSubdirectories = false;
-                monitor.Item1.Filter = filename;
-                monitor.Item1.NotifyFilter = NotifyFilters.LastWrite;
-                monitor.Item1.Changed += handler;
-                monitor.Item1.EnableRaisingEvents = true;
+                monitor = new FileSystemWatcher
+                {
+                    Path = folder,
+                    IncludeSubdirectories = false,
+                    Filter = filename,
+                    NotifyFilter = NotifyFilters.LastWrite
+                };
+                monitor.Changed += handler;
+                monitor.EnableRaisingEvents = true;
             }
             catch
             {
@@ -46,6 +50,7 @@ namespace MinecraftClient
                     ConsoleIO.WriteLineFormatted("§8" + string.Format(Translations.filemonitor_fail, callerClass));
                 }
 
+                monitor?.Dispose();
                 monitor = null;
                 var cancellationTokenSource = new CancellationTokenSource();
                 polling = new Tuple<Thread, CancellationTokenSource>(new Thread(() => PollingThread(folder, filename, handler, cancellationTokenSource.Token)), cancellationTokenSource);
@@ -60,9 +65,16 @@ namespace MinecraftClient
         public void Dispose()
         {
             if (monitor is not null)
-                monitor.Item1.Dispose();
+            {
+                if (handler is not null)
+                    monitor.Changed -= handler;
+                monitor.Dispose();
+            }
             if (polling is not null)
+            {
                 polling.Item2.Cancel();
+                polling.Item2.Dispose();
+            }
         }
 
         /// <summary>
@@ -124,7 +136,7 @@ namespace MinecraftClient
                 {
                     attempt++;
                     if (attempt < maxTries)
-                        Thread.Sleep(new Random().Next(50, 100) * attempt); // Back-off like CSMA/CD
+                        Thread.Sleep(Random.Shared.Next(50, 100) * attempt); // Back-off like CSMA/CD
                     else throw;
                 }
             }
@@ -152,7 +164,7 @@ namespace MinecraftClient
                 {
                     attempt++;
                     if (attempt < maxTries)
-                        Thread.Sleep(new Random().Next(50, 100) * attempt); // Back-off like CSMA/CD
+                        Thread.Sleep(Random.Shared.Next(50, 100) * attempt); // Back-off like CSMA/CD
                     else throw;
                 }
             }

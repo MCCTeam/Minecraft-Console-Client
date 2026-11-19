@@ -232,14 +232,12 @@ namespace MinecraftClient.Inventory
         /// <remarks>Also depending on the container type, some empty slots cannot be used e.g. armor slots. This might cause issues.</remarks>
         public int[] GetEmpytSlots()
         {
-            List<int> result = new();
-            for (int i = 0; i < Type.SlotCount(); i++)
+            int slotCount = Type.SlotCount();
+            List<int> result = new(slotCount);
+            for (int i = 0; i < slotCount; i++)
             {
-                result.Add(i);
-            }
-            foreach (var item in Items)
-            {
-                result.Remove(item.Key);
+                if (!Items.ContainsKey(i))
+                    result.Add(i);
             }
             return result.ToArray();
         }

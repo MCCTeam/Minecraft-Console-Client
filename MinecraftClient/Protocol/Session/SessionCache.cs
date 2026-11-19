@@ -79,7 +79,9 @@ namespace MinecraftClient.Protocol.Session
         /// <returns>TRUE if session tokens are seeded from file</returns>
         public static bool InitializeDiskCache()
         {
+            cachemonitor?.Dispose();
             cachemonitor = new FileMonitor(AppDomain.CurrentDomain.BaseDirectory, SessionCacheFileSerialized, new FileSystemEventHandler(OnChanged));
+            updatetimer.Elapsed -= HandlePending;
             updatetimer.Elapsed += HandlePending;
             return LoadFromDisk();
         }

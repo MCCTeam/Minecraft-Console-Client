@@ -17,8 +17,7 @@ public abstract class StructuredComponentRegistry(DataTypes dataTypes, ItemPalet
 
         name = name.ToLower();
 
-        if (ComponentParsers.ContainsKey(name) || IdToComponent.ContainsValue(name)
-                                               || ComponentToId.ContainsKey(name) || IdToComponent.ContainsKey(id))
+        if (ComponentParsers.ContainsKey(name) || ComponentToId.ContainsKey(name) || IdToComponent.ContainsKey(id))
             throw new InvalidOperationException($"A component with name '{name}' or id '{id}' is already registered.");
 
         ComponentParsers[name] = typeof(T);

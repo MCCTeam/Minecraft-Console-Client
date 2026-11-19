@@ -872,10 +872,10 @@ namespace MinecraftClient.ChatBots
             {
                 LogDebug("Moving to: " + pos);
 
-                while (GetCurrentLocation().Distance(pos) > tolerance)
+                while (running && ClientIsMoving() && GetCurrentLocation().Distance(pos) > tolerance)
                     Thread.Sleep(200);
 
-                return true;
+                return GetCurrentLocation().Distance(pos) <= tolerance;
             }
             else LogDebug("Can't move to: " + pos);
 
@@ -887,7 +887,7 @@ namespace MinecraftClient.ChatBots
         {
             if (!DigBlock(block.ToFloor(), Direction.Down)) return false;
             short i = 0; // Maximum wait time of 10 sec.
-            while (GetWorld().GetBlock(block).Type != Material.Air && i <= digTimeout)
+            while (running && GetWorld().GetBlock(block).Type != Material.Air && i <= digTimeout)
             {
                 Thread.Sleep(100);
                 i++;

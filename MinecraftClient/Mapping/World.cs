@@ -458,13 +458,32 @@ namespace MinecraftClient.Mapping
             Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
             Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
 
-            List<int> xRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.X)), Convert.ToInt32(Math.Floor(maxPoint.X - minPoint.X)) + 1).ToList();
-            List<int> yRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Y)), Convert.ToInt32(Math.Floor(maxPoint.Y - minPoint.Y)) + 1).ToList();
-            List<int> zRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Z)), Convert.ToInt32(Math.Floor(maxPoint.Z - minPoint.Z)) + 1).ToList();
+            int startX = Convert.ToInt32(Math.Floor(minPoint.X));
+            int countX = Convert.ToInt32(Math.Floor(maxPoint.X - minPoint.X)) + 1;
+            int startY = Convert.ToInt32(Math.Floor(minPoint.Y));
+            int countY = Convert.ToInt32(Math.Floor(maxPoint.Y - minPoint.Y)) + 1;
+            int startZ = Convert.ToInt32(Math.Floor(minPoint.Z));
+            int countZ = Convert.ToInt32(Math.Floor(maxPoint.Z - minPoint.Z)) + 1;
 
-            List<Location> listOfBlocks = xRange.SelectMany(x => yRange.SelectMany(y => zRange.Select(z => new Location(x, y, z)))).ToList();
+            int endX = startX + countX;
+            int endY = startY + countY;
+            int endZ = startZ + countZ;
 
-            return listOfBlocks.Where(loc => GetBlock(loc).Type == block).ToList();
+            List<Location> result = new();
+            for (int x = startX; x < endX; x++)
+            {
+                for (int y = startY; y < endY; y++)
+                {
+                    for (int z = startZ; z < endZ; z++)
+                    {
+                        Location loc = new(x, y, z);
+                        if (GetBlock(loc).Type == block)
+                            result.Add(loc);
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -489,6 +508,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         public void Clear()
         {
+            chunks.Clear();
             chunks = new();
             chunkCnt = 0;
             chunkLoadNotCompleted = 0;

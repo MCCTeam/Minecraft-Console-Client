@@ -32,7 +32,20 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Decompressed data as a byte array</returns>
         public static byte[] Decompress(byte[] to_decompress, int size_uncompressed)
         {
-            using MemoryStream compressedStream = new(to_decompress, writable: false);
+            return Decompress(to_decompress, 0, to_decompress.Length, size_uncompressed);
+        }
+
+        /// <summary>
+        /// Decompress a slice of a byte array into another byte array of the specified size
+        /// </summary>
+        /// <param name="to_decompress">Buffer containing compressed data</param>
+        /// <param name="offset">Start offset in buffer</param>
+        /// <param name="count">Number of compressed bytes</param>
+        /// <param name="size_uncompressed">Size of the data once decompressed</param>
+        /// <returns>Decompressed data as a byte array</returns>
+        public static byte[] Decompress(byte[] to_decompress, int offset, int count, int size_uncompressed)
+        {
+            using MemoryStream compressedStream = new(to_decompress, offset, count, writable: false);
             using ZLibStream stream = new(compressedStream, CompressionMode.Decompress);
 
             byte[] packetData_decompressed = new byte[size_uncompressed];
